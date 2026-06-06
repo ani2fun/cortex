@@ -1,10 +1,10 @@
 openapi: 3.0.3
 info:
-  title: Codefolio API
+  title: Cortex API
   description: |
-    Source of truth for the Codefolio HTTP API. The sbt-openapi-codegen plugin
+    Source of truth for the Cortex HTTP API. The sbt-openapi-codegen plugin
     reads this file and emits tapir `Endpoint` descriptions plus case classes
-    into the cross-compiled `shared` module under package `codefolio.shared.api`.
+    into the cross-compiled `shared` module under package `cortex.shared.api`.
     Both server and client compile against the generated code, so a schema
     change here breaks both sides until they're updated.
 
@@ -172,7 +172,7 @@ paths:
       summary: |
         Identity claims for the bearer-token holder, plus the user's
         current /api/run quota for this hour. Surfaced verbatim from the
-        validated JWT — codefolio does not persist a users table.
+        validated JWT — cortex does not persist a users table.
       security:
         - bearerAuth: []
       responses:
@@ -240,7 +240,7 @@ components:
       bearerFormat: JWT
       description: |
         OIDC access token issued by Keycloak (realm `apps-prod`, public
-        client `codefolio-web`, GitHub IdP). Validated server-side
+        client `cortex-web`, GitHub IdP). Validated server-side
         against the JWK set fetched from the issuer URL.
 
   responses:
@@ -714,7 +714,7 @@ components:
           type: string
           nullable: true
           description: Public Keycloak client id for the SPA.
-          example: "codefolio-web"
+          example: "cortex-web"
 
     Quota:
       type: object

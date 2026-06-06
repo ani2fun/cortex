@@ -17,10 +17,6 @@ export default defineConfig({
 
   resolve: {
     alias: {
-      // `@data` → `client/src/data`. Lets the Scala.js client `@JSImport` the
-      // TypeScript bridge and JSON files without brittle relative paths into
-      // the linker output directory.
-      "@data":     path.resolve(import.meta.dirname, "src/data"),
       // `@markdown` → `client/src/markdown`. Same idea, for the Prism +
       // markdown-pipeline TS helpers Scala.js calls into.
       "@markdown": path.resolve(import.meta.dirname, "src/markdown"),

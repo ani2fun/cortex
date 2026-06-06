@@ -1,4 +1,4 @@
-name: Build, Push, and Promote Codefolio
+name: Build, Push, and Promote Cortex
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: codefolio-main
+  group: cortex-main
   cancel-in-progress: true
 
 permissions:
@@ -18,7 +18,7 @@ jobs:
   call:
     uses: ./.github/workflows/_build-push-promote.yml
     with:
-      image_repo: ghcr.io/ani2fun/codefolio
-      infra_kustomization_file: deploy/apps/codefolio/overlays/prod/kustomization.yaml
-      commit_message: "chore(codefolio): promote image to"
+      image_repo: ghcr.io/ani2fun/cortex
+      infra_kustomization_file: deploy/apps/cortex/overlays/prod/kustomization.yaml
+      commit_message: "chore(cortex): promote image to"
     secrets: inherit

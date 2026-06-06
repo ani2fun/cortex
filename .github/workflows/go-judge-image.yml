@@ -23,7 +23,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: codefolio-go-judge-image
+  group: cortex-go-judge-image
   cancel-in-progress: true
 
 permissions:
@@ -54,8 +54,8 @@ jobs:
             --platform linux/amd64 \
             --file runner/go-judge/Dockerfile \
             --push \
-            --tag ghcr.io/ani2fun/codefolio-go-judge:${{ github.sha }} \
-            --tag ghcr.io/ani2fun/codefolio-go-judge:latest \
-            --cache-from type=gha,scope=codefolio-go-judge \
-            --cache-to type=gha,mode=max,scope=codefolio-go-judge \
+            --tag ghcr.io/ani2fun/cortex-go-judge:${{ github.sha }} \
+            --tag ghcr.io/ani2fun/cortex-go-judge:latest \
+            --cache-from type=gha,scope=cortex-go-judge \
+            --cache-to type=gha,mode=max,scope=cortex-go-judge \
             runner/go-judge

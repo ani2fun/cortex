@@ -1,5 +1,5 @@
 # Two-stage build: compile the LikeC4 SPA, then serve it from nginx-unprivileged
-# at the /c4/ subpath. Codefolio's Scala server reverse-proxies /c4/* to this
+# at the /c4/ subpath. Cortex's Scala server reverse-proxies /c4/* to this
 # image's Service in-cluster — there is no public Ingress on this image.
 
 FROM node:20-alpine AS builder
@@ -35,7 +35,7 @@ RUN set -eu; \
 
 WORKDIR /build/c4
 # --base /c4/ makes the SPA load its assets from /c4/... so it works behind
-# codefolio's subpath proxy without rewriting HTML at runtime.
+# cortex's subpath proxy without rewriting HTML at runtime.
 RUN likec4 build --base /c4/ --output /build/dist
 
 FROM nginxinc/nginx-unprivileged:1.27-alpine

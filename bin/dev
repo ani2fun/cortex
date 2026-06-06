@@ -73,9 +73,9 @@ done
 # the full local GitHub-sign-in flow (Keycloak container, realm import, user
 # tester/tester) with `AUTH_ENABLED=true ./bin/dev`. See ADR-0013.
 export AUTH_ENABLED="${AUTH_ENABLED:-false}"
-export KEYCLOAK_ISSUER_URL="${KEYCLOAK_ISSUER_URL:-http://localhost:8081/realms/codefolio}"
-export KEYCLOAK_REALM="${KEYCLOAK_REALM:-codefolio}"
-export KEYCLOAK_CLIENT_ID="${KEYCLOAK_CLIENT_ID:-codefolio-web}"
+export KEYCLOAK_ISSUER_URL="${KEYCLOAK_ISSUER_URL:-http://localhost:8081/realms/cortex}"
+export KEYCLOAK_REALM="${KEYCLOAK_REALM:-cortex}"
+export KEYCLOAK_CLIENT_ID="${KEYCLOAK_CLIENT_ID:-cortex-web}"
 
 # ---- 1c. Fresh build state: clear the cross-compiled `shared` targets ----
 #
@@ -156,10 +156,10 @@ export LIKEC4_URL="${LIKEC4_URL:-http://127.0.0.1:8090}"
 if [[ "$AUTH_ENABLED" == "true" ]]; then
   # Keycloak has no compose healthcheck; poll the realm's OIDC discovery
   # endpoint instead (first boot imports the realm — can take ~30-60s).
-  log "waiting for Keycloak realm 'codefolio' to import…"
+  log "waiting for Keycloak realm 'cortex' to import…"
   kc_ready=""
   for _ in $(seq 1 60); do
-    if curl -sf "http://localhost:8081/realms/codefolio/.well-known/openid-configuration" \
+    if curl -sf "http://localhost:8081/realms/cortex/.well-known/openid-configuration" \
         >/dev/null 2>&1; then
       kc_ready=1
       break
@@ -237,13 +237,13 @@ PIDS+=($!)
 log "all services up — Ctrl-C to stop"
 log "  Vite (frontend, with HMR):  http://localhost:${VITE_PORT}"
 log "  ZIO server (API + Swagger): http://localhost:${SERVER_PORT}  /docs"
-log "  Postgres:                   localhost:5432  (user/pass: codefolio)"
+log "  Postgres:                   localhost:5432  (user/pass: cortex)"
 log "  Redis:                      localhost:6379"
-log "  MongoDB:                    localhost:27017 (db: codefolio)"
+log "  MongoDB:                    localhost:27017 (db: cortex)"
 log "  go-judge (sandbox):         localhost:5050 (POST /run)"
 log "  LikeC4 (via proxy):         http://localhost:${SERVER_PORT}/c4/view/index"
 if [[ "$AUTH_ENABLED" == "true" ]]; then
-  log "  Keycloak:                   http://localhost:8081 (admin/admin) — realm codefolio, user tester/tester"
+  log "  Keycloak:                   http://localhost:8081 (admin/admin) — realm cortex, user tester/tester"
   log "  Auth:                       ON  (sign in as tester/tester; AUTH_ENABLED=false ./bin/dev to skip)"
 else
   log "  Auth:                       OFF (editor unlocked, no sign-in; AUTH_ENABLED=true ./bin/dev to enable)"

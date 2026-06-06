@@ -1,6 +1,6 @@
 --liquibase formatted sql
 
---changeset codefolio:1-create-visits
+--changeset cortex:1-create-visits
 CREATE TABLE visits (
   id    INT    PRIMARY KEY,
   count BIGINT NOT NULL

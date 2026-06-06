@@ -5,14 +5,14 @@
 /* Source paths. v4 auto-scans the project tree but skips .gitignore'd dirs.
    The Scala.js linker output is gitignored — declare it explicitly so the
    classes emitted into the linked JS make it into the CSS bundle. */
-@source "../client/target/scala-3.6.2/codefolio-client-fastopt";
-@source "../client/target/scala-3.6.2/codefolio-client-opt";
+@source "../client/target/scala-3.6.2/cortex-client-fastopt";
+@source "../client/target/scala-3.6.2/cortex-client-opt";
 
 /* Dark-mode variant: trigger on `.dark` ancestor (set by the index.html
    bootstrap script on <html>). Canonical shadcn-v4 form. */
 @custom-variant dark (&:is(.dark *));
 
-/* Codefolio editorial palette: warm cream foreground on dark roast bg in
+/* Cortex editorial palette: warm cream foreground on dark roast bg in
    .dark, mirrored on warm off-white in :root. Terracotta replaces the old
    shadcn blue --primary. The shadcn token names stay so every existing
    `text-primary` / `border-primary` / `bg-card` callsite picks up the

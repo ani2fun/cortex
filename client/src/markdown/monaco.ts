@@ -47,7 +47,7 @@ import "monaco-editor/esm/vs/basic-languages/javascript/javascript.contribution"
 // surround so the editor doesn't look like a transplanted VS Code window. The
 // token rules mirror the static-fence palette (indigo keyword, teal function/type,
 // green string, amber number, muted-italic comment) so runnable + rendered code match.
-monaco.editor.defineTheme("codefolio-dark", {
+monaco.editor.defineTheme("cortex-dark", {
   base: "vs-dark",
   inherit: true,
   rules: [

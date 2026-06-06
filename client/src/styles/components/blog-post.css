@@ -1344,7 +1344,7 @@
        family colour for every text descendant inside these bands so the
        theme switch doesn't change them. Body copy bumped from 0.7 → 0.82
        to clear WCAG AA (4.5:1 on `#110f0d`).
-       Source: codefolio-design-system/patches/blog-post.contrast-patch.css */
+       Source: cortex-design-system/patches/blog-post.contrast-patch.css */
 
     .blog-post__recipe :where(h1, h2, h3, h4, h5, h6) {
         color: hsl(var(--cream));

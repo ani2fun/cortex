@@ -1,6 +1,6 @@
 /* Sign-in modal — the GitHub auth dialog for editing Cortex code blocks.
    Ported from the Claude Design `Cortex Auth` artboard (cortex-auth/styles.css
-   `.modal-*`), re-tokenised onto codefolio's shadcn HSL variables so light /
+   `.modal-*`), re-tokenised onto cortex's shadcn HSL variables so light /
    dark mode come for free. Block: .sign-in-modal */
 
 @keyframes sign-in-modal-scrim-in {

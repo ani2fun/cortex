@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       image_repo:
-        description: GHCR image repository (e.g. ghcr.io/ani2fun/codefolio)
+        description: GHCR image repository (e.g. ghcr.io/ani2fun/cortex)
         required: true
         type: string
       dockerfile:

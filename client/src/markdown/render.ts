@@ -934,7 +934,7 @@ export interface RenderResult {
 // instead of baked hexes, so code recolors with the site's --syn-* palette
 // (mapped onto a dark code slab in chapter-content.css). Built once at module load.
 const cssVarsTheme = createCssVariablesTheme({
-  name: "codefolio",
+  name: "cortex",
   variablePrefix: "--shiki-",
   fontStyle: true,
 });

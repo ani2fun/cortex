@@ -1,0 +1,48 @@
+{
+  "realm": "cortex",
+  "enabled": true,
+  "displayName": "Cortex (local)",
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "accessTokenLifespan": 300,
+  "clients": [
+    {
+      "clientId": "cortex-web",
+      "name": "Cortex SPA",
+      "description": "Public PKCE client for the Cortex code-edit auth gate (ADR-0013).",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "redirectUris": [
+        "http://localhost:5173/*",
+        "http://localhost:8080/*"
+      ],
+      "webOrigins": [
+        "http://localhost:5173",
+        "http://localhost:8080",
+        "+"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:5173/*##http://localhost:8080/*"
+      }
+    }
+  ],
+  "users": [
+    {
+      "username": "tester",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "tester@cortex.local",
+      "firstName": "Cortex",
+      "lastName": "Tester",
+      "credentials": [
+        { "type": "password", "value": "tester", "temporary": false }
+      ]
+    }
+  ]
+}

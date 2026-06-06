@@ -77,4 +77,4 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Build Docker image
-        run: docker build -t codefolio:ci .
+        run: docker build -t cortex:ci .

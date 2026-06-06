@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: Codefolio Visualisation — render schema (VizCases)
+  title: Cortex Visualisation — render schema (VizCases)
   version: "1.0"
   description: |
     Single source of truth for the **viz render contract**: the `VizCases`

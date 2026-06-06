@@ -41,7 +41,7 @@ FROM eclipse-temurin:21-jre-jammy AS runtime
 
 WORKDIR /app
 
-# Server distribution: bin/codefolio-server, lib/*.jar
+# Server distribution: bin/cortex-server, lib/*.jar
 COPY --from=builder /build/server/target/universal/stage /app
 # Frontend bundle: served by the zio-http static fallback.
 COPY --from=builder /build/client/dist /app/static
@@ -53,4 +53,4 @@ ENV CORTEX_ROOT=/app/content/cortex
 ENV PORT=8080
 EXPOSE 8080
 
-CMD ["bin/codefolio-server"]
+CMD ["bin/cortex-server"]

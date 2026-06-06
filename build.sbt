@@ -1,7 +1,7 @@
 import org.scalajs.linker.interface.ModuleKind
 
 ThisBuild / scalaVersion := "3.6.2"
-ThisBuild / organization := "codefolio"
+ThisBuild / organization := "cortex"
 ThisBuild / version      := "0.1.0-SNAPSHOT"
 
 ThisBuild / scalacOptions ++= Seq(
@@ -41,7 +41,7 @@ val nimbusJoseV   = "9.48"
 // `shared` is cross-compiled for the JVM (server) and JS (client). The
 // sbt-openapi-codegen plugin reads `api/openapi.yaml` and writes generated
 // tapir endpoints + case classes into each platform's `src_managed` dir
-// under the package `codefolio.shared.api`. Both server and client depend
+// under the package `cortex.shared.api`. Both server and client depend
 // on this module, so the API spec is the single source of truth and a
 // schema change breaks compilation on both sides.
 
@@ -50,7 +50,7 @@ lazy val shared = crossProject(JSPlatform, JVMPlatform)
   .in(file("shared"))
   .enablePlugins(OpenapiCodegenPlugin)
   .settings(
-    name := "codefolio-shared",
+    name := "cortex-shared",
     libraryDependencies ++= Seq(
       "com.softwaremill.sttp.tapir" %%% "tapir-core"       % tapirV,
       "com.softwaremill.sttp.tapir" %%% "tapir-json-circe" % tapirV,
@@ -60,7 +60,7 @@ lazy val shared = crossProject(JSPlatform, JVMPlatform)
     ),
     testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework"),
     openapiSwaggerFile  := (ThisBuild / baseDirectory).value / "api" / "openapi.yaml",
-    openapiPackage      := "codefolio.shared.api",
+    openapiPackage      := "cortex.shared.api",
     openapiObject       := "Endpoints",
     openapiJsonSerdeLib := "circe"
   )
@@ -83,8 +83,8 @@ lazy val server = (project in file("server"))
   .enablePlugins(JavaAppPackaging)
   .dependsOn(sharedJVM)
   .settings(
-    name                := "codefolio-server",
-    Compile / mainClass := Some("codefolio.server.Main"),
+    name                := "cortex-server",
+    Compile / mainClass := Some("cortex.server.Main"),
     // Run the server with the build root as its working directory so the
     // default `./client/dist` static path (and any other relative path the
     // user puts in application.conf) resolves the same way under
@@ -133,7 +133,7 @@ lazy val client = (project in file("client"))
   .enablePlugins(ScalaJSPlugin)
   .dependsOn(sharedJS)
   .settings(
-    name                            := "codefolio-client",
+    name                            := "cortex-client",
     scalaJSUseMainModuleInitializer := true,
     scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.ESModule) },
     libraryDependencies ++= Seq(
@@ -149,7 +149,7 @@ lazy val client = (project in file("client"))
 lazy val root = (project in file("."))
   .aggregate(sharedJVM, sharedJS, server, client)
   .settings(
-    name           := "codefolio",
+    name           := "cortex",
     publish / skip := true
   )
 
@@ -163,7 +163,7 @@ lazy val root = (project in file("."))
 // instead of pulling another into the build.
 addCommandAlias(
   "validateCortexPayloads",
-  "server/runMain codefolio.server.cortexPipeline.LinkedListCanonValidator"
+  "server/runMain cortex.server.cortexPipeline.LinkedListCanonValidator"
 )
 
 // `sbt genTraceFixtures` — Phase 0 (ADR-0025). Adapts each HeapTraceFixtures
@@ -173,5 +173,5 @@ addCommandAlias(
 // (test-only) fixtures.
 addCommandAlias(
   "genTraceFixtures",
-  "sharedJVM/Test/runMain codefolio.shared.viz.GenTraceFixtures"
+  "sharedJVM/Test/runMain cortex.shared.viz.GenTraceFixtures"
 )

@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: Codefolio Visualisation Schemas — Phase 0 oneOf prototype
+  title: Cortex Visualisation Schemas — Phase 0 oneOf prototype
   version: "0.1"
   description: |
     Phase 0 deliverable 8 / gap 4 (ADR-0025). Just the THREE hardest sum types

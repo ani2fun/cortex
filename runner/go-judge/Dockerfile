@@ -1,4 +1,4 @@
-# go-judge sandbox + codefolio language toolchains.
+# go-judge sandbox + cortex language toolchains.
 #
 # Base: criyle/go-judge (Debian 13 "trixie", binary /opt/go-judge, listens :5050).
 # go-judge bundles NO compilers — the sandbox bind-mounts the container's

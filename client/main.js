@@ -22,5 +22,5 @@ import { transition as _d3Transition, interrupt as _d3Interrupt } from "d3-trans
 window.__d3TransitionLoaded = { _d3Transition, _d3Interrupt };
 
 // Side-effect import: triggers the Scala.js MainModuleInitializer
-// (codefolio.client.Main.main), which mounts the React tree.
+// (cortex.client.Main.main), which mounts the React tree.
 import "scalajs:main.js";

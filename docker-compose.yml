@@ -2,15 +2,15 @@ services:
   db:
     image: postgres:17-alpine
     environment:
-      POSTGRES_USER: codefolio
-      POSTGRES_PASSWORD: codefolio
-      POSTGRES_DB: codefolio
+      POSTGRES_USER: cortex
+      POSTGRES_PASSWORD: cortex
+      POSTGRES_DB: cortex
     volumes:
       - pgdata:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U codefolio -d codefolio"]
+      test: ["CMD-SHELL", "pg_isready -U cortex -d cortex"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -67,8 +67,8 @@ services:
   # Keycloak — OIDC provider for the Cortex code-edit auth gate (ADR-0013).
   # Dev mode: in-memory H2, HTTP only, realm imported on first boot from
   # docker/keycloak/import/. Admin console: http://localhost:8081 (admin/
-  # admin). The imported `codefolio` realm ships a public PKCE client
-  # `codefolio-web` and a local `tester` / `tester` user, so the whole
+  # admin). The imported `cortex` realm ships a public PKCE client
+  # `cortex-web` and a local `tester` / `tester` user, so the whole
   # sign-in flow can be exercised without a GitHub OAuth app. Production
   # points at the homelab Keycloak instead (application.conf `auth` defaults).
   keycloak:
@@ -92,12 +92,12 @@ services:
       likec4: { condition: service_started }
       keycloak: { condition: service_started }
     environment:
-      DB_URL:      jdbc:postgresql://db:5432/codefolio
-      DB_USER:     codefolio
-      DB_PASSWORD: codefolio
+      DB_URL:      jdbc:postgresql://db:5432/cortex
+      DB_USER:     cortex
+      DB_PASSWORD: cortex
       REDIS_URL:   redis://redis:6379
       MONGO_URI:   mongodb://mongo:27017
-      MONGO_DB:    codefolio
+      MONGO_DB:    cortex
       STATIC_DIR:  /app/static
       PORT:        "8080"
       # go-judge sandbox for /api/run. bin/dev (JVM on host) overrides to
@@ -116,9 +116,9 @@ services:
       # server alike). To force auth on in full-docker you must also pin
       # Keycloak's hostname so issuer + JWKS host agree.
       AUTH_ENABLED:            ${AUTH_ENABLED:-false}
-      KEYCLOAK_ISSUER_URL:     ${KEYCLOAK_ISSUER_URL:-http://keycloak:8080/realms/codefolio}
-      KEYCLOAK_REALM:          ${KEYCLOAK_REALM:-codefolio}
-      KEYCLOAK_CLIENT_ID:      ${KEYCLOAK_CLIENT_ID:-codefolio-web}
+      KEYCLOAK_ISSUER_URL:     ${KEYCLOAK_ISSUER_URL:-http://keycloak:8080/realms/cortex}
+      KEYCLOAK_REALM:          ${KEYCLOAK_REALM:-cortex}
+      KEYCLOAK_CLIENT_ID:      ${KEYCLOAK_CLIENT_ID:-cortex-web}
     ports:
       - "8080:8080"
 
