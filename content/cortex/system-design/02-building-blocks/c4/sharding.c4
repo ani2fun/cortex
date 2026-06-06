@@ -1,0 +1,44 @@
+// Lesson 12 — "Sharding and partitioning". The deployment shape the
+// lesson anchors on: a client speaks to a router (an application-level
+// shard map or a managed proxy like Vitess / Citus); the router picks
+// the right shard; reads + writes go there. Independent shards.
+//
+// All identifiers carry the `shard` prefix per the locked
+// identifier-prefix convention. See
+// memory/likec4_multi_file_convention.md.
+
+model {
+  shardClient = actor 'Application' {
+    description 'Issues reads and writes keyed by a partition key — user_id, channel_id, customer_id, etc.'
+  }
+
+  shardSystem = system 'Sharded datastore' {
+    description 'N independent shards. Each shard holds a slice of the keyspace and is internally a normal Postgres / MySQL / Cassandra.'
+
+    shardRouter = container 'Shard router' {
+      description 'Hashes the partition key, looks up the owning shard, forwards the query. Vitess / Citus / a stateless Go service in front of plain Postgres.'
+    }
+    shardA = container 'Shard A' {
+      description 'Owns keys with hash(key) % 3 == 0 (or range [a..h]). Postgres + replicas + the usual operational kit.'
+    }
+    shardB = container 'Shard B' {
+      description 'Owns keys with hash(key) % 3 == 1 (or range [i..p]).'
+    }
+    shardC = container 'Shard C' {
+      description 'Owns keys with hash(key) % 3 == 2 (or range [q..z]).'
+    }
+
+    shardRouter -> shardA 'routes if owning shard'
+    shardRouter -> shardB 'routes if owning shard'
+    shardRouter -> shardC 'routes if owning shard'
+  }
+
+  shardClient -> shardSystem 'read/write keyed by partition key'
+}
+
+views {
+  view buildingblocks_sharding_overview of shardSystem {
+    title 'Sharded datastore — router + N independent shards'
+    include *
+  }
+}

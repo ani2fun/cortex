@@ -1,0 +1,43 @@
+// Capstone 43 — "Distributed file storage" (GFS/HDFS/S3 lineage). C4 container
+// view. Store petabytes of files on thousands of UNRELIABLE commodity machines,
+// where disk/machine failure is the norm. Core design: split each file into
+// large fixed-size CHUNKS, REPLICATE (or erasure-code) each chunk across
+// machines/racks, and keep a MASTER holding only metadata (chunk locations) OUT
+// of the data path — clients read/write chunk bytes directly from chunkservers.
+//
+// All identifiers carry the `dfs` prefix. View name scope-prefixed
+// `capstones_distributedfilestorage_*`. No `specification` block — element kinds
+// (actor, system, container) shared from 05-application-architecture/c4/workspace.c4.
+
+model {
+  dfsClient = actor 'Client' {
+    description 'Reads and writes large files. Asks the master where chunks live, then transfers chunk bytes directly with chunkservers.'
+  }
+
+  dfsSys = system 'Distributed file storage' {
+    description 'Petabyte-to-exabyte file storage on commodity hardware. Files are chunked, each chunk replicated/erasure-coded; the master holds metadata only and stays out of the data path.'
+
+    dfsMaster = container 'Master (metadata)' {
+      description 'Holds the namespace, file-to-chunk mapping, and chunk-to-location map in memory. Makes global placement and re-replication decisions. NOT in the data path — answers "where is chunk N?" and steps aside. GFS master / HDFS NameNode.'
+    }
+    dfsChunkserver = container 'Chunkserver' {
+      description 'Stores fixed-size chunks (GFS 64 MB / HDFS 128 MB) on local disk and serves chunk bytes directly to clients. GFS chunkserver / HDFS DataNode.'
+    }
+    dfsChunkserverPeer = container 'Chunkserver (peer replica)' {
+      description 'A peer chunkserver holding another replica of the same chunk. Each chunk lives on ~3 chunkservers (or is erasure-coded) across racks, so losing one machine never loses data.'
+    }
+
+    dfsChunkserver -> dfsChunkserverPeer 'replicate chunk to peers (3x across racks)'
+    dfsMaster -> dfsChunkserver 'heartbeat, detect failures, trigger re-replication'
+  }
+
+  dfsClient -> dfsMaster 'lookup chunk locations (metadata only)'
+  dfsClient -> dfsChunkserver 'read/write chunk bytes (direct, bulk data path)'
+}
+
+views {
+  view capstones_distributedfilestorage_architecture of dfsSys {
+    title 'Distributed file storage — container view (master + chunkservers)'
+    include *
+  }
+}

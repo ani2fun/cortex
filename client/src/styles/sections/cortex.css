@@ -1,0 +1,79 @@
+@layer components {
+    /* Cortex — homepage preview of the Cortex index.
+
+       Block: .cortex
+       Elements:
+         __inner             — content wrapper
+         __eyebrow           — "CORTEX · NOTEBOOK" mono caption
+         __heading-row       — title left, pulse pill right
+         __title             — italic display heading
+         __pulse-pill        — "Currently writing: …" pill
+         __pulse-dot         — animated indigo dot
+         __pulse-text        — pill copy
+         (BookGrid renders the cards via __card / __card-* below)
+    */
+
+    .cortex {
+        @apply py-24 px-6 scroll-mt-24 border-t border-border/60;
+    }
+    
+    /* ── Card grid (rendered by BookGrid) ─────────────────────────── */
+    .cortex__grid {
+        @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl mx-auto;
+    }
+    .cortex__card {
+        @apply flex flex-col rounded-md border border-border/70 p-5 bg-card
+               transition;
+    }
+    .cortex__card:hover {
+        border-color: hsl(var(--primary) / 0.5);
+    }
+    .cortex__card-meta {
+        @apply flex items-center gap-2 mb-2;
+    }
+    .cortex__card-meta-icon {
+        @apply h-3.5 w-3.5 text-muted-foreground;
+    }
+    .cortex__card-meta-text {
+        @apply text-[10px] font-mono tracking-widest text-muted-foreground uppercase;
+    }
+    .cortex__card-title {
+        @apply text-base font-medium text-foreground transition-colors mb-1;
+    }
+    .cortex__card:hover .cortex__card-title {
+        color: hsl(var(--primary));
+    }
+    .cortex__card-description {
+        @apply text-sm text-foreground/80 leading-relaxed mb-4 flex-1;
+    }
+    .cortex__card-footer {
+        @apply flex flex-wrap items-center gap-1.5 mt-auto;
+    }
+    .cortex__card-tag {
+        @apply text-[10px] font-mono text-muted-foreground;
+    }
+    .cortex__card-cta {
+        @apply ml-auto inline-flex items-center text-xs font-mono text-foreground;
+    }
+    .cortex__card-cta-icon {
+        @apply h-3 w-3 ml-1 transition-transform;
+    }
+    .cortex__card:hover .cortex__card-cta-icon {
+        transform: translateX(2px);
+    }
+
+    .cortex__cta-row {
+        @apply flex justify-center mt-10;
+    }
+    .cortex__cta {
+        @apply inline-flex items-center gap-2 px-5 py-2.5 rounded-full
+               border border-foreground/30 hover:border-foreground
+               text-sm font-medium text-foreground transition no-underline;
+    }
+    .cortex__cta-icon {
+        @apply h-4 w-4 transition-transform;
+    }
+    .cortex__cta:hover .cortex__cta-icon {
+        transform: translateX(2px);
+    }
+}

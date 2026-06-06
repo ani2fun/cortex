@@ -1,0 +1,198 @@
+@layer components {
+    /* Projects — featured card + filterable grid.
+
+       Block: .projects
+       Elements:
+         __inner                — content wrapper
+         __eyebrow              — "PROJECTS · SELECTED" mono caption
+         __heading-row          — title left, filter chips right
+         __title                — italic display heading
+         __filters              — chip row
+         __filter / __filter--active
+         __grid                 — 1 / 2 / 3 col responsive grid
+         __card / __card--featured
+         __image                — real photo (when present)
+         __placeholder          — tinted-stripe block
+         __placeholder-meta     — mono metadata caption
+         __ascii                — pre block for inline ASCII art (featured card only)
+         __body                 — text content of card
+         __icon-row / __icon-link / __icon-svg
+         __name                 — card title
+         __description          — body sentence
+         __tag-row / __tag      — tech chips
+    */
+
+    .projects {
+        /* Slight warm band against the page bg — sits between two 1px
+           rules so the section reads as a distinct surface without going
+           full card-with-shadow. Mirrors the prototype's `.proj` layer. */
+        @apply py-24 px-6 scroll-mt-24;
+        background-color: hsl(var(--secondary) / 0.6);
+        border-top: 1px solid hsl(var(--border));
+        border-bottom: 1px solid hsl(var(--border));
+    }
+    .dark .projects {
+        background-color: hsl(var(--secondary) / 0.4);
+    }
+    .projects__inner {
+        @apply max-w-6xl mx-auto;
+    }
+    .projects__eyebrow {
+        @apply text-sm font-mono tracking-widest text-muted-foreground uppercase mb-3;
+    }
+    .projects__heading-row {
+        @apply flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-8;
+    }
+    .projects__heading {
+        @apply flex flex-col;
+    }
+    .projects__intro {
+        @apply md:text-right text-sm text-muted-foreground max-w-sm font-mono leading-relaxed;
+    }
+    .projects__title {
+        font-family: var(--font-display);
+        font-style: italic;
+        font-weight: 400;
+        font-size: 40px;
+        line-height: 1.02;
+        letter-spacing: -0.02em;
+        color: hsl(var(--foreground));
+        margin: 0;
+    }
+    .projects__filters {
+        @apply flex flex-wrap gap-2 mb-6;
+    }
+    .projects__filter {
+        @apply px-3 py-1.5 rounded-full text-[11px] font-mono uppercase tracking-wider
+               border border-border/70 text-muted-foreground bg-transparent
+               hover:text-foreground hover:border-foreground/40 transition;
+    }
+    .projects__filter--active {
+        @apply text-background bg-foreground border-foreground;
+    }
+
+    .projects__grid {
+        @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6;
+    }
+
+    /* ── Card ─────────────────────────────────────────────────────── */
+    .projects__card {
+        @apply relative flex flex-col bg-card border border-border/70 rounded-lg
+               overflow-hidden;
+        transition: transform 220ms cubic-bezier(0.2, 0.7, 0.2, 1),
+                    box-shadow 220ms,
+                    border-color 220ms;
+    }
+    .projects__card:hover {
+        transform: translateY(-3px);
+        border-color: hsl(var(--primary) / 0.5);
+        box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05),
+                    0 8px 24px -12px rgba(0, 0, 0, 0.18);
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .projects__card { transition: none; }
+        .projects__card:hover { transform: none; }
+    }
+    .projects__card--featured {
+        @apply md:col-span-2;
+    }
+
+    /* Real photo (kept for projects that actually have one). */
+    .projects__image {
+        @apply w-full h-48 object-cover border-b border-border/60;
+    }
+
+    /* Tinted-stripe placeholder — replaces the duplicated macbook.webp. */
+    .projects__placeholder {
+        @apply w-full h-48 flex items-end justify-start p-5 border-b border-border/60;
+        background-image: linear-gradient(
+            135deg,
+            hsl(var(--primary) / 0.08) 0%,
+            hsl(var(--primary) / 0.04) 50%,
+            hsl(var(--primary) / 0.10) 100%
+        );
+        background-size: 100% 100%;
+        position: relative;
+    }
+    .projects__placeholder::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: repeating-linear-gradient(
+            45deg,
+            transparent 0,
+            transparent 6px,
+            hsl(var(--primary) / 0.05) 6px,
+            hsl(var(--primary) / 0.05) 7px
+        );
+        pointer-events: none;
+    }
+    .projects__placeholder-meta {
+        @apply relative text-[11px] font-mono tracking-widest text-foreground/70 uppercase;
+    }
+
+    /* ASCII topology for the featured K3s card.
+       The .projects__ascii-frame is a relatively-positioned wrapper so the
+       "live · 4 nodes · k3s" badge can pin top-left without overlapping
+       the diagram. */
+    .projects__ascii-frame {
+        @apply relative border-b border-border/60;
+        background-color: hsl(var(--primary) / 0.05);
+    }
+    .projects__ascii-badge {
+        @apply absolute top-4 left-4 inline-block z-10
+               text-[11px] font-mono uppercase tracking-widest
+               px-2.5 py-1 rounded-full
+               text-muted-foreground bg-card border border-border/70;
+    }
+    .projects__ascii {
+        @apply font-mono text-[11px] md:text-xs leading-tight px-6 py-6 pt-12
+               text-foreground/85 m-0
+               whitespace-pre overflow-x-auto;
+        background-color: transparent;
+    }
+
+    /* ── Body ─────────────────────────────────────────────────────── */
+    .projects__body {
+        @apply p-5 flex flex-col flex-1 gap-3;
+    }
+    .projects__icon-row {
+        @apply flex gap-3;
+    }
+    .projects__icon-link {
+        @apply text-muted-foreground hover:text-primary transition-transform;
+    }
+    .projects__icon-link:hover {
+        transform: scale(1.08);
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .projects__icon-link { transition: none; }
+        .projects__icon-link:hover { transform: none; }
+    }
+    .projects__icon-svg {
+        @apply w-4 h-4;
+    }
+    .projects__name {
+        font-family: var(--font-display);
+        font-style: italic;
+        font-weight: 400;
+        font-size: 22px;
+        line-height: 1.1;
+        letter-spacing: -0.01em;
+        color: hsl(var(--foreground));
+    }
+    .projects__description {
+        @apply text-sm text-foreground/80 leading-relaxed flex-1;
+    }
+    .projects__tag-row {
+        @apply flex flex-wrap items-center gap-x-1 gap-y-1 mt-2;
+    }
+    .projects__tag {
+        @apply text-[11px] font-mono text-muted-foreground;
+    }
+    .projects__tag + .projects__tag::before {
+        content: "·";
+        margin-right: 4px;
+        color: hsl(var(--border));
+    }
+}

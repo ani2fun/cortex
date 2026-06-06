@@ -1,0 +1,176 @@
+@layer components {
+    /* Experience — vertical accordion.
+
+       Block: .experience
+       Elements:
+         __inner             — content wrapper
+         __eyebrow           — "EXPERIENCE · 6 ROLES"
+         __title             — italic display heading
+         __list              — vertical stack of roles
+         __role              — single accordion entry
+         __role--open        — modifier when expanded
+         __role-header       — clickable button (company | meta | chevron)
+         __role-company      — italic display company name
+         __role-meta         — mono dates · role tag
+         __role-chevron      — chevron container; rotates 90° when open
+         __role-body         — expanded content
+         __role-position     — full position + company link line
+         __role-link         — link to company URL
+         __primary-tags      — promoted 2–3 tech chips (indigo tinted)
+         __primary-tag       — single chip
+         __summary           — one-paragraph blurb
+         __bullets / __bullet — main bullets
+         __results           — results pull-quote with indigo left rail
+         __results-title     — "RESULTS" mono caption
+         __results-list / __results-item
+         __secondary-row     — demoted "ALSO" stack
+         __secondary-label   — mono "ALSO" prefix
+         __secondary-tag     — small dimmed tag
+    */
+
+    .experience {
+        @apply py-24 px-6 scroll-mt-24 border-t border-border/60;
+    }
+    .experience__inner {
+        @apply max-w-5xl mx-auto;
+    }
+    .experience__eyebrow {
+        @apply text-sm font-mono tracking-widest text-muted-foreground uppercase mb-3;
+    }
+    .experience__title {
+        font-family: var(--font-display);
+        font-style: italic;
+        font-weight: 400;
+        font-size: 40px;
+        line-height: 1.02;
+        letter-spacing: -0.02em;
+        color: hsl(var(--foreground));
+        margin: 0 0 3rem;
+    }
+
+    .experience__list {
+        @apply flex flex-col;
+    }
+
+    /* ── Single role ──────────────────────────────────────────────── */
+    .experience__role {
+        @apply border-t border-border/60;
+    }
+    .experience__role:last-child {
+        @apply border-b border-border/60;
+    }
+    .experience__role-header {
+        @apply w-full grid grid-cols-[1fr_auto_auto] items-baseline gap-4
+               py-6 text-left bg-transparent cursor-pointer;
+    }
+    .experience__role-company {
+        font-family: var(--font-display);
+        font-style: italic;
+        font-weight: 400;
+        font-size: clamp(28px, 3vw, 36px);
+        line-height: 1;
+        color: hsl(var(--foreground));
+    }
+    .experience__role-meta {
+        @apply text-[11px] font-mono tracking-wide text-muted-foreground uppercase;
+    }
+    .experience__role-chevron {
+        @apply text-muted-foreground transition-transform;
+        transition: transform 220ms cubic-bezier(0.2, 0.7, 0.2, 1), color 220ms;
+    }
+    .experience__role--open .experience__role-chevron {
+        transform: rotate(180deg);
+        color: hsl(var(--primary));
+    }
+    .experience__role-chevron-icon {
+        @apply w-4 h-4;
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .experience__role-chevron { transition: none; }
+    }
+
+    /* ── Role body ────────────────────────────────────────────────── */
+    /* Body always rendered; max-height transitions 0 → 1600px when the
+       parent gets --open. 1600px is more than any single role needs even
+       at narrow widths; using a real number (vs `auto`) is the only way
+       max-height transitions actually animate. */
+    .experience__role-body {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 360ms cubic-bezier(0.2, 0.7, 0.2, 1);
+    }
+    .experience__role--open .experience__role-body {
+        max-height: 1600px;
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .experience__role-body { transition: none; }
+    }
+    .experience__role-body-inner {
+        @apply pb-8 pl-0 md:pl-1 max-w-prose;
+    }
+    .experience__role-position {
+        @apply text-sm font-mono text-muted-foreground mb-4;
+    }
+    .experience__role-link {
+        @apply text-foreground hover:text-primary underline decoration-border underline-offset-4;
+    }
+
+    .experience__primary-tags {
+        @apply flex flex-wrap gap-2 mb-5;
+    }
+    .experience__primary-tag {
+        @apply text-[11px] font-mono px-2.5 py-1 rounded-full
+               text-foreground;
+        background-color: hsl(var(--primary) / 0.12);
+        border: 1px solid hsl(var(--primary) / 0.35);
+    }
+
+    .experience__summary {
+        @apply text-base leading-relaxed text-foreground/90 mb-4;
+    }
+    /* Bullets use a 6px indigo dash via ::before — matches the
+       prototype's flat editorial accent rather than a rounded disc. */
+    .experience__bullets {
+        @apply list-none p-0 m-0 mb-6 flex flex-col gap-2.5 text-foreground/85;
+    }
+    .experience__bullet {
+        @apply text-[15px] leading-relaxed pl-6 relative max-w-[70ch];
+    }
+    .experience__bullet::before {
+        content: "";
+        position: absolute;
+        left: 4px;
+        top: 0.7em;
+        width: 6px;
+        height: 1px;
+        background-color: hsl(var(--primary));
+    }
+
+    /* ── Results pull-quote ──────────────────────────────────────── */
+    .experience__results {
+        @apply pl-4 py-2 mb-6;
+        border-left: 2px solid hsl(var(--primary));
+        background-color: hsl(var(--primary) / 0.06);
+    }
+    .experience__results-title {
+        @apply text-[10px] font-mono tracking-widest text-primary uppercase mb-2;
+    }
+    .experience__results-list {
+        @apply list-none p-0 m-0 space-y-2 text-[14.5px] text-foreground/85;
+    }
+    .experience__results-item {
+        @apply leading-relaxed;
+    }
+
+    /* ── Demoted secondary stack ─────────────────────────────────── */
+    .experience__secondary-row {
+        @apply flex flex-wrap items-baseline gap-x-3 gap-y-1 mt-4
+               pt-4 border-t border-border/40;
+    }
+    .experience__secondary-label {
+        @apply text-[10px] font-mono tracking-widest text-muted-foreground uppercase;
+    }
+    .experience__secondary-tag {
+        @apply text-[11px] font-mono text-muted-foreground;
+    }
+}

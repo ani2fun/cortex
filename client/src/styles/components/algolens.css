@@ -1,0 +1,2583 @@
+@layer components {
+  /* ══════════════════════════════════════════════════════════════════════
+     AlgoLens — 4-pane modal shell (Slice 1).
+
+     Ported from docs/new_feature/claude_design/handoff_bundle/visualise/
+     algolens/Visualise.html with these token substitutions:
+       var(--c-bg)         → hsl(var(--background))
+       var(--c-bg-card)    → hsl(var(--card))
+       var(--c-bg-band)    → hsl(var(--secondary))
+       var(--c-fg)         → hsl(var(--foreground))
+       var(--c-fg-muted)   → hsl(var(--muted-foreground))
+       var(--c-border)     → hsl(var(--border))
+       var(--c-primary)    → hsl(var(--primary))
+       var(--c-primary-soft → hsl(var(--primary) / .16)
+
+     NOT ported: paper-grain overlay, Tweaks panel, renderer gallery
+     (per IMPLEMENTATION_PROMPT §6.13–6.14). Block prefix: .algolens
+     ════════════════════════════════════════════════════════════════════ */
+
+  /* ── 4-pane outer grid ─────────────────────────────────────────────── */
+  /* The modal card replaces viz-modal__card with this grid, which fills
+     the whole card. Rows: TopBar (auto) / 3-col panes (1fr) /
+     ControlsBar (auto) / OutputPanel (auto). */
+  .algolens-grid {
+    display: grid;
+    grid-template-rows: auto 1fr auto auto;
+    /* flex: 1 1 auto so the grid fills viz-modal__card (a flex container) */
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    background: hsl(var(--background));
+  }
+
+  /* ── Help popover keyboard shortcuts list ────────────────────────── */
+  .algolens__help-shortcuts {
+    list-style: none;
+    padding: 0;
+    margin: 8px 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .algolens__help-shortcut {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: hsl(var(--foreground));
+  }
+  .algolens__help-key {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    min-width: 36px;
+    padding: 2px 6px;
+    border: 1px solid hsl(var(--border));
+    border-radius: 4px;
+    background: hsl(var(--muted));
+    color: hsl(var(--foreground));
+    text-align: center;
+  }
+
+  /* ── Top bar ───────────────────────────────────────────────────────── */
+  .algolens__topbar {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    row-gap: 8px;
+    padding: 10px 18px;
+    border-bottom: 1px solid hsl(var(--border));
+    background: hsl(var(--background) / 0.95);
+    backdrop-filter: blur(6px);
+    position: sticky;
+    top: 0;
+    z-index: 30;
+  }
+  .algolens__topbar-brand {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin-right: auto;
+  }
+  .algolens__topbar-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+  }
+  .algolens__topbar-mark {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 7px;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 20px;
+    letter-spacing: -0.015em;
+    color: hsl(var(--foreground));
+    line-height: 1;
+  }
+  .algolens__topbar-divider {
+    font-family: var(--font-mono);
+    font-style: normal;
+    font-size: 13px;
+    color: hsl(var(--border));
+    transform: translateY(-2px);
+  }
+  .algolens__topbar-product {
+    font-family: var(--font-mono);
+    font-style: normal;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: hsl(var(--primary));
+    transform: translateY(-2px);
+  }
+
+  /* Language tabs inside the top bar */
+  .algolens__topbar-langs {
+    display: inline-flex;
+    gap: 0;
+    border: 1px solid hsl(var(--border));
+    border-radius: 9999px;
+    padding: 3px;
+    background: hsl(var(--card));
+  }
+  .algolens__topbar-lang {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border: 0;
+    background: transparent;
+    border-radius: 9999px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+    cursor: pointer;
+    transition: color 180ms cubic-bezier(0.2, 0.7, 0.2, 1),
+      background 180ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .algolens__topbar-lang:hover { color: hsl(var(--foreground)); }
+  .algolens__topbar-lang-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: var(--lang-accent, hsl(var(--primary)));
+    transition: box-shadow 200ms ease;
+  }
+  .algolens__topbar-lang--active {
+    color: hsl(var(--foreground));
+    background: hsl(var(--background));
+    box-shadow: inset 0 0 0 1px var(--lang-accent, hsl(var(--primary)));
+  }
+
+  /* Icon sizing inside buttons — 15 px fits the 30 px pill buttons */
+  .algolens__topbar-btn-icon {
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+  }
+  /* Icon sizing inside transport buttons */
+  .algolens-controls__tbtn-icon {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+  }
+  /* Icon sizing inside output collapse button */
+  .algolens-output__collapse-icon {
+    width: 13px;
+    height: 13px;
+    flex-shrink: 0;
+  }
+
+  /* Action buttons in the top bar */
+  .algolens__topbar-actions {
+    flex: 0 0 auto;
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .algolens__topbar-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 30px;
+    padding: 0 11px;
+    border: 1px solid hsl(var(--border));
+    border-radius: 9999px;
+    background: hsl(var(--card));
+    color: hsl(var(--foreground));
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 180ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .algolens__topbar-btn > span { white-space: nowrap; }
+  .algolens__topbar-btn:hover {
+    transform: translateY(-1px);
+    border-color: hsl(var(--foreground));
+  }
+  .algolens__topbar-btn--primary {
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    border-color: hsl(var(--primary));
+    font-weight: 600;
+  }
+  .algolens__topbar-btn--primary:hover {
+    border-color: hsl(var(--primary));
+    filter: brightness(0.92);
+  }
+  .algolens__topbar-btn--primary:disabled {
+    opacity: 0.65;
+    cursor: progress;
+  }
+  .algolens__topbar-btn--ghost { background: transparent; }
+  .algolens__topbar-btn--success {
+    color: #16a34a;
+    border-color: #16a34a;
+    background: rgba(22, 163, 74, 0.08);
+  }
+  .algolens__topbar-btn--copied {
+    color: #16a34a;
+    border-color: #16a34a;
+    background: rgba(22, 163, 74, 0.12);
+    cursor: default;
+  }
+  .algolens__topbar-icon-btn {
+    width: 30px;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid hsl(var(--border));
+    background: hsl(var(--card));
+    border-radius: 9999px;
+    color: hsl(var(--muted-foreground));
+    cursor: pointer;
+    transition: all 180ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .algolens__topbar-icon-btn:hover {
+    color: hsl(var(--foreground));
+    border-color: hsl(var(--foreground));
+  }
+  .algolens__topbar-spinner {
+    animation: algolens-spin 0.9s linear infinite;
+    width: 13px;
+    height: 13px;
+  }
+  @keyframes algolens-spin { to { transform: rotate(360deg); } }
+
+  /* Test case strip inside the top bar */
+  .algolens__topbar-cases {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 4px;
+    border-left: 1px solid hsl(var(--border));
+    margin-left: 4px;
+    padding-left: 12px;
+  }
+  .algolens__topbar-cases-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+  }
+  .algolens__topbar-case-btn {
+    display: inline-flex;
+    height: 24px;
+    min-width: 24px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 6px;
+    border: 1px solid hsl(var(--border));
+    background: hsl(var(--card));
+    border-radius: 6px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    cursor: pointer;
+    transition: all 140ms ease;
+  }
+  .algolens__topbar-case-btn:hover { border-color: hsl(var(--foreground)); }
+  .algolens__topbar-case-btn--active {
+    background: hsl(var(--primary));
+    border-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+  }
+
+  /* Zoom readout in the top bar */
+  .algolens__topbar-zoom-readout {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    width: 3.5rem;
+    text-align: center;
+    color: hsl(var(--muted-foreground));
+    tabular-nums: 1;
+  }
+
+  /* ── 3-column pane area ─────────────────────────────────────────────── */
+  .algolens__panes {
+    display: grid;
+    grid-template-columns: minmax(200px, 30fr) minmax(280px, 44fr) minmax(200px, 26fr);
+    min-height: 0;
+    overflow: hidden;
+    /* Slice 4 — anchor for the absolutely-positioned .algolens-arrows overlay.
+       The SVG inside it spans every pane so arrows can be drawn from the frames
+       pane's locals to the canvas pane's cards in one coordinate space. */
+    position: relative;
+  }
+
+  /* ── Arrow overlay (Slice 4 — ArrowLayer) ──────────────────────────── */
+  /* Sits over the 3-pane row and draws cubic Bezier curves from each active-
+     frame Ref local (`[data-local-id]`, scoped to a non-parent frame card) to
+     the matching multi-card sub-canvas (`[data-card-id]`). Pointer-events: none
+     so it never intercepts clicks on either pane. */
+  .algolens-arrows {
+    position: absolute;
+    /* top/left/right (not `inset: 0`) so the JS-set height — the panes' full
+       scroll content, see arrow-layer.ts — takes effect instead of being pinned
+       to the viewport. `min-height: 100%` is the no-scroll fallback. Without this
+       the overlay clips arrows to a frame that's scrolled below the fold when the
+       panes grid stacks vertically at narrow widths. */
+    top: 0;
+    left: 0;
+    right: 0;
+    min-height: 100%;
+    pointer-events: none;
+    z-index: 10;
+    overflow: hidden;
+  }
+  .algolens-arrows__svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .algolens-arrows__path {
+    fill: none;
+    stroke: hsl(var(--primary));
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0.95;
+    transition: stroke-width 140ms ease, opacity 140ms ease;
+  }
+  /* Slice 5 — hover-link emphasis on the arrow whose cursor name matches the
+     shared hover key. Thicker stroke so the active arrow reads as the one
+     being inspected. */
+  .algolens-arrows__path--hovered {
+    stroke-width: 2.25;
+    opacity: 1;
+  }
+  .algolens-arrows__label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    fill: hsl(var(--primary));
+    opacity: 0.9;
+    paint-order: stroke fill;
+    stroke: hsl(var(--background));
+    stroke-width: 3;
+    stroke-linejoin: round;
+    transition: font-weight 140ms ease;
+  }
+  .algolens-arrows__label--hovered {
+    font-weight: 700;
+  }
+  .algolens__pane {
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-right: 1px solid hsl(var(--border));
+  }
+  .algolens__pane:last-child { border-right: 0; }
+  .algolens__pane--canvas {
+    background: hsl(var(--card) / 0.45);
+    overflow: auto;
+  }
+  /* The renderer mounts a .viz-graph card inside the canvas pane — clear its
+     outer margin so it fills flush. */
+  .algolens__pane--canvas .viz-graph { margin: 0; }
+
+  /* ── Code editor pane ──────────────────────────────────────────────── */
+  .algolens-code-editor {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    height: 100%;
+    background: hsl(var(--background));
+  }
+  .algolens-code-editor__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    border-bottom: 1px solid hsl(var(--border));
+    background: hsl(var(--muted) / 0.5);
+    flex-shrink: 0;
+  }
+  .algolens-code-editor__eyebrow {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+  }
+
+  /* Monaco surface — the SOURCE pane renders read-only through MonacoSourcePane.
+     A definite-height flex child so Monaco's height:100% + automaticLayout fill the
+     pane (itself a fixed-height grid cell that scrolls internally). */
+  .algolens-code-editor__monaco {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+  }
+  /* Whole-line decorations Monaco paints for the step's executing / upcoming line
+     (MonacoSourcePane.applyDecorations). Backgrounds are deliberately stronger than
+     the old hand-rolled pane's faint tints (the prior --next was 0.06 alpha) so the
+     active + next lines read clearly on the dark editor theme. */
+  .algolens-mono__line--current {
+    background: rgba(79, 91, 213, 0.24);
+    box-shadow: inset 3px 0 0 0 #4f5bd5;
+  }
+  .algolens-mono__line--next {
+    background: rgba(245, 158, 11, 0.16);
+    box-shadow: inset 3px 0 0 0 rgba(245, 158, 11, 0.85);
+  }
+
+  /* ── Stack frames pane ─────────────────────────────────────────────── */
+  /* Slice 2 replaces this with real StackFramesPanel content. */
+  .algolens-frames {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    height: 100%;
+    background: hsl(var(--background));
+  }
+  .algolens-frames__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border-bottom: 1px solid hsl(var(--border));
+    flex-shrink: 0;
+  }
+  .algolens-frames__eyebrow {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: hsl(var(--foreground) / 0.62);
+  }
+  .algolens-frames__hint {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: hsl(var(--muted-foreground));
+    opacity: 0.7;
+  }
+  .algolens-frames__list {
+    flex: 1 1 auto;
+    overflow: auto;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .algolens-frames__placeholder {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px;
+    text-align: center;
+    color: hsl(var(--muted-foreground));
+    font-family: var(--font-mono);
+    font-size: 11px;
+  }
+
+  /* Frame cards (full implementation lands in Slice 2) */
+  .algolens-frame {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-left: 3px solid var(--frame-accent, hsl(var(--primary)));
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .algolens-frame--parent {
+    opacity: 0.55;
+    border-left-color: hsl(var(--border));
+    border-left-width: 1px;
+  }
+  .algolens-frame__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px 12px;
+    border-bottom: 1px solid hsl(var(--border) / 0.5);
+  }
+  .algolens-frame__title {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 5px;
+    min-width: 0;
+    flex: 1 1 auto;
+    overflow: hidden;
+  }
+  .algolens-frame__title em {
+    /* Function / class / <module> names are code identifiers — keep them upright
+       (not the editorial display-italic) so they're easy to read. */
+    font-family: var(--font-sans);
+    font-style: normal;
+    font-weight: 600;
+    font-size: 14px;
+    color: hsl(var(--foreground));
+    flex-shrink: 0;
+  }
+  .algolens-frame__paren {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: hsl(var(--muted-foreground));
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  /* Locals area scrolls horizontally when a value is wider than the frame
+     (Python's `typing._SpecialGenericAlias`, long list / dict reprs, etc.) — the
+     frame's outer `overflow: hidden` keeps the rounded corners + accent stripe
+     intact, so the scrolling happens INSIDE here. Each row is `min-width: max-content`
+     so the grid grows past the frame width and triggers the horizontal scrollbar. */
+  .algolens-frame__locals {
+    padding: 2px 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  .algolens-frame__local {
+    display: grid;
+    grid-template-columns: minmax(50px, 1fr) auto minmax(50px, 1.4fr) 12px;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 12px;
+    border-top: 1px solid hsl(var(--border) / 0.4);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    min-width: max-content;
+  }
+  .algolens-frame__local:first-child { border-top: 0; }
+  .algolens-frame__local--changed { background: rgba(106, 150, 86, 0.07); }
+  .algolens-frame__local--return   { background: hsl(var(--primary) / .08); }
+  /* Slice 5 — hover-link highlight on a locals row whose name matches the
+     shared hover key, so the row, its canvas cursor-mark and its arrow read
+     as one linked set. */
+  .algolens-frame__local--hovered {
+    background: hsl(var(--primary) / 0.16);
+    box-shadow: inset 2px 0 0 0 hsl(var(--primary));
+  }
+  .algolens-frame__local { cursor: default; }
+  .algolens-frame:not(.algolens-frame--parent) .algolens-frame__local {
+    cursor: pointer;
+  }
+  .algolens-frame__local-name  { color: hsl(var(--foreground)); font-weight: 500; }
+  .algolens-frame__local-type  {
+    font-size: 10px;
+    /* Brighter than --muted-foreground so the type column stays legible on the
+       dark modal surface (theme-aware: near-ink in light, near-white in dark). */
+    color: hsl(var(--foreground) / 0.72);
+    padding: 1px 4px;
+    border-radius: 3px;
+    background: hsl(var(--muted) / 0.7);
+    justify-self: start;
+  }
+  .algolens-frame__local-val { color: hsl(var(--foreground) / 0.85); text-align: right; white-space: nowrap; }
+
+  /* ── Controls bar ──────────────────────────────────────────────────── */
+  .algolens-controls {
+    flex-shrink: 0;
+    display: grid;
+    /* Slice 1: transport (auto) | scrubber+meta (1fr).
+       Slice 6: added diff-toggle column (auto). */
+    grid-template-columns: auto 1fr auto;
+    gap: 16px;
+    padding: 10px 18px;
+    border-top: 1px solid hsl(var(--border));
+    border-bottom: 1px solid hsl(var(--border));
+    background: hsl(var(--muted) / 0.4);
+    align-items: center;
+  }
+  /* Frozen = non-traced language tab active */
+  .algolens-controls--frozen { opacity: 0.55; pointer-events: none; }
+
+  .algolens-controls__transport {
+    display: inline-flex;
+    gap: 4px;
+  }
+  .algolens-controls__tbtn {
+    width: 30px;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid hsl(var(--border));
+    background: hsl(var(--background));
+    color: hsl(var(--foreground));
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 180ms ease;
+  }
+  .algolens-controls__tbtn:hover:not(:disabled) {
+    color: hsl(var(--primary));
+    border-color: hsl(var(--primary));
+  }
+  .algolens-controls__tbtn:disabled { opacity: 0.35; cursor: default; }
+  .algolens-controls__tbtn--play {
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    border-color: hsl(var(--primary));
+  }
+  .algolens-controls__tbtn--play:hover {
+    filter: brightness(0.9);
+    color: hsl(var(--primary-foreground));
+  }
+
+  .algolens-controls__scrubber-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 0;
+  }
+  .algolens-controls__scrubber {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(
+      to right,
+      hsl(var(--primary)) 0,
+      hsl(var(--primary)) var(--pct, 0%),
+      hsl(var(--border)) var(--pct, 0%),
+      hsl(var(--border)) 100%
+    );
+    border-radius: 4px;
+    outline: none;
+    cursor: pointer;
+  }
+  .algolens-controls__scrubber::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    background: hsl(var(--primary));
+    border-radius: 999px;
+    border: 2px solid hsl(var(--background));
+    box-shadow: 0 0 0 1px hsl(var(--primary));
+    cursor: grab;
+  }
+  .algolens-controls__scrubber::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    background: hsl(var(--primary));
+    border-radius: 999px;
+    border: 2px solid hsl(var(--background));
+    cursor: grab;
+  }
+  .algolens-controls__step-meta {
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: hsl(var(--muted-foreground));
+    flex-wrap: wrap;
+  }
+  .algolens-controls__step-counter b { color: hsl(var(--foreground)); font-weight: 600; }
+  .algolens-controls__sep { opacity: 0.5; }
+  .algolens-controls__meta-label {
+    font-size: 9.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    opacity: 0.7;
+  }
+  .algolens-controls__step-meta b { color: hsl(var(--foreground)); font-weight: 500; }
+
+  .algolens-controls__filters {
+    display: inline-flex;
+    gap: 12px;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .algolens-controls__filter,
+  .algolens-controls__speed,
+  .algolens-controls__diff {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: hsl(var(--muted-foreground));
+  }
+  .algolens-controls__filter-label {
+    font-size: 9.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  .algolens-controls__select {
+    padding: 3px 8px;
+    border: 1px solid hsl(var(--border));
+    background: hsl(var(--background));
+    border-radius: 6px;
+    font: 500 11px var(--font-sans);
+    color: hsl(var(--foreground));
+    cursor: pointer;
+  }
+  .algolens-controls__diff input { accent-color: hsl(var(--primary)); margin: 0; }
+  .algolens-controls__diff span { font: 500 11px var(--font-sans); color: hsl(var(--foreground)); }
+  .algolens-controls__speed-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 72px;
+    height: 3px;
+    background: linear-gradient(
+      to right,
+      hsl(var(--primary)) 0,
+      hsl(var(--primary)) var(--pct, 0%),
+      hsl(var(--border)) var(--pct, 0%),
+      hsl(var(--border)) 100%
+    );
+    border-radius: 3px;
+    outline: none;
+  }
+  .algolens-controls__speed-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 10px;
+    height: 10px;
+    background: hsl(var(--primary));
+    border-radius: 999px;
+    cursor: grab;
+  }
+  .algolens-controls__tortoise,
+  .algolens-controls__hare { font-size: 12px; opacity: 0.6; }
+  .algolens-controls__timeline-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 9px;
+    border: 1px solid hsl(var(--border));
+    background: hsl(var(--card));
+    border-radius: 6px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+    cursor: pointer;
+    transition: all 140ms ease;
+  }
+  .algolens-controls__timeline-btn:hover {
+    color: hsl(var(--foreground));
+    border-color: hsl(var(--foreground));
+  }
+
+  /* ── Output panel ──────────────────────────────────────────────────── */
+  .algolens-output {
+    flex-shrink: 0;
+    border-bottom: 1px solid hsl(var(--border));
+    background: hsl(var(--background));
+  }
+  .algolens-output--collapsed .algolens-output__head {
+    border-bottom: 0;
+  }
+  .algolens-output__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7px 18px;
+    border-bottom: 1px solid hsl(var(--border) / 0.5);
+  }
+  .algolens-output__tabs {
+    display: inline-flex;
+    gap: 3px;
+    align-items: center;
+  }
+  .algolens-output__tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border: 0;
+    background: transparent;
+    border-radius: 5px;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+    cursor: pointer;
+    transition: all 140ms ease;
+  }
+  .algolens-output__tab--active {
+    background: hsl(var(--muted));
+    color: hsl(var(--foreground));
+  }
+  .algolens-output__tab-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 999px;
+    background: #16a34a;
+  }
+  .algolens-output__hint {
+    margin-left: 10px;
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+    opacity: 0.6;
+  }
+  .algolens-output__collapse {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    background: transparent;
+    border: 1px solid hsl(var(--border));
+    border-radius: 5px;
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+    cursor: pointer;
+    transition: all 140ms ease;
+  }
+  .algolens-output__collapse:hover {
+    color: hsl(var(--foreground));
+    border-color: hsl(var(--foreground));
+  }
+  .algolens-output__body {
+    padding: 10px 18px 14px;
+    max-height: 180px;
+    overflow: auto;
+  }
+  /* Stdin textarea — uncontrolled input read by Re-trace. Sits at the top of the
+     output body, distinct from the (read-only) stdout pane below. */
+  .algolens-output__stdin {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 10px;
+  }
+  .algolens-output__stdin-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
+  }
+  .algolens-output__stdin-input {
+    width: 100%;
+    resize: vertical;
+    min-height: 36px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    border: 1px solid hsl(var(--border));
+    background: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 1.4;
+  }
+  .algolens-output__stdin-input:focus {
+    outline: 2px solid hsl(var(--primary) / 0.4);
+    outline-offset: -1px;
+    border-color: hsl(var(--primary) / 0.6);
+  }
+  /* Console-style output surface — an inset terminal block that preserves the
+     program's exact whitespace (leading spaces, blank lines, tabs) the way a
+     VS Code terminal does. `min-height` keeps a console area even when output
+     is short or empty. */
+  .algolens-output__pre {
+    margin: 0;
+    padding: 12px 14px;
+    border-radius: 8px;
+    border: 1px solid hsl(var(--border) / 0.6);
+    background: hsl(var(--muted) / 0.5);
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    line-height: 1.6;
+    color: hsl(var(--foreground));
+    white-space: pre-wrap;
+    tab-size: 4;
+    min-height: 3.4em;
+    overflow-x: auto;
+  }
+  .algolens-output__placeholder {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: hsl(var(--muted-foreground));
+    font-style: italic;
+  }
+
+  /* ── Status overlay (tracing / failed) — shown inside canvas pane ─── */
+  .algolens__status {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 24px;
+    text-align: center;
+    font-size: 13px;
+    color: hsl(var(--muted-foreground));
+    height: 100%;
+  }
+  .algolens__status-icon {
+    width: 24px;
+    height: 24px;
+    animation: algolens-spin 1s linear infinite;
+    color: hsl(var(--primary));
+  }
+  .algolens__status--error { color: hsl(var(--destructive)); }
+  .algolens__status-title {
+    margin: 0;
+    font-weight: 600;
+    font-size: 14px;
+  }
+  .algolens__status-detail {
+    margin: 0;
+    max-width: 58ch;
+    white-space: pre-wrap;
+    text-align: left;
+    font-size: 12px;
+    font-family: var(--font-mono);
+    color: hsl(var(--muted-foreground));
+  }
+
+  /* ── Canvas annotation (P0-A) — rich "what just happened" block ─────
+     Ported from Visualise.html lines 405-433 + 2048-2101. Sits beside the
+     heap card inside the canvas pane; eyebrow colour-codes the tracer event
+     (call / line / return / exception); title is the diff summary (italic
+     editorial); body is the source line that this step is executing. */
+  .algolens__pane--canvas {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  /* The diagram occupies the pane and centres (margin:auto keeps tall diagrams
+     scrollable rather than clipped); the source-line footer pins to the bottom. */
+  .algolens-canvas-stage {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+    display: flex;
+  }
+  .algolens-canvas-stage > * { margin: auto; }
+  .algolens-canvas-lines {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 10px 16px;
+    border-top: 1px solid hsl(var(--border) / 0.6);
+    background: hsl(var(--card) / 0.6);
+  }
+  .algolens-canvas-line {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    min-width: 0;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    /* Render source as literal glyphs. Geist Mono ships contextual alternates /
+       ligatures (on by default) that shape a `--` / `->` digraph into one joined
+       glyph which overhangs the preceding character — the reported `right--`
+       overlapping the `t`. A code readout must read exactly as typed, so opt out. */
+    font-variant-ligatures: none;
+    font-feature-settings: "liga" 0, "calt" 0;
+  }
+  .algolens-canvas-line__label {
+    flex: 0 0 5.5rem;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+  }
+  .algolens-canvas-line__code {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: hsl(var(--foreground) / 0.65);
+  }
+  .algolens-canvas-line__num {
+    color: hsl(var(--muted-foreground));
+    margin-right: 8px;
+    opacity: 0.65;
+  }
+  .algolens-canvas-line__code--none { color: hsl(var(--muted-foreground)); }
+  .algolens-canvas-line--current .algolens-canvas-line__label {
+    color: hsl(var(--primary));
+    font-weight: 600;
+  }
+  .algolens-canvas-line--current .algolens-canvas-line__code {
+    color: hsl(var(--foreground));
+    font-weight: 500;
+  }
+  .canvas__annotation {
+    max-width: 60ch;
+    padding: 14px 16px;
+    background: hsl(var(--muted) / 0.5);
+    border: 1px solid hsl(var(--border) / 0.5);
+    border-radius: 10px;
+  }
+  .canvas__annotation--rich {
+    padding: 16px 18px 14px;
+  }
+  .canvas__annotation-head {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+  .canvas__annotation-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+  }
+  .canvas__annotation-eyebrow--call      { color: #3a5a8c; }
+  .canvas__annotation-eyebrow--return    { color: #4a6a3c; }
+  .dark .canvas__annotation-eyebrow--return { color: #9bbf86; }
+  .canvas__annotation-eyebrow--exception { color: #a13e3e; }
+  .canvas__annotation-title {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 19px;
+    letter-spacing: -0.01em;
+    color: hsl(var(--foreground));
+    margin: 0;
+    line-height: 1.1;
+  }
+  .canvas__annotation-body {
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.6;
+    color: hsl(var(--foreground) / 0.75);
+    margin: 6px 0 0;
+    text-wrap: pretty;
+  }
+  .canvas__annotation-body code {
+    font-family: var(--font-mono);
+    font-weight: 500;
+    font-style: normal;
+    background: hsl(var(--background));
+    border: 1px solid hsl(var(--border) / 0.5);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: hsl(var(--foreground));
+  }
+  .canvas__annotation-body em {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 400;
+    color: hsl(var(--foreground));
+  }
+  .canvas__annotation-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 8px;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.04em;
+    color: hsl(var(--primary));
+    text-decoration: none;
+    border-bottom: 1px solid color-mix(in oklab, hsl(var(--primary)) 35%, transparent);
+    padding-bottom: 1px;
+    transition: border-color 180ms;
+  }
+  .canvas__annotation-link:hover {
+    border-bottom-color: hsl(var(--primary));
+  }
+  .canvas__annotation-link-arrow {
+    font-size: 11px;
+    line-height: 1;
+  }
+
+  /* ── Responsive: narrow screens stack panes ────────────────────────── */
+  @media (max-width: 900px) {
+    .algolens__panes {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto auto auto;
+      overflow-y: auto;
+    }
+    .algolens__pane {
+      border-right: 0;
+      border-bottom: 1px solid hsl(var(--border));
+    }
+    .algolens__pane:last-child { border-bottom: 0; }
+    .algolens__pane--canvas { min-height: 280px; }
+    .algolens__pane--code   { min-height: 200px; }
+    .algolens__pane--frames { min-height: 160px; }
+    .algolens-controls {
+      grid-template-columns: auto 1fr;
+      grid-template-rows: auto auto;
+    }
+    .algolens-controls__filters {
+      grid-column: 1 / -1;
+      flex-wrap: wrap;
+    }
+  }
+
+  /* ── Phone: lead with the canvas, compress the chrome ──────────────── */
+  /* On a full-bleed phone modal (visualise-modal.css drops the card to
+     100dvh below md) the top bar + controls otherwise wrap into tall stacks
+     that crowd out the visualisation. Tighten their padding, drop the
+     decorative brand text, and reorder the stacked panes so the canvas — the
+     point of "Visualise" — sits first. */
+  @media (max-width: 640px) {
+    .algolens__topbar {
+      gap: 8px;
+      row-gap: 6px;
+      padding: 8px 12px;
+    }
+    /* Decorative brand bits — recover the row they cost on a narrow bar. */
+    .algolens__topbar-eyebrow,
+    .algolens__topbar-product,
+    .algolens__topbar-divider {
+      display: none;
+    }
+    .algolens__topbar-mark { font-size: 16px; }
+    .algolens__topbar-btn {
+      height: 28px;
+      padding: 0 9px;
+      font-size: 11px;
+    }
+    .algolens__topbar-icon-btn { width: 28px; height: 28px; }
+    /* The action cluster has flex:0 0 auto, so its own flex-wrap never fires and
+       the row (incl. Close) spills past the screen edge. Give it a full-width
+       row of its own so every control — especially Close — stays on-screen. */
+    .algolens__topbar-actions {
+      flex: 1 1 100%;
+      justify-content: flex-start;
+    }
+
+    /* Canvas first; trim the stacked min-heights so less scrolling is needed
+       to reach the code + frames below it. */
+    .algolens__pane--canvas { order: -1; min-height: 240px; }
+    .algolens__pane--code   { min-height: 180px; }
+    .algolens__pane--frames { min-height: 150px; }
+
+    .algolens-controls {
+      gap: 10px;
+      padding: 8px 12px;
+    }
+    .algolens-controls__tbtn { width: 28px; height: 28px; }
+
+    /* Keep the output panel from dominating the short viewport. */
+    .algolens-output__body { max-height: 120px; }
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     AlgoLens — Execution Timeline Drawer (Slice 7).
+
+     Slide-in panel from the right; one row per VizGraphStep. CSS ported
+     from Visualise.html `.timeline` block. Token substitutions:
+       var(--c-fg)          → hsl(var(--foreground))
+       var(--c-fg-muted)    → hsl(var(--muted-foreground))
+       var(--c-fg-soft)     → hsl(var(--foreground) / 0.75)
+       var(--c-border)      → hsl(var(--border))
+       var(--c-border-soft) → hsl(var(--border) / 0.5)
+       var(--c-primary)     → hsl(var(--primary))
+       hsl(var(--card))     → hsl(var(--card))          (unchanged)
+       hsl(var(--muted))    → hsl(var(--muted))         (unchanged)
+       body[data-theme="dark"] → .dark
+     Block prefix: .algolens-timeline
+     ════════════════════════════════════════════════════════════════════ */
+
+  /* ── Timeline drawer ───────────────────────────────────────────────── */
+  .algolens-timeline {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(360px, calc(100vw - 32px));
+    background: hsl(var(--card));
+    border-left: 1px solid hsl(var(--border));
+    box-shadow: -16px 0 40px -16px rgba(17, 15, 13, 0.18);
+    display: flex;
+    flex-direction: column;
+    z-index: 70;
+    animation: algolens-timeline-slide 250ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  @keyframes algolens-timeline-slide {
+    from { transform: translateX(20px); opacity: 0; }
+    to   { transform: translateX(0);    opacity: 1; }
+  }
+  .algolens-timeline__head {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 12px;
+    align-items: baseline;
+    padding: 14px 18px;
+    border-bottom: 1px solid hsl(var(--border) / 0.5);
+  }
+  .algolens-timeline__eyebrow {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+  }
+  .algolens-timeline__title {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 22px;
+    letter-spacing: -0.01em;
+    color: hsl(var(--foreground));
+  }
+  .algolens-timeline__close {
+    width: 26px;
+    height: 26px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 0;
+    border-radius: 5px;
+    color: hsl(var(--muted-foreground));
+    cursor: pointer;
+  }
+  .algolens-timeline__close:hover {
+    background: hsl(var(--muted));
+    color: hsl(var(--foreground));
+  }
+  .algolens-timeline__list {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: 8px 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .algolens-timeline__row {
+    display: grid;
+    grid-template-columns: 28px 16px 32px 1fr auto;
+    gap: 8px;
+    align-items: center;
+    padding: 8px 18px;
+    background: transparent;
+    border: 0;
+    border-left: 3px solid transparent;
+    cursor: pointer;
+    text-align: left;
+    transition: background 140ms;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: hsl(var(--foreground) / 0.75);
+  }
+  .algolens-timeline__row:hover {
+    background: hsl(var(--muted) / 0.6);
+  }
+  .algolens-timeline__row--active {
+    background: color-mix(in oklab, hsl(var(--primary)) 10%, transparent);
+    border-left-color: hsl(var(--primary));
+    color: hsl(var(--foreground));
+  }
+  .algolens-timeline__row--unchanged {
+    opacity: 0.55;
+  }
+  .algolens-timeline__step {
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    font-size: 11px;
+    letter-spacing: 0.04em;
+  }
+  .algolens-timeline__row--active .algolens-timeline__step {
+    color: hsl(var(--primary));
+  }
+  .algolens-timeline__event {
+    width: 16px;
+    height: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    border-radius: 4px;
+    color: hsl(var(--muted-foreground));
+  }
+  .algolens-timeline__line {
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    color: hsl(var(--muted-foreground));
+    text-align: right;
+  }
+  .algolens-timeline__summary {
+    font-family: var(--font-sans);
+    font-size: 12.5px;
+    color: hsl(var(--foreground));
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .algolens-timeline__unchanged-tag {
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: hsl(var(--muted));
+    font-size: 9px;
+    color: hsl(var(--muted-foreground));
+    letter-spacing: 0.04em;
+  }
+  .algolens-timeline__foot {
+    padding: 10px 18px;
+    border-top: 1px solid hsl(var(--border) / 0.5);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: hsl(var(--muted-foreground));
+    letter-spacing: 0.04em;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     AlgoLens — Keyboard Shortcuts Overlay (Slice 7).
+
+     Full-screen backdrop + centred card. CSS ported from Visualise.html
+     `.shortcuts` block. Same token substitution table as timeline above.
+     Block prefix: .algolens-shortcuts
+     ════════════════════════════════════════════════════════════════════ */
+
+  /* ── Shortcuts overlay ─────────────────────────────────────────────── */
+  .algolens-shortcuts {
+    position: fixed;
+    inset: 0;
+    background: rgba(17, 15, 13, 0.55);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 80;
+    animation: algolens-fade-in 180ms ease;
+  }
+  @keyframes algolens-fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  .algolens-shortcuts__card {
+    width: min(520px, calc(100vw - 32px));
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: 14px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    animation: algolens-lift-in 200ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  @keyframes algolens-lift-in {
+    from { transform: translateY(8px); opacity: 0; }
+    to   { transform: translateY(0);   opacity: 1; }
+  }
+  .algolens-shortcuts__head {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 12px;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid hsl(var(--border) / 0.5);
+  }
+  .algolens-shortcuts__eyebrow {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+  }
+  .algolens-shortcuts__head em {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 24px;
+    color: hsl(var(--foreground));
+  }
+  .algolens-shortcuts__close {
+    width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 0;
+    border-radius: 6px;
+    color: hsl(var(--muted-foreground));
+    cursor: pointer;
+  }
+  .algolens-shortcuts__close:hover {
+    color: hsl(var(--foreground));
+    background: hsl(var(--muted));
+  }
+  .algolens-shortcuts__rows {
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .algolens-shortcuts__row {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 16px;
+    align-items: center;
+  }
+  .algolens-shortcuts__kbd {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 4px 10px;
+    background: hsl(var(--muted));
+    border: 1px solid hsl(var(--border));
+    border-radius: 5px;
+    color: hsl(var(--foreground));
+    text-align: center;
+    justify-self: start;
+  }
+  .algolens-shortcuts__label {
+    font-size: 13px;
+    color: hsl(var(--foreground) / 0.75);
+  }
+  .algolens-shortcuts__foot {
+    padding: 12px 20px;
+    border-top: 1px solid hsl(var(--border) / 0.5);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: hsl(var(--muted-foreground));
+    background: hsl(var(--muted) / 0.5);
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     Bespoke Stack renderer (ADR-0024, slice 1 of 17).
+
+     Ported from Visualise.html lines 980–1003 with the same token
+     substitution table as the rest of this file:
+       var(--c-border)     → hsl(var(--border))
+       var(--c-fg)         → hsl(var(--foreground))
+       var(--c-fg-muted)   → hsl(var(--muted-foreground))
+       hsl(var(--background)) (unchanged)
+     `--top-color` is set inline by the renderer from the `top` pointer-canon
+     colour (indigo by default) so the modifier doesn't need to know the
+     palette — the renderer pushes it in via a style attr.
+     Block prefix: .stack-renderer
+     ════════════════════════════════════════════════════════════════════ */
+
+  .stack-renderer {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* Reserve enough vertical room that the bottom-anchored cells column
+       can grow upward without re-flowing surrounding chrome on every push.
+       Tuned to ~5 cells (each ≈ 50px) of headroom; larger stacks expand
+       past this naturally. */
+    min-height: 260px;
+    justify-content: flex-end;
+  }
+  /* Side pointer (`top →`) — absolutely positioned, `top` set inline by JS to
+     align with the top cell's centre. The `right: 50%` + `margin-right` math
+     places the pointer just to the LEFT of the centred cells column; the CSS
+     transition makes it slide between positions as push / pop reshuffles the
+     column. */
+  .stack-renderer__pointer {
+    position: absolute;
+    right: 50%;
+    margin-right: 76px; /* = 130px (cells min-width) / 2 + 11px gap */
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+    color: #4f5bd5;
+    white-space: nowrap;
+    transition:
+      top 320ms cubic-bezier(0.4, 0, 0.2, 1),
+      color 200ms ease,
+      opacity 200ms ease,
+      font-weight 140ms ease;
+    pointer-events: none;
+  }
+  .stack-renderer__pointer--hidden {
+    opacity: 0;
+  }
+  .stack-renderer__pointer--hovered {
+    font-weight: 700;
+    filter: brightness(1.15);
+  }
+  .stack-renderer__pointer-name {
+    /* Lock width so the arrow doesn't jitter horizontally between hover states */
+    display: inline-block;
+  }
+  .stack-renderer__pointer-arrow {
+    display: inline-block;
+    color: currentColor;
+  }
+  .stack-renderer__cells {
+    display: flex;
+    flex-direction: column;
+    /* Bottom-anchor so push lifts the top UP, giving the side pointer
+       something to slide along. */
+    justify-content: flex-end;
+    min-width: 130px;
+  }
+  .stack-renderer__cell {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    padding: 14px 14px 14px 20px;
+    background: hsl(var(--background));
+    border: 1px solid hsl(var(--border));
+    border-bottom: 0;
+    font-family: var(--font-mono);
+    font-size: 16px;
+    color: hsl(var(--foreground));
+    transition:
+      background 220ms ease,
+      border-color 220ms ease,
+      color 220ms ease,
+      opacity 220ms ease;
+  }
+  /* Rounded corners on the cells column — applied per-cell so the bottom-
+     anchored stack keeps clean corners regardless of cell count. */
+  .stack-renderer__cell:first-child {
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+  }
+  .stack-renderer__cell:last-child {
+    border-bottom: 1px solid hsl(var(--border));
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+  }
+  .stack-renderer__cell--top {
+    background: color-mix(in oklab, var(--top-color) 12%, transparent);
+    border-color: var(--top-color);
+    color: var(--top-color);
+  }
+  .stack-renderer__cell--new {
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--top-color, #4f5bd5) 60%, transparent);
+  }
+  .stack-renderer__cell--changed {
+    background: rgba(106, 150, 86, 0.10);
+  }
+  .stack-renderer__cell--removed {
+    opacity: 0.35;
+  }
+  .stack-renderer__cell--empty {
+    display: block;
+    text-align: center;
+    color: hsl(var(--muted-foreground));
+    font-style: italic;
+    font-size: 12px;
+    padding: 12px 14px;
+    border-bottom: 1px solid hsl(var(--border));
+  }
+  .stack-renderer__cell-value { /* default cell layout — left column */ }
+  .stack-renderer__cell-index {
+    font-size: 10px;
+    color: hsl(var(--muted-foreground));
+    padding-left: 12px;
+  }
+  .stack-renderer__cell--top .stack-renderer__cell-index {
+    color: color-mix(in oklab, var(--top-color) 70%, hsl(var(--muted-foreground)));
+  }
+
+  /* ════════════════════════════════════════════════════════════════════
+     HashMap renderer (ADR-0029, renderer #2) — separate chaining.
+     A column of bucket rows; each row is a boxed index + a horizontal chain
+     of `key: value` entry boxes joined by → connectors. The bucket Arr cells
+     (the Dict→Arr→Entry intermediary) are NOT drawn — only the index and the
+     reconstructed entry chain, which is the pedagogical shape. The renderer
+     reconstructs this from the full VizGraph's nodes + edges (cross-structure,
+     which the generic multi-card path cannot show).
+     Block prefix: .hashmap-renderer
+     ════════════════════════════════════════════════════════════════════ */
+
+  .hashmap-renderer {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+    min-height: 200px;
+    justify-content: center;
+    font-family: var(--font-mono);
+  }
+  .hashmap-renderer__empty {
+    color: hsl(var(--muted-foreground));
+    font-style: italic;
+    font-size: 13px;
+  }
+  .hashmap-renderer__bucket {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  /* Boxed bucket index — the hash-table slot number. */
+  .hashmap-renderer__index {
+    flex: 0 0 auto;
+    min-width: 30px;
+    height: 30px;
+    padding: 0 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid hsl(var(--border));
+    border-radius: 6px;
+    background: color-mix(in oklab, hsl(var(--muted-foreground)) 8%, transparent);
+    font-size: 13px;
+    color: hsl(var(--muted-foreground));
+  }
+  .hashmap-renderer__chain {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0;
+  }
+  .hashmap-renderer__connector {
+    color: hsl(var(--muted-foreground));
+    padding: 0 8px;
+    font-size: 13px;
+  }
+  .hashmap-renderer__entry {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 3px;
+    padding: 6px 11px;
+    border: 1px solid hsl(var(--border));
+    border-radius: 6px;
+    background: hsl(var(--background));
+    font-size: 14px;
+    color: hsl(var(--foreground));
+    transition:
+      background 220ms ease,
+      border-color 220ms ease;
+  }
+  .hashmap-renderer__entry-key {
+    color: hsl(var(--muted-foreground));
+  }
+  .hashmap-renderer__entry-sep {
+    color: hsl(var(--muted-foreground));
+  }
+  .hashmap-renderer__entry--new {
+    border-color: var(--entry-new-color, #4f5bd5);
+    background: color-mix(in oklab, var(--entry-new-color, #4f5bd5) 12%, transparent);
+  }
+  .hashmap-renderer__entry--changed {
+    background: rgba(106, 150, 86, 0.1);
+  }
+
+  /* ════════════════════════════════════════════════════════════════════
+     Queue / Deque renderer (ADR-0027, renderer #4) — FIFO row.
+     Horizontal cells, FRONT (head) on the left, BACK (tail) on the right.
+     Head/tail callouts above the end cells; direction hint above the row.
+     `--head-color` / `--tail-color` set inline by the renderer.
+     Block prefix: .queue-renderer
+     ════════════════════════════════════════════════════════════════════ */
+
+  .queue-renderer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 160px;
+    font-family: var(--font-mono);
+  }
+  /* dequeue ← … ← enqueue hint spread across the row's width. */
+  .queue-renderer__hint {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+  }
+  .queue-renderer__cells {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+  }
+  .queue-renderer__cell {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    min-width: 52px;
+    padding: 14px 10px;
+    background: hsl(var(--background));
+    border: 1px solid hsl(var(--border));
+    border-right: 0;
+    font-family: var(--font-mono);
+    color: hsl(var(--foreground));
+    transition:
+      background 220ms ease,
+      border-color 220ms ease,
+      opacity 220ms ease;
+  }
+  .queue-renderer__cell:first-child {
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+  }
+  .queue-renderer__cell:last-child {
+    border-right: 1px solid hsl(var(--border));
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+  }
+  .queue-renderer__cell--head {
+    border-color: var(--head-color);
+    color: var(--head-color);
+  }
+  .queue-renderer__cell--tail {
+    border-color: var(--tail-color);
+  }
+  /* Keep the shared border between adjacent head/tail crisp. */
+  .queue-renderer__cell--head + .queue-renderer__cell {
+    border-left-color: var(--head-color);
+  }
+  .queue-renderer__cell--new {
+    background: color-mix(in oklab, var(--tail-color, #4f5bd5) 12%, transparent);
+  }
+  .queue-renderer__cell--changed {
+    background: rgba(106, 150, 86, 0.1);
+  }
+  .queue-renderer__cell--removed {
+    opacity: 0.35;
+  }
+  .queue-renderer__cell--empty {
+    border-radius: 8px;
+    border-right: 1px solid hsl(var(--border));
+    color: hsl(var(--muted-foreground));
+    font-style: italic;
+    font-size: 12px;
+  }
+  .queue-renderer__cell-marker {
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+    min-height: 11px;
+  }
+  .queue-renderer__cell--head .queue-renderer__cell-marker {
+    color: var(--head-color);
+  }
+  .queue-renderer__cell--tail .queue-renderer__cell-marker {
+    color: var(--tail-color);
+  }
+  .queue-renderer__cell-value {
+    font-size: 16px;
+  }
+  .queue-renderer__cell-index {
+    font-size: 10px;
+    color: hsl(var(--muted-foreground));
+  }
+
+  /* ════════════════════════════════════════════════════════════════════
+     Bitset renderer (ADR-0027, renderer #8) — fixed-width bit row.
+     A horizontal row of bit cells, bit 0 on the left. The defining visual is
+     the SET / CLEAR contrast: set bits (`--set`, value 1) are filled with the
+     accent, clear bits (value 0) stay muted — so the bitset reads as a row of
+     on/off flags, not a generic array of small ints. A `n bits · k set`
+     popcount summary sits above the row; each cell carries its bit index.
+     `--bit-set` is the canon "on" accent (indigo), shared by the set fill,
+     border, and value text. `--changed` (the bit that just flipped) layers a
+     green ring OVER the set/clear base so it shows for both 0→1 and 1→0.
+     Block prefix: .bitset-renderer
+     ════════════════════════════════════════════════════════════════════ */
+
+  .bitset-renderer {
+    --bit-set: #4f5bd5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 120px;
+    font-family: var(--font-mono);
+  }
+  /* `8 bits · 2 set` popcount readout above the row. */
+  .bitset-renderer__summary {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+  }
+  .bitset-renderer__bits {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+  }
+  .bitset-renderer__bit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    min-width: 44px;
+    padding: 12px 8px;
+    background: hsl(var(--background));
+    border: 1px solid hsl(var(--border));
+    border-right: 0;
+    color: hsl(var(--muted-foreground));
+    transition:
+      background 220ms ease,
+      border-color 220ms ease,
+      color 220ms ease,
+      box-shadow 220ms ease,
+      opacity 220ms ease;
+  }
+  .bitset-renderer__bit:first-child {
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+  }
+  .bitset-renderer__bit:last-child {
+    border-right: 1px solid hsl(var(--border));
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+  }
+  /* Set bit (value 1) — filled with the accent so the row reads as flags. */
+  .bitset-renderer__bit--set {
+    background: color-mix(in oklab, var(--bit-set) 14%, transparent);
+    border-color: var(--bit-set);
+    color: var(--bit-set);
+  }
+  .bitset-renderer__bit--set + .bitset-renderer__bit {
+    border-left-color: var(--bit-set);
+  }
+  /* Just-flipped bit — a green ring over whatever set/clear base it has. */
+  .bitset-renderer__bit--changed {
+    box-shadow: inset 0 0 0 2px rgba(106, 150, 86, 0.7);
+    border-color: rgba(106, 150, 86, 0.7);
+  }
+  .bitset-renderer__bit--changed + .bitset-renderer__bit {
+    border-left-color: rgba(106, 150, 86, 0.7);
+  }
+  .bitset-renderer__bit--new {
+    box-shadow: inset 0 0 0 2px color-mix(in oklab, var(--bit-set) 60%, transparent);
+  }
+  .bitset-renderer__bit--removed {
+    opacity: 0.35;
+  }
+  .bitset-renderer__bit--empty {
+    flex-direction: row;
+    border-radius: 8px;
+    border-right: 1px solid hsl(var(--border));
+    color: hsl(var(--muted-foreground));
+    font-style: italic;
+    font-size: 12px;
+  }
+  .bitset-renderer__bit-value {
+    font-size: 17px;
+    font-weight: 600;
+    line-height: 1;
+  }
+  .bitset-renderer__bit-index {
+    font-size: 10px;
+    color: hsl(var(--muted-foreground));
+  }
+  .bitset-renderer__bit--set .bitset-renderer__bit-index {
+    color: color-mix(in oklab, var(--bit-set) 70%, hsl(var(--muted-foreground)));
+  }
+
+  /* ════════════════════════════════════════════════════════════════════
+     Segment-tree renderer (ADR-0027, renderer #10) — range-bar overlay.
+     A column grid `n` wide (one column per array index, set inline). Each node
+     is a bar at `grid-column: lo+1 / hi+2` on its tree level's row, so it sits
+     directly over the array slice [lo,hi] it covers. A bar spanning columns
+     covers the inter-column gaps (one contiguous segment); siblings stay split
+     by the gap. Leaves (`--leaf`, [i,i]) land on the bottom level styled as the
+     array cells; an index row sits beneath. `--cursor` is the `cur` traversal
+     pointer's node. `--cursor-color` is the canon accent.
+     Block prefix: .segment-tree-renderer
+     ════════════════════════════════════════════════════════════════════ */
+
+  .segment-tree-renderer {
+    position: relative;
+    margin: 8px auto;
+    font-family: var(--font-mono);
+  }
+  .segment-tree-renderer__empty {
+    color: hsl(var(--muted-foreground));
+    font-style: italic;
+    font-size: 12px;
+    padding: 40px;
+  }
+  /* Parent→child tree edges, behind the nodes. */
+  .segment-tree-renderer__svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+  }
+  .segment-tree-renderer__edge {
+    stroke: hsl(var(--border));
+    stroke-width: 1.5;
+  }
+  /* A node — [lo,hi] over its aggregate value, centred on (x, y). */
+  .segment-tree-renderer__node {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 3px 7px;
+    background: hsl(var(--background));
+    border: 1px solid hsl(var(--border));
+    border-radius: 6px;
+    white-space: nowrap;
+    transition:
+      background 200ms ease,
+      border-color 200ms ease,
+      box-shadow 200ms ease,
+      color 200ms ease;
+  }
+  /* The node the `cur` traversal pointer is visiting — tinted in its role colour. */
+  .segment-tree-renderer__node--cursor {
+    border-color: var(--node-color, hsl(var(--primary)));
+    background: color-mix(in oklab, var(--node-color, hsl(var(--primary))) 12%, transparent);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--node-color, hsl(var(--primary))) 16%, transparent);
+  }
+  /* Aggregate changed vs. the previous step (a point update) — green ring. */
+  .segment-tree-renderer__node--changed {
+    border-color: rgba(106, 150, 86, 0.7);
+    box-shadow: 0 0 0 2px rgba(106, 150, 86, 0.5);
+  }
+  .segment-tree-renderer__range {
+    font-size: 8.5px;
+    letter-spacing: 0.04em;
+    color: hsl(var(--muted-foreground));
+  }
+  .segment-tree-renderer__val {
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.15;
+    color: hsl(var(--foreground));
+  }
+  .segment-tree-renderer__node--cursor .segment-tree-renderer__val {
+    color: var(--node-color, hsl(var(--primary)));
+  }
+  /* The underlying array — leaves laid out as indexed cells, column-aligned. */
+  .segment-tree-renderer__array {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 44px;
+    border-top: 1px solid hsl(var(--border));
+  }
+  .segment-tree-renderer__leaf {
+    position: absolute;
+    top: 8px;
+    transform: translateX(-50%);
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    padding: 3px 8px;
+    background: hsl(var(--muted) / 0.5);
+    border-radius: 4px;
+    font-size: 11px;
+    color: hsl(var(--foreground));
+  }
+  .segment-tree-renderer__leaf em {
+    font-style: normal;
+    font-size: 9px;
+    color: hsl(var(--muted-foreground));
+  }
+
+  /* ════════════════════════════════════════════════════════════════════
+     B-tree renderer (ADR-0029, cross-structure) — n-ary multi-key tree.
+     Each node is a BOX of key cells; child pointers (SVG) hang from the gaps
+     between keys (k keys ⇒ k+1 children). Reconstructed whole-graph from the
+     keys/children Arr edges, so `viz=binary-tree`'s no-edges failure is gone.
+     `--new` flashes a freshly-inserted key; `--cursor` tints the node a local
+     points at, in its role colour (`--node-color`).
+     Block prefix: .btree-renderer
+     ════════════════════════════════════════════════════════════════════ */
+
+  .btree-renderer {
+    position: relative;
+    margin: 8px auto;
+    font-family: var(--font-mono);
+  }
+  .btree-renderer__empty {
+    color: hsl(var(--muted-foreground));
+    font-style: italic;
+    font-size: 12px;
+    padding: 40px;
+  }
+  /* Child pointers, behind the boxes. */
+  .btree-renderer__svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+  }
+  .btree-renderer__edge {
+    stroke: hsl(var(--border));
+    stroke-width: 1.5;
+  }
+  /* A node — a horizontal row of key cells, centred on x with its top at y. */
+  .btree-renderer__node {
+    position: absolute;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: stretch;
+    height: 32px;
+    background: hsl(var(--background));
+    border: 1px solid hsl(var(--border));
+    border-radius: 6px;
+    white-space: nowrap;
+    transition:
+      border-color 200ms ease,
+      box-shadow 200ms ease;
+  }
+  .btree-renderer__node--leaf {
+    background: hsl(var(--muted) / 0.35);
+  }
+  /* The node a local (cursor / cardCursor) points at — tinted in its role colour. */
+  .btree-renderer__node--cursor {
+    border-color: var(--node-color, hsl(var(--primary)));
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--node-color, hsl(var(--primary))) 16%, transparent);
+  }
+  /* One key inside the box; --divided draws the separator between adjacent keys. */
+  .btree-renderer__key {
+    min-width: 34px;
+    padding: 0 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    font-size: 13px;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+  }
+  .btree-renderer__key--divided {
+    border-left: 1px solid hsl(var(--border));
+  }
+  .btree-renderer__key--empty {
+    color: hsl(var(--muted-foreground));
+    font-weight: 400;
+  }
+  /* A freshly-inserted key flashes in the canon "added" green. */
+  .btree-renderer__key--new {
+    color: rgb(86, 140, 76);
+    background: color-mix(in oklab, rgb(106, 150, 86) 18%, transparent);
+    animation: btree-key-pop 360ms ease;
+  }
+  .btree-renderer__key--changed {
+    color: hsl(var(--primary));
+  }
+  @keyframes btree-key-pop {
+    from {
+      transform: scale(0.6);
+      opacity: 0.2;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  /* ════════════════════════════════════════════════════════════════════
+     Fenwick / BIT renderer (ADR-0027, renderer #11) — responsibility staircase.
+     A column grid `n` wide (one column per 1-based index, set inline). Each cell
+     is a bar at `grid-column: (i-lowbit+1) / (i+1)` on its low-bit level's row
+     (`log2(lowbit)`), so it sits over the half-open slice (i-lowbit, i] it owns —
+     index 8 spans the whole array, 4 the left half, odd indices (`--singleton`)
+     are atomic. The empty cells between bars are the BIT's binary structure, not
+     gaps. An index row sits beneath. `--cursor` is the `i` query pointer climbing
+     the staircase. `--fen-cursor-color` is the canon accent.
+     Block prefix: .fenwick-renderer
+     ════════════════════════════════════════════════════════════════════ */
+
+  .fenwick-renderer {
+    --fen-cursor-color: #4f5bd5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 160px;
+    font-family: var(--font-mono);
+  }
+  .fenwick-renderer__grid {
+    display: grid;
+    /* grid-template-columns: repeat(n, …) set inline by the renderer. */
+    gap: 4px;
+    align-items: stretch;
+  }
+  .fenwick-renderer__grid--empty {
+    color: hsl(var(--muted-foreground));
+    font-style: italic;
+    font-size: 12px;
+  }
+  /* A cell bar — spans its (lo,i] columns on its low-bit level's row. */
+  .fenwick-renderer__node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    min-height: 34px;
+    padding: 3px 6px;
+    border: 1px solid hsl(var(--border));
+    border-radius: 5px;
+    background: color-mix(in oklab, hsl(var(--muted-foreground)) 6%, transparent);
+    color: hsl(var(--foreground));
+    transition:
+      background 220ms ease,
+      border-color 220ms ease,
+      box-shadow 220ms ease;
+  }
+  /* Singletons (odd index, lowbit 1) own a single element — the atomic cells. */
+  .fenwick-renderer__node--singleton {
+    background: hsl(var(--background));
+  }
+  /* The cell the `i` query pointer is visiting this step. */
+  .fenwick-renderer__node--cursor {
+    border-color: var(--fen-cursor-color);
+    background: color-mix(in oklab, var(--fen-cursor-color) 14%, transparent);
+    box-shadow: inset 0 0 0 1px var(--fen-cursor-color);
+    color: var(--fen-cursor-color);
+  }
+  /* Stored aggregate changed vs. the previous step — e.g. a point-update jump. */
+  .fenwick-renderer__node--changed {
+    box-shadow: inset 0 0 0 2px rgba(106, 150, 86, 0.7);
+    border-color: rgba(106, 150, 86, 0.7);
+  }
+  .fenwick-renderer__node-value {
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.1;
+  }
+  .fenwick-renderer__node-range {
+    font-size: 9px;
+    color: hsl(var(--muted-foreground));
+  }
+  .fenwick-renderer__node--cursor .fenwick-renderer__node-range {
+    color: color-mix(in oklab, var(--fen-cursor-color) 70%, hsl(var(--muted-foreground)));
+  }
+  /* Index row beneath the staircase — the 1-based Fenwick indices 1..n. */
+  .fenwick-renderer__index {
+    text-align: center;
+    font-size: 10px;
+    color: hsl(var(--muted-foreground));
+    padding-top: 2px;
+  }
+
+  /* ════════════════════════════════════════════════════════════════════
+     Skip-list renderer (ADR-0027, renderer #12) — multi-level grid.
+     A flex column of level rows (top express lane first). Each row: an `L{n}`
+     label, then a CSS grid `auto repeat(n, 1fr) auto` of head | one slot per node |
+     ∅. A node present at that level is a boxed value cell; levels it does NOT reach
+     render a thin `__gap` rule so columns stay aligned by key. `--active` is the
+     `cur` search pointer's column, tinted from `--node-color` (the emitted role
+     colour, set inline). Matches the design handoff's SkipListRenderer; the bespoke
+     trace-driven sibling of the delegate `skiplist-layout.ts` (the inline
+     `d3 widget=skiplist` path).
+     Block prefix: .skiplist-renderer
+     ════════════════════════════════════════════════════════════════════ */
+
+  .skiplist-renderer {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-height: 120px;
+    justify-content: center;
+    font-family: var(--font-mono);
+  }
+  .skiplist-renderer__row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .skiplist-renderer__level-label {
+    width: 24px;
+    font-size: 10px;
+    color: hsl(var(--muted-foreground));
+    letter-spacing: 0.06em;
+  }
+  .skiplist-renderer__nodes {
+    flex: 1 1 auto;
+    display: grid;
+    /* grid-template-columns: auto repeat(n, 1fr) auto — set inline by the renderer. */
+    gap: 4px;
+    align-items: center;
+  }
+  .skiplist-renderer__head,
+  .skiplist-renderer__null {
+    font-size: 11px;
+    color: hsl(var(--muted-foreground));
+  }
+  .skiplist-renderer__slot {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 32px;
+  }
+  .skiplist-renderer__node {
+    min-width: 32px;
+    padding: 4px 6px;
+    background: hsl(var(--background));
+    border: 1px solid hsl(var(--border));
+    border-radius: 4px;
+    font-size: 12px;
+    text-align: center;
+    color: hsl(var(--foreground));
+    transition:
+      background 220ms ease,
+      border-color 220ms ease,
+      box-shadow 220ms ease,
+      color 220ms ease;
+  }
+  /* The `cur` search pointer's column — tinted in its role colour (set inline). */
+  .skiplist-renderer__node--active {
+    border-color: var(--node-color);
+    background: color-mix(in oklab, var(--node-color) 12%, transparent);
+    color: var(--node-color);
+    box-shadow: 0 0 0 2px color-mix(in oklab, var(--node-color) 14%, transparent);
+  }
+  /* A level the node does NOT reach — a thin rule keeps the column aligned. */
+  .skiplist-renderer__gap {
+    width: 100%;
+    height: 1px;
+    background: hsl(var(--border));
+    opacity: 0.5;
+  }
+  .skiplist-renderer__empty {
+    color: hsl(var(--muted-foreground));
+    font-style: italic;
+    font-size: 12px;
+  }
+
+  /* ════════════════════════════════════════════════════════════════════
+     Block prefix: .list-renderer  (singly + doubly linked list — design boxes)
+     A horizontal chain of value boxes joined by curved `next` arrows, ending in
+     ∅. `head`/`tail` carets sit above their node, the `cur` caret below — all
+     absolutely positioned within the node box, so columns self-align.
+     ════════════════════════════════════════════════════════════════════ */
+
+  .list-renderer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 14px;
+    min-height: 120px;
+    font-family: var(--font-mono);
+  }
+  .list-renderer__row {
+    display: flex;
+    align-items: center;
+    /* headroom for the head/tail carets above + the cur caret below */
+    padding: 34px 0;
+  }
+  .list-renderer__node {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+    min-width: 34px;
+    overflow: hidden;
+    background: hsl(var(--background));
+    border: 1px solid hsl(var(--border));
+    border-radius: 6px;
+    font-size: 14px;
+    color: hsl(var(--foreground));
+    transition:
+      background 220ms ease,
+      border-color 220ms ease,
+      box-shadow 220ms ease,
+      color 220ms ease;
+  }
+  /* Node compartments — narrow uppercase PREV / NEXT link cells flank the value
+     cell, separated by hairline borders (the design's textbook node box). */
+  .list-renderer__field {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .list-renderer__field--prev,
+  .list-renderer__field--next {
+    padding: 0 5px;
+    font-size: 8px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+  }
+  .list-renderer__field--prev {
+    border-right: 1px solid hsl(var(--border));
+  }
+  .list-renderer__field--next {
+    border-left: 1px solid hsl(var(--border));
+  }
+  .list-renderer__val {
+    padding: 8px 12px;
+    min-width: 22px;
+    font-weight: 600;
+  }
+  /* The `cur` pointer's node — tinted in its role colour (set inline). */
+  .list-renderer__node--active {
+    border-color: var(--node-color);
+    background: color-mix(in oklab, var(--node-color) 12%, transparent);
+    color: var(--node-color);
+    box-shadow: 0 0 0 2px color-mix(in oklab, var(--node-color) 14%, transparent);
+  }
+  /* A node inserted this step — indigo "new" ring (MarkerColors canon). */
+  .list-renderer__node--new {
+    box-shadow: 0 0 0 2px color-mix(in oklab, #4f5bd5 18%, transparent);
+  }
+  .list-renderer__node--changed {
+    box-shadow: 0 0 0 2px color-mix(in oklab, #5a8a5a 16%, transparent);
+  }
+  /* head / tail caret above the node; cur caret below — absolute so the node
+     row's flex widths drive alignment without a matched second row. */
+  .list-renderer__head-label,
+  .list-renderer__tail-label {
+    position: absolute;
+    bottom: calc(100% + 3px);
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    font-size: 11px;
+    line-height: 1.1;
+    white-space: nowrap;
+  }
+  .list-renderer__cur {
+    position: absolute;
+    top: calc(100% + 3px);
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    font-size: 11px;
+    line-height: 1.1;
+    white-space: nowrap;
+  }
+  .list-renderer__edge {
+    display: inline-flex;
+    align-items: center;
+    color: hsl(var(--muted-foreground));
+  }
+  .list-renderer__edge-svg {
+    display: block;
+  }
+  .list-renderer__null {
+    margin-left: 2px;
+    font-size: 16px;
+    color: hsl(var(--muted-foreground));
+  }
+  .list-renderer__empty {
+    color: hsl(var(--muted-foreground));
+    font-style: italic;
+    font-size: 12px;
+  }
+  /* Legend (doubly list) — a colour swatch + label for each edge type. */
+  .list-renderer__legend {
+    display: flex;
+    gap: 18px;
+    font-size: 11px;
+    color: hsl(var(--muted-foreground));
+  }
+  .list-renderer__legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .list-renderer__legend-line {
+    display: inline-block;
+    width: 22px;
+    height: 2px;
+    border-radius: 1px;
+  }
+
+  /* ════════════════════════════════════════════════════════════════════
+     Array renderer (ADR-0027) — the DEFAULT for every array-1d card (no
+     viz-kind needed; wired as the layoutKind default in index.ts). Ports the
+     design handoff's ArrayRenderer: three column-aligned grid rows — pointer
+     carets (tinted by the cursor's role colour via --pcolor), boxed value
+     cells, and an index row — replacing the generic circle layout. A cursor's
+     cell tints in its pointer hue (`--cursor`); a flipped value rings green
+     (`--changed`). Block prefix: .array-renderer
+     ════════════════════════════════════════════════════════════════════ */
+
+  .array-renderer {
+    --n: 7;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-height: 120px;
+    justify-content: center;
+    font-family: var(--font-mono);
+  }
+  .array-renderer__pointers,
+  .array-renderer__cells,
+  .array-renderer__indices {
+    display: grid;
+    grid-template-columns: repeat(var(--n, 7), minmax(38px, 1fr));
+    gap: 5px;
+  }
+  .array-renderer__cell-slot {
+    min-height: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 3px;
+    padding-bottom: 4px;
+  }
+  .array-renderer__labels {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+  .array-renderer__pointer {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    color: var(--pcolor, hsl(var(--primary)));
+    padding: 1px 4px;
+    border-radius: 4px;
+  }
+  .array-renderer__pointer-name {
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: var(--pcolor, hsl(var(--primary)));
+  }
+  .array-renderer__cell {
+    height: 56px;
+    border: 1px solid hsl(var(--border));
+    background: hsl(var(--background));
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition:
+      background 220ms ease,
+      border-color 220ms ease,
+      box-shadow 220ms ease,
+      color 220ms ease;
+  }
+  .array-renderer__cell-value {
+    font-size: 17px;
+    font-weight: 500;
+  }
+  /* The cell a pointer is indexing — tinted in the pointer's role colour. */
+  .array-renderer__cell--cursor {
+    border-color: var(--pcolor);
+    background: color-mix(in oklab, var(--pcolor) 12%, transparent);
+    color: var(--pcolor);
+  }
+  /* A value that flipped this step — green ring (MarkerColors `changed`). */
+  .array-renderer__cell--changed {
+    border-color: rgba(106, 150, 86, 0.7);
+    box-shadow: inset 0 0 0 2px rgba(106, 150, 86, 0.7);
+  }
+  .array-renderer__cell--new {
+    box-shadow: inset 0 0 0 2px color-mix(in oklab, hsl(var(--primary)) 55%, transparent);
+  }
+  .array-renderer__cell--removed {
+    opacity: 0.35;
+  }
+  .array-renderer__index {
+    text-align: center;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    color: hsl(var(--muted-foreground));
+    padding-top: 2px;
+  }
+  .array-renderer__empty {
+    color: hsl(var(--muted-foreground));
+    font-style: italic;
+    font-size: 12px;
+  }
+
+  /* ── 2-D matrix renderer (array-2d) ───────────────────────────────── */
+  /* Ported from the design handoff's .matrix-renderer: a grid of boxed cells
+     with a column-index header row + per-row index labels. Inner cells only
+     (the outer row-pointer cells are structural; see grid-renderer.ts). */
+  .matrix-renderer {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 2px;
+    align-items: flex-start;
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+  .matrix-renderer__col-labels,
+  .matrix-renderer__row {
+    display: flex;
+    gap: 2px;
+  }
+  .matrix-renderer__corner {
+    width: 22px;
+    flex-shrink: 0;
+  }
+  .matrix-renderer__col-label {
+    width: 36px;
+    flex-shrink: 0;
+    text-align: center;
+    font-size: 10px;
+    color: hsl(var(--muted-foreground));
+    padding: 2px 0;
+  }
+  .matrix-renderer__row-label {
+    width: 22px;
+    flex-shrink: 0;
+    align-self: center;
+    text-align: center;
+    font-size: 10px;
+    color: hsl(var(--muted-foreground));
+  }
+  .matrix-renderer__cell {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: hsl(var(--background));
+    border: 1px solid hsl(var(--border));
+    border-radius: 4px;
+    color: hsl(var(--foreground));
+    transition:
+      background 200ms ease,
+      border-color 200ms ease,
+      box-shadow 200ms ease,
+      color 200ms ease;
+  }
+  /* A grid hole (ragged row) — dashed + faded so the matrix shape still reads. */
+  .matrix-renderer__cell--hole {
+    background: transparent;
+    border-style: dashed;
+    opacity: 0.4;
+  }
+  /* A cursor on a (row, col) inner cell — design's --active treatment. */
+  .matrix-renderer__cell--active {
+    background: color-mix(in oklab, var(--pcolor, hsl(var(--primary))) 16%, transparent);
+    border-color: var(--pcolor, hsl(var(--primary)));
+    color: var(--pcolor, hsl(var(--primary)));
+    box-shadow: 0 0 0 2px color-mix(in oklab, var(--pcolor, hsl(var(--primary))) 18%, transparent);
+  }
+  /* A cell whose value flipped this step — green ring (MarkerColors `changed`). */
+  .matrix-renderer__cell--changed {
+    border-color: rgba(106, 150, 86, 0.7);
+    box-shadow: inset 0 0 0 2px rgba(106, 150, 86, 0.7);
+  }
+  .matrix-renderer__cell--new {
+    box-shadow: inset 0 0 0 2px color-mix(in oklab, hsl(var(--primary)) 55%, transparent);
+  }
+  .matrix-renderer__cell--removed {
+    opacity: 0.35;
+  }
+  .matrix-renderer__empty {
+    color: hsl(var(--muted-foreground));
+    font-style: italic;
+    font-size: 12px;
+  }
+}

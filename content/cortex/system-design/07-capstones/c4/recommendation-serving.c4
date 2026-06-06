@@ -1,0 +1,56 @@
+// Capstone 46 — "Recommendation serving layer" (YouTube/two-stage lineage).
+// C4 container view. The job: from a catalogue of ~100M items, pick a few dozen
+// a person will likely enjoy, in well under ~100 ms. The defining shape is the
+// TWO-STAGE FUNNEL (Covington et al., RecSys 2016): a cheap, recall-oriented
+// CANDIDATE GENERATION step narrows millions of items to a few hundred via
+// approximate-nearest-neighbour (ANN) search over learned EMBEDDINGS, then an
+// expensive, precision-oriented RANKING model scores only those few hundred
+// using rich features. Embeddings, the ANN index, and the model are all
+// PRECOMPUTED OFFLINE; a FEATURE STORE serves the same feature definitions
+// online and offline so training and serving cannot silently drift apart.
+//
+// All identifiers carry the `rec` prefix. View name scope-prefixed
+// `capstones_recommendationserving_*`. No `specification` block — element kinds
+// (actor, system, container) shared from 05-application-architecture/c4/workspace.c4.
+
+model {
+  recUser = actor 'User' {
+    description 'Opens a feed or a "recommended for you" rail and expects a fast, relevant, fresh, non-repetitive list — within a fraction of a second.'
+  }
+
+  recSys = system 'Recommendation serving' {
+    description 'Turns a 100M-item catalogue into a short ranked list per request. A two-stage funnel: cheap recall (ANN over embeddings) then expensive precision (a ranking model), fed by an offline training pipeline and a feature store.'
+
+    recApi = container 'Serving API / orchestrator' {
+      description 'Owns the per-request budget. Calls candidate generation, fetches features, calls the ranker, then applies business rules — filter already-seen, dedupe, diversify — and returns the top N. Degrades gracefully when downstream is slow.'
+    }
+    recCandidate = container 'Candidate generation (two-tower + ANN index)' {
+      description 'Embeds the user, then runs approximate-nearest-neighbour search (HNSW / FAISS) over ~100M precomputed item embeddings to return a few hundred candidates in single-digit milliseconds. Optimised for RECALL — do not miss good items — not exactness.'
+    }
+    recRanker = container 'Ranking model (heavy, precision)' {
+      description 'Scores the few hundred candidates with a richer model and many features, producing a fine-grained ordering. Optimised for PRECISION. The serving cost centre: requests times candidates equals tens of millions of scorings per second.'
+    }
+    recFeatures = container 'Feature store (online + offline)' {
+      description 'Single source of feature definitions. The online half serves features in single-digit ms at request time; the offline half feeds training. Same definitions both sides, so training-serving skew cannot creep in (Uber Michelangelo lineage).'
+    }
+    recTraining = container 'Offline training + embedding pipeline' {
+      description 'Periodically retrains the models, recomputes item/user embeddings, rebuilds the ANN index, and materialises offline features. Runs on the batch/warehouse side — never in the request path.'
+    }
+
+    recApi -> recCandidate 'retrieve a few hundred candidates (recall stage)'
+    recApi -> recFeatures 'fetch features for user and candidates'
+    recApi -> recRanker 'score the candidates (precision stage)'
+    recTraining -> recCandidate 'publish item embeddings and ANN index'
+    recTraining -> recRanker 'publish the trained ranking model'
+    recTraining -> recFeatures 'materialise offline features'
+  }
+
+  recUser -> recApi 'open feed, request recommendations'
+}
+
+views {
+  view capstones_recommendationserving_architecture of recSys {
+    title 'Recommendation serving — container view (two-stage funnel + feature store)'
+    include *
+  }
+}

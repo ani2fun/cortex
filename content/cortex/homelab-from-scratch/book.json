@@ -1,0 +1,7 @@
+{
+    "title": "Homelab from Scratch",
+    "description": "Build a real Kubernetes homelab end-to-end — four Ubuntu boxes, a private WireGuard mesh, K3s with Calico, a single hardened cloud edge, automatic TLS via cert-manager and Cloudflare, Sealed-Secrets-driven GitOps, PostgreSQL, Keycloak, and a CI/CD pipeline that deploys for you. Whoami is the demo app; the architecture is real.",
+    "tags": ["homelab", "kubernetes", "k3s", "wireguard", "calico", "argocd", "cloudflare", "gitops"],
+    "estimatedReadingMinutes": 125,
+    "order": 4
+}

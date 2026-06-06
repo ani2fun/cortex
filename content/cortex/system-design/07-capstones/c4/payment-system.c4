@@ -1,0 +1,53 @@
+// Capstone 44 — "Payment system" (Stripe-style money movement). C4 container
+// view. Money is special: never double-charge (theft), never lose a charge
+// (free work), and every cent must balance. The design rests on three pillars:
+// IDEMPOTENCY KEYS (a retry is safe — exactly-once at the boundary), an
+// immutable DOUBLE-ENTRY LEDGER (every payment posts equal debit+credit, so the
+// books must sum to zero and bugs are detectable), and a per-payment STATE
+// MACHINE / SAGA across external card networks (no 2PC with Visa), with
+// RECONCILIATION as the safety net.
+//
+// All identifiers carry the `pay` prefix. View name scope-prefixed
+// `capstones_paymentsystem_*`. No `specification` block — element kinds
+// (actor, system, container) shared from 05-application-architecture/c4/workspace.c4.
+
+model {
+  payCustomer = actor 'Customer / merchant' {
+    description 'Submits a charge at checkout; expects to be charged exactly once and never lose money.'
+  }
+
+  paySys = system 'Payment system' {
+    description 'Moves money exactly-once. Correctness over throughput: idempotent API, balanced ledger, saga across external networks, continuous reconciliation.'
+
+    payApi = container 'Payment API (idempotency)' {
+      description 'Every charge carries an Idempotency-Key. The API checks it FIRST: if seen, it replays the stored result and does nothing new — so a retried charge never bills twice.'
+    }
+    payOrchestrator = container 'Orchestrator (state machine / saga)' {
+      description 'Drives each payment through INITIATED -> AUTHORIZED -> CAPTURED -> SETTLED (or failed/refunded). A saga: on partial failure it compensates (void an auth that was never captured). No distributed transaction across the card network.'
+    }
+    payLedger = container 'Ledger (double-entry, ACID)' {
+      description 'Immutable, append-only record of money movement. Every payment posts a balanced debit + credit; the sum of all entries must be zero. The strongly-consistent source of truth (a relational/ACID store).'
+    }
+    payGateway = container 'Card-network gateway' {
+      description 'Talks to external acquirers / card networks (Visa, Mastercard) to authorize and capture. Slow and occasionally unreachable — the part you cannot transact atomically with.'
+    }
+    payRecon = container 'Reconciliation' {
+      description 'Continuously compares the internal ledger against the network/bank settlement reports to catch discrepancies (money that moved but was not recorded, or vice versa) — the safety net under at-least-once + idempotency.'
+    }
+
+    payApi -> payOrchestrator 'start payment (after idempotency check)'
+    payOrchestrator -> payGateway 'authorize, then capture'
+    payOrchestrator -> payLedger 'post balanced entries (debit + credit)'
+    payRecon -> payLedger 'compare against settlement'
+    payRecon -> payGateway 'fetch settlement reports'
+  }
+
+  payCustomer -> payApi 'POST /charges with Idempotency-Key'
+}
+
+views {
+  view capstones_paymentsystem_architecture of paySys {
+    title 'Payment system — container view (idempotency + ledger + saga)'
+    include *
+  }
+}

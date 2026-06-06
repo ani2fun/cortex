@@ -1,0 +1,91 @@
+// Lesson 11 — "Replication". Three deployment shapes that cover almost
+// every replicated datastore in production: single-leader (Postgres
+// streaming replication, MySQL primary-replica), multi-leader (active-
+// active cross-region, CRDT-backed), leaderless (Cassandra / Dynamo).
+// One view per shape so the lesson body can iframe each next to its
+// prose explanation.
+//
+// All identifiers carry the `rep` prefix per the locked
+// identifier-prefix convention. See memory/likec4_multi_file_convention.md.
+//
+// No `specification` block — element kinds (`actor`, `system`,
+// `container`) are declared once in workspace.c4 and shared.
+
+model {
+  repApp = actor 'Application' {
+    description 'Writes go to the leader (or any node in leaderless). Reads can target leader, replica, or any node.'
+  }
+
+  // ===== Shape 1 — single-leader =====
+  repSingle = system 'Single-leader cluster' {
+    description 'One primary accepts writes. Replicas apply the WAL stream and serve reads.'
+
+    repSingleLeader = container 'Primary' {
+      description 'Accepts writes. Streams the WAL to every replica. Failure = promotion of one replica.'
+    }
+    repSingleR1 = container 'Replica 1' {
+      description 'Replays the WAL. Serves stale-tolerant reads. May lag the primary by milliseconds (sync) or seconds (async).'
+    }
+    repSingleR2 = container 'Replica 2' {
+      description 'Same role as replica 1; promoted on primary failure.'
+    }
+
+    repSingleLeader -> repSingleR1 'streams WAL'
+    repSingleLeader -> repSingleR2 'streams WAL'
+  }
+
+  // ===== Shape 2 — multi-leader =====
+  repMulti = system 'Multi-leader cluster' {
+    description 'Two or more leaders, each accepting writes locally and replicating to the others. Used for cross-region active-active.'
+
+    repMultiL1 = container 'Leader A (us-east)' {
+      description 'Accepts writes from US users. Replicates to L2 asynchronously.'
+    }
+    repMultiL2 = container 'Leader B (eu-west)' {
+      description 'Accepts writes from EU users. Replicates to L1 asynchronously. Conflicts resolved by LWW or CRDT.'
+    }
+
+    repMultiL1 -> repMultiL2 'replicates writes (async)'
+    repMultiL2 -> repMultiL1 'replicates writes (async)'
+  }
+
+  // ===== Shape 3 — leaderless =====
+  repLeaderless = system 'Leaderless cluster' {
+    description 'Every node accepts writes. Reads + writes use quorum (N replicas, write W, read R, with R + W > N for strong consistency).'
+
+    repLeaderlessN1 = container 'Node 1' {
+      description 'Equal peer. Accepts writes for keys whose hash falls in its slice of the ring; coordinates with quorum peers.'
+    }
+    repLeaderlessN2 = container 'Node 2' {
+      description 'Equal peer. Same role.'
+    }
+    repLeaderlessN3 = container 'Node 3' {
+      description 'Equal peer. Same role.'
+    }
+
+    repLeaderlessN1 -> repLeaderlessN2 'gossip + anti-entropy'
+    repLeaderlessN1 -> repLeaderlessN3 'gossip + anti-entropy'
+    repLeaderlessN2 -> repLeaderlessN3 'gossip + anti-entropy'
+  }
+
+  repApp -> repSingle 'writes → primary; reads → primary or replica'
+  repApp -> repMulti 'writes → nearest leader; reads → nearest leader'
+  repApp -> repLeaderless 'writes & reads → any node, with quorum'
+}
+
+views {
+  view buildingblocks_replication_single_leader of repSingle {
+    title 'Single-leader replication — one primary, N replicas'
+    include *
+  }
+
+  view buildingblocks_replication_multi_leader of repMulti {
+    title 'Multi-leader replication — active-active across regions'
+    include *
+  }
+
+  view buildingblocks_replication_leaderless of repLeaderless {
+    title 'Leaderless replication — quorum reads and writes'
+    include *
+  }
+}

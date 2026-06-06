@@ -1,0 +1,7 @@
+{
+    "title": "Codefolio App (kakde.eu) Onboarding",
+    "description": "An engineer's tour of this codebase — what each module does, how requests flow end-to-end, and how to extend the project. Read this before opening a PR.",
+    "tags": ["onboarding", "architecture", "scala", "scala.js"],
+    "estimatedReadingMinutes": 30,
+    "order": 5
+}

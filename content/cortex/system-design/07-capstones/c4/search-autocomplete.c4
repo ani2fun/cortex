@@ -1,0 +1,46 @@
+// Capstone 42 — "Search autocomplete / typeahead". C4 container view. The
+// system must return the top completions for a growing PREFIX faster than a
+// human types (tens of milliseconds, between keystrokes). The core is a TRIE
+// (prefix tree) with the top-k completions PRECOMPUTED and cached at every
+// node, so a suggest is O(prefix length): traverse to the node, return its
+// cached list. The trie is rebuilt offline from aggregated query frequencies.
+//
+// All identifiers carry the `ac` prefix. View name scope-prefixed
+// `capstones_searchautocomplete_*`. No `specification` block — element kinds
+// (actor, system, container) shared from 05-application-architecture/c4/workspace.c4.
+
+model {
+  acUser = actor 'User' {
+    description 'Types into a search box; expects the top suggestions to appear between keystrokes.'
+  }
+
+  acSys = system 'Search autocomplete' {
+    description 'Returns top-k completions for a prefix in tens of milliseconds. Read-dominated; staleness-tolerant.'
+
+    acCache = container 'Edge cache' {
+      description 'Caches results for hot short prefixes (a, fa, the) close to users. Most suggest traffic is a tiny set of popular prefixes, so a small cache absorbs the bulk.'
+    }
+    acSuggest = container 'Suggest service (in-memory trie)' {
+      description 'Holds the trie in memory, sharded by prefix. A request traverses to the prefix node and returns its precomputed top-k list. O(prefix length), no scan.'
+    }
+    acAggregator = container 'Query-log aggregator' {
+      description 'Offline batch (MapReduce-style): counts how often each query was searched, producing the top queries and their frequencies. Runs periodically (hourly/daily).'
+    }
+    acBuilder = container 'Trie builder' {
+      description 'Offline: builds a fresh trie from the top queries, precomputing the weight-ordered top-k completions at every node, then publishes it to the suggest service.'
+    }
+
+    acCache -> acSuggest 'on cache miss'
+    acAggregator -> acBuilder 'top queries + frequencies'
+    acBuilder -> acSuggest 'publish rebuilt trie'
+  }
+
+  acUser -> acCache 'type-ahead prefix'
+}
+
+views {
+  view capstones_searchautocomplete_architecture of acSys {
+    title 'Search autocomplete — container view (trie + offline build)'
+    include *
+  }
+}

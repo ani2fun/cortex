@@ -1,0 +1,184 @@
+openapi: 3.0.3
+info:
+  title: Codefolio Visualisation Schemas — Phase 0 oneOf prototype
+  version: "0.1"
+  description: |
+    Phase 0 deliverable 8 / gap 4 (ADR-0025). Just the THREE hardest sum types
+    from the planned `viz-schema.yaml`: HeapObject (Instance | Arr | Dict),
+    HeapValue (Scalar | Ref), HeapScalar (I | D | B | S | Null). The whole point
+    is to prove `sbt-openapi-codegen` (Scala + circe) and `openapi-typescript`
+    (TS) both handle `oneOf` + `discriminator` cleanly BEFORE Phase 1 commits
+    the full schema. If either fails here, the format gets redesigned (e.g.
+    nullable flat fields with a `kind` discriminator).
+
+    Conventions:
+      - Tagged unions use `discriminator: kind` + a `mapping`.
+      - Discriminator field is always named `kind` and is the FIRST property.
+      - Each variant is its own named schema (HeapScalarI, HeapValueRef, …).
+        Inline anonymous variants would compile but reduce TS ergonomics
+        (`HeapObject["oneOf"][0]` vs `HeapInstance`).
+# EMPIRICAL CODEGEN FINDINGS (ADR-0025, verified via a throwaway `vizproto`
+# sbt project pointed here). sbt-openapi-codegen 1.11.22 against this file:
+#   ✅ oneOf + discriminator → clean `sealed trait` + case-class variants with a
+#      `def kind: String` discriminator (VizProto.scala). The shape is exactly
+#      what we want.
+#   ✅ circe serdes (VizProtoJsonSerdes.scala) — proper discriminator
+#      Encoder/Decoder dispatching on "kind" — BUT only generated when a type is
+#      used as an ENDPOINT BODY. A schemas-only `paths: {}` file emits NO circe
+#      codecs. So the real viz schema would need a (dummy or real) endpoint.
+#   ❌ tuple-as-array (`items: { oneOf: [...] }`) → NotImplementedError in the
+#      circe serde generator. MUST encode tuples as objects ({name,value} /
+#      {key,value}) — done below.
+#   ❌ tapir Schema file (VizProtoSchemas.scala) references phantom `*Kind` types
+#      for every single-value discriminator enum → does NOT compile (plugin bug).
+#      And VizProto.scala imports it, so it can't simply be excluded.
+#   ❌ enum codec derivation pulls in `org.latestbit:circe-tagged-adt-codec`
+#      (not a current dependency) and still errors on the derives clause.
+# NET: sbt-openapi-codegen is NOT a drop-in for the viz types in 1.11.22.
+# openapi-typescript (TS side) works perfectly. See ADR-0025 for the Phase-1
+# recommendation (yaml drives TS; Scala stays hand-written + circe with a
+# yaml-conformance test — OR invest in fighting the plugin / upgrading it).
+paths: {}
+components:
+  schemas:
+
+    # ── Heap scalars: the leaf values ──────────────────────────────────────
+    HeapScalar:
+      oneOf:
+        - $ref: "#/components/schemas/HeapScalarI"
+        - $ref: "#/components/schemas/HeapScalarD"
+        - $ref: "#/components/schemas/HeapScalarB"
+        - $ref: "#/components/schemas/HeapScalarS"
+        - $ref: "#/components/schemas/HeapScalarNull"
+      discriminator:
+        propertyName: kind
+        mapping:
+          I:      "#/components/schemas/HeapScalarI"
+          D:      "#/components/schemas/HeapScalarD"
+          B:      "#/components/schemas/HeapScalarB"
+          S:      "#/components/schemas/HeapScalarS"
+          "Null": "#/components/schemas/HeapScalarNull"
+    HeapScalarI:
+      type: object
+      required: [kind, value]
+      properties:
+        kind:  { type: string, enum: [I] }
+        value: { type: integer, format: int64 }
+    HeapScalarD:
+      type: object
+      required: [kind, value]
+      properties:
+        kind:  { type: string, enum: [D] }
+        value: { type: number, format: double }
+    HeapScalarB:
+      type: object
+      required: [kind, value]
+      properties:
+        kind:  { type: string, enum: [B] }
+        value: { type: boolean }
+    HeapScalarS:
+      type: object
+      required: [kind, value]
+      properties:
+        kind:  { type: string, enum: [S] }
+        value: { type: string }
+    HeapScalarNull:
+      type: object
+      required: [kind]
+      properties:
+        # NOTE: bare `Null` in YAML is the null literal — must be quoted, or
+        # codegen sees enum: [null] not enum: ["Null"]. Phase-0 footgun (ADR-0025).
+        kind: { type: string, enum: ["Null"] }
+
+    # ── Heap values: scalar or ref ─────────────────────────────────────────
+    HeapValue:
+      oneOf:
+        - $ref: "#/components/schemas/HeapValueScalar"
+        - $ref: "#/components/schemas/HeapValueRef"
+      discriminator:
+        propertyName: kind
+        mapping:
+          Scalar: "#/components/schemas/HeapValueScalar"
+          Ref:    "#/components/schemas/HeapValueRef"
+    HeapValueScalar:
+      type: object
+      required: [kind, value]
+      properties:
+        kind:  { type: string, enum: [Scalar] }
+        value: { $ref: "#/components/schemas/HeapScalar" }
+    HeapValueRef:
+      type: object
+      required: [kind, id]
+      properties:
+        kind: { type: string, enum: [Ref] }
+        id:   { type: string }
+
+    # ── Heap objects: Instance, Arr, Dict ──────────────────────────────────
+    #
+    # The harder case. Instance fields and Dict entries are tuples
+    # (key/name, value). openapi 3.0 doesn't have native tuples, but it does
+    # express them as a fixed-length array with a single union'd `items` —
+    # both Scala (List[(String, HeapValue)]) and TS ([string, HeapValue][])
+    # accept this in practice. Phase 1 will pick the final encoding after
+    # both codegens are run.
+    HeapObject:
+      oneOf:
+        - $ref: "#/components/schemas/HeapInstance"
+        - $ref: "#/components/schemas/HeapArr"
+        - $ref: "#/components/schemas/HeapDict"
+      discriminator:
+        propertyName: kind
+        mapping:
+          Instance: "#/components/schemas/HeapInstance"
+          Arr:      "#/components/schemas/HeapArr"
+          Dict:     "#/components/schemas/HeapDict"
+    HeapInstance:
+      type: object
+      required: [kind, cls, fields]
+      properties:
+        kind:   { type: string, enum: [Instance] }
+        cls:    { type: string }
+        fields:
+          type: array
+          description: Ordered (name, value) pairs encoded as 2-tuples.
+          items:
+            $ref: "#/components/schemas/HeapInstanceField"
+    HeapInstanceField:
+      # Was a tuple [name, value]; sbt-openapi-codegen's circe serde generator
+      # throws NotImplementedError on an array-of-oneOf (ADR-0025, gap 4 result).
+      # Object encoding codegens cleanly and is strictly more type-safe.
+      type: object
+      required: [name, value]
+      properties:
+        name:  { type: string }
+        value: { $ref: "#/components/schemas/HeapValue" }
+    HeapArr:
+      type: object
+      required: [kind, arrKind, items]
+      properties:
+        kind: { type: string, enum: [Arr] }
+        arrKind:
+          type: string
+          enum: [Lst, Tup, JArr]
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/HeapValue"
+    HeapDict:
+      type: object
+      required: [kind, entries]
+      properties:
+        kind: { type: string, enum: [Dict] }
+        entries:
+          type: array
+          items:
+            $ref: "#/components/schemas/HeapDictEntry"
+    HeapDictEntry:
+      # Was a tuple [key, value]; object-encoded for the same reason as
+      # HeapInstanceField above (array-of-$ref is fine, but object is clearer
+      # and consistent).
+      type: object
+      required: [key, value]
+      properties:
+        key:   { $ref: "#/components/schemas/HeapValue" }
+        value: { $ref: "#/components/schemas/HeapValue" }

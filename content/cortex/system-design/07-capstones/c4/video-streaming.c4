@@ -1,0 +1,59 @@
+// Capstone 40 — "Video streaming" (YouTube/Netflix-style VOD). C4 container
+// view of the two decoupled halves: an EXPENSIVE one-time pipeline that ingests
+// a raw upload and transcodes it into a ladder of bitrates chopped into small
+// segments, and a CHEAP, massively-cached serve where a CDN streams those
+// segments and the player adapts bitrate to its bandwidth.
+//
+// All identifiers carry the `vid` prefix. View name scope-prefixed
+// `capstones_videostreaming_*`. No `specification` block — element kinds
+// (actor, system, container) are shared from
+// 05-application-architecture/c4/workspace.c4.
+
+model {
+  vidCreator = actor 'Creator' {
+    description 'Uploads a raw video file once.'
+  }
+  vidViewer = actor 'Viewer' {
+    description 'Streams the video; the player adapts bitrate (ABR) segment by segment to its bandwidth.'
+  }
+
+  vidSys = system 'Video streaming' {
+    description 'Ingest, transcode into a bitrate ladder of segments, and serve via CDN with adaptive bitrate. Storage + bandwidth dominate; transcode is batch compute.'
+
+    vidIngest = container 'Ingest service' {
+      description 'Issues presigned multipart upload URLs, records video metadata, and fans out transcode jobs once the raw file lands.'
+    }
+    vidStore = container 'Object storage' {
+      description 'Durable home for the raw upload, every transcoded segment, and the manifests. ~Eleven-nines durability, effectively unlimited (the CDN origin).'
+    }
+    vidTranscode = container 'Transcode workers' {
+      description 'A queue-driven farm that encodes the source into the bitrate ladder (240p..4K, multiple codecs). CPU/GPU-heavy and parallelized by segment.'
+    }
+    vidPackager = container 'Packager' {
+      description 'Chops each rendition into 2-10s segments and writes the HLS/DASH manifest (M3U8/MPD) that lists every bitrate and its segment URLs.'
+    }
+    vidMeta = container 'Metadata DB' {
+      description 'Video records: owner, title, processing status, available renditions. Small relative to the bytes.'
+    }
+    vidCDN = container 'CDN edge' {
+      description 'Caches segments at edge POPs close to viewers and serves ~95% of bytes. Netflix runs its own (Open Connect) inside ISPs. The bytes-to-eyeballs layer.'
+    }
+
+    vidIngest -> vidStore 'raw upload (multipart)'
+    vidIngest -> vidMeta 'record status + renditions'
+    vidIngest -> vidTranscode 'fan out ladder jobs'
+    vidTranscode -> vidPackager 'transcoded renditions'
+    vidPackager -> vidStore 'write segments + manifest'
+    vidCDN -> vidStore 'origin fetch on cache miss'
+  }
+
+  vidCreator -> vidIngest 'request upload'
+  vidViewer -> vidCDN 'GET manifest + segments'
+}
+
+views {
+  view capstones_videostreaming_architecture of vidSys {
+    title 'Video streaming — container view (transcode pipeline + CDN serve)'
+    include *
+  }
+}

@@ -1,0 +1,772 @@
+openapi: 3.0.3
+info:
+  title: Codefolio API
+  description: |
+    Source of truth for the Codefolio HTTP API. The sbt-openapi-codegen plugin
+    reads this file and emits tapir `Endpoint` descriptions plus case classes
+    into the cross-compiled `shared` module under package `codefolio.shared.api`.
+    Both server and client compile against the generated code, so a schema
+    change here breaks both sides until they're updated.
+
+    The skeleton wires three stores end-to-end:
+      * Postgres  — persistent visit counter
+      * Redis     — caches the Greeting payload for ~10s; `cached` reports hit/miss
+      * MongoDB   — append-only log of every /api/hello call (see /api/recent)
+  version: 0.1.0
+
+servers:
+  - url: /
+    description: Same-origin (server serves both API and frontend statics in production)
+
+paths:
+  /api/hello:
+    get:
+      operationId: getHello
+      summary: |
+        Return the running visit counter, also caching the result in Redis and
+        appending the call to a MongoDB event log.
+      responses:
+        '200':
+          description: Greeting payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Greeting'
+
+  /api/recent:
+    get:
+      operationId: getRecent
+      summary: Most recent /api/hello calls, read from MongoDB.
+      responses:
+        '200':
+          description: Recent call log entries (newest first)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecentCalls'
+
+  /api/health:
+    get:
+      operationId: getHealth
+      summary: Liveness check — 200 if every backing store is reachable.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+
+  /api/cortex/index:
+    get:
+      operationId: getCortexIndex
+      summary: |
+        List every book in the Cortex, each with its chapter refs.
+        The server walks the on-disk content tree once on first request and
+        caches the result; redeploying ships the new index.
+      responses:
+        '200':
+          description: Cortex index
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CortexIndex'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/cortex/{book}/{chapter}:
+    get:
+      operationId: getCortexChapter
+      summary: |
+        Return the raw markdown body + frontmatter + prev/next slugs for one
+        chapter. The client renders the markdown via the JS pipeline (so
+        TOC, code highlighting, mermaid + d2 happen client-side).
+      parameters:
+        - name: book
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: chapter
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Chapter payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChapterPayload'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/blogs/index:
+    get:
+      operationId: getBlogIndex
+      summary: |
+        List every published blog post — title, summary, publish date, tags,
+        eyebrow, read minutes. Sorted descending by `publishedAt`.
+        The server walks `content/blogs/*.md` once, caches the result, and
+        invalidates on mtime bump (when `BLOG_AUTO_RELOAD=true`).
+      responses:
+        '200':
+          description: Blog index
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlogIndex'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/blogs/{slug}:
+    get:
+      operationId: getBlogPost
+      summary: |
+        Return the raw markdown body + frontmatter + prev/next slugs for one
+        blog post. The client renders the markdown via the same JS pipeline
+        used for Cortex chapters (`allowDangerousHtml: true`, so the rich
+        HTML blocks embedded in the post survive untouched).
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Blog post payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlogPostPayload'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/auth/config:
+    get:
+      operationId: getAuthConfig
+      summary: |
+        Public boot-time config for the SPA's Keycloak client. Returns the
+        coordinates `keycloak-js` needs to initialise (issuer URL, realm,
+        client id). When `enabled=false` (dev mode), the optional fields
+        are absent and the frontend skips initialising keycloak-js
+        entirely — every visitor is treated as anonymous with full edit
+        access.
+      responses:
+        '200':
+          description: Auth config payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthConfig'
+
+  /api/me:
+    get:
+      operationId: getMe
+      summary: |
+        Identity claims for the bearer-token holder, plus the user's
+        current /api/run quota for this hour. Surfaced verbatim from the
+        validated JWT — codefolio does not persist a users table.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User info + quota
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserInfo'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/run:
+    post:
+      operationId: runCode
+      summary: |
+        Execute a code snippet via Piston (production) or the local Code
+        Runner container (dev). Validates language + payload size, then
+        proxies to whichever backend is configured.
+
+        Authentication is **optional**: anonymous calls go through a
+        per-IP token bucket (5/min, burst 10); calls with a valid
+        bearer token go through a per-user hourly bucket (100/hour).
+        Either bucket can return 429 with a `Retry-After` header.
+
+        A malformed or expired bearer token returns 401 even though
+        anonymous is allowed — sending garbage is not the same as
+        sending nothing. (No `security` field declared on this
+        operation: the codegen renders that as a required bearer
+        scheme, which would break anonymous callers. The optional
+        scheme is wired into the server's endpoint definition
+        manually; clients that want to authenticate just send an
+        `Authorization: Bearer …` header.)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RunRequest'
+      responses:
+        '200':
+          description: Execution finished (success or program-level error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RunResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '413':
+          $ref: '#/components/responses/PayloadTooLarge'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        OIDC access token issued by Keycloak (realm `apps-prod`, public
+        client `codefolio-web`, GitHub IdP). Validated server-side
+        against the JWK set fetched from the issuer URL.
+
+  responses:
+    BadRequest:
+      description: Request could not be processed by the server.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    Unauthorized:
+      description: |
+        Bearer token is missing, malformed, signature-invalid, or expired.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    PayloadTooLarge:
+      description: Request payload exceeds a server-side limit.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    TooManyRequests:
+      description: |
+        Caller has exceeded the per-IP (anonymous) or per-user
+        (authenticated) rate-limit bucket for /api/run. The response
+        carries a `Retry-After: <seconds>` header indicating when the
+        current window resets (added by the server, not declared in the
+        codegen-friendly schema — see `RateLimiter.scala`).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    NotFound:
+      description: Requested resource was not found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    BadGateway:
+      description: Upstream execution backend failed.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    ServiceUnavailable:
+      description: Required backend is not configured or unavailable.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    InternalServerError:
+      description: Internal server error.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+
+  schemas:
+    Greeting:
+      type: object
+      required: [message, visits, cached]
+      properties:
+        message:
+          type: string
+          description: Greeting text rendered by the frontend.
+          example: Hello from ZIO + Postgres
+        visits:
+          type: integer
+          format: int64
+          description: Total times the /api/hello endpoint has been hit (read from Postgres).
+          example: 42
+        cached:
+          type: boolean
+          description: True if the response came from the Redis cache; false on a cold read from Postgres.
+          example: false
+
+    HelloEvent:
+      type: object
+      required: [timestampEpochMs, visits]
+      properties:
+        timestampEpochMs:
+          type: integer
+          format: int64
+          description: When the call was logged, milliseconds since epoch (set server-side).
+          example: 1714485600000
+        visits:
+          type: integer
+          format: int64
+          description: The visit-counter value recorded for this call.
+          example: 42
+
+    RecentCalls:
+      type: object
+      required: [entries]
+      properties:
+        entries:
+          type: array
+          items:
+            $ref: '#/components/schemas/HelloEvent'
+
+    HealthStatus:
+      type: object
+      required: [status, postgres, redis, mongo]
+      properties:
+        status:
+          type: string
+          example: ok
+        postgres:
+          type: boolean
+        redis:
+          type: boolean
+        mongo:
+          type: boolean
+
+    ApiError:
+      type: object
+      required: [error]
+      description: |
+        Generic error envelope returned by API endpoints when something goes
+        wrong. `detail` carries a longer machine- or human-readable message;
+        `hint` (optional) is operator-facing — e.g. an env var that needs
+        setting, or a misconfiguration the caller can't fix client-side.
+      properties:
+        error:
+          type: string
+          example: "Language 'foo' is not runnable"
+        detail:
+          type: string
+          nullable: true
+        hint:
+          type: string
+          nullable: true
+          example: "Set EXECUTOR_URL"
+
+    RunRequest:
+      type: object
+      required: [language, source]
+      description: A code-execution request. `stdin` is optional.
+      properties:
+        language:
+          type: string
+          description: Language name or alias (e.g. "python", "py", "java").
+          example: python
+        source:
+          type: string
+          description: |
+            Source code to execute. Bounded at 64 KiB UTF-8.
+        stdin:
+          type: string
+          nullable: true
+          description: |
+            Optional stdin to pipe to the running program. Bounded at 16 KiB
+            UTF-8.
+
+    RunnableLanguageInfo:
+      type: object
+      required: [id, label, aliases]
+      description: |
+        Describes one of the languages this server is willing to execute.
+        The `id` matches Judge0's submission language IDs (kept as the
+        canonical identifier so the same enum maps to both Piston and the
+        local Code Runner container).
+      properties:
+        id:
+          type: integer
+          format: int32
+          example: 71
+        label:
+          type: string
+          example: "Python 3.8"
+        aliases:
+          type: array
+          items: { type: string }
+          example: ["python", "py", "python3"]
+
+    RunResult:
+      type: object
+      required: [stdout, stderr, compileOutput, statusId, statusDescription]
+      description: |
+        Result payload from a single code-execution attempt. Mirrors Judge0's
+        submission response shape (status IDs match — 3 = Accepted, 6 =
+        Compile Error, 11 = Runtime Error). Times are seconds-as-string,
+        memory is KB, both as Judge0 reports them.
+      properties:
+        stdout:
+          type: string
+        stderr:
+          type: string
+        compileOutput:
+          type: string
+        statusId:
+          type: integer
+          format: int32
+          example: 3
+        statusDescription:
+          type: string
+          example: Accepted
+        time:
+          type: string
+          nullable: true
+          example: "0.024"
+        memory:
+          type: integer
+          format: int64
+          nullable: true
+          example: 3672
+
+    RunResponse:
+      type: object
+      required: [result, language]
+      description: |
+        Wraps the execution result with the resolved language metadata so the
+        frontend can show "Python 3.8" alongside the output without re-doing
+        the alias lookup itself.
+      properties:
+        result:
+          $ref: '#/components/schemas/RunResult'
+        language:
+          $ref: '#/components/schemas/RunnableLanguageInfo'
+
+    ChapterRef:
+      type: object
+      required: [slug, title]
+      properties:
+        slug:
+          type: string
+          example: introduction
+        title:
+          type: string
+          example: Introduction
+        groupPath:
+          type: array
+          items: { type: string }
+          nullable: true
+          description: |
+            Ordered path of section titles from book root to this chapter's
+            immediate parent. Renders as nested collapsible sidebar sections.
+            Null/empty means the chapter is at the book root. Max depth 6.
+            Derived from the on-disk directory layout under
+            `content/cortex/<book>/...` — directories become section
+            segments, optionally re-titled by `_section.json`.
+        essential:
+          type: boolean
+          nullable: true
+          description: |
+            Whether this chapter is part of the book's mandatory canonical
+            path (`true` = essential, filled dot in the sidebar) or
+            destination-only reference material (`false` = optional, hollow
+            ring). Resolved by the index walker from a cascade: per-chapter
+            frontmatter `essential:` wins, otherwise the nearest enclosing
+            section's `_section.json#defaultStatus` ("essential" |
+            "optional"), otherwise `true`. Null on the wire is treated as
+            `true` by the client (default-essential).
+
+    Book:
+      type: object
+      required: [slug, title, description, chapters]
+      properties:
+        slug:
+          type: string
+          example: distributed-systems
+        title:
+          type: string
+        description:
+          type: string
+        tags:
+          type: array
+          items: { type: string }
+          nullable: true
+        estimatedReadingMinutes:
+          type: integer
+          format: int32
+          nullable: true
+        chapters:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChapterRef'
+
+    CortexIndex:
+      type: object
+      required: [books]
+      properties:
+        books:
+          type: array
+          items:
+            $ref: '#/components/schemas/Book'
+
+    ChapterFrontmatter:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+        summary:
+          type: string
+          nullable: true
+        essential:
+          type: boolean
+          nullable: true
+          description: |
+            Per-chapter override for the essential/optional status indicator
+            shown next to the chapter title in the sidebar. Absent (`null`)
+            means inherit from the nearest enclosing section's
+            `_section.json#defaultStatus`, falling through to the book-level
+            default (`true`).
+
+    ChapterPayload:
+      type: object
+      required: [book, chapter, frontmatter, raw]
+      description: |
+        Full payload for one chapter. `raw` is the markdown body with
+        frontmatter stripped; the client runs it through the JS pipeline.
+        `prevSlug` / `nextSlug` are within the same book; null at the ends.
+      properties:
+        book:
+          $ref: '#/components/schemas/Book'
+        chapter:
+          $ref: '#/components/schemas/ChapterRef'
+        frontmatter:
+          $ref: '#/components/schemas/ChapterFrontmatter'
+        raw:
+          type: string
+        prevSlug:
+          type: string
+          nullable: true
+        nextSlug:
+          type: string
+          nullable: true
+
+    BlogMetaItem:
+      type: object
+      required: [label, value]
+      description: |
+        A single label/value pair shown in the blog post hero meta strip
+        (e.g. "Read Time" / "15 min"). Free-form text; renders as a
+        column of small caps + value.
+      properties:
+        label:
+          type: string
+          example: Read Time
+        value:
+          type: string
+          example: 15 min
+
+    BlogSummary:
+      type: object
+      required: [slug, title, summary, publishedAt]
+      description: |
+        Summary card for a single blog post — used by the blog index list
+        and the prev/next pager. Excludes the markdown body.
+      properties:
+        slug:
+          type: string
+          example: l-reuteri-yogurt
+        title:
+          type: string
+        summary:
+          type: string
+        publishedAt:
+          type: string
+          description: ISO-8601 date (YYYY-MM-DD) the post was first published.
+          example: "2026-05-10"
+        tags:
+          type: array
+          items: { type: string }
+          nullable: true
+        readMinutes:
+          type: integer
+          format: int32
+          nullable: true
+        eyebrow:
+          type: string
+          nullable: true
+          description: Short topical label shown above the post title.
+          example: "Gut Health · Fermented Foods"
+
+    BlogIndex:
+      type: object
+      required: [posts]
+      properties:
+        posts:
+          type: array
+          items:
+            $ref: '#/components/schemas/BlogSummary'
+
+    BlogPostFrontmatter:
+      type: object
+      required: [title, publishedAt]
+      description: |
+        Frontmatter extracted from the post's `.md` file. Carries everything
+        the post hero needs to render — title, summary, eyebrow, the
+        meta-strip pairs ("Active Prep / 10 min"), and read minutes.
+      properties:
+        title:
+          type: string
+        summary:
+          type: string
+          nullable: true
+        publishedAt:
+          type: string
+        tags:
+          type: array
+          items: { type: string }
+          nullable: true
+        readMinutes:
+          type: integer
+          format: int32
+          nullable: true
+        eyebrow:
+          type: string
+          nullable: true
+        meta:
+          type: array
+          items:
+            $ref: '#/components/schemas/BlogMetaItem'
+          nullable: true
+
+    BlogPostPayload:
+      type: object
+      required: [post, frontmatter, raw]
+      description: |
+        Full payload for one blog post. `raw` is the markdown body with
+        frontmatter stripped; the client renders it via the same `unified`
+        pipeline as Cortex chapters. `prevSlug` / `nextSlug` walk the
+        index in publish-date order; null at the ends.
+      properties:
+        post:
+          $ref: '#/components/schemas/BlogSummary'
+        frontmatter:
+          $ref: '#/components/schemas/BlogPostFrontmatter'
+        raw:
+          type: string
+        prevSlug:
+          type: string
+          nullable: true
+        nextSlug:
+          type: string
+          nullable: true
+
+    AuthConfig:
+      type: object
+      required: [enabled]
+      description: |
+        Boot-time auth configuration consumed by the SPA. When `enabled`
+        is false (dev convenience), the optional Keycloak coordinates are
+        absent and the frontend treats every visitor as an anonymous user
+        with full edit access (the rate limiter is also bypassed
+        server-side). When `enabled` is true, all three optional fields
+        are present and `keycloak-js` initialises with them.
+      properties:
+        enabled:
+          type: boolean
+          description: True when the server is enforcing auth.
+          example: true
+        issuerUrl:
+          type: string
+          nullable: true
+          description: |
+            Full OIDC issuer URL — typically
+            `<keycloak-base>/realms/<realm>`. Used to derive the JWKS URL
+            and as the public-facing token issuer the SPA hands to
+            keycloak-js.
+          example: "https://keycloak.kakde.eu/realms/apps-prod"
+        realm:
+          type: string
+          nullable: true
+          description: Keycloak realm name.
+          example: "apps-prod"
+        clientId:
+          type: string
+          nullable: true
+          description: Public Keycloak client id for the SPA.
+          example: "codefolio-web"
+
+    Quota:
+      type: object
+      required: [used, limit, windowSeconds, resetEpochMs]
+      description: |
+        Per-user (or per-IP) /api/run rate-limit snapshot. `used` is the
+        number of requests consumed in the current window; `limit` is
+        the cap; `windowSeconds` is the bucket size (60 anon, 3600
+        authed); `resetEpochMs` is when the current window flips, in
+        milliseconds since epoch.
+      properties:
+        used:
+          type: integer
+          format: int32
+          example: 8
+        limit:
+          type: integer
+          format: int32
+          example: 100
+        windowSeconds:
+          type: integer
+          format: int32
+          example: 3600
+        resetEpochMs:
+          type: integer
+          format: int64
+          example: 1779097200000
+
+    UserInfo:
+      type: object
+      required: [sub, preferredUsername, quota]
+      description: |
+        Public projection of the validated JWT claims for the caller,
+        plus their current rate-limit snapshot. `sub` is the stable
+        Keycloak subject id; `preferredUsername` is typically the GitHub
+        login (the GitHub IdP populates it from the user's GitHub
+        handle); `name` and `email` are best-effort (GitHub doesn't
+        always release them).
+      properties:
+        sub:
+          type: string
+          example: "f1c2c3d4-aaaa-bbbb-cccc-1234567890ab"
+        preferredUsername:
+          type: string
+          example: "ani2fun"
+        name:
+          type: string
+          nullable: true
+          example: "Aniket Kakde"
+        email:
+          type: string
+          nullable: true
+          example: "a.r.kakde@gmail.com"
+        quota:
+          $ref: '#/components/schemas/Quota'

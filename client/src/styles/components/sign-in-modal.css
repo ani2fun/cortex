@@ -1,0 +1,253 @@
+/* Sign-in modal — the GitHub auth dialog for editing Cortex code blocks.
+   Ported from the Claude Design `Cortex Auth` artboard (cortex-auth/styles.css
+   `.modal-*`), re-tokenised onto codefolio's shadcn HSL variables so light /
+   dark mode come for free. Block: .sign-in-modal */
+
+@keyframes sign-in-modal-scrim-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+@keyframes sign-in-modal-card-in {
+    from { opacity: 0; transform: translateY(8px) scale(0.985); }
+    to   { opacity: 1; transform: none; }
+}
+
+@layer components {
+    /* Scrim — fixed full-viewport backdrop; also the click-outside close target. */
+    .sign-in-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 200;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        background: rgba(20, 16, 12, 0.55);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        animation: sign-in-modal-scrim-in 220ms cubic-bezier(0.2, 0.7, 0.2, 1);
+    }
+    .dark .sign-in-modal {
+        background: rgba(0, 0, 0, 0.65);
+    }
+
+    /* Card */
+    .sign-in-modal__card {
+        width: 100%;
+        max-width: 460px;
+        background: hsl(var(--card));
+        border: 1px solid hsl(var(--border));
+        border-radius: 16px;
+        box-shadow:
+            0 24px 60px -20px rgba(0, 0, 0, 0.4),
+            0 8px 24px -12px rgba(0, 0, 0, 0.25);
+        overflow: hidden;
+        animation: sign-in-modal-card-in 280ms cubic-bezier(0.2, 0.7, 0.2, 1);
+    }
+
+    /* Head */
+    .sign-in-modal__head {
+        position: relative;
+        padding: 24px 26px 0;
+    }
+    .sign-in-modal__close {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        width: 28px;
+        height: 28px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        color: hsl(var(--muted-foreground));
+        transition: color 160ms ease, background-color 160ms ease;
+    }
+    .sign-in-modal__close:hover {
+        color: hsl(var(--primary));
+        background: hsl(var(--primary) / 0.08);
+    }
+    .sign-in-modal__close-icon {
+        width: 16px;
+        height: 16px;
+    }
+    .sign-in-modal__eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: hsl(var(--muted-foreground));
+    }
+    .sign-in-modal__dot {
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: hsl(var(--primary));
+    }
+    .sign-in-modal__title {
+        margin: 0 0 10px;
+        max-width: 22ch;
+        font-family: var(--font-display);
+        font-style: italic;
+        font-weight: 400;
+        font-size: 30px;
+        line-height: 1.05;
+        letter-spacing: -0.015em;
+        color: hsl(var(--foreground));
+    }
+    .sign-in-modal__title em {
+        font-style: italic;
+    }
+    .sign-in-modal__lede {
+        margin: 0 0 22px;
+        max-width: 42ch;
+        font-size: 15px;
+        line-height: 1.55;
+        color: hsl(var(--foreground) / 0.78);
+    }
+    .sign-in-modal__lede em {
+        font-family: var(--font-display);
+        font-style: italic;
+        font-size: 1.05em;
+        letter-spacing: 0.02em;
+    }
+
+    /* Body — "what I'm asking GitHub for" */
+    .sign-in-modal__body {
+        padding: 0 26px 8px;
+    }
+    .sign-in-modal__why {
+        padding: 18px 0 4px;
+        border-top: 1px solid hsl(var(--border) / 0.7);
+    }
+    .sign-in-modal__why-title {
+        margin-bottom: 10px;
+        font-family: var(--font-mono);
+        font-size: 10.5px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: hsl(var(--muted-foreground));
+    }
+    .sign-in-modal__rows {
+        display: grid;
+        gap: 10px;
+    }
+    .sign-in-modal__row {
+        display: grid;
+        grid-template-columns: 22px 1fr;
+        gap: 12px;
+        font-size: 13.5px;
+        line-height: 1.45;
+        color: hsl(var(--foreground) / 0.85);
+    }
+    .sign-in-modal__row b {
+        font-weight: 600;
+        color: hsl(var(--foreground));
+    }
+    .sign-in-modal__row code {
+        padding: 1px 5px;
+        border-radius: 4px;
+        font-family: var(--font-mono);
+        font-size: 12px;
+        background: hsl(var(--primary) / 0.1);
+        color: hsl(var(--primary));
+    }
+    .sign-in-modal__row-ico {
+        width: 22px;
+        height: 22px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid hsl(var(--border));
+        border-radius: 6px;
+        color: hsl(var(--muted-foreground));
+    }
+    .sign-in-modal__row--yes .sign-in-modal__row-ico {
+        color: #4e8e54;
+        border-color: rgba(78, 142, 84, 0.4);
+        background: rgba(78, 142, 84, 0.08);
+    }
+    .sign-in-modal__row-icon {
+        width: 11px;
+        height: 11px;
+    }
+
+    /* Foot — CTA + skip */
+    .sign-in-modal__foot {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 18px 26px 24px;
+    }
+    .sign-in-modal__cta {
+        flex: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 14px 18px;
+        border-radius: 10px;
+        background: hsl(var(--foreground));
+        color: hsl(var(--background));
+        font-family: var(--font-sans);
+        font-weight: 500;
+        font-size: 14.5px;
+        transition: background-color 160ms ease, color 160ms ease, transform 120ms ease;
+    }
+    .sign-in-modal__cta:hover {
+        transform: translateY(-1px);
+        background: hsl(var(--primary));
+        color: #fff;
+    }
+    .sign-in-modal__cta--loading {
+        opacity: 0.85;
+        pointer-events: none;
+    }
+    .sign-in-modal__cta-icon {
+        width: 18px;
+        height: 18px;
+    }
+    .sign-in-modal__skip {
+        padding: 10px 6px;
+        font-family: var(--font-mono);
+        font-size: 10.5px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: hsl(var(--muted-foreground));
+        transition: color 160ms ease;
+    }
+    .sign-in-modal__skip:hover {
+        color: hsl(var(--primary));
+    }
+
+    /* Fine print */
+    .sign-in-modal__fine {
+        padding: 0 26px 22px;
+        font-family: var(--font-mono);
+        font-size: 10.5px;
+        line-height: 1.55;
+        letter-spacing: 0.04em;
+        color: hsl(var(--muted-foreground));
+    }
+    .sign-in-modal__fine a {
+        color: hsl(var(--primary));
+        text-decoration: underline;
+        text-decoration-thickness: 1px;
+        text-underline-offset: 2px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .sign-in-modal,
+        .sign-in-modal__card {
+            animation: none;
+        }
+        .sign-in-modal__cta {
+            transition: none;
+        }
+    }
+}

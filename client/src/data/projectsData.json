@@ -1,0 +1,60 @@
+[
+  {
+    "name": "Self-hosted homelab on K3s",
+    "tags": [
+      "Kubernetes",
+      "K3s",
+      "Linux",
+      "Networking",
+      "Observability",
+      "Self-hosted"
+    ],
+    "projectUrl": "https://kakde.eu",
+    "githubUrl": "https://github.com/ani2fun",
+    "image": {
+      "url": "",
+      "alt": "Self-hosted homelab cluster"
+    },
+    "description": "Four-node K3s cluster on commodity hardware sitting at home. Hands-on with the full delivery path — packaging, deployment, networking, observability — for the services I actually use, including this site.",
+    "category": "Infra",
+    "metadata": "K3S · 2023 · LINUX · GO",
+    "featured": true
+  },
+  {
+    "name": "Codefolio App",
+    "tags": [
+      "Scala 3",
+      "Scala.js",
+      "ZIO",
+      "Tailwind",
+      "Self-hosted"
+    ],
+    "projectUrl": "https://www.kakde.eu/",
+    "githubUrl": "https://github.com/ani2fun/codefolio",
+    "image": {
+      "url": "/img/other/portfolio-webapp.webp",
+      "alt": "Codefolio App"
+    },
+    "description": "You're looking at it. kakde.eu runs on this — same architecture I used at Audi: Scala 3 end-to-end, Scala.js + scalajs-react on the frontend, ZIO 2 + zio-http on the backend over Postgres, Redis, and Mongo. Packaged as a container and deployed to my homelab cluster. The GitHub link below has the code if you want to see how it's built.",
+    "category": "Backend",
+    "metadata": "SCALA.JS · 2024 · ZIO + TAILWIND"
+  },
+  {
+    "name": "Sonatype Maven Central Publisher",
+    "tags": [
+      "Kotlin",
+      "Gradle",
+      "Maven Central",
+      "Open source"
+    ],
+    "projectUrl": "https://plugins.gradle.org/plugin/eu.kakde.gradle.sonatype-maven-central-publisher",
+    "githubUrl": "https://github.com/ani2fun/sonatype-maven-central-publisher.git",
+    "image": {
+      "url": "/img/other/gradle-plugin.webp",
+      "alt": "Gradle plugin"
+    },
+    "description": "Open-source Gradle plugin I authored and maintain on the official Plugin Portal. Publishes JVM artefacts to Maven Central through Sonatype's Central Portal API. Demo projects: github.com/ani2fun/plugin-demo.",
+    "category": "OSS",
+    "metadata": "GRADLE PLUGIN · 2023 · KOTLIN"
+  }
+]

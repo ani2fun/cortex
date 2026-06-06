@@ -1,0 +1,17 @@
+# CAP / PACELC simulator — task runner.
+# `just` is preferred; a `make test` fallback also works (Makefile not provided).
+
+default:
+    @just --list
+
+# Run the full pytest suite. This is what CI runs.
+test:
+    uv run --extra dev pytest
+
+# Run the 8-scenario demo from the lesson.
+demo:
+    uv run python -m cap_simulator.demo
+
+# Lint with ruff (optional — only if you have it installed).
+lint:
+    uvx ruff check src tests

@@ -1,0 +1,11 @@
+# Part 1 — Foundations
+
+> **The mental model.** Five lessons that the rest of this book leans on. Skip them and the later parts will not stick.
+
+## Chapters
+
+- [1. What "system design" actually means](/cortex/system-design/foundations-what-system-design-means)
+- [2. Numbers every engineer should know](/cortex/system-design/foundations-numbers-every-engineer-should-know)
+- [3. Back-of-envelope estimation](/cortex/system-design/foundations-back-of-envelope-estimation)
+- [4. The CAP theorem and PACELC, honestly](/cortex/system-design/foundations-cap-and-pacelc)
+- [5. Latency, throughput, and the Universal Scalability Law](/cortex/system-design/foundations-latency-throughput-usl)

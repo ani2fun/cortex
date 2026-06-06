@@ -1,0 +1,158 @@
+@layer components {
+    /* Traced code block — Python source with a current-line cursor, locals panel,
+       and step controls. The cursor + locals only appear after the user clicks
+       Trace and the harness returns a parsed trace. */
+
+    .traced-code {
+        @apply my-6 rounded-lg border border-border bg-card overflow-hidden;
+    }
+    /* Collapsed: header sits alone; no border under it (there's nothing below). */
+    .traced-code--collapsed .traced-code__header {
+        @apply border-b-0;
+    }
+    .traced-code__header {
+        @apply flex flex-wrap items-center justify-between gap-2 border-b border-border bg-muted/40
+               px-3 py-2;
+    }
+    .traced-code__language-label {
+        @apply text-sm font-medium text-muted-foreground;
+    }
+    .traced-code__body {
+        @apply grid gap-0;
+        grid-template-columns: minmax(0, 1fr);
+    }
+    .traced-code--has-trace .traced-code__body {
+        @apply md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)];
+    }
+
+    /* ─── Source view ─────────────────────────────────────────────── */
+    .traced-code__source {
+        @apply m-0 px-0 py-3 text-xs font-mono leading-relaxed bg-transparent overflow-x-auto;
+    }
+    .traced-code__line {
+        @apply flex items-baseline border-l-2 border-transparent px-3 transition-colors;
+    }
+    .traced-code__line--current {
+        @apply border-primary bg-primary/10;
+    }
+    .traced-code__line-number {
+        @apply mr-3 select-none text-right tabular-nums text-muted-foreground/70 shrink-0;
+        font-variant-numeric: tabular-nums;
+        min-width: 2.5rem;
+    }
+    .traced-code__line-code {
+        @apply block min-w-0 flex-1 whitespace-pre;
+    }
+
+    /* ─── Locals panel ────────────────────────────────────────────── */
+    .traced-code__locals {
+        @apply border-l border-border bg-background/40 p-3 text-xs;
+    }
+    .traced-code__locals-title {
+        @apply mb-2 font-semibold text-foreground;
+    }
+    .traced-code__locals-empty {
+        @apply italic text-muted-foreground;
+    }
+    .traced-code__locals-table {
+        @apply w-full border-collapse;
+    }
+    .traced-code__locals-table td {
+        @apply align-top border-t border-border/60 px-1.5 py-1;
+    }
+    .traced-code__locals-name {
+        @apply font-mono text-primary whitespace-nowrap pr-2;
+    }
+    .traced-code__locals-value {
+        @apply font-mono break-words text-foreground;
+        word-break: break-all;
+    }
+
+    /* ─── Caption + program output ────────────────────────────────── */
+    .traced-code__caption {
+        @apply border-t border-border bg-muted/30 px-3 py-2 text-xs text-foreground;
+    }
+    .traced-code__details {
+        @apply border-t border-border;
+    }
+    .traced-code__details-summary {
+        @apply cursor-pointer px-3 py-2 text-xs font-medium text-muted-foreground hover:bg-muted/40;
+    }
+    .traced-code__details-pre {
+        @apply m-0 px-3 py-2 text-xs font-mono whitespace-pre-wrap bg-muted/20 text-foreground!;
+
+    }
+
+    /* ─── Language tabs (Slice 7 — companion source-only languages) ─ */
+    .traced-code__tabs {
+        @apply flex items-center gap-0.5 flex-wrap;
+    }
+    .traced-code__tab {
+        @apply inline-flex h-7 items-center gap-1 rounded px-2.5 text-xs font-medium
+               text-muted-foreground transition-colors hover:bg-accent hover:text-foreground
+               border border-transparent cursor-pointer;
+    }
+    .traced-code__tab--active {
+        @apply bg-background text-foreground border-border;
+    }
+    .traced-code__brand-icon--scala {
+        @apply h-3 w-3 mr-0.5;
+    }
+    /* Lock banner — shown when a source-only companion tab is active */
+    .traced-code__lock-banner {
+        @apply inline-flex items-center gap-1.5 text-xs text-muted-foreground;
+    }
+    .traced-code__lock-banner-icon {
+        @apply h-3 w-3 shrink-0 opacity-60;
+    }
+    .traced-code__lock-banner-text {
+        @apply opacity-75;
+    }
+    .traced-code__lock-banner-link {
+        @apply text-primary underline underline-offset-2 hover:opacity-80 cursor-pointer
+               bg-transparent border-0 p-0 text-xs font-medium;
+    }
+
+    /* ─── Controls ────────────────────────────────────────────────── */
+    .traced-code__controls {
+        @apply flex flex-wrap items-center gap-2;
+    }
+    .traced-code__button {
+        @apply inline-flex h-8 items-center gap-1.5 rounded-md border border-border bg-background
+               px-2.5 text-xs font-medium text-foreground transition-colors hover:bg-accent
+               disabled:pointer-events-none disabled:opacity-45;
+    }
+    .traced-code__button--primary {
+        @apply border-primary bg-primary text-primary-foreground hover:bg-primary/90;
+    }
+    .traced-code__button--ghost {
+        @apply border-transparent text-muted-foreground hover:text-foreground;
+    }
+    .traced-code__button--icon {
+        @apply w-8 justify-center px-0;
+    }
+    .traced-code__button-icon {
+        @apply h-3.5 w-3.5;
+    }
+    .traced-code__progress {
+        @apply min-w-20 text-center text-xs font-medium tabular-nums text-muted-foreground;
+    }
+    .traced-code__loading {
+        @apply inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground;
+    }
+    .traced-code__loading-icon {
+        @apply h-3.5 w-3.5 animate-spin;
+    }
+    .traced-code__error {
+        @apply my-6 rounded-lg border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive;
+    }
+    .traced-code__error-title {
+        @apply mb-1 font-semibold;
+    }
+    .traced-code__error-message {
+        @apply text-xs whitespace-pre-wrap;
+    }
+    .traced-code__error-inline {
+        @apply max-w-[40ch] truncate text-xs text-destructive;
+    }
+}

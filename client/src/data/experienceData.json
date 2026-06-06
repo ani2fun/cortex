@@ -1,0 +1,259 @@
+[
+  {
+    "position": "Software Engineer — Backend",
+    "company": {
+      "short": "Europcar",
+      "name": "Europcar International (Paris, France)",
+      "url": "https://www.europcar.com/"
+    },
+    "time": "August 2022 – Present",
+    "description": "Working on the customer authentication and account lifecycle for both consumer and partner channels, plus the wider reservation platform around it.",
+    "items": [
+      "Built the customer authentication and account lifecycle on Kotlin/Spring Boot with Keycloak / Red Hat SSO - account creation, email verification, password reset, login, logout, account recovery, profile updates, and account deletion.",
+      "Set up Keycloak as the shared identity layer for B2B and B2C, integrating customer profiles into a single source for downstream personalisation and segmentation.",
+      "Worked across the wider reservation platform alongside the auth work.",
+      "Rewrote slow PostgreSQL queries on the auth and account services and added composite indexes where lookups were doing full scans."
+    ],
+    "results": [
+      "Authored a C4-model architecture POC using Structurizr DSL and presented it to the team as a proposal for living architecture documentation; adopted by individual developers interested in learning the DSL.",
+      "Modernised the team's Gradle build setup with multi-level CI caching, cutting build times and simplifying the architecture pattern - adopted as the internal reference by 3+ adjacent teams."
+    ],
+    "leveragedKnowledgeIn": [
+      "Kotlin",
+      "Java",
+      "Spring Boot",
+      "Keycloak",
+      "OAuth2 / OIDC",
+      "JWT",
+      "PostgreSQL",
+      "Kafka",
+      "AWS",
+      "GitLab CI/CD",
+      "Gradle",
+      "Structurizr",
+      "Hexagonal / DDD"
+    ],
+    "featured": true,
+    "roleTag": "Backend / Identity",
+    "location": "Paris",
+    "selectedWorkBlurb": "Customer authentication and account lifecycle on Kotlin + Spring Boot with Keycloak — for both consumer and B2B partner organisations.",
+    "primaryTech": [
+      "Kotlin",
+      "Spring Boot",
+      "Keycloak"
+    ],
+    "secondaryTech": [
+      "Java",
+      "OAuth2 / OIDC",
+      "JWT",
+      "PostgreSQL",
+      "Kafka",
+      "AWS",
+      "GitLab CI/CD",
+      "Gradle",
+      "Structurizr",
+      "Hexagonal / DDD"
+    ]
+  },
+  {
+    "position": "Software Engineer P.II",
+    "company": {
+      "short": "Dassault",
+      "name": "Dassault Systèmes (Paris, France)",
+      "url": "https://www.3ds.com/"
+    },
+    "time": "March 2022 – July 2022",
+    "description": "Short engagement building a data quality tool that scanned Dassault's global online sales and product-referential systems for missing fields, broken references, and inconsistent values across millions of records.",
+    "items": [
+      "Built a data quality tool that scanned Dassault’s global online sales and product-referential systems for missing fields, broken references, and inconsistent values across millions of records.",
+      "Started this tool as a Python/SQL prototype, then rewrote it as a Java/Spring Boot service integrated into the release pipeline, partnering with business analysts to translate vague data-quality rules into automated checks."
+    ],
+    "results": [],
+    "leveragedKnowledgeIn": [
+      "Java",
+      "Spring Boot",
+      "Python",
+      "SQL",
+      "Oracle"
+    ],
+    "featured": false,
+    "roleTag": "Backend",
+    "location": "Paris",
+    "primaryTech": [
+      "Java",
+      "Spring Boot"
+    ],
+    "secondaryTech": [
+      "Python",
+      "SQL",
+      "Oracle"
+    ]
+  },
+  {
+    "position": "Software Consultant — Backend / Data Pipeline (Remote)",
+    "company": {
+      "short": "Audi AG",
+      "name": "Audi AG, Ingolstadt — via Lunatech SAS",
+      "url": "https://www.audi.com/"
+    },
+    "time": "August 2018 – December 2021",
+    "description": "Built Audi's in-house ground-truth labelling platform and data pipeline for autonomous-driving model training. Worked remotely from Paris on a fast-growing team.",
+    "items": [
+      "Built Audi's in-house ground-truth labelling platform and data pipeline for autonomous-driving model training — handling vehicle video ingestion, frame extraction, labelling job distribution, and export of finished labels to training systems.",
+      "Orchestrated batch and asynchronous workflows with Argo Workflow, integrated with the cloud platform so model predictions could pre-label data and speed up annotation.",
+      "Streamed labeling and annotation events through Kafka, indexed them into Elasticsearch to power dataset search, slicing, and quality dashboards used by ML and QA teams.",
+      "Set the backend architecture early on so the codebase could absorb fast team growth without re-litigating structure later."
+    ],
+    "results": [
+      "That early architectural call paid off as the team grew — multiple developers came onto the project later and could ship features quickly without spending time fighting the codebase or relitigating structure."
+    ],
+    "leveragedKnowledgeIn": [
+      "Scala",
+      "ScalaJS",
+      "Akka-HTTP",
+      "Play Framework",
+      "React",
+      "Kafka",
+      "Elasticsearch",
+      "Forgerock IAM",
+      "Docker",
+      "GKE",
+      "GCP",
+      "Argo Workflows"
+    ],
+    "featured": true,
+    "roleTag": "Backend / Data Pipeline",
+    "location": "Remote (via Lunatech)",
+    "selectedWorkBlurb": "Set the early backend architecture for Audi's in-house labeling platform — ground-truth video data feeding autonomous-driving model training.",
+    "primaryTech": [
+      "Scala",
+      "Akka-HTTP",
+      "ScalaJS"
+    ],
+    "secondaryTech": [
+      "React",
+      "Play Framework",
+      "Kafka",
+      "Elasticsearch",
+      "Forgerock IAM",
+      "Docker",
+      "GKE",
+      "GCP",
+      "Argo Workflows"
+    ]
+  },
+  {
+    "position": "Software Consultant — Backend (On-site)",
+    "company": {
+      "short": "Disney",
+      "name": "Disneyland Paris — via Lunatech SAS",
+      "url": "https://www.disneylandparis.com/",
+      "displayName": "Disneyland Paris"
+    },
+    "time": "January 2017 – August 2018",
+    "description": "Helped lead the technical pilot for D4th, the new marketing platform integrating Tridion CMS with the Disneyland Paris public site (~10 million annual visitors).",
+    "items": [
+      "Helped lead the technical pilot (internally known as D4th — Disney 4th gen), the new marketing platform integrating Tridion CMS with the Disneyland Paris public site (~10 million annual visitors).",
+      "The pilot landed well enough that Disney funded a multi-million-euro programme on the back of it to fully replace the legacy marketing application.",
+      "Wrote supporting microservices for browser push notifications and the SOAP integration with the older internal systems."
+    ],
+    "results": [
+      "Took on GitLab CI/CD setup and production deployment myself, even though both were outside my original scope — figured out the existing infrastructure, ran the initial deployments, and handed it off cleanly when a more experienced infra engineer joined later."
+    ],
+    "leveragedKnowledgeIn": [
+      "Java",
+      "Scala",
+      "Play Framework",
+      "Tridion CMS",
+      "SOAP",
+      "GitLab CI/CD",
+      "Microservices"
+    ],
+    "featured": true,
+    "roleTag": "Backend",
+    "location": "On-site (via Lunatech)",
+    "selectedWorkBlurb": "Helped lead the technical pilot for D4th — the new marketing platform integrating Tridion CMS with the public site (~10M annual visitors). Pilot funded a multi-million-euro replacement of the legacy app.",
+    "primaryTech": [
+      "Java",
+      "Scala",
+      "Play Framework"
+    ],
+    "secondaryTech": [
+      "Tridion CMS",
+      "SOAP",
+      "GitLab CI/CD",
+      "Microservices"
+    ]
+  },
+  {
+    "position": "Software Consultant — Full-stack (Remote)",
+    "company": {
+      "short": "UPS",
+      "name": "UPS France — via Lunatech SAS",
+      "url": "https://www.ups.com/"
+    },
+    "time": "August 2016 – January 2017",
+    "description": "Worked remotely on a B2B shipment-lifecycle platform — new features, maintenance, and day-to-day operations.",
+    "items": [
+      "Added a Quartz-based scheduler that pushed automated reports to operations so delivery issues could be caught earlier.",
+      "Deployed to AWS EC2 and handled day-to-day production: log analysis and incident triage."
+    ],
+    "results": [],
+    "leveragedKnowledgeIn": [
+      "Java",
+      "Quartz",
+      "AWS EC2",
+      "Linux"
+    ],
+    "featured": false,
+    "roleTag": "Full-stack",
+    "location": "Remote (via Lunatech)",
+    "primaryTech": [
+      "Java",
+      "Quartz"
+    ],
+    "secondaryTech": [
+      "AWS EC2",
+      "Linux"
+    ]
+  },
+  {
+    "position": "Software Developer Intern",
+    "company": {
+      "short": "Nokia",
+      "name": "Nokia Bell Labs (formerly Alcatel-Lucent) — Paris, France",
+      "url": "https://www.bell-labs.com/",
+      "displayName": "Bell Labs"
+    },
+    "time": "July 2014 – December 2014",
+    "description": "Internship in the research division working on video-quality estimation and streaming protocols.",
+    "items": [
+      "Built a video-quality estimation tool in Java implementing the ITU-T P.1201.1 model.",
+      "Analysed streaming traffic with Wireshark and tcpdump as part of research into QUIC, HTTP/2, and H.264."
+    ],
+    "results": [],
+    "leveragedKnowledgeIn": [
+      "Java",
+      "ITU-T P.1201.1",
+      "Wireshark",
+      "tcpdump",
+      "QUIC",
+      "HTTP/2",
+      "H.264"
+    ],
+    "featured": false,
+    "roleTag": "Research intern",
+    "location": "Paris",
+    "primaryTech": [
+      "Java",
+      "ITU-T P.1201.1"
+    ],
+    "secondaryTech": [
+      "Wireshark",
+      "tcpdump",
+      "QUIC",
+      "HTTP/2",
+      "H.264"
+    ]
+  }
+]

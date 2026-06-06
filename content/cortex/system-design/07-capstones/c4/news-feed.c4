@@ -1,0 +1,61 @@
+// Capstone 38 — "News feed / timeline". C4 container view of a Twitter/X-style
+// home timeline built on HYBRID fan-out: normal authors are fanned out on write
+// (their post id is pushed into each follower's precomputed Redis timeline);
+// celebrities are NOT fanned out (their recent posts are pulled and merged at
+// read time), which bounds the write cost of a 50M-follower post.
+//
+// All identifiers carry the `feed` prefix. View name is scope-prefixed
+// `capstones_newsfeed_*` (LikeC4 view names share one flat namespace across
+// the book — see memory/likec4_multi_file_convention.md). No `specification`
+// block — element kinds (actor, system, container) are shared from
+// 05-application-architecture/c4/workspace.c4.
+
+model {
+  feedAuthor = actor 'Author' {
+    description 'Creates posts and follows other users.'
+  }
+  feedReader = actor 'Reader' {
+    description 'Opens their home timeline — a merge of everyone they follow, newest/ranked first.'
+  }
+
+  feedSys = system 'News feed' {
+    description 'Builds each user a personalized home timeline. Read-heavy; hybrid fan-out (push for normal authors, pull for celebrities).'
+
+    feedPostSvc = container 'Post service' {
+      description 'Accepts new posts, stores them, looks up the author follower count, and decides push (normal) vs no-fan-out (celebrity).'
+    }
+    feedFanout = container 'Fan-out workers (queue)' {
+      description 'Async workers draining a queue: for a normal author, push the post id into every follower timeline. Celebrity jobs are isolated so a viral post cannot starve normal fan-out.'
+    }
+    feedCache = container 'Feed cache (Redis)' {
+      description 'Per-user materialized timelines: a capped list of recent post ids. A read is one LRANGE; a push is one write per follower.'
+    }
+    feedTimelineSvc = container 'Timeline service' {
+      description 'On read: LRANGE the user precomputed timeline, pull recent posts from followed celebrities, merge + rank, return a page.'
+    }
+    feedGraph = container 'Social graph store' {
+      description 'Who follows whom. Supplies follower lists/counts to fan-out and celebrity lists to the read path.'
+    }
+    feedPostStore = container 'Post store' {
+      description 'Durable source of truth for post bodies + metadata (sharded). Timelines hold only ids; bodies are hydrated from here.'
+    }
+
+    feedPostSvc -> feedPostStore 'store post body'
+    feedPostSvc -> feedGraph 'follower count + list'
+    feedPostSvc -> feedFanout 'enqueue fan-out (normal authors only)'
+    feedFanout -> feedCache 'push post id to each follower timeline'
+    feedTimelineSvc -> feedCache 'LRANGE precomputed timeline'
+    feedTimelineSvc -> feedGraph 'followed-celebrity list'
+    feedTimelineSvc -> feedPostStore 'pull recent celebrity posts; hydrate bodies'
+  }
+
+  feedAuthor -> feedPostSvc 'POST /posts ; POST /follow'
+  feedReader -> feedTimelineSvc 'GET /feed'
+}
+
+views {
+  view capstones_newsfeed_architecture of feedSys {
+    title 'News feed — container view (hybrid fan-out)'
+    include *
+  }
+}

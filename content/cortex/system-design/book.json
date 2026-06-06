@@ -1,0 +1,12 @@
+{
+    "title": "System Design",
+    "description": "A serious, hands-on track for building production systems — written for curious beginners, not interview-cram readers. Covers foundations, distributed patterns, storage, application architecture, operations, and capstone designs. Work in progress.",
+    "tags": [
+        "system-design",
+        "distributed-systems",
+        "backend",
+        "architecture"
+    ],
+    "estimatedReadingMinutes": 900,
+    "order": 1
+}

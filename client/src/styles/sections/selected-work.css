@@ -1,0 +1,133 @@
+@layer components {
+    /* Selected Work — three-row scannable strip between Hero and About.
+
+       Block: .selected-work
+       Elements:
+         __inner             — content wrapper
+         __heading-row       — heading left, intro paragraph right
+         __heading           — eyebrow + display title
+         __eyebrow           — "SELECTED WORK · 2017 — PRESENT"
+         __title             — two-line italic display heading
+         __intro             — right-aligned mono intro paragraph
+         __intro-link        — anchor styled inline
+         __rows              — vertical list of 1px-divider rows
+         __row               — clickable row anchor
+         __row-rail          — indigo hover rail (left edge, scaleY 0→1)
+         __row-company       — italic display company name
+         __row-meta          — mono dates · location · role
+         __row-blurb         — body sentence
+         __row-tags          — primary tech mono chips, right-aligned
+         __row-tag           — single chip
+         __row-arrow         — arrow ↗ slot
+         __row-arrow-icon    — lucide ArrowRight, scales on hover
+    */
+
+    .selected-work {
+        @apply py-20 px-6 border-t border-border/60;
+    }
+    .selected-work__inner {
+        @apply max-w-6xl mx-auto;
+    }
+
+    /* ── Heading row ───────────────────────────────────────────────── */
+    .selected-work__heading-row {
+        @apply flex flex-col md:flex-row md:items-end md:justify-between gap-8 mb-12;
+    }
+    .selected-work__eyebrow {
+        @apply text-sm font-mono tracking-widest text-muted-foreground uppercase mb-3;
+    }
+    .selected-work__title {
+        font-family: var(--font-display);
+        font-style: italic;
+        font-weight: 400;
+        font-size: 40px;
+        line-height: 1.02;
+        letter-spacing: -0.02em;
+        color: hsl(var(--foreground));
+        margin: 0;
+    }
+    .selected-work__intro {
+        @apply md:text-right text-sm text-muted-foreground max-w-sm font-mono leading-relaxed;
+    }
+    .selected-work__intro-link {
+        @apply text-foreground underline decoration-primary/60 underline-offset-4
+               hover:decoration-primary;
+    }
+
+    /* ── Rows ──────────────────────────────────────────────────────── */
+    .selected-work__rows {
+        @apply flex flex-col;
+    }
+    .selected-work__row {
+        @apply relative grid items-center py-7 gap-x-6 gap-y-2 no-underline
+               text-foreground border-t border-border/60 transition-transform duration-200;
+        grid-template-columns: minmax(160px, 1fr) minmax(180px, 1.2fr) minmax(0, 2fr) minmax(140px, 1fr) auto;
+    }
+    .selected-work__row:last-child {
+        @apply border-b border-border/60;
+    }
+    .selected-work__row-rail {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background-color: hsl(var(--primary));
+        transform: scaleY(0);
+        transform-origin: top;
+        transition: transform 220ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .selected-work__row:hover .selected-work__row-rail {
+        transform: scaleY(1);
+    }
+    .selected-work__row:hover {
+        transform: translateX(2px);
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .selected-work__row { transition: none; }
+        .selected-work__row:hover { transform: none; }
+    }
+    .selected-work__row-company {
+        font-family: var(--font-display);
+        font-style: italic;
+        font-weight: 400;
+        font-size: clamp(28px, 3vw, 36px);
+        line-height: 1;
+        color: hsl(var(--foreground));
+        padding-left: 1rem;
+    }
+    .selected-work__row-meta {
+        @apply text-[11px] font-mono tracking-wide text-muted-foreground uppercase;
+    }
+    .selected-work__row-blurb {
+        @apply text-[14.5px] leading-relaxed text-foreground/85;
+    }
+    .selected-work__row-tags {
+        @apply flex flex-wrap gap-x-3 gap-y-1 justify-end text-right;
+    }
+    .selected-work__row-tag {
+        @apply text-[11px] font-mono text-muted-foreground;
+    }
+    .selected-work__row-arrow {
+        @apply text-muted-foreground;
+    }
+    .selected-work__row:hover .selected-work__row-arrow {
+        color: hsl(var(--primary));
+    }
+    .selected-work__row-arrow-icon {
+        @apply w-4 h-4 -rotate-45 transition-transform;
+    }
+    .selected-work__row:hover .selected-work__row-arrow-icon {
+        transform: rotate(-45deg) translateX(2px);
+    }
+
+    /* Mobile: collapse the grid to a stacked card. */
+    @media (max-width: 768px) {
+        .selected-work__row {
+            grid-template-columns: 1fr;
+            gap: 0.5rem;
+        }
+        .selected-work__row-tags { @apply justify-start text-left; }
+        .selected-work__row-arrow { display: none; }
+    }
+}

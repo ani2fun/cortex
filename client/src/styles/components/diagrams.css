@@ -1,0 +1,225 @@
+@layer components {
+    /* Diagrams — D2 + Mermaid embed components.
+       Blocks: .diagram (D2 inline), .diagram-modal (D2 fullscreen), .mermaid */
+
+    /* ─── D2 inline view ─────────────────────────────────────────── */
+    .diagram {
+        /* `group` is added literally in markup so the hover-zoom button uses
+           group-hover: on its descendant button. */
+        @apply relative my-6 rounded-lg border border-border bg-card p-4
+               [&_svg]:block [&_svg]:mx-auto [&_svg]:max-w-full [&_svg]:max-h-[420px]
+               [&_svg]:h-auto [&_svg]:w-auto;
+    }
+    .diagram__zoom-button {
+        @apply absolute top-2 right-2 inline-flex items-center gap-1 rounded-md bg-background/90
+               border border-border px-2 py-1 text-xs font-medium text-foreground
+               opacity-0 group-hover:opacity-100 focus-visible:opacity-100
+               transition-opacity hover:bg-accent;
+    }
+    .diagram__zoom-icon {
+        @apply h-3.5 w-3.5;
+    }
+    .diagram svg foreignObject .md,
+    .diagram-modal__svg svg foreignObject .md {
+        color: var(--color-fg-default, #0a0f25) !important;
+    }
+    .diagram svg foreignObject .md :where(p, strong, em, span),
+    .diagram-modal__svg svg foreignObject .md :where(p, strong, em, span) {
+        color: inherit !important;
+    }
+    .diagram svg foreignObject .md code,
+    .diagram-modal__svg svg foreignObject .md code {
+        color: var(--color-fg-default, #0a0f25) !important;
+        background-color: var(--color-neutral-muted, #eef1f8) !important;
+    }
+
+    /* ─── D2 step-through slideshow ───────────────────────────────── */
+    .d2-slides > .d2-slide:not(:first-child) {
+        @apply hidden;
+    }
+    .d2-slideshow {
+        @apply my-6;
+    }
+    .d2-slideshow__caption {
+        @apply mb-3 text-center text-sm font-medium text-muted-foreground;
+    }
+    .d2-slideshow__frame .diagram {
+        @apply my-0;
+    }
+    .d2-slideshow__controls {
+        @apply mt-3 flex flex-wrap items-center justify-center gap-2;
+    }
+    .d2-slideshow__button {
+        @apply inline-flex h-9 items-center gap-1.5 rounded-md border border-border bg-background
+               px-3 text-sm font-medium text-foreground transition-colors hover:bg-accent
+               disabled:pointer-events-none disabled:opacity-45;
+    }
+    .d2-slideshow__button--primary {
+        @apply border-primary bg-primary text-primary-foreground hover:bg-primary/90;
+    }
+    .d2-slideshow__button--icon {
+        @apply w-9 justify-center px-0;
+    }
+    .d2-slideshow__button-icon {
+        @apply h-4 w-4;
+    }
+    .d2-slideshow__progress {
+        @apply min-w-24 text-center text-xs font-medium tabular-nums text-muted-foreground;
+    }
+
+    .d2-error {
+        @apply rounded-lg border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive;
+    }
+    .d2-error-title {
+        @apply mb-2 font-semibold;
+    }
+
+    /* ─── D2 fullscreen modal ────────────────────────────────────── */
+    .diagram-modal {
+        @apply fixed inset-0 z-[60] bg-black/80 flex flex-col;
+    }
+    .diagram-modal__toolbar {
+        @apply flex items-center justify-end gap-2 p-3 border-b border-white/10;
+    }
+    .diagram-modal__button {
+        @apply rounded-md bg-background/90 border border-border p-2 hover:bg-accent text-foreground;
+    }
+    .diagram-modal__button-icon {
+        @apply h-4 w-4;
+    }
+    .diagram-modal__zoom-readout {
+        @apply text-xs text-white/80 tabular-nums w-12 text-center;
+    }
+    .diagram-modal__viewport {
+        /* Scrollable viewport — `flex` (no items-/justify-center) so the lone
+           child gets `margin: auto` for layout while preserving symmetric
+           overflow when zoomed past 100%. */
+        @apply flex-1 overflow-auto flex p-6;
+    }
+    .diagram-modal__card {
+        /* `m-auto` on a flex item centers when there's free space and keeps
+           symmetric overflow when there isn't. `shrink-0` keeps the card at
+           its declared size. Width/height are set inline from the zoom state. */
+        @apply m-auto shrink-0 bg-white rounded-lg p-6
+               transition-[width,height] duration-150 ease-out;
+    }
+    .diagram-modal__svg {
+        @apply w-full h-full;
+    }
+    /* The captured SVG arrives with the render engine's own sizing baked in
+       (mermaid bakes an inline `max-width`; both engines set width/height
+       attributes). Override it here so the SVG always fills its wrapper and
+       the viewBox + default `preserveAspectRatio` (xMidYMid meet) keeps the
+       diagram contained. Declarative on purpose — a JS one-shot got wiped
+       when `dangerouslySetInnerHtml` re-applied on every zoom re-render. */
+    .diagram-modal__svg svg {
+        width: 100% !important;
+        height: 100% !important;
+        max-width: 100% !important;
+        display: block;
+    }
+    /* Webkit-only scrollbar styling. We deliberately do NOT set the standard
+       `scrollbar-color` / `scrollbar-width` props: in Chromium 121+ setting
+       `scrollbar-color` makes the engine ignore `::-webkit-scrollbar` sizing,
+       so a custom (thicker) bar is only reachable through these pseudo-element
+       rules. Firefox consequently falls back to its default scrollbar here.
+       Fixed light values because the modal overlay is always `bg-black/80`
+       regardless of theme — the `--border` token would vanish in dark mode. */
+    .diagram-modal__viewport::-webkit-scrollbar {
+        width: 18px;
+        height: 18px;
+    }
+    .diagram-modal__viewport::-webkit-scrollbar-thumb {
+        background-color: rgb(255 255 255 / 0.4);
+        border-radius: 9px;
+    }
+    .diagram-modal__viewport::-webkit-scrollbar-thumb:hover {
+        background-color: rgb(255 255 255 / 0.6);
+    }
+    .diagram-modal__viewport::-webkit-scrollbar-track,
+    .diagram-modal__viewport::-webkit-scrollbar-corner {
+        background-color: rgb(255 255 255 / 0.08);
+    }
+
+    /* ─── Mermaid ────────────────────────────────────────────────── */
+    /* `group` is added literally in markup so the hover-zoom button uses
+       group-hover: on its descendant button — same pattern as `.diagram`.
+
+       Mermaid emits SVGs at their natural pixel size, which on a wide article
+       reads as a tiny diagram floating in a big card. We force the inline SVG
+       to fill the container width (`w-full`) while keeping aspect ratio
+       (`h-auto`) and cap absolute height (`max-h-[480px]`) so a tall diagram
+       doesn't dominate the scroll. The fullscreen modal ignores these caps and
+       sizes from the zoom state. */
+    .mermaid {
+        @apply relative my-6 rounded-lg border border-border bg-card p-4
+               [&_svg]:block [&_svg]:mx-auto [&_svg]:max-w-full [&_svg]:w-full
+               [&_svg]:h-auto [&_svg]:max-h-[480px];
+    }
+    .mermaid__svg {
+        @apply flex justify-center;
+    }
+    .mermaid__zoom-button {
+        @apply absolute top-2 right-2 inline-flex items-center gap-1 rounded-md bg-background/90
+               border border-border px-2 py-1 text-xs font-medium text-foreground
+               opacity-0 group-hover:opacity-100 focus-visible:opacity-100
+               transition-opacity hover:bg-accent;
+    }
+    .mermaid__zoom-icon {
+        @apply h-3.5 w-3.5;
+    }
+    .mermaid__error {
+        @apply my-6 rounded-lg border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive;
+    }
+    .mermaid__error-title {
+        @apply font-semibold mb-2;
+    }
+    .mermaid__error-message {
+        @apply whitespace-pre-wrap text-xs;
+    }
+
+    /* ─── LikeC4 iframe ──────────────────────────────────────────── */
+    /* Mirrors `.diagram` (D2) — `group` stays literal in markup so the
+       hover-zoom button can use group-hover: on its descendant button. */
+    .likec4-iframe {
+        @apply relative my-6 overflow-hidden rounded-lg border border-border bg-card;
+    }
+    .likec4-iframe__frame {
+        @apply block w-full;
+    }
+    .likec4-iframe__zoom-button {
+        @apply absolute top-2 right-2 inline-flex items-center gap-1 rounded-md bg-background/90
+               border border-border px-2 py-1 text-xs font-medium text-foreground
+               opacity-0 group-hover:opacity-100 focus-visible:opacity-100
+               transition-opacity hover:bg-accent;
+    }
+    .likec4-iframe__zoom-icon {
+        @apply h-3.5 w-3.5;
+    }
+    .likec4-modal {
+        @apply fixed inset-0 z-[60] bg-black/80 flex items-center justify-center p-4;
+    }
+    .likec4-modal__card {
+        /* width/height intentionally sized in viewport units so the LikeC4 SPA
+           has as much room as possible without bleeding to the edge. */
+        @apply relative rounded-lg bg-card shadow-2xl overflow-hidden;
+        width: 95vw;
+        height: 90vh;
+    }
+    .likec4-modal__frame {
+        @apply block w-full h-full;
+    }
+    .likec4-modal__close {
+        @apply absolute top-3 right-3 rounded-md bg-background/90 border border-border p-2
+               hover:bg-accent text-foreground;
+    }
+    .likec4-modal__close-icon {
+        @apply h-4 w-4;
+    }
+    .likec4-modal__hint {
+        /* Bottom-left affordance: the LikeC4 standalone viewer doesn't render
+           the React Flow controls panel, but mouse-wheel + drag still work. */
+        @apply absolute bottom-3 left-3 rounded-md bg-background/85 border border-border
+               px-2.5 py-1 text-xs font-medium text-muted-foreground select-none pointer-events-none;
+    }
+}

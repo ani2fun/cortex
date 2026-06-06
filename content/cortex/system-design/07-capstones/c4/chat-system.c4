@@ -1,0 +1,51 @@
+// Capstone 39 — "Chat system". C4 container view of a WhatsApp/Slack-style
+// real-time messenger. The defining problem is NOT message logic — it is
+// managing millions of stateful, long-lived WebSocket connections and routing
+// a message to whichever gateway currently holds the recipient's connection.
+//
+// All identifiers carry the `chat` prefix. View name scope-prefixed
+// `capstones_chatsystem_*`. No `specification` block — element kinds
+// (actor, system, container) are shared from
+// 05-application-architecture/c4/workspace.c4.
+
+model {
+  chatUser = actor 'User' {
+    description 'Holds a persistent WebSocket connection to a gateway; sends and receives messages in real time.'
+  }
+
+  chatSys = system 'Chat system' {
+    description 'Real-time 1:1 and group messaging with ordering, delivery/read receipts, and presence. Connection-management is the core problem.'
+
+    chatGateway = container 'WebSocket gateway' {
+      description 'Holds millions of persistent connections (WhatsApp: ~2M/server on Erlang). Terminates WebSockets; registers each connection in the session registry and heartbeats presence.'
+    }
+    chatMsgSvc = container 'Message service' {
+      description 'Persists each message with a per-conversation sequence number, de-dupes by client message id, and routes it to the recipient gateway via pub/sub. The brain of delivery + ordering.'
+    }
+    chatRegistry = container 'Session + presence registry (Redis)' {
+      description 'Maps user -> gateway (so a message can find where the recipient is connected) and tracks online/last-seen via heartbeats. Millions of lookups per second, in memory.'
+    }
+    chatStore = container 'Message store (wide-column)' {
+      description 'Durable, time-ordered messages keyed by (conversation_id, message_id). Write-heavy, append-mostly: an LSM-tree / wide-column workload (Cassandra / ScyllaDB).'
+    }
+    chatPush = container 'Push-notification service' {
+      description 'Delivers to OFFLINE recipients via APNs / FCM, since there is no live connection to push to. The fallback path when the session registry shows the user is gone.'
+    }
+
+    chatGateway -> chatRegistry 'register connection + heartbeat presence'
+    chatGateway -> chatMsgSvc 'inbound message'
+    chatMsgSvc -> chatStore 'persist (conversation_id, seq)'
+    chatMsgSvc -> chatRegistry 'look up recipient gateway / online?'
+    chatMsgSvc -> chatGateway 'route to recipient gateway (pub/sub)'
+    chatMsgSvc -> chatPush 'notify if recipient offline'
+  }
+
+  chatUser -> chatGateway 'WebSocket: send + receive'
+}
+
+views {
+  view capstones_chatsystem_architecture of chatSys {
+    title 'Chat system — container view (gateways + session registry)'
+    include *
+  }
+}

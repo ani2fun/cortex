@@ -1,0 +1,46 @@
+// LikeC4 model of the homelab platform.
+//
+// Public-content rule of thumb: model topology + technology choices + public
+// hostnames only. Keep out: internal IP ranges, software versions, secret /
+// service-account names, internal service DNS, secret-management flows.
+
+specification {
+  element actor
+  element system
+  element container
+}
+
+model {
+  user = actor 'Operator' {
+    description 'Aniket — administers the homelab'
+  }
+
+  homelab = system 'Homelab Platform' {
+    description 'K3s cluster across four Ubuntu nodes'
+
+    ms1 = container 'ms-1' {
+      description 'K3s server and admin host'
+    }
+    wk1 = container 'wk-1' {
+      description 'Database worker'
+    }
+    wk2 = container 'wk-2' {
+      description 'GitOps worker'
+    }
+    edge = container 'vm-1 (edge)' {
+      description 'Public ingress edge'
+    }
+
+    user -> ms1 'kubectl over private mesh'
+    edge -> ms1 'overlay traffic'
+    edge -> wk1 'overlay traffic'
+    edge -> wk2 'overlay traffic'
+  }
+}
+
+views {
+  view index of homelab {
+    title 'Homelab overview'
+    include *
+  }
+}

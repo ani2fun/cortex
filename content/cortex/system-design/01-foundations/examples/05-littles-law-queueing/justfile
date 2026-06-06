@@ -1,0 +1,12 @@
+# Little's Law queueing simulator — task runner.
+
+default:
+    @just --list
+
+# Run the test suite. CI runs this.
+test:
+    uv run --extra dev pytest
+
+# Run the utilisation sweep: shows the latency cliff and validates Little's Law.
+demo:
+    uv run python -m queueing_lab.demo

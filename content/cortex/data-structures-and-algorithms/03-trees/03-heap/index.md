@@ -1,0 +1,34 @@
+# Heap
+
+Use this page as the chapter map for heap. The guides are ordered from fundamentals into common problem-solving patterns and design practice.
+
+> How to read this chapter: follow **Start Here** top to bottom — that is the teaching path. Drill it in **Practice** once it clicks. Use **Reference** (recall cards, synthesis, design) for review, not first reading.
+
+## Start Here — the learning path
+
+- [Heaps](/cortex/data-structures-and-algorithms/trees-heap-what-is-a-heap)
+- [Pattern: Top K Elements](/cortex/data-structures-and-algorithms/trees-heap-pattern-top-k-elements-pattern)
+- [Pattern: Comparator](/cortex/data-structures-and-algorithms/trees-heap-pattern-comparator-pattern)
+
+## Practice
+
+Do these after the matching pattern in Start Here.
+
+### Top K Elements
+- [Kth Largest Element](/cortex/data-structures-and-algorithms/trees-heap-pattern-top-k-elements-problems-kth-largest-element)
+- [Kth Smallest Element](/cortex/data-structures-and-algorithms/trees-heap-pattern-top-k-elements-problems-kth-smallest-element)
+- [K Range Sum](/cortex/data-structures-and-algorithms/trees-heap-pattern-top-k-elements-problems-k-range-sum)
+- [K Sorted Array Sorting](/cortex/data-structures-and-algorithms/trees-heap-pattern-top-k-elements-problems-k-sorted-array-sorting)
+
+### Comparator
+- [K Most Frequent Elements](/cortex/data-structures-and-algorithms/trees-heap-pattern-comparator-problems-k-most-frequent-elements)
+- [K Smallest Sum Pairs](/cortex/data-structures-and-algorithms/trees-heap-pattern-comparator-problems-k-smallest-sum-pairs)
+- [K Closest Values](/cortex/data-structures-and-algorithms/trees-heap-pattern-comparator-problems-k-closest-values)
+- [K Arrays Smallest Range](/cortex/data-structures-and-algorithms/trees-heap-pattern-comparator-problems-k-arrays-smallest-range)
+- [K-Way List Merge](/cortex/data-structures-and-algorithms/trees-heap-pattern-comparator-problems-k-way-list-merge)
+
+## Reference
+
+Quick-recall and design material. Skim, don't study top to bottom.
+
+- [Design a Heap](/cortex/data-structures-and-algorithms/trees-heap-design-a-heap-design-a-heap)

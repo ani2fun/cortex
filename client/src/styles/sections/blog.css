@@ -1,0 +1,122 @@
+@layer components {
+    /* Blog index page — `/blogs`.
+       Block: .blog
+       Elements:
+         __inner             — content wrapper
+         __eyebrow           — "BLOG · WRITING IN PROGRESS" mono caption
+         __heading-row       — title left, latest pill right
+         __title             — italic display heading
+         __grid              — post card grid
+         __card              — single post card
+         __card-meta         — date + read time mono row
+         __card-eyebrow      — topical label above title
+         __card-title        — post title
+         __card-summary      — post summary text
+         __card-footer       — tags + CTA row
+         __card-tag          — single tag pill
+         __card-cta          — "Read" arrow link
+
+       Mirrors `cortex.css` so blog feels like a sibling section.
+    */
+
+    .blog {
+        @apply py-24 px-6 scroll-mt-24 border-t border-border/60;
+    }
+    .blog__inner {
+        @apply max-w-6xl mx-auto;
+    }
+    .blog__eyebrow {
+        @apply text-sm font-mono tracking-widest text-muted-foreground uppercase mb-3;
+    }
+    .blog__heading-row {
+        @apply flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-12;
+    }
+    .blog__title {
+        font-family: var(--font-display);
+        font-style: italic;
+        font-weight: 400;
+        font-size: 40px;
+        line-height: 1.02;
+        letter-spacing: -0.02em;
+        color: hsl(var(--foreground));
+        margin: 0;
+    }
+    .blog__lede {
+        @apply text-foreground/80 max-w-2xl leading-relaxed;
+    }
+
+    /* ── Card grid ────────────────────────────────────────────────────── */
+    .blog__grid {
+        @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl mx-auto;
+    }
+    .blog__card {
+        @apply flex flex-col rounded-md border border-border/70 p-5 bg-card transition no-underline;
+    }
+    .blog__card:hover {
+        border-color: hsl(var(--primary) / 0.5);
+    }
+    .blog__card-meta {
+        @apply flex items-center gap-2 mb-2;
+    }
+    .blog__card-meta-icon {
+        @apply h-3.5 w-3.5 text-muted-foreground;
+    }
+    .blog__card-meta-text {
+        @apply text-[10px] font-mono tracking-widest text-muted-foreground uppercase;
+    }
+    .blog__card-eyebrow {
+        @apply text-[10px] font-mono tracking-widest uppercase mb-1;
+        color: hsl(var(--primary) / 0.85);
+    }
+    .blog__card-title {
+        @apply text-base font-medium text-foreground transition-colors mb-1;
+    }
+    .blog__card:hover .blog__card-title {
+        color: hsl(var(--primary));
+    }
+    .blog__card-summary {
+        @apply text-sm text-foreground/80 leading-relaxed mb-4 flex-1;
+    }
+    .blog__card-footer {
+        @apply flex flex-wrap items-center gap-1.5 mt-auto;
+    }
+    .blog__card-tag {
+        @apply text-[10px] font-mono text-muted-foreground;
+    }
+    .blog__card-cta {
+        @apply ml-auto inline-flex items-center text-xs font-mono text-foreground;
+    }
+    .blog__card-cta-icon {
+        @apply h-3 w-3 ml-1 transition-transform;
+    }
+    .blog__card:hover .blog__card-cta-icon {
+        transform: translateX(2px);
+    }
+
+    .blog__status {
+        @apply text-center text-muted-foreground py-12 max-w-md mx-auto;
+    }
+
+    /* ── Pager (prev / next post navigation) ──────────────────────────── */
+    .blog__pager {
+        @apply grid grid-cols-1 md:grid-cols-2 gap-3 max-w-3xl mx-auto mt-16 mb-24 px-4;
+    }
+    .blog__pager-card {
+        @apply flex flex-col rounded-md border border-border/70 p-4 bg-card transition no-underline;
+    }
+    .blog__pager-card:hover {
+        border-color: hsl(var(--primary) / 0.5);
+    }
+    .blog__pager-card--next {
+        @apply md:text-right;
+    }
+    .blog__pager-direction {
+        @apply text-[10px] font-mono tracking-widest text-muted-foreground uppercase mb-1;
+    }
+    .blog__pager-title {
+        @apply text-sm font-medium text-foreground transition-colors;
+    }
+    .blog__pager-card:hover .blog__pager-title {
+        color: hsl(var(--primary));
+    }
+}

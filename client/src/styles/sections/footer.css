@@ -1,0 +1,88 @@
+@layer components {
+    /* Footer — "Let's talk." lede + two link columns + meta strip.
+
+       Block: .footer
+       Elements:
+         __inner             — flex row (lede left, link-cols right)
+         __lede              — Let's talk + sub copy
+         __name              — italic display "Let's talk."
+         __sub               — body sub line
+         __sub-link          — inline mailto link
+         __cols              — two-column container
+         __col               — single label + list
+         __col-label         — eyebrow caption
+         __col-list          — flex column of links
+         __col-link          — individual link
+         __col-link-arrow    — ↗ glyph (mono)
+         __meta              — bottom strip (credit | version + toggle)
+         __meta-credit       — left mono one-liner
+         __meta-right        — flex right (version + theme toggle)
+         __meta-version      — mono version stamp
+         __meta-toggle       — dark-mode toggle slot
+    */
+
+    .footer {
+        @apply mt-24 px-6 py-14 border-t border-border/60;
+    }
+    .footer__inner {
+        @apply flex flex-col md:flex-row md:items-end md:justify-between gap-10
+               max-w-6xl mx-auto;
+    }
+
+    .footer__lede {
+        @apply max-w-md;
+    }
+    .footer__name {
+        font-family: var(--font-display);
+        font-style: italic;
+        font-weight: 400;
+        font-size: clamp(40px, 5vw, 56px);
+        line-height: 0.92;
+        letter-spacing: -0.02em;
+        color: hsl(var(--foreground));
+        margin: 0;
+    }
+    .footer__sub {
+        @apply mt-3 text-sm text-muted-foreground max-w-[36ch] leading-relaxed;
+    }
+    .footer__sub-link {
+        @apply text-foreground underline decoration-border underline-offset-4
+               hover:decoration-primary;
+    }
+
+    .footer__cols {
+        @apply flex flex-wrap gap-8 md:gap-14;
+    }
+    .footer__col {
+        @apply flex flex-col;
+    }
+    .footer__col-label {
+        @apply text-[10px] font-mono tracking-widest text-muted-foreground uppercase mb-3;
+    }
+    .footer__col-list {
+        @apply flex flex-col;
+    }
+    .footer__col-link {
+        @apply py-1 text-sm text-foreground/85 hover:text-primary transition-colors no-underline;
+    }
+    .footer__col-link-arrow {
+        @apply font-mono text-muted-foreground;
+    }
+
+    .footer__meta {
+        @apply max-w-6xl mx-auto mt-9 pt-5 border-t border-border/60
+               flex flex-col md:flex-row md:items-center md:justify-between gap-3;
+    }
+    .footer__meta-credit {
+        @apply text-[11px] font-mono tracking-wider text-muted-foreground;
+    }
+    .footer__meta-right {
+        @apply flex items-center gap-4;
+    }
+    .footer__meta-version {
+        @apply text-[11px] font-mono tracking-wider text-muted-foreground;
+    }
+    .footer__meta-toggle {
+        @apply flex items-center;
+    }
+}

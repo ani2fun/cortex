@@ -1,0 +1,88 @@
+@layer components {
+    /* Header — sticky top nav with logomark + lowercase wordmark + desktop nav
+       + dark-mode toggle + ghost "Get in touch" pill + mobile drawer.
+
+       Block: .header
+       Elements: __nav, __brand, __logomark, __wordmark, __link, __link--active,
+                 __actions, __toggle, __toggle--mobile, __toggle--desktop,
+                 __cta, __burger, __burger-icon, __drawer, __drawer-list,
+                 __drawer-link */
+
+    .header {
+        @apply fixed top-0 left-0 right-0 z-50 bg-background/85 backdrop-blur
+               border-b border-border/60;
+        transition: opacity 280ms ease;
+    }
+    /* Focus mode (cortex reader) fades the global header. The body class is set
+       by `CortexReaderLayout` when the user enters focus mode; this rule keeps
+       the fade colocated with the header it affects. */
+    body.cortex-focus-mode .header {
+        opacity: 0;
+        pointer-events: none;
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .header { transition: none; }
+    }
+    .header__nav {
+        @apply px-5 py-4 flex justify-between items-center gap-4;
+    }
+    .header__brand {
+        @apply flex items-center gap-2.5 no-underline;
+    }
+    .header__logomark {
+        /* Solid ink-on-bg chip per prototype — confidence over decoration.
+           Bg flips with theme: dark roast in light mode, warm cream in dark
+           mode. The mono "a" sits in the middle. */
+        @apply inline-flex items-center justify-center w-[22px] h-[22px] rounded-md
+               bg-foreground text-background text-xs font-mono font-semibold leading-none;
+    }
+    .header__wordmark {
+        @apply text-[13px] font-mono font-medium tracking-tight text-foreground hidden sm:inline;
+    }
+    .header__menu {
+        @apply hidden md:flex md:gap-1 lg:gap-2;
+    }
+    .header__link {
+        @apply relative px-2 lg:px-3 py-2 text-sm font-medium text-foreground/80
+               hover:text-foreground transition-colors no-underline;
+    }
+    .header__link::after {
+        content: "";
+        position: absolute;
+        left: 0.5rem;
+        right: 0.5rem;
+        bottom: 0.4rem;
+        height: 1px;
+        background-color: hsl(var(--primary));
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 200ms ease;
+    }
+    .header__link:hover::after { transform: scaleX(1); }
+    .header__actions {
+        @apply flex items-center gap-3;
+    }
+    .header__toggle--mobile { @apply block md:hidden; }
+    .header__toggle--desktop { @apply hidden md:flex; }
+    .header__cta {
+        /* Solid ink-on-bg pill per prototype. Hover lifts 1px; nothing more. */
+        @apply hidden md:inline-flex items-center px-[14px] py-2 rounded-full
+               bg-foreground text-background text-[13px] font-medium
+               hover:-translate-y-px transition no-underline;
+    }
+    .header__burger {
+        @apply md:hidden inline-flex items-center justify-center;
+    }
+    .header__burger-icon {
+        @apply w-7 h-7 text-foreground/80 hover:text-primary;
+    }
+    .header__drawer {
+        @apply md:hidden border-t border-border/60 bg-background;
+    }
+    .header__drawer-list {
+        @apply flex flex-col items-start gap-3 p-6;
+    }
+    .header__drawer-link {
+        @apply text-base font-medium text-foreground/80 hover:text-primary;
+    }
+}

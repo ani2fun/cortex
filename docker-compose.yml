@@ -1,0 +1,127 @@
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: codefolio
+      POSTGRES_PASSWORD: codefolio
+      POSTGRES_DB: codefolio
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U codefolio -d codefolio"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  mongo:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodata:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand({ping:1}).ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # go-judge sandbox (criyle/go-judge) + the Languages.scala toolchains (JDK 21,
+  # Python, C/C++, Go, Rust, Kotlin, TS/JS, SQLite). Speaks the /run command API.
+  # Needs `privileged` for its cgroup-v2 namespace sandbox (validated on Docker
+  # Desktop + the homelab k3s nodes). First build is large (~1.9 GB).
+  go-judge:
+    build:
+      context: ./runner/go-judge
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    privileged: true
+    ports:
+      - "127.0.0.1:5050:5050"
+
+  # Static SPA built from the co-located workspace.c4 by Dockerfile.likec4
+  # (nginx on :8080). Bound to 127.0.0.1 only — local dev convenience, not
+  # internet-facing, matching the production posture (no public Ingress on
+  # the LikeC4 image). Rebuild after editing the DSL with:
+  #   docker compose up -d --build likec4
+  likec4:
+    build:
+      context: .
+      dockerfile: Dockerfile.likec4
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8090:8080"
+
+  # Keycloak — OIDC provider for the Cortex code-edit auth gate (ADR-0013).
+  # Dev mode: in-memory H2, HTTP only, realm imported on first boot from
+  # docker/keycloak/import/. Admin console: http://localhost:8081 (admin/
+  # admin). The imported `codefolio` realm ships a public PKCE client
+  # `codefolio-web` and a local `tester` / `tester` user, so the whole
+  # sign-in flow can be exercised without a GitHub OAuth app. Production
+  # points at the homelab Keycloak instead (application.conf `auth` defaults).
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+    volumes:
+      - ./docker/keycloak/import:/opt/keycloak/data/import:ro
+    ports:
+      - "8081:8080"
+
+  app:
+    build: .
+    depends_on:
+      db:    { condition: service_healthy }
+      redis: { condition: service_healthy }
+      mongo: { condition: service_healthy }
+      go-judge: { condition: service_started }
+      likec4: { condition: service_started }
+      keycloak: { condition: service_started }
+    environment:
+      DB_URL:      jdbc:postgresql://db:5432/codefolio
+      DB_USER:     codefolio
+      DB_PASSWORD: codefolio
+      REDIS_URL:   redis://redis:6379
+      MONGO_URI:   mongodb://mongo:27017
+      MONGO_DB:    codefolio
+      STATIC_DIR:  /app/static
+      PORT:        "8080"
+      # go-judge sandbox for /api/run. bin/dev (JVM on host) overrides to
+      # http://localhost:5050; prod points at the in-cluster go-judge Service.
+      EXECUTOR_URL:            ${EXECUTOR_URL:-http://go-judge:5050}
+      EXECUTOR_AUTHN_TOKEN:    ${EXECUTOR_AUTHN_TOKEN:-}
+      # Reach the likec4 nginx via docker compose DNS on its container port.
+      # bin/dev (JVM on host) overrides to http://localhost:8090.
+      LIKEC4_URL:              http://likec4:8080
+      # Auth gate (ADR-0013). Off by default for the full-docker stack:
+      # browser-side OIDC needs Keycloak reachable at the SAME origin the
+      # browser uses (http://localhost:8081) while the in-container server
+      # would reach it at http://keycloak:8080 — the token `iss` then can't
+      # satisfy both. The supported + tested local auth path is `bin/dev`
+      # (server on the host; Keycloak at localhost:8081 for browser AND
+      # server alike). To force auth on in full-docker you must also pin
+      # Keycloak's hostname so issuer + JWKS host agree.
+      AUTH_ENABLED:            ${AUTH_ENABLED:-false}
+      KEYCLOAK_ISSUER_URL:     ${KEYCLOAK_ISSUER_URL:-http://keycloak:8080/realms/codefolio}
+      KEYCLOAK_REALM:          ${KEYCLOAK_REALM:-codefolio}
+      KEYCLOAK_CLIENT_ID:      ${KEYCLOAK_CLIENT_ID:-codefolio-web}
+    ports:
+      - "8080:8080"
+
+volumes:
+  pgdata:
+  mongodata:

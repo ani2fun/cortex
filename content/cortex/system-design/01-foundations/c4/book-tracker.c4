@@ -1,0 +1,98 @@
+// Lesson 1 — "What 'system design' actually means". Two views of the same
+// product across two scales: the personal (10-reader) build and the same
+// product at 50,000 readers with a real-time leaderboard. The lesson body
+// embeds each view in an <iframe src="/c4/view/..."> so the reader can pan
+// and zoom side-by-side.
+//
+// All identifiers carry the `bt` (book tracker) prefix — every lesson `.c4`
+// file owns its own prefix so identifiers don't collide in LikeC4's flat
+// global namespace. See memory/likec4_multi_file_convention.md.
+//
+// No `specification` block — element kinds (`actor`, `system`, `container`)
+// are declared once in workspace.c4 and shared across the project.
+
+model {
+  btReader = actor 'Reader' {
+    description 'Tracks books they have read; rates and reviews them.'
+  }
+
+  // ===== Architecture A — personal scale (10 readers) =====
+  btPersonal = system 'Book Tracker (personal)' {
+    description '10 readers. Built in an evening.'
+
+    btSmallWeb = container 'FastAPI app' {
+      description 'Serves the UI and handles reads / writes. Python 3.11 / FastAPI.'
+    }
+    btSmallDb = container 'SQLite file' {
+      description 'Single file on the same VM. Nightly backup to S3.'
+    }
+    btSmallAlert = container 'Disk-full alert' {
+      description 'The one piece of operations the design needs. Cron + cloud monitor.'
+    }
+
+    btSmallWeb -> btSmallDb 'SQL queries (same VM, microseconds)'
+    btSmallAlert -> btSmallDb 'Watches disk usage'
+  }
+
+  btReader -> btPersonal 'Reads / writes book reviews via HTTPS'
+
+  // ===== Architecture B — scaled (50,000 readers, real-time leaderboard) =====
+  btScaled = system 'Book Tracker (scaled)' {
+    description '50,000 readers, real-time leaderboard, multi-region.'
+
+    btCdn = container 'CDN' {
+      description 'Serves static assets and cache-friendly API responses (Cloudflare).'
+    }
+    btLb = container 'Load balancer' {
+      description 'Health-checks and steers traffic to app instances (L7 reverse proxy).'
+    }
+    btApiFleet = container 'API fleet' {
+      description 'Stateless. Horizontally scaled. Python / FastAPI on Kubernetes.'
+    }
+    btCache = container 'Read cache' {
+      description 'Hot timeline / book metadata. Redis Cluster.'
+    }
+    btPrimaryDb = container 'Primary database' {
+      description 'Source of truth for reviews, users, books. PostgreSQL with read replicas.'
+    }
+    btQueue = container 'Event queue' {
+      description 'Decouples writes from leaderboard updates. Kafka.'
+    }
+    btWorker = container 'Leaderboard worker' {
+      description 'Aggregates reads from the queue into the cache. Python consumer.'
+    }
+    btSearch = container 'Search index' {
+      description 'Title / author search over the corpus. OpenSearch.'
+    }
+    btMetrics = container 'Observability' {
+      description 'Logs, metrics, traces. Drives alerting and oncall. OpenTelemetry + Prometheus.'
+    }
+
+    btCdn -> btLb 'Cache miss / dynamic API'
+    btLb -> btApiFleet 'Routes to a healthy app instance'
+    btApiFleet -> btCache 'Reads cached timelines (~100 us)'
+    btApiFleet -> btPrimaryDb 'Reads / writes through ORM'
+    btApiFleet -> btQueue 'Publishes review-created events'
+    btApiFleet -> btSearch 'Full-text queries'
+    btQueue -> btWorker 'Consumes review events'
+    btWorker -> btCache 'Updates leaderboard slabs'
+    btWorker -> btPrimaryDb 'Reads denormalised aggregates'
+    btMetrics -> btApiFleet 'Scrapes app metrics'
+    btMetrics -> btPrimaryDb 'Watches replication lag'
+    btMetrics -> btQueue 'Watches consumer lag'
+  }
+
+  btReader -> btScaled 'HTTPS to nearest edge'
+}
+
+views {
+  view foundations_book_tracker_personal of btPersonal {
+    title 'Personal book tracker — container view'
+    include *
+  }
+
+  view foundations_book_tracker_scaled of btScaled {
+    title 'Scaled book tracker — container view'
+    include *
+  }
+}

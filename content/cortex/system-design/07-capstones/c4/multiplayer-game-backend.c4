@@ -1,0 +1,52 @@
+// Capstone 45 — "Online multiplayer game backend" (fast-paced, authoritative).
+// C4 container view. The problem: keep many players agreeing on one shared world
+// in real time, where ~100 ms of network lag ruins the feel and the speed of
+// light forbids perfect synchronisation. The design rests on an AUTHORITATIVE
+// SERVER running a fixed-rate TICK LOOP (the single source of truth, so clients
+// cannot cheat by lying), with the latency hidden by CLIENT-SIDE PREDICTION
+// (move now), SERVER RECONCILIATION (correct later), ENTITY INTERPOLATION
+// (smooth other players), and LAG COMPENSATION (rewind to resolve hits fairly).
+// Each match is independent, so the fleet scales by spinning up one server per
+// match — embarrassingly parallel, like sharding by region.
+//
+// All identifiers carry the `game` prefix. View name scope-prefixed
+// `capstones_multiplayergamebackend_*`. No `specification` block — element kinds
+// (actor, system, container) shared from 05-application-architecture/c4/workspace.c4.
+
+model {
+  gamePlayer = actor 'Player' {
+    description 'Runs the game client. Sends a stream of small input messages over UDP and receives world snapshots; predicts locally so the controls feel instant.'
+  }
+
+  gameSys = system 'Game backend' {
+    description 'Hosts fast-paced multiplayer matches. One authoritative server simulates each match at a fixed tick rate; matchmaking and a fleet manager place players onto regional servers near them.'
+
+    gameMatchmaker = container 'Matchmaking service' {
+      description 'Groups players by skill and region into a match, asks the fleet for a server, and hands each player a server address plus a join token. A normal request/response service — NOT in the real-time path.'
+    }
+    gameFleet = container 'Fleet manager' {
+      description 'Allocates and tears down match-server instances and autoscales the pool with demand (peak evenings, quiet mornings). Each match needs only a fraction of a core, so many matches pack onto one host.'
+    }
+    gameServer = container 'Authoritative game server (tick loop)' {
+      description 'The single source of truth for one match. Each tick it drains queued inputs, advances the physics simulation, runs lag compensation to resolve hits, and broadcasts a snapshot to every player. Transient match state lives in RAM and is discarded when the match ends.'
+    }
+    gameProfile = container 'Player profile + progression store' {
+      description 'Durable state: account, rank/MMR, inventory, unlocks. Read at match start and written at match end — NEVER touched per tick, so slow durable I/O stays out of the 16.7 ms tick budget. A normal database.'
+    }
+
+    gameMatchmaker -> gameFleet 'request a server for this match'
+    gameFleet -> gameServer 'allocate / spin up a match instance'
+    gameServer -> gameProfile 'load at match start, persist results at end (not per tick)'
+  }
+
+  gamePlayer -> gameMatchmaker 'find a match (skill, region)'
+  gameMatchmaker -> gamePlayer 'connect to server (address + token)'
+  gamePlayer -> gameServer 'send inputs, receive snapshots (UDP)'
+}
+
+views {
+  view capstones_multiplayergamebackend_architecture of gameSys {
+    title 'Online multiplayer game backend — container view (authoritative tick loop + fleet)'
+    include *
+  }
+}

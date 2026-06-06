@@ -1,0 +1,52 @@
+// Lesson 7 — "Load balancing". Two views of the same backend pool: one
+// fronted by an L4 (TCP/IP) relay, one fronted by an L7 (HTTP-aware)
+// reverse proxy. The lesson body sets them side-by-side so the reader
+// sees the contrast at a glance: the edge labels carry the difference
+// ("opaque TCP forward" vs "HTTP request, routed by path / header").
+//
+// All identifiers carry the `lb` (load balancer) prefix — every lesson
+// `.c4` file owns its own prefix so identifiers don't collide in
+// LikeC4's flat global namespace. See
+// memory/likec4_multi_file_convention.md.
+//
+// No `specification` block — element kinds (`actor`, `system`,
+// `container`) are declared once in workspace.c4 and shared across
+// the LikeC4 project.
+
+model {
+  lbClient = actor 'Client' {
+    description 'Browser or upstream service. Opens a TCP connection or HTTPS request.'
+  }
+
+  lbL4 = system 'L4 load balancer' {
+    description 'TCP/IP relay. Picks a backend per connection by 5-tuple hash or weighted round-robin. No HTTP semantics. Examples: AWS NLB, GitHub GLB, IPVS.'
+  }
+
+  lbL7 = system 'L7 reverse proxy' {
+    description 'HTTP-aware. Terminates TLS, parses the request, routes by path / header / cookie. Examples: NGINX, HAProxy, Envoy, AWS ALB.'
+  }
+
+  lbBackends = system 'Backend pool' {
+    description 'Stateless app replicas + shared database. The thing the LB distributes across.'
+  }
+
+  lbClient -> lbL4 'TCP / TLS to anycast VIP'
+  lbClient -> lbL7 'HTTPS request'
+  lbL4 -> lbBackends 'opaque TCP forward (round-robin / weighted / 5-tuple hash)'
+  lbL7 -> lbBackends 'HTTP request, routed by path / header / cookie'
+}
+
+views {
+  // Two landscape views, one per LB shape. Identical client and pool
+  // on both sides; only the LB system swaps and the edge labels
+  // change. That is the entire point of the L4 vs L7 contrast.
+  view buildingblocks_load_balancing_l4 {
+    title 'L4 load balancing — opaque TCP relay'
+    include lbClient, lbL4, lbBackends
+  }
+
+  view buildingblocks_load_balancing_l7 {
+    title 'L7 load balancing — HTTP-aware reverse proxy'
+    include lbClient, lbL7, lbBackends
+  }
+}

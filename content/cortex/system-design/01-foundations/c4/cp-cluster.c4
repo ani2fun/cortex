@@ -1,0 +1,48 @@
+// Lesson 4 — "The CAP theorem and PACELC, honestly". Three-replica quorum
+// KV store, the topology the in-page PartitionSimulator widget and the
+// `examples/04-cap-pacelc-simulator/` Python project both model. Every
+// edge between replicas is "replicate write & await ack" — the edge the
+// scenario steps cut to inject a partition.
+//
+// All identifiers carry the `cp` (CAP cluster) prefix — every lesson `.c4`
+// file owns its own prefix so identifiers don't collide in LikeC4's flat
+// global namespace. See memory/likec4_multi_file_convention.md.
+//
+// No `specification` block — element kinds (`actor`, `system`, `container`)
+// are declared once in workspace.c4 and shared across the LikeC4 project.
+
+model {
+  cpClient = actor 'Client' {
+    description 'Writes and reads keys against the cluster.'
+  }
+
+  cpKv = system 'Quorum KV store' {
+    description 'Three-node CP cluster. Writes need a majority ack.'
+
+    cpReplicaA = container 'Replica A' {
+      description 'Coordinator in the demo scenarios. Writes locally after quorum ack. Python (cap_simulator).'
+    }
+    cpReplicaB = container 'Replica B' {
+      description 'Voting peer. Acks if reachable; otherwise the cluster cannot form quorum.'
+    }
+    cpReplicaC = container 'Replica C' {
+      description 'Voting peer. Same role as B.'
+    }
+
+    cpReplicaA -> cpReplicaB 'replicates write & awaits ack'
+    cpReplicaA -> cpReplicaC 'replicates write & awaits ack'
+    cpReplicaB -> cpReplicaA 'replicates write & awaits ack (when B coordinates)'
+    cpReplicaB -> cpReplicaC 'replicates write & awaits ack'
+    cpReplicaC -> cpReplicaA 'replicates write & awaits ack (when C coordinates)'
+    cpReplicaC -> cpReplicaB 'replicates write & awaits ack'
+  }
+
+  cpClient -> cpKv 'write(x, v) — forwarded to majority via coordinator'
+}
+
+views {
+  view foundations_cp_cluster_containers of cpKv {
+    title 'CP cluster — container view'
+    include *
+  }
+}

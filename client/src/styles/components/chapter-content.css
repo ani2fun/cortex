@@ -1,0 +1,191 @@
+@layer components {
+    /* ChapterContent — the rendered <article> wrapper. The Tailwind Typography
+       (prose) plugin drives most of the look; we only override the headings'
+       scroll offset and the <pre>/<img> defaults so that runnable code and
+       images don't collide with the plugin's spacing. */
+
+    /* Editorial typography for chapter prose. The Tailwind Typography plugin
+       drives spacing and lists; we own the heading fonts (serif italic for
+       h1/h2, sans for h3) and pull every prose role onto our indigo /
+       cream / ink token stack so the reader flows with the rest of the site. */
+    .chapter-content {
+        @apply prose dark:prose-invert max-w-none
+               prose-headings:scroll-mt-28 prose-pre:p-0 prose-pre:bg-transparent
+               prose-pre:border-0 prose-img:my-0;
+        /* Type controls (CortexTypePrefs) write `--reader-fs`, `--reader-lh`,
+           `--reader-font` on `:root`; the prose consumes them with the original
+           values as fallbacks. Keeps the old hardcoded baseline when no prefs
+           are set, swaps to the user's choice once they touch the controls. */
+        font-size: var(--reader-fs, 18px);
+        line-height: var(--reader-lh, 1.75);
+        font-family: var(--reader-font, var(--font-read));
+        --tw-prose-body: hsl(var(--foreground) / 0.85);
+        --tw-prose-headings: hsl(var(--foreground));
+        --tw-prose-lead: hsl(var(--foreground) / 0.85);
+        --tw-prose-links: hsl(var(--primary));
+        --tw-prose-bold: hsl(var(--foreground));
+        --tw-prose-counters: hsl(var(--muted-foreground));
+        --tw-prose-bullets: hsl(var(--muted-foreground));
+        --tw-prose-quotes: hsl(var(--foreground) / 0.85);
+        --tw-prose-captions: hsl(var(--muted-foreground));
+        --tw-prose-invert-body: hsl(var(--foreground) / 0.85);
+        --tw-prose-invert-headings: hsl(var(--foreground));
+        --tw-prose-invert-lead: hsl(var(--foreground) / 0.85);
+        --tw-prose-invert-links: hsl(var(--primary));
+        --tw-prose-invert-bold: hsl(var(--foreground));
+        --tw-prose-invert-counters: hsl(var(--muted-foreground));
+        --tw-prose-invert-bullets: hsl(var(--muted-foreground));
+        --tw-prose-invert-quotes: hsl(var(--foreground) / 0.85);
+        --tw-prose-invert-captions: hsl(var(--muted-foreground));
+    }
+    /* h2 — Newsreader upright medium, 30px. Replaces the Typography plugin's
+       default sans-bold heading; the chapter title above stays Instrument Serif. */
+    .chapter-content h2 {
+        font-family: var(--font-head);
+        font-style: normal;
+        font-weight: 500;
+        font-size: 30px;
+        line-height: 1.16;
+        letter-spacing: -0.01em;
+        margin: 56px 0 14px;
+    }
+    /* h3 — Geist sans, 17px semibold. Calmer step than h2 so the
+       hierarchy reads cleanly on long chapters. */
+    .chapter-content h3 {
+        font-family: var(--font-sans);
+        font-weight: 600;
+        font-size: 17px;
+        line-height: 1.3;
+        letter-spacing: -0.005em;
+        margin: 36px 0 10px;
+    }
+    /* Body em — legible italic in the reading font (Literata italic), ink colour. */
+    .chapter-content em {
+        font-family: inherit;       /* Literata italic in the body, not display serif */
+        font-style: italic;
+        font-weight: 500;
+        font-size: 1em;
+        color: hsl(var(--foreground));
+        letter-spacing: 0;
+    }
+    /* Bold uses font-weight 600 (medium-bold), not the plugin's 700. */
+    .chapter-content strong {
+        font-weight: 600;
+    }
+
+    /* Inline code: rehype-pretty-code is bypassed for inline nodes, so we
+       own the full look. A muted chip keeps it readable in both themes. */
+    .chapter-content :not(pre) > code {
+        @apply rounded px-1.5 py-0.5 bg-muted text-foreground font-code text-[0.875em];
+    }
+    /* Rendered code fences: JetBrains Mono on a permanent dark slab. Code is a
+       dark island in every theme, so syntax tokens use the dark-tuned --syn
+       variants (the :root values are tuned for light surfaces). These map onto
+       Shiki's css-variables theme output (render.ts → createCssVariablesTheme). */
+    .chapter-content pre {
+        --shiki-background: #2d2d2d;          /* matches the runnable Monaco editor */
+        --shiki-foreground: #d6d3cc;
+        --syn-kw: #7e88e6;
+        --syn-fn: #54b3a1;
+        --syn-str: #84b87d;
+        --syn-num: #d59a55;
+        --syn-com: #8a857c;
+        --shiki-token-keyword: var(--syn-kw);
+        --shiki-token-function: var(--syn-fn);
+        --shiki-token-string: var(--syn-str);
+        --shiki-token-string-expression: var(--syn-str);
+        --shiki-token-constant: var(--syn-num);
+        --shiki-token-comment: var(--syn-com);
+        --shiki-token-parameter: var(--shiki-foreground);
+        --shiki-token-punctuation: #b7b3aa;
+        --shiki-token-link: var(--syn-fn);
+    }
+    .chapter-content pre code {
+        font-family: var(--font-code);
+    }
+
+    /* D2 embeds Markdown labels inside SVG <foreignObject> nodes. Those nodes
+       live under the article, so our inline-code chip rule would otherwise
+       override D2's own SVG-scoped theme colors in dark mode. Keep not-prose
+       islands isolated from article-level inline-code styling. */
+    .chapter-content .not-prose :not(pre) > code {
+        color: inherit !important;
+        background-color: var(--color-neutral-muted, #eef1f8) !important;
+        padding: 0.2em 0.4em !important;
+        border-radius: 6px !important;
+    }
+
+    /* Tailwind Typography wraps every <blockquote> in italic + curly open/close
+       quotes via blockquote::before / blockquote p::before content rules. That
+       reads as a pull-quote — wrong for callouts, definitions, hints, and the
+       Q/A blocks the rebuild uses heavily. Strip the italics, bold, and quote
+       glyphs; keep the left border and inset so the block stays visually
+       distinct from surrounding prose. */
+    .chapter-content blockquote {
+        font-style: normal;
+        font-weight: 400;
+        quotes: none;
+    }
+    .chapter-content blockquote p:first-of-type::before,
+    .chapter-content blockquote p:last-of-type::after,
+    .chapter-content blockquote::before,
+    .chapter-content blockquote::after {
+        content: none;
+    }
+
+    /* Collapsible Q/A used by the Memorize section. <details> + <summary> is
+       native HTML so remark passes it through; we only own the look. */
+    .chapter-content details {
+        @apply my-3 rounded-md border border-border bg-muted/30 px-4 py-2 transition-colors;
+    }
+    .chapter-content details:hover {
+        @apply bg-muted/50;
+    }
+    .chapter-content details[open] {
+        @apply bg-muted/40;
+    }
+    .chapter-content details > summary {
+        @apply cursor-pointer font-medium text-foreground py-1 -mx-1 px-1 rounded
+               flex items-center gap-2;
+        list-style: none;
+    }
+    .chapter-content details > summary::-webkit-details-marker { display: none; }
+    /* CSS-drawn triangle instead of a Unicode glyph: the "▸"/"▾" geometric-triangle
+       codepoints fall back to a broken-image / tofu box on some systems and fonts.
+       A border triangle is pure geometry (no glyph), so it renders identically
+       everywhere — and rotating it animates the open/closed transition. */
+    .chapter-content details > summary::before {
+        content: "";
+        display: inline-block;
+        flex-shrink: 0;
+        width: 0;
+        height: 0;
+        border-top: 0.42em solid transparent;
+        border-bottom: 0.42em solid transparent;
+        border-left: 0.6em solid hsl(var(--foreground));
+        font-size: 1.7em;   /* keeps the chevron visible next to large heading text */
+        transition: transform 0.15s ease;
+    }
+    .chapter-content details[open] > summary::before {
+        transform: rotate(90deg);
+    }
+    .chapter-content details > summary p {
+        display: inline;
+        margin: 0;
+    }
+    /* Headings inside <summary> (used by the Quick Reference chapter so its
+       collapsed top-level sections still register in the right-rail outline)
+       keep their prose typography but lose the block margins that would push
+       the chevron off-axis from the heading text. The parent <summary> is now
+       a flex row, so margin: 0 is enough — `align-items: center` does the
+       vertical work. */
+    .chapter-content details > summary :is(h1, h2, h3, h4, h5, h6) {
+        margin: 0;
+    }
+    .chapter-content details > *:not(summary) {
+        @apply mt-2 mb-1;
+    }
+    .chapter-content details > *:last-child {
+        @apply mb-0;
+    }
+}

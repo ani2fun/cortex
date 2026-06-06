@@ -1,0 +1,50 @@
+# Two-stage build: compile the LikeC4 SPA, then serve it from nginx-unprivileged
+# at the /c4/ subpath. Codefolio's Scala server reverse-proxies /c4/* to this
+# image's Service in-cluster — there is no public Ingress on this image.
+
+FROM node:20-alpine AS builder
+WORKDIR /build
+RUN npm install -g likec4@latest
+
+# LikeC4 reads .c4 files recursively from its project root, so every Part's
+# c4/ directory under content/cortex/ is fair game for the same model namespace.
+# We materialise the project root in two passes:
+#
+#   1. Copy the entire content/cortex/ tree to a scratch area.
+#   2. find -exec each .c4 file into /build/c4/<part>/<file>.c4 so filename
+#      collisions across Parts are impossible by construction (LikeC4 view
+#      names already live in a flat namespace — see workspace.c4 conventions).
+#
+# A non-zero find result fails the build loudly rather than silently shipping
+# an empty SPA.
+COPY content/cortex/ /tmp/cortex/
+RUN set -eu; \
+    mkdir -p /build/c4; \
+    count=0; \
+    for src in $(find /tmp/cortex -type f -name '*.c4' | sort); do \
+      dir=$(dirname "$src"); \
+      part=$(basename "$(dirname "$dir")"); \
+      mkdir -p "/build/c4/$part"; \
+      cp "$src" "/build/c4/$part/$(basename "$src")"; \
+      count=$((count + 1)); \
+    done; \
+    if [ "$count" -eq 0 ]; then echo "ERROR: no .c4 sources found under content/cortex/"; exit 1; fi; \
+    rm -rf /tmp/cortex; \
+    echo "Collected $count LikeC4 source(s):"; \
+    find /build/c4 -type f -name '*.c4' | sort
+
+WORKDIR /build/c4
+# --base /c4/ makes the SPA load its assets from /c4/... so it works behind
+# codefolio's subpath proxy without rewriting HTML at runtime.
+RUN likec4 build --base /c4/ --output /build/dist
+
+FROM nginxinc/nginx-unprivileged:1.27-alpine
+COPY --from=builder /build/dist /usr/share/nginx/html/c4/
+RUN printf '%s\n' \
+  'server {' \
+  '  listen 8080;' \
+  '  root /usr/share/nginx/html;' \
+  '  location /c4/ { try_files $uri $uri/ /c4/index.html; }' \
+  '  location / { return 404; }' \
+  '}' > /etc/nginx/conf.d/default.conf
+EXPOSE 8080

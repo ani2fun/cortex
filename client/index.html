@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en" suppressHydrationWarning>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Aniket Kakde — Backend-leaning Software Engineer</title>
+    <meta name="description" content="Backend-leaning Software Engineer based in Paris. Ten years on production systems at Europcar, Audi, Dassault, and Disneyland Paris — Java, Kotlin, Scala, Kafka, PostgreSQL, AWS/GCP." />
+    <meta name="keywords" content="Aniket Kakde, software engineer, backend, Kotlin, Java, Scala, Spring Boot, Kafka, PostgreSQL, AWS, GCP, Kubernetes, Paris" />
+    <link rel="icon" href="/img/portfolio/favicon.webp" />
+
+    <!--
+      Editorial type system: Instrument Serif for display headings (italic-only),
+      Geist for sans/UI body, Geist Mono for eyebrows / dates / mono utility text,
+      plus the Cortex reader stack — Literata (reading body), Newsreader (upright
+      §/h2 headings), JetBrains Mono (code).
+      Preconnect to Google Fonts and Vercel's Geist mirror so the first paint
+      doesn't wait on a fresh DNS+TLS handshake. font-display=swap keeps text
+      visible during the swap.
+    -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&family=Literata:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Newsreader:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Aniket Kakde — Backend-leaning Software Engineer" />
+    <meta property="og:description" content="Ten years on production systems at Europcar, Audi, Dassault, and Disneyland Paris. Backend on the JVM, with the occasional foray into infra and frontends." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://kakde.eu" />
+    <meta property="og:image" content="/img/portfolio/og-image.webp" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Aniket Kakde — Software Engineer" />
+
+    <!--
+      Theme bootstrap. Runs synchronously *before* any module script so the
+      `dark` class is set on <html> before first paint, avoiding a flash of
+      the wrong theme. Keeps the same precedence as next-themes:
+      explicit user choice > system preference > light default.
+    -->
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem("theme");
+          var dark = t === "dark" || (!t && window.matchMedia("(prefers-color-scheme: dark)").matches);
+          document.documentElement.classList.toggle("dark", dark);
+        } catch (_) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/main.js"></script>
+  </body>
+</html>

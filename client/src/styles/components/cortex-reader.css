@@ -1,0 +1,1767 @@
+@layer components {
+    /* Cortex reader — sidebar | main layout shells, plus a floating "On This Page" TOC overlay.
+       Blocks: .cortex-reader-layout, .cortex-reader-breadcrumb, .cortex-reader-pager, .cortex-reader-sidebar,
+               .cortex-reader-toc-float, .cortex-reader-toc-pop, .cortex-reader-toc-scrim */
+
+    /* ─── Layout (2-column reader) ───────────────────────────────── */
+    /* Widths matched to the latest Cortex reader UI kit (software-docs feel —
+       think Stripe / MDN / Vercel docs, not classical long-form essay):
+         page max  1840px  ·  sidebar 280px  ·  prose cap 1100px
+       At 1920 this leaves ~80px of composed shoulder on each side; at 2560
+       the shoulders grow but the reading column stays at its measured cap.
+       The 1100px prose cap lands at ~96ch — past the classical reading
+       ceiling but matches modern technical-docs sites that prioritise
+       code-block density over line-by-line cadence. The right-rail TOC
+       column is gone — replaced by a floating hamburger FAB that opens an
+       "On this page" popover, working on every viewport. */
+    .cortex-reader-layout {
+        @apply grid grid-cols-1 lg:grid-cols-[280px_minmax(0,1fr)]
+               gap-0 max-w-[1840px] mx-auto;
+    }
+    .cortex-reader-layout__main {
+        @apply px-5 md:px-16 py-11 pb-20 min-w-0;
+    }
+    .cortex-reader-layout__prose {
+        @apply max-w-[1100px] mx-auto;
+    }
+    /* Chapter title — Instrument Serif italic, large editorial display.
+       Sits above the markdown body so it lives outside .chapter-content
+       (and therefore isn't styled by the Typography plugin). */
+    .cortex-reader-prose__title {
+        font-family: var(--font-display);
+        font-style: italic;
+        font-weight: 400;
+        font-size: clamp(48px, 5.4vw, 76px);
+        line-height: 0.96;
+        letter-spacing: -0.025em;
+        color: hsl(var(--foreground));
+        margin: 0 0 22px;
+    }
+    /* Lede paragraph — slightly larger sans body, narrower than the body
+       prose so the opening reads as a deliberate hierarchy step (78ch lede
+       vs. ~96ch body measure). */
+    .cortex-reader-prose__lede {
+        font-family: var(--font-sans);
+        font-size: clamp(17px, 1.4vw, 19px);
+        line-height: 1.55;
+        color: hsl(var(--foreground) / 0.85);
+        max-width: 78ch;
+        text-wrap: pretty;
+        margin: 0 0 40px;
+    }
+    .cortex-reader-prose__lede em {
+        font-family: var(--font-sans);
+        font-style: italic;
+        font-weight: 500;
+        font-size: 1em;
+        color: hsl(var(--primary));     /* key term pops in indigo */
+        letter-spacing: 0;
+    }
+
+    /* ─── Breadcrumb ─────────────────────────────────────────────── */
+    /* Mono uppercase tracking for the parent crumbs; the current chapter
+       drops back to sans for legibility (it's the long bit). */
+    .cortex-reader-breadcrumb {
+        @apply text-[11px] font-mono uppercase tracking-widest
+               text-muted-foreground mb-9;
+    }
+    .cortex-reader-breadcrumb__list {
+        @apply flex flex-wrap items-center gap-2;
+    }
+    .cortex-reader-breadcrumb__link {
+        @apply text-muted-foreground hover:text-primary transition-colors;
+    }
+    .cortex-reader-breadcrumb__separator {
+        @apply h-[11px] w-[11px] opacity-60;
+    }
+    .cortex-reader-breadcrumb__current {
+        @apply font-sans text-[13px] tracking-normal normal-case
+               text-foreground/85 font-medium truncate;
+    }
+
+    /* ─── Pager (prev/next chapter) ──────────────────────────────── */
+    /* Two-column even on mobile so prev/next live side-by-side. Cards
+       get a indigo `::before` rail that scales in on hover plus a
+       subtle 1px lift + soft shadow. */
+    .cortex-reader-pager {
+        @apply mt-16 pt-8 border-t border-border grid grid-cols-2 gap-3 sm:gap-3.5
+               max-w-[720px] mx-auto;
+    }
+    .cortex-reader-pager__card {
+        /* `group` is added literally in markup so group-hover: works on children. */
+        @apply relative overflow-hidden rounded-lg border border-border bg-card
+               px-5 py-4 transition min-w-0;
+    }
+    .cortex-reader-pager__card::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+        background-color: hsl(var(--primary));
+        transform: scaleY(0);
+        transform-origin: center;
+        transition: transform 220ms cubic-bezier(0.2, 0.7, 0.2, 1);
+    }
+    .cortex-reader-pager__card--next::before { left: auto; right: 0; }
+    .cortex-reader-pager__card:hover {
+        transform: translateY(-1px);
+        border-color: hsl(var(--border));
+        box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05),
+                    0 8px 24px -12px rgba(0, 0, 0, 0.18);
+    }
+    .cortex-reader-pager__card:hover::before { transform: scaleY(1); }
+    @media (prefers-reduced-motion: reduce) {
+        .cortex-reader-pager__card { transition: none; }
+        .cortex-reader-pager__card:hover { transform: none; }
+        .cortex-reader-pager__card::before { transition: none; }
+    }
+    .cortex-reader-pager__card--next {
+        @apply text-right col-start-2;
+    }
+    .cortex-reader-pager__label {
+        @apply flex items-center gap-1.5 text-[11px] font-mono font-medium
+               uppercase tracking-widest text-muted-foreground mb-2;
+    }
+    .cortex-reader-pager__label--next {
+        @apply justify-end;
+    }
+    .cortex-reader-pager__label-icon {
+        @apply h-3 w-3;
+    }
+    /* Pager title — Instrument Serif italic 18px to match the editorial
+       voice across the rest of the site. */
+    .cortex-reader-pager__title {
+        font-family: var(--font-display);
+        font-style: italic;
+        font-weight: 400;
+        font-size: 18px;
+        line-height: 1.2;
+        letter-spacing: -0.01em;
+        color: hsl(var(--foreground));
+        @apply block truncate;
+    }
+
+    /* ─── Scroll-to-top floating button ──────────────────────────── */
+    .scroll-to-top {
+        @apply fixed bottom-5 right-5 z-40 rounded-full bg-primary text-primary-foreground
+               p-3 shadow-lg transition-opacity duration-200 hover:opacity-90;
+    }
+    .scroll-to-top--hidden {
+        @apply opacity-0 pointer-events-none;
+    }
+    .scroll-to-top--visible {
+        @apply opacity-100;
+    }
+    .scroll-to-top__icon {
+        @apply h-5 w-5;
+    }
+
+    /* ─── Sidebar (chapters) ─────────────────────────────────────── */
+    .cortex-reader-sidebar__open-button {
+        @apply lg:hidden fixed bottom-5 left-5 z-40 rounded-full bg-primary text-primary-foreground p-3 shadow-lg;
+    }
+    .cortex-reader-sidebar__open-icon {
+        @apply h-5 w-5;
+    }
+    .cortex-reader-sidebar__drawer-overlay {
+        @apply lg:hidden fixed inset-0 z-50 bg-black/40;
+    }
+    .cortex-reader-sidebar__drawer-panel {
+        @apply absolute left-0 top-0 h-full w-[85%] max-w-sm overflow-y-auto bg-background border-r border-border;
+    }
+    .cortex-reader-sidebar__close-button {
+        @apply absolute top-4 right-4 text-muted-foreground;
+    }
+    .cortex-reader-sidebar__close-icon {
+        @apply h-5 w-5;
+    }
+    .cortex-reader-sidebar__desktop {
+        @apply hidden lg:block sticky top-20 self-start max-h-[calc(100vh-5rem)]
+               overflow-y-auto border-r border-border;
+        /* Stop sidebar scrolls from latching onto the page scroll — important
+           now that the sticky sidebar can scroll independently of the prose. */
+        overscroll-behavior: contain;
+        /* Themed thin scrollbar so the sidebar's own scroll affordance doesn't
+           fight the page's. Mirrors the popover scrollbar treatment. */
+        scrollbar-width: thin;
+        scrollbar-color: hsl(var(--border)) transparent;
+        /* The `top` nudge below (when the sticky chapter bar slides in) animates
+           with the bar's own slide so the two feel like one motion. The full
+           transition list (including padding for the collapse) lives in the
+           collapse-additions block further down. */
+    }
+    .cortex-reader-sidebar__desktop::-webkit-scrollbar { width: 8px; }
+    .cortex-reader-sidebar__desktop::-webkit-scrollbar-track { background: transparent; }
+    .cortex-reader-sidebar__desktop::-webkit-scrollbar-thumb {
+        background-color: hsl(var(--border));
+        border-radius: 4px;
+        /* 2px transparent ring pads the thumb away from the gutter edge so it
+           reads as a pill, not a flush bar (matches the TOC popover scrollbar). */
+        border: 2px solid hsl(var(--background));
+    }
+    .cortex-reader-sidebar__desktop::-webkit-scrollbar-thumb:hover {
+        background-color: hsl(var(--muted-foreground));
+    }
+    /* When the sticky chapter bar slides in (it sits at top: 64px and is ~40px
+       tall), nudge the sidebar down so the two surfaces don't visually crash.
+       Reverses cleanly when the bar slides back out. */
+    body:has(.cortex-reader-sticky-bar[data-on="true"]) .cortex-reader-sidebar__desktop {
+        top: calc(5rem + 40px);
+        max-height: calc(100vh - 5rem - 40px);
+    }
+    .cortex-reader-sidebar__inner {
+        @apply flex flex-col gap-5 px-6 pt-9 pb-12;
+    }
+    /* "Back to Cortex" link — mono uppercase eyebrow, low weight. */
+    .cortex-reader-sidebar__back {
+        @apply text-[14px] font-mono font-medium uppercase tracking-widest
+               text-muted-foreground hover:text-primary transition-colors;
+    }
+    /* Book title — Instrument Serif italic, sized for sidebar. */
+    .cortex-reader-sidebar__title {
+        font-family: var(--font-display);
+        font-style: italic;
+        font-weight: 400;
+        font-size: 24px;
+        line-height: 1.1;
+        letter-spacing: -0.015em;
+        color: hsl(var(--foreground));
+        margin-top: 0.5rem;
+    }
+    .cortex-reader-sidebar__description {
+        @apply mt-1 text-[11px] font-mono uppercase tracking-wider
+               text-muted-foreground leading-relaxed;
+    }
+    /* Recursive sidebar tree. The top-level <ul> is `__tree`; sections nest
+       arbitrarily deep via <details>/<summary>; leaves are chapter links.
+       Indentation is depth-driven (rules below) so the tree stays scannable
+       even for deeply nested books like the DSA import. */
+    .cortex-reader-sidebar__tree {
+        @apply space-y-1 list-none;
+    }
+    .cortex-reader-sidebar__section {
+        @apply list-none;
+    }
+    .cortex-reader-sidebar__section-details {
+        @apply list-none;
+    }
+    .cortex-reader-sidebar__section-details > summary::-webkit-details-marker { display: none; }
+    .cortex-reader-sidebar__section-details > summary { list-style: none; }
+    .cortex-reader-sidebar__section-summary {
+        @apply flex items-center gap-2 cursor-pointer select-none py-1
+               text-xs font-bold uppercase tracking-wider text-foreground
+               hover:text-primary;
+    }
+    /* Lucide ChevronRight rendered inline by CortexSidebar; rotates 90° when
+       the parent <details> is open. h-4 w-4 = 16px to land legibly next to
+       the 12px-uppercase summary text — `w-3` (the previous Unicode triangle's
+       size) was too tiny against the bold all-caps label. */
+    .cortex-reader-sidebar__section-chevron {
+        @apply h-4 w-4 flex-none text-muted-foreground transition-transform;
+    }
+    .cortex-reader-sidebar__section-details[open]
+        > .cortex-reader-sidebar__section-summary
+        .cortex-reader-sidebar__section-chevron {
+        transform: rotate(90deg);
+    }
+    .cortex-reader-sidebar__section-name {
+        @apply flex-1 truncate;
+    }
+    .cortex-reader-sidebar__section-children {
+        @apply list-none ml-3 mt-1 space-y-1 border-l border-border pl-2;
+    }
+    .cortex-reader-sidebar__section--depth-0 > .cortex-reader-sidebar__section-details > .cortex-reader-sidebar__section-summary {
+        @apply mt-3;
+    }
+    .cortex-reader-sidebar__chapter-item {
+        @apply list-none;
+    }
+    /* Chapter row — 2-column grid: [num badge · name]. */
+    .cortex-reader-sidebar__chapter-link {
+        @apply grid items-center gap-2.5 py-2 pr-2.5 pl-1.5
+               rounded-md text-[13.5px] leading-snug text-foreground/75
+               hover:text-foreground hover:bg-secondary/50
+               transition-colors;
+        grid-template-columns: 28px minmax(0, 1fr);
+    }
+    /* Mono number badge — 28×28 outlined square. Empty content (when the
+       chapter has no derived number) leaves a visible empty box; that's
+       fine for the rare corner-case but expected to be filled in real use. */
+    .cortex-reader-sidebar__num {
+        @apply inline-flex items-center justify-center
+               text-[11px] font-mono text-muted-foreground;
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
+        border: 1px solid hsl(var(--border));
+        background-color: transparent;
+        transition: color 160ms, border-color 160ms, background-color 160ms;
+    }
+    .cortex-reader-sidebar__name {
+        @apply min-w-0 overflow-hidden text-ellipsis whitespace-nowrap;
+    }
+    /* Reveal the full chapter title on hover / keyboard focus by un-truncating
+       the row in place. We avoided a popup tooltip here because the sidebar's
+       `overflow-y: auto` implicitly clips horizontal overflow (W3C overflow
+       rules), so any `position: absolute` pseudo-element extending past the
+       column edge gets sliced. Expanding the row instead keeps the full text
+       inside the sidebar's bounds; the row simply grows vertically. */
+    .cortex-reader-sidebar__chapter-link:hover .cortex-reader-sidebar__name,
+    .cortex-reader-sidebar__chapter-link:focus-visible .cortex-reader-sidebar__name {
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
+    }
+    /* Active chapter — soft card surface with shadow + indigo-tinted
+       number badge (replaces the muted outline). The bg-card token
+       handles light/dark; the shadow stack matches the design's --shadow-1. */
+    .cortex-reader-sidebar__chapter-link--active {
+        @apply bg-card text-foreground font-medium;
+        box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.04);
+    }
+    .cortex-reader-sidebar__chapter-link--active .cortex-reader-sidebar__num {
+        color: hsl(var(--primary));
+        border-color: hsl(var(--primary) / 0.35);
+        background-color: hsl(var(--primary) / 0.12);
+    }
+    .dark .cortex-reader-sidebar__chapter-link--active {
+        box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04);
+    }
+
+    /* ─── Search input ────────────────────────────────────────────── */
+    /* Sits below the book description, above the chapter list. Filters the
+       sidebar tree as the user types; the ⌘K hint is a passive label, the
+       global keydown listener owns the focus shortcut. */
+    .cortex-reader-sidebar__search {
+        @apply flex items-center gap-2 px-3 py-2 mt-3 mb-3
+               rounded-md bg-card border border-border
+               focus-within:border-primary;
+        transition: border-color 160ms, box-shadow 160ms;
+    }
+    .cortex-reader-sidebar__search:focus-within {
+        box-shadow: 0 0 0 3px hsl(var(--primary) / 0.18);
+    }
+    .cortex-reader-sidebar__search-icon {
+        @apply h-3.5 w-3.5 text-muted-foreground flex-none;
+    }
+    .cortex-reader-sidebar__search-input {
+        @apply flex-1 min-w-0 bg-transparent border-0 outline-none p-0
+               text-[13px] text-foreground placeholder:text-muted-foreground;
+    }
+    /* Strip the user-agent search "X" cancel button (Safari + Chrome both
+       paint it; ours is the Esc handler instead). */
+    .cortex-reader-sidebar__search-input::-webkit-search-cancel-button {
+        -webkit-appearance: none;
+        appearance: none;
+    }
+    .cortex-reader-sidebar__search-kbd {
+        @apply text-[10px] font-mono text-muted-foreground border border-border
+               rounded px-1.5 py-0.5 bg-secondary/40 flex-none;
+    }
+    .cortex-reader-sidebar__mark {
+        @apply rounded-sm px-0.5 text-foreground;
+        background-color: hsl(var(--primary) / 0.18);
+    }
+    .cortex-reader-sidebar__empty {
+        @apply px-2 py-3 text-[13px] text-muted-foreground leading-relaxed;
+    }
+    .cortex-reader-sidebar__empty em {
+        font-family: var(--font-display);
+        font-style: italic;
+        color: hsl(var(--foreground) / 0.85);
+        letter-spacing: 0.05em;
+    }
+
+    /* ─── Floating TOC button (every viewport) ───────────────────────
+       Mirrors .scroll-to-top: same 44×44 circle, same primary fill, same
+       shadow language. Sits 12px above the back-to-top button on the same
+       vertical axis (right: 20px). Open-state flips the fill to the
+       foreground colour and swaps the ListTree icon for X, so it reads
+       as "press again to close". */
+    .cortex-reader-toc-float {
+        position: fixed;
+        right: 20px;
+        /* 20 (gutter) + 44 (back-to-top) + 12 (gap) = 76 */
+        bottom: 76px;
+        z-index: 40;
+        width: 44px;
+        height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 9999px;
+        border: 0;
+        cursor: pointer;
+        background-color: hsl(var(--primary));
+        color: hsl(var(--primary-foreground));
+        box-shadow: 0 6px 18px -4px rgba(0, 0, 0, 0.25),
+                    0 2px 4px -1px rgba(0, 0, 0, 0.10);
+        transition: opacity 180ms ease,
+                    transform 180ms ease,
+                    background-color 180ms ease,
+                    color 180ms ease;
+    }
+    .cortex-reader-toc-float:hover {
+        opacity: 0.92;
+        transform: translateY(-1px);
+    }
+    .cortex-reader-toc-float:focus-visible {
+        outline: 2px solid hsl(var(--primary));
+        outline-offset: 3px;
+    }
+    .cortex-reader-toc-float__icon {
+        width: 20px;
+        height: 20px;
+    }
+    .cortex-reader-toc-float[aria-expanded="true"] {
+        background-color: hsl(var(--foreground));
+        color: hsl(var(--background));
+    }
+    .cortex-reader-toc-float[aria-expanded="true"] .cortex-reader-toc-float__icon--menu  { display: none; }
+    .cortex-reader-toc-float[aria-expanded="false"] .cortex-reader-toc-float__icon--close { display: none; }
+    @media (prefers-reduced-motion: reduce) {
+        .cortex-reader-toc-float { transition: none; }
+        .cortex-reader-toc-float:hover { transform: none; }
+    }
+
+    /* ─── Floating TOC popover ────────────────────────────────────
+       Anchored bottom-right, above the FAB stack:
+         20 (gutter) + 44 (top) + 12 (gap) + 44 (toc) + 12 (gap) = 132 */
+    .cortex-reader-toc-pop {
+        position: fixed;
+        right: 20px;
+        bottom: 132px;
+        z-index: 39;
+        width: 340px;
+        max-width: calc(100vw - 40px);
+        max-height: min(60vh, 480px);
+        display: flex;
+        flex-direction: column;
+        background-color: hsl(var(--card));
+        color: hsl(var(--card-foreground));
+        border: 1px solid hsl(var(--border));
+        border-radius: 14px;
+        box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05),
+                    0 8px 24px -12px rgba(0, 0, 0, 0.18);
+        padding: 18px 4px 14px;
+        transform-origin: bottom right;
+        transition: opacity 180ms ease, transform 180ms ease;
+    }
+    .cortex-reader-toc-pop[data-open="false"] {
+        opacity: 0;
+        transform: translateY(8px) scale(0.98);
+        pointer-events: none;
+    }
+    .cortex-reader-toc-pop[data-open="true"] {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    .cortex-reader-toc-pop__head {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        padding: 0 16px 12px;
+        border-bottom: 1px solid hsl(var(--border) / 0.6);
+    }
+    .cortex-reader-toc-pop__eyebrow {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: hsl(var(--muted-foreground));
+        font-weight: 500;
+    }
+    .cortex-reader-toc-pop__count {
+        margin-left: auto;
+        font-family: var(--font-mono);
+        font-size: 10.5px;
+        color: hsl(var(--muted-foreground));
+        background-color: hsl(var(--background));
+        border: 1px solid hsl(var(--border) / 0.6);
+        border-radius: 9999px;
+        padding: 2px 8px;
+    }
+    .cortex-reader-toc-pop__list {
+        list-style: none;
+        margin: 8px 0 0;
+        padding: 0 8px;
+        overflow-y: auto;
+        /* Reserve the scrollbar gutter so the rows don't jump 6-8px wider
+           the moment the list grows past the cap. */
+        scrollbar-gutter: stable;
+        scrollbar-width: thin;
+        scrollbar-color: hsl(var(--border)) transparent;
+    }
+    .cortex-reader-toc-pop__list::-webkit-scrollbar { width: 8px; }
+    .cortex-reader-toc-pop__list::-webkit-scrollbar-track { background: transparent; }
+    .cortex-reader-toc-pop__list::-webkit-scrollbar-thumb {
+        background-color: hsl(var(--border));
+        border-radius: 4px;
+        /* A 2px transparent "border" pads the thumb away from the gutter edge
+           so it reads as a pill, not a flush bar. */
+        border: 2px solid hsl(var(--card));
+    }
+    .cortex-reader-toc-pop__list::-webkit-scrollbar-thumb:hover {
+        background-color: hsl(var(--muted-foreground));
+    }
+    .cortex-reader-toc-pop__row {
+        padding: 0;
+    }
+    .cortex-reader-toc-pop__btn {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        padding: 7px 8px;
+        border: 0;
+        background: none;
+        cursor: pointer;
+        text-align: left;
+        text-decoration: none;
+        color: hsl(var(--muted-foreground));
+        font-family: var(--font-sans);
+        font-size: 13px;
+        line-height: 1.35;
+        border-radius: 6px;
+        transition: background-color 140ms ease, color 140ms ease;
+    }
+    .cortex-reader-toc-pop__btn:hover {
+        color: hsl(var(--foreground));
+        background-color: hsl(var(--foreground) / 0.04);
+    }
+    .cortex-reader-toc-pop__tick {
+        display: inline-block;
+        width: 14px;
+        height: 4px;
+        border-radius: 2px;
+        flex: none;
+        background-color: hsl(var(--border));
+        transition: width 150ms ease, background-color 150ms ease;
+    }
+    .cortex-reader-toc-pop__btn:hover .cortex-reader-toc-pop__tick {
+        background-color: hsl(var(--foreground));
+    }
+    .cortex-reader-toc-pop__row--active .cortex-reader-toc-pop__btn {
+        color: hsl(var(--foreground));
+        font-weight: 500;
+    }
+    .cortex-reader-toc-pop__row--active .cortex-reader-toc-pop__tick {
+        background-color: hsl(var(--primary));
+        width: 22px;
+    }
+    /* Depth indent + weight — l1 reads as a section header (bolder,
+       foreground colour) so the user can scan top-level anchors at a
+       glance; l2/l3 are children, indented and lighter. The Scala
+       component caps at l3, matching the prior right-rail rule. */
+    .cortex-reader-toc-pop__row--l1 .cortex-reader-toc-pop__btn {
+        color: hsl(var(--foreground));
+        font-weight: 600;
+        font-size: 13.5px;
+    }
+    .cortex-reader-toc-pop__row--l1:not(:first-child) .cortex-reader-toc-pop__btn {
+        margin-top: 6px;
+    }
+    .cortex-reader-toc-pop__row--l2 .cortex-reader-toc-pop__btn {
+        padding-left: 14px;
+        font-size: 13px;
+    }
+    .cortex-reader-toc-pop__row--l3 .cortex-reader-toc-pop__btn {
+        padding-left: 22px;
+        font-size: 12.5px;
+    }
+    .cortex-reader-toc-pop__label {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .cortex-reader-toc-pop__btn:hover .cortex-reader-toc-pop__label,
+    .cortex-reader-toc-pop__row--active .cortex-reader-toc-pop__label {
+        white-space: normal;
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .cortex-reader-toc-pop,
+        .cortex-reader-toc-pop__tick,
+        .cortex-reader-toc-pop__btn { transition: none; }
+    }
+
+    /* Transparent scrim — captures click-outside without dimming the page
+       (the popover is the only visible chrome). */
+    .cortex-reader-toc-scrim {
+        position: fixed;
+        inset: 0;
+        z-index: 38;
+        background: transparent;
+    }
+    .cortex-reader-toc-scrim[data-open="false"] { display: none; }
+
+    /* ─── Collapsible sidebar (data-attribute driven) ─────────────────
+       Layout root carries `data-side="collapsed|expanded"` + `data-peek="on|"`.
+       When collapsed, the grid shrinks to a 64px rail and the inner search/
+       tree fades; the rail nav shows numbered chapter tiles + section icons.
+       When peeking (only meaningful while collapsed), the grid temporarily
+       expands again WITHOUT touching the user's stored preference. */
+    .cortex-reader-layout {
+        transition: grid-template-columns 280ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    @media (min-width: 1024px) {
+        .cortex-reader-layout[data-side="collapsed"] {
+            grid-template-columns: 64px minmax(0, 1fr);
+        }
+        .cortex-reader-layout[data-side="collapsed"][data-peek="on"] {
+            grid-template-columns: 280px minmax(0, 1fr);
+        }
+    }
+    /* Layout-collapse additions to the sidebar block. We don't redeclare
+       `position` here — the base rule above sets `sticky` and that's what we
+       want. (A `position: sticky` element is itself a containing block for
+       absolute descendants, so the toggle pill below still anchors correctly.)
+       The padding transition pairs with the grid's column transition. */
+    .cortex-reader-sidebar__desktop {
+        transition: padding 280ms cubic-bezier(0.4, 0, 0.2, 1),
+                    top    220ms ease,
+                    max-height 220ms ease;
+    }
+    /* Collapse pill — sits top-right of the sidebar. Expanded shows "Collapse [["
+       with a left-chevron; collapsed centers a right-chevron (the rotation is
+       handled by CSS on the icon). */
+    .cortex-reader-sidebar__toggle {
+        position: absolute;
+        top: 22px;
+        right: 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        height: 28px;
+        padding: 0 10px 0 8px;
+        border-radius: 9999px;
+        border: 1px solid hsl(var(--border));
+        background-color: hsl(var(--card));
+        color: hsl(var(--muted-foreground));
+        font-family: var(--font-mono);
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        cursor: pointer;
+        box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.04);
+        transition: color 140ms ease, background-color 140ms ease,
+                    transform 140ms ease, right 280ms cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 4;
+    }
+    .cortex-reader-sidebar__toggle:hover {
+        color: hsl(var(--foreground));
+        background-color: hsl(var(--background));
+    }
+    .cortex-reader-sidebar__toggle:focus-visible {
+        outline: 2px solid hsl(var(--primary));
+        outline-offset: 2px;
+    }
+    .cortex-reader-sidebar__toggle-icon {
+        width: 12px;
+        height: 12px;
+        transition: transform 280ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .cortex-reader-sidebar__toggle-label,
+    .cortex-reader-sidebar__toggle-kbd {
+        transition: opacity 140ms ease, max-width 280ms ease;
+        max-width: 80px;
+        opacity: 1;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+    .cortex-reader-sidebar__toggle-kbd {
+        font-family: var(--font-mono);
+        font-size: 9.5px;
+        border: 1px solid hsl(var(--border) / 0.6);
+        border-radius: 3px;
+        padding: 0 4px;
+        margin-left: 2px;
+        color: hsl(var(--muted-foreground));
+        background-color: hsl(var(--background));
+    }
+    /* Collapsed: pill shrinks to a centered chevron-only button. */
+    .cortex-reader-layout[data-side="collapsed"]:not([data-peek="on"]) .cortex-reader-sidebar__toggle {
+        right: 50%;
+        transform: translateX(50%);
+        padding: 0;
+        width: 28px;
+        justify-content: center;
+        gap: 0;
+    }
+    .cortex-reader-layout[data-side="collapsed"]:not([data-peek="on"])
+        .cortex-reader-sidebar__toggle-icon {
+        transform: rotate(180deg);
+    }
+    .cortex-reader-layout[data-side="collapsed"]:not([data-peek="on"])
+        .cortex-reader-sidebar__toggle-label,
+    .cortex-reader-layout[data-side="collapsed"]:not([data-peek="on"])
+        .cortex-reader-sidebar__toggle-kbd {
+        max-width: 0;
+        opacity: 0;
+        /* Collapse the kbd chip's box to a true zero. `max-width: 0` alone is
+           not enough: under `box-sizing: border-box` it cannot shrink a box
+           below its own border + padding, so the `[`-key chip kept ~10px of
+           width (1px border ×2 + 4px padding ×2) and — sitting after the
+           chevron in the flex row — pushed the chevron left of centre. Margin,
+           padding and border must all be zeroed for the row to centre on the
+           chevron alone. */
+        margin: 0;
+        padding: 0;
+        border-width: 0;
+    }
+    /* Peek state — small PEEK badge appears on the pill so the user knows the
+       expanded view is temporary. */
+    .cortex-reader-layout[data-peek="on"][data-side="collapsed"]
+        .cortex-reader-sidebar__toggle::after {
+        content: "PEEK";
+        margin-left: 4px;
+        padding: 0 5px;
+        border-radius: 3px;
+        background-color: hsl(var(--primary) / 0.18);
+        color: hsl(var(--primary));
+        font-family: var(--font-mono);
+        font-size: 8.5px;
+        letter-spacing: 0.14em;
+    }
+
+    /* Expanded inner (search + tree) — fades when collapsed without peek. */
+    .cortex-reader-sidebar__expanded {
+        @apply flex flex-col gap-5 px-6 pt-9 pb-12;
+        transition: opacity 180ms ease;
+    }
+    /* Scoped to `__desktop`: the mobile drawer reuses the same `__expanded`
+       class, and the whole reader (drawer included) sits inside
+       `[data-side="collapsed"]` once the viewport is below the auto-collapse
+       breakpoint — i.e. always on phones. Without this scope the rule would
+       collapse the drawer's content to height:0/visibility:hidden, leaving
+       the opened drawer blank. */
+    .cortex-reader-layout[data-side="collapsed"]:not([data-peek="on"])
+        .cortex-reader-sidebar__desktop
+        .cortex-reader-sidebar__expanded {
+        opacity: 0;
+        visibility: hidden;
+        height: 0;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        pointer-events: none;
+    }
+
+    /* Rail — hidden by default; shown only when collapsed and not peeking. */
+    .cortex-reader-sidebar__rail {
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        padding-top: 56px;
+    }
+    .cortex-reader-layout[data-side="collapsed"]:not([data-peek="on"])
+        .cortex-reader-sidebar__rail {
+        display: flex;
+    }
+    /* Rail tile — 40×40 with the chapter number in mono. Active state lifts the
+       border and adds a primary fill. */
+    .cortex-reader-sidebar__rail-tile {
+        position: relative;
+        width: 40px;
+        height: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        border: 1px solid hsl(var(--border));
+        background-color: hsl(var(--card));
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: hsl(var(--muted-foreground));
+        text-decoration: none;
+        cursor: pointer;
+        transition: color 140ms ease, background-color 140ms ease,
+                    border-color 140ms ease, transform 140ms ease;
+    }
+    .cortex-reader-sidebar__rail-tile:hover {
+        color: hsl(var(--foreground));
+        border-color: hsl(var(--muted-foreground));
+        transform: translateY(-1px);
+    }
+    .cortex-reader-sidebar__rail-tile--active {
+        color: hsl(var(--primary));
+        background-color: hsl(var(--primary) / 0.12);
+        border-color: hsl(var(--primary) / 0.35);
+        font-weight: 600;
+        isolation: isolate;
+    }
+    .cortex-reader-sidebar__rail-tile--section {
+        width: 32px;
+        height: 32px;
+        border: 0;
+        background: transparent;
+        color: hsl(var(--muted-foreground));
+    }
+    .cortex-reader-sidebar__rail-tile--section:hover {
+        color: hsl(var(--foreground));
+        background-color: hsl(var(--secondary));
+    }
+    .cortex-reader-sidebar__rail-tile__icon {
+        width: 14px;
+        height: 14px;
+    }
+    .cortex-reader-sidebar__rail-divider {
+        width: 14px;
+        height: 1px;
+        background-color: hsl(var(--border));
+        margin: 6px 0 2px;
+    }
+    /* Tooltip beside each tile — appears to the right on hover/focus. */
+    .cortex-reader-sidebar__rail-tip {
+        position: absolute;
+        left: calc(100% + 10px);
+        top: 50%;
+        transform: translateY(-50%) translateX(-4px);
+        opacity: 0;
+        pointer-events: none;
+        background-color: hsl(var(--foreground));
+        color: hsl(var(--background));
+        font-family: var(--font-sans);
+        font-size: 12px;
+        font-weight: 500;
+        letter-spacing: 0;
+        line-height: 1.3;
+        padding: 6px 10px;
+        border-radius: 6px;
+        white-space: nowrap;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+        transition: opacity 140ms ease, transform 140ms ease;
+        z-index: 5;
+    }
+    .cortex-reader-sidebar__rail-tip::before {
+        content: "";
+        position: absolute;
+        right: 100%;
+        top: 50%;
+        transform: translateY(-50%);
+        border: 5px solid transparent;
+        border-right-color: hsl(var(--foreground));
+    }
+    .cortex-reader-sidebar__rail-tile:hover .cortex-reader-sidebar__rail-tip,
+    .cortex-reader-sidebar__rail-tile:focus-visible .cortex-reader-sidebar__rail-tip {
+        opacity: 1;
+        transform: translateY(-50%) translateX(0);
+    }
+
+    /* Sync-flash — pulses the active rail tile / chapter row when the right-TOC
+       dispatches cortex:syncFlash. Single-use animation, removed by JS after
+       FlashMs (800ms). */
+    @keyframes cortex-sidebar-sync-flash {
+        0%   { box-shadow: 0 0 0 0 hsl(var(--primary) / 0.45); }
+        25%  { box-shadow: 0 0 0 8px hsl(var(--primary) / 0.45); }
+        100% { box-shadow: 0 0 0 0 transparent; }
+    }
+    .cortex-reader-sidebar__rail-tile--flash,
+    .cortex-reader-sidebar__chapter-link--flash {
+        animation: cortex-sidebar-sync-flash 720ms ease-out;
+    }
+
+    /* ─── FAB column repositioning ─────────────────────────────────
+       The original two-FAB stack (back-to-top at 20px, TOC at 76px) grows to a
+       four-FAB stack: back-to-top → type → focus → TOC (top of stack). Each
+       button is 44px high with a 12px gap above the previous one. */
+    .cortex-reader-type-prefs-fab {
+        position: fixed;
+        right: 20px;
+        bottom: 76px;
+        z-index: 40;
+        width: 44px;
+        height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 9999px;
+        border: 1px solid hsl(var(--border));
+        background-color: hsl(var(--card));
+        color: hsl(var(--foreground));
+        cursor: pointer;
+        box-shadow: 0 6px 18px -4px rgba(0, 0, 0, 0.18),
+                    0 2px 4px -1px rgba(0, 0, 0, 0.08);
+        transition: opacity 180ms ease, transform 180ms ease,
+                    background-color 180ms ease;
+    }
+    .cortex-reader-type-prefs-fab:hover {
+        background-color: hsl(var(--background));
+        transform: translateY(-1px);
+    }
+    .cortex-reader-type-prefs-fab:focus-visible {
+        outline: 2px solid hsl(var(--primary));
+        outline-offset: 3px;
+    }
+    .cortex-reader-type-prefs-fab__icon {
+        width: 20px;
+        height: 20px;
+    }
+    .cortex-reader-focus-fab {
+        position: fixed;
+        right: 20px;
+        bottom: 132px;
+        z-index: 40;
+        width: 44px;
+        height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 9999px;
+        border: 1px solid hsl(var(--border));
+        background-color: hsl(var(--card));
+        color: hsl(var(--foreground));
+        cursor: pointer;
+        box-shadow: 0 6px 18px -4px rgba(0, 0, 0, 0.18),
+                    0 2px 4px -1px rgba(0, 0, 0, 0.08);
+        transition: opacity 180ms ease, transform 180ms ease,
+                    background-color 180ms ease;
+    }
+    .cortex-reader-focus-fab:hover {
+        background-color: hsl(var(--background));
+        transform: translateY(-1px);
+    }
+    .cortex-reader-focus-fab:focus-visible {
+        outline: 2px solid hsl(var(--primary));
+        outline-offset: 3px;
+    }
+    .cortex-reader-focus-fab[aria-pressed="true"] {
+        background-color: hsl(var(--foreground));
+        color: hsl(var(--background));
+        border-color: hsl(var(--foreground));
+    }
+    .cortex-reader-focus-fab__icon {
+        width: 18px;
+        height: 18px;
+    }
+    /* TOC float moves up the stack to make room for type + focus. */
+    .cortex-reader-toc-float {
+        bottom: 188px;
+    }
+    .cortex-reader-toc-pop {
+        bottom: 244px;
+    }
+    /* Focus + type FABs hidden under mobile breakpoint (the F / T key shortcuts
+       still work for keyboard users). */
+    @media (max-width: 1023px) {
+        .cortex-reader-type-prefs-fab,
+        .cortex-reader-focus-fab,
+        .cortex-reader-type-prefs { display: none; }
+    }
+
+    /* ─── Focus-mode hint + edge ──────────────────────────────────── */
+    .cortex-reader-focus-hint {
+        position: fixed;
+        top: 18px;
+        right: 24px;
+        z-index: 50;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-family: var(--font-mono);
+        font-size: 10.5px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: hsl(var(--muted-foreground));
+        background-color: hsl(var(--card));
+        border: 1px solid hsl(var(--border));
+        border-radius: 9999px;
+        padding: 6px 14px;
+        box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.04);
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(-6px);
+        transition: opacity 240ms ease, transform 240ms ease;
+        cursor: pointer;
+    }
+    .cortex-reader-focus-hint[data-focused="true"] {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateY(0);
+    }
+    .cortex-reader-focus-hint[data-focused="true"][data-faded="true"] {
+        opacity: 0.18;
+    }
+    .cortex-reader-focus-hint[data-focused="true"][data-faded="true"]:hover {
+        opacity: 1;
+    }
+    .cortex-reader-focus-hint kbd {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        padding: 1px 5px;
+        border: 1px solid hsl(var(--border));
+        border-radius: 3px;
+        background-color: hsl(var(--background));
+        color: hsl(var(--foreground));
+        letter-spacing: 0;
+    }
+    .cortex-reader-focus-hint__dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 9999px;
+        background-color: hsl(var(--primary));
+        animation: cortex-focus-pulse 2s ease-in-out infinite;
+    }
+    @keyframes cortex-focus-pulse {
+        0%, 100% { opacity: 0.4; }
+        50%      { opacity: 1; }
+    }
+    .cortex-reader-focus-edge {
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 24px;
+        z-index: 51;
+        cursor: pointer;
+    }
+
+    /* Focus mode body class — fades every chrome surface and recentres the
+       prose at 760px. The site header gets its own rule in header.css. */
+    body.cortex-focus-mode .cortex-reader-sidebar__desktop,
+    body.cortex-focus-mode .cortex-reader-toc-float,
+    body.cortex-focus-mode .cortex-reader-toc-pop,
+    body.cortex-focus-mode .cortex-reader-type-prefs-fab,
+    body.cortex-focus-mode .cortex-reader-type-prefs,
+    body.cortex-focus-mode .cortex-reader-sticky-bar,
+    body.cortex-focus-mode .cortex-reader-minimap,
+    body.cortex-focus-mode .scroll-to-top {
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 280ms ease;
+    }
+    body.cortex-focus-mode .cortex-reader-layout {
+        grid-template-columns: 1fr !important;
+    }
+    body.cortex-focus-mode .cortex-reader-layout__main {
+        padding-top: 64px;
+        padding-bottom: 120px;
+    }
+    body.cortex-focus-mode .cortex-reader-layout__prose {
+        max-width: 760px;
+        margin-inline: auto;
+    }
+
+    /* ─── Sticky chapter bar ──────────────────────────────────────── */
+    .cortex-reader-sticky-bar {
+        position: fixed;
+        top: 64px;
+        left: 0;
+        right: 0;
+        z-index: 28;
+        padding: 10px 32px;
+        background-color: hsl(var(--background) / 0.92);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid hsl(var(--border) / 0.6);
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        transform: translateY(-110%);
+        opacity: 0;
+        pointer-events: none;
+        transition: transform 220ms ease, opacity 220ms ease;
+    }
+    .cortex-reader-sticky-bar[data-on="true"] {
+        transform: translateY(0);
+        opacity: 1;
+        pointer-events: auto;
+    }
+    .cortex-reader-sticky-bar__chapter {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 6px;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: hsl(var(--muted-foreground));
+    }
+    .cortex-reader-sticky-bar__chapter strong {
+        color: hsl(var(--foreground));
+        font-family: var(--font-sans);
+        font-size: 13px;
+        letter-spacing: 0;
+        text-transform: none;
+        font-weight: 600;
+    }
+    .cortex-reader-sticky-bar__sep { opacity: 0.5; }
+    .cortex-reader-sticky-bar__section {
+        color: hsl(var(--foreground));
+        font-family: var(--font-sans);
+        font-size: 13.5px;
+        font-weight: 500;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        flex: 1;
+        min-width: 0;
+    }
+    @media (max-width: 767px) {
+        .cortex-reader-sticky-bar { display: none; }
+    }
+
+    /* ─── Mini-map (right edge) ───────────────────────────────────── */
+    .cortex-reader-minimap {
+        position: fixed;
+        top: 50%;
+        right: 8px;
+        transform: translateY(-50%);
+        z-index: 40;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 6px;
+        pointer-events: none;
+    }
+    .cortex-reader-minimap__track {
+        position: relative;
+        width: 2px;
+        height: min(380px, 50vh);
+        background-color: hsl(var(--border));
+        border-radius: 1px;
+        pointer-events: auto;
+    }
+    .cortex-reader-minimap__fill {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        background-color: hsl(var(--primary));
+        border-radius: 1px;
+        transition: height 100ms linear;
+    }
+    .cortex-reader-minimap__tick {
+        position: absolute;
+        left: -8px;
+        right: -8px;
+        height: 16px;
+        transform: translateY(-50%);
+        cursor: pointer;
+        pointer-events: auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: none;
+        border: 0;
+        padding: 0;
+    }
+    .cortex-reader-minimap__tick::before {
+        content: "";
+        width: 16px;
+        height: 2px;
+        background-color: hsl(var(--border));
+        border-radius: 1px;
+        transition: width 140ms ease, background-color 140ms ease, opacity 140ms ease;
+    }
+    /* Depth differentiation: h1 widest + boldest, h3 narrowest. The base rule above
+       is the h2 default; --level-1 / --level-3 modifiers override it. */
+    .cortex-reader-minimap__tick--level-1::before {
+        width: 22px;
+        background-color: hsl(var(--muted-foreground));
+    }
+    .cortex-reader-minimap__tick--level-3::before {
+        width: 12px;
+        opacity: 0.75;
+    }
+    .cortex-reader-minimap__tick:hover::before,
+    .cortex-reader-minimap__tick--active::before {
+        width: 22px;
+        background-color: hsl(var(--foreground));
+        opacity: 1;
+    }
+    .cortex-reader-minimap__tick--level-1:hover::before,
+    .cortex-reader-minimap__tick--level-1.cortex-reader-minimap__tick--active::before {
+        width: 28px;
+    }
+    .cortex-reader-minimap__tick--level-3:hover::before,
+    .cortex-reader-minimap__tick--level-3.cortex-reader-minimap__tick--active::before {
+        width: 18px;
+    }
+    .cortex-reader-minimap__tick--active::before {
+        background-color: hsl(var(--primary));
+    }
+    .cortex-reader-minimap__tick-label {
+        position: absolute;
+        right: calc(100% + 12px);
+        top: 50%;
+        transform: translateY(-50%) translateX(-4px);
+        background-color: hsl(var(--foreground));
+        color: hsl(var(--background));
+        font-family: var(--font-sans);
+        font-size: 12px;
+        white-space: nowrap;
+        padding: 5px 10px;
+        border-radius: 6px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 120ms ease, transform 120ms ease;
+    }
+    .cortex-reader-minimap__tick-label::after {
+        content: "";
+        position: absolute;
+        left: 100%;
+        top: 50%;
+        transform: translateY(-50%);
+        border: 5px solid transparent;
+        border-left-color: hsl(var(--foreground));
+    }
+    .cortex-reader-minimap__tick:hover .cortex-reader-minimap__tick-label {
+        opacity: 1;
+        transform: translateY(-50%) translateX(0);
+    }
+    @media (max-width: 1099px) {
+        .cortex-reader-minimap { display: none; }
+    }
+
+    /* ─── Read-meta strip (under H1) ──────────────────────────────── */
+    .cortex-reader-readmeta {
+        display: inline-flex;
+        align-items: center;
+        gap: 14px;
+        margin: -8px 0 28px;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: hsl(var(--muted-foreground));
+    }
+    .cortex-reader-readmeta strong {
+        color: hsl(var(--foreground));
+        font-weight: 500;
+    }
+    .cortex-reader-readmeta__dot {
+        width: 3px;
+        height: 3px;
+        border-radius: 9999px;
+        background-color: hsl(var(--muted-foreground));
+        opacity: 0.5;
+    }
+
+    /* ─── Heading anchor link affordance ──────────────────────────── */
+    .chapter-content h2,
+    .chapter-content h3,
+    .chapter-content h4 {
+        position: relative;
+    }
+    .chapter-content .cortex-prose-anchor {
+        position: absolute;
+        left: -28px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 22px;
+        height: 22px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: hsl(var(--muted-foreground));
+        opacity: 0;
+        text-decoration: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: opacity 140ms ease, color 140ms ease, transform 140ms ease;
+    }
+    .chapter-content h2:hover .cortex-prose-anchor,
+    .chapter-content h3:hover .cortex-prose-anchor,
+    .chapter-content h4:hover .cortex-prose-anchor,
+    .chapter-content .cortex-prose-anchor:focus-visible {
+        opacity: 1;
+    }
+    .chapter-content .cortex-prose-anchor:hover {
+        color: hsl(var(--primary));
+        transform: translateY(-50%) scale(1.1);
+    }
+    .chapter-content .cortex-prose-anchor svg {
+        width: 14px;
+        height: 14px;
+    }
+    /* Headings inside a collapsible <summary> (e.g. the Quick Reference's foldable
+       sections, the Memorize <details>) are the fold's toggle control — they must
+       not get the hover deep-link pill, which would otherwise pop up in indigo
+       right next to the disclosure chevron. The heading keeps its id, so the
+       right-rail outline and #-anchor URLs still resolve. */
+    .chapter-content summary .cortex-prose-anchor { display: none; }
+    .chapter-content .cortex-prose-anchor[data-copied="true"]::after {
+        content: "Copied";
+        position: absolute;
+        left: calc(100% + 6px);
+        top: 50%;
+        transform: translateY(-50%);
+        font-family: var(--font-mono);
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: hsl(var(--primary));
+        background-color: hsl(var(--primary) / 0.18);
+        border: 1px solid hsl(var(--primary) / 0.35);
+        padding: 2px 6px;
+        border-radius: 4px;
+        white-space: nowrap;
+    }
+
+    /* ─── Code block header ───────────────────────────────────────── */
+    .chapter-content .cortex-code-block {
+        margin: 0 0 28px;
+        border-radius: 10px;
+        overflow: hidden;
+        background-color: hsl(var(--foreground));
+    }
+    .chapter-content .cortex-code-block__head {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 14px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        background-color: rgba(255, 255, 255, 0.04);
+        color: hsl(var(--background));
+        font-family: var(--font-mono);
+        font-size: 11px;
+        letter-spacing: 0.08em;
+    }
+    .chapter-content .cortex-code-block__lang {
+        color: hsl(var(--primary));
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+    }
+    .chapter-content .cortex-code-block__file {
+        opacity: 0.68;
+    }
+    .chapter-content .cortex-code-block__copy {
+        margin-left: auto;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 10px;
+        border-radius: 6px;
+        background-color: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: hsl(var(--background));
+        font-family: var(--font-mono);
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: background-color 140ms ease, color 140ms ease,
+                    border-color 140ms ease;
+    }
+    .chapter-content .cortex-code-block__copy:hover {
+        background-color: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.25);
+    }
+    .chapter-content .cortex-code-block__copy[data-state="copied"] {
+        color: hsl(var(--primary));
+        border-color: hsl(var(--primary));
+    }
+    .chapter-content .cortex-code-block__copy svg {
+        width: 11px;
+        height: 11px;
+    }
+    .chapter-content .cortex-code-block pre {
+        margin: 0;
+        border-radius: 0;
+        background-color: transparent;
+        border: 0;
+        padding: 18px 22px;
+        color: hsl(var(--background));
+    }
+
+    /* ─── Prev / Next chapter footer ──────────────────────────────── */
+    .cortex-reader-prev-next {
+        margin: 96px auto 0;
+        max-width: 1100px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+    }
+    .cortex-reader-prev-next__placeholder {
+        /* Empty placeholder so the next card still occupies the second column */
+    }
+    .cortex-reader-prev-next__card {
+        display: flex;
+        flex-direction: column;
+        padding: 22px 24px 24px;
+        border: 1px solid hsl(var(--border));
+        border-radius: 14px;
+        background-color: hsl(var(--card));
+        text-decoration: none;
+        color: inherit;
+        transition: transform 180ms ease, border-color 180ms ease,
+                    background-color 180ms ease, box-shadow 180ms ease;
+    }
+    .cortex-reader-prev-next__card:hover {
+        transform: translateY(-2px);
+        border-color: hsl(var(--muted-foreground));
+        box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05),
+                    0 8px 24px -12px rgba(0, 0, 0, 0.18);
+    }
+    .cortex-reader-prev-next__card--next {
+        text-align: right;
+    }
+    .cortex-reader-prev-next__eyebrow {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: hsl(var(--muted-foreground));
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+    }
+    .cortex-reader-prev-next__eyebrow--next {
+        justify-content: flex-end;
+    }
+    .cortex-reader-prev-next__arrow {
+        width: 13px;
+        height: 13px;
+        transition: transform 180ms ease;
+    }
+    .cortex-reader-prev-next__card--prev:hover .cortex-reader-prev-next__arrow {
+        transform: translateX(-3px);
+    }
+    .cortex-reader-prev-next__card--next:hover .cortex-reader-prev-next__arrow {
+        transform: translateX(3px);
+    }
+    .cortex-reader-prev-next__title {
+        font-family: var(--font-display);
+        font-style: italic;
+        font-size: 28px;
+        line-height: 1.1;
+        letter-spacing: -0.015em;
+        margin: 0;
+        color: hsl(var(--foreground));
+    }
+
+    /* ─── Type controls panel ─────────────────────────────────────── */
+    .cortex-reader-type-prefs {
+        position: fixed;
+        right: 76px;
+        bottom: 20px;
+        z-index: 48;
+        width: 280px;
+        background-color: hsl(var(--card));
+        border: 1px solid hsl(var(--border));
+        border-radius: 14px;
+        box-shadow: 0 12px 32px -10px rgba(0, 0, 0, 0.4);
+        padding: 16px;
+        opacity: 0;
+        transform: translateY(8px) scale(0.98);
+        transform-origin: bottom right;
+        pointer-events: none;
+        transition: opacity 180ms ease, transform 180ms ease;
+    }
+    .cortex-reader-type-prefs[data-open="true"] {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        pointer-events: auto;
+    }
+    .cortex-reader-type-prefs__title {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: hsl(var(--muted-foreground));
+        margin: 0 0 14px;
+    }
+    .cortex-reader-type-prefs__group {
+        margin-bottom: 14px;
+    }
+    .cortex-reader-type-prefs__group:last-child {
+        margin-bottom: 0;
+    }
+    .cortex-reader-type-prefs__label {
+        font-family: var(--font-mono);
+        font-size: 10.5px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: hsl(var(--muted-foreground));
+        margin: 0 0 6px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .cortex-reader-type-prefs__seg {
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: 1fr;
+        gap: 4px;
+        padding: 3px;
+        background-color: hsl(var(--background));
+        border: 1px solid hsl(var(--border) / 0.6);
+        border-radius: 9px;
+    }
+    .cortex-reader-type-prefs__seg button {
+        border: 0;
+        background: transparent;
+        padding: 7px 10px;
+        border-radius: 6px;
+        font-family: var(--font-sans);
+        font-size: 12.5px;
+        color: hsl(var(--muted-foreground));
+        cursor: pointer;
+        transition: background-color 140ms ease, color 140ms ease;
+    }
+    .cortex-reader-type-prefs__seg button:hover {
+        color: hsl(var(--foreground));
+    }
+    .cortex-reader-type-prefs__seg button[aria-pressed="true"] {
+        background-color: hsl(var(--card));
+        color: hsl(var(--foreground));
+        box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.04);
+        font-weight: 500;
+    }
+    .cortex-reader-type-prefs__seg--family button[data-v="serif"] {
+        font-family: var(--font-read);
+        font-size: 14px;
+    }
+    .cortex-reader-type-prefs__seg--family button[data-v="mono"] {
+        font-family: var(--font-code);
+        font-size: 12.5px;
+    }
+    .cortex-reader-type-prefs__row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        padding: 8px 10px;
+        border: 1px solid hsl(var(--border) / 0.6);
+        border-radius: 9px;
+        background-color: hsl(var(--background));
+        cursor: pointer;
+        transition: background-color 140ms ease;
+    }
+    .cortex-reader-type-prefs__row:hover {
+        background-color: hsl(var(--secondary));
+    }
+    .cortex-reader-type-prefs__row-label {
+        font-size: 13px;
+        color: hsl(var(--foreground));
+        flex: 1;
+        text-align: left;
+    }
+    .cortex-reader-type-prefs__switch {
+        width: 32px;
+        height: 18px;
+        border-radius: 9999px;
+        background-color: hsl(var(--border));
+        position: relative;
+        transition: background-color 160ms ease;
+        flex: none;
+    }
+    .cortex-reader-type-prefs__switch::after {
+        content: "";
+        position: absolute;
+        left: 2px;
+        top: 2px;
+        width: 14px;
+        height: 14px;
+        border-radius: 9999px;
+        background-color: hsl(var(--card));
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        transition: transform 160ms ease;
+    }
+    .cortex-reader-type-prefs__row[aria-pressed="true"] .cortex-reader-type-prefs__switch {
+        background-color: hsl(var(--primary));
+    }
+    .cortex-reader-type-prefs__row[aria-pressed="true"] .cortex-reader-type-prefs__switch::after {
+        transform: translateX(14px);
+    }
+
+    /* ─── Selection actions popover ───────────────────────────────── */
+    .cortex-reader-selpop {
+        position: absolute;
+        z-index: 55;
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+        padding: 3px;
+        background-color: hsl(var(--foreground));
+        border-radius: 9px;
+        box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.4);
+        opacity: 0;
+        transform: translate(-50%, calc(-100% - 16px)) scale(0.96);
+        transform-origin: 50% calc(100% + 8px);
+        pointer-events: none;
+        transition: opacity 140ms ease, transform 140ms ease;
+    }
+    .cortex-reader-selpop[data-open="true"] {
+        opacity: 1;
+        transform: translate(-50%, calc(-100% - 10px)) scale(1);
+        pointer-events: auto;
+    }
+    .cortex-reader-selpop::after {
+        content: "";
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        border: 6px solid transparent;
+        border-top-color: hsl(var(--foreground));
+    }
+    .cortex-reader-selpop button {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 10px;
+        background-color: transparent;
+        border: 0;
+        color: hsl(var(--background));
+        font-family: var(--font-sans);
+        font-size: 12px;
+        font-weight: 500;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background-color 120ms ease;
+    }
+    .cortex-reader-selpop button:hover {
+        background-color: rgba(255, 255, 255, 0.12);
+    }
+    .cortex-reader-selpop button[data-state="done"] {
+        color: hsl(var(--primary));
+    }
+    .cortex-reader-selpop__icon {
+        width: 13px;
+        height: 13px;
+    }
+    .cortex-reader-selpop__divider {
+        width: 1px;
+        height: 16px;
+        background-color: rgba(255, 255, 255, 0.12);
+        margin: 0 2px;
+    }
+    .cortex-reader-highlight {
+        background-color: hsl(var(--primary) / 0.18);
+        color: inherit;
+        padding: 0 2px;
+        border-radius: 2px;
+        box-shadow: inset 0 -2px 0 hsl(var(--primary));
+    }
+
+    /* ─── Resume reading toast ────────────────────────────────────── */
+    .cortex-reader-resume {
+        position: fixed;
+        left: 50%;
+        bottom: 24px;
+        transform: translate(-50%, 24px);
+        z-index: 60;
+        display: inline-flex;
+        align-items: center;
+        gap: 14px;
+        padding: 10px 12px 10px 18px;
+        background-color: hsl(var(--foreground));
+        color: hsl(var(--background));
+        border-radius: 9999px;
+        box-shadow: 0 12px 32px -10px rgba(0, 0, 0, 0.4);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 220ms ease, transform 220ms ease;
+    }
+    .cortex-reader-resume[data-open="true"] {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translate(-50%, 0);
+    }
+    .cortex-reader-resume__label {
+        font-family: var(--font-sans);
+        font-size: 13px;
+    }
+    .cortex-reader-resume__btn {
+        padding: 6px 14px;
+        border-radius: 9999px;
+        background-color: hsl(var(--primary));
+        color: hsl(var(--primary-foreground));
+        border: 0;
+        font-family: var(--font-sans);
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: opacity 140ms ease;
+    }
+    .cortex-reader-resume__btn:hover {
+        opacity: 0.9;
+    }
+    .cortex-reader-resume__close {
+        width: 26px;
+        height: 26px;
+        border-radius: 9999px;
+        background-color: transparent;
+        color: hsl(var(--background) / 0.7);
+        border: 0;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .cortex-reader-resume__close:hover {
+        color: hsl(var(--background));
+        background-color: rgba(255, 255, 255, 0.08);
+    }
+    .cortex-reader-resume__close-icon {
+        width: 13px;
+        height: 13px;
+    }
+
+    /* ─── Reduced-motion sweep (single-source toggle) ─────────────── */
+    @media (prefers-reduced-motion: reduce) {
+        .cortex-reader-layout,
+        .cortex-reader-sidebar__desktop,
+        .cortex-reader-sidebar__toggle,
+        .cortex-reader-sidebar__toggle-icon,
+        .cortex-reader-sidebar__toggle-label,
+        .cortex-reader-sidebar__toggle-kbd,
+        .cortex-reader-sidebar__expanded,
+        .cortex-reader-sidebar__rail-tile,
+        .cortex-reader-sidebar__rail-tip,
+        .cortex-reader-type-prefs-fab,
+        .cortex-reader-focus-fab,
+        .cortex-reader-focus-hint,
+        .cortex-reader-focus-hint__dot,
+        .cortex-reader-sticky-bar,
+        .cortex-reader-minimap__fill,
+        .cortex-reader-minimap__tick::before,
+        .cortex-reader-minimap__tick-label,
+        .cortex-reader-type-prefs,
+        .cortex-reader-type-prefs__seg button,
+        .cortex-reader-type-prefs__row,
+        .cortex-reader-type-prefs__switch,
+        .cortex-reader-type-prefs__switch::after,
+        .cortex-reader-selpop,
+        .cortex-reader-selpop button,
+        .cortex-reader-resume,
+        .cortex-reader-prev-next__card,
+        .cortex-reader-prev-next__arrow,
+        body.cortex-focus-mode .cortex-reader-sidebar__desktop,
+        body.cortex-focus-mode .cortex-reader-toc-float,
+        body.cortex-focus-mode .cortex-reader-toc-pop,
+        body.cortex-focus-mode .cortex-reader-type-prefs-fab,
+        body.cortex-focus-mode .cortex-reader-type-prefs,
+        body.cortex-focus-mode .cortex-reader-sticky-bar,
+        body.cortex-focus-mode .cortex-reader-minimap,
+        body.cortex-focus-mode .scroll-to-top { transition: none !important; }
+        .cortex-reader-sidebar__rail-tile--flash,
+        .cortex-reader-sidebar__chapter-link--flash,
+        .cortex-reader-focus-hint__dot { animation: none !important; }
+        .cortex-reader-sidebar__rail-tile:hover,
+        .cortex-reader-prev-next__card:hover,
+        .cortex-reader-type-prefs-fab:hover,
+        .cortex-reader-focus-fab:hover { transform: none !important; }
+    }
+
+    /* ─── Mobile: dock the in-page TOC FAB on the bottom line ─────────
+       Below `lg` the left "chapters" FAB sits at bottom-left (bottom-5 = 20px).
+       Pull the in-page TOC FAB down to the bottom-right corner so the two read
+       as a matched pair on one line. The back-to-top button (the only other
+       right-edge FAB shown at this width — the type + focus FABs are
+       `display:none` here) and the TOC popover shift up one 56px slot so
+       nothing overlaps. This block sits last in the file so it wins on source
+       order over every FAB base rule above. */
+    @media (max-width: 1023.98px) {
+        .cortex-reader-toc-float { bottom: 20px; }
+        .cortex-reader-toc-pop   { bottom: 76px; }
+        .scroll-to-top           { bottom: 76px; }
+    }
+}

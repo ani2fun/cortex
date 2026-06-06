@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    name: sbt build + tests + frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up sbt
+        uses: sbt/setup-sbt@v1
+
+      - name: Cache sbt
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.sbt
+            ~/.cache/coursier
+            ~/.ivy2/cache
+          key: ${{ runner.os }}-sbt-${{ hashFiles('**/build.sbt', 'project/**') }}
+          restore-keys: |
+            ${{ runner.os }}-sbt-
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v6
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: client/package.json
+
+      # - name: Format check (Scala)
+      #   run: sbt "scalafmtCheckAll; scalafmtSbtCheck"
+
+      - name: Compile + test (Scala)
+        run: sbt "compile; test"
+
+      # Validate every `d3 widget=linked-list` payload across content/cortex/
+      # against the ADR-0016 marker canon — names ∈ closed set, no author
+      # `color`, node `style` ∈ {new, removed, highlight}, sections in bounds.
+      # Catches drift in chapters nobody re-opened locally; the widget itself
+      # enforces the same canon at runtime under `bin/dev`.
+      - name: Linked-list canon (cortex payloads)
+        run: sbt validateCortexPayloads
+
+      - name: Stage server + link client JS
+        run: sbt "server/Universal/stage; client/fullLinkJS"
+
+      - name: Install npm deps
+        working-directory: client
+        run: npm install --no-audit --no-fund
+
+      # Vitest covers the pure-TypeScript D3 layout maths (client/src/d3/
+      # *-layout.ts) — deterministic, no DOM, runs in plain Node.
+      - name: Test frontend (vitest)
+        working-directory: client
+        run: npm test
+
+      - name: Build frontend bundle
+        working-directory: client
+        run: npm run build
+
+  docker:
+    name: docker build smoke
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Build Docker image
+        run: docker build -t codefolio:ci .

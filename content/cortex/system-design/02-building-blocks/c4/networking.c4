@@ -1,0 +1,76 @@
+// Lesson 6 — "Networking primer for system designers". The component
+// vocabulary the rest of Part 2 builds on: how an HTTP request travels from
+// a browser, through the recursive DNS resolver, to a CDN edge (with origin
+// shielding), and only on cache misses, to the origin app + database.
+//
+// The overview view is the system-context the lesson opens on. The
+// `cdn_internals` view zooms inside the CDN system to make the edge-vs-shield
+// distinction concrete — caching (Lesson 8) and replication (Lesson 11) both
+// reuse this shape.
+//
+// All identifiers carry the `net` (networking) prefix — every lesson `.c4`
+// file owns its own prefix so identifiers don't collide in LikeC4's flat
+// global namespace. See memory/likec4_multi_file_convention.md.
+//
+// No `specification` block — element kinds (`actor`, `system`, `container`)
+// are declared once in workspace.c4 and shared across the LikeC4 project.
+
+model {
+  netUser = actor 'Browser user' {
+    description 'Types https://example.com and waits for first paint.'
+  }
+
+  netResolver = system 'Recursive DNS resolver' {
+    description 'OS / ISP / public (1.1.1.1, 8.8.8.8). Caches answers per TTL.'
+  }
+
+  netCdn = system 'CDN' {
+    description 'Anycast edge fleet in front of origin. Most reads never reach the origin.'
+
+    netEdgePop = container 'Edge POP' {
+      description 'Anycast IP. Terminates TCP/QUIC + TLS. Caches popular objects (hot tier).'
+    }
+    netShield = container 'Origin shield' {
+      description 'Regional cache between edges and origin. Coalesces concurrent misses into one upstream fetch.'
+    }
+
+    netEdgePop -> netShield 'cache miss — fetch via shield'
+  }
+
+  netOrigin = system 'Origin' {
+    description 'The application the CDN sits in front of. Sees only cache misses + revalidations.'
+
+    netAppServer = container 'App server' {
+      description 'Renders pages / serves API. The thing you actually wrote.'
+    }
+    netDatabase = container 'Database' {
+      description 'System of record for the dynamic responses the app produces.'
+
+      netAppServer -> netDatabase 'reads / writes'
+    }
+  }
+
+  netUser -> netResolver 'A / AAAA query for www.example.com'
+  netResolver -> netUser 'returns CDN anycast IP'
+  netUser -> netCdn 'HTTPS request — TCP/QUIC + TLS + HTTP GET'
+  netCdn -> netOrigin 'cache miss — origin fetch on the small fraction of misses'
+}
+
+views {
+  // System-landscape view (no `of` clause) — shows peer systems side by
+  // side. A scoped view (e.g. `of netCdn`) would zoom INTO the CDN and only
+  // show its containers + immediate neighbours, which is the wrong shape
+  // for an overview meant to display the whole browser → DNS → CDN →
+  // origin topology. Listing the elements explicitly (rather than
+  // `include *`) keeps the view focused on this lesson; otherwise LikeC4
+  // pulls in every element from every other `.c4` file in the project.
+  view buildingblocks_networking_overview {
+    title 'Networking — system context (browser → DNS → CDN → origin)'
+    include netUser, netResolver, netCdn, netOrigin
+  }
+
+  view buildingblocks_networking_cdn_internals of netCdn {
+    title 'CDN — container view (edge POP + origin shield)'
+    include *
+  }
+}

@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Silent SSO check</title>
+  </head>
+  <body>
+    <!--
+      Keycloak silent check-sso endpoint. keycloak-js loads this page inside a
+      hidden iframe to probe for an existing session without navigating the app.
+      Its only job is to hand the (post-redirect) iframe URL back to the parent
+      window so keycloak-js can read the auth result. See KeycloakClient.scala.
+    -->
+    <script>
+      parent.postMessage(location.href, location.origin);
+    </script>
+  </body>
+</html>

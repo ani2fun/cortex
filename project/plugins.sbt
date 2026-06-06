@@ -1,0 +1,6 @@
+addSbtPlugin("org.scala-js"                % "sbt-scalajs"              % "1.21.0")
+addSbtPlugin("org.portable-scala"          % "sbt-scalajs-crossproject" % "1.3.2")
+addSbtPlugin("com.github.sbt"              % "sbt-native-packager"      % "1.10.4")
+addSbtPlugin("io.spray"                    % "sbt-revolver"             % "0.10.0")
+addSbtPlugin("com.softwaremill.sttp.tapir" % "sbt-openapi-codegen"      % "1.11.22")
+addSbtPlugin("org.scalameta"               % "sbt-scalafmt"             % "2.5.2")

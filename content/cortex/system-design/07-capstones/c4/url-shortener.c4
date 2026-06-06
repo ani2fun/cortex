@@ -1,0 +1,51 @@
+// Capstone 37 — "URL shortener". C4 container view of the system: the
+// stateless redirect/create API, the read-through cache that absorbs the
+// hot (Zipfian) tail of redirects, the sharded KV store that is the durable
+// source of truth (code -> long URL), and the key-generation service that
+// hands out unique base62 codes so creates never collide.
+//
+// All identifiers carry the `urlshort` prefix per the locked
+// identifier-prefix convention. View name is scope-prefixed
+// `capstones_urlshortener_*` (LikeC4 view names share a flat namespace
+// across all Parts — see memory/likec4_multi_file_convention.md).
+//
+// No `specification` block — element kinds (`actor`, `system`, `container`)
+// are declared once in 05-application-architecture/c4/workspace.c4 and shared
+// across the whole book's merged model.
+
+model {
+  urlshortUser = actor 'User' {
+    description 'Creates short links (POST /shorten) and follows them (GET /{code} -> redirect).'
+  }
+
+  urlshortSys = system 'URL Shortener' {
+    description 'Maps a short code to a long URL and redirects. Read-heavy (~100:1 reads:writes).'
+
+    urlshortApi = container 'API / redirector' {
+      description 'Stateless app servers behind a load balancer. POST /shorten stores a new code; GET /{code} returns a 302 to the long URL.'
+    }
+    urlshortCache = container 'Cache (Redis)' {
+      description 'Read-through cache of code -> URL for the hot tail of links. Absorbs the large majority of redirects so the KV store is barely touched.'
+    }
+    urlshortKv = container 'KV store (sharded)' {
+      description 'Durable source of truth: short_code -> long_url + metadata. A point-lookup workload, sharded by code. Backed by an LSM/B-tree KV engine.'
+    }
+    urlshortKgs = container 'Key-generation service' {
+      description 'Hands out unique base62 codes (a pre-generated key pool or a distributed counter) so concurrent creates never collide.'
+    }
+
+    urlshortApi -> urlshortCache 'look up code (read-through)'
+    urlshortApi -> urlshortKv 'read on cache miss; write on create'
+    urlshortApi -> urlshortKgs 'request a unique code (on create)'
+    urlshortCache -> urlshortKv 'populate on miss'
+  }
+
+  urlshortUser -> urlshortApi 'POST /shorten ; GET /{code}'
+}
+
+views {
+  view capstones_urlshortener_architecture of urlshortSys {
+    title 'URL shortener — container view'
+    include *
+  }
+}

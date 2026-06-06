@@ -1,0 +1,31 @@
+.git
+.gitignore
+.github
+.idea
+.vscode
+.bsp
+.bloop
+.metals
+metals.sbt
+.DS_Store
+
+# Don't ship build outputs into the build context
+**/target
+**/project/target
+**/project/project
+client/dist
+node_modules
+**/node_modules
+
+# Local-only
+.env
+.env.*
+CLAUDE.md
+AGENTS.md
+CODEX_CONTEXT.md
+DEEPENING.md
+INTERFACE-DESIGN.md
+LANGUAGE.md
+.claude
+README.md
+*.log

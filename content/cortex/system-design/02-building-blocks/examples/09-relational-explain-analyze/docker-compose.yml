@@ -1,0 +1,36 @@
+# Lesson 9 — Relational databases hands-on. One Postgres, one tiny Python
+# script that seeds 100k rows then runs the same `WHERE email = ?` query
+# with and without an index. The reader watches the EXPLAIN ANALYZE output
+# flip from a sequential scan (~30 ms) to an index scan (~0.1 ms). See
+# ./README.md for the recipe.
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: lesson9
+      POSTGRES_PASSWORD: lesson9
+      POSTGRES_DB: lesson9
+    ports:
+      - "55432:5432"   # exposed for psql from the host; matches the README
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lesson9 -d lesson9"]
+      interval: 1s
+      timeout: 2s
+      retries: 30
+
+  seed:
+    build: ./app
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PGHOST: db
+      PGPORT: "5432"
+      PGUSER: lesson9
+      PGPASSWORD: lesson9
+      PGDATABASE: lesson9
+    # By default, `docker compose run seed` runs the seed-then-demo
+    # script. The README walks the reader through running it once,
+    # then connecting via psql to play.
+    command: ["python", "explain_demo.py"]

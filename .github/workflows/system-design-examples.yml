@@ -1,0 +1,94 @@
+name: system-design-examples
+
+# Runs each runnable example under content/cortex/system-design/**/examples/
+# on PRs that touch the section. Scoped narrowly so unrelated PRs are unaffected.
+
+on:
+  pull_request:
+    paths:
+      - 'content/cortex/system-design/**'
+      - '.github/workflows/system-design-examples.yml'
+  workflow_dispatch:
+
+jobs:
+  discover:
+    name: Discover examples
+    runs-on: ubuntu-latest
+    outputs:
+      examples: ${{ steps.find.outputs.examples }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - id: find
+        name: Find example projects
+        run: |
+          shopt -s nullglob
+          examples=()
+          for dir in content/cortex/system-design/*/examples/*/; do
+            if [ -f "$dir/justfile" ] || [ -f "$dir/Makefile" ]; then
+              examples+=("\"${dir%/}\"")
+            fi
+          done
+          if [ ${#examples[@]} -eq 0 ]; then
+            echo 'examples=[]' >> "$GITHUB_OUTPUT"
+          else
+            joined=$(IFS=,; echo "${examples[*]}")
+            echo "examples=[$joined]" >> "$GITHUB_OUTPUT"
+          fi
+
+  test:
+    name: Test ${{ matrix.example }}
+    needs: discover
+    if: ${{ fromJSON(needs.discover.outputs.examples)[0] != null }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        example: ${{ fromJSON(needs.discover.outputs.examples) }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Detect language
+        id: lang
+        run: |
+          dir="${{ matrix.example }}"
+          if [ -f "$dir/pyproject.toml" ]; then
+            echo "lang=python" >> "$GITHUB_OUTPUT"
+          elif [ -f "$dir/pom.xml" ]; then
+            echo "lang=java" >> "$GITHUB_OUTPUT"
+          elif [ -f "$dir/build.sbt" ]; then
+            echo "lang=scala" >> "$GITHUB_OUTPUT"
+          else
+            echo "lang=unknown" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up Python
+        if: steps.lang.outputs.lang == 'python'
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install uv
+        if: steps.lang.outputs.lang == 'python'
+        run: pip install uv
+
+      - name: Set up JDK 21
+        if: steps.lang.outputs.lang == 'java' || steps.lang.outputs.lang == 'scala'
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Install just
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh \
+            | bash -s -- --to /usr/local/bin
+
+      - name: Run tests
+        working-directory: ${{ matrix.example }}
+        run: |
+          if [ -f justfile ]; then
+            just test
+          else
+            make test
+          fi

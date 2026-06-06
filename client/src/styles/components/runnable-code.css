@@ -1,0 +1,357 @@
+@layer components {
+    /* Runnable code block (rcb) - editable code editor + Run/Cancel/Reset + output, plus
+       the tabbed group that hosts multiple language variants.
+       Blocks: .rcb (single block), .rcg (tabbed group) */
+
+    /* ─── Single block ───────────────────────────────────────────── */
+    .rcb {
+        @apply my-6 rounded-lg border border-border overflow-hidden;
+    }
+    .rcb__header {
+        @apply flex items-center justify-between gap-2 px-3 py-2 border-b border-border bg-muted/40;
+        /* containing block for the discovery cue, so the cue is bounded by the
+           header width and can never overflow the viewport */
+        position: relative;
+    }
+    .rcb__language-label {
+        @apply inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground;
+    }
+    /* Real brand-mark prefix for languages where the emoji-only label is too
+       vague (currently just Scala). Sized to sit on the cap-height of the
+       label text; coloured in Scala brand red so the chip reads as a real
+       brand mark, not a monochrome glyph. */
+    .rcb__brand-icon {
+        @apply h-3.5 w-3.5 shrink-0;
+    }
+    .rcb__brand-icon--scala {
+        color: #DC322F;
+    }
+    .rcb__controls {
+        @apply flex items-center gap-2;
+    }
+    .rcb__button {
+        @apply inline-flex items-center gap-1.5 rounded-md border border-border
+               px-2 py-1 text-xs font-semibold hover:bg-accent;
+    }
+    .rcb__button--cancel {
+        @apply px-3;
+    }
+    .rcb__button--run {
+        /* Override base border + background — the Run button is the primary action. */
+        @apply rounded-md bg-primary text-primary-foreground border-transparent
+               px-3 py-1 text-xs font-semibold hover:bg-primary/90 hover:bg-primary/90;
+    }
+    .rcb__button--viz {
+        /* Sibling of Run — secondary, outlined, indigo-tinted on hover.
+           Declared after .rcb__button so the hover here wins over hover:bg-accent. */
+        @apply hover:border-primary hover:text-primary hover:bg-primary/10;
+    }
+    .rcb__button-icon {
+        @apply h-3 w-3;
+    }
+    .rcb__editor {
+        @apply bg-[#2d2d2d] text-zinc-100;
+    }
+    /* Wrapper around the Monaco instance. Height is driven inline by the
+       Scala component's content-size hook; this rule just nukes the padding
+       (Monaco's own `options.padding` handles vertical space) and prevents
+       page scrolling on accidental wheel events landing on the editor. */
+    .rcb__editor--monaco {
+        @apply p-0 overflow-hidden;
+    }
+    /* Monaco renders its own background + gutter; force-clear any default
+       so the wrapper's #2d2d2d shows through and the theme registered in
+       `monaco.ts` is what the user sees. */
+    .rcb__editor--monaco .monaco-editor,
+    .rcb__editor--monaco .monaco-editor .overflow-guard,
+    .rcb__editor--monaco .monaco-editor-background,
+    .rcb__editor--monaco .monaco-editor .margin {
+        background-color: transparent !important;
+    }
+    /* Display-only variant for non-runnable tabs (pseudocode). Matches the
+       editable editor's inline padding/font settings so tab-switching feels
+       seamless. */
+    .rcb__editor--static {
+        @apply m-0 p-4 overflow-x-auto;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+                     "Liberation Mono", "Courier New", monospace;
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    .rcb__output {
+        @apply border-t border-border bg-muted/50 px-4 py-3 text-sm font-mono;
+    }
+    .rcb__loading {
+        @apply flex items-center gap-2 text-muted-foreground;
+    }
+    .rcb__loading-icon {
+        @apply h-3.5 w-3.5 animate-spin;
+    }
+    .rcb__error {
+        @apply whitespace-pre-wrap text-destructive text-xs;
+    }
+    .rcb__result {
+        @apply space-y-2;
+    }
+    .rcb__status-row {
+        @apply flex flex-wrap items-center gap-2 text-xs;
+    }
+    .rcb__status {
+        @apply inline-flex items-center rounded px-1.5 py-0.5 font-semibold;
+    }
+    .rcb__status--ok {
+        @apply bg-emerald-500/15 text-emerald-700 dark:text-emerald-400;
+    }
+    .rcb__status--err {
+        @apply bg-rose-500/15 text-rose-700 dark:text-rose-400;
+    }
+    .rcb__status-meta {
+        @apply text-muted-foreground;
+    }
+    .rcb__details-summary {
+        @apply cursor-pointer text-xs text-muted-foreground;
+    }
+    .rcb__details-pre--compile {
+        @apply mt-1 whitespace-pre-wrap text-xs text-amber-700 dark:text-amber-400;
+    }
+    .rcb__details-pre--stderr {
+        @apply mt-1 whitespace-pre-wrap text-xs text-rose-700 dark:text-rose-400 text-foreground!;
+    }
+    .rcb__stdout {
+        @apply whitespace-pre-wrap text-xs text-foreground!;
+    }
+    .rcb__no-output {
+        @apply text-xs text-muted-foreground italic;
+    }
+
+    /* ─── Tabbed group ───────────────────────────────────────────── */
+    .rcg {
+        @apply my-6 rounded-lg border border-border overflow-hidden;
+    }
+    .rcg__tablist {
+        @apply flex border-b border-border bg-muted/40 overflow-x-auto;
+    }
+    .rcg__tab {
+        @apply inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold whitespace-nowrap
+               border-b-2 transition-colors border-transparent text-muted-foreground hover:text-foreground;
+    }
+    .rcg__tab--active {
+        @apply border-primary text-foreground;
+    }
+    /* Scala-specific brand mark on tabs, same rules as `.rcb__brand-icon`. */
+    .rcg__brand-icon {
+        @apply h-3.5 w-3.5 shrink-0;
+    }
+    .rcg__brand-icon--scala {
+        color: #DC322F;
+    }
+
+    /* ─── Auth gate (ADR-0013) ───────────────────────────────────── */
+
+    /* Locked "Edit" button — shown to anonymous visitors. The lock badge
+       carries the signal; the button itself keeps the base styling. */
+    .rcb__button--locked {
+        @apply text-muted-foreground;
+    }
+    .rcb__lock {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 15px;
+        height: 15px;
+        margin-right: 1px;
+        border-radius: 4px;
+        background: hsl(var(--primary) / 0.16);
+        color: hsl(var(--primary));
+    }
+    .rcb__lock-icon {
+        width: 9px;
+        height: 9px;
+        stroke-width: 2.4;
+    }
+
+    /* Bottom edit bar — visible only while the editor is in edit mode. Sits
+       flush under the dark editor surface (.rcb__editor is #2d2d2d). */
+    .rcb__edit-bar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 12px;
+        background: #2d2d2d;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        font-family: var(--font-mono);
+        font-size: 10.5px;
+        letter-spacing: 0.04em;
+        color: rgba(244, 244, 245, 0.7);
+    }
+    .rcb__edit-bar-dirty {
+        color: hsl(var(--primary));
+        font-weight: 500;
+    }
+    .rcb__edit-bar-spacer {
+        flex: 1;
+    }
+    .rcb__edit-bar kbd {
+        padding: 1.5px 5px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-bottom-width: 2px;
+        border-radius: 3px;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: rgba(244, 244, 245, 0.92);
+    }
+
+    /* Identity chip — avatar + @handle + sign-out, shown in a code block's
+       header when a user is signed in. Block: .identity-chip */
+    .identity-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 3px 7px 3px 3px;
+        border-radius: 9999px;
+        border: 1px solid hsl(var(--border));
+        background: hsl(var(--card));
+        font-family: var(--font-mono);
+        font-size: 10.5px;
+        letter-spacing: 0.02em;
+    }
+    .identity-chip__avatar {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #7e88e6 0%, #4f5bd5 55%, #2a2f6b 100%);
+        color: #fff;
+        font-family: var(--font-sans);
+        font-size: 9px;
+        font-weight: 700;
+    }
+    .identity-chip__handle {
+        color: hsl(var(--foreground));
+        text-transform: lowercase;
+    }
+    .identity-chip__signout {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: 2px;
+        color: hsl(var(--muted-foreground));
+        transition: color 160ms ease;
+    }
+    .identity-chip__signout:hover {
+        color: hsl(var(--primary));
+    }
+    .identity-chip__signout-icon {
+        width: 11px;
+        height: 11px;
+    }
+
+    /* ─── Visualise discovery cue ────────────────────────────────── */
+    /* A one-time, once-per-browser nudge toward the Visualise button: the
+       button pulses and a dismissible tip drops beneath the header. Claimed
+       by the first viz block scrolled into view (RunnableCodeBlock — the
+       IntersectionObserver + `discoveryClaimed` / `DiscoveryKey`). The tip
+       is positioned against `.rcb__header`, so it is always bounded by the
+       block and never overflows the viewport. */
+    .rcb__viz {
+        display: inline-flex;
+    }
+    /* Pulse ring — kept ≤ 5px so it isn't clipped by `.rcb`'s overflow-hidden;
+       four iterations, then it stops. */
+    @keyframes rcb-viz-pulse {
+        0%   { box-shadow: 0 0 0 0 hsl(var(--primary) / 0.5); }
+        70%  { box-shadow: 0 0 0 5px hsl(var(--primary) / 0); }
+        100% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0); }
+    }
+    .rcb__button--viz-cue {
+        animation: rcb-viz-pulse 1.8s ease-out 4;
+    }
+    @keyframes rcb-viz-cue-in {
+        from { opacity: 0; transform: translateY(-4px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+    .rcb__viz-cue {
+        position: absolute;
+        top: calc(100% + 9px);
+        right: 12px;
+        z-index: 5;
+        display: flex;
+        align-items: flex-start;
+        gap: 6px;
+        width: max-content;
+        max-width: 15rem;
+        padding: 7px 8px 8px 11px;
+        border: 1px solid hsl(var(--border));
+        border-radius: 8px;
+        background: hsl(var(--card));
+        color: hsl(var(--foreground));
+        box-shadow: 0 10px 26px -10px rgba(0, 0, 0, 0.4);
+        font-size: 12px;
+        line-height: 1.4;
+        animation: rcb-viz-cue-in 200ms ease-out;
+    }
+    /* Caret pointing up — offset to sit roughly under the Visualise button
+       (which is ~131px in from the header's right edge). */
+    .rcb__viz-cue::before {
+        content: "";
+        position: absolute;
+        top: -5px;
+        right: 119px;
+        width: 10px;
+        height: 10px;
+        background: hsl(var(--card));
+        border-left: 1px solid hsl(var(--border));
+        border-top: 1px solid hsl(var(--border));
+        transform: rotate(45deg);
+    }
+    /* On a phone the tip spans the block width — a banner, not a pointer. */
+    @media (max-width: 768px) {
+        .rcb__viz-cue {
+            left: 12px;
+            right: 12px;
+            width: auto;
+            max-width: none;
+        }
+        .rcb__viz-cue::before {
+            display: none;
+        }
+    }
+    .rcb__viz-cue-text {
+        flex: 1;
+        min-width: 0;
+    }
+    .rcb__viz-cue-close {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        width: 18px;
+        height: 18px;
+        margin: -2px -2px 0 0;
+        border: none;
+        border-radius: 4px;
+        background: transparent;
+        color: hsl(var(--muted-foreground));
+        transition: color 140ms ease;
+    }
+    .rcb__viz-cue-close:hover {
+        color: hsl(var(--foreground));
+    }
+    .rcb__viz-cue-close-icon {
+        width: 12px;
+        height: 12px;
+    }
+    /* The tip carries the message; honour a reduced-motion preference by
+       dropping the pulse and the entrance animation. */
+    @media (prefers-reduced-motion: reduce) {
+        .rcb__button--viz-cue {
+            animation: none;
+        }
+        .rcb__viz-cue {
+            animation: none;
+        }
+    }
+}

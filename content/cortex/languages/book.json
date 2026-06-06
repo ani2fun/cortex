@@ -1,0 +1,12 @@
+{
+    "title": "Programming Languages",
+    "description": "A senior-engineer-grade tour of the languages a working engineer reaches for daily — starting with SQL and growing to cover Python, Scala, and the rest. Every section is a self-contained curriculum: deep mental models, production-reality examples, and a hint-driven practice ladder. The goal is not syntax fluency but the ability to reason about what each language is asking the runtime to do, and to debug the production version when it goes wrong.",
+    "tags": [
+        "languages",
+        "sql",
+        "postgres",
+        "programming-languages"
+    ],
+    "estimatedReadingMinutes": 600,
+    "order": 3
+}

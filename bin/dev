@@ -1,0 +1,252 @@
+#!/usr/bin/env bash
+# One-command dev mode: Postgres (Docker) + sbt watcher (server reStart +
+# client fastLinkJS) + Vite dev server. Streams all logs to stdout with
+# coloured prefixes. Ctrl-C tears everything down.
+
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+
+SERVER_PORT=8080
+VITE_PORT=5173
+
+# ---- helpers -------------------------------------------------------------
+
+c_reset=$'\033[0m'
+c_db=$'\033[36m'      # cyan
+c_sbt=$'\033[33m'     # yellow
+c_vite=$'\033[35m'    # magenta
+c_meta=$'\033[32m'    # green
+
+prefix() { local label="$1" colour="$2"; sed -u -e "s/^/${colour}[${label}]${c_reset} /"; }
+log()    { printf "%s[dev]%s %s\n" "$c_meta" "$c_reset" "$*"; }
+warn()   { printf "%s[dev]%s %s\n" $'\033[31m' "$c_reset" "$*" >&2; }
+
+port_pids() { lsof -nP -iTCP:"$1" -sTCP:LISTEN -t 2>/dev/null || true; }
+
+PIDS=()
+cleanup() {
+  log "shutting down…"
+  for pid in "${PIDS[@]:-}"; do kill "$pid" 2>/dev/null || true; done
+  # Best-effort: stop the sbt-revolver-managed server JVM (parented to sbt's child)
+  (sbt -batch "server/reStop" >/dev/null 2>&1 &) || true
+  # And kill anything still holding the server port
+  local stragglers
+  stragglers="$(port_pids "$SERVER_PORT")"
+  if [[ -n "$stragglers" ]]; then
+    log "killing leftover process(es) on :$SERVER_PORT — ${stragglers//$'\n'/ }"
+    kill $stragglers 2>/dev/null || true
+  fi
+}
+trap cleanup EXIT INT TERM
+
+# ---- 1. Pre-flight: free the ports we need ------------------------------
+
+# Stop any background sbt-revolver server first (clean if a previous run
+# of this script was killed without releasing it).
+log "stopping any prior sbt-revolver-managed server"
+(sbt -batch -no-colors "server/reStop" >/dev/null 2>&1 || true)
+
+for port_info in "$SERVER_PORT:server" "$VITE_PORT:vite"; do
+  port="${port_info%%:*}"
+  who="${port_info##*:}"
+  pids="$(port_pids "$port")"
+  if [[ -n "$pids" ]]; then
+    warn "port $port (for $who) is in use by PID(s): ${pids//$'\n'/ }"
+    warn "attempting to free it…"
+    kill $pids 2>/dev/null || true
+    sleep 2
+    pids="$(port_pids "$port")"
+    if [[ -n "$pids" ]]; then
+      warn "still in use — please stop the conflicting process and retry."
+      exit 1
+    fi
+  fi
+done
+
+# ---- 1b. Auth gate (ADR-0013): OFF by default for local dev -------------
+#
+# OFF by default: the editor is unlocked for everyone, the /api/run rate
+# limiter no-ops, the server's JWT verifier short-circuits, and the SPA skips
+# keycloak-js — so there's no Keycloak container to start or wait on. Opt INTO
+# the full local GitHub-sign-in flow (Keycloak container, realm import, user
+# tester/tester) with `AUTH_ENABLED=true ./bin/dev`. See ADR-0013.
+export AUTH_ENABLED="${AUTH_ENABLED:-false}"
+export KEYCLOAK_ISSUER_URL="${KEYCLOAK_ISSUER_URL:-http://localhost:8081/realms/codefolio}"
+export KEYCLOAK_REALM="${KEYCLOAK_REALM:-codefolio}"
+export KEYCLOAK_CLIENT_ID="${KEYCLOAK_CLIENT_ID:-codefolio-web}"
+
+# ---- 1c. Fresh build state: clear the cross-compiled `shared` targets ----
+#
+# `./bin/dev` runs TWO sbt processes that both compile `shared`: the watcher
+# (`~ ;client/fastLinkJS …`) and @scala-js/vite-plugin-scalajs's own one-shot
+# sbt. At startup they race on shared/.js's incremental (zinc) cache, which
+# intermittently corrupts it — the tell is a Vite crash like
+#   "Source file '…/shared/.js/…/CortexIndexWalker\$BookMeta\$.class' does not exist".
+# Wiping the cross targets forces a clean codegen + recompile so every launch
+# starts from a known-good state. Opt out (warm, faster start) with
+# `DEV_NO_CLEAN=1 ./bin/dev`.
+if [[ -z "${DEV_NO_CLEAN:-}" ]]; then
+  log "fresh start — clearing shared/.js + shared/.jvm + client scalajs targets (DEV_NO_CLEAN=1 to skip)"
+  rm -rf shared/.js/target shared/.jvm/target client/target
+fi
+
+# ---- 2. Backing stores: Postgres + Redis + MongoDB + go-judge -----------
+
+# Preflight: locate docker. Docker Desktop installs `docker` at
+# /usr/local/bin/docker (Intel) or /opt/homebrew/bin/docker (Apple
+# Silicon) on first launch. Those symlinks occasionally disappear after
+# an OS update or a fresh reboot while the binary inside Docker.app stays
+# put — fall back to the bundled binary so the launcher doesn't die on
+# `command not found`. (Mac-only path; Linux Docker installs put `docker`
+# on $PATH directly and never hit the fallback.)
+if ! command -v docker >/dev/null 2>&1; then
+  if [[ -x /Applications/Docker.app/Contents/Resources/bin/docker ]]; then
+    log "docker not on \$PATH — using bundled binary from Docker.app"
+    export PATH="/Applications/Docker.app/Contents/Resources/bin:$PATH"
+  else
+    warn "docker not found. Install Docker Desktop"
+    warn "  https://www.docker.com/products/docker-desktop/"
+    warn "or another Docker-compatible runtime (OrbStack, Colima, podman-compose)."
+    exit 1
+  fi
+fi
+
+# Confirm the daemon is reachable. The CLI being present doesn't mean
+# Docker Desktop is running — `docker compose up` would otherwise fail
+# deep inside step 2 with a less-actionable error.
+if ! docker info >/dev/null 2>&1; then
+  warn "docker CLI is available but the daemon isn't responding."
+  warn "Start Docker Desktop and re-run ./bin/dev:"
+  warn "    open -ga Docker"
+  exit 1
+fi
+
+# Keycloak only matters when the auth gate is on — skip the container (and
+# its ~30-60s first-boot realm import) otherwise.
+stores="db redis mongo go-judge likec4"
+if [[ "$AUTH_ENABLED" == "true" ]]; then stores="$stores keycloak"; fi
+log "starting backing stores ($stores)"
+docker compose up -d --remove-orphans $stores
+
+for svc in db redis mongo; do
+  log "waiting for $svc to be healthy…"
+  for _ in $(seq 1 30); do
+    status="$(docker inspect --format '{{.State.Health.Status}}' "$(docker compose ps -q "$svc")" 2>/dev/null || echo starting)"
+    [[ "$status" == "healthy" ]] && break
+    sleep 1
+  done
+done
+
+# go-judge has no healthcheck; just confirm the container is up.
+log "go-judge reachable at http://127.0.0.1:5050 (POST /run)"
+export EXECUTOR_URL="${EXECUTOR_URL:-http://localhost:5050}"
+
+# likec4 has no healthcheck; nginx is fast to start. Edit any .c4 source
+# under content/cortex/**/c4/ then `docker compose up -d --build likec4` to
+# pick up changes. Use 127.0.0.1 (not `localhost`) so the JDK HttpClient
+# in LikeC4ProxyRoutes connects over IPv4 — docker-desktop binds :8090 to
+# 127.0.0.1 only, and the JDK prefers ::1 for `localhost` on macOS.
+log "likec4 SPA reachable at http://127.0.0.1:8090/c4/ (proxied by ZIO server at /c4/*)"
+export LIKEC4_URL="${LIKEC4_URL:-http://127.0.0.1:8090}"
+
+# Auth gate (ADR-0013) — config is set in step 1b above. When enabled, wait
+# for the local Keycloak realm import before the app starts (first boot slow).
+if [[ "$AUTH_ENABLED" == "true" ]]; then
+  # Keycloak has no compose healthcheck; poll the realm's OIDC discovery
+  # endpoint instead (first boot imports the realm — can take ~30-60s).
+  log "waiting for Keycloak realm 'codefolio' to import…"
+  kc_ready=""
+  for _ in $(seq 1 60); do
+    if curl -sf "http://localhost:8081/realms/codefolio/.well-known/openid-configuration" \
+        >/dev/null 2>&1; then
+      kc_ready=1
+      break
+    fi
+    sleep 2
+  done
+  if [[ -n "$kc_ready" ]]; then
+    log "Keycloak ready — admin http://localhost:8081 (admin/admin); sign in as tester/tester"
+  else
+    warn "Keycloak didn't become ready in time — sign-in may not work yet."
+  fi
+fi
+
+# ---- 3. Frontend deps (one-time) ----------------------------------------
+
+if [[ ! -d client/node_modules ]]; then
+  log "installing npm deps (first run)"
+  (cd client && npm install --no-audit --no-fund) | prefix "npm" "$c_vite"
+fi
+
+# ---- 3b. Viz render types: regenerate from viz-schema.yaml ---------------
+#
+# `client/src/d3/types.generated.ts` is generated from `viz-schema.yaml`
+# (ADR-0026). Regenerate once per dev session so a yaml edit is reflected
+# without remembering to run the script. The committed file is the source of
+# truth for CI (a vitest drift guard fails if it's stale); this just keeps
+# the working tree fresh during iteration. The Scala side is hand-written +
+# conformance-tested, so nothing to generate there.
+log "regenerating viz render types (viz-schema.yaml → types.generated.ts)…"
+(cd client && npm run codegen:viz --silent) | prefix "codegen" "$c_vite"
+
+# ---- 4. sbt watcher: client fastLinkJS + server reStart in sequence -----
+
+# Order matters: `client/fastLinkJS` MUST come before `server/reStart`.
+# reStart (sbt-revolver) is an InputTask with a greedy argument parser —
+# any task name placed after it on the line is swallowed as a program
+# argument to the forked app (the tell: `Main.main(client/fastLinkJS)` in
+# the log) instead of running as its own watched task, so client sources
+# would never be recompiled on change. Keep reStart last.
+#
+# Previously this used `~ all client/fastLinkJS server/reStart` to run the
+# two tasks in parallel under `~`, but sbt 1.10.7 rejects that as
+# "Invalid commands: 'all …'" the moment `~` parses it. Falling back to
+# the explicit `;`-chained form keeps the same semantics (recompile both
+# on every change) and survives the `all` regression. Each `;` makes sbt
+# treat the next token as a fresh command, so reStart's greedy parser
+# doesn't swallow client/fastLinkJS.
+log "starting sbt watcher (client/fastLinkJS + server/reStart)…"
+sbt -no-colors "~ ;client/fastLinkJS ;server/reStart" \
+  2> >(prefix "sbt" "$c_sbt" >&2) \
+  |  prefix "sbt" "$c_sbt" &
+PIDS+=($!)
+
+# Stagger Vite behind the watcher's FIRST compile. The @scala-js/vite-plugin's
+# own sbt and this watcher BOTH build the client (sharedJS → client/fastLinkJS);
+# compiling concurrently races the scalajs incremental (zinc) cache and corrupts
+# it ("…sjsir/…class does not exist" → Vite dies on boot). Waiting until the
+# server is up means the watcher has finished a full, consistent client build,
+# so the plugin's sbt does a clean incremental pass instead of a colliding one.
+# (Times out after ~4min so a stuck/failed compile still hands control to Vite.)
+log "waiting for sbt's first compile (server on :$SERVER_PORT) before starting Vite…"
+for _ in $(seq 1 120); do
+  [[ -n "$(port_pids "$SERVER_PORT")" ]] && break
+  sleep 2
+done
+
+# ---- 5. Vite dev server --------------------------------------------------
+
+log "starting Vite dev server on http://localhost:${VITE_PORT}"
+(cd client && npm run dev --silent) \
+  2> >(prefix "vite" "$c_vite" >&2) \
+  |  prefix "vite" "$c_vite" &
+PIDS+=($!)
+
+log "all services up — Ctrl-C to stop"
+log "  Vite (frontend, with HMR):  http://localhost:${VITE_PORT}"
+log "  ZIO server (API + Swagger): http://localhost:${SERVER_PORT}  /docs"
+log "  Postgres:                   localhost:5432  (user/pass: codefolio)"
+log "  Redis:                      localhost:6379"
+log "  MongoDB:                    localhost:27017 (db: codefolio)"
+log "  go-judge (sandbox):         localhost:5050 (POST /run)"
+log "  LikeC4 (via proxy):         http://localhost:${SERVER_PORT}/c4/view/index"
+if [[ "$AUTH_ENABLED" == "true" ]]; then
+  log "  Keycloak:                   http://localhost:8081 (admin/admin) — realm codefolio, user tester/tester"
+  log "  Auth:                       ON  (sign in as tester/tester; AUTH_ENABLED=false ./bin/dev to skip)"
+else
+  log "  Auth:                       OFF (editor unlocked, no sign-in; AUTH_ENABLED=true ./bin/dev to enable)"
+fi
+
+wait "${PIDS[@]}"

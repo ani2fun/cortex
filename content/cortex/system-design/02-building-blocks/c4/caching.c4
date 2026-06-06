@@ -1,0 +1,56 @@
+// Lesson 8 — "Caching". The four-tier topology that the lesson body
+// references: browser-local cache (HTTP / service-worker) → CDN edge
+// cache → application's side cache (Redis / Memcached) → origin
+// database. The lesson body explains *where* each tier sits and *what*
+// it costs to traverse them; the view anchors that vocabulary.
+//
+// All identifiers carry the `cache` prefix — every lesson `.c4` file
+// owns its own prefix so identifiers don't collide in LikeC4's flat
+// global namespace. See memory/likec4_multi_file_convention.md.
+//
+// LikeC4 quirk: relationships involving containers nested inside a
+// system must be declared INSIDE that system's block. A `system ->
+// its-own-container` arrow at the top-level is rejected as "Invalid
+// parent-child relationship".
+//
+// No `specification` block — element kinds (`actor`, `system`,
+// `container`) are declared once in workspace.c4 and shared across
+// the LikeC4 project.
+
+model {
+  cacheClient = actor 'Browser / mobile client' {
+    description 'Has an HTTP / service-worker cache. Free; ~0 ms hits.'
+  }
+
+  cacheCdn = system 'CDN edge' {
+    description 'Static-asset cache + (optionally) cached API responses. 5–30 ms RTT to the user.'
+  }
+
+  cacheApp = system 'Application' {
+    description 'The thing you wrote. Reads from its side caches first; falls through to origin on miss.'
+
+    cacheL1 = container 'In-process cache' {
+      description 'JVM / Python LRU map. Microsecond hits. No network. Per-instance, so cluster invalidation is a problem.'
+    }
+    cacheL2 = container 'Distributed cache' {
+      description 'Redis / Memcached cluster. Sub-ms intra-DC hits. Shared across the app fleet.'
+    }
+
+    cacheL1 -> cacheL2 'L1 miss — fall through'
+  }
+
+  cacheOrigin = system 'Origin store' {
+    description 'Postgres / DynamoDB / whatever holds the canonical state. ~1–10 ms on a fast query; slow ones cost more.'
+  }
+
+  cacheClient -> cacheCdn 'HTTPS GET'
+  cacheCdn -> cacheApp 'cache miss — forward to app fleet'
+  cacheApp -> cacheOrigin 'L2 miss — read origin (and writes always)'
+}
+
+views {
+  view buildingblocks_caching_overview {
+    title 'Caching — four tiers (client → CDN → app caches → origin)'
+    include cacheClient, cacheCdn, cacheApp, cacheOrigin, cacheL1, cacheL2
+  }
+}

@@ -1,0 +1,39 @@
+<!doctype html>
+<!--
+  Phase 0 — trace-shape render harness (ADR-0025).
+
+  Stand-alone Vite-served HTML that loads a fixture JSON from
+  ./fixtures/<name>.json and feeds it to the production d3 renderer entry.
+  Driven by Playwright tests in trace-shapes.spec.ts.
+
+  Usage:
+    /test/e2e/render.html?fixture=avl-rotation
+    /test/e2e/render.html?fixture=graph-bfs
+    /test/e2e/render.html?fixture=hashmap-chained-collisions
+
+  Page exposes one global signal for tests:
+    window.__renderState — one of:
+      "pending"  — fixture not loaded yet
+      "ready"    — renderer mounted, controller available as window.__controller
+      "error:<message>" — fetch or render failed
+-->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Trace-shape render harness</title>
+    <!-- Production stylesheet so renderer chrome looks the same as in the modal. -->
+    <link rel="stylesheet" href="/tailwind.css" />
+    <style>
+      body { margin: 0; padding: 1rem; background: #fff; color: #111; font-family: system-ui, sans-serif; }
+      header { margin: 0 0 0.5rem 0; font-size: 0.875rem; color: #555; }
+      #harness-root { min-height: 400px; }
+      #harness-error { color: #b00020; font-family: monospace; white-space: pre-wrap; }
+    </style>
+  </head>
+  <body>
+    <header id="harness-header">Loading fixture…</header>
+    <div id="harness-root" data-render-state="pending"></div>
+    <pre id="harness-error" hidden></pre>
+    <script type="module" src="./render-fixture.ts"></script>
+  </body>
+</html>

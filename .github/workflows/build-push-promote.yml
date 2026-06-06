@@ -1,0 +1,24 @@
+name: Build, Push, and Promote Codefolio
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: codefolio-main
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  call:
+    uses: ./.github/workflows/_build-push-promote.yml
+    with:
+      image_repo: ghcr.io/ani2fun/codefolio
+      infra_kustomization_file: deploy/apps/codefolio/overlays/prod/kustomization.yaml
+      commit_message: "chore(codefolio): promote image to"
+    secrets: inherit

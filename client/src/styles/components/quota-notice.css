@@ -1,0 +1,48 @@
+/* Quota notice — the advisory panel that appears at the foot of a runnable
+   code block once the signed-in user has burned ≥70% of their hourly run
+   budget. Ported from the Claude Design `Cortex Auth` artboard (`.note*`).
+   Block: .quota-notice */
+
+@layer components {
+    .quota-notice {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        padding: 12px 14px;
+        border-top: 1px solid hsl(var(--primary) / 0.35);
+        background: hsl(var(--primary) / 0.06);
+    }
+    .quota-notice__icon {
+        flex-shrink: 0;
+        margin-top: 1px;
+        width: 22px;
+        height: 22px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        background: hsl(var(--primary) / 0.16);
+        color: hsl(var(--primary));
+    }
+    .quota-notice__icon-svg {
+        width: 12px;
+        height: 12px;
+    }
+    .quota-notice__title {
+        margin-bottom: 4px;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: hsl(var(--primary));
+    }
+    .quota-notice__body {
+        font-size: 14px;
+        line-height: 1.55;
+        color: hsl(var(--foreground) / 0.85);
+    }
+    .quota-notice__figure {
+        font-family: var(--font-mono);
+        color: hsl(var(--foreground));
+    }
+}

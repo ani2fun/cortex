@@ -1,0 +1,13 @@
+# Concurrency and Systems
+
+Every data structure in this book so far assumed **one thread**. The moment you have two — and that's every server, every database, every browser tab — the rules change. A regular linked-list insert is a few instructions; a *concurrent* linked-list insert that doesn't lose updates is a research paper. This module is the bridge between the textbook DSA you've learnt and the data structures real systems run.
+
+> How to read this chapter: follow **Start Here** top to bottom — that is the teaching path.
+
+## Start Here — the learning path
+
+- [CAS and Atomics](/cortex/data-structures-and-algorithms/concurrency-and-systems-cas-and-atomics)
+- [Lock-Free Queue](/cortex/data-structures-and-algorithms/concurrency-and-systems-lock-free-queue)
+- [Concurrent Hash Map](/cortex/data-structures-and-algorithms/concurrency-and-systems-concurrent-hash-map)
+- [RCU and Hazard Pointers](/cortex/data-structures-and-algorithms/concurrency-and-systems-rcu-and-hazard-pointers)
+- [Distributed Data Structures (Teaser)](/cortex/data-structures-and-algorithms/concurrency-and-systems-distributed-data-structures-teaser)

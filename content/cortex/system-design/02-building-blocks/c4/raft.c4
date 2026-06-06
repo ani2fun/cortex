@@ -1,0 +1,41 @@
+// Lesson 14 — "Consensus (Paxos, Raft)". The three-node Raft cluster
+// that the lesson body's `RaftAnimator` widget walks through: one
+// leader, two followers, each running the same Raft state machine over
+// a persistent log + WAL-on-disk. The view is a static snapshot of the
+// steady state; the widget shows the dynamic state transitions.
+//
+// All identifiers carry the `raft` prefix per the locked
+// identifier-prefix convention. See
+// memory/likec4_multi_file_convention.md.
+
+model {
+  raftClient = actor 'Client' {
+    description 'Issues writes through the cluster leader. Reads can target the leader (linearisable) or any follower (eventually consistent).'
+  }
+
+  raftCluster = system 'Raft cluster' {
+    description 'Three nodes running Raft. Tolerates 1 failure. Used by etcd, Consul, CockroachDB, ScyllaDB, TiKV.'
+
+    raftLeader = container 'Leader' {
+      description 'Currently elected leader. Accepts writes, replicates them to followers, advances the committed index when a majority acks.'
+    }
+    raftF1 = container 'Follower 1' {
+      description 'Receives AppendEntries from the leader; applies committed log entries. Becomes a candidate if leader heartbeat is missed.'
+    }
+    raftF2 = container 'Follower 2' {
+      description 'Same role as Follower 1. The two followers + leader form a quorum of 3; any 2 nodes can commit.'
+    }
+
+    raftLeader -> raftF1 'AppendEntries (replication + heartbeat)'
+    raftLeader -> raftF2 'AppendEntries (replication + heartbeat)'
+  }
+
+  raftClient -> raftCluster 'write → leader (read → leader for linearisable)'
+}
+
+views {
+  view buildingblocks_raft_cluster of raftCluster {
+    title 'Raft cluster — leader + 2 followers, tolerates 1 failure'
+    include *
+  }
+}

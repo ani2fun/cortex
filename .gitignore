@@ -1,0 +1,62 @@
+# Build outputs
+target/
+project/target/
+project/project/
+**/target/
+
+# sbt + Bloop + Metals + Bsp
+.bsp/
+.bloop/
+.metals/
+metals.sbt
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Node / Vite
+node_modules/
+client/dist/
+.npm/
+.parcel-cache/
+
+# Playwright (Phase 0+) — per-run artifacts; baselines under
+# client/test/e2e/*.spec.ts-snapshots/ ARE committed.
+client/test-results/
+client/playwright-report/
+client/blob-report/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# Claude / agent context (not committed)
+.claude/
+CLAUDE.md
+CONTEXT.md
+DEEPENING.md
+INTERFACE-DESIGN.md
+LANGUAGE.md
+docs/*
+!docs/perf-baselines.md
+tools
+.codegraph
+.graphify
+graphify-out
+.handoff/
+
+# Logs
+*.log
+
+# Python (system-design example projects)
+**/.venv/
+**/__pycache__/
+*.pyc
+**/.pytest_cache/
+**/.ruff_cache/

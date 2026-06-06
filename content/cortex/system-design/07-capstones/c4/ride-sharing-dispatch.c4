@@ -1,0 +1,58 @@
+// Capstone 41 — "Ride-sharing dispatch" (Uber/Lyft-style). C4 container view.
+// The defining problem is GEOSPATIAL: match a rider to the nearest of millions
+// of MOVING drivers in seconds, over a fleet whose positions update constantly.
+// The core is a cell-grid index (Uber's H3 hexagons): index drivers by cell,
+// answer "who's near me?" with a k-ring query over the rider's cell + neighbors.
+//
+// All identifiers carry the `ride` prefix. View name scope-prefixed
+// `capstones_ridesharingdispatch_*`. No `specification` block — element kinds
+// (actor, system, container) shared from 05-application-architecture/c4/workspace.c4.
+
+model {
+  rideRider = actor 'Rider' {
+    description 'Requests a ride from a pickup location; wants the nearest driver and an ETA, fast.'
+  }
+  rideDriver = actor 'Driver' {
+    description 'Streams GPS location every few seconds while available; receives and accepts ride offers.'
+  }
+
+  rideSys = system 'Ride-sharing dispatch' {
+    description 'Real-time geospatial matching of moving riders to moving drivers, with ETA ranking and surge pricing. Naturally shardable by geography.'
+
+    rideLocIngest = container 'Location ingest' {
+      description 'Absorbs the high-rate driver location firehose (batched/aggregated to cut writes) and updates each driver cell in the geo index.'
+    }
+    rideGeoIndex = container 'Geo index (H3 cells)' {
+      description 'In-memory map of H3 cell to the available drivers in it. A k-ring query (rider cell + neighbor cells) finds nearby drivers in O(1) lookups. Sharded by region.'
+    }
+    rideMatch = container 'Matching service' {
+      description 'On a ride request: compute the rider cell, k-ring query the geo index for candidates, rank by ETA, offer to the best driver with a response timeout, fall through on decline.'
+    }
+    rideRouting = container 'Routing / ETA service' {
+      description 'Ranks candidates by road-network ETA (not straight-line distance) over the live road graph + traffic.'
+    }
+    rideSurge = container 'Surge-pricing service' {
+      description 'Per-cell supply/demand feedback loop: when requests outstrip nearby drivers, raise the price to rebalance.'
+    }
+    rideTripStore = container 'Trip store' {
+      description 'Durable trips and driver state. Enforces single-assignment: a driver is claimed atomically so they are never dispatched to two riders.'
+    }
+
+    rideLocIngest -> rideGeoIndex 'update driver cell'
+    rideMatch -> rideGeoIndex 'k-ring query (cell + neighbors)'
+    rideMatch -> rideRouting 'rank candidates by ETA'
+    rideMatch -> rideTripStore 'create trip (atomic claim)'
+    rideSurge -> rideGeoIndex 'read supply/demand per cell'
+  }
+
+  rideDriver -> rideLocIngest 'location every few seconds'
+  rideRider -> rideMatch 'request ride'
+  rideMatch -> rideDriver 'offer ride'
+}
+
+views {
+  view capstones_ridesharingdispatch_architecture of rideSys {
+    title 'Ride-sharing dispatch — container view (geo index + matching)'
+    include *
+  }
+}

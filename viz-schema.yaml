@@ -1,0 +1,201 @@
+openapi: 3.0.3
+info:
+  title: Codefolio Visualisation — render schema (VizCases)
+  version: "1.0"
+  description: |
+    Single source of truth for the **viz render contract**: the `VizCases`
+    payload that `HeapToGraph.adapt` (Scala) circe-encodes and the standalone
+    D3 renderer (`client/src/d3`) consumes. ADR-0026.
+
+    Pipeline: tracer JSON → MarkedTrace.decodeTrace → HeapTrace (Scala) →
+    HeapToGraph.adapt → **VizCases** → d3 renderer. This file describes the
+    boxed step only.
+
+    Codegen (LITE — see ADR-0025/0026 for why NOT sbt-openapi-codegen here):
+      - TS:    `cd client && npm run codegen:viz` → src/d3/types.generated.ts
+               (openapi-typescript). src/d3/types.ts re-exports flat aliases.
+      - Scala: types stay HAND-WRITTEN in
+               shared/.../viz/VizGraph.scala (circe Encoder). A conformance
+               test (VizSchemaConformanceSpec) asserts the case-class fields
+               match this file, so the three sides can't drift.
+
+    Conventions (verified against the codegen experiment, ADR-0025):
+      - circe `deriveEncoder` ALWAYS emits every case-class field (a defaulted
+        `Option[T] = None` becomes JSON `null`, not an absent key). So EVERY
+        property here is listed in `required`; the three `Option[_]` fields
+        (`slot`, `link`, `structureType`) additionally carry `nullable: true`
+        → openapi-typescript emits `T | null`, matching the current types.ts.
+      - This file is the viz RENDER contract only. The raw tracer wire format
+        (`{type:"list", items}`, `{ref:id}`, …) is a SEPARATE contract checked
+        by `bin/validate-tracer-output.py`; it is intentionally not here.
+
+    Full prose for every field lives in VizGraph.scala (the Scala source); the
+    descriptions here are deliberately one-liners.
+paths: {}
+components:
+  schemas:
+
+    VizField:
+      type: object
+      description: An extra display field on a node — a non-pointer scalar (e.g. height=2), shown as a sub-label.
+      required: [name, value]
+      properties:
+        name:  { type: string }
+        value: { type: string }
+
+    VizNode:
+      type: object
+      description: A node in one animation step.
+      required: [id, label, kind, meta, slot, cardId, layoutKind]
+      properties:
+        id:    { type: string }
+        label: { type: string }
+        kind:
+          type: string
+          description: Originating class for an Instance, or a synthetic kind ("cell" / "entry") for a collection member. Drives CSS.
+        meta:
+          type: array
+          description: The object's other scalar fields, surfaced as small sub-labels.
+          items: { $ref: "#/components/schemas/VizField" }
+        slot:
+          type: integer
+          nullable: true
+          description: An array cell's 0-based index; null for instances and dict entries.
+        cardId:
+          type: string
+          description: Per-object grouping key (Slice 3 auto-dispatch). Empty for hand-curated payloads.
+        layoutKind:
+          type: string
+          description: Inferred per-card layout (tree-binary, list-single, hashmap, array-1d, …). Empty → fall back to VizGraph.layoutHint.
+
+    VizEdge:
+      type: object
+      description: A directed edge; label is the field it came from (e.g. "left" / "right").
+      required: [from, to, label]
+      properties:
+        from:  { type: string }
+        to:    { type: string }
+        label: { type: string }
+
+    VizCursor:
+      type: object
+      description: A frame-local variable pointing into the structure — drawn as a labelled, role-coloured caret.
+      required: [name, target, color]
+      properties:
+        name:   { type: string }
+        target: { type: string, description: "id of the node (or cardId, for cardCursor) it references" }
+        color:  { type: string, description: "role colour from MarkerColors; empty until colorizeCursors assigns it" }
+
+    Annotation:
+      type: object
+      description: A rich editorial annotation for one animation step — rendered beside the heap card.
+      required: [eyebrow, title, body, link]
+      properties:
+        eyebrow:
+          type: string
+          description: Tracer event kind — "call" / "line" / "return" / "exception". Drives eyebrow colour.
+        title: { type: string, description: "short diff summary, rendered in editorial italic" }
+        body:  { type: string, description: "the source line this step executes" }
+        link:
+          type: string
+          nullable: true
+          description: Optional href; reserved for future deep links.
+
+    VizLocal:
+      type: object
+      description: One local variable in a stack frame — display-ready for the StackFramesPanel (Slice 2).
+      required: [name, typeName, value, changed]
+      properties:
+        name:     { type: string, description: "variable name" }
+        typeName: { type: string, description: "inferred type label (int, TreeNode, list, …)" }
+        value:    { type: string, description: "display string" }
+        changed:  { type: boolean, description: "true when this var's value differs from the previous step" }
+
+    VizFrame:
+      type: object
+      description: A stack frame captured at one animation step (Slice 2); innermost frame first.
+      required: [fn, locals, isActive]
+      properties:
+        fn:       { type: string }
+        locals:
+          type: array
+          items: { $ref: "#/components/schemas/VizLocal" }
+        isActive: { type: boolean, description: "true only for the innermost frame (index 0)" }
+
+    VizGraphStep:
+      type: object
+      description: One animation step — the graph state + emphasis + the source line that produced it.
+      required:
+        - nodes
+        - edges
+        - cursor
+        - highlight
+        - changed
+        - removed
+        - annotation
+        - line
+        - frames
+        - cardCursor
+        - unchanged
+        - structureType
+      properties:
+        nodes:
+          type: array
+          items: { $ref: "#/components/schemas/VizNode" }
+        edges:
+          type: array
+          items: { $ref: "#/components/schemas/VizEdge" }
+        cursor:
+          type: array
+          description: Per-node cursors — refs whose target is itself a node.
+          items: { $ref: "#/components/schemas/VizCursor" }
+        highlight:
+          type: array
+          description: Node ids new this step (freshly created / attached) — persistent-layer cue.
+          items: { type: string }
+        changed:
+          type: array
+          description: Node ids whose display value differs from the previous step — transient-layer cue.
+          items: { type: string }
+        removed:
+          type: array
+          description: Node ids gone since the previous step, re-emitted once so the renderer can fade them.
+          items: { type: string }
+        annotation: { $ref: "#/components/schemas/Annotation" }
+        line: { type: integer, description: "1-based source line, for the code pane" }
+        frames:
+          type: array
+          description: The call stack at this step (Slice 2); innermost first.
+          items: { $ref: "#/components/schemas/VizFrame" }
+        cardCursor:
+          type: array
+          description: Card-level cursors (Slice 4) — target is the cardId, for the ArrowLayer.
+          items: { $ref: "#/components/schemas/VizCursor" }
+        unchanged:
+          type: boolean
+          description: Slice 6 — true when only the source line advanced (heap + active-frame locals identical). Always false for step 0.
+        structureType:
+          type: string
+          nullable: true
+          description: Bespoke-renderer dispatch axis (ADR-0024) — "stack" / "queue" / …. null → generic renderer.
+
+    VizGraph:
+      type: object
+      description: One traced test case's animation.
+      required: [steps, layoutHint, title, truncated]
+      properties:
+        steps:
+          type: array
+          items: { $ref: "#/components/schemas/VizGraphStep" }
+        layoutHint: { type: string }
+        title:      { type: string }
+        truncated:  { type: boolean }
+
+    VizCases:
+      type: object
+      description: The full payload handed to the D3 renderer — one VizGraph per traced test case.
+      required: [cases]
+      properties:
+        cases:
+          type: array
+          items: { $ref: "#/components/schemas/VizGraph" }

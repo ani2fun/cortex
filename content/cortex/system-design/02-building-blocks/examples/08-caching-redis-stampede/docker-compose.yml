@@ -1,0 +1,23 @@
+# Lesson 8 — Cache stampede hands-on. One Python service in front of one
+# Redis cache, simulating one slow origin. The Python service exposes two
+# endpoints — `/no-coalesce` (naive read-through that stampedes under
+# concurrency) and `/coalesced` (the same read-through with a Redis SETNX
+# lease so only one caller hits the origin per cold key). The reader runs
+# `hey` or `xargs -P` against each endpoint and watches the origin call
+# counter. See ./README.md for the recipe.
+
+services:
+  redis:
+    image: redis:7-alpine
+    # No host port — the app reaches Redis via service-name DNS.
+
+  app:
+    build: ./app
+    depends_on: [redis]
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      ORIGIN_LATENCY_MS: "500"   # how long the simulated slow origin takes
+      CACHE_TTL_SEC: "30"
+    ports:
+      - "8088:8000"

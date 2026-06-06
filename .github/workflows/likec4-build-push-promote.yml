@@ -1,0 +1,34 @@
+name: Build, Push, and Promote LikeC4
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      # Any .c4 source under content/cortex/ feeds the same LikeC4 SPA.
+      # Each Part keeps its lesson sources in a sibling c4/ subdirectory;
+      # Dockerfile.likec4 collects them recursively into the project root.
+      - 'content/cortex/**/*.c4'
+      - 'Dockerfile.likec4'
+      - '.github/workflows/likec4-build-push-promote.yml'
+      - '.github/workflows/_build-push-promote.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: likec4-main
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  call:
+    uses: ./.github/workflows/_build-push-promote.yml
+    with:
+      image_repo: ghcr.io/ani2fun/likec4
+      dockerfile: Dockerfile.likec4
+      buildx_cache_scope: likec4
+      infra_kustomization_file: deploy/apps/likec4/overlays/prod/kustomization.yaml
+      commit_message: "chore(likec4): promote image to"
+    secrets: inherit

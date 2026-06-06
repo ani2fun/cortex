@@ -1,0 +1,3525 @@
+@layer components {
+    /* D3 interactive widgets. Each widget has its own BEM block; the .d3-widget
+       placeholder div from the markdown pipeline is replaced by the widget root,
+       so there's no shared wrapper class beyond the error placeholder. */
+
+    /* ─── Error placeholder ───────────────────────────────────────── */
+    .d3-widget__error {
+        @apply my-6 rounded-lg border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive;
+    }
+    .d3-widget__error-title {
+        @apply mb-1 font-semibold;
+    }
+    .d3-widget__error-message {
+        @apply whitespace-pre-wrap text-xs;
+    }
+
+    /* ─── Array traversal stepper ─────────────────────────────────── */
+    .array-traversal {
+        @apply my-6 rounded-lg border border-border bg-card p-4;
+    }
+    .array-traversal__title {
+        @apply mb-3 text-center text-sm font-medium text-muted-foreground;
+    }
+    .array-traversal__frame {
+        @apply flex justify-center;
+    }
+    .array-traversal__svg {
+        /* Render at the SVG's intrinsic pixel size (cells = 56px) without
+           upscaling. `max-w-full` prevents overflow on narrow screens —
+           long lists (viewBox wider than the prose column) shrink to fit.
+           Pairs with `.array-traversal__frame { justify-center }` so the
+           SVG sits centred under its title. */
+        @apply block h-auto max-w-full;
+    }
+    /* Transform / position of cells and markers is animated by D3 (see ADR-0013); CSS keeps
+       only the fill/stroke transitions that D3 doesn't touch (in-range class toggle). */
+    .array-traversal__cell-group {
+        /* D3 owns this group's transform; no CSS transition. */
+    }
+    .array-traversal__cell {
+        fill: var(--color-card, #ffffff);
+        stroke: var(--color-border, #e5e7eb);
+        stroke-width: 1.5;
+        transition: fill 200ms ease, stroke 200ms ease;
+    }
+    .array-traversal__cell--in-range {
+        fill: rgba(58, 90, 140, 0.08);
+        stroke: rgba(58, 90, 140, 0.5);
+    }
+    .array-traversal__cell-label {
+        @apply text-sm font-semibold;
+        fill: var(--color-foreground);
+        font-size: 16px;
+    }
+    .array-traversal__cell-index {
+        @apply text-xs;
+        fill: var(--color-muted-foreground, #a13e3e);
+        font-size: 11px;
+    }
+    .array-traversal__range {
+        fill: rgba(58, 90, 140, 0.18);
+        stroke: rgba(58, 90, 140, 0.45);
+        stroke-width: 1;
+        /* D3 owns x/width transitions; CSS keeps fill smoothing. */
+        transition: fill 250ms ease;
+    }
+    /* 2D region-range highlight — same blue-tint family as the 1D range band,
+       but a rectangle spanning rowHi-rowLo+1 × colHi-colLo+1 cells. Sits
+       under the cell layer. */
+    .array-traversal__region {
+        fill: rgba(58, 90, 140, 0.12);
+        stroke: rgba(58, 90, 140, 0.40);
+        stroke-width: 1;
+        transition: fill 250ms ease;
+    }
+    /* Cell modifier — applied to cells inside a 2D regionRange. Subtle tint
+       so the per-cell paint still reads. */
+    .array-traversal__cell--in-region {
+        fill: rgba(58, 90, 140, 0.08);
+        stroke: rgba(58, 90, 140, 0.5);
+    }
+    .array-traversal__marker {
+        /* D3 owns this group's transform; no CSS transition. */
+    }
+    /* Marker rendered over a 2D grid. Same paint behaviour as the 1D marker;
+       this modifier exists so per-mode CSS branches if needed. */
+    .array-traversal__marker--grid {
+        /* D3 owns this group's transform; no CSS transition. */
+    }
+    /* flat-with-2d-overlay annotation — small "(row, col)" text under the
+       cell-index for the marker's cell. Muted so the marker arrow + label
+       above stay the visual primary. */
+    .array-traversal__overlay-annotation {
+        font-size: 10px;
+        font-weight: 500;
+        fill: var(--color-muted-foreground, #a13e3e);
+        font-family: ui-monospace, SFMono-Regular, monospace;
+    }
+    .array-traversal__marker-label {
+        font-size: 11px;
+        font-weight: 600;
+    }
+    .array-traversal__empty-placeholder {
+        fill: var(--color-muted-foreground);
+        font-size: 50px;
+        font-style: italic;
+    }
+    .array-traversal__caption {
+        @apply mt-3 text-center text-base text-foreground min-h-[1.5rem];
+        font-weight: 500;
+        line-height: 1.5;
+    }
+    /* Inline markdown rendered from `msg`: `**bold**` and `` `code` ``. */
+    .array-traversal__caption strong {
+        font-weight: 700;
+        color: var(--color-foreground);
+    }
+    .array-traversal__caption code {
+        @apply rounded bg-muted px-1.5 py-0.5 font-mono text-sm;
+        color: var(--color-foreground);
+    }
+    /* Size bracket above the cell row — horizontal line + perpendicular end-
+       ticks + centered label. Used by chapters that introduce arrays with a
+       "size = N" annotation over the cells. */
+    .array-traversal__size-bracket-line,
+    .array-traversal__size-bracket-tick {
+        stroke: #3730a3;
+        stroke-width: 1.25;
+        fill: none;
+    }
+    .array-traversal__size-bracket-label {
+        fill: #3730a3;
+        font-size: 13px;
+        font-weight: 700;
+        font-style: italic;
+    }
+    .array-traversal__controls {
+        @apply mt-3 flex flex-wrap items-center justify-center gap-2;
+    }
+    .array-traversal__button {
+        @apply inline-flex h-9 items-center gap-1.5 rounded-md border border-border bg-background
+               px-3 text-sm font-medium text-foreground transition-colors hover:bg-accent
+               disabled:pointer-events-none disabled:opacity-45;
+    }
+    .array-traversal__button--primary {
+        @apply border-primary bg-primary text-primary-foreground hover:bg-primary/90;
+    }
+    .array-traversal__button--icon {
+        @apply w-9 justify-center px-0;
+    }
+    .array-traversal__button-icon {
+        @apply h-4 w-4;
+    }
+    .array-traversal__progress {
+        @apply min-w-24 text-center text-xs font-medium tabular-nums text-muted-foreground;
+    }
+
+    /* ─── Stack / queue stepper ───────────────────────────────────────
+       One widget for both LIFO and FIFO. `mode:"stack"` renders a
+       vertical column with `top` pointer to the right; `mode:"queue"`
+       renders a horizontal row with `front`/`back` pointers above. The
+       `--<mode>` modifier on `.stack-queue` and `.stack-queue__svg`
+       lets per-mode CSS branch if needed; today the cell and pointer
+       styling is shared between modes. */
+    .stack-queue {
+        @apply my-6 rounded-lg border border-border bg-card p-4;
+    }
+    .stack-queue__title {
+        @apply mb-3 text-center text-sm font-medium text-muted-foreground;
+    }
+    .stack-queue__op {
+        @apply mb-2 text-center text-sm font-medium text-primary;
+        font-family: ui-monospace, SFMono-Regular, monospace;
+    }
+    .stack-queue__frame {
+        @apply flex justify-center;
+    }
+    .stack-queue__svg {
+        @apply block h-auto max-w-full;
+    }
+    /* Background capacity slot — muted, sits behind the item cell so an
+       unoccupied slot reads as "available room" not "rendered cell". */
+    .stack-queue__slot {
+        fill: var(--color-muted, #f1f5f9);
+        stroke: var(--color-border, #e5e7eb);
+        stroke-width: 1;
+        stroke-dasharray: 3 3;
+        opacity: 0.6;
+    }
+    /* Occupied item cell — same fill as ArrayTraversal so the widget
+       families read alike across the book. */
+    .stack-queue__cell {
+        fill: var(--color-card, #ffffff);
+        stroke: var(--color-border, #e5e7eb);
+        stroke-width: 1.5;
+        transition: fill 200ms ease, stroke 200ms ease;
+    }
+    .stack-queue__cell-label {
+        @apply text-sm font-semibold;
+        fill: var(--color-foreground);
+        font-size: 16px;
+    }
+    .stack-queue__marker-label {
+        font-size: 11px;
+        font-weight: 600;
+        font-family: ui-monospace, SFMono-Regular, monospace;
+    }
+    .stack-queue__empty {
+        fill: var(--color-muted-foreground);
+        font-size: 16px;
+        font-style: italic;
+    }
+    .stack-queue__caption {
+        @apply mt-3 text-center text-sm text-foreground min-h-[1.25rem];
+    }
+    .stack-queue__controls {
+        @apply mt-3 flex flex-wrap items-center justify-center gap-2;
+    }
+    .stack-queue__button {
+        @apply inline-flex h-9 items-center gap-1.5 rounded-md border border-border bg-background
+               px-3 text-sm font-medium text-foreground transition-colors hover:bg-accent
+               disabled:pointer-events-none disabled:opacity-45;
+    }
+    .stack-queue__button--primary {
+        @apply border-primary bg-primary text-primary-foreground hover:bg-primary/90;
+    }
+    .stack-queue__button--icon {
+        @apply w-9 justify-center px-0;
+    }
+    .stack-queue__button-icon {
+        @apply h-4 w-4;
+    }
+    .stack-queue__progress {
+        @apply min-w-24 text-center text-xs font-medium tabular-nums text-muted-foreground;
+    }
+
+    /* ─── Linked-list stepper (singly + doubly) ───────────────────────
+       Shape mirrors .array-traversal__* but with nodes + arrows + a
+       back lane for doubly's prev arrows / Floyd's cycle back-edge.
+       Authors pick singly vs doubly via `direction` in the payload
+       (see ADR-0014). */
+    .linked-list {
+        @apply my-6 rounded-lg border border-border bg-card p-4;
+    }
+    .linked-list__title {
+        @apply mb-3 text-center text-sm font-medium text-muted-foreground;
+    }
+    .linked-list__frame {
+        @apply flex justify-center;
+    }
+    .linked-list__svg {
+        /* Same sizing rationale as `.array-traversal__svg` — render at the
+           SVG's intrinsic pixel size (nodes = 56px) without upscaling so
+           the widget reads at a comfortable density for the prose column.
+           `max-w-full` lets very long chains shrink to fit narrower screens. */
+        @apply block h-auto max-w-full;
+    }
+    /* D3 owns the node group's transform; CSS provides the visual style
+       for the rect and the dark-mode-safe text fill. */
+    .linked-list__node {
+        /* D3 owns this group's transform; no CSS transition. */
+    }
+    .linked-list__node-rect {
+        fill: var(--color-card, #ffffff);
+        stroke: var(--color-border, #e5e7eb);
+        stroke-width: 1.5;
+        transition: fill 220ms ease, stroke 220ms ease;
+    }
+    .linked-list__node--new .linked-list__node-rect {
+        stroke: rgba(79, 91, 213, 0.72);
+        stroke-width: 2;
+    }
+    .linked-list__node--removed .linked-list__node-rect {
+        stroke: rgba(161, 62, 62, 0.7);
+        fill: rgba(161, 62, 62, 0.05);
+    }
+    .linked-list__node--removed {
+        opacity: 0.6;
+    }
+    .linked-list__node--highlight .linked-list__node-rect {
+        fill: rgba(58, 90, 140, 0.08);
+        stroke: rgba(58, 90, 140, 0.55);
+    }
+    .linked-list__node-label {
+        @apply text-sm font-semibold;
+        /* `currentColor` fallback so SVG text stays visible if the
+           CSS custom property is unset in some dark-mode contexts. */
+        fill: var(--color-foreground);
+        font-size: 16px;
+    }
+    /* Arrows. D3 sets each path's `d` attribute per step; CSS only
+       defines stroke, dash, and colour. */
+    .linked-list__arrow {
+        stroke: var(--color-muted-foreground);
+        stroke-width: 2;
+        fill: none;
+        transition: stroke 250ms ease;
+    }
+    .linked-list__arrowhead {
+        fill: var(--color-muted-foreground);
+        transition: fill 250ms ease;
+    }
+    .linked-list__arrow-group--back .linked-list__arrow {
+        stroke: var(--color-muted-foreground);
+        stroke-dasharray: 3 3;
+        opacity: 0.85;
+    }
+    .linked-list__arrow-group--back .linked-list__arrowhead {
+        fill: var(--color-muted-foreground);
+        opacity: 0.85;
+    }
+    .linked-list__arrow-group--broken .linked-list__arrow {
+        stroke: rgba(161, 62, 62, 0.75);
+        stroke-dasharray: 4 4;
+    }
+    .linked-list__arrow-group--broken .linked-list__arrowhead {
+        fill: rgba(161, 62, 62, 0.75);
+    }
+    .linked-list__cycle-edge {
+        stroke: rgba(90, 138, 90, 0.7);
+        stroke-width: 2;
+        stroke-dasharray: 6 4;
+        fill: none;
+    }
+    .linked-list__marker {
+        /* D3 owns this group's transform; no CSS transition. */
+    }
+    .linked-list__marker-label {
+        font-size: 11px;
+        font-weight: 600;
+    }
+    /* Non-canonical marker name (ADR-0016 hard-reject). Rendered with the
+       `⚠ name` text prefix from the Scala render path; CSS gives it a
+       louder fill + weight so the violation is hard to miss. */
+    .linked-list__marker--warning .linked-list__marker-label {
+        fill: #a13e3e;
+        font-weight: 700;
+    }
+    .linked-list__empty-placeholder {
+        fill: var(--color-muted-foreground);
+        font-size: 44px;
+        font-style: italic;
+    }
+    .linked-list__caption {
+        @apply mt-3 text-center text-sm text-foreground min-h-[1.25rem];
+    }
+
+    /* ── Progress block (Phase 1.3 + 1.4) ─────────────────────────────────
+       Replaces the old read-only "Step N / M" span with a segmented
+       clickable bar plus optional section labels above it. Each segment is
+       a button so screen readers + keyboard nav can reach every step. */
+    .linked-list__progress {
+        @apply mt-3 flex flex-col items-stretch gap-1;
+    }
+    .linked-list__section-labels {
+        @apply relative h-4 w-full;
+    }
+    .linked-list__section-label {
+        @apply absolute top-0 truncate text-center text-[10px] font-semibold uppercase tracking-wide
+               text-muted-foreground;
+    }
+    .linked-list__progress-bar {
+        @apply flex h-2 w-full overflow-hidden rounded;
+        background: hsl(var(--muted) / 0.5);
+    }
+    .linked-list__progress-segment {
+        @apply flex-1 cursor-pointer border-0 p-0 transition-colors;
+        background: transparent;
+        min-width: 3px;
+        height: 100%;
+    }
+    .linked-list__progress-segment:hover {
+        background: hsl(var(--accent) / 0.6);
+    }
+    .linked-list__progress-segment--past {
+        background: hsl(var(--primary) / 0.4);
+    }
+    .linked-list__progress-segment--active {
+        background: hsl(var(--primary));
+    }
+    .linked-list__progress-segment--section-start {
+        border-left: 2px solid hsl(var(--border));
+    }
+    .linked-list__progress-text {
+        @apply text-center text-xs font-medium tabular-nums text-muted-foreground;
+    }
+
+    .linked-list__controls {
+        @apply mt-3 flex flex-wrap items-center justify-center gap-2;
+    }
+    .linked-list__button {
+        @apply inline-flex h-9 items-center gap-1.5 rounded-md border border-border bg-background
+               px-3 text-sm font-medium text-foreground transition-colors hover:bg-accent
+               disabled:pointer-events-none disabled:opacity-45;
+    }
+    .linked-list__button--primary {
+        @apply border-primary bg-primary text-primary-foreground hover:bg-primary/90;
+    }
+    .linked-list__button--icon {
+        @apply w-9 justify-center px-0;
+    }
+    .linked-list__button-icon {
+        @apply h-4 w-4;
+    }
+
+    /* ── Speed toggle (Phase 1.5) ─────────────────────────────────────────
+       Three buttons (½× / 1× / 2×) for the play-loop speed. Sits inside
+       the controls row alongside Prev/Play/Next/Reset. The active speed
+       lights up like the play button so the current rate is obvious. */
+    .linked-list__speed-toggle {
+        @apply ml-2 inline-flex items-center gap-0.5 rounded-md border border-border bg-background p-1;
+    }
+    .linked-list__speed-label {
+        @apply px-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground;
+    }
+    .linked-list__speed-button {
+        @apply h-7 min-w-9 rounded px-2 text-xs font-semibold tabular-nums text-muted-foreground
+               transition-colors hover:bg-accent;
+        background: transparent;
+        border: 0;
+    }
+    .linked-list__speed-button--active {
+        @apply bg-primary text-primary-foreground hover:bg-primary/90;
+    }
+
+    /* ─── Binary-tree stepper (binary / bst / avl / rbt / treap) ──────
+       One widget covers all five tree-flavour modes via a `--<mode>`
+       modifier. Nodes are circles (matching the textbook tree idiom);
+       edges are straight lines from parent centre to child centre.
+       Optional sidebar (call-stack OR iterator-stack) renders as a
+       vertical column of frames to the right; optional output strip
+       below the tree shows the running traversal output. Mode-specific
+       decorators (rbt fill colour, avl balance-factor badge, treap
+       priority badge) toggle via `--rbt-<color>` and renderer-level
+       conditional element insertion. */
+    .binary-tree {
+        @apply my-6 rounded-lg border border-border bg-card p-4;
+    }
+    .binary-tree__title {
+        @apply mb-3 text-center text-sm font-medium text-muted-foreground;
+    }
+    .binary-tree__frame {
+        @apply flex justify-center overflow-x-auto;
+    }
+    .binary-tree__svg {
+        @apply block h-auto max-w-full;
+    }
+    /* Node circle — defaults to plain card fill + muted border. Style
+       modifiers (visited / highlight / removed / match / new) tint the
+       fill and stroke; RBT mode replaces the fill entirely via the
+       --rbt-red / --rbt-black modifiers. */
+    .binary-tree__node-group {
+        /* D3 owns the group's transform; no CSS transition. */
+    }
+    .binary-tree__node-circle {
+        fill: var(--color-card, #ffffff);
+        stroke: var(--color-border, #cbd5e1);
+        stroke-width: 1.75;
+        transition: fill 220ms ease, stroke 220ms ease;
+    }
+    .binary-tree__node-label {
+        @apply text-sm font-semibold;
+        fill: var(--color-foreground);
+        font-size: 14px;
+    }
+    .binary-tree__node-bf {
+        font-size: 10px;
+        font-weight: 600;
+        fill: var(--color-muted-foreground, #a13e3e);
+        font-family: ui-monospace, SFMono-Regular, monospace;
+    }
+    .binary-tree__node-priority {
+        font-size: 10px;
+        font-weight: 600;
+        fill: var(--color-muted-foreground, #a13e3e);
+        font-family: ui-monospace, SFMono-Regular, monospace;
+    }
+    /* Per-style modifiers — mirror the LinkedList vocabulary so a `new`
+       node in a tree reads the same colour family as a `new` node in
+       a list. */
+    .binary-tree__node-group--new .binary-tree__node-circle {
+        stroke: rgba(79, 91, 213, 0.85);
+        stroke-width: 2.25;
+        fill: rgba(79, 91, 213, 0.08);
+    }
+    .binary-tree__node-group--removed .binary-tree__node-circle {
+        stroke: rgba(161, 62, 62, 0.7);
+        fill: rgba(161, 62, 62, 0.06);
+    }
+    .binary-tree__node-group--removed {
+        opacity: 0.55;
+    }
+    .binary-tree__node-group--highlight .binary-tree__node-circle {
+        fill: rgba(58, 90, 140, 0.12);
+        stroke: rgba(58, 90, 140, 0.65);
+        stroke-width: 2;
+    }
+    .binary-tree__node-group--visited .binary-tree__node-circle {
+        fill: rgba(105, 96, 87, 0.10);
+        stroke: rgba(105, 96, 87, 0.55);
+    }
+    .binary-tree__node-group--visited .binary-tree__node-label {
+        fill: var(--color-muted-foreground, #a13e3e);
+    }
+    .binary-tree__node-group--match .binary-tree__node-circle {
+        fill: rgba(79, 91, 213, 0.15);
+        stroke: rgba(79, 91, 213, 0.7);
+        stroke-width: 2;
+    }
+    /* RBT mode — red and black node fills. Label fill flips to high-
+       contrast white over the saturated black/red, so the value stays
+       legible. The --rbt-* modifier composes with style modifiers (a
+       `highlight`-styled red node keeps the red fill but gains a thicker
+       blue stroke). */
+    .binary-tree__node-group--rbt-red .binary-tree__node-circle {
+        fill: #dc2626;
+        stroke: #b91c1c;
+    }
+    .binary-tree__node-group--rbt-red .binary-tree__node-label {
+        fill: #ffffff;
+    }
+    .binary-tree__node-group--rbt-black .binary-tree__node-circle {
+        fill: #0f172a;
+        stroke: #020617;
+    }
+    .binary-tree__node-group--rbt-black .binary-tree__node-label {
+        fill: #ffffff;
+    }
+    /* Edges — straight lines from parent to child centre. D3 sets the
+       path `d` per step; CSS keeps only the stroke styling and the
+       transition smoothing for non-`d` attributes. */
+    .binary-tree__edge {
+        stroke: var(--color-muted-foreground);
+        stroke-width: 1.75;
+        fill: none;
+        transition: stroke 220ms ease;
+    }
+    /* Markers — arrow + label above the node. Mirrors the array-traversal
+       /stack-queue pattern: triangle on rank-0 marker only; subsequent
+       markers stack labels upward without an extra triangle. Non-canonical
+       marker names render the `⚠ name` text in the warning colour from
+       MarkerCanon. */
+    .binary-tree__marker {
+        /* D3 owns the group's transform; no CSS transition. */
+    }
+    .binary-tree__marker-label {
+        font-size: 11px;
+        font-weight: 600;
+        font-family: ui-monospace, SFMono-Regular, monospace;
+    }
+    /* Sidebar — vertical column of stack frames to the right of the
+       tree. The frames stack top-down with the first frame at the top
+       and the most recently pushed (active) frame at the bottom,
+       matching recursion-stack convention. */
+    .binary-tree__sidebar-label {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        fill: var(--color-muted-foreground, #a13e3e);
+    }
+    .binary-tree__sidebar-group {
+        /* D3 owns the group's transform; no CSS transition. */
+    }
+    .binary-tree__sidebar-frame {
+        fill: var(--color-card, #ffffff);
+        stroke: var(--color-border, #cbd5e1);
+        stroke-width: 1.25;
+        transition: fill 200ms ease, stroke 200ms ease;
+    }
+    .binary-tree__sidebar-frame-label {
+        font-size: 12px;
+        font-weight: 500;
+        fill: var(--color-foreground);
+        font-family: ui-monospace, SFMono-Regular, monospace;
+    }
+    .binary-tree__sidebar-group--active .binary-tree__sidebar-frame {
+        fill: rgba(79, 91, 213, 0.12);
+        stroke: rgba(79, 91, 213, 0.6);
+        stroke-width: 1.75;
+    }
+    .binary-tree__sidebar-group--returned .binary-tree__sidebar-frame {
+        opacity: 0.55;
+    }
+    .binary-tree__sidebar-group--queued .binary-tree__sidebar-frame {
+        fill: rgba(58, 90, 140, 0.08);
+        stroke: rgba(58, 90, 140, 0.5);
+        stroke-dasharray: 3 3;
+    }
+    /* Output strip — running traversal output below the tree. Mirrors
+       the array-traversal cell aesthetic so the connection between "we
+       just visited this node" and "this is the next slot in the output
+       sequence" reads at a glance. */
+    .binary-tree__output-label {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        fill: var(--color-muted-foreground, #a13e3e);
+    }
+    .binary-tree__output-group {
+        /* D3 owns the group's transform; no CSS transition. */
+    }
+    .binary-tree__output-cell {
+        fill: rgba(79, 91, 213, 0.10);
+        stroke: rgba(79, 91, 213, 0.45);
+        stroke-width: 1.25;
+    }
+    .binary-tree__output-text {
+        font-size: 13px;
+        font-weight: 600;
+        fill: var(--color-foreground);
+        font-family: ui-monospace, SFMono-Regular, monospace;
+    }
+    .binary-tree__empty-placeholder {
+        fill: var(--color-muted-foreground);
+        font-size: 16px;
+        font-style: italic;
+    }
+    .binary-tree__caption {
+        @apply mt-3 text-center text-sm text-foreground min-h-[1.25rem];
+    }
+    .binary-tree__controls {
+        @apply mt-3 flex flex-wrap items-center justify-center gap-2;
+    }
+    .binary-tree__button {
+        @apply inline-flex h-9 items-center gap-1.5 rounded-md border border-border bg-background
+               px-3 text-sm font-medium text-foreground transition-colors hover:bg-accent
+               disabled:pointer-events-none disabled:opacity-45;
+    }
+    .binary-tree__button--primary {
+        @apply border-primary bg-primary text-primary-foreground hover:bg-primary/90;
+    }
+    .binary-tree__button--icon {
+        @apply w-9 justify-center px-0;
+    }
+    .binary-tree__button-icon {
+        @apply h-4 w-4;
+    }
+    .binary-tree__progress {
+        @apply min-w-24 text-center text-xs font-medium tabular-nums text-muted-foreground;
+    }
+
+    /* ─── Visualise graph renderer (trace-driven, pure-D3 — ADR-0018) ───
+       Styles the one standalone TypeScript renderer that consumes a `VizGraph`
+       (reconstructed from a Python heap trace) and animates it inside the
+       Visualise modal. D3 owns node/edge transforms; CSS owns fills + the
+       transitions. A new data structure adds a layout, never a renderer. */
+    .viz-graph {
+        @apply my-6 rounded-lg border border-border bg-card p-4;
+    }
+    .viz-graph__title {
+        @apply mb-3 text-center text-sm font-medium text-muted-foreground;
+    }
+    .viz-graph__frame {
+        @apply flex justify-center overflow-x-auto;
+    }
+    .viz-graph__svg {
+        @apply block h-auto max-w-full;
+    }
+    /* Edges — straight parent→child lines; D3 sets the path `d` per step. Calm by
+       default (muted, thin); colour is reserved for pointers. The stroke / width
+       transitions ease the brief cursor-traversal tint in and back out. */
+    .viz-graph__edge {
+        stroke: var(--color-muted-foreground);
+        stroke-width: 1.75;
+        fill: none;
+        transition: opacity 200ms ease, stroke 260ms ease, stroke-width 260ms ease;
+    }
+    /* A cursor crossed this edge this step — D3 sets the inline stroke to the
+       cursor's role colour; this just thickens it so the traversal reads. */
+    .viz-graph__edge--traversed {
+        stroke-width: 2.75;
+    }
+    /* Arrowhead — `context-stroke` makes it follow its edge's stroke, so a
+       traversal-tinted edge gets a tinted head too; muted fallback otherwise. */
+    .viz-graph__arrowhead path {
+        fill: var(--color-muted-foreground);
+        fill: context-stroke;
+    }
+    /* Pointer-name label sitting on an edge (left / right / next / …). A card-
+       coloured stroke halo (paint-order draws stroke first) keeps the edge line
+       from cutting through the glyphs. */
+    .viz-graph__edge-label {
+        font-family: var(--font-mono, ui-monospace, monospace);
+        font-size: 9.5px;
+        fill: var(--color-muted-foreground);
+        stroke: var(--color-card, #ffffff);
+        stroke-width: 3px;
+        paint-order: stroke fill;
+        transition: opacity 200ms ease;
+    }
+    /* Node circle — plain card fill by default; the cursor / new modifiers
+       tint it, and the transition makes the BFS cursor glide node to node. */
+    .viz-graph__circle {
+        fill: var(--color-card, #ffffff);
+        stroke: var(--color-border, #cbd5e1);
+        stroke-width: 1.75;
+        transition: fill 220ms ease, stroke 220ms ease, stroke-width 220ms ease;
+    }
+    .viz-graph__value {
+        @apply font-semibold;
+        fill: var(--color-foreground);
+        font-size: 14px;
+    }
+    /* Per-node class label (e.g. `TreeNode`) — sits just under the circle so the
+       diagram conveys *what* each node is, not only its value. Empty string for
+       collection-member kinds (`cell` / `entry`) so cells / dict entries don't
+       repeat the parent card's identity. */
+    .viz-graph__class {
+        font-size: 10px;
+        font-weight: 600;
+        font-style: italic;
+        fill: var(--color-muted-foreground);
+        letter-spacing: 0.02em;
+    }
+    /* Per-node field meta (e.g. an AVL `height=2`) — a small mono sub-label below
+       the class label, so the diagram shows per-node state, not just the value. */
+    .viz-graph__meta {
+        font-family: var(--font-mono, ui-monospace, monospace);
+        font-size: 10px;
+        font-weight: 500;
+        fill: var(--color-muted-foreground);
+    }
+    /* The cursor — the node the algorithm is currently at. */
+    .viz-graph__node--cursor .viz-graph__circle {
+        fill: rgba(58, 90, 140, 0.14);
+        stroke: rgba(58, 90, 140, 0.7);
+        stroke-width: 2.25;
+    }
+    /* The cursor marker — the frame-local variable name(s) + a caret, over the cursor node.
+       Hidden by default, revealed for the cursor. Pointer-events live on the
+       cursor-mark only when it's visible — Slice 5 hover linking depends on
+       this so the opacity-0 marks don't accidentally catch the mouse. */
+    .viz-graph__cursor-mark {
+        font-size: 16px;
+        font-weight: 600;
+        fill: rgba(58, 90, 140, 0.92);
+        opacity: 0;
+        pointer-events: none;
+        cursor: pointer;
+        transition: opacity 200ms ease, font-size 140ms ease;
+    }
+    .viz-graph__node--cursor .viz-graph__cursor-mark {
+        opacity: 1;
+        pointer-events: auto;
+    }
+    /* Slice 5 — hover-link emphasis. Slightly larger caret so the linked
+       cursor reads as the active one without changing layout (text grows
+       upward from the baseline at y = -(NODE_RADIUS + 10)). */
+    .viz-graph__cursor-mark--hovered {
+        font-size: 18px;
+        fill: rgba(37, 99, 235, 1);
+    }
+    /* The freshly inserted leaf — green family, mirrors binary-tree `--new`. */
+    .viz-graph__node--new .viz-graph__circle {
+        fill: rgba(79, 91, 213, 0.12);
+        stroke: rgba(79, 91, 213, 0.85);
+        stroke-width: 2.25;
+    }
+    /* Transient-state adornment ring — a halo just outside the node circle, on its
+       own element so the changed-flash / removed-fade layers cleanly over the
+       persistent --cursor / --new circle tint. Transparent until a state lights it. */
+    .viz-graph__node-ring {
+        fill: none;
+        stroke: transparent;
+        stroke-width: 2.5;
+        transition: stroke 240ms ease;
+    }
+    /* Display value changed vs. the previous step — a one-step amber ring. */
+    .viz-graph__node--changed .viz-graph__node-ring {
+        stroke: #8a4f7d;
+    }
+    /* Gone since the previous step — a red ring; the renderer also fades the node. */
+    .viz-graph__node--removed .viz-graph__node-ring {
+        stroke: #a13e3e;
+    }
+    /* Trie word-end (`is_end`) — a persistent green outer ring, so the node circle
+       + this ring read as the classic terminal double-ring. Unlike the transient
+       changed/removed rings above this is set every step from `kind`; trie traces
+       have no label-changes or removals, so they never contend for this ring. */
+    .viz-graph__node--terminal .viz-graph__node-ring {
+        stroke: #2f7d57;
+        stroke-width: 2;
+    }
+    /* Linked-list null terminator (a synthesised sentinel, kind "null") — a muted,
+       dashed circle holding ∅, so a chain visibly ends at null rather than just
+       stopping. Set every step from `kind`; only the linked-list renderer emits it. */
+    .viz-graph__node--null .viz-graph__circle {
+        fill: none;
+        stroke: var(--color-muted-foreground);
+        stroke-width: 1.5;
+        stroke-dasharray: 3 3;
+        opacity: 0.55;
+    }
+    .viz-graph__node--null .viz-graph__value {
+        fill: var(--color-muted-foreground);
+        font-weight: 500;
+        opacity: 0.75;
+    }
+    .viz-graph__caption {
+        @apply mt-3 text-center text-sm text-foreground min-h-[1.25rem];
+    }
+    .viz-graph__notice {
+        @apply mt-2 text-center text-xs text-muted-foreground;
+    }
+    .viz-graph__controls {
+        @apply mt-3 flex flex-wrap items-center justify-center gap-2;
+    }
+    .viz-graph__button {
+        @apply inline-flex h-9 items-center gap-1.5 rounded-md border border-border bg-background
+               px-3 text-sm font-medium text-foreground transition-colors hover:bg-accent
+               disabled:pointer-events-none disabled:opacity-45;
+    }
+    .viz-graph__progress {
+        @apply min-w-24 text-center text-xs font-medium tabular-nums text-muted-foreground;
+    }
+    /* Legend — a static key for the node colours + the pointer caret. */
+    .viz-graph__legend {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        gap: 5px 16px;
+        margin-top: 12px;
+        padding-top: 10px;
+        border-top: 1px solid var(--color-border, #cbd5e1);
+        font-size: 11px;
+        line-height: 1.3;
+        color: var(--color-muted-foreground);
+    }
+    .viz-graph__legend-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .viz-graph__legend-swatch {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 14px;
+        height: 14px;
+        flex-shrink: 0;
+    }
+    .viz-graph__legend-swatch--cursor {
+        border-radius: 50%;
+        background: rgba(58, 90, 140, 0.14);
+        border: 1.5px solid rgba(58, 90, 140, 0.7);
+    }
+    .viz-graph__legend-swatch--new {
+        border-radius: 50%;
+        background: rgba(79, 91, 213, 0.12);
+        border: 1.5px solid rgba(79, 91, 213, 0.85);
+    }
+    .viz-graph__legend-swatch--changed {
+        border-radius: 50%;
+        border: 2px solid #8a4f7d;
+    }
+    .viz-graph__legend-swatch--removed {
+        border-radius: 50%;
+        border: 2px solid #a13e3e;
+    }
+    .viz-graph__legend-swatch--pointer {
+        font-size: 15px;
+        font-weight: 600;
+        color: rgba(58, 90, 140, 0.92);
+    }
+    /* Slice 3 — multi-card stack. When `HeapToGraph.adapt` infers per-object layouts,
+       the renderer emits one .viz-card per heap-object group; they stack here in a
+       single column ordered by heap-object id ascending. The first card has no top
+       separator; subsequent cards get a hairline rule for visual grouping without
+       doubling the outer .viz-graph border. */
+    .viz-graph__cards {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+    }
+    .viz-card {
+        padding-top: 12px;
+        padding-bottom: 4px;
+    }
+    .viz-card + .viz-card {
+        border-top: 1px dashed var(--color-border, #cbd5e1);
+        margin-top: 8px;
+    }
+
+    /* ─── Latency-scaled-time chart ────────────────────────────────── */
+    .latency-scaled-time {
+        @apply my-6 rounded-lg border border-border bg-card p-4;
+    }
+    .latency-scaled-time__title {
+        @apply mb-3 text-center text-sm font-medium text-muted-foreground;
+    }
+    .latency-scaled-time__frame {
+        @apply flex justify-center cursor-pointer;
+    }
+    .latency-scaled-time__svg {
+        @apply block w-full h-auto;
+    }
+    .latency-scaled-time__axis {
+        stroke: var(--color-border, #e5e7eb);
+        stroke-width: 1;
+    }
+    .latency-scaled-time__tick {
+        stroke: var(--color-border, #e5e7eb);
+        stroke-width: 1;
+    }
+    .latency-scaled-time__tick-label {
+        @apply text-xs;
+        fill: var(--color-muted-foreground, #a13e3e);
+        font-size: 10px;
+        font-variant-numeric: tabular-nums;
+    }
+    .latency-scaled-time__tick-label--major {
+        font-weight: 600;
+        fill: var(--color-foreground, #0a0f25);
+    }
+    .latency-scaled-time__hit {
+        fill: transparent;
+        /* Picks up pointer events without painting — full-row click target. */
+        pointer-events: all;
+    }
+    .latency-scaled-time__row:hover .latency-scaled-time__hit {
+        fill: rgba(148, 163, 184, 0.08);
+    }
+    .latency-scaled-time__label {
+        @apply text-sm;
+        fill: var(--color-foreground, #0a0f25);
+        font-size: 12px;
+    }
+    .latency-scaled-time__label--highlight {
+        font-weight: 600;
+    }
+    .latency-scaled-time__label--selected {
+        font-weight: 700;
+        fill: hsl(var(--primary));
+    }
+    .latency-scaled-time__bar {
+        fill: hsl(var(--muted-foreground) / 0.55);
+        transition: fill 200ms ease, opacity 200ms ease;
+    }
+    .latency-scaled-time__bar--highlight {
+        fill: hsl(var(--primary) / 0.85);
+    }
+    .latency-scaled-time__bar--selected {
+        fill: hsl(var(--primary));
+    }
+    .latency-scaled-time__ns {
+        font-size: 11px;
+        fill: var(--color-muted-foreground, #a13e3e);
+        font-variant-numeric: tabular-nums;
+    }
+    .latency-scaled-time__caption {
+        @apply mt-3 text-center text-sm text-foreground min-h-[1.5rem];
+    }
+    .latency-scaled-time__caption-arrow {
+        @apply mx-1 text-muted-foreground;
+    }
+
+    /* ─── Estimation calculator ───────────────────────────────────── */
+    .estimation-calculator {
+        @apply my-6 rounded-lg border border-border bg-card p-4;
+    }
+    .estimation-calculator__title {
+        @apply mb-3 text-center text-sm font-medium text-muted-foreground;
+    }
+    .estimation-calculator__presets {
+        @apply mb-4 flex flex-wrap items-center justify-center gap-2;
+    }
+    .estimation-calculator__preset {
+        @apply inline-flex h-8 items-center rounded-full border border-border bg-background
+               px-3 text-xs font-medium text-foreground transition-colors hover:bg-accent;
+    }
+    .estimation-calculator__preset--active {
+        @apply border-primary bg-primary text-primary-foreground hover:bg-primary/90;
+    }
+    .estimation-calculator__fields {
+        @apply grid grid-cols-1 gap-3 sm:grid-cols-2;
+    }
+    .estimation-calculator__field {
+        @apply flex flex-col gap-1;
+    }
+    .estimation-calculator__field-label {
+        @apply text-xs font-semibold uppercase tracking-wide text-muted-foreground;
+    }
+    .estimation-calculator__field-row {
+        @apply flex items-center gap-2 rounded-md border border-border bg-background px-2;
+    }
+    .estimation-calculator__field-input {
+        @apply h-9 flex-1 border-0 bg-transparent text-sm font-medium tabular-nums text-foreground
+               focus:outline-none focus:ring-0;
+    }
+    .estimation-calculator__field-suffix {
+        @apply text-xs font-medium text-muted-foreground;
+    }
+    .estimation-calculator__field-hint {
+        @apply text-xs text-muted-foreground;
+    }
+    .estimation-calculator__outputs {
+        @apply mt-4 grid grid-cols-1 gap-1 rounded-md border border-border bg-background p-3 text-sm;
+    }
+    .estimation-calculator__output-row {
+        @apply flex items-baseline justify-between gap-2 border-b border-border/50 py-1 last:border-b-0;
+    }
+    .estimation-calculator__output-label {
+        @apply text-xs uppercase tracking-wide text-muted-foreground;
+    }
+    .estimation-calculator__output-value {
+        @apply text-base font-semibold tabular-nums text-foreground;
+    }
+    .estimation-calculator__output-suffix {
+        @apply text-xs font-normal text-muted-foreground;
+    }
+
+    /* ─── Partition simulator ─────────────────────────────────────── */
+    .partition-simulator {
+        @apply my-6 rounded-lg border border-border bg-card p-4;
+    }
+    .partition-simulator__title {
+        @apply mb-3 text-center text-sm font-medium text-muted-foreground;
+    }
+    .partition-simulator__scenarios {
+        @apply mb-3 flex flex-wrap items-center justify-center gap-2;
+    }
+    .partition-simulator__scenario {
+        @apply inline-flex h-8 items-center gap-2 rounded-full border border-border bg-background
+               px-3 text-xs font-medium text-foreground transition-colors hover:bg-accent;
+    }
+    .partition-simulator__scenario--active {
+        @apply border-primary bg-primary/10;
+    }
+    .partition-simulator__scenario-name {
+        @apply tracking-tight;
+    }
+    .partition-simulator__mode-badge {
+        @apply inline-flex h-5 items-center rounded-full px-2 text-[10px] font-bold uppercase tracking-wide;
+    }
+    .partition-simulator__mode-badge--cp {
+        @apply bg-blue-500/15 text-blue-600 dark:text-blue-300;
+    }
+    .partition-simulator__mode-badge--ap {
+        @apply bg-amber-500/15 text-amber-700 dark:text-amber-300;
+    }
+    .partition-simulator__frame {
+        @apply flex justify-center;
+    }
+    .partition-simulator__svg {
+        @apply block w-full max-w-2xl h-auto;
+    }
+    .partition-simulator__link {
+        stroke: var(--color-border, #e5e7eb);
+        stroke-width: 2.5;
+        transition: stroke-dasharray 250ms ease, opacity 250ms ease;
+    }
+    .partition-simulator__link--broken {
+        stroke: hsl(var(--destructive));
+        stroke-dasharray: 6 6;
+        opacity: 0.7;
+    }
+    .partition-simulator__node {
+        fill: var(--color-card, #ffffff);
+        stroke: hsl(var(--primary));
+        stroke-width: 2;
+        transition: fill 200ms ease, stroke 200ms ease;
+    }
+    .partition-simulator__node--refused {
+        fill: hsl(var(--destructive) / 0.12);
+        stroke: hsl(var(--destructive));
+    }
+    .partition-simulator__node-label {
+        @apply text-sm font-bold;
+        fill: var(--color-foreground, #0a0f25);
+        font-size: 14px;
+    }
+    .partition-simulator__node-value {
+        @apply text-xs;
+        fill: var(--color-muted-foreground, #a13e3e);
+        font-size: 12px;
+        font-family: ui-monospace, SFMono-Regular, monospace;
+    }
+    .partition-simulator__node-value--refused {
+        fill: hsl(var(--destructive));
+    }
+    .partition-simulator__badge rect {
+        fill: hsl(var(--destructive));
+    }
+    .partition-simulator__badge text {
+        fill: var(--color-card, #ffffff);
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+    }
+    .partition-simulator__caption {
+        @apply mt-3 flex flex-wrap items-baseline justify-center gap-2 text-center text-sm text-foreground min-h-[1.5rem];
+    }
+    .partition-simulator__caption-text {
+        @apply text-foreground;
+    }
+    .partition-simulator__controls {
+        @apply mt-3 flex flex-wrap items-center justify-center gap-2;
+    }
+    .partition-simulator__button {
+        @apply inline-flex h-9 items-center gap-1.5 rounded-md border border-border bg-background
+               px-3 text-sm font-medium text-foreground transition-colors hover:bg-accent
+               disabled:pointer-events-none disabled:opacity-45;
+    }
+    .partition-simulator__button--primary {
+        @apply border-primary bg-primary text-primary-foreground hover:bg-primary/90;
+    }
+    .partition-simulator__button--icon {
+        @apply w-9 justify-center px-0;
+    }
+    .partition-simulator__button-icon {
+        @apply h-4 w-4;
+    }
+    .partition-simulator__progress {
+        @apply min-w-24 text-center text-xs font-medium tabular-nums text-muted-foreground;
+    }
+
+    /* ─── Queueing simulator ──────────────────────────────────────── */
+    .queueing-simulator {
+        @apply my-6 rounded-lg border border-border bg-card p-4;
+    }
+    .queueing-simulator__title {
+        @apply mb-3 text-center text-sm font-medium text-muted-foreground;
+    }
+    .queueing-simulator__frame {
+        @apply flex justify-center;
+    }
+    .queueing-simulator__svg {
+        @apply block w-full h-auto;
+    }
+    .queueing-simulator__chart-title {
+        @apply text-xs font-medium;
+        fill: var(--color-muted-foreground, #a13e3e);
+        font-size: 11px;
+    }
+    .queueing-simulator__axis {
+        stroke: var(--color-border, #e5e7eb);
+        stroke-width: 1;
+    }
+    .queueing-simulator__grid {
+        stroke: var(--color-border, #e5e7eb);
+        stroke-width: 0.5;
+        stroke-dasharray: 2 4;
+        opacity: 0.5;
+    }
+    .queueing-simulator__y-label, .queueing-simulator__x-label {
+        @apply text-xs;
+        fill: var(--color-muted-foreground, #a13e3e);
+        font-size: 10px;
+        font-variant-numeric: tabular-nums;
+    }
+    .queueing-simulator__bar {
+        fill: hsl(var(--muted-foreground) / 0.5);
+        transition: fill 200ms ease;
+    }
+    .queueing-simulator__bar--selected {
+        fill: hsl(var(--primary));
+    }
+    .queueing-simulator__bar-label {
+        font-size: 10px;
+        font-weight: 600;
+        fill: var(--color-foreground, #0a0f25);
+        font-variant-numeric: tabular-nums;
+    }
+    .queueing-simulator__overflow {
+        font-size: 14px;
+        fill: hsl(var(--destructive));
+        font-weight: 700;
+    }
+    .queueing-simulator__controls {
+        @apply mt-3 flex justify-center;
+    }
+    .queueing-simulator__slider-label {
+        @apply flex w-full max-w-md flex-col items-stretch gap-2;
+    }
+    .queueing-simulator__slider-text {
+        @apply text-center text-sm font-medium text-foreground tabular-nums;
+    }
+    .queueing-simulator__slider {
+        @apply h-2 w-full appearance-none rounded-full bg-muted accent-primary;
+    }
+    .queueing-simulator__slider::-webkit-slider-thumb {
+        @apply h-4 w-4 rounded-full bg-primary;
+        appearance: none;
+    }
+    .queueing-simulator__readout {
+        @apply mt-4 grid grid-cols-1 gap-1 rounded-md border border-border bg-background p-3 text-sm;
+    }
+    .queueing-simulator__readout-row {
+        @apply grid grid-cols-1 gap-1 border-b border-border/40 py-1 last:border-b-0 sm:grid-cols-[1fr_auto_2fr] sm:items-baseline sm:gap-3;
+    }
+    .queueing-simulator__readout-label {
+        @apply text-xs uppercase tracking-wide text-muted-foreground;
+    }
+    .queueing-simulator__readout-value {
+        @apply text-base font-semibold tabular-nums text-foreground;
+    }
+    .queueing-simulator__readout-note {
+        @apply text-xs text-muted-foreground;
+    }
+
+    /* ─── Handshake timeline ──────────────────────────────────────────── */
+    .handshake-timeline {
+        @apply my-6 rounded-lg border border-border bg-card p-4;
+    }
+    .handshake-timeline__title {
+        @apply mb-3 text-center text-sm font-medium text-muted-foreground;
+    }
+    .handshake-timeline__frame {
+        @apply flex justify-center;
+    }
+    .handshake-timeline__svg {
+        @apply block w-full h-auto;
+    }
+    .handshake-timeline__caption {
+        @apply text-xs font-medium;
+        fill: var(--color-muted-foreground, #a13e3e);
+        font-size: 11px;
+    }
+    .handshake-timeline__scenario-label {
+        @apply text-xs;
+        fill: var(--color-foreground, #0a0f25);
+        font-size: 12px;
+        font-weight: 500;
+    }
+    .handshake-timeline__total {
+        @apply text-xs;
+        fill: var(--color-foreground, #0a0f25);
+        font-size: 12px;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+    }
+    .handshake-timeline__phase {
+        transition: opacity 200ms ease;
+        opacity: 0.92;
+    }
+    .handshake-timeline__phase-label {
+        font-size: 10px;
+        font-weight: 600;
+        fill: #ffffff;
+        pointer-events: none;
+    }
+    .handshake-timeline__phase-label--abbrev {
+        letter-spacing: 0.05em;
+    }
+    /* Phase-kind colours — tuned for legibility on both light and dark themes.
+       Each is Tailwind 500-ish with a small contrast bump so 24-px-tall bars
+       read at a glance and white text labels remain legible. */
+    .handshake-timeline__phase--dns {
+        fill: #8a4f7d; /* amber-500 */
+    }
+    .handshake-timeline__phase--tcp {
+        fill: #3a5a8c; /* blue-500 */
+    }
+    .handshake-timeline__phase--tls {
+        fill: #8b5cf6; /* violet-500 */
+    }
+    .handshake-timeline__phase--quic {
+        fill: #14b8a6; /* teal-500 */
+    }
+    .handshake-timeline__phase--request {
+        fill: #10b981; /* emerald-500 */
+    }
+    .handshake-timeline__phase--processing {
+        fill: #f43f5e; /* rose-500 */
+    }
+    .handshake-timeline__phase--other {
+        fill: #a13e3e; /* slate-500 */
+    }
+    .handshake-timeline__controls {
+        @apply mt-3 flex justify-center;
+    }
+    .handshake-timeline__slider-label {
+        @apply flex w-full max-w-md flex-col items-stretch gap-2;
+    }
+    .handshake-timeline__slider-text {
+        @apply text-center text-sm font-medium text-foreground tabular-nums;
+    }
+    .handshake-timeline__slider {
+        @apply h-2 w-full appearance-none rounded-full bg-muted accent-primary;
+    }
+    .handshake-timeline__slider::-webkit-slider-thumb {
+        @apply h-4 w-4 rounded-full bg-primary;
+        appearance: none;
+    }
+    .handshake-timeline__legend {
+        @apply mt-3 flex flex-wrap items-center justify-center gap-3 text-xs;
+    }
+    .handshake-timeline__legend-item {
+        @apply inline-flex items-center gap-1.5 text-muted-foreground;
+    }
+    .handshake-timeline__swatch {
+        @apply inline-block h-3 w-3 rounded;
+    }
+    .handshake-timeline__legend-text {
+        @apply text-foreground;
+    }
+    .handshake-timeline__readout {
+        @apply mt-4 grid grid-cols-1 gap-1 rounded-md border border-border bg-background p-3 text-sm;
+    }
+    .handshake-timeline__readout-row {
+        @apply grid grid-cols-1 gap-1 border-b border-border/40 py-1 last:border-b-0 sm:grid-cols-[1fr_auto_2fr] sm:items-baseline sm:gap-3;
+    }
+    .handshake-timeline__readout-label {
+        @apply text-xs uppercase tracking-wide text-muted-foreground;
+    }
+    .handshake-timeline__readout-value {
+        @apply text-base font-semibold tabular-nums text-foreground;
+    }
+    .handshake-timeline__readout-note {
+        @apply text-xs text-muted-foreground;
+    }
+
+    /* ─── Consistent hash ring ────────────────────────────────────────── */
+    .consistent-hash-ring {
+        @apply my-6 rounded-lg border border-border bg-card p-4;
+    }
+    .consistent-hash-ring__title {
+        @apply mb-3 text-center text-sm font-medium text-muted-foreground;
+    }
+    .consistent-hash-ring__frame {
+        @apply flex justify-center;
+    }
+    .consistent-hash-ring__svg {
+        @apply block w-full h-auto;
+    }
+    .consistent-hash-ring__ring {
+        fill: none;
+        stroke: var(--color-border, #e5e7eb);
+        stroke-width: 1.5;
+    }
+    .consistent-hash-ring__phys-disk {
+        stroke: var(--color-card, #ffffff);
+        stroke-width: 2;
+    }
+    .consistent-hash-ring__phys-label {
+        fill: #ffffff;
+        font-size: 11px;
+        font-weight: 700;
+        pointer-events: none;
+    }
+    .consistent-hash-ring__vnode {
+        opacity: 0.78;
+        transition: opacity 200ms ease;
+    }
+    .consistent-hash-ring__key {
+        stroke: var(--color-card, #ffffff);
+        stroke-width: 1;
+        opacity: 0.95;
+    }
+    .consistent-hash-ring__center {
+        @apply text-xs uppercase;
+        fill: var(--color-muted-foreground, #a13e3e);
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+    }
+    .consistent-hash-ring__center-sub {
+        fill: var(--color-foreground, #0a0f25);
+        font-size: 12px;
+        font-weight: 500;
+        font-variant-numeric: tabular-nums;
+    }
+    .consistent-hash-ring__controls {
+        @apply mt-3 flex flex-col gap-3 items-stretch max-w-md mx-auto;
+    }
+    .consistent-hash-ring__slider-row {
+        @apply flex flex-col gap-1.5;
+    }
+    .consistent-hash-ring__slider-text {
+        @apply text-sm font-medium text-foreground tabular-nums text-center;
+    }
+    .consistent-hash-ring__slider {
+        @apply h-2 w-full appearance-none rounded-full bg-muted accent-primary;
+    }
+    .consistent-hash-ring__slider::-webkit-slider-thumb {
+        @apply h-4 w-4 rounded-full bg-primary;
+        appearance: none;
+    }
+    .consistent-hash-ring__loads {
+        @apply mt-4 rounded-md border border-border bg-background p-3;
+    }
+    .consistent-hash-ring__loads-label {
+        @apply mb-2 text-xs uppercase tracking-wide text-muted-foreground;
+    }
+    .consistent-hash-ring__loads-grid {
+        @apply grid grid-cols-2 gap-1.5 sm:grid-cols-4;
+    }
+    .consistent-hash-ring__load-item {
+        @apply inline-flex items-center gap-2 text-xs;
+    }
+    .consistent-hash-ring__swatch {
+        @apply inline-block h-3 w-3 flex-none rounded;
+    }
+    .consistent-hash-ring__load-text {
+        @apply text-foreground tabular-nums;
+    }
+    .consistent-hash-ring__readout {
+        @apply mt-3 grid grid-cols-1 gap-1 rounded-md border border-border bg-background p-3 text-sm;
+    }
+    .consistent-hash-ring__readout-row {
+        @apply grid grid-cols-1 gap-1 border-b border-border/40 py-1 last:border-b-0 sm:grid-cols-[1fr_auto_2fr] sm:items-baseline sm:gap-3;
+    }
+    .consistent-hash-ring__readout-label {
+        @apply text-xs uppercase tracking-wide text-muted-foreground;
+    }
+    .consistent-hash-ring__readout-value {
+        @apply text-base font-semibold tabular-nums text-foreground;
+    }
+    .consistent-hash-ring__readout-note {
+        @apply text-xs text-muted-foreground;
+    }
+
+    /* ─── Cache stampede simulator ────────────────────────────────────── */
+    .cache-stampede {
+        @apply my-6 rounded-lg border border-border bg-card p-4;
+    }
+    .cache-stampede__title {
+        @apply mb-3 text-center text-sm font-medium text-muted-foreground;
+    }
+    .cache-stampede__frame {
+        @apply flex justify-center;
+    }
+    .cache-stampede__svg {
+        @apply block w-full h-auto;
+    }
+    .cache-stampede__panel-frame {
+        fill: var(--color-background, #f8f5f2);
+        stroke: var(--color-border, #e5e7eb);
+        stroke-width: 1;
+    }
+    .cache-stampede__panel-title {
+        font-size: 13px;
+        font-weight: 600;
+        fill: var(--color-foreground, #0a0f25);
+    }
+    .cache-stampede__panel-subtitle {
+        font-size: 11px;
+        fill: var(--color-muted-foreground, #a13e3e);
+    }
+    .cache-stampede__axis {
+        stroke: var(--color-border, #e5e7eb);
+        stroke-width: 1;
+    }
+    .cache-stampede__axis-label {
+        font-size: 10px;
+        fill: var(--color-muted-foreground, #a13e3e);
+        font-variant-numeric: tabular-nums;
+    }
+    .cache-stampede__y-title {
+        font-size: 11px;
+        font-weight: 500;
+        fill: var(--color-muted-foreground, #a13e3e);
+    }
+    .cache-stampede__bar {
+        transition: fill 200ms ease, opacity 200ms ease;
+    }
+    .cache-stampede__bar--without {
+        fill: #f43f5e; /* rose-500 — the bad case is red */
+        opacity: 0.85;
+    }
+    .cache-stampede__bar--with {
+        fill: #10b981; /* emerald-500 — the good case is green */
+        opacity: 0.9;
+    }
+    .cache-stampede__bar-label {
+        font-size: 11px;
+        font-weight: 600;
+        fill: #ffffff;
+        pointer-events: none;
+    }
+    .cache-stampede__bar-label--above {
+        fill: var(--color-foreground, #0a0f25);
+    }
+    .cache-stampede__verdict {
+        font-size: 12px;
+        font-weight: 600;
+    }
+    .cache-stampede__verdict--bad {
+        fill: hsl(var(--destructive));
+    }
+    .cache-stampede__verdict--ok {
+        fill: var(--color-foreground, #0a0f25);
+    }
+    .cache-stampede__controls {
+        @apply mt-3 flex flex-col gap-3 items-stretch max-w-md mx-auto;
+    }
+    .cache-stampede__slider-row {
+        @apply flex flex-col gap-1.5;
+    }
+    .cache-stampede__slider-text {
+        @apply text-sm font-medium text-foreground tabular-nums text-center;
+    }
+    .cache-stampede__slider {
+        @apply h-2 w-full appearance-none rounded-full bg-muted accent-primary;
+    }
+    .cache-stampede__slider::-webkit-slider-thumb {
+        @apply h-4 w-4 rounded-full bg-primary;
+        appearance: none;
+    }
+    .cache-stampede__readout {
+        @apply mt-4 grid grid-cols-1 gap-1 rounded-md border border-border bg-background p-3 text-sm;
+    }
+    .cache-stampede__readout-row {
+        @apply grid grid-cols-1 gap-1 border-b border-border/40 py-1 last:border-b-0 sm:grid-cols-[1fr_auto_2fr] sm:items-baseline sm:gap-3;
+    }
+    .cache-stampede__readout-label {
+        @apply text-xs uppercase tracking-wide text-muted-foreground;
+    }
+    .cache-stampede__readout-value {
+        @apply text-base font-semibold tabular-nums text-foreground;
+    }
+    .cache-stampede__readout-note {
+        @apply text-xs text-muted-foreground;
+    }
+
+    /* ─── B-tree walker ───────────────────────────────────────────────── */
+    .btree-walker {
+        @apply my-6 rounded-lg border border-border bg-card p-4;
+    }
+    .btree-walker__title {
+        @apply mb-3 text-center text-sm font-medium text-muted-foreground;
+    }
+    .btree-walker__frame {
+        @apply flex justify-center;
+    }
+    .btree-walker__svg {
+        @apply block w-full h-auto;
+    }
+    .btree-walker__caption {
+        font-size: 11px;
+        fill: var(--color-muted-foreground, #a13e3e);
+        font-weight: 500;
+    }
+    .btree-walker__level-label {
+        font-size: 11px;
+        font-weight: 500;
+        fill: var(--color-foreground, #0a0f25);
+        font-variant-numeric: tabular-nums;
+    }
+    .btree-walker__level-label--seq {
+        fill: hsl(var(--destructive));
+        font-weight: 600;
+    }
+    .btree-walker__bar {
+        stroke: var(--color-border, #e5e7eb);
+        stroke-width: 1;
+        transition: fill 200ms ease;
+    }
+    .btree-walker__bar--internal {
+        fill: hsl(var(--muted-foreground) / 0.18);
+    }
+    .btree-walker__bar--seq {
+        fill: hsl(var(--destructive) / 0.20);
+        stroke: hsl(var(--destructive));
+    }
+    .btree-walker__path-dot {
+        fill: #3a5a8c; /* blue-500 — the lookup path */
+        stroke: var(--color-card, #ffffff);
+        stroke-width: 1.5;
+    }
+    .btree-walker__path-line {
+        stroke: #3a5a8c;
+        stroke-width: 2;
+        stroke-dasharray: 3 3;
+        opacity: 0.6;
+    }
+    .btree-walker__page-count {
+        font-size: 11px;
+        fill: var(--color-foreground, #0a0f25);
+        font-variant-numeric: tabular-nums;
+    }
+    .btree-walker__controls {
+        @apply mt-3 flex flex-col gap-3 items-stretch max-w-xl mx-auto;
+    }
+    .btree-walker__slider-row {
+        @apply flex flex-col gap-1.5;
+    }
+    .btree-walker__slider-text {
+        @apply text-sm font-medium text-foreground tabular-nums text-center;
+    }
+    .btree-walker__slider {
+        @apply h-2 w-full appearance-none rounded-full bg-muted accent-primary;
+    }
+    .btree-walker__slider::-webkit-slider-thumb {
+        @apply h-4 w-4 rounded-full bg-primary;
+        appearance: none;
+    }
+    .btree-walker__readout {
+        @apply mt-4 grid grid-cols-1 gap-1 rounded-md border border-border bg-background p-3 text-sm;
+    }
+    .btree-walker__readout-row {
+        @apply grid grid-cols-1 gap-1 border-b border-border/40 py-1 last:border-b-0 sm:grid-cols-[1fr_auto_2fr] sm:items-baseline sm:gap-3;
+    }
+    .btree-walker__readout-label {
+        @apply text-xs uppercase tracking-wide text-muted-foreground;
+    }
+    .btree-walker__readout-value {
+        @apply text-base font-semibold tabular-nums text-foreground;
+    }
+    .btree-walker__readout-note {
+        @apply text-xs text-muted-foreground;
+    }
+
+    /* ─── Replication-lag simulator ───────────────────────────────────── */
+    .replication-lag {
+        @apply my-6 rounded-lg border border-border bg-card p-4;
+    }
+    .replication-lag__title {
+        @apply mb-3 text-center text-sm font-medium text-muted-foreground;
+    }
+    .replication-lag__frame {
+        @apply flex justify-center;
+    }
+    .replication-lag__svg {
+        @apply block w-full h-auto;
+    }
+    .replication-lag__lane {
+        fill: var(--color-background, #f8f5f2);
+        stroke: var(--color-border, #e5e7eb);
+        stroke-width: 1;
+    }
+    .replication-lag__lane-label {
+        font-size: 12px;
+        font-weight: 600;
+        fill: var(--color-foreground, #0a0f25);
+    }
+    .replication-lag__baseline {
+        stroke: var(--color-border, #e5e7eb);
+        stroke-width: 1;
+        stroke-dasharray: 2 3;
+    }
+    .replication-lag__write {
+        fill: #3a5a8c; /* blue-500 */
+        stroke: var(--color-card, #ffffff);
+        stroke-width: 2;
+    }
+    .replication-lag__write-label {
+        font-size: 10px;
+        font-weight: 600;
+        fill: var(--color-foreground, #0a0f25);
+        font-variant-numeric: tabular-nums;
+        pointer-events: none;
+    }
+    .replication-lag__arrow {
+        stroke: #a13e3e; /* slate-500 */
+        stroke-width: 1.5;
+        stroke-dasharray: 3 3;
+        opacity: 0.6;
+    }
+    .replication-lag__cursor {
+        stroke: hsl(var(--destructive));
+        stroke-width: 2;
+        stroke-dasharray: 6 3;
+    }
+    .replication-lag__cursor-label {
+        font-size: 11px;
+        fill: hsl(var(--destructive));
+        font-weight: 600;
+    }
+    .replication-lag__controls {
+        @apply mt-3 flex flex-col gap-3 items-stretch max-w-xl mx-auto;
+    }
+    .replication-lag__slider-row {
+        @apply flex flex-col gap-1.5;
+    }
+    .replication-lag__slider-text {
+        @apply text-sm font-medium text-foreground tabular-nums text-center;
+    }
+    .replication-lag__slider {
+        @apply h-2 w-full appearance-none rounded-full bg-muted accent-primary;
+    }
+    .replication-lag__slider::-webkit-slider-thumb {
+        @apply h-4 w-4 rounded-full bg-primary;
+        appearance: none;
+    }
+    .replication-lag__readout {
+        @apply mt-3 grid grid-cols-1 gap-1 rounded-md border border-border bg-background p-3 text-sm;
+    }
+    .replication-lag__readout-row {
+        @apply grid grid-cols-1 gap-1 border-b border-border/40 py-1 last:border-b-0 sm:grid-cols-[1fr_auto_2fr] sm:items-baseline sm:gap-3;
+    }
+    .replication-lag__readout-label {
+        @apply text-xs uppercase tracking-wide text-muted-foreground;
+    }
+    .replication-lag__readout-value {
+        @apply text-base font-semibold tabular-nums text-foreground;
+    }
+    .replication-lag__readout-note {
+        @apply text-xs text-muted-foreground;
+    }
+
+    /* ─── Hot shard simulator ─────────────────────────────────────────── */
+    .hot-shard {
+        @apply my-6 rounded-lg border border-border bg-card p-4;
+    }
+    .hot-shard__title {
+        @apply mb-3 text-center text-sm font-medium text-muted-foreground;
+    }
+    .hot-shard__frame {
+        @apply flex justify-center;
+    }
+    .hot-shard__svg {
+        @apply block w-full h-auto;
+    }
+    .hot-shard__axis {
+        stroke: var(--color-border, #e5e7eb);
+        stroke-width: 1;
+    }
+    .hot-shard__y-label, .hot-shard__x-axis-title {
+        font-size: 11px;
+        fill: var(--color-muted-foreground, #a13e3e);
+    }
+    .hot-shard__x-label {
+        font-size: 11px;
+        fill: var(--color-foreground, #0a0f25);
+        font-variant-numeric: tabular-nums;
+    }
+    .hot-shard__bar {
+        fill: hsl(var(--primary) / 0.65);
+        transition: fill 200ms ease;
+    }
+    .hot-shard__bar--hot {
+        fill: hsl(var(--destructive));
+    }
+    .hot-shard__bar-label {
+        font-size: 10px;
+        font-weight: 600;
+        fill: #ffffff;
+        pointer-events: none;
+    }
+    .hot-shard__bar-label--outside {
+        fill: var(--color-foreground, #0a0f25);
+    }
+    .hot-shard__controls {
+        @apply mt-3 flex flex-col gap-3 items-stretch max-w-xl mx-auto;
+    }
+    .hot-shard__strategy-row {
+        @apply flex flex-wrap items-center justify-center gap-2;
+    }
+    .hot-shard__strategy-label {
+        @apply text-xs uppercase tracking-wide text-muted-foreground mr-2;
+    }
+    .hot-shard__strategy {
+        @apply inline-flex h-8 items-center rounded-full border border-border bg-background
+               px-3 text-xs font-medium text-foreground transition-colors hover:bg-accent;
+    }
+    .hot-shard__strategy--active {
+        @apply border-primary bg-primary text-primary-foreground hover:bg-primary/90;
+    }
+    .hot-shard__slider-row {
+        @apply flex flex-col gap-1.5;
+    }
+    .hot-shard__slider-text {
+        @apply text-sm font-medium text-foreground tabular-nums text-center;
+    }
+    .hot-shard__slider {
+        @apply h-2 w-full appearance-none rounded-full bg-muted accent-primary;
+    }
+    .hot-shard__slider::-webkit-slider-thumb {
+        @apply h-4 w-4 rounded-full bg-primary;
+        appearance: none;
+    }
+    .hot-shard__readout {
+        @apply mt-3 grid grid-cols-1 gap-1 rounded-md border border-border bg-background p-3 text-sm;
+    }
+    .hot-shard__readout-row {
+        @apply grid grid-cols-1 gap-1 border-b border-border/40 py-1 last:border-b-0 sm:grid-cols-[1fr_auto_2fr] sm:items-baseline sm:gap-3;
+    }
+    .hot-shard__readout-label {
+        @apply text-xs uppercase tracking-wide text-muted-foreground;
+    }
+    .hot-shard__readout-value {
+        @apply text-base font-semibold tabular-nums text-foreground;
+    }
+    .hot-shard__readout-note {
+        @apply text-xs text-muted-foreground;
+    }
+
+    /* ─── Raft animator ───────────────────────────────────────────────── */
+    .raft-animator {
+        @apply my-6 rounded-lg border border-border bg-card p-4;
+    }
+    .raft-animator__title {
+        @apply mb-3 text-center text-sm font-medium text-muted-foreground;
+    }
+    .raft-animator__scenarios {
+        @apply mb-3 flex flex-wrap items-center justify-center gap-2;
+    }
+    .raft-animator__scenario {
+        @apply inline-flex h-8 items-center rounded-full border border-border bg-background
+               px-3 text-xs font-medium text-foreground transition-colors hover:bg-accent;
+    }
+    .raft-animator__scenario--active {
+        @apply border-primary bg-primary text-primary-foreground hover:bg-primary/90;
+    }
+    .raft-animator__frame {
+        @apply flex justify-center;
+    }
+    .raft-animator__svg {
+        @apply block w-full max-w-2xl h-auto;
+    }
+    .raft-animator__node {
+        stroke-width: 2;
+        transition: fill 200ms ease, stroke 200ms ease;
+    }
+    .raft-animator__node--follower {
+        fill: var(--color-card, #ffffff);
+        stroke: hsl(var(--muted-foreground));
+    }
+    .raft-animator__node--candidate {
+        fill: hsl(48 96% 90%);
+        stroke: hsl(38 92% 50%);
+    }
+    .raft-animator__node--leader {
+        fill: hsl(220 95% 90%);
+        stroke: hsl(220 90% 55%);
+        stroke-width: 3;
+    }
+    .raft-animator__node--down {
+        fill: hsl(var(--destructive) / 0.12);
+        stroke: hsl(var(--destructive));
+        stroke-dasharray: 5 4;
+    }
+    .raft-animator__node-id {
+        font-size: 13px;
+        font-weight: 700;
+        fill: var(--color-foreground, #0a0f25);
+    }
+    .raft-animator__node-badge {
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        fill: var(--color-foreground, #0a0f25);
+    }
+    .raft-animator__node-term {
+        font-size: 10px;
+        fill: var(--color-muted-foreground, #a13e3e);
+        font-variant-numeric: tabular-nums;
+    }
+    .raft-animator__node-votedfor {
+        font-size: 9px;
+        fill: var(--color-muted-foreground, #a13e3e);
+        font-style: italic;
+    }
+    .raft-animator__node-log {
+        font-size: 10px;
+        font-family: ui-monospace, SFMono-Regular, monospace;
+        fill: var(--color-muted-foreground, #a13e3e);
+    }
+    .raft-animator__arrow {
+        stroke: hsl(220 90% 55%);
+        stroke-width: 2;
+    }
+    .raft-animator__arrow-head {
+        fill: hsl(220 90% 55%);
+    }
+    .raft-animator__arrow-label {
+        font-size: 11px;
+        font-weight: 600;
+        fill: hsl(220 90% 35%);
+        font-family: ui-monospace, SFMono-Regular, monospace;
+    }
+    .raft-animator__caption {
+        @apply mt-3 text-center text-sm text-foreground min-h-[1.5rem];
+    }
+    .raft-animator__controls {
+        @apply mt-3 flex flex-wrap items-center justify-center gap-2;
+    }
+    .raft-animator__button {
+        @apply inline-flex h-9 items-center gap-1.5 rounded-md border border-border bg-background
+               px-3 text-sm font-medium text-foreground transition-colors hover:bg-accent
+               disabled:pointer-events-none disabled:opacity-45;
+    }
+    .raft-animator__button--primary {
+        @apply border-primary bg-primary text-primary-foreground hover:bg-primary/90;
+    }
+    .raft-animator__progress {
+        @apply min-w-24 text-center text-xs font-medium tabular-nums text-muted-foreground;
+    }
+
+    /* ─── Graph explorer (force / grid / dag) ─────────────────────────
+       Single widget for source Phase 9 (Graph) plus orphan advanced-
+       graph chapters and several real-systems DAG visualisations.
+       Three layout modes share one renderer; per-step `nodeStates` and
+       `edgeStates` overlay closed-catalog statuses as `--<state>`
+       modifiers. Edge-colour CSS variables also feed the SVG
+       `<marker>` arrowheads in `directed: true` mode — change the
+       palette in one place and both the line and head update. */
+    .graph-explorer {
+        @apply my-6 rounded-lg border border-border bg-card p-4;
+        /* Edge palette — referenced from JS as `var(--ge-edge-*)` for
+           arrowhead fills, and below in `.graph-explorer__edge--<state>`
+           rules for line strokes. */
+        --ge-edge-default: #94a3b8;
+        --ge-edge-tree: #4f5bd5;
+        --ge-edge-back: #a13e3e;
+        --ge-edge-cross: #8a4f7d;
+        --ge-edge-forward: #8b5cf6;
+        --ge-edge-relaxed: #3a5a8c;
+        --ge-edge-tight: #4f5bd5;
+        --ge-edge-on-path: #4f5bd5;
+        --ge-edge-considered: #8a4f7d;
+        --ge-edge-rejected: #a13e3e;
+        --ge-edge-failure: #a13e3e;
+    }
+    .graph-explorer__title {
+        @apply mb-3 text-center text-sm font-medium text-muted-foreground;
+    }
+    .graph-explorer__frame {
+        @apply flex justify-center overflow-x-auto;
+    }
+    .graph-explorer__svg {
+        @apply block h-auto max-w-full;
+    }
+    /* Grid backdrop — visible only in `layout: "grid"`. Drawn behind
+       node circles so a 3x3 grid reads as a board with circles
+       on it, mirroring the source diagram style. */
+    .graph-explorer__grid-cell {
+        fill: rgba(148, 163, 184, 0.06);
+        stroke: rgba(148, 163, 184, 0.25);
+        stroke-width: 1;
+    }
+    /* Node group — circle + label. D3 owns the transform; CSS owns
+       only the per-state fill / stroke. */
+    .graph-explorer__node {
+        /* D3 owns this group's transform; no CSS transition. */
+    }
+    .graph-explorer__node-circle {
+        fill: var(--color-card, #ffffff);
+        stroke: var(--color-border, #cbd5e1);
+        stroke-width: 1.75;
+        transition: fill 220ms ease, stroke 220ms ease;
+    }
+    .graph-explorer__node-label {
+        @apply text-sm font-semibold;
+        fill: var(--color-foreground);
+        font-size: 13px;
+    }
+    /* Per-state modifiers — closed catalog mirrored from
+       GraphExplorer.NodeStates. */
+    .graph-explorer__node--unseen .graph-explorer__node-circle {
+        fill: var(--color-card, #ffffff);
+        stroke: rgba(148, 163, 184, 0.6);
+    }
+    .graph-explorer__node--frontier .graph-explorer__node-circle {
+        fill: rgba(58, 90, 140, 0.12);
+        stroke: rgba(58, 90, 140, 0.7);
+        stroke-width: 2;
+    }
+    .graph-explorer__node--active .graph-explorer__node-circle {
+        fill: rgba(138, 79, 125, 0.18);
+        stroke: rgba(138, 79, 125, 0.85);
+        stroke-width: 2.5;
+    }
+    .graph-explorer__node--settled .graph-explorer__node-circle {
+        fill: rgba(79, 91, 213, 0.18);
+        stroke: rgba(79, 91, 213, 0.7);
+        stroke-width: 2;
+    }
+    /* Directed-cycle-detection colours: white / gray / black. White is
+       the unseen default; gray marks "on the active recursion stack";
+       black marks "fully processed". A back edge into a gray node is
+       the cycle witness. */
+    .graph-explorer__node--white .graph-explorer__node-circle {
+        fill: #ffffff;
+        stroke: #94a3b8;
+    }
+    .graph-explorer__node--gray .graph-explorer__node-circle {
+        fill: #cbd5e1;
+        stroke: #7d2929;
+        stroke-width: 2;
+    }
+    .graph-explorer__node--black .graph-explorer__node-circle {
+        fill: #0f172a;
+        stroke: #020617;
+        stroke-width: 2;
+    }
+    .graph-explorer__node--black .graph-explorer__node-label {
+        fill: #ffffff;
+    }
+    /* Two-colouring (bipartite check). Distinct enough to read across
+       a dense graph; muted enough that the active/frontier overlay
+       stays visible in mixed payloads. */
+    .graph-explorer__node--colourA .graph-explorer__node-circle {
+        fill: rgba(58, 90, 140, 0.22);
+        stroke: rgba(58, 90, 140, 0.8);
+        stroke-width: 2;
+    }
+    .graph-explorer__node--colourB .graph-explorer__node-circle {
+        fill: rgba(90, 138, 90, 0.22);
+        stroke: rgba(90, 138, 90, 0.8);
+        stroke-width: 2;
+    }
+    /* Connected-component colouring — up to 8 components in the
+       catalog. Component palette is intentionally muted (not full
+       saturation) so the algorithm overlay states (active / settled)
+       stay legible on top. */
+    .graph-explorer__node--component0 .graph-explorer__node-circle {
+        fill: rgba(58, 90, 140, 0.18);
+        stroke: rgba(58, 90, 140, 0.7);
+    }
+    .graph-explorer__node--component1 .graph-explorer__node-circle {
+        fill: rgba(138, 79, 125, 0.18);
+        stroke: rgba(138, 79, 125, 0.7);
+    }
+    .graph-explorer__node--component2 .graph-explorer__node-circle {
+        fill: rgba(90, 138, 90, 0.18);
+        stroke: rgba(90, 138, 90, 0.7);
+    }
+    .graph-explorer__node--component3 .graph-explorer__node-circle {
+        fill: rgba(79, 91, 213, 0.18);
+        stroke: rgba(79, 91, 213, 0.7);
+    }
+    .graph-explorer__node--component4 .graph-explorer__node-circle {
+        fill: rgba(161, 62, 62, 0.18);
+        stroke: rgba(161, 62, 62, 0.7);
+    }
+    .graph-explorer__node--component5 .graph-explorer__node-circle {
+        fill: rgba(197, 165, 114, 0.18);
+        stroke: rgba(197, 165, 114, 0.7);
+    }
+    .graph-explorer__node--component6 .graph-explorer__node-circle {
+        fill: rgba(236, 72, 153, 0.18);
+        stroke: rgba(236, 72, 153, 0.7);
+    }
+    .graph-explorer__node--component7 .graph-explorer__node-circle {
+        fill: rgba(132, 204, 22, 0.18);
+        stroke: rgba(132, 204, 22, 0.7);
+    }
+    /* Edges — straight paths from source to target centre. D3 sets
+       the `d` per step; CSS owns stroke style only. Per-state
+       modifiers use the same `--ge-edge-*` variables as the SVG
+       arrowhead `<marker>` fills, so the line + head stay in sync. */
+    .graph-explorer__edge {
+        stroke: var(--ge-edge-default);
+        stroke-width: 1.75;
+        fill: none;
+        transition: stroke 220ms ease, opacity 220ms ease;
+    }
+    .graph-explorer__edge--tree {
+        stroke: var(--ge-edge-tree);
+        stroke-width: 2.25;
+    }
+    .graph-explorer__edge--back {
+        stroke: var(--ge-edge-back);
+        stroke-width: 2.25;
+        stroke-dasharray: 6 4;
+    }
+    .graph-explorer__edge--cross {
+        stroke: var(--ge-edge-cross);
+        stroke-dasharray: 4 3;
+    }
+    .graph-explorer__edge--forward {
+        stroke: var(--ge-edge-forward);
+        stroke-dasharray: 8 3;
+    }
+    .graph-explorer__edge--relaxed {
+        stroke: var(--ge-edge-relaxed);
+        stroke-width: 2;
+    }
+    .graph-explorer__edge--tight {
+        stroke: var(--ge-edge-tight);
+        stroke-width: 2.5;
+    }
+    .graph-explorer__edge--on-path {
+        stroke: var(--ge-edge-on-path);
+        stroke-width: 3;
+    }
+    .graph-explorer__edge--considered {
+        stroke: var(--ge-edge-considered);
+        stroke-dasharray: 5 3;
+    }
+    .graph-explorer__edge--rejected {
+        stroke: var(--ge-edge-rejected);
+        opacity: 0.45;
+        stroke-dasharray: 2 4;
+    }
+    .graph-explorer__edge--failure {
+        stroke: var(--ge-edge-failure);
+        stroke-width: 1.5;
+        stroke-dasharray: 1 3;
+    }
+    .graph-explorer__edge-weight {
+        font-size: 11px;
+        font-weight: 600;
+        font-family: ui-monospace, SFMono-Regular, monospace;
+        fill: var(--color-muted-foreground);
+        paint-order: stroke;
+        stroke: var(--color-card, #ffffff);
+        stroke-width: 3.5;
+    }
+    /* Marker overlay (optional pointer indicator) — same vocabulary as
+       LinkedList / BinaryTree markers. Fill is resolved from
+       MarkerCanon in Scala; this stylesheet only owns text shaping. */
+    .graph-explorer__marker {
+        /* D3 owns the group's transform; no CSS transition. */
+    }
+    .graph-explorer__marker-label {
+        font-size: 11px;
+        font-weight: 600;
+        font-family: ui-monospace, SFMono-Regular, monospace;
+    }
+    /* Panels — sidecar tables right of the canvas. Two kinds: array
+       (keyed cells with labels above, e.g. dist[]) and list (pill
+       stack, e.g. queue contents / visit order). */
+    .graph-explorer__panel-title {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        fill: var(--color-muted-foreground, #a13e3e);
+    }
+    .graph-explorer__panel-label {
+        font-size: 10px;
+        font-weight: 600;
+        font-family: ui-monospace, SFMono-Regular, monospace;
+        fill: var(--color-muted-foreground, #a13e3e);
+    }
+    .graph-explorer__panel-rect {
+        fill: var(--color-card, #ffffff);
+        stroke: var(--color-border, #cbd5e1);
+        stroke-width: 1.25;
+    }
+    .graph-explorer__panel-value {
+        font-size: 13px;
+        font-weight: 600;
+        font-family: ui-monospace, SFMono-Regular, monospace;
+        fill: var(--color-foreground);
+    }
+    .graph-explorer__panel-pill-rect {
+        fill: rgba(58, 90, 140, 0.12);
+        stroke: rgba(58, 90, 140, 0.55);
+        stroke-width: 1.25;
+    }
+    .graph-explorer__panel-pill-text {
+        font-size: 12px;
+        font-weight: 600;
+        font-family: ui-monospace, SFMono-Regular, monospace;
+        fill: var(--color-foreground);
+    }
+    .graph-explorer__caption {
+        @apply mt-3 text-center text-sm text-foreground min-h-[1.25rem];
+    }
+    .graph-explorer__controls {
+        @apply mt-3 flex flex-wrap items-center justify-center gap-2;
+    }
+    .graph-explorer__button {
+        @apply inline-flex h-9 items-center gap-1.5 rounded-md border border-border bg-background
+               px-3 text-sm font-medium text-foreground transition-colors hover:bg-accent
+               disabled:pointer-events-none disabled:opacity-45;
+    }
+    .graph-explorer__button--primary {
+        @apply border-primary bg-primary text-primary-foreground hover:bg-primary/90;
+    }
+    .graph-explorer__button--icon {
+        @apply w-9 justify-center px-0;
+    }
+    .graph-explorer__button-icon {
+        @apply h-4 w-4;
+    }
+    .graph-explorer__progress {
+        @apply min-w-24 text-center text-xs font-medium tabular-nums text-muted-foreground;
+    }
+
+    /* ─── Hash table (chaining / linear / quadratic / double) ────────
+       Single widget for source Phase 3 (Hash table, 57 source
+       diagrams) across four collision-resolution strategies. The
+       bucket array renders as a vertical column of rows; chaining
+       mode lays out entries horizontally within a row with arrows
+       between consecutive entries; probing modes hold at most one
+       entry per row and reveal the probe-sequence cursor in a
+       sidecar lane. Per-step `highlight` paints a bucket-wide tint
+       under the entries — the colour palette below is the closed
+       set "target / miss / match / collision". */
+    .hash-table {
+        @apply my-6 rounded-lg border border-border bg-card p-4;
+        --ht-chain-arrow: #94a3b8;
+    }
+    .hash-table__title {
+        @apply mb-2 text-center text-sm font-medium text-muted-foreground;
+    }
+    .hash-table__hash-label {
+        @apply text-center text-xs font-mono text-muted-foreground;
+    }
+    .hash-table__hash-labels {
+        @apply flex flex-wrap justify-center gap-x-6;
+    }
+    .hash-table__op {
+        @apply mb-2 text-center text-sm font-semibold text-foreground;
+    }
+    .hash-table__frame {
+        @apply mt-2 flex justify-center overflow-x-auto;
+    }
+    .hash-table__svg {
+        @apply block h-auto max-w-full;
+    }
+    /* Bucket row background — faint slate panel that frames each
+       bucket's contents. Always visible; entries layer on top. */
+    .hash-table__row {
+        fill: rgba(148, 163, 184, 0.08);
+        stroke: rgba(148, 163, 184, 0.35);
+        stroke-width: 1;
+    }
+    /* Index label to the left of each row. Right-anchored so the
+       column of digits aligns. */
+    .hash-table__index {
+        font-size: 12px;
+        font-weight: 600;
+        font-family: ui-monospace, SFMono-Regular, monospace;
+        fill: var(--color-muted-foreground, #a13e3e);
+    }
+    /* Bucket highlight overlay — tinted rectangle over the row.
+       Closed catalog: target / miss / match / collision. Each kind
+       paints its own fill so the same colour means the same
+       semantics across modes. */
+    .hash-table__highlight {
+        pointer-events: none;
+        transition: opacity 220ms ease;
+    }
+    .hash-table__highlight--target {
+        fill: rgba(58, 90, 140, 0.18);
+        stroke: rgba(58, 90, 140, 0.7);
+        stroke-width: 1.5;
+    }
+    .hash-table__highlight--miss {
+        fill: rgba(148, 163, 184, 0.22);
+        stroke: rgba(148, 163, 184, 0.7);
+        stroke-width: 1.5;
+        stroke-dasharray: 4 3;
+    }
+    .hash-table__highlight--match {
+        fill: rgba(79, 91, 213, 0.22);
+        stroke: rgba(79, 91, 213, 0.8);
+        stroke-width: 2;
+    }
+    .hash-table__highlight--collision {
+        fill: rgba(161, 62, 62, 0.20);
+        stroke: rgba(161, 62, 62, 0.75);
+        stroke-width: 1.5;
+        stroke-dasharray: 6 3;
+    }
+    /* Entries — key=value cells laid out per bucket. D3 owns the
+       group transform; CSS owns only fill / stroke / text. */
+    .hash-table__entry-rect {
+        fill: var(--color-card, #ffffff);
+        stroke: var(--color-border, #cbd5e1);
+        stroke-width: 1.5;
+    }
+    .hash-table__entry-text {
+        font-size: 12px;
+        font-weight: 600;
+        font-family: ui-monospace, SFMono-Regular, monospace;
+        fill: var(--color-foreground);
+    }
+    /* Tombstone: open-addressing delete marker. Faded fill + dashed
+       border + strikethrough on the label. The key stays visible so
+       a subsequent search for a key whose probe path crossed this
+       slot can still find it. */
+    .hash-table__entry--tombstone .hash-table__entry-rect {
+        fill: rgba(148, 163, 184, 0.12);
+        stroke: rgba(148, 163, 184, 0.55);
+        stroke-dasharray: 4 3;
+    }
+    .hash-table__entry--tombstone .hash-table__entry-text {
+        fill: var(--color-muted-foreground, #94a3b8);
+        text-decoration: line-through;
+    }
+    /* Chain arrows (chaining mode) — small horizontal arrows between
+       consecutive entries in a chain. Reuses the `<marker>` defined
+       in HashTable.scala's ensureSvg, fed by --ht-chain-arrow. */
+    .hash-table__arrow {
+        stroke: var(--ht-chain-arrow);
+        stroke-width: 1.75;
+        fill: none;
+    }
+    /* Chain cursor (chaining mode) — small downward triangle above
+       the entry at the cursor position. Indigo to match the
+       `current` family in MarkerCanon. */
+    .hash-table__chain-cursor-arrow {
+        fill: #4f5bd5;
+    }
+    /* Probe trail dots (probing modes) — small muted dots at each
+       earlier probe step. The active cursor is rendered separately
+       below and visually distinct. */
+    .hash-table__probe-trail {
+        fill: rgba(148, 163, 184, 0.65);
+        stroke: rgba(105, 96, 87, 0.5);
+        stroke-width: 1;
+    }
+    .hash-table__probe-cursor-dot {
+        fill: rgba(138, 79, 125, 0.95);
+        stroke: rgba(180, 83, 9, 0.85);
+        stroke-width: 1.5;
+    }
+    .hash-table__probe-cursor-label {
+        font-size: 11px;
+        font-weight: 600;
+        font-family: ui-monospace, SFMono-Regular, monospace;
+        fill: var(--color-foreground);
+    }
+    .hash-table__caption {
+        @apply mt-3 text-center text-sm text-foreground min-h-[1.25rem];
+    }
+    .hash-table__controls {
+        @apply mt-3 flex flex-wrap items-center justify-center gap-2;
+    }
+    .hash-table__button {
+        @apply inline-flex h-9 items-center gap-1.5 rounded-md border border-border bg-background
+               px-3 text-sm font-medium text-foreground transition-colors hover:bg-accent
+               disabled:pointer-events-none disabled:opacity-45;
+    }
+    .hash-table__button--primary {
+        @apply border-primary bg-primary text-primary-foreground hover:bg-primary/90;
+    }
+    .hash-table__button--icon {
+        @apply w-9 justify-center px-0;
+    }
+    .hash-table__button-icon {
+        @apply h-4 w-4;
+    }
+    .hash-table__progress {
+        @apply min-w-24 text-center text-xs font-medium tabular-nums text-muted-foreground;
+    }
+
+    /* ── Heap-tree (Phase 8) ──────────────────────────────────────────
+       Dual-view widget: the binary tree on top, the contiguous backing
+       array below. Both panels are keyed by item.id so a swap visibly
+       slides the same DOM elements between positions. Mode flag picks
+       between max / min / custom — the badge tints differ but the
+       renderer is identical. */
+    .heap-tree {
+        @apply my-6 rounded-lg border border-border bg-card p-4;
+    }
+    .heap-tree__title {
+        @apply mb-2 text-center text-sm font-medium text-muted-foreground;
+    }
+    .heap-tree__mode-row {
+        @apply mb-2 flex flex-wrap items-center justify-center gap-x-3 gap-y-1;
+    }
+    .heap-tree__mode-badge {
+        @apply rounded-md border px-2 py-0.5 text-xs font-semibold uppercase tracking-wide;
+        border-color: rgba(105, 96, 87, 0.55);
+        color: var(--color-muted-foreground, #a13e3e);
+        background: rgba(105, 96, 87, 0.06);
+    }
+    .heap-tree__mode-badge--max {
+        border-color: rgba(161, 62, 62, 0.55);
+        color: #b91c1c;
+        background: rgba(161, 62, 62, 0.08);
+    }
+    .heap-tree__mode-badge--min {
+        border-color: rgba(58, 90, 140, 0.55);
+        color: #1d4ed8;
+        background: rgba(58, 90, 140, 0.08);
+    }
+    .heap-tree__mode-badge--custom {
+        border-color: rgba(90, 138, 90, 0.55);
+        color: #7e22ce;
+        background: rgba(90, 138, 90, 0.08);
+    }
+    .heap-tree__comparator-label {
+        @apply text-xs font-mono text-muted-foreground;
+    }
+    .heap-tree__frame {
+        @apply mt-2 flex justify-center overflow-x-auto;
+    }
+    .heap-tree__svg {
+        @apply block h-auto max-w-full;
+    }
+    /* Compare result — colour the verdict text: green for true, slate
+       for false. Authors writing payloads see at a glance whether the
+       comparison the step describes actually held. */
+    .heap-tree__compare {
+        font-size: 13px;
+        font-weight: 600;
+        font-family: ui-monospace, SFMono-Regular, monospace;
+        fill: var(--color-muted-foreground, #a13e3e);
+    }
+    .heap-tree__compare--true {
+        fill: rgba(79, 91, 213, 0.95);
+    }
+    .heap-tree__compare--false {
+        fill: rgba(161, 62, 62, 0.9);
+    }
+    /* Input strip — stream of values feeding the heap (top-k patterns). */
+    .heap-tree__input-label {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        fill: var(--color-muted-foreground, #a13e3e);
+    }
+    .heap-tree__input-rect {
+        fill: rgba(105, 96, 87, 0.06);
+        stroke: rgba(105, 96, 87, 0.4);
+        stroke-width: 1.25;
+    }
+    .heap-tree__input-text {
+        font-size: 12px;
+        font-weight: 600;
+        fill: var(--color-foreground);
+        font-family: ui-monospace, SFMono-Regular, monospace;
+    }
+    .heap-tree__input-cursor {
+        fill: rgba(79, 91, 213, 0.85);
+    }
+    /* Tree edges — straight lines from parent to child, trimmed to meet
+       the circle edges. */
+    .heap-tree__tree-edge {
+        stroke: var(--color-muted-foreground);
+        stroke-width: 1.75;
+        fill: none;
+        /* `d` transitions are best-effort — modern Chromium / Firefox
+           honour them; older browsers will snap-redraw on swap. The
+           position transitions on .heap-tree__tree-node carry the
+           animation regardless. */
+        transition: stroke 220ms ease, d 450ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .heap-tree__tree-circle {
+        fill: var(--color-card, #ffffff);
+        stroke: var(--color-border, #cbd5e1);
+        stroke-width: 1.75;
+    }
+    /* CSS-driven swap-slide. D3's `selection.transition().attr("transform", fn)`
+       does NOT propagate the new value to the SVG attribute for id-keyed
+       groups whose datum's coordinate changes between renders (the data IS
+       rebound, but the transition attr stays at the prior value — same
+       trap as singleton-keyed elements in HashTable). HeapTree therefore
+       snap-sets the transform and lets CSS animate the change.
+       Both the tree node and the array cell get the same easing so a
+       swap reads as one coordinated motion across panels. */
+    .heap-tree__tree-node,
+    .heap-tree__tree-marker,
+    .heap-tree__array-cell,
+    .heap-tree__array-marker {
+        transition: transform 450ms cubic-bezier(0.4, 0, 0.2, 1),
+                    opacity 350ms ease;
+    }
+    .heap-tree__tree-value {
+        font-size: 14px;
+        font-weight: 600;
+        fill: var(--color-foreground);
+    }
+    .heap-tree__tree-sortkey {
+        font-size: 10px;
+        font-weight: 600;
+        fill: var(--color-muted-foreground, #a13e3e);
+        font-family: ui-monospace, SFMono-Regular, monospace;
+    }
+    /* Pending swap — dashed amber arc above the two soon-to-be-swapped
+       nodes. The amber communicates "this is about to change". */
+    .heap-tree__tree-pending,
+    .heap-tree__array-pending {
+        stroke: rgba(138, 79, 125, 0.85);
+        stroke-width: 2;
+        stroke-dasharray: 5 4;
+        fill: none;
+    }
+    /* Markers — share font + weight with the binary-tree marker labels
+       so a `current` marker reads the same across both widgets. */
+    .heap-tree__tree-marker-label,
+    .heap-tree__array-marker-label {
+        font-size: 11px;
+        font-weight: 600;
+        font-family: ui-monospace, SFMono-Regular, monospace;
+    }
+    /* Array cells — same warm-card aesthetic as the array-traversal
+       widget so the connection between "the heap is a tree" and "the
+       heap is also an array" reads visually. */
+    .heap-tree__array-rect {
+        fill: var(--color-card, #ffffff);
+        stroke: var(--color-border, #cbd5e1);
+        stroke-width: 1.5;
+    }
+    .heap-tree__array-text {
+        font-size: 13px;
+        font-weight: 600;
+        fill: var(--color-foreground);
+        font-family: ui-monospace, SFMono-Regular, monospace;
+    }
+    .heap-tree__array-index {
+        font-size: 11px;
+        font-weight: 600;
+        fill: var(--color-muted-foreground, #a13e3e);
+        font-family: ui-monospace, SFMono-Regular, monospace;
+    }
+    /* Output strip — running k-largest accumulator below the array. */
+    .heap-tree__output-label {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        fill: var(--color-muted-foreground, #a13e3e);
+    }
+    .heap-tree__output-rect {
+        fill: rgba(79, 91, 213, 0.10);
+        stroke: rgba(79, 91, 213, 0.45);
+        stroke-width: 1.25;
+    }
+    .heap-tree__output-text {
+        font-size: 12px;
+        font-weight: 600;
+        fill: var(--color-foreground);
+        font-family: ui-monospace, SFMono-Regular, monospace;
+    }
+    .heap-tree__caption {
+        @apply mt-3 text-center text-sm text-foreground min-h-[1.25rem];
+    }
+    .heap-tree__controls {
+        @apply mt-3 flex flex-wrap items-center justify-center gap-2;
+    }
+    .heap-tree__button {
+        @apply inline-flex h-9 items-center gap-1.5 rounded-md border border-border bg-background
+               px-3 text-sm font-medium text-foreground transition-colors hover:bg-accent
+               disabled:pointer-events-none disabled:opacity-45;
+    }
+    .heap-tree__button--primary {
+        @apply border-primary bg-primary text-primary-foreground hover:bg-primary/90;
+    }
+    .heap-tree__button--icon {
+        @apply w-9 justify-center px-0;
+    }
+    .heap-tree__button-icon {
+        @apply h-4 w-4;
+    }
+    .heap-tree__progress {
+        @apply min-w-24 text-center text-xs font-medium tabular-nums text-muted-foreground;
+    }
+
+    /* ── call-stack ────────────────────────────────────────────────────────
+       Dual-mode widget: vertical activation-frame ladder (`stack`) or
+       top-down recursion tree (`recursion-tree`). Shares the event-tape
+       data model across modes; the renderer projects to either layout.
+       Frame status (active / waiting / returning / popped / overflow) is
+       computed from the live stack and surfaced as modifier classes on
+       each frame's rect — authors don't pick the colour, the state does. */
+    .call-stack {
+        @apply my-6 rounded-lg border border-border bg-card p-4;
+    }
+    .call-stack__title {
+        @apply mb-2 text-center text-sm font-medium text-muted-foreground;
+    }
+    .call-stack__mode-row {
+        @apply mb-2 flex flex-wrap items-center justify-center gap-x-3 gap-y-1;
+    }
+    .call-stack__mode-badge {
+        @apply rounded-md border px-2 py-0.5 text-xs font-semibold uppercase tracking-wide;
+        border-color: rgba(105, 96, 87, 0.55);
+        color: var(--color-muted-foreground, #a13e3e);
+        background: rgba(105, 96, 87, 0.06);
+    }
+    .call-stack__mode-badge--stack {
+        border-color: rgba(58, 90, 140, 0.55);
+        color: #1d4ed8;
+        background: rgba(58, 90, 140, 0.08);
+    }
+    .call-stack__mode-badge--recursion-tree {
+        border-color: rgba(90, 138, 90, 0.55);
+        color: #7e22ce;
+        background: rgba(90, 138, 90, 0.08);
+    }
+    .call-stack__frame-host {
+        @apply mt-2 flex justify-center overflow-x-auto;
+    }
+    .call-stack__svg {
+        @apply block h-auto max-w-full;
+    }
+    /* Stack-memory chrome — the outer rect drawn when stackLimit is set.
+       Muted slate so the reader reads it as "the box that holds the frames"
+       rather than as another active element. */
+    .call-stack__memory {
+        fill: rgba(105, 96, 87, 0.04);
+        stroke: rgba(105, 96, 87, 0.45);
+        stroke-width: 1.25;
+        stroke-dasharray: 4 3;
+    }
+    /* Overflow band — light red wash behind the slots at depth >= overflowAt.
+       Sits BEHIND the frames so the frame fill still reads on top, but the
+       background signals "this region is dangerous" even before a frame
+       arrives there. */
+    .call-stack__overflow-band {
+        fill: rgba(161, 62, 62, 0.12);
+        stroke: rgba(161, 62, 62, 0.35);
+        stroke-width: 1;
+        stroke-dasharray: 3 3;
+    }
+    /* CSS-driven slide for keyed frame groups + the pointer + tree nodes —
+       same pattern hint #5 as HeapTree (D3's transition().attr("transform")
+       doesn't reliably propagate to multi-keyed groups whose datum changes
+       only in coordinate fields between renders; snap-set via .attr() and
+       let CSS animate). */
+    .call-stack__frame,
+    .call-stack__pointer,
+    .call-stack__tree-node,
+    .call-stack__frame-local {
+        transition: transform 450ms cubic-bezier(0.4, 0, 0.2, 1),
+                    x 450ms cubic-bezier(0.4, 0, 0.2, 1),
+                    y 450ms cubic-bezier(0.4, 0, 0.2, 1),
+                    opacity 350ms ease;
+    }
+    /* Stack-mode frame rect — base style is the "waiting" frame (muted card).
+       Modifier classes paint the active / returning / overflow variants. */
+    .call-stack__frame-rect {
+        fill: var(--color-card, #ffffff);
+        stroke: rgba(105, 96, 87, 0.55);
+        stroke-width: 1.5;
+    }
+    .call-stack__frame--active .call-stack__frame-rect {
+        stroke: rgba(79, 91, 213, 0.85);
+        stroke-width: 2;
+        fill: rgba(79, 91, 213, 0.06);
+    }
+    .call-stack__frame--returning .call-stack__frame-rect {
+        stroke: rgba(90, 138, 90, 0.85);
+        stroke-width: 2;
+        fill: rgba(90, 138, 90, 0.06);
+        stroke-dasharray: 5 3;
+    }
+    .call-stack__frame--overflow .call-stack__frame-rect {
+        stroke: rgba(161, 62, 62, 0.85);
+        stroke-width: 2;
+        fill: rgba(161, 62, 62, 0.10);
+    }
+    .call-stack__frame-name {
+        font-size: 13px;
+        font-weight: 600;
+        font-family: ui-monospace, SFMono-Regular, monospace;
+        fill: var(--color-foreground);
+    }
+    .call-stack__frame--overflow .call-stack__frame-name {
+        fill: #b91c1c;
+    }
+    .call-stack__frame-return {
+        font-size: 12px;
+        font-weight: 700;
+        font-family: ui-monospace, SFMono-Regular, monospace;
+        fill: rgba(90, 138, 90, 0.95);
+    }
+    .call-stack__frame-local {
+        font-size: 11px;
+        font-weight: 500;
+        font-family: ui-monospace, SFMono-Regular, monospace;
+        fill: var(--color-muted-foreground, #a13e3e);
+    }
+    /* Stack pointer — emerald (the `top`/`current` family). Drawn as a ▶
+       triangle to the right of the active frame. */
+    .call-stack__pointer {
+        fill: rgba(79, 91, 213, 0.85);
+        stroke: rgba(79, 91, 213, 0.95);
+        stroke-width: 1;
+    }
+    /* Recursion-tree-mode node — base is "pending" (frame defined but not
+       yet called); other status modifiers light up as the call sequence
+       progresses. */
+    .call-stack__tree-rect {
+        fill: var(--color-card, #ffffff);
+        stroke: rgba(105, 96, 87, 0.45);
+        stroke-width: 1.5;
+    }
+    .call-stack__tree-node--pending .call-stack__tree-rect {
+        fill: rgba(105, 96, 87, 0.04);
+        stroke-dasharray: 3 3;
+    }
+    .call-stack__tree-node--pending .call-stack__tree-name {
+        fill: rgba(105, 96, 87, 0.6);
+    }
+    .call-stack__tree-node--active .call-stack__tree-rect {
+        stroke: rgba(79, 91, 213, 0.9);
+        stroke-width: 2;
+        fill: rgba(79, 91, 213, 0.08);
+    }
+    .call-stack__tree-node--waiting .call-stack__tree-rect {
+        stroke: rgba(58, 90, 140, 0.7);
+        stroke-width: 1.5;
+        fill: rgba(58, 90, 140, 0.04);
+    }
+    .call-stack__tree-node--returning .call-stack__tree-rect {
+        stroke: rgba(90, 138, 90, 0.9);
+        stroke-width: 2;
+        fill: rgba(90, 138, 90, 0.10);
+    }
+    .call-stack__tree-node--popped .call-stack__tree-rect {
+        opacity: 0.65;
+        fill: rgba(105, 96, 87, 0.06);
+        stroke: rgba(105, 96, 87, 0.55);
+        stroke-width: 1.25;
+    }
+    .call-stack__tree-node--popped .call-stack__tree-name {
+        fill: rgba(105, 96, 87, 0.7);
+    }
+    .call-stack__tree-name {
+        font-size: 12px;
+        font-weight: 600;
+        font-family: ui-monospace, SFMono-Regular, monospace;
+        fill: var(--color-foreground);
+    }
+    .call-stack__tree-edge {
+        stroke: var(--color-muted-foreground);
+        stroke-width: 1.5;
+        fill: none;
+    }
+    .call-stack__tree-return {
+        font-size: 11px;
+        font-weight: 700;
+        font-family: ui-monospace, SFMono-Regular, monospace;
+        fill: rgba(90, 138, 90, 0.95);
+    }
+    .call-stack__tree-return--fresh {
+        fill: rgba(79, 91, 213, 0.95);
+    }
+    .call-stack__caption {
+        @apply mt-3 text-center text-sm text-foreground min-h-[1.25rem];
+    }
+    .call-stack__controls {
+        @apply mt-3 flex flex-wrap items-center justify-center gap-2;
+    }
+    .call-stack__button {
+        @apply inline-flex h-9 items-center gap-1.5 rounded-md border border-border bg-background
+               px-3 text-sm font-medium text-foreground transition-colors hover:bg-accent
+               disabled:pointer-events-none disabled:opacity-45;
+    }
+    .call-stack__button--primary {
+        @apply border-primary bg-primary text-primary-foreground hover:bg-primary/90;
+    }
+    .call-stack__button--icon {
+        @apply w-9 justify-center px-0;
+    }
+    .call-stack__button-icon {
+        @apply h-4 w-4;
+    }
+    .call-stack__progress {
+        @apply min-w-24 text-center text-xs font-medium tabular-nums text-muted-foreground;
+    }
+    /* ── Decision-tree (Arc 1 — backtracking enumeration / search) ──────────
+       Tree of choices with per-step status modifiers (active / visited /
+       accepted / rejected / pruned / popped / unseen) + optional side panels
+       for the current partial (path) and accumulated solutions list. */
+    .decision-tree {
+        @apply my-6 rounded-lg border border-border bg-card p-4;
+    }
+    .decision-tree__title {
+        @apply mb-2 text-center text-sm font-medium text-muted-foreground;
+    }
+    .decision-tree__kind-row {
+        @apply mb-2 flex flex-wrap items-center justify-center gap-x-3 gap-y-1;
+    }
+    .decision-tree__kind-badge {
+        @apply rounded-md border px-2 py-0.5 text-xs font-semibold uppercase tracking-wide;
+        border-color: rgba(105, 96, 87, 0.55);
+        color: var(--color-muted-foreground, #a13e3e);
+        background: rgba(105, 96, 87, 0.06);
+    }
+    .decision-tree__kind-badge--enumeration {
+        border-color: rgba(58, 90, 140, 0.55);
+        color: #1d4ed8;
+        background: rgba(58, 90, 140, 0.08);
+    }
+    .decision-tree__kind-badge--search {
+        border-color: rgba(79, 91, 213, 0.55);
+        color: #047857;
+        background: rgba(79, 91, 213, 0.08);
+    }
+    .decision-tree__canvas-row {
+        @apply mt-2 flex flex-wrap items-start justify-center gap-4;
+    }
+    /* flex-shrink: 0 keeps the canvas at its natural (SVG) width so a sibling
+       panel can't squeeze it — without this, the panel column would overlap
+       the rightmost prune-reason badges. The SVG drops `max-w-full` for the
+       same reason; on narrow viewports the canvas-row's `flex-wrap` moves
+       the panels under the canvas instead of crushing the canvas. */
+    .decision-tree__canvas {
+        @apply flex justify-center overflow-x-auto shrink-0;
+    }
+    .decision-tree__svg {
+        @apply block h-auto;
+    }
+    /* Side panels — render as compact lists right of the canvas. Path =
+       current partial (the root→active labels). Solutions = labels of
+       accepted leaves in order of acceptance. */
+    .decision-tree__panels {
+        @apply flex flex-col gap-3 min-w-[140px];
+    }
+    .decision-tree__panel {
+        @apply rounded-md border border-border bg-background/60 p-2;
+    }
+    .decision-tree__panel-title {
+        @apply mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground;
+    }
+    .decision-tree__panel-empty {
+        @apply text-xs italic text-muted-foreground;
+    }
+    .decision-tree__panel-list {
+        @apply ml-4 list-decimal text-xs font-mono text-foreground;
+    }
+    .decision-tree__panel-item {
+        @apply mb-0.5;
+    }
+    /* CSS-driven slide for keyed groups (pattern hint #5 — D3's
+       transition().attr("transform") doesn't reliably propagate to
+       multi-keyed groups whose datum only changes in coordinates between
+       renders; snap-set via .attr() and let CSS animate). The tree layout
+       is static — the only animated transform is for reason badges that
+       appear/move and the (rare) tree-shape change. */
+    .decision-tree__node,
+    .decision-tree__reason {
+        transition: transform 450ms cubic-bezier(0.4, 0, 0.2, 1),
+                    opacity 350ms ease;
+    }
+    /* Edge — drawn first so nodes sit on top. Status modifier derives from
+       the CHILD node's status: active/accepted brighten; pruned dashes
+       grey; popped dims. */
+    .decision-tree__edge {
+        stroke: var(--color-muted-foreground);
+        stroke-width: 1.5;
+        fill: none;
+        transition: stroke 250ms ease, opacity 250ms ease;
+    }
+    .decision-tree__edge--active {
+        stroke: rgba(79, 91, 213, 0.9);
+        stroke-width: 2;
+    }
+    .decision-tree__edge--accepted {
+        stroke: rgba(79, 91, 213, 0.85);
+        stroke-width: 2;
+    }
+    .decision-tree__edge--rejected {
+        stroke: rgba(105, 96, 87, 0.55);
+        stroke-width: 1.25;
+    }
+    .decision-tree__edge--visited {
+        stroke: rgba(105, 96, 87, 0.7);
+        stroke-width: 1.5;
+    }
+    .decision-tree__edge--popped {
+        stroke: rgba(105, 96, 87, 0.45);
+        stroke-width: 1.25;
+        opacity: 0.7;
+    }
+    .decision-tree__edge--pruned {
+        stroke: rgba(105, 96, 87, 0.45);
+        stroke-width: 1.25;
+        stroke-dasharray: 4 3;
+        opacity: 0.55;
+    }
+    .decision-tree__edge--unseen {
+        stroke: rgba(148, 163, 184, 0.55);
+        stroke-width: 1.25;
+    }
+    /* Edge label — author-supplied `edgeLabel`. Sits at the midpoint of
+       the edge. Dimmed when the edge's child is unseen / popped / pruned
+       so the active path reads as the brightest line through the tree.
+       `paint-order: stroke fill` + a white stroke gives the text glyphs a
+       small halo that masks the edge line passing behind them — without
+       this, letters with open interiors (`g`, `o`, `e`, …) have the line
+       visibly cutting through. */
+    .decision-tree__edge-label {
+        font-size: 10px;
+        font-weight: 600;
+        font-family: ui-monospace, SFMono-Regular, monospace;
+        fill: var(--color-muted-foreground, #a13e3e);
+        paint-order: stroke fill;
+        stroke: var(--color-card, #ffffff);
+        stroke-width: 3px;
+        stroke-linejoin: round;
+    }
+    .decision-tree__edge-label--dim {
+        fill: rgba(148, 163, 184, 0.75);
+    }
+    /* Transient backtrack arc — curved Bézier from popped child up to the
+       parent we're moving to. Lives one step (rendered only when
+       `state.lastBacktrack` is set). Amber so it reads as a return
+       motion distinct from the forward edges. */
+    .decision-tree__backtrack-arc {
+        stroke: rgba(138, 79, 125, 0.85);
+        stroke-width: 2;
+        fill: none;
+        stroke-dasharray: 5 3;
+        pointer-events: none;
+    }
+    /* Node rect — base style is the unseen / undecided choice. Modifier
+       classes flip fill + stroke for the seven statuses. */
+    .decision-tree__node-rect {
+        fill: var(--color-card, #ffffff);
+        stroke: rgba(105, 96, 87, 0.5);
+        stroke-width: 1.5;
+        transition: fill 250ms ease, stroke 250ms ease;
+    }
+    .decision-tree__node--unseen .decision-tree__node-rect {
+        fill: rgba(148, 163, 184, 0.04);
+        stroke: rgba(148, 163, 184, 0.45);
+        stroke-dasharray: 3 3;
+    }
+    .decision-tree__node--active .decision-tree__node-rect {
+        stroke: rgba(79, 91, 213, 0.9);
+        stroke-width: 2.25;
+        fill: rgba(79, 91, 213, 0.08);
+    }
+    .decision-tree__node--visited .decision-tree__node-rect {
+        stroke: rgba(58, 90, 140, 0.7);
+        stroke-width: 1.5;
+        fill: rgba(58, 90, 140, 0.05);
+    }
+    .decision-tree__node--accepted .decision-tree__node-rect {
+        stroke: rgba(79, 91, 213, 0.95);
+        stroke-width: 2.25;
+        fill: rgba(79, 91, 213, 0.16);
+    }
+    .decision-tree__node--rejected .decision-tree__node-rect {
+        stroke: rgba(105, 96, 87, 0.7);
+        stroke-width: 1.25;
+        fill: rgba(105, 96, 87, 0.08);
+    }
+    .decision-tree__node--pruned .decision-tree__node-rect {
+        stroke: rgba(161, 62, 62, 0.7);
+        stroke-width: 1.25;
+        fill: rgba(161, 62, 62, 0.08);
+        stroke-dasharray: 4 3;
+        opacity: 0.7;
+    }
+    .decision-tree__node--popped .decision-tree__node-rect {
+        stroke: rgba(105, 96, 87, 0.55);
+        stroke-width: 1.25;
+        fill: rgba(105, 96, 87, 0.05);
+        opacity: 0.7;
+    }
+    /* Node text — base; modifiers tweak weight / colour. */
+    .decision-tree__node-text {
+        font-size: 11px;
+        font-weight: 600;
+        font-family: ui-monospace, SFMono-Regular, monospace;
+        fill: var(--color-foreground);
+    }
+    .decision-tree__node--unseen .decision-tree__node-text {
+        fill: rgba(105, 96, 87, 0.7);
+    }
+    .decision-tree__node--popped .decision-tree__node-text {
+        fill: rgba(105, 96, 87, 0.8);
+    }
+    .decision-tree__node--pruned .decision-tree__node-text {
+        fill: rgba(185, 28, 28, 0.85);
+    }
+    .decision-tree__node--accepted .decision-tree__node-text {
+        fill: rgba(4, 120, 87, 0.95);
+    }
+    /* Strike-through line — visible only when node is `--pruned`. The line
+       lives in every node group (drawn at enter) but is hidden by default
+       (opacity 0) and toggled on via the modifier. */
+    .decision-tree__node-strike {
+        stroke: rgba(185, 28, 28, 0.85);
+        stroke-width: 1.5;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 200ms ease;
+    }
+    .decision-tree__node--pruned .decision-tree__node-strike {
+        opacity: 1;
+    }
+    /* Accepted checkmark — hidden by default, shown only on accepted leaves.
+       The leaf-rejected case stays unmarked (no glyph; the slate fill is
+       the rejection cue). */
+    .decision-tree__node-check {
+        font-size: 11px;
+        font-weight: 700;
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        fill: rgba(4, 120, 87, 0.95);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 200ms ease;
+    }
+    .decision-tree__node--accepted .decision-tree__node-check {
+        opacity: 1;
+    }
+    /* Reason badge — pill rendered to the right of the pruned node carrying
+       the canon reason (`dup` / `dead-end` / `constraint`). Persists for
+       the rest of the trace. */
+    .decision-tree__reason-rect {
+        fill: rgba(161, 62, 62, 0.12);
+        stroke: rgba(161, 62, 62, 0.65);
+        stroke-width: 1;
+    }
+    .decision-tree__reason-text {
+        font-size: 10px;
+        font-weight: 700;
+        font-family: ui-monospace, SFMono-Regular, monospace;
+        fill: #b91c1c;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+    .decision-tree__caption {
+        @apply mt-3 text-center text-sm text-foreground min-h-[1.25rem];
+    }
+    .decision-tree__controls {
+        @apply mt-3 flex flex-wrap items-center justify-center gap-2;
+    }
+    .decision-tree__button {
+        @apply inline-flex h-9 items-center gap-1.5 rounded-md border border-border bg-background
+               px-3 text-sm font-medium text-foreground transition-colors hover:bg-accent
+               disabled:pointer-events-none disabled:opacity-45;
+    }
+    .decision-tree__button--primary {
+        @apply border-primary bg-primary text-primary-foreground hover:bg-primary/90;
+    }
+    .decision-tree__button--icon {
+        @apply w-9 justify-center px-0;
+    }
+    .decision-tree__button-icon {
+        @apply h-4 w-4;
+    }
+    .decision-tree__progress {
+        @apply min-w-24 text-center text-xs font-medium tabular-nums text-muted-foreground;
+    }
+
+    /* ─────────────────────────────────────────────────────────────────────────
+       dp-table — 1D / 2D dynamic-programming table with two solver modes
+       (bottom-up = fill + dependency arrows; top-down = recursion tree
+       above the table writing back per leaf return). Cell status splits
+       cleanly: a persistent layer (empty / filled / on-path) + a transient
+       adornment layer (filling / depends-on / cached) stacked via extra
+       modifier classes. Adornments never overwrite the persistent status —
+       this dodges the terminal-status preservation problem the decision-
+       tree post-ship audit caught.
+       ───────────────────────────────────────────────────────────────────── */
+    .dp-table {
+        @apply my-6 rounded-lg border border-border bg-card p-4;
+    }
+    .dp-table__title {
+        @apply mb-2 text-center text-sm font-medium text-muted-foreground;
+    }
+    .dp-table__solver-row {
+        @apply mb-2 flex flex-wrap items-center justify-center gap-x-3 gap-y-1;
+    }
+    .dp-table__solver-badge {
+        @apply rounded-md border px-2 py-0.5 text-xs font-semibold uppercase tracking-wide;
+        border-color: rgba(105, 96, 87, 0.55);
+        color: var(--color-muted-foreground, #a13e3e);
+        background: rgba(105, 96, 87, 0.06);
+    }
+    .dp-table__solver-badge--bottom-up {
+        border-color: rgba(58, 90, 140, 0.55);
+        color: #1d4ed8;
+        background: rgba(58, 90, 140, 0.08);
+    }
+    .dp-table__solver-badge--top-down {
+        border-color: rgba(79, 91, 213, 0.55);
+        color: #047857;
+        background: rgba(79, 91, 213, 0.08);
+    }
+    /* Single-canvas widget — no flanking panels — so the simpler
+       overflow-x-auto + max-w-full pair from call-stack / heap-tree fits.
+       A wide table scrolls horizontally inside the canvas; the rule + path
+       captions flow under it at the canvas's full width. */
+    .dp-table__canvas {
+        @apply flex justify-center overflow-x-auto;
+    }
+    .dp-table__svg {
+        @apply block h-auto max-w-full;
+    }
+    /* Column + row label text. Mono so digits + letter labels align across
+       cells. */
+    .dp-table__col-label,
+    .dp-table__row-label {
+        font-size: 11px;
+        font-weight: 600;
+        font-family: ui-monospace, SFMono-Regular, monospace;
+        fill: var(--color-muted-foreground, #a13e3e);
+    }
+    /* CSS-driven slide for keyed groups (pattern hint #5 — D3's
+       transition().attr("transform") doesn't reliably propagate to
+       multi-keyed groups whose datum only changes in coordinates between
+       renders). Cell positions are static in practice; the transition
+       costs nothing when nothing moves but keeps the renderer flexible. */
+    .dp-table__cell,
+    .dp-table__tree-node {
+        transition: transform 350ms cubic-bezier(0.4, 0, 0.2, 1),
+                    opacity 250ms ease;
+    }
+    /* Cell rect — base style is the empty / not-yet-filled state. Modifier
+       classes flip fill + stroke for the persistent statuses; adornment
+       classes layer extra strokes on top for the current step only. */
+    .dp-table__cell-rect {
+        fill: var(--color-card, #ffffff);
+        stroke: rgba(105, 96, 87, 0.55);
+        stroke-width: 1;
+        transition: fill 250ms ease, stroke 250ms ease, stroke-width 250ms ease;
+    }
+    .dp-table__cell--empty .dp-table__cell-rect {
+        fill: rgba(148, 163, 184, 0.05);
+        stroke: rgba(148, 163, 184, 0.55);
+        stroke-dasharray: 3 3;
+    }
+    .dp-table__cell--filled .dp-table__cell-rect {
+        fill: rgba(58, 90, 140, 0.07);
+        stroke: rgba(58, 90, 140, 0.55);
+    }
+    .dp-table__cell--on-path .dp-table__cell-rect {
+        fill: rgba(79, 91, 213, 0.16);
+        stroke: rgba(79, 91, 213, 0.95);
+        stroke-width: 2;
+    }
+    /* Adornment: --filling = the cell being computed RIGHT NOW. Emerald halo
+       on top of whatever persistent status the cell carries (typically
+       transitions from empty → filled this same step, so paint reads as
+       emerald-over-blue mid-step). */
+    .dp-table__cell--filling .dp-table__cell-rect {
+        stroke: rgba(79, 91, 213, 0.95);
+        stroke-width: 2.25;
+        fill: rgba(79, 91, 213, 0.18);
+    }
+    /* Adornment: --depends-on = a predecessor of the filling cell.
+       Amber outline so it reads distinct from `--filling` (the active
+       computation) and `--on-path` (the recovered answer trace). */
+    .dp-table__cell--depends-on .dp-table__cell-rect {
+        stroke: rgba(138, 79, 125, 0.9);
+        stroke-width: 2;
+        fill: rgba(138, 79, 125, 0.14);
+    }
+    /* Adornment: --cached = top-down memoised hit flash. Violet — distinct
+       from the other adornments because cache-hit is its own narrative
+       beat ("we already know this answer, we're reusing it"). */
+    .dp-table__cell--cached .dp-table__cell-rect {
+        stroke: rgba(90, 138, 90, 0.9);
+        stroke-width: 2;
+        fill: rgba(90, 138, 90, 0.14);
+    }
+    /* Cell value text — base; status modifiers tweak fill colour. */
+    .dp-table__cell-text {
+        font-size: 12px;
+        font-weight: 600;
+        font-family: ui-monospace, SFMono-Regular, monospace;
+        fill: var(--color-foreground);
+    }
+    .dp-table__cell--empty .dp-table__cell-text {
+        fill: rgba(105, 96, 87, 0.55);
+    }
+    .dp-table__cell--filled .dp-table__cell-text {
+        fill: rgba(29, 78, 216, 0.95);
+    }
+    .dp-table__cell--on-path .dp-table__cell-text {
+        fill: rgba(4, 120, 87, 0.95);
+        font-weight: 700;
+    }
+    .dp-table__cell--filling .dp-table__cell-text {
+        fill: rgba(4, 120, 87, 0.95);
+        font-weight: 700;
+    }
+    /* Dependency arrow — transient, drawn once per fill event. Amber dashed
+       so it reads as a "this cell depends on these" cue without competing
+       with the persistent edge styling on the recursion tree. */
+    .dp-table__dep-arrow {
+        stroke: rgba(138, 79, 125, 0.9);
+        stroke-width: 1.75;
+        fill: none;
+        stroke-dasharray: 4 3;
+        pointer-events: none;
+    }
+    /* Recursion-tree edges (top-down mode only). Status derives from the
+       child node — active brightens, returned dims slightly to read as
+       "done". */
+    .dp-table__tree-edge {
+        stroke: var(--color-muted-foreground);
+        stroke-width: 1.5;
+        fill: none;
+        transition: stroke 250ms ease, opacity 250ms ease;
+    }
+    .dp-table__tree-edge--unseen {
+        stroke: rgba(148, 163, 184, 0.55);
+        stroke-width: 1.25;
+    }
+    .dp-table__tree-edge--active {
+        stroke: rgba(79, 91, 213, 0.9);
+        stroke-width: 2;
+    }
+    .dp-table__tree-edge--returned {
+        stroke: rgba(105, 96, 87, 0.6);
+        stroke-width: 1.5;
+    }
+    /* Recursion-tree node rect — base + status modifiers mirror the
+       decision-tree palette for visual continuity (the two widgets render
+       analogous topologies). */
+    .dp-table__tree-node-rect {
+        fill: var(--color-card, #ffffff);
+        stroke: rgba(105, 96, 87, 0.5);
+        stroke-width: 1.5;
+        transition: fill 250ms ease, stroke 250ms ease;
+    }
+    .dp-table__tree-node--unseen .dp-table__tree-node-rect {
+        fill: rgba(148, 163, 184, 0.04);
+        stroke: rgba(148, 163, 184, 0.45);
+        stroke-dasharray: 3 3;
+    }
+    .dp-table__tree-node--active .dp-table__tree-node-rect {
+        stroke: rgba(79, 91, 213, 0.9);
+        stroke-width: 2.25;
+        fill: rgba(79, 91, 213, 0.08);
+    }
+    .dp-table__tree-node--returned .dp-table__tree-node-rect {
+        stroke: rgba(105, 96, 87, 0.6);
+        stroke-width: 1.5;
+        fill: rgba(105, 96, 87, 0.06);
+    }
+    .dp-table__tree-node-text {
+        font-size: 11px;
+        font-weight: 600;
+        font-family: ui-monospace, SFMono-Regular, monospace;
+        fill: var(--color-foreground);
+    }
+    .dp-table__tree-node--unseen .dp-table__tree-node-text {
+        fill: rgba(105, 96, 87, 0.7);
+    }
+    .dp-table__tree-node--returned .dp-table__tree-node-text {
+        fill: rgba(71, 85, 105, 0.95);
+    }
+    /* Rule annotation strip — surfaces the current event's `rule` text
+       below the table. Fixed min-height so the table doesn't jump as the
+       reader scrubs through events with/without rules. */
+    .dp-table__rule {
+        @apply mt-2 text-center text-xs font-mono text-muted-foreground min-h-[1.25rem];
+    }
+    /* Optimal-path caption — appears at the final step. Emerald to match
+       the `--on-path` cells. Min-height preserved so scrubbing backwards
+       doesn't squash the layout. */
+    .dp-table__path-caption {
+        @apply text-center text-xs font-semibold min-h-[1.1rem];
+        color: rgba(4, 120, 87, 0.95);
+    }
+    .dp-table__path-caption--blank {
+        visibility: hidden;
+    }
+    .dp-table__path-marker {
+        color: rgba(79, 91, 213, 0.95);
+        margin-right: 0.15rem;
+    }
+    .dp-table__caption {
+        @apply mt-2 text-center text-sm text-foreground min-h-[1.25rem];
+    }
+    .dp-table__controls {
+        @apply mt-3 flex flex-wrap items-center justify-center gap-2;
+    }
+    .dp-table__button {
+        @apply inline-flex h-9 items-center gap-1.5 rounded-md border border-border bg-background
+               px-3 text-sm font-medium text-foreground transition-colors hover:bg-accent
+               disabled:pointer-events-none disabled:opacity-45;
+    }
+    .dp-table__button--primary {
+        @apply border-primary bg-primary text-primary-foreground hover:bg-primary/90;
+    }
+    .dp-table__button--icon {
+        @apply w-9 justify-center px-0;
+    }
+    .dp-table__button-icon {
+        @apply h-4 w-4;
+    }
+    .dp-table__progress {
+        @apply min-w-24 text-center text-xs font-medium tabular-nums text-muted-foreground;
+    }
+
+    /* ─── trie — character-edge prefix tree with insert / search /
+       prefix-walk operations. Node state splits cleanly into a persistent
+       layer (visible / terminal / in-prefix — once set, stays set) and a
+       transient adornment layer (active / new / hit / miss — reset each
+       step), so a `visit` that passes over a terminal node can't strip
+       the ring (the terminal-status preservation pattern from dp-table).
+       ───────────────────────────────────────────────────────────────────── */
+    .trie {
+        @apply my-6 rounded-lg border border-border bg-card p-4;
+    }
+    .trie__title {
+        @apply mb-2 text-center text-sm font-medium text-muted-foreground;
+    }
+    .trie__operation-row {
+        @apply mb-2 flex flex-wrap items-center justify-center gap-x-2 gap-y-1;
+    }
+    .trie__operation-badge {
+        @apply rounded-md border px-2 py-0.5 text-xs font-semibold uppercase tracking-wide;
+        border-color: rgba(105, 96, 87, 0.55);
+        color: var(--color-muted-foreground, #a13e3e);
+        background: rgba(105, 96, 87, 0.06);
+    }
+    .trie__operation-badge--insert {
+        border-color: rgba(79, 91, 213, 0.55);
+        color: #047857;
+        background: rgba(79, 91, 213, 0.08);
+    }
+    .trie__operation-badge--search {
+        border-color: rgba(58, 90, 140, 0.55);
+        color: #1d4ed8;
+        background: rgba(58, 90, 140, 0.08);
+    }
+    .trie__operation-badge--prefix-walk {
+        border-color: rgba(90, 138, 90, 0.55);
+        color: #7e22ce;
+        background: rgba(90, 138, 90, 0.08);
+    }
+    .trie__operation-word {
+        @apply rounded bg-muted px-1.5 py-0.5 text-xs font-mono text-foreground;
+    }
+    /* Single-canvas widget — same overflow-x-auto + max-w-full pair as
+       dp-table / call-stack / heap-tree so wide tries scroll inside their
+       container instead of squeezing. */
+    .trie__canvas {
+        @apply flex justify-center overflow-x-auto;
+    }
+    .trie__svg {
+        @apply block h-auto max-w-full;
+    }
+    /* CSS-driven slide for keyed groups (pattern hint #5 — D3's
+       transition().attr("transform") doesn't reliably propagate to multi-
+       keyed groups whose datum only changes in coordinates). Node
+       positions are static after layout in practice; the transition costs
+       nothing when nothing moves. */
+    .trie__node,
+    .trie__active-char {
+        transition: transform 350ms cubic-bezier(0.4, 0, 0.2, 1),
+                    opacity 250ms ease;
+    }
+    /* Edge — base slate stroke. Status modifiers brighten on cursor
+       walk (`--active`) or layer a violet halo for prefix-walk subtrees
+       (`--in-prefix`). */
+    .trie__edge {
+        stroke: var(--color-muted-foreground);
+        stroke-width: 1.5;
+        fill: none;
+        transition: stroke 250ms ease, stroke-width 250ms ease, opacity 250ms ease;
+    }
+    .trie__edge--default {
+        stroke: rgba(148, 163, 184, 0.7);
+        stroke-width: 1.5;
+    }
+    .trie__edge--active {
+        stroke: rgba(79, 91, 213, 0.9);
+        stroke-width: 2.25;
+    }
+    .trie__edge--in-prefix {
+        stroke: rgba(90, 138, 90, 0.85);
+        stroke-width: 2;
+    }
+    /* Edge label — the character. Paint-order halo (memory hint:
+       svg-text-on-line halo) so the glyph cuts cleanly across the edge
+       line for letters with open interiors (g, o, e). */
+    .trie__edge-label {
+        font-size: 12px;
+        font-weight: 700;
+        font-family: ui-monospace, SFMono-Regular, monospace;
+        fill: rgba(71, 85, 105, 0.95);
+        stroke: var(--color-card, #ffffff);
+        stroke-width: 3;
+        paint-order: stroke fill;
+        pointer-events: none;
+    }
+    .trie__edge-label--active {
+        fill: rgba(4, 120, 87, 0.95);
+    }
+    .trie__edge-label--in-prefix {
+        fill: rgba(126, 34, 206, 0.95);
+    }
+    /* Node circle — base style is the default (visible, no special state).
+       Persistent class modifiers (`--default`, `--in-prefix`) set the base
+       fill/stroke; transient adornment modifiers (`--active`, `--new`,
+       `--hit`, `--miss`) override stroke + fill; the terminal ring is its
+       own concentric circle layered behind the node circle. */
+    .trie__node-circle {
+        fill: var(--color-card, #ffffff);
+        stroke: rgba(105, 96, 87, 0.75);
+        stroke-width: 1.5;
+        transition: fill 250ms ease, stroke 250ms ease, stroke-width 250ms ease;
+    }
+    .trie__node--default .trie__node-circle {
+        fill: rgba(241, 245, 249, 0.95);
+        stroke: rgba(105, 96, 87, 0.75);
+    }
+    .trie__node--in-prefix .trie__node-circle {
+        fill: rgba(90, 138, 90, 0.12);
+        stroke: rgba(90, 138, 90, 0.8);
+        stroke-width: 2;
+    }
+    /* Active = cursor here this step. Emerald halo. */
+    .trie__node--active .trie__node-circle {
+        fill: rgba(79, 91, 213, 0.16);
+        stroke: rgba(79, 91, 213, 0.95);
+        stroke-width: 2.25;
+    }
+    /* Just-created this step. Slightly stronger emerald to read as "I'm
+       brand new" alongside `--active` (which fires on the same step). */
+    .trie__node--new .trie__node-circle {
+        fill: rgba(79, 91, 213, 0.22);
+        stroke: rgba(79, 91, 213, 1);
+        stroke-width: 2.5;
+    }
+    /* Hit flash — search success. Emerald with a slightly different tint
+       than `--active` (deeper green) so the final hit step reads as
+       conclusive. */
+    .trie__node--hit .trie__node-circle {
+        fill: rgba(34, 197, 94, 0.28);
+        stroke: rgba(21, 128, 61, 1);
+        stroke-width: 2.5;
+    }
+    /* Miss flash — search failure. Rose. */
+    .trie__node--miss .trie__node-circle {
+        fill: rgba(161, 62, 62, 0.22);
+        stroke: rgba(190, 18, 60, 1);
+        stroke-width: 2.5;
+    }
+    /* Terminal ring — concentric circle outside the node. Hidden by
+       default; shown only on `--terminal` nodes. Source order: declared
+       AFTER `--active` etc so the ring opacity wins regardless of which
+       transient adornments are active. */
+    .trie__terminal-ring {
+        fill: none;
+        stroke: rgba(105, 96, 87, 0.55);
+        stroke-width: 1.25;
+        opacity: 0;
+        transition: opacity 300ms ease, stroke 250ms ease, stroke-width 250ms ease;
+        pointer-events: none;
+    }
+    .trie__node--terminal .trie__terminal-ring {
+        opacity: 1;
+        stroke: rgba(138, 79, 125, 0.95);
+        stroke-width: 2;
+    }
+    .trie__node--terminal.trie__node--in-prefix .trie__terminal-ring {
+        stroke: rgba(90, 138, 90, 0.95);
+    }
+    /* Inner label text — typically just root's "*". Mono so letters and
+       digits line up across the trie. */
+    .trie__node-label {
+        font-size: 13px;
+        font-weight: 700;
+        font-family: ui-monospace, SFMono-Regular, monospace;
+        fill: rgba(71, 85, 105, 0.95);
+        pointer-events: none;
+    }
+    .trie__node--in-prefix .trie__node-label {
+        fill: rgba(126, 34, 206, 0.95);
+    }
+    .trie__node--active .trie__node-label,
+    .trie__node--new .trie__node-label {
+        fill: rgba(4, 120, 87, 0.95);
+    }
+    .trie__node--hit .trie__node-label {
+        fill: rgba(21, 128, 61, 0.95);
+    }
+    .trie__node--miss .trie__node-label {
+        fill: rgba(190, 18, 60, 0.95);
+    }
+    /* Active-character pill — floats above the active node showing the
+       single character being processed this step. Amber so it reads as
+       "the cue", distinct from the emerald `--active` ring. */
+    .trie__active-char-rect {
+        fill: rgba(138, 79, 125, 0.95);
+        stroke: rgba(180, 83, 9, 1);
+        stroke-width: 1;
+    }
+    .trie__active-char-text {
+        font-size: 11px;
+        font-weight: 700;
+        font-family: ui-monospace, SFMono-Regular, monospace;
+        fill: #ffffff;
+        pointer-events: none;
+    }
+    /* Consumed-prefix readout — chars walked so far. Mono so glyph
+       widths are uniform as the cursor advances. */
+    .trie__consumed {
+        @apply mt-2 text-center text-xs min-h-[1.25rem];
+    }
+    .trie__consumed-label {
+        @apply uppercase tracking-wide text-muted-foreground;
+        font-size: 10px;
+        font-weight: 600;
+    }
+    .trie__consumed-value {
+        @apply rounded bg-muted px-1.5 py-0.5 font-mono text-foreground;
+    }
+    .trie__caption {
+        @apply mt-2 text-center text-sm text-foreground min-h-[1.25rem];
+    }
+    .trie__controls {
+        @apply mt-3 flex flex-wrap items-center justify-center gap-2;
+    }
+    .trie__button {
+        @apply inline-flex h-9 items-center gap-1.5 rounded-md border border-border bg-background
+               px-3 text-sm font-medium text-foreground transition-colors hover:bg-accent
+               disabled:pointer-events-none disabled:opacity-45;
+    }
+    .trie__button--primary {
+        @apply border-primary bg-primary text-primary-foreground hover:bg-primary/90;
+    }
+    .trie__button--icon {
+        @apply w-9 justify-center px-0;
+    }
+    .trie__button-icon {
+        @apply h-4 w-4;
+    }
+    .trie__progress {
+        @apply min-w-24 text-center text-xs font-medium tabular-nums text-muted-foreground;
+    }
+
+    /* ─── Inline diagram (Phase C / D / E — KnownLayouts dispatch) ────
+       Host block for `d3 widget=<layoutKind>` fences that route through
+       InlineDiagramBlock. The TS renderWidget writes its SVG directly into
+       .inline-diagram__canvas; the "Show JSON" <details> below is a native
+       browser toggle requiring no React state. */
+    .inline-diagram {
+        @apply my-6 rounded-lg border border-border bg-card p-4;
+    }
+    .inline-diagram__canvas {
+        /* Minimum height so an empty or errored diagram still occupies
+           vertical space; the TS renderer overrides this with its SVG height. */
+        @apply min-h-32 w-full;
+    }
+    .inline-diagram__json {
+        @apply mt-4 border-t border-border pt-3;
+    }
+    .inline-diagram__json summary {
+        @apply cursor-pointer select-none text-xs font-medium text-muted-foreground;
+    }
+    .inline-diagram__json pre {
+        @apply mt-2 overflow-x-auto rounded bg-muted p-3 font-mono text-xs text-foreground;
+        white-space: pre-wrap;
+        word-break: break-all;
+    }
+
+}

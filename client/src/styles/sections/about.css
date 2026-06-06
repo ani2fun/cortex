@@ -1,0 +1,131 @@
+@layer components {
+    /* About — prose + sticky fact-list card.
+
+       Block: .about
+       Elements:
+         __layout            — 12-col grid wrapper (prose 7, sidecard 5)
+         __prose             — left column
+         __eyebrow           — "ABOUT" mono caption
+         __title             — italic display heading
+         __paragraph         — body paragraphs
+         __emphasis          — indigo inline accent
+         __sidecard          — sticky right column (portrait + fact list)
+         __portrait          — square photo
+         __facts             — dl wrapper
+         __fact              — single label/value row
+         __fact-label        — mono uppercase label
+         __fact-value        — sans value
+    */
+
+    .about {
+        @apply py-24 px-6 scroll-mt-24 border-t border-border/60;
+    }
+    .about__layout {
+        @apply grid grid-cols-1 lg:grid-cols-12 gap-12 max-w-6xl mx-auto;
+    }
+
+    .about__prose {
+        @apply lg:col-span-7;
+    }
+    .about__eyebrow {
+        @apply text-sm font-mono tracking-widest text-muted-foreground uppercase mb-4;
+    }
+    .about__title {
+        font-family: var(--font-display);
+        font-style: italic;
+        font-weight: 400;
+        font-size: 40px;
+        line-height: 1.02;
+        letter-spacing: -0.02em;
+        color: hsl(var(--foreground));
+        margin: 0 0 1.75rem;
+    }
+    .about__paragraph {
+        @apply text-base md:text-lg leading-relaxed text-foreground/85 mb-5
+               max-w-prose;
+    }
+    .about__emphasis {
+        @apply text-foreground;
+        font-weight: 500;
+    }
+
+    /* Editorial epigraph at the top of the prose column. Uses the display
+       serif italic so it reads like a typeset quote, not a Tailwind blockquote
+       plate. The left rule is the same indigo primary used elsewhere for
+       inline accent. */
+    .about__quote {
+        @apply mb-8 pl-5 border-l-2 border-primary/40;
+        margin-block-start: 0;
+    }
+    .about__quote-text {
+        font-family: var(--font-display);
+        font-style: italic;
+        font-weight: 400;
+        font-size: clamp(20px, 1.6vw, 24px);
+        line-height: 1.4;
+        color: hsl(var(--foreground));
+        margin: 0 0 0.5rem;
+    }
+    .about__quote-author {
+        @apply text-[11px] font-mono tracking-widest uppercase text-muted-foreground;
+        font-style: normal;
+    }
+
+    /* Bullet list — indigo hairline lead-in instead of a glyph; matches
+       the Experience section's bullet treatment. */
+    .about__list {
+        @apply list-none p-0 mb-6 max-w-prose flex flex-col gap-3;
+    }
+    .about__list-item {
+        @apply text-base md:text-lg leading-relaxed text-foreground/85 pl-6 relative;
+    }
+    .about__list-item::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0.85em;
+        width: 12px;
+        height: 1px;
+        background-color: hsl(var(--primary));
+    }
+
+    /* Inline code chip — for the gradle-plugin coordinate. */
+    .about__inline-code {
+        @apply font-mono text-[0.85em] px-1.5 py-0.5 rounded
+               bg-muted text-foreground;
+    }
+
+    /* Closing CTA paragraph — separated by a hairline rule so it reads as
+       a sign-off rather than another body line. */
+    .about__paragraph--cta {
+        @apply mt-6 pt-5 border-t border-border/60;
+    }
+
+    .about__sidecard {
+        @apply lg:col-span-5 lg:sticky lg:top-24 self-start
+               flex flex-col gap-6;
+        max-width: 420px;
+        margin-inline: auto;
+    }
+    .about__portrait {
+        /* 4:5 portrait per prototype — taller than wide, reads more like
+           an editorial magazine photo than a square avatar. */
+        @apply w-full object-cover rounded-lg
+               border border-border/70;
+        aspect-ratio: 4 / 5;
+        filter: saturate(0.92) contrast(1.02);
+    }
+    .about__facts {
+        @apply m-0 grid grid-cols-1 gap-0 border-t border-border/60;
+    }
+    .about__fact {
+        @apply grid grid-cols-[100px_1fr] items-baseline gap-3 py-3
+               border-b border-border/60;
+    }
+    .about__fact-label {
+        @apply text-[10px] font-mono tracking-widest text-muted-foreground uppercase m-0;
+    }
+    .about__fact-value {
+        @apply text-sm text-foreground m-0;
+    }
+}

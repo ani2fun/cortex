@@ -1,0 +1,79 @@
+// Lesson 9 — "Relational databases". The Postgres process model — what
+// is *actually running* when you `psql` and run a query. The lesson uses
+// Postgres as the canonical example; other relational engines (MySQL,
+// SQL Server, Oracle) have similar shapes with different names.
+//
+// All identifiers carry the `rel` (relational) prefix — every lesson
+// `.c4` file owns its own prefix so identifiers don't collide in
+// LikeC4's flat global namespace. See
+// memory/likec4_multi_file_convention.md.
+//
+// Container-to-container relationships live INSIDE the parent system
+// block; `system -> its-own-container` arrows at the top level are
+// rejected as "Invalid parent-child relationship".
+//
+// No `specification` block — element kinds (`actor`, `system`,
+// `container`) are declared once in workspace.c4 and shared across
+// the LikeC4 project.
+
+model {
+  relClient = actor 'SQL client / app' {
+    description 'psql, JDBC, an ORM. Opens a TCP connection to port 5432 and sends SQL.'
+  }
+
+  relPg = system 'PostgreSQL server' {
+    description 'One Postgres instance — many processes, one shared-memory region, files on disk.'
+
+    relPostmaster = container 'postmaster' {
+      description 'The parent process. Listens on :5432, forks one backend per accepted connection.'
+    }
+    relBackend = container 'backend (one per connection)' {
+      description 'Where queries run. Parses SQL, builds the plan, walks indexes, writes rows. ~10 MB resident — why production needs pgbouncer.'
+    }
+    relSharedBuf = container 'shared_buffers (in-memory page cache)' {
+      description '~25% of RAM by default. Heap + index pages, dirty + clean. Hits cost microseconds; misses go to disk.'
+    }
+    relWalBuf = container 'WAL buffers (in-memory)' {
+      description 'Append-only stream of redo records. Backends append; the WAL writer flushes.'
+    }
+    relWalWriter = container 'WAL writer' {
+      description 'Flushes WAL buffers to disk on commit (or every wal_writer_delay). Durability ⇒ this fsync is the bottleneck.'
+    }
+    relBgWriter = container 'bgwriter' {
+      description 'Continuously trickles dirty shared_buffers pages out to disk so backends rarely have to wait.'
+    }
+    relCheckpointer = container 'checkpointer' {
+      description 'Periodic full sync: flushes everything dirty, advances the WAL trim point. Long-running checkpoints == latency spikes.'
+    }
+    relAutovacuum = container 'autovacuum' {
+      description 'Reclaims dead tuples left by UPDATE / DELETE under MVCC. If blocked, the table bloats and queries slow down.'
+    }
+    relHeap = container 'heap files (on disk)' {
+      description 'Tables stored as 8 KB pages, one file per relation. The authoritative state.'
+    }
+    relWalDisk = container 'WAL segments (on disk)' {
+      description '16 MB rotating files. Survival kit on crash: replay WAL forward from the last checkpoint to recover.'
+    }
+
+    relPostmaster -> relBackend 'fork() new backend per client'
+    relBackend -> relSharedBuf 'reads / writes 8 KB pages'
+    relBackend -> relWalBuf 'appends redo records on every modify'
+    relWalWriter -> relWalBuf 'flushes records'
+    relWalWriter -> relWalDisk 'fsync — the durability point of commit'
+    relBgWriter -> relSharedBuf 'scans for dirty pages'
+    relBgWriter -> relHeap 'writes them out'
+    relCheckpointer -> relSharedBuf 'forces all dirty'
+    relCheckpointer -> relHeap 'full-sync checkpoint'
+    relAutovacuum -> relSharedBuf 'reads pages to find dead tuples'
+    relAutovacuum -> relHeap 'rewrites cleaned pages'
+  }
+
+  relClient -> relPg 'SQL over TCP / port 5432'
+}
+
+views {
+  view buildingblocks_relational_databases_internals of relPg {
+    title 'PostgreSQL — what is actually running'
+    include *
+  }
+}

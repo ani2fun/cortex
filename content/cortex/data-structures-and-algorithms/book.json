@@ -1,0 +1,14 @@
+{
+    "title": "Data Structures and Algorithms",
+    "description": "A senior-engineer-grade DSA curriculum: 11 modules from asymptotic analysis to the production data structures inside Postgres, Linux, Redis, and Git. Every chapter ships with runnable Python and Java code, edge cases, production-reality references, and a hint-driven practice ladder.",
+    "tags": [
+        "computer-science",
+        "data-structures",
+        "algorithms",
+        "dsa",
+        "interview-prep",
+        "systems"
+    ],
+    "estimatedReadingMinutes": 1400,
+    "order": 2
+}

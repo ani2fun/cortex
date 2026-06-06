@@ -1,0 +1,380 @@
+@layer components {
+    /* The Visualise modal (ADR-0018) — opened from a runnable Python code
+       block's "Visualise" button. Chrome mirrors .diagram-modal; adds a title
+       strip and a two-pane card (code on the left, diagram on the right).
+       The overlay + toolbar are always dark (fixed values) — the modal sits on
+       a dark scrim in either site theme. The card, diagram pane, and status
+       follow the theme tokens, so the modal is dark in dark mode and light in
+       light mode. The code pane stays the dark prism-tomorrow editor surface
+       (#2d2d2d) — the app ships only that one, dark, syntax theme, and every
+       other code surface (.rcb__editor) uses it too. Block: .viz-modal */
+
+    .viz-modal {
+        @apply fixed inset-0 z-[60] flex flex-col;
+        background: rgba(17, 15, 13, 0.82);
+        backdrop-filter: blur(2px);
+    }
+
+    /* ─── toolbar ─────────────────────────────────────────────────── */
+    .viz-modal__toolbar {
+        @apply flex items-center gap-2 p-3 border-b;
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    .viz-modal__title {
+        @apply inline-flex items-baseline gap-2.5 mr-auto pl-1;
+    }
+    .viz-modal__title-eyebrow {
+        @apply text-[10.5px] uppercase;
+        font-family: var(--font-mono, ui-monospace, monospace);
+        letter-spacing: 0.16em;
+        /* Theme-aware (was a hardcoded cream that vanished on the light-mode header). */
+        color: hsl(var(--muted-foreground));
+    }
+    .viz-modal__title-name {
+        @apply italic text-[17px];
+        font-family: var(--font-display, "Instrument Serif", Georgia, serif);
+        color: hsl(var(--foreground));
+    }
+    .viz-modal__button {
+        @apply inline-flex items-center gap-1.5 rounded-md p-2 text-xs font-semibold;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        background: rgba(251, 249, 243, 0.05);
+        color: #efe8d8;
+    }
+    .viz-modal__button:hover {
+        background: rgba(251, 249, 243, 0.14);
+    }
+    .viz-modal__button-icon {
+        @apply h-4 w-4;
+    }
+    .viz-modal__zoom-readout {
+        @apply text-xs tabular-nums w-12 text-center;
+        color: rgba(239, 232, 216, 0.7);
+    }
+
+    /* ─── test-case selector ──────────────────────────────────────── */
+    /* Shown only when the traced `main` ran more than one test case and
+       `HeapToGraph` segmented the trace into several animations (ADR-0018).
+       Part of the always-dark chrome — sits flush under the toolbar, above
+       the themed viewport. The active case wears the primary accent, the
+       same colour the code pane uses for the current line. */
+    .viz-modal__cases {
+        @apply flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5
+               px-3 py-2 border-b;
+        border-color: rgba(255, 255, 255, 0.1);
+        background: rgba(0, 0, 0, 0.18);
+    }
+    .viz-modal__cases-label {
+        @apply text-[10.5px] uppercase;
+        font-family: var(--font-mono, ui-monospace, monospace);
+        letter-spacing: 0.14em;
+        color: rgba(239, 232, 216, 0.55);
+    }
+    .viz-modal__cases-list {
+        @apply flex flex-wrap items-center gap-1.5;
+    }
+    .viz-modal__case-button {
+        @apply inline-flex h-7 min-w-7 items-center justify-center rounded-md
+               px-2 text-xs font-semibold tabular-nums;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        background: rgba(251, 249, 243, 0.05);
+        color: #efe8d8;
+    }
+    .viz-modal__case-button:hover {
+        background: rgba(251, 249, 243, 0.14);
+    }
+    .viz-modal__case-button--active {
+        border-color: var(--color-primary, #4f5bd5);
+        background: var(--color-primary, #4f5bd5);
+        color: #fff;
+    }
+
+    /* ─── viewport + card ─────────────────────────────────────────── */
+    .viz-modal__viewport {
+        @apply flex-1 overflow-auto flex p-6;
+    }
+    .viz-modal__card {
+        /* `m-auto` centers when there's free space, keeps symmetric overflow
+           when there isn't. Width/height are set inline from the zoom state. */
+        @apply m-auto shrink-0 flex overflow-hidden rounded-xl bg-card
+               transition-[width,height] duration-150 ease-out;
+        box-shadow: 0 24px 56px -16px rgba(0, 0, 0, 0.45);
+    }
+
+    /* ─── two panes: code + diagram ───────────────────────────────── */
+    .viz-modal__panes {
+        @apply flex h-full w-full;
+    }
+    /* Code pane — always the dark prism-tomorrow editor surface (#2d2d2d), the
+       same surface .rcb__editor uses; the app ships only the dark syntax theme,
+       so this stays dark in light mode too (a dark editor inset on a light
+       card, exactly like a runnable code block). */
+    .viz-modal__code {
+        @apply h-full w-[42%] shrink-0 overflow-auto border-r border-border;
+        background: #2d2d2d;
+    }
+    .viz-modal__diagram {
+        @apply h-full flex-1 overflow-auto flex items-center justify-center p-4 bg-background;
+    }
+    /* The renderer mounts a full .viz-graph card inside the host — drop its
+       outer margin so it sits flush in the modal pane. */
+    .viz-modal__host .viz-graph {
+        @apply my-0;
+    }
+    /* The diagram caption (step.annotation.title) duplicates the modal's
+       Prev / Current / Next source-line footer, so hide it inside the modal.
+       Inline chapter diagrams have no such footer and keep their caption. */
+    .viz-modal__host .viz-graph__caption {
+        display: none;
+    }
+
+    /* ─── code pane ───────────────────────────────────────────────── */
+    .viz-modal__source {
+        @apply m-0 p-3 text-[12.5px] leading-relaxed;
+        font-family: var(--font-mono, ui-monospace, monospace);
+        /* Base colour for the un-tokenised text (identifiers, whitespace);
+           Prism token spans paint over it with prism-tomorrow's own colours. */
+        color: #f4f4f5;
+    }
+    .viz-modal__line {
+        @apply flex;
+    }
+    .viz-modal__line--current {
+        background: rgba(79, 91, 213, 0.16);
+        box-shadow: inset 2px 0 0 0 var(--color-primary, #4f5bd5);
+    }
+    .viz-modal__line-number {
+        @apply shrink-0 pr-3 text-right tabular-nums select-none whitespace-pre;
+        color: rgba(244, 244, 245, 0.4);
+    }
+    .viz-modal__line-code {
+        @apply flex-1 whitespace-pre;
+    }
+
+    /* ─── status (tracing / failed) ───────────────────────────────── */
+    .viz-modal__status {
+        @apply m-auto flex flex-col items-center gap-3 p-8 text-center text-sm
+               text-muted-foreground;
+    }
+    .viz-modal__status-icon {
+        @apply h-6 w-6 animate-spin;
+        color: var(--color-primary, #4f5bd5);
+    }
+    .viz-modal__status--error {
+        color: hsl(var(--destructive));
+    }
+    .viz-modal__status-title {
+        @apply m-0 font-semibold;
+    }
+    .viz-modal__status-detail {
+        @apply m-0 max-w-[60ch] whitespace-pre-wrap text-left text-xs text-muted-foreground;
+    }
+
+    /* ─── help popover ────────────────────────────────────────────── */
+    /* The "How it works" `(i)` button sits in the title strip; clicking it
+       opens a dismissible popover (VisualiseModal.renderHelp) — not a hover
+       tooltip, there is too much to say. The popover is always-dark chrome:
+       it emerges from the always-dark toolbar, so it does NOT follow the site
+       theme. `.viz-modal__help` carries a stacking context so the popover
+       paints above the themed viewport; a full-viewport transparent backdrop
+       catches the outside click. Block: .viz-modal__help* */
+    .viz-modal__help {
+        position: relative;
+        z-index: 5;
+        display: inline-flex;
+        align-self: center;
+    }
+    .viz-modal__help-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        border: none;
+        border-radius: 6px;
+        background: transparent;
+        color: rgba(239, 232, 216, 0.6);
+        transition: background 140ms ease, color 140ms ease;
+    }
+    .viz-modal__help-button:hover,
+    .viz-modal__help-button[aria-expanded="true"] {
+        background: rgba(251, 249, 243, 0.12);
+        color: #efe8d8;
+    }
+    .viz-modal__help-button-icon {
+        width: 16px;
+        height: 16px;
+    }
+    /* Transparent full-viewport catcher — an outside click closes the popover
+       (and is stopped by the toolbar, so it never reaches the modal scrim). */
+    .viz-modal__help-backdrop {
+        position: fixed;
+        inset: 0;
+        background: transparent;
+    }
+    .viz-modal__help-popover {
+        position: absolute;
+        top: calc(100% + 10px);
+        left: 0;
+        width: min(20rem, calc(100vw - 2rem));
+        max-height: min(70vh, 26rem);
+        overflow-y: auto;
+        padding: 14px 16px 16px;
+        border: 1px solid rgba(255, 255, 255, 0.13);
+        border-radius: 10px;
+        background: #221f1b;
+        box-shadow: 0 18px 44px -14px rgba(0, 0, 0, 0.7);
+    }
+    /* Caret — a rotated square showing two edges, pointing up at the (i). */
+    .viz-modal__help-popover::before {
+        content: "";
+        position: absolute;
+        top: -6px;
+        left: 8px;
+        width: 11px;
+        height: 11px;
+        background: #221f1b;
+        border-left: 1px solid rgba(255, 255, 255, 0.13);
+        border-top: 1px solid rgba(255, 255, 255, 0.13);
+        transform: rotate(45deg);
+    }
+    .viz-modal__help-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 10px;
+    }
+    .viz-modal__help-heading {
+        font-size: 13px;
+        font-weight: 600;
+        color: #efe8d8;
+    }
+    .viz-modal__help-close {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        width: 22px;
+        height: 22px;
+        margin: -3px -5px 0 0;
+        border: none;
+        border-radius: 5px;
+        background: transparent;
+        color: rgba(239, 232, 216, 0.55);
+        transition: background 140ms ease, color 140ms ease;
+    }
+    .viz-modal__help-close:hover {
+        background: rgba(251, 249, 243, 0.1);
+        color: #efe8d8;
+    }
+    .viz-modal__help-close-icon {
+        width: 14px;
+        height: 14px;
+    }
+    .viz-modal__help-section + .viz-modal__help-section {
+        margin-top: 11px;
+    }
+    .viz-modal__help-section-title {
+        display: block;
+        margin-bottom: 3px;
+        font-family: var(--font-mono, ui-monospace, monospace);
+        font-size: 9.5px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: rgba(239, 232, 216, 0.5);
+    }
+    .viz-modal__help-section-body {
+        margin: 0;
+        font-size: 12px;
+        line-height: 1.5;
+        color: rgba(239, 232, 216, 0.78);
+    }
+    .viz-modal__help-legend {
+        list-style: none;
+        margin: 5px 0 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+    .viz-modal__help-legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        color: rgba(239, 232, 216, 0.78);
+    }
+    /* Swatches echo the renderer's legend (cursor blue, new green, ▾ pointer)
+       but at a higher opacity — they sit on the dark popover, not the themed
+       card the in-diagram legend uses. */
+    .viz-modal__help-swatch {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 15px;
+        height: 15px;
+        flex-shrink: 0;
+    }
+    .viz-modal__help-swatch--cursor {
+        border-radius: 50%;
+        background: rgba(96, 165, 250, 0.32);
+        border: 1.5px solid rgba(96, 165, 250, 0.95);
+    }
+    .viz-modal__help-swatch--new {
+        border-radius: 50%;
+        background: rgba(52, 211, 153, 0.3);
+        border: 1.5px solid rgba(52, 211, 153, 0.95);
+    }
+    .viz-modal__help-swatch--pointer {
+        font-size: 15px;
+        font-weight: 700;
+        line-height: 1;
+        color: #7dabf8;
+    }
+    .viz-modal__help-note {
+        margin: 9px 0 0;
+        font-size: 11px;
+        line-height: 1.45;
+        font-style: italic;
+        color: rgba(239, 232, 216, 0.5);
+    }
+
+    /* ─── mobile: full-bleed card ─────────────────────────────────────
+       On a phone the modal card's inline 95vw × 90vh (written by the Scala
+       layout from the zoom state) wastes scarce screen and leaves the inner
+       AlgoLens grid cramped. Below the md breakpoint the card fills the
+       viewport edge-to-edge: the viewport padding is dropped and the inline
+       size is overridden with !important (the Scala layout that writes the
+       inline width/height stays untouched, as before). The AlgoLens panes,
+       top bar and controls reflow via their own breakpoints in algolens.css. */
+    @media (max-width: 768px) {
+        .viz-modal__viewport {
+            padding: 0;
+        }
+        .viz-modal__card {
+            width: 100vw !important;
+            /* dvh tracks the real visible height as mobile browser chrome
+               shows/hides; vh is the fallback for older engines. */
+            height: 100vh !important;
+            height: 100dvh !important;
+            max-width: none;
+            border-radius: 0;
+        }
+        /* The anchored help popover would overflow a phone — show it as a small
+           centred dialog instead (the backdrop already dims behind it). */
+        .viz-modal__help-popover {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            right: auto;
+            transform: translate(-50%, -50%);
+            width: min(21rem, calc(100vw - 1.5rem));
+            max-height: min(80vh, 30rem);
+        }
+        .viz-modal__help-popover::before {
+            display: none;
+        }
+    }
+}
