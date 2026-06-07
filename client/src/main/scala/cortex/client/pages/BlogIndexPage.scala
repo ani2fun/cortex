@@ -2,7 +2,7 @@ package cortex.client.pages
 
 import cortex.client.api.ApiClient
 import cortex.client.components.blog.PostGrid
-import cortex.client.util.{AsyncFetch, PageTitle}
+import cortex.client.util.{AsyncFetch, AsyncResult, PageTitle}
 import cortex.shared.api.Endpoints.BlogIndex
 import japgolly.scalajs.react.*
 import japgolly.scalajs.react.vdom.html_<^.*
@@ -10,10 +10,42 @@ import japgolly.scalajs.react.vdom.html_<^.*
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 
 /**
- * Lists every published blog post — the `/blogs` route. Mirrors `CortexIndexPage` shape: hero (title + lede)
- * over a `PostGrid`. The grid renders an empty-state message when the index is empty.
+ * Lists every published blog post — the `/blogs` route. Editorial header (mono eyebrow + italic-serif title +
+ * lede) over a [[PostGrid]], speaking the same design language as the Landing: the `.blog__inner` column is
+ * sized to match `.cx-home`, so the post cards line up with the library cards. The header stays put across
+ * all three async states so the page never flashes a bare grid; `PostGrid` owns its own empty-state copy.
  */
 object BlogIndexPage:
+
+  /**
+   * The editorial chrome, shared by every async state. `rightSlot` carries the post-count pill once loaded.
+   */
+  private def shell(rightSlot: VdomNode, body: VdomNode): VdomNode =
+    <.main(
+      ^.className := "blog",
+      <.div(
+        ^.className := "blog__inner",
+        <.div(^.className := "blog__eyebrow", "— Writing"),
+        <.div(
+          ^.className := "blog__heading-row",
+          <.h1(^.className := "blog__title", "Written to be re-read."),
+          rightSlot
+        ),
+        <.p(
+          ^.className := "blog__lede",
+          "Long-form essays and field notes — from the homelab to the kitchen. Fewer posts, more depth;",
+          " each one meant to stand on its own."
+        ),
+        body
+      )
+    )
+
+  private def countPill(n: Int): VdomNode =
+    if n <= 0 then EmptyVdom
+    else <.span(^.className := "blog__count", s"$n ${if n == 1 then "post" else "posts"}")
+
+  private def status(text: String): VdomNode =
+    <.p(^.className := "blog__status", text)
 
   val Component =
     ScalaFnComponent
@@ -28,22 +60,12 @@ object BlogIndexPage:
           )
       }
       .render { (_, state) =>
-        <.main(
-          ^.className := "container",
-          <.section(
-            ^.className := "px-4 md:px-8 pt-28 md:pt-32 pb-12",
-            <.h1(
-              ^.className := "text-3xl md:text-5xl font-bold text-center text-foreground mb-3",
-              "Blog"
-            ),
-            <.p(
-              ^.className :=
-                "text-center text-foreground/80 mb-10 text-sm md:text-base max-w-2xl mx-auto",
-              "Articles and write-ups. Pick a post to start reading."
-            ),
-            state.value.render(
-              loaded = idx => PostGrid.Component(PostGrid.Props(idx.posts.toList))
+        state.value match
+          case AsyncResult.Loading      => shell(EmptyVdom, status("Loading posts…"))
+          case AsyncResult.Errored(msg) => shell(EmptyVdom, status(msg))
+          case AsyncResult.Loaded(idx) =>
+            shell(
+              countPill(idx.posts.length),
+              PostGrid.Component(PostGrid.Props(idx.posts.toList))
             )
-          )
-        )
       }

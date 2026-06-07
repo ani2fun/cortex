@@ -19,17 +19,33 @@
        Mirrors `cortex.css` so blog feels like a sibling section.
     */
 
+    /* Outer wrapper — only owns the top clearance for the fixed header (matched to
+       the Landing's `.cx-hero` 72px) + bottom space. Horizontal gutter + max-width
+       live on `__inner` so the post column aligns pixel-for-pixel with the Landing. */
     .blog {
-        @apply py-24 px-6 scroll-mt-24 border-t border-border/60;
+        @apply pt-[72px] pb-24;
     }
     .blog__inner {
-        @apply max-w-6xl mx-auto;
+        max-width: 1152px;
+        margin-inline: auto;
+        padding-inline: 32px;
+    }
+    @media (max-width: 640px) {
+        .blog__inner { padding-inline: 20px; }
     }
     .blog__eyebrow {
         @apply text-sm font-mono tracking-widest text-muted-foreground uppercase mb-3;
     }
     .blog__heading-row {
         @apply flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-12;
+    }
+    /* Post-count pill sitting opposite the title — echoes the Landing's status pill. */
+    .blog__count {
+        @apply inline-flex items-center text-[11px] font-mono tracking-widest
+               text-muted-foreground uppercase whitespace-nowrap;
+        border: 1px solid hsl(var(--border));
+        border-radius: 999px;
+        padding: 6px 13px;
     }
     .blog__title {
         font-family: var(--font-display);
