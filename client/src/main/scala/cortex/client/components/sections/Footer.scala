@@ -1,84 +1,75 @@
 package cortex.client.components.sections
 
-import cortex.client.components.ToggleMode
+import cortex.client.components.icons.LucideIcons
 import japgolly.scalajs.react.*
 import japgolly.scalajs.react.vdom.html_<^.*
 
 import scala.scalajs.js
 
 /**
- * Footer — "Let's talk." block + two link columns + meta line.
- *
- * Mirrors the design system prototype's `.ftr` layout. The meta line carries the homelab one-liner and the
- * version stamp; the prototype's "v2.0 · paris ⌁ {year}" pattern is preserved.
+ * Footer — the design system's "Read it once. Keep it forever." block: an editorial lede + a library CTA,
+ * link columns, and a mono meta strip carrying the homelab one-liner.
  */
 object Footer:
 
-  private def metaLink(href: String, label: String, external: Boolean = false): VdomNode =
+  private def link(href: String, label: String, external: Boolean): VdomNode =
     <.a(
+      ^.key       := label,
       ^.href      := href,
-      ^.className := "footer__col-link",
-      if external then TagMod(^.rel := "noopener noreferrer", ^.target := "_blank")
-      else TagMod.empty,
-      label,
-      if external then <.span(^.className := "footer__col-link-arrow", " ↗") else EmptyVdom
+      ^.className := "cx-foot__link",
+      if external then TagMod(^.target := "_blank", ^.rel := "noopener noreferrer") else TagMod.empty,
+      label
+    )
+
+  private def col(head: String, links: List[(String, String, Boolean)]): VdomNode =
+    <.div(
+      ^.className := "cx-foot__col",
+      <.div(^.className := "cx-foot__col-head", head),
+      <.div(^.className := "cx-foot__col-list", links.toTagMod { case (h, l, e) => link(h, l, e) })
     )
 
   val Component = ScalaFnComponent[Unit] { _ =>
     val year = new js.Date().getFullYear().toInt
-
     <.footer(
-      ^.className := "footer container",
+      ^.className := "cx-foot",
       <.div(
-        ^.className := "footer__inner",
+        ^.className := "cx-foot__inner",
         <.div(
-          ^.className := "footer__lede",
-          <.h2(^.className := "footer__name", "Let's talk."),
-          <.p(
-            ^.className := "footer__sub",
-            "Senior backend roles, JVM ecosystems, identity and platforms. Reach me at ",
-            <.a(
-              ^.href      := "mailto:a.r.kakde@gmail.com",
-              ^.className := "footer__sub-link",
-              "a.r.kakde@gmail.com"
-            ),
-            "."
-          )
-        ),
-        <.div(
-          ^.className := "footer__cols",
+          ^.className := "cx-foot__grid",
           <.div(
-            ^.className := "footer__col",
-            <.div(^.className := "footer__col-label", "Find me"),
-            <.div(
-              ^.className := "footer__col-list",
-              metaLink("https://www.linkedin.com/in/aniketkakde/", "LinkedIn", external = true),
-              metaLink("https://github.com/ani2fun", "GitHub", external = true),
-              metaLink("mailto:a.r.kakde@gmail.com", "Email", external = false)
+            ^.className := "cx-foot__lede",
+            <.h2(^.className := "cx-foot__lede-title", "Read it once.", <.br, "Keep it forever."),
+            <.a(
+              ^.href      := "/",
+              ^.className := "cx-btn cx-btn--primary cx-btn--md",
+              LucideIcons.BookOpen(LucideIcons.withClass("cx-btn__icon")),
+              "Browse the library"
             )
           ),
-          <.div(
-            ^.className := "footer__col",
-            <.div(^.className := "footer__col-label", "Read"),
-            <.div(
-              ^.className := "footer__col-list",
-              metaLink("/", "Cortex"),
-              metaLink("/blogs", "Blog"),
-              metaLink("/Aniket-Kakde-CV-EN.pdf", "CV (PDF)")
+          col(
+            "Read",
+            List(
+              ("/", "Library", false),
+              ("/blogs", "Blog", false),
+              ("/Aniket-Kakde-CV-EN.pdf", "CV (PDF)", false)
+            )
+          ),
+          col(
+            "Connect",
+            List(
+              ("https://github.com/ani2fun", "GitHub", true),
+              ("https://www.linkedin.com/in/aniketkakde/", "LinkedIn", true),
+              ("mailto:a.r.kakde@gmail.com", "Email", true)
             )
           )
-        )
-      ),
-      <.div(
-        ^.className := "footer__meta",
-        <.span(
-          ^.className := "footer__meta-credit",
-          s"built with scala.js · served from a 4-node k3s cluster in my flat · © $year"
         ),
         <.div(
-          ^.className := "footer__meta-right",
-          <.span(^.className := "footer__meta-version", s"v2.0 · paris · $year"),
-          <.div(^.className  := "footer__meta-toggle", ToggleMode.Component())
+          ^.className := "cx-foot__meta",
+          <.span(s"© $year Aniket Kakde"),
+          <.span(
+            ^.className := "cx-foot__meta-right",
+            "Built for reading · served from a 4-node k3s cluster in my flat"
+          )
         )
       )
     )
