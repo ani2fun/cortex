@@ -870,10 +870,10 @@ object VisualiseModal:
   ): VdomElement =
     <.div(
       ^.className := "algolens__topbar",
-      // Brand: CODEFOLIO · LAB / Visualise / AlgoLens
+      // Brand: CORTEX · LAB / Visualise / AlgoLens
       <.div(
         ^.className := "algolens__topbar-brand",
-        <.span(^.className := "algolens__topbar-eyebrow", "CODEFOLIO · LAB"),
+        <.span(^.className := "algolens__topbar-eyebrow", "CORTEX · LAB"),
         <.span(
           ^.className := "algolens__topbar-mark",
           <.em("Visualise"),
