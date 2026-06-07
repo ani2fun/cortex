@@ -44,12 +44,12 @@ DEEPENING.md
 INTERFACE-DESIGN.md
 LANGUAGE.md
 docs/*
-!docs/perf-baselines.md
 tools
 .codegraph
 .graphify
 graphify-out
 .handoff/
+ui-design-system
 
 # Logs
 *.log

@@ -1,0 +1,94 @@
+/* Cortex landing (/) — editorial hero + book library. The design system's "docs/Landing" surface,
+   built on the existing token layer (colors, fonts, radius from tailwind.css). The book cards below
+   reuse the existing .cortex__card grid (sections/cortex.css). */
+
+.cx-home {
+  max-width: 1152px;
+  margin-inline: auto;
+  padding-inline: 32px;
+}
+@media (max-width: 640px) { .cx-home { padding-inline: 20px; } }
+
+/* ── Header brand: indigo logo chip + lowercase wordmark ─────────────────── */
+.header__chip { display: block; border-radius: 7px; flex: none; }
+
+/* ── Hero ────────────────────────────────────────────────────────────────── */
+.cx-hero { padding: 72px 0 56px; }
+
+.cx-hero__pill {
+  display: inline-flex; align-items: center; gap: 9px;
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+  border: 1px solid hsl(var(--border)); border-radius: 999px;
+  padding: 6px 13px 6px 11px; margin-bottom: 28px; white-space: nowrap;
+}
+.cx-hero__dot {
+  width: 7px; height: 7px; border-radius: 999px; background: hsl(var(--primary));
+  box-shadow: 0 0 0 3px hsl(var(--primary) / 0.18); flex: none;
+}
+@keyframes cx-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+@media (prefers-reduced-motion: no-preference) {
+  .cx-hero__dot { animation: cx-pulse 2.4s ease-in-out infinite; }
+}
+
+.cx-hero__title {
+  font-family: var(--font-display); font-style: italic; font-weight: 400;
+  font-size: clamp(44px, 5.6vw, 76px); letter-spacing: -0.03em; line-height: 1.0;
+  margin: 0 0 26px; max-width: 15ch; color: hsl(var(--foreground));
+}
+.cx-hero__lede {
+  font-family: var(--font-sans); font-size: 19px; line-height: 1.55;
+  color: hsl(var(--muted-foreground)); max-width: 52ch; margin: 0 0 32px;
+}
+.cx-hero__lede-em { color: hsl(var(--foreground)); font-style: italic; }
+
+.cx-hero__ctas { display: flex; align-items: center; gap: 14px; margin-bottom: 60px; flex-wrap: wrap; }
+
+.cx-hero__stats {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px;
+  border-top: 1px solid hsl(var(--border)); padding-top: 28px;
+}
+@media (max-width: 720px) { .cx-hero__stats { grid-template-columns: repeat(2, 1fr); gap: 22px; } }
+
+.cx-stat__num {
+  font-family: var(--font-display); font-style: italic; font-size: 40px; line-height: 1;
+  letter-spacing: -0.02em; color: hsl(var(--foreground));
+}
+.cx-stat__sup {
+  font-family: var(--font-mono); font-size: 12px; font-style: normal; margin-left: 4px;
+  color: hsl(var(--muted-foreground));
+}
+.cx-stat__label {
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: hsl(var(--muted-foreground)); margin-top: 10px; line-height: 1.4;
+}
+
+/* ── Buttons (landing CTAs) ────────────────────────────────────────────────── */
+.cx-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+  padding: 0 22px; font-family: var(--font-sans); font-size: 15px; font-weight: 500;
+  line-height: 1; letter-spacing: -0.005em; border-radius: 8px; border: 1px solid transparent;
+  text-decoration: none; cursor: pointer; white-space: nowrap;
+  transition: background 140ms cubic-bezier(.2, .7, .2, 1), transform 140ms cubic-bezier(.2, .7, .2, 1),
+    border-color 140ms;
+}
+.cx-btn--lg { height: 48px; }
+.cx-btn:active { transform: translateY(0.5px); }
+.cx-btn--primary { background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); }
+.cx-btn--primary:hover { background: hsl(var(--primary) / 0.88); }
+.cx-btn--outline { background: transparent; color: hsl(var(--foreground)); border-color: hsl(var(--border)); }
+.cx-btn--outline:hover { background: hsl(var(--secondary)); }
+.cx-btn__icon { width: 18px; height: 18px; }
+
+/* ── Library section ───────────────────────────────────────────────────────── */
+.cx-lib { padding: 12px 0 88px; }
+.cx-lib__head { margin-bottom: 24px; }
+.cx-lib__eyebrow {
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+  color: hsl(var(--primary)); margin-bottom: 12px;
+}
+.cx-lib__title {
+  font-family: var(--font-display); font-style: italic; font-weight: 400; font-size: 40px;
+  letter-spacing: -0.025em; margin: 0; color: hsl(var(--foreground));
+}
+.cx-lib__status { font-family: var(--font-sans); color: hsl(var(--muted-foreground)); padding: 24px 0; }

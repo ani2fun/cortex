@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Cortex">
+  <rect width="128" height="128" rx="30" fill="#5159d4"></rect>
+  <g transform="translate(14 14) scale(1.0)">
+    <path d="M76.05 28.14 A34 34 0 1 0 76.05 71.86" stroke="#f6f1e8" stroke-width="11" stroke-linecap="round" fill="none"></path>
+    <path d="M62.26 39.72 A16 16 0 1 0 62.26 60.28" stroke="#f6f1e8" stroke-width="11" stroke-linecap="round" fill="none"></path>
+  </g>
+</svg>

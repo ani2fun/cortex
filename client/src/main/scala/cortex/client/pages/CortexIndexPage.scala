@@ -2,6 +2,7 @@ package cortex.client.pages
 
 import cortex.client.api.ApiClient
 import cortex.client.components.book.BookGrid
+import cortex.client.components.icons.LucideIcons
 import cortex.client.util.{AsyncFetch, PageTitle}
 import cortex.shared.api.Endpoints.CortexIndex
 import japgolly.scalajs.react.*
@@ -10,10 +11,67 @@ import japgolly.scalajs.react.vdom.html_<^.*
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 
 /**
- * Lists every book in the Cortex. Each card links to `/cortex/<slug>`, which the BookRedirectPage forwards to
- * the first chapter.
+ * Cortex landing — the editorial home at `/`. A status-pill + italic-serif hero, then the book library
+ * (fetched from `/api/cortex/index`). Mirrors the design system's `docs/Landing` surface; the book cards
+ * reuse [[BookGrid]] (whose card the design was reverse-engineered from).
  */
 object CortexIndexPage:
+
+  private def stat(num: String, sup: String, label: String): VdomNode =
+    <.div(
+      ^.className := "cx-stat",
+      <.div(
+        ^.className := "cx-stat__num",
+        num,
+        if sup.nonEmpty then <.span(^.className := "cx-stat__sup", sup) else EmptyVdom
+      ),
+      <.div(^.className := "cx-stat__label", label)
+    )
+
+  private val hero: VdomNode =
+    <.section(
+      ^.className := "cx-hero",
+      <.div(
+        ^.className := "cx-hero__pill",
+        <.span(^.className := "cx-hero__dot", ^.aria.hidden := true),
+        "A reading-first knowledge base"
+      ),
+      <.h1(
+        ^.className := "cx-hero__title",
+        "Think in systems,",
+        <.br,
+        "not in tabs."
+      ),
+      <.p(
+        ^.className := "cx-hero__lede",
+        <.em(^.className := "cx-hero__lede-em", "Cortex"),
+        " turns reading into a library you can return to — interactive books, linked notes, and runnable",
+        " code, all set like a publication you'd want to read."
+      ),
+      <.div(
+        ^.className := "cx-hero__ctas",
+        <.a(
+          ^.href      := "#library",
+          ^.className := "cx-btn cx-btn--primary cx-btn--lg",
+          LucideIcons.BookOpen(LucideIcons.withClass("cx-btn__icon")),
+          "Start reading"
+        ),
+        <.a(
+          ^.href      := "https://github.com/ani2fun",
+          ^.target    := "_blank",
+          ^.rel       := "noopener noreferrer",
+          ^.className := "cx-btn cx-btn--outline cx-btn--lg",
+          "Browse on GitHub"
+        )
+      ),
+      <.div(
+        ^.className := "cx-hero__stats",
+        stat("Py · Java", "", "RUNNABLE IN-BROWSER"),
+        stat("∞", "", "RE-READS, NO PAYWALL"),
+        stat("0", "ads", "JUST THE WRITING"),
+        stat("100%", "", "YOURS TO KEEP")
+      )
+    )
 
   val Component =
     ScalaFnComponent
@@ -29,20 +87,20 @@ object CortexIndexPage:
       }
       .render { (_, state) =>
         <.main(
-          ^.className := "container",
+          ^.className := "cx-home",
+          hero,
           <.section(
-            ^.className := "px-4 md:px-8 pt-28 md:pt-32 pb-12",
-            <.h1(
-              ^.className := "text-3xl md:text-5xl font-bold text-center text-foreground mb-3",
-              "Cortex"
-            ),
-            <.p(
-              ^.className :=
-                "text-center text-foreground/80 mb-10 text-sm md:text-base max-w-2xl mx-auto",
-              "Notes I keep while reading, building, and chasing rabbit holes. Pick a topic and dive in."
+            ^.className := "cx-lib",
+            ^.id        := "library",
+            <.div(
+              ^.className := "cx-lib__head",
+              <.div(^.className := "cx-lib__eyebrow", "— The library"),
+              <.h2(^.className := "cx-lib__title", "Browse the books")
             ),
             state.value.render(
-              loaded = idx => BookGrid.Component(BookGrid.Props(idx.books.toList))
+              loaded = idx => BookGrid.Component(BookGrid.Props(idx.books.toList)),
+              loading = <.p(^.className := "cx-lib__status", "Loading the library…"),
+              errored = msg => <.p(^.className := "cx-lib__status", msg)
             )
           )
         )
