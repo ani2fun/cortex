@@ -21,8 +21,9 @@ import japgolly.scalajs.react.extra.router.*
  * Rule ORDER matters: scalajs-react matches top-to-bottom, and the generic `/{book}` and `/{book}/{chapter}`
  * routes would swallow `/blogs` etc., so all reserved/static routes are declared first.
  *
- * The production server's index.html fallback covers `/`, the reserved segments in `shared.AppRoutes.SpaRoutes`,
- * and each book slug (enumerated from the content tree) — see ADR-0009 and `server.http.StaticRoutes`.
+ * The production server's index.html fallback covers `/`, the reserved segments in
+ * `shared.AppRoutes.SpaRoutes`, and each book slug (enumerated from the content tree) — see ADR-0009 and
+ * `server.http.StaticRoutes`.
  */
 object Router:
 
@@ -39,15 +40,26 @@ object Router:
     // backend (slug regex rejects `#`). Same for query-string segments.
     val seg = string("[^/?#]+")
 
+    // Book-segment matcher: like `seg`, but it must NOT match a reserved top-level
+    // segment (`blogs`, `demo`, the legacy `cortex`). Declaration order alone is not
+    // enough — scalajs-react treats the rule set as a bijection, so if `/blogs` is
+    // matchable by BOTH the static `blogs` route AND the generic `seg → BookRedirect`
+    // route, the parser sees two rules claiming the same path and throws
+    // `RoutingRules.Exception` (the page renders blank). Excluding the reserved words
+    // from the book segment leaves exactly one rule matching `/blogs` and `/demo`.
+    // Sourced from `AppRoutes.SpaRoutes` so the list can't drift from the server's.
+    val reservedSeg = AppRoutes.SpaRoutes.iterator.map(_.segment).mkString("|")
+    val bookSeg     = string(s"(?!(?:$reservedSeg)(?:$$|/))[^/?#]+")
+
     // The | operator composes route rules. Each rule is "pattern ~> render".
     // `trimSlashes` normalises trailing/duplicate slashes before matching.
     val rules =
       trimSlashes
-        // `/` is the Cortex book index (this is cortex.kakde.eu; there is no /cortex prefix).
+      // `/` is the Cortex book index (this is cortex.kakde.eu; there is no /cortex prefix).
         | staticRoute(root, Page.CortexIndex) ~> render(CortexIndexPage.Component())
-        // Reserved top-level routes are declared BEFORE the generic one/two-segment book routes
-        // below: scalajs-react matches in declaration order, and `/{book}` / `/{book}/{chapter}`
-        // would otherwise swallow `/blogs`, `/blogs/{slug}`, `/demo`.
+        // Reserved top-level routes. These are declared before the generic book routes AND the book
+        // routes use `bookSeg` (which excludes these segments), so `/blogs`, `/blogs/{slug}`, `/demo`
+        // are each matched by exactly one rule — see the `bookSeg` note above.
         | staticRoute(AppRoutes.Blogs, Page.Blogs) ~> render(BlogIndexPage.Component())
         | dynamicRouteCT((AppRoutes.Blogs / seg).caseClass[Page.BlogPost]) ~>
         dynRender((p: Page.BlogPost) => BlogPostPage.Component(BlogPostPage.Props(p.slug)))
@@ -60,11 +72,11 @@ object Router:
           "^/?cortex(?:/(.*))?$".r,
           m => Some(redirectToPath(Path(Option(m.group(1)).getOrElse("")))(SetRouteVia.HistoryReplace))
         )
-        // /{book}/{chapter} — the chapter reader.
-        | dynamicRouteCT((seg / seg).caseClass[Page.Chapter]) ~>
+        // /{book}/{chapter} — the chapter reader. `bookSeg` keeps the reserved segments out.
+        | dynamicRouteCT((bookSeg / seg).caseClass[Page.Chapter]) ~>
         dynRender((p: Page.Chapter) => ChapterPage.Component(ChapterPage.Props(p.book, p.chapter)))
         // /{book} — redirect to the book's first chapter (BookRedirectPage navigates on mount).
-        | dynamicRouteCT(seg.caseClass[Page.BookRedirect]) ~>
+        | dynamicRouteCT(bookSeg.caseClass[Page.BookRedirect]) ~>
         dynRender((p: Page.BookRedirect) => BookRedirectPage.Component(p.book))
 
     rules
