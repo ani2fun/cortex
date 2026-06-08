@@ -221,6 +221,7 @@
 @import "./src/styles/sections/certifications.css";
 @import "./src/styles/sections/cortex.css";
 @import "./src/styles/sections/blog.css";
+@import "./src/styles/sections/demo.css";
 @import "./src/styles/sections/header.css";
 @import "./src/styles/sections/footer.css";
 @import "./src/styles/components/cortex-reader.css";
