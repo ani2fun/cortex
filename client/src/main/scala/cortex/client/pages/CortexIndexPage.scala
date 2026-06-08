@@ -95,7 +95,7 @@ object CortexIndexPage:
             <.div(
               ^.className := "cx-lib__head",
               <.div(^.className := "cx-lib__eyebrow", "— The library"),
-              <.h2(^.className := "cx-lib__title", "Browse the books")
+              <.h2(^.className  := "cx-lib__title", "Browse the books")
             ),
             state.value.render(
               loaded = idx => BookGrid.Component(BookGrid.Props(idx.books.toList)),

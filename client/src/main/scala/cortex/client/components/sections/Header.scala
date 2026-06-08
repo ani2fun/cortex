@@ -8,15 +8,15 @@ import japgolly.scalajs.react.extra.router.RouterCtl
 import japgolly.scalajs.react.vdom.html_<^.*
 
 /**
- * Sticky editorial top nav for Cortex — the design system's chrome: the indigo logo chip + lowercase
- * `cortex` wordmark, the Library / Blog routes, a theme toggle, and a GitHub link. SPA-internal links
- * navigate via `RouterCtl` (no full reload); the brand returns to the library home.
+ * Sticky editorial top nav for Cortex — the design system's chrome: the indigo logo chip + lowercase `cortex`
+ * wordmark, the Library / Blog routes, a theme toggle, and a GitHub link. SPA-internal links navigate via
+ * `RouterCtl` (no full reload); the brand returns to the library home.
  */
 object Header:
 
   final case class Props(ctl: RouterCtl[Page])
 
-  private final case class NavLink(page: Page, href: String, label: String)
+  final private case class NavLink(page: Page, href: String, label: String)
 
   private val navLinks: List[NavLink] = List(
     NavLink(Page.CortexIndex, "/", "Library"),
