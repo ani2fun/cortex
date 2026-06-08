@@ -23,7 +23,7 @@ object Header:
     NavLink(Page.Blogs, "/blogs", "Blog")
   )
 
-  private val GithubUrl = "https://github.com/ani2fun"
+  private val GithubUrl = "https://github.com/ani2fun/cortex"
 
   val Component =
     ScalaFnComponent

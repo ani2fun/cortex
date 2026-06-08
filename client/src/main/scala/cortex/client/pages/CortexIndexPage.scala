@@ -57,7 +57,7 @@ object CortexIndexPage:
           "Start reading"
         ),
         <.a(
-          ^.href      := "https://github.com/ani2fun",
+          ^.href      := "https://github.com/ani2fun/cortex",
           ^.target    := "_blank",
           ^.rel       := "noopener noreferrer",
           ^.className := "cx-btn cx-btn--outline cx-btn--lg",
