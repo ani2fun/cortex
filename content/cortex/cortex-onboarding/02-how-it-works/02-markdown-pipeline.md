@@ -10,14 +10,17 @@ The remark / rehype ecosystem is JS-native. Each plugin is a small JS module; th
 So we draw the boundary differently: **one TypeScript module owns the entire pipeline, and Scala calls it exactly once per chapter.** That module is `client/src/markdown/render.ts`. Scala-side, the contact surface is exactly this:
 
 ```scala
-// In client/src/main/scala/codefolio/client/markdown/MarkdownRenderer.scala
+// In client/src/main/scala/cortex/client/markdown/MarkdownRenderer.scala
 @js.native
-@JSImport("@markdown/loader", "renderChapter")
-private def renderChapterRaw(raw: String): js.Promise[JsRenderResult] = js.native
+@JSImport("@markdown/loader", "loadRenderChapter")
+private def loadRenderChapter(): js.Promise[js.Function1[String, js.Promise[JsRenderResult]]] = js.native
 
 def render(raw: String): Future[Result] =
-  renderChapterRaw(raw).toFuture.map(toResult)
-println("Single function. One Future per chapter. Done.")
+  for
+    renderFn <- loadRenderChapter().toFuture   // dynamic-import the pipeline on first use
+    rendered <- renderFn(raw).toFuture
+  yield toResult(rendered)
+println("One import. One Future per chapter. Done.")
 ```
 
 That's the entire JS-interop layer for chapter rendering. Everything else is regular Scala on one side and regular TS on the other.
@@ -85,7 +88,7 @@ We can't render React inside a string of HTML. But we *can* render a `<div>` wit
 
 D2 is special: it's pre-rendered by the WASM engine before stringification, so the SVG is **already in the HTML**. The placeholder div is there only to attach a React component (the zoom modal); the SVG inside survives untouched.
 
-The walker on the Scala side lives in [ChapterContent.scala](https://github.com/aniketkakde/codefolio/blob/main/client/src/main/scala/codefolio/client/components/cortex/ChapterContent.scala). The relevant shape is:
+The walker on the Scala side lives in `client/src/main/scala/cortex/client/components/book/ChapterContent.scala`. The relevant shape is:
 
 ```scala
 // Pseudo-Scala — see ChapterContent.scala for the full version.
@@ -119,7 +122,7 @@ The pipeline pulls in **a lot** of code: shiki ships ~1MB of grammar JSON, merma
 ```d2
 direction: right
 
-home: HomePage {
+home: "CortexIndexPage (/)" {
   shape: page
 }
 chapter: ChapterPage {
@@ -142,7 +145,7 @@ Two layers of laziness:
 1. **`loader.ts`** is the only module Scala imports directly. It does `await import("./render")` the first time it's called and caches the result. So merely loading the SPA bundle doesn't pull in `render.ts` at all.
 2. **Inside `render.ts`**, the heavy plugins (`shiki`, `mermaid`, `@terrastruct/d2`, `katex`) are themselves loaded with `await import("...")`. Vite's `manualChunks` setting (in `client/vite.config.mjs`) names these chunks so they ship as separate files browsers can fetch on demand and cache forever.
 
-The Hero/About/Experience/Projects path on `/` doesn't touch any of this. Only `ChapterPage` does.
+The book index at `/` (and the blog index at `/blogs`) doesn't touch any of this. Only `ChapterPage` and `BlogPostPage` do.
 
 ## Where each format gets handled
 

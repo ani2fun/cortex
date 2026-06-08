@@ -3,7 +3,7 @@ title: Server Stack — Why Each Library
 summary: ZIO 2, tapir, circe, HikariCP, Lettuce, Mongo sync — what each one buys us, why we picked it over the alternative, and what breaks if you swap it out.
 ---
 
-This chapter is a library-by-library tour of `server/`. The format is the same throughout: a section per decision, each with **what we use**, **why this and not the obvious alternative**, and **what breaks if you change it**. Read it alongside [Repository Tour](/cortex/codefolio-onboarding/start-here-repository-tour) — that one is a map; this one is the legend.
+This chapter is a library-by-library tour of `server/`. The format is the same throughout: a section per decision, each with **what we use**, **why this and not the obvious alternative**, and **what breaks if you change it**. Read it alongside [Repository Tour](/cortex/cortex-onboarding/start-here-repository-tour) — that one is a map; this one is the legend.
 
 ## Why ZIO 2 at all
 
@@ -21,26 +21,30 @@ The alternatives we considered:
 | http4s + cats-effect | Excellent, but we'd be juggling two effect systems (cats-effect + zio-test). |
 | Spring Boot | Reflection-heavy, slow to start, fights the type system. |
 
-**If you remove ZIO:** the layer wiring at [server/Main.scala:54](server/src/main/scala/codefolio/server/Main.scala) collapses, `acquireRelease` goes away, and every handler grows a `try/catch` for resources it didn't allocate. Don't.
+**If you remove ZIO:** the layer wiring in `server/src/main/scala/cortex/server/Main.scala` collapses, `acquireRelease` goes away, and every handler grows a `try/catch` for resources it didn't allocate. Don't.
 
 ## The `provide(...)` block — order doesn't matter, the DAG does
 
-[server/Main.scala:54-61](server/src/main/scala/codefolio/server/Main.scala) wires six layers:
+`server/src/main/scala/cortex/server/Main.scala` wires the layer set. Besides projecting each sub-config out of `AppConfig` (one `ZLayer.fromFunction` per `DbConfig`, `RedisConfig`, … so downstream layers depend only on the slice they need), the meaningful services are:
 
 ```scala
 program.provide(
-  AppConfig.live,
-  DataSource.live,
-  HelloPipeline.live,
-  CodeRunPipeline.live,
-  CortexPipeline.live,
-  HttpApp.live
+  AppConfig.live,       // reads application.conf + env vars
+  // … per-store config projections (dbCfg, redisCfg, …) …
+  DataSource.live,      // HikariCP pool over Postgres
+  HelloPipeline.live,   // /api/hello, /api/recent, /api/health
+  CodeRunPipeline.live, // /api/run (go-judge sandbox)
+  CortexPipeline.live,  // /api/cortex/*
+  BlogPipeline.live,    // /api/blogs/*
+  Auth.live,            // Keycloak JWT verifier (no-op when AUTH_ENABLED=false)
+  RateLimiter.live,     // Redis token bucket for /api/run
+  HttpApp.live          // tapir + zio-http + static + SPA fallback
 )
 ```
 
 Two things to internalise:
 
-- **Order is irrelevant.** ZIO's macro looks at each layer's input/output types and assembles a topological order. You list the *set* of layers, not the sequence — adding a new store means adding *one* line.
+- **Order is irrelevant.** ZIO's macro looks at each layer's input/output types and assembles a topological order. You list the *set* of layers, not the sequence — adding a new pipeline or store means adding *one* line.
 - **Failure types stack up.** `HttpApp.live` is `ZLayer[…, Nothing, HttpApp]`; the other layers are infallible too. The combined effect's error channel is `Config.Error` (from `AppConfig.live` reading HOCON). If you make a layer's error type non-`Nothing`, it bubbles up — useful when you *want* the app to refuse to start without that store.
 
 **If you change it:** if you add a new pipeline that depends on a not-yet-provided service, the compiler reports an unsatisfied requirement. The error message is verbose but accurate — read the type bounds before changing the constructor.
@@ -51,9 +55,9 @@ zio-http alone gives you `Routes(Method.POST / "api" / "run" -> handler { … })
 
 tapir gives us **one** source: a generated `Endpoint[I, E, O, R]` value. From it we get:
 
-- a request decoder (server side, [http/ApiRoutes.scala:53](server/src/main/scala/codefolio/server/http/ApiRoutes.scala))
+- a request decoder (server side, `server/src/main/scala/cortex/server/http/ApiRoutes.scala`)
 - a response encoder (same)
-- a typed sttp `Request` builder (client side, [client/api/ApiClient.scala](client/src/main/scala/codefolio/client/api/ApiClient.scala))
+- a typed sttp `Request` builder (client side, `client/src/main/scala/cortex/client/api/ApiClient.scala`)
 - the OpenAPI document at `/docs/` via `tapir-swagger-ui-bundle`
 
 The `errorOut` is bolted on at the wire layer, not on the endpoint definition itself:
@@ -69,14 +73,15 @@ val helloEndpoint: ZServerEndpoint[Any, Any] =
 
 This split is intentional. The codegen'd endpoint describes the *contract* (path, body shapes); the wire layer adds the *transport policy* (how a domain failure becomes an HTTP status). If you collapsed the two, every error response would have to be enumerated in `api/openapi.yaml`, and the `mapError` function would become a giant pattern match in the codegen'd file.
 
-**If you remove tapir:** you'd hand-write request/response codecs, hand-wire OpenAPI, and re-derive the same types twice (server + client). Drift becomes inevitable. (See [Shared & Codegen](/cortex/codefolio-onboarding/deep-dive-shared-and-codegen) for why this matters.)
+**If you remove tapir:** you'd hand-write request/response codecs, hand-wire OpenAPI, and re-derive the same types twice (server + client). Drift becomes inevitable. (See [Shared & Codegen](/cortex/cortex-onboarding/deep-dive-shared-and-codegen) for why this matters.)
 
 ## The `mapError` boundary — handlers don't know about HTTP
 
-The error translation lives in exactly one place: [http/ApiErrors.scala](server/src/main/scala/codefolio/server/http/ApiErrors.scala).
+The error translation lives in exactly one place: `server/src/main/scala/cortex/server/http/ApiErrors.scala`.
 
 ```scala
-type HandlerFailure = RunFailure | CortexFailure | HelloFailure
+type HandlerFailure =
+  RunFailure | CortexFailure | HelloFailure | BlogFailure | AuthFailure | RateLimitFailure
 
 def toHttp(failure: HandlerFailure): (StatusCode, ApiError) = failure match
   case RunFailure.BadInput(error, hint)        => StatusCode.BadRequest      -> ApiError(error, None, hint)
@@ -84,10 +89,10 @@ def toHttp(failure: HandlerFailure): (StatusCode, ApiError) = failure match
   case RunFailure.NotConfigured                => StatusCode.ServiceUnavailable -> …
   case RunFailure.BackendFailure(error, d)     => StatusCode.BadGateway     -> ApiError(error, d, None)
   case CortexFailure.NotFound                  => StatusCode.NotFound        -> ApiError("Not found", None, None)
-  // …
+  // … BlogFailure, AuthFailure (401/503), RateLimitFailure (429) …
 ```
 
-`HandlerFailure` is a Scala 3 **union type** — `RunFailure | CortexFailure | HelloFailure`. The compiler forces `toHttp` to be exhaustive across all three pipelines. Add a new `CortexFailure` variant and the match becomes non-exhaustive, the build breaks, and you can't ship a handler that returns an unmapped error.
+`HandlerFailure` is a Scala 3 **union type** spanning four pipeline error types (`RunFailure`, `CortexFailure`, `HelloFailure`, `BlogFailure`) plus two cross-cutting ones from the Auth Gate (`AuthFailure` → 401/503, `RateLimitFailure` → 429). The compiler forces `toHttp` to be exhaustive across all of them. Add a new `CortexFailure` variant and the match becomes non-exhaustive, the build breaks, and you can't ship a handler that returns an unmapped error.
 
 Why not put the status code inside the failure case class itself (like `RunFailure.BadInput(StatusCode.BadRequest, …)`)? Because then `RunFailure` would depend on tapir/sttp's `StatusCode`, leaking HTTP into a pure-domain enum. Pipelines would couple to the wire layer. The current shape lets you unit-test pipelines without importing a single tapir type.
 
@@ -95,9 +100,9 @@ Why not put the status code inside the failure case class itself (like `RunFailu
 
 ## Why circe (and not zio-json)
 
-This was a forced choice, not a preference. From the [CLAUDE.md](CLAUDE.md) note: `sbt-openapi-codegen` only emits codecs for **circe** and **jsoniter**. zio-json isn't supported, so the entire JSON path goes through circe.
+This was a forced choice, not a preference: `sbt-openapi-codegen` only emits codecs for **circe** and **jsoniter**. zio-json isn't supported, so the entire JSON path goes through circe.
 
-Settings live in [build.sbt:47-65](build.sbt):
+Settings live in `build.sbt`:
 
 ```scala
 openapiJsonSerdeLib := "circe"
@@ -111,7 +116,7 @@ That single setting causes the codegen to emit `EndpointsJsonSerdes.scala` with 
 
 ## The three-store pattern — public trait + internal seams
 
-[server/helloPipeline/HelloPipeline.scala:73](server/src/main/scala/codefolio/server/helloPipeline/HelloPipeline.scala) is the canonical pattern. The public surface is small:
+`server/src/main/scala/cortex/server/helloPipeline/HelloPipeline.scala` is the canonical pattern. The public surface is small:
 
 ```scala
 trait HelloPipeline:
@@ -120,7 +125,7 @@ trait HelloPipeline:
   def health: UIO[HealthStatus]
 ```
 
-The internals are three package-private traits — `Visits` (Postgres), `GreetingCache` (Redis), `EventLog` (Mongo) — composed inside one module. This is documented in [docs/adr/0003](docs/adr/) ("deep modules"): one entry point, several private seams, no public sub-services.
+The internals are three package-private traits — `Visits` (Postgres), `GreetingCache` (Redis), `EventLog` (Mongo) — composed inside one module. This is documented in `docs/adr/0003` ("deep modules"): one entry point, several private seams, no public sub-services.
 
 The *alternative* (one module per store, all public, wired in `Main.scala`) is what most ZIO tutorials show. It's worse for two reasons:
 
@@ -140,7 +145,7 @@ val readFromCache: UIO[Option[Greeting]] =
     .catchAll(e => ZIO.logWarning(s"Redis GET failed: ${e.getMessage}").as(None))
 ```
 
-This is documented in [docs/adr/0002](docs/adr/). The design rule is: **a non-critical store outage degrades the response, it doesn't break it.** A request to `/api/hello` should return a value as long as Postgres is reachable; the user shouldn't see a 500 because Redis is rebooting.
+This is documented in `docs/adr/0002`. The design rule is: **a non-critical store outage degrades the response, it doesn't break it.** A request to `/api/hello` should return a value as long as Postgres is reachable; the user shouldn't see a 500 because Redis is rebooting.
 
 The flip side, written explicitly in the ADR, is that **you must monitor the warning logs** — silent fallback is silent failure if you don't. We accept that trade in this skeleton because the alternative ("any store outage is a hard failure") is much more user-visible and much more annoying during dev.
 
@@ -148,7 +153,7 @@ The flip side, written explicitly in the ADR, is that **you must monitor the war
 
 ## HikariCP + plain JDBC (and not zio-jdbc)
 
-The persistence layer is plain JDBC with a HikariCP pool wrapped in a `ZLayer`. From [db/DataSource.scala:11-27](server/src/main/scala/codefolio/server/db/DataSource.scala):
+The persistence layer is plain JDBC with a HikariCP pool wrapped in a `ZLayer`. From `server/src/main/scala/cortex/server/db/DataSource.scala`:
 
 ```scala
 val live: ZLayer[AppConfig, Throwable, JDataSource] =
@@ -160,7 +165,7 @@ val live: ZLayer[AppConfig, Throwable, JDataSource] =
           val hc = HikariConfig()
           hc.setJdbcUrl(cfg.db.url); hc.setUsername(cfg.db.user); hc.setPassword(cfg.db.password)
           hc.setMaximumPoolSize(10)
-          hc.setPoolName("codefolio-pool")
+          hc.setPoolName("cortex-pool")
           HikariDataSource(hc)
         }
       )(ds => ZIO.attempt(ds.close()).orDie)
@@ -220,7 +225,7 @@ The sync driver is simpler to read than the reactive one, and a Mongo write here
 
 ## Liquibase YAML + JUL→SLF4J bridge
 
-Migrations live in [server/src/main/resources/db/changelog/](server/src/main/resources/db/changelog/) and run on server boot via [db/Migrations.scala](server/src/main/scala/codefolio/server/db/Migrations.scala). The master changelog is YAML, included SQL changesets are plain `.sql` with Liquibase's `--changeset` markers.
+Migrations live in `server/src/main/resources/db/changelog/` and run on server boot via `server/src/main/scala/cortex/server/db/Migrations.scala`. The master changelog is YAML, included SQL changesets are plain `.sql` with Liquibase's `--changeset` markers.
 
 Why YAML over Flyway-style numbered SQL files?
 
@@ -234,7 +239,7 @@ The annoying thing: **Liquibase logs through `java.util.logging`** by default, a
 
 ## The path-traversal guard in `CortexPipeline`
 
-[cortexPipeline/CortexPipeline.scala:142-152](server/src/main/scala/codefolio/server/cortexPipeline/CortexPipeline.scala) is a small but load-bearing piece of code:
+`server/src/main/scala/cortex/server/cortexPipeline/CortexPipeline.scala` has a small but load-bearing path-traversal guard:
 
 ```scala
 private def safeUnder(rel: String): Either[CortexFailure, File] =
@@ -259,18 +264,22 @@ The fallback to `.toAbsolutePath.normalize` handles the case where `toRealPath()
 
 ## Static fallback list — derived, not wildcard
 
-[http/StaticRoutes.scala](server/src/main/scala/codefolio/server/http/StaticRoutes.scala) builds two route sets: a handful of *fixed* routes (`/`, `/index.html`, `/assets/*`, the CV PDF, …) plus an SPA `index.html` fallback **derived** from `AppRoutes.SpaRoutes` — the single source of truth for the SPA route topology (ADR-0009):
+`server/src/main/scala/cortex/server/http/StaticRoutes.scala` builds two route sets: a handful of *fixed* routes (`/`, `/index.html`, `/assets/*`, `/img/*`, `/certificates/*`) plus an SPA `index.html` fallback **derived** from `AppRoutes.SpaRoutes` — the single source of truth for the SPA route topology (ADR-0009). Book slugs aren't in that list; `StaticRoutes` adds them separately by scanning the content directory on disk:
 
 ```scala
-// shared/AppRoutes.scala — the topology, read by the client Router AND the server
+// shared/AppRoutes.scala — the topology, read by the client Router AND the server.
+// `cortex` is the LEGACY prefix: the book index moved to `/`, but old
+// /cortex/<book>/<chapter> links must still hard-reload, so it stays here
+// and the client router rewrites it to the root-based path.
 val SpaRoutes = List(
   SpaRoute("demo",   hasNestedRoutes = false),
-  SpaRoute("cortex", hasNestedRoutes = true),
-  SpaRoute("blogs",  hasNestedRoutes = true)
+  SpaRoute("blogs",  hasNestedRoutes = true),
+  SpaRoute("cortex", hasNestedRoutes = true)   // legacy
 )
 
 // server/http/StaticRoutes.scala — derive one leaf route per SpaRoute, plus a
-// `/segment/trailing` route for the nested ones, so /cortex/foo/bar reloads cleanly.
+// `/segment/trailing` route for the nested ones, so /blogs/foo reloads cleanly;
+// book slugs found on disk get the same treatment.
 val spaFallback = AppRoutes.SpaRoutes.flatMap { spa => /* leaf (+ nested) */ }
 ```
 
@@ -284,7 +293,7 @@ The mitigation isn't a hand-maintained list any more — it's the derivation fro
 
 ## Configuration shape and env var binding
 
-[config/AppConfig.scala](server/src/main/scala/codefolio/server/config/AppConfig.scala) is a flat case-class tree:
+`server/src/main/scala/cortex/server/config/AppConfig.scala` is a flat case-class tree:
 
 ```scala
 final case class AppConfig(
@@ -294,29 +303,32 @@ final case class AppConfig(
     redis: RedisConfig,
     mongo: MongoConfig,
     runner: RunnerConfig,
-    cortex: CortexConfig
+    likec4: LikeC4Config,
+    cortex: CortexConfig,
+    blog: BlogConfig,
+    auth: AuthConfig
 )
 
 object AppConfig:
-  val config: Config[AppConfig] = deriveConfig[AppConfig].nested("codefolio")
+  val config: Config[AppConfig] = deriveConfig[AppConfig].nested("cortex")
   val live: ZLayer[Any, Config.Error, AppConfig] = ZLayer.fromZIO(ZIO.config(config))
 ```
 
 Three things going on:
 
 - **`deriveConfig`** uses Magnolia to derive a `Config[AppConfig]` from the case class shape — no annotation noise, no manual key→field mapping.
-- **`.nested("codefolio")`** prefixes every key with `codefolio.*`. Reads from a HOCON `codefolio { … }` block; reads env vars as `CODEFOLIO_DB_URL`, `CODEFOLIO_REDIS_URL`, etc.
+- **`.nested("cortex")`** reads from a HOCON `cortex { … }` block. In `application.conf`, each leaf also carries an explicit `${?ENV}` override (e.g. `db.url = ${?DB_URL}`), so the *documented* env-var names (`DB_URL`, `REDIS_URL`, `MONGO_URI`, …) are deliberately chosen and unprefixed — the `cortex` nesting namespaces the HOCON keys, not the env vars.
 - **`ZIO.config`** picks up the bootstrap `ConfigProvider` set in `Main.scala` — Typesafe HOCON + env-var override.
 
-**If you switch to zio-config without `.nested("codefolio")`:** every env var loses its prefix and you start clashing with system-level vars (`PORT`, `MONGO_URL`). The prefix is the namespace.
+**If you rename the `.nested("cortex")` root:** the HOCON block key must move with it, or `ZIO.config` finds nothing and the app refuses to start (which is the right failure mode). Each store config is read here exactly once; downstream layers get a projected slice.
 
 ## What's *not* in the server
 
 Worth naming explicitly:
 
-- **No SSR.** The server hands the SPA `index.html` and a string of markdown. React rendering happens in the browser. (See [Markdown Pipeline](/cortex/codefolio-onboarding/how-it-works-markdown-pipeline) for why.)
-- **OIDC auth (Keycloak).** `/api/run` and the Cortex code editor are gated by Keycloak / OIDC (ADR-0013): the server validates JWTs (nimbus-jose-jwt), the SPA signs in via `keycloak-js` (PKCE), and a per-JWT token bucket rate-limits `/api/run`. `AUTH_ENABLED=false` short-circuits the whole gate for local dev (every caller is anonymous, no rate limit). See `config/AppConfig.scala`'s `AuthConfig` and the `/api/auth/config` endpoint.
-- **No write traffic from production.** Postgres / Redis / Mongo are exercised by the Hello demo at `/demo`. The portfolio reads from disk and bundled JSON. This is by design — keeps prod stateless.
+- **No SSR.** The server hands the SPA `index.html` and a string of markdown. React rendering happens in the browser. (See [Markdown Pipeline](/cortex/cortex-onboarding/how-it-works-markdown-pipeline) for why.)
+- **OIDC auth (Keycloak).** `/api/run` and the in-chapter code editor are gated by Keycloak / OIDC (ADR-0013): the server validates JWTs (nimbus-jose-jwt) against the production `apps-prod` realm (public client `cortex-web`, GitHub IdP), the SPA signs in via `keycloak-js` (PKCE), and a Redis fixed-window bucket rate-limits `/api/run` (per IP for anonymous, per JWT `sub` for signed-in). `AUTH_ENABLED=false` short-circuits the whole gate for local dev (every caller is anonymous, no rate limit). The relevant code is in `server/auth/`, `http/RateLimiter.scala`, `config/AppConfig.scala`'s `AuthConfig`, and the `/api/auth/config` endpoint.
+- **No write traffic from production.** Postgres / Redis / Mongo are exercised by the Hello demo at `/demo`; Redis additionally backs the rate-limiter counter. The book and blog read from disk. This is by design — keeps prod content stateless.
 
 ## Where to look first when something on the server breaks
 

@@ -13,7 +13,7 @@ summary: One request — GET /api/hello — traced from the OpenAPI YAML through
 - The server reads Postgres, caches in Redis, appends to MongoDB — the three-store demo.
 - The client calls the endpoint through a tapir-derived sttp request, gets back a `Greeting`, and renders it.
 
-If you understand this one request, you understand how every other endpoint in the project is wired up. The rest of the work — `/api/run`, `/api/cortex/*`, `/api/blog/*` — is the same pattern with a heavier payload.
+If you understand this one request, you understand how every other endpoint in the project is wired up. The rest of the work — `/api/run`, `/api/cortex/*`, `/api/blogs/*` — is the same pattern with a heavier payload.
 
 ## Step 1 — The contract in `api/openapi.yaml`
 
@@ -146,13 +146,13 @@ jvm -> server: depends on
 js -> client: depends on
 ```
 
-The same `case class Greeting(message, visits, cached)` is now available at `codefolio.shared.api.Endpoints.Greeting` in **both** modules. The JSON codec is the same one too — circe instances under `EndpointsJsonSerdes` — so the wire format on the server's encode side is guaranteed to match the wire format on the client's decode side.
+The same `case class Greeting(message, visits, cached)` is now available at `cortex.shared.api.Endpoints.Greeting` in **both** modules. The JSON codec is the same one too — circe instances under `EndpointsJsonSerdes` — so the wire format on the server's encode side is guaranteed to match the wire format on the client's decode side.
 
 This is the spot in the stack where a more conventional setup would have a hand-written DTO on the server, a hand-written DTO on the client, and a runtime bug when they drift. Here the *compiler* refuses to ship two definitions in the first place.
 
 ## Step 4 — Server: `HelloPipeline.greet`
 
-The server interprets `Endpoints.getHello` by attaching a ZIO effect to it. Inside [helloPipeline/HelloPipeline.scala](server/src/main/scala/codefolio/server/helloPipeline/HelloPipeline.scala):
+The server interprets `Endpoints.getHello` by attaching a ZIO effect to it. Inside `server/src/main/scala/cortex/server/helloPipeline/HelloPipeline.scala`:
 
 > 🧭 **Reading ZIO types — your decoder ring for the rest of the book.** `ZIO[R, E, A]` is an *effect*: a value that *describes* work needing environment `R`, that may fail with error `E`, or succeed with value `A`. Shorthands: **`IO[E, A]`** = no environment needed; **`UIO[A]`** = can't fail; **`Task[A]`** = may fail with any `Throwable`. So `greet: IO[HelloFailure, Greeting]` reads as "work that either fails with a `HelloFailure` or yields a `Greeting`". And the `for { … } yield …` below does **not** loop — it *sequences* effects one after another, like chaining `await` in JavaScript.
 
@@ -203,7 +203,7 @@ val helloRoute: ZServerEndpoint[Any, Any] =
 
 ## Step 5 — Client: `ApiClient.getHello`
 
-On the JS side, the *same* `Endpoints.getHello` value is interpreted by `tapir-sttp-client` to build an HTTP request descriptor. From [client/src/main/scala/codefolio/client/api/ApiClient.scala](client/src/main/scala/codefolio/client/api/ApiClient.scala):
+On the JS side, the *same* `Endpoints.getHello` value is interpreted by `tapir-sttp-client` to build an HTTP request descriptor. From `client/src/main/scala/cortex/client/api/ApiClient.scala`:
 
 ```scala
 private val helloRequest: Unit => Request[Either[Unit, Greeting], Any] =
@@ -251,7 +251,7 @@ sequenceDiagram
   Br->>Ac: getHello: Future[Greeting]
   Ac->>Sv: GET /api/hello (same-origin)
   Sv->>Hp: tapir interprets Endpoints.getHello
-  Hp->>Re: GET codefolio:greeting:latest
+  Hp->>Re: GET cortex:greeting:latest
   alt cache hit
     Re-->>Hp: Greeting(cached=false)
     Hp->>Hp: flip cached → true
@@ -283,7 +283,7 @@ The trade-off is build complexity — the cross-project, the codegen, the `sbt-r
 
 ## Where to look next
 
-- **Code:** [helloPipeline/HelloPipeline.scala](server/src/main/scala/codefolio/server/helloPipeline/HelloPipeline.scala), [ApiClient.scala](client/src/main/scala/codefolio/client/api/ApiClient.scala), [api/openapi.yaml](api/openapi.yaml).
+- **Code:** `server/src/main/scala/cortex/server/helloPipeline/HelloPipeline.scala`, `client/src/main/scala/cortex/client/api/ApiClient.scala`, `api/openapi.yaml`.
 - **ADRs:** `docs/adr/0003-hello-pipeline-internal-seams.md` (the seam pattern) and `docs/adr/0004-wire-adapters-and-unified-backends.md` (the pipeline-as-deep-module rule).
-- **Deep dives:** [Server Stack](/cortex/codefolio-onboarding/deep-dive-server-stack) (ZIO, tapir, HikariCP, Lettuce, Mongo) and [Shared & Codegen](/cortex/codefolio-onboarding/deep-dive-shared-and-codegen) (the codegen plugin's settings and what it emits in detail).
-- **The other end of the spectrum:** [Request Lifecycle](/cortex/codefolio-onboarding/how-it-works-request-lifecycle), which traces the much heavier `/api/run` path and a chapter fetch.
+- **Deep dives:** [Server Stack](/cortex/cortex-onboarding/deep-dive-server-stack) (ZIO, tapir, HikariCP, Lettuce, Mongo) and [Shared & Codegen](/cortex/cortex-onboarding/deep-dive-shared-and-codegen) (the codegen plugin's settings and what it emits in detail).
+- **The other end of the spectrum:** [Request Lifecycle](/cortex/cortex-onboarding/how-it-works-request-lifecycle), which traces the much heavier `/api/run` path and a chapter fetch.

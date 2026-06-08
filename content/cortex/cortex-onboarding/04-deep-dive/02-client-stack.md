@@ -3,14 +3,14 @@ title: Client Stack — Why Each Library
 summary: Scala.js, scalajs-react hooks, sttp + FetchBackend, the JS interop boundary — what each idiom buys us and what breaks if you swap it.
 ---
 
-This chapter is the client-side companion to [Server Stack](/cortex/codefolio-onboarding/deep-dive-server-stack). Same format: per-decision, **what we use**, **why this and not the obvious alternative**, **what breaks if you change it**. If you're new to Scala.js, the section on the hook builder is the one to internalise — every component in the codebase follows the same pattern.
+This chapter is the client-side companion to [Server Stack](/cortex/cortex-onboarding/deep-dive-server-stack). Same format: per-decision, **what we use**, **why this and not the obvious alternative**, **what breaks if you change it**. If you're new to Scala.js, the section on the hook builder is the one to internalise — every component in the codebase follows the same pattern.
 
 ## Why Scala.js + scalajs-react
 
 The frontend is Scala 3 compiled to JavaScript via Scala.js. The React binding is `japgolly.scalajs-react` 3.0.x. Two concrete benefits:
 
-1. **One language, two runtimes.** The same `RunRequest(language, source, stdin)` case class lives on both sides. Edit `api/openapi.yaml`, recompile, and both server and client break in step (see [Shared & Codegen](/cortex/codefolio-onboarding/deep-dive-shared-and-codegen)). No copy-paste, no DTO drift.
-2. **Pure logic on both sides.** `shared/runner/CodeExecutor` is the run-state machine: `Idle → Running → Done`. It compiles to JVM bytecode and runs in zio-test, *and* it compiles to JS and runs in the browser. Same code, two test surfaces. The component file ([RunnableCodeBlock.scala:18-19](client/src/main/scala/codefolio/client/components/cortex/RunnableCodeBlock.scala)) calls this out explicitly: "State machine lives in `CodeExecutor` (shared module — testable on the JVM); this file owns the React surface only."
+1. **One language, two runtimes.** The same `RunRequest(language, source, stdin)` case class lives on both sides. Edit `api/openapi.yaml`, recompile, and both server and client break in step (see [Shared & Codegen](/cortex/cortex-onboarding/deep-dive-shared-and-codegen)). No copy-paste, no DTO drift.
+2. **Pure logic on both sides.** `shared/runner/CodeExecutor` (package `cortex.shared.runner`) is the run-state machine: `Idle → Running → Done`. It compiles to JVM bytecode and runs in zio-test, *and* it compiles to JS and runs in the browser. Same code, two test surfaces. The component file (`client/src/main/scala/cortex/client/components/book/RunnableCodeBlock.scala`) calls this out explicitly: "State machine lives in `CodeExecutor` (shared module — testable on the JVM); this file owns the React surface only."
 
 Alternatives we passed on:
 
@@ -18,7 +18,7 @@ Alternatives we passed on:
 |---|---|
 | TypeScript + React | Loses the type-shared case classes; loses the cross-platform `CodeExecutor` test story. |
 | Slinky (Scala.js + React via macros) | Different API, smaller community. `scalajs-react` is the de-facto choice. |
-| Laminar | Excellent reactive model but no React ecosystem (lucide-react, react-simple-code-editor) without bridging. |
+| Laminar | Excellent reactive model but no React ecosystem (lucide-react, the Monaco editor) without bridging. |
 
 **If you remove Scala.js:** you'd be back to two implementations of `RunRequest`, two implementations of slug derivation, two test runners. The codebase doubles in size.
 
@@ -26,7 +26,7 @@ Alternatives we passed on:
 
 This is the single most important pattern in the client codebase. Every component is a `ScalaFnComponent` built with a chain of `.useX` calls. Once you internalise the shape, the rest is just plumbing.
 
-The reference example is [RunnableCodeBlock.scala:60-63](client/src/main/scala/codefolio/client/components/cortex/RunnableCodeBlock.scala):
+The reference example is `client/src/main/scala/cortex/client/components/book/RunnableCodeBlock.scala`:
 
 ```scala
 val Component =
@@ -46,13 +46,13 @@ The "By" suffix runs throughout: `useState` (constant initial value), `useStateB
 
 Each `.useX` is the Scala equivalent of one React hook. The order matters because each hook becomes a positional parameter — flip `.useState(0).useState(false)` to `.useState(false).useState(0)` and you'd have to flip every render-time access too.
 
-For a longer-form walkthrough on a stateful diagram component see [D2Slideshow.scala](client/src/main/scala/codefolio/client/components/cortex/D2Slideshow.scala) — it has `useState`, `useState`, `useRefBy`, and `useEffectWithDepsBy` chained, and there's a comment explaining each.
+For a longer-form walkthrough on a stateful diagram component see `client/src/main/scala/cortex/client/components/book/D2Slideshow.scala` — it has `useState`, `useState`, `useRefBy`, and `useEffectWithDepsBy` chained, and there's a comment explaining each.
 
 **If you swap to React hooks-style code (a render function with inline `useState`):** scalajs-react doesn't support that shape. The hook builder is the binding; you can't escape it.
 
 ## `useEffectWithDepsBy` — the workhorse for side effects
 
-Most useful effect-running pattern in the codebase. The shape, from [ChapterContent.scala:60-94](client/src/main/scala/codefolio/client/components/cortex/ChapterContent.scala):
+Most useful effect-running pattern in the codebase. The shape, from `client/src/main/scala/cortex/client/components/book/ChapterContent.scala`:
 
 ```scala
 .useEffectWithDepsBy((props, _, _) => props.result.html) {
@@ -78,7 +78,7 @@ Two functions stacked:
 
 The shape is ugly the first time you see it. It's also exactly the right shape: the selector decouples "what does this effect depend on" from "what does it do", which makes it easy to refactor a dependency without touching the body.
 
-**If you wrap the body in another `Callback { … }`:** classic bug. `articleRef.foreach { article => … }` already returns a `Callback`. Wrapping the inside in `Callback { mount(...) }` constructs a new Callback that's never run — placeholders stay empty, no error fires. There's a comment on this in `ChapterContent.scala`. (See [Local Development](/cortex/codefolio-onboarding/working-on-it-local-development) for the foot-gun list.)
+**If you wrap the body in another `Callback { … }`:** classic bug. `articleRef.foreach { article => … }` already returns a `Callback`. Wrapping the inside in `Callback { mount(...) }` constructs a new Callback that's never run — placeholders stay empty, no error fires. There's a comment on this in `ChapterContent.scala`. (See [Local Development](/cortex/cortex-onboarding/working-on-it-local-development) for the foot-gun list.)
 
 ## `useRefBy` — the leak-prevention pattern
 
@@ -103,12 +103,12 @@ val tearDown: Callback = Callback {
 
 ## The placeholder walker — bridging HTML and React
 
-Two-step rendering, fully explained in [Markdown Pipeline](/cortex/codefolio-onboarding/how-it-works-markdown-pipeline) but worth the deep dive here:
+Two-step rendering, fully explained in [Markdown Pipeline](/cortex/cortex-onboarding/how-it-works-markdown-pipeline) but worth the deep dive here:
 
 1. The TS pipeline emits HTML with `<div class="runnable-code" data-source="…">` placeholders.
 2. After `dangerouslySetInnerHTML` settles, the Scala walker `querySelectorAll`s each placeholder class and uses `ReactDOMClient.createRoot(node).render(…)` to mount a Scala.js React component into it.
 
-The catalog of placeholder descriptors lives in [ChapterPlaceholders.scala](client/src/main/scala/codefolio/client/components/cortex/ChapterPlaceholders.scala). This decouples *which* placeholders the pipeline emits from *how* the walker mounts them — adding a new interactive block is one new descriptor, one new component file, no walker changes.
+The decode-then-dispatch split has a clean home. `BlockDiscovery.scala` (in `components/book/`) walks the article DOM and turns each placeholder into a value of the typed `Block` ADT — whose *structural* decoders live in the shared module at `cortex.shared.book.Blocks` (JVM-tested). `ChapterContent`'s `render` is then a **total `Block => VdomElement` match** (`Block.RunnableCode`, `Block.Mermaid`, `Block.D2Inline`, `Block.D3Widget`, `Block.TracedCode`, …). Adding a new interactive block is one new `Block` variant, one new component, and one new match arm — and because the match is exhaustive, the compiler won't let you forget the arm.
 
 The pattern is the only reasonable way to mix bulk-rendered HTML and React-managed widgets in markdown. SSR isn't an option because the markdown pipeline depends on browser-only modules (D2's WASM blob, mermaid's lazy renderer). Hydration isn't an option either — there's no React tree to hydrate from, just a string of HTML.
 
@@ -116,7 +116,7 @@ The pattern is the only reasonable way to mix bulk-rendered HTML and React-manag
 
 ## `runId` — discarding stale results without cancelling them
 
-[RunnableCodeBlock.scala:78-92](client/src/main/scala/codefolio/client/components/cortex/RunnableCodeBlock.scala) is a small but illuminating piece:
+`client/src/main/scala/cortex/client/components/book/RunnableCodeBlock.scala` has a small but illuminating piece:
 
 ```scala
 def runCb: Callback = Callback.suspend {
@@ -134,7 +134,7 @@ def runCb: Callback = Callback.suspend {
 }
 ```
 
-Each click of Run computes a new `tag` (the next runId), increments state, and fires the request. When the response arrives, the handler calls `CodeExecutor.completed(prev, tag, …)` — and `CodeExecutor` (in [shared/runner/CodeExecutor.scala](shared/src/main/scala/codefolio/shared/runner/CodeExecutor.scala)) checks whether `tag == prev.runId`. If not, the user has cancelled or fired another run; the late result is silently dropped.
+Each click of Run computes a new `tag` (the next runId), increments state, and fires the request. When the response arrives, the handler calls `CodeExecutor.completed(prev, tag, …)` — and `CodeExecutor` (in `shared/src/main/scala/cortex/shared/runner/CodeExecutor.scala`) checks whether `tag == prev.runId`. If not, the user has cancelled or fired another run; the late result is silently dropped.
 
 This is necessary because **sttp's `FetchBackend` returns a plain `Future` with no cancellation hook.** The browser `fetch()` API supports `AbortController`, but the sttp backend doesn't expose it. So we can't cancel an in-flight HTTP request — we can only ignore its eventual reply.
 
@@ -144,7 +144,7 @@ The runId is computed inside `Callback.suspend` (deferred to *the moment the Cal
 
 ## Why `FetchBackend` and not the others
 
-[ApiClient.scala](client/src/main/scala/codefolio/client/api/ApiClient.scala):
+`client/src/main/scala/cortex/client/api/ApiClient.scala`:
 
 ```scala
 private val backend: SttpBackend[Future, Any] = FetchBackend()
@@ -175,7 +175,7 @@ The obvious alternative — `Some(uri"")` — looks "more explicit". It also cra
 
 ## The JS interop boundary — one module, not many
 
-[markdown/MarkdownRenderer.scala](client/src/main/scala/codefolio/client/markdown/MarkdownRenderer.scala) is the entire contact surface between Scala and the markdown pipeline:
+`client/src/main/scala/cortex/client/markdown/MarkdownRenderer.scala` is the entire contact surface between Scala and the markdown *pipeline*:
 
 ```scala
 @js.native
@@ -200,13 +200,13 @@ The alternative shape (one Scala.js facade per JS plugin) was tried in early pro
 
 Drawing the boundary at the *pipeline* level — one `renderChapter(raw): { html, toc }` function — is one boundary, one type, and one place to update when a plugin changes.
 
-**If you start adding per-plugin facades:** stop. There's a reason the codebase has exactly two `@JSImport`s in the entire client (`@markdown/loader` and `react-simple-code-editor`).
+**If you start adding per-plugin facades:** stop. The client does have a handful of other `@JSImport`s — each for a *self-contained* JS dependency with a stable surface: `lucide-react` icons, `keycloak-js` (PKCE sign-in), `d3` and the D3 widget renderer, the Monaco editor (`@markdown/monaco`, the in-chapter code editor), `react-dom`'s `createPortal`, and the small `@markdown/runtime` helpers (Prism highlight, Mermaid render). The rule isn't "only one import ever" — it's "don't shred a single coherent pipeline into 30 facades". The whole remark/rehype pipeline stays behind the lone `@markdown/loader` boundary.
 
 ## Why a single `@scala-js/vite-plugin-scalajs` config
 
-Vite handles the bundling. The Scala.js plugin's job is to expose the linker output (`client/target/scala-3.x/codefolio-client-fastopt/main.js`) as an ES module Vite can resolve.
+Vite handles the bundling. The Scala.js plugin's job is to expose the linker output (`client/target/scala-3.x/cortex-client-fastopt/main.js`) as an ES module Vite can resolve.
 
-[client/vite.config.mjs](client/vite.config.mjs):
+`client/vite.config.mjs`:
 
 ```javascript
 scalaJSPlugin({
@@ -226,7 +226,7 @@ The `cwd: ".."` is the trickiest setting. Without it, the plugin invokes a fresh
 Two layers of CSS in this codebase:
 
 - **Utility classes at call sites** — `^.className := "flex items-center gap-2 …"`. These live in the Scala source.
-- **BEM block stylesheets** — `client/src/styles/{sections,components}/*.css`. Each block (`.experience`, `.cortex-reader-toc`, `.rcb`) has its own file. Inside the file, modifiers (`--active`, `--last`) are listed below the base block.
+- **BEM block stylesheets** — `client/src/styles/{sections,components}/*.css`. Each block (`.cortex-reader-toc`, `.rcb`, `.diagram`) has its own file. Inside the file, modifiers (`--active`, `--last`) are listed below the base block.
 
 The BEM blocks use `@apply` to compose tailwind utilities into named classes. Tailwind v4's `@apply` is **stricter than v3** — unknown utilities now error at compile time and serve a blank page in Vite. The migration scrubbed several typos:
 
@@ -235,7 +235,7 @@ The BEM blocks use `@apply` to compose tailwind utilities into named classes. Ta
 - `custom-icon` (a name that looked like a utility but had no underlying CSS rule)
 - `group` and `container` — these are *marker* classes, not utilities. They have zero CSS in v4 so they must stay literal in markup, not be `@apply`'d.
 
-The other v4 surprise: `container` lost its auto-centering. We restore it explicitly in [client/tailwind.css](client/tailwind.css):
+The other v4 surprise: `container` lost its auto-centering. We restore it explicitly in `client/tailwind.css`:
 
 ```css
 @utility container {
@@ -249,7 +249,7 @@ Every `<main className="container">` callsite relies on this rule. Removing it m
 
 ## Theme bootstrap — why it lives in `index.html`
 
-Dark mode is a `.dark` ancestor class on `<html>`. Set on first paint via an inline script in [client/index.html](client/index.html), *before* React mounts:
+Dark mode is a `.dark` ancestor class on `<html>`. Set on first paint via an inline script in `client/index.html`, *before* React mounts:
 
 ```html
 <script>
@@ -268,7 +268,7 @@ Why inline, not in a Scala.js module? Because the Scala.js bundle loads *after* 
 
 ## Bundle splitting — `manualChunks` is load-bearing
 
-[client/vite.config.mjs](client/vite.config.mjs):
+`client/vite.config.mjs`:
 
 ```javascript
 build: {
@@ -309,7 +309,7 @@ Without `manualChunks` they'd be inlined in the main bundle and the home page wo
 |---|---|
 | Placeholders render as empty `<div>`s | `ChapterContent.scala` — the walker bug (Callback wrapping its own body) |
 | Run button stuck on "Cancel" | `RunnableCodeBlock.scala` — runId computed at render time instead of inside `Callback.suspend` |
-| Hard reload of `/cortex/...` returns 404 | server `StaticRoutes.scala` (yes, server-side — the SPA fallback list is missing the route) |
+| Hard reload of an in-app route (`/{book}/{chapter}`, `/blogs/...`) returns 404 | server `StaticRoutes.scala` (yes, server-side — the SPA fallback derivation or the on-disk book-slug scan is missing the route) |
 | Page goes blank, Vite log shows "@apply rejected" | `client/src/styles/**/*.css` — typo in a `@apply` directive |
 | Bundle size warning for the home chunk | `vite.config.mjs` — `manualChunks` lost a heavy dep |
 | Dark mode flashes on load | `client/index.html` — bootstrap script removed or moved |

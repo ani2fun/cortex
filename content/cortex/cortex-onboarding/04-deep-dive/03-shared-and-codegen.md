@@ -9,7 +9,7 @@ The `shared` module is the smallest of the three sbt projects but it's the one t
 
 You could put the case classes in `server/` and copy them by hand into `client/`. Most full-stack codebases do exactly that. It's a bad idea for one reason: **drift**. The DTO on the server says `language: String`, the DTO on the client says `lang: String`, and you find out at runtime that JSON keys don't match.
 
-The fix is to put the types in a single source file that compiles to both target platforms. That's what a Scala.js cross-project does. From [build.sbt:47-65](build.sbt):
+The fix is to put the types in a single source file that compiles to both target platforms. That's what a Scala.js cross-project does. From `build.sbt`:
 
 ```scala
 lazy val shared = crossProject(JSPlatform, JVMPlatform)
@@ -23,13 +23,13 @@ lazy val shared = crossProject(JSPlatform, JVMPlatform)
       "io.circe"                    %%% "circe-generic"    % circeV
     ),
     openapiSwaggerFile  := (ThisBuild / baseDirectory).value / "api" / "openapi.yaml",
-    openapiPackage      := "codefolio.shared.api",
+    openapiPackage      := "cortex.shared.api",
     openapiObject       := "Endpoints",
     openapiJsonSerdeLib := "circe"
   )
 ```
 
-The result is two compiled artefacts — `sharedJVM` and `sharedJS` — that contain the **same source** linked against the right standard library and target. Both export `codefolio.shared.api.Endpoints` with identical type signatures.
+The result is two compiled artefacts — `sharedJVM` and `sharedJS` — that contain the **same source** linked against the right standard library and target. Both export `cortex.shared.api.Endpoints` with identical type signatures.
 
 **If you remove the cross-project and put the types in `server/`:** the client can't see them, you write them again on the client side, they drift within a week.
 
@@ -103,7 +103,7 @@ If the client sends `python3`, the server resolves the alias. If it sends `cobol
 
 ## Why circe (and not jsoniter)
 
-[build.sbt:64](build.sbt):
+`build.sbt`:
 
 ```scala
 openapiJsonSerdeLib := "circe"
@@ -115,7 +115,7 @@ The plugin supports circe and jsoniter. We picked circe because:
 - The codegen-emitted codecs are `Encoder`/`Decoder` instances, which compose with the rest of the tapir-circe ecosystem.
 - jsoniter is faster but its macros are heavier and the error messages are worse during development.
 
-The trade-off vs zio-json: zio-json isn't supported by the codegen plugin at all. We could hand-write zio-json codecs, but then we'd lose the auto-generated ones, which is the whole point of the plugin. (Discussed in [Server Stack](/cortex/codefolio-onboarding/deep-dive-server-stack#why-circe-and-not-zio-json).)
+The trade-off vs zio-json: zio-json isn't supported by the codegen plugin at all. We could hand-write zio-json codecs, but then we'd lose the auto-generated ones, which is the whole point of the plugin. (Discussed in [Server Stack](/cortex/cortex-onboarding/deep-dive-server-stack#why-circe-and-not-zio-json).)
 
 **If you change to `"jsoniter"`:** swap `tapir-json-circe` for `tapir-json-jsoniter` in `build.sbt`, run `sbt clean compile`, and verify the OpenAPI doc round-trips. Most callers won't notice.
 
@@ -132,7 +132,7 @@ The codegen could emit hand-written codecs, but it leans on `circe-generic` to k
 
 ## The `-Wconf:src=.*src_managed/.*:s` silencer
 
-[build.sbt:14](build.sbt):
+`build.sbt`:
 
 ```scala
 "-Wconf:src=.*src_managed/.*:s",
@@ -146,7 +146,7 @@ The choice is deliberate: we want unused-warnings on hand-written code (catches 
 
 ## The Scala 3 E198 silencer
 
-[build.sbt:18](build.sbt):
+`build.sbt`:
 
 ```scala
 "-Wconf:msg=unused local definition:s"
@@ -174,14 +174,15 @@ Three things to know:
 
 **If you put `tapir-zio` in `shared`:** the JS compile fails because ZIO isn't fully Scala.js-friendly (the `zio` artefact has JVM-only bits). The split is a hard requirement, not a stylistic preference.
 
-## What's outside the codegen — the `runner` and `cortex` shared types
+## What's outside the codegen — the `runner`, `book`, and `viz` shared types
 
-Two hand-written modules under `shared/src/main/scala/codefolio/shared/`:
+Hand-written modules under `shared/src/main/scala/cortex/shared/`:
 
-- **`runner/CodeExecutor.scala`** — pure state machine for `Idle → Running → Done`. Used by `RunnableCodeBlock` (browser) and tested by zio-test (JVM). Zero Scala.js-isms; zero JVM-isms.
-- **`cortex/SidebarForest.scala`** — pure flat-list-to-tree builder for the sidebar. Used by both the server (when emitting the chapter index payload) and the client (when rendering the sidebar tree).
+- **`runner/CodeExecutor.scala`** (package `cortex.shared.runner`) — pure state machine for `Idle → Running → Done`. Used by `RunnableCodeBlock` (browser) and tested by zio-test (JVM). Zero Scala.js-isms; zero JVM-isms.
+- **`book/SidebarForest.scala`**, **`book/CortexIndexWalker.scala`**, **`book/Blocks.scala`**, **`book/Frontmatter.scala`** (package `cortex.shared.book`) — the pure flat-list-to-tree sidebar builder, the on-disk index walker, the structural block decoders, and the frontmatter parser. Used by the server (emitting the chapter index payload) and the client (rendering the sidebar + decoding placeholders). The package is `book`, **not** `cortex`: a former nested `cortex` subpackage was renamed during the repo split so it wouldn't collide with the root `cortex.*` prefix.
+- **`viz/`** (package `cortex.shared.viz`) — the data-structure-agnostic `HeapToGraph` adapter and `VizGraph` model behind the Visualise modal, plus the shared `MarkerColors` canon.
 
-These are the only shared modules we author by hand. Each one is a small, pure data structure or state machine that both sides need to agree on. Writing them in `shared` and unit-testing on the JVM means the browser inherits the test suite for free.
+These are the shared modules we author by hand. Each one is a small, pure data structure or state machine that both sides need to agree on. Writing them in `shared` and unit-testing on the JVM means the browser inherits the test suite for free.
 
 **Rule of thumb:** if you'd write the same code twice for both sides, write it in `shared` instead. If only one side needs it, keep it on that side.
 
@@ -210,7 +211,7 @@ That last bullet is the magic. The build is your migration script. You can't shi
 | Server pattern-matches `lang` against an empty value. | No artefact gets built. |
 | Eventually somebody tests in a browser and sees "Bad input — language required". | Issue surfaces in the IDE, no commit possible. |
 
-This is also why the [Extending the Project](/cortex/codefolio-onboarding/working-on-it-extending) recipe for "add an API endpoint" insists on starting at `api/openapi.yaml` and chasing compile errors — that's the codegen safety net at work.
+This is also why the [Extending the Project](/cortex/cortex-onboarding/working-on-it-extending) recipe for "add an API endpoint" insists on starting at `api/openapi.yaml` and chasing compile errors — that's the codegen safety net at work.
 
 ## Where to look first when codegen breaks
 

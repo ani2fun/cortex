@@ -6,12 +6,13 @@ summary: Module layout, the OpenAPI codegen flow, and a map of where each kind o
 ## Top-level layout
 
 ```
-codefolio/
+cortex/
 ├── api/openapi.yaml              ← single source of truth for HTTP contracts
 ├── shared/                       ← codegen output: case classes + tapir Endpoints
 ├── server/                       ← ZIO + zio-http backend
 ├── client/                       ← Scala.js + scalajs-react frontend + Vite
 ├── content/cortex/               ← markdown books (you're reading this from here)
+├── content/blogs/                ← markdown blog posts (surfaced at /blogs)
 ├── runner/go-judge/              ← go-judge sandbox image (Dockerfile + toolchains)
 ├── bin/dev                       ← the dev script you'll run most days
 ├── build.sbt                     ← sbt build, defines the three sbt projects
@@ -74,7 +75,7 @@ The contract is enforced by *the compiler*, not by tests. If you change a field'
 ## What lives in `server/`
 
 ```
-server/src/main/scala/codefolio/server/
+server/src/main/scala/cortex/server/
 ├── Main.scala                            ← ZIO entry point; layer wiring
 ├── HttpApp.scala                         ← tapir → zio-http binding (delegates routes to ApiRoutes)
 ├── content/
@@ -95,14 +96,25 @@ server/src/main/scala/codefolio/server/
 ├── cortexPipeline/
 │   ├── CortexPipeline.scala                  /api/cortex/* — internal CortexFs seam;
 │   │                                         MtimeCachedIndex cache; CortexFailure type
-│   └── ChapterAssetRewrite.scala             rewrites relative asset URLs in chapters
+│   ├── ChapterAssetRewrite.scala             rewrites relative asset URLs in chapters
+│   └── LinkedListCanonValidator.scala        validates linked-list widget marker names
 ├── blogPipeline/
 │   ├── BlogPipeline.scala                    /api/blogs/index, /api/blogs/{slug}
 │   └── BlogFrontmatter.scala                 YAML frontmatter parser for posts
+├── auth/
+│   ├── Auth.scala                            Keycloak JWT verifier seam (ADR-0013)
+│   ├── KeycloakAuthBackend.scala             nimbus-jose-jwt validation against the JWKS
+│   ├── MockAuthBackend.scala                 no-op verifier when AUTH_ENABLED=false
+│   ├── VerifiedClaims.scala                  decoded JWT payload (never serialised)
+│   └── AuthFailure.scala                     401 / 503 error type
 ├── http/
 │   ├── ApiRoutes.scala                       composes every pipeline's tapir endpoints;
-│   │                                         handlerEndpoint wiring helper (ADR-0012)
+│   │                                         handlerEndpoint wiring helper + the Auth Gate
+│   │                                         (withOptionalAuth / authedEndpoint) (ADR-0012)
 │   ├── ApiErrors.scala                       HandlerFailure union → HTTP status mapping
+│   ├── RateLimiter.scala                     Redis fixed-window counter for /api/run
+│   ├── RateLimitFailure.scala                429 error type
+│   ├── ClientIp.scala                        extracts the caller IP for per-IP limiting
 │   ├── FileServer.scala                      static file serving + path-traversal guard,
 │   │                                         shared by both static surfaces (ADR-0010)
 │   ├── ContentTypes.scala                    one extension → Content-Type table
@@ -117,34 +129,36 @@ server/src/main/scala/codefolio/server/
     └── AppConfig.scala                       AppConfig + per-store config types
 ```
 
-Each *pipeline* package is a **deep module** with a public entry point and small internal seams (see ADR-0003 and ADR-0004 in `docs/adr/`). If you're looking for "where does `/api/run` happen", grep for `runCode` and start in `CodeRunPipeline.scala`. Cross-cutting wiring (route composition, error → HTTP mapping, static fallback) lives in `http/`.
+Each *pipeline* package is a **deep module** with a public entry point and small internal seams (see ADR-0003 and ADR-0004 in `docs/adr/`). If you're looking for "where does `/api/run` happen", grep for `runCode` and start in `CodeRunPipeline.scala`. Cross-cutting wiring (route composition, error → HTTP mapping, the Auth Gate, static fallback) lives in `http/`.
 
 ## What lives in `client/`
 
 ```
 client/src/
-├── main/scala/codefolio/client/
+├── main/scala/cortex/client/
 │   ├── Main.scala            ← createRoot + render Router
 │   ├── Router.scala          ← scalajs-react Router config
-│   ├── Page.scala            ← sealed trait Page = Home | Chapter | ...
+│   ├── Page.scala            ← sealed trait Page = CortexIndex | Chapter | Blogs | BlogPost | Demo | ...
 │   ├── Layout.scala          ← Header / outlet / Footer wrapper
-│   ├── pages/                ← one file per route
+│   ├── pages/                ← one file per route (CortexIndexPage, ChapterPage, BlogIndexPage, DemoPage, ...)
 │   ├── components/
-│   │   ├── sections/         ← Hero, About, Experience, Projects, Cortex, ...
-│   │   ├── cortex/           ← CortexSidebar, CortexToc, ChapterContent, BookGrid, ...
-│   │   ├── blog/             ← PostGrid, blog post renderers
+│   │   ├── sections/         ← Header, Footer (the page chrome — no portfolio sections any more)
+│   │   ├── book/             ← CortexSidebar, CortexToc, ChapterContent, BookGrid, the D3 widgets, ...
+│   │   ├── blog/             ← PostGrid, BlogPager, blog post renderers
 │   │   ├── ui/               ← Section, Button (CVA-style variants in Scala)
 │   │   └── icons/            ← lucide-react via JsComponent
+│   ├── auth/                 ← KeycloakClient (keycloak-js PKCE) + auth state
 │   ├── api/ApiClient.scala   ← typed HTTP client built from tapir endpoints
 │   ├── markdown/MarkdownRenderer.scala  ← thin Scala facade over render.ts
-│   ├── data/portfolioData.ts ← TS bridge to JSON content
+│   ├── d3/                   ← generic pure-D3 widget + Visualise renderer
 │   └── util/                 ← Theme, PageTitle, Cn (clsx + tailwind-merge), ...
 ├── markdown/                 ← TS-side of the markdown pipeline
 │   ├── render.ts             ← unified/remark/rehype + shiki/d2/mermaid/katex
 │   ├── runtime.ts            ← Mermaid renderer + Prism highlighter
+│   ├── monaco.ts             ← lazy Monaco editor loader (the runnable-block editor)
 │   └── loader.ts             ← lazy gateway: dynamic-import wrapper
 ├── styles/                   ← per-section/component BEM stylesheets
-│   ├── sections/             ← hero.css, about.css, experience.css, ...
+│   ├── sections/             ← header.css, footer.css, ...
 │   └── components/           ← cortex-reader.css, diagrams.css, runnable-code.css, ...
 ├── tailwind.css              ← v4 entry: @import "tailwindcss" + @theme + @utility + section imports
 ├── vite.config.mjs
@@ -153,8 +167,8 @@ client/src/
 
 A few patterns to internalise:
 
-- **Pages are routes.** Every file in `pages/` is exactly one route in `Router.scala`. To add a route, add a file, add a `Page` case, add a rule in `Router`.
-- **`components/sections/`** = portfolio sections on the home page. **`components/cortex/`** = anything that participates in chapter rendering.
+- **Pages are routes.** Every file in `pages/` is exactly one route in `Router.scala`. To add a route, add a file, add a `Page` case, add a rule in `Router`. The site root `/` renders `CortexIndexPage` (the book library); there is no separate portfolio home.
+- **`components/book/`** = anything that participates in chapter rendering (sidebar, TOC, the markdown placeholder components, the D3 widgets). **`components/sections/`** is now just the `Header` and `Footer` chrome wrapped around every page.
 - **`markdown/render.ts`** is the single point of contact with the JS markdown ecosystem. Resist the urge to add per-plugin Scala facades — wrap once in TS, call from Scala.
 - **CSS is BEM via Tailwind `@apply`.** Every multi-class `^.className` lives as a `.block__element--modifier` rule in `client/src/styles/{sections,components}/*.css`, wrapped in `@layer components` so utilities applied at the call site still win. The companion Scala primitive is `components/ui/Section.scala`. Tailwind v4 is configured CSS-first — there is **no** `tailwind.config.ts` and **no** `postcss.config.mjs`.
 
@@ -166,29 +180,32 @@ It's a **cross-compiled** Scala module: one source tree that compiles to JVM byt
 
 What's in there:
 
-- **Codegen output** (most of it) — `Endpoints.scala`, `EndpointsJsonSerdes.scala`, `EndpointsSchemas.scala` emitted under `src_managed/` by `sbt-openapi-codegen` from `api/openapi.yaml`. Includes every request/response case class plus tapir `Endpoint` values the server interprets and the client calls.
-- **Two hand-written pure modules** — `runner/CodeExecutor.scala` (state machine for the runnable code blocks) and `cortex/SidebarForest.scala` (flat-list → tree builder for the sidebar). Both are platform-agnostic, both unit-tested on the JVM, both used in the browser.
+- **Codegen output** (most of it) — `Endpoints.scala`, `EndpointsJsonSerdes.scala`, `EndpointsSchemas.scala` emitted under `src_managed/` by `sbt-openapi-codegen` from `api/openapi.yaml`, into package `cortex.shared.api`. Includes every request/response case class plus tapir `Endpoint` values the server interprets and the client calls.
+- **Hand-written pure modules** under `cortex.shared.*` — `runner/CodeExecutor.scala` (state machine for the runnable code blocks), `book/SidebarForest.scala` (flat-list → tree builder for the sidebar), `book/CortexIndexWalker.scala` and `book/Blocks.scala` (the structural block decoders), and the `viz/` heap-to-graph adapter behind the Visualise modal. All platform-agnostic, all unit-tested on the JVM, all used in the browser. (Note the package: the cross-compiled book code is `cortex.shared.book`, renamed from a former nested `cortex` subpackage to avoid colliding with the root `cortex.*` prefix.)
 - **One smoke test** under `shared/src/test/scala/` that imports the generated `Endpoints` to confirm codegen ran. If `sbt test` passes, the generation worked.
 
 The payoff: rename `Greeting.message` → `Greeting.greeting` in `api/openapi.yaml`, run `sbt compile`, and the **server pipeline** and the **client API client** both stop compiling in the same build. The contract becomes a compile-time check.
 
-The canonical walk-through of this is the [Hello World, End to End](/cortex/codefolio-onboarding/how-it-works-hello-world-end-to-end) chapter — it traces one `/api/hello` request through every step of the stack and shows exactly where the shared module pays off. The full mechanical details (`crossProject(JSPlatform, JVMPlatform)`, `crossType(CrossType.Pure)`, codegen plugin settings, how each generated file is laid out) are in the [Shared & Codegen](/cortex/codefolio-onboarding/deep-dive-shared-and-codegen) deep-dive.
+The canonical walk-through of this is the [Hello World, End to End](/cortex/cortex-onboarding/how-it-works-hello-world-end-to-end) chapter — it traces one `/api/hello` request through every step of the stack and shows exactly where the shared module pays off. The full mechanical details (`crossProject(JSPlatform, JVMPlatform)`, `crossType(CrossType.Pure)`, codegen plugin settings, how each generated file is laid out) are in the [Shared & Codegen](/cortex/cortex-onboarding/deep-dive-shared-and-codegen) deep-dive.
 
 ## What lives in `content/`
 
 ```
 content/cortex/                            ← books are auto-discovered (no root manifest)
-├── codefolio-onboarding/
+├── cortex-onboarding/                     ← this book
 │   ├── book.json                          ← OPTIONAL — title/description/tags
 │   ├── 01-start-here/                     ← directory = collapsible sidebar section
 │   │   ├── _section.json                  ← OPTIONAL — pretty section title
 │   │   └── *.md                           ← one chapter per file
 │   └── ...
-└── distributed-systems/
+└── data-structures-and-algorithms/        ← other books sit alongside
     └── ...
+
+content/blogs/                             ← flat .md posts surfaced at /blogs
+└── *.md                                   ← YAML frontmatter drives the index
 ```
 
-**Convention over configuration** — the on-disk layout *is* the index. Each immediate subdir of `content/cortex/` is a book; nested directories become sidebar sections (any depth, capped at 6); `.md` files are chapters; numeric prefixes (`01-`, `02-`) drive ordering. To add a chapter you drop a `.md` file in the right directory and reload — that's it. (See [Extending the Project](/cortex/codefolio-onboarding/working-on-it-extending).)
+**Convention over configuration** — the on-disk layout *is* the index. Each immediate subdir of `content/cortex/` is a book; nested directories become sidebar sections (any depth, capped at 6); `.md` files are chapters; numeric prefixes (`01-`, `02-`) drive ordering. To add a chapter you drop a `.md` file in the right directory and reload — that's it. Blog posts are simpler still: flat `.md` files under `content/blogs/`, ordered by their `publishedAt` frontmatter. (See [Extending the Project](/cortex/cortex-onboarding/working-on-it-extending).)
 
 ## What lives in `runner/go-judge/`
 
@@ -202,7 +219,7 @@ History (see ADR-0029): the project previously ran two backends — **Piston** (
 | --- | --- |
 | Change a request/response shape | `api/openapi.yaml`, then chase compile errors |
 | Add a new HTTP endpoint | `api/openapi.yaml` → new `server/<feature>Pipeline/` package → register in `server/http/ApiRoutes.scala` → call from `client/api/ApiClient.scala` |
-| Tweak how a chapter looks | `client/src/markdown/render.ts` (HTML emitted) and/or the relevant component under `client/.../components/cortex/` |
+| Tweak how a chapter looks | `client/src/markdown/render.ts` (HTML emitted) and/or the relevant component under `client/.../components/book/` |
 | Add a runnable language | a `GoJudgeSpec` (compile/run commands) in `server/.../codeRunPipeline/Languages.scala` + the toolchain in `runner/go-judge/Dockerfile` + Prism grammar in `client/src/markdown/runtime.ts` |
 | Fix a routing issue | `client/.../Router.scala` (SPA side) **and** `server/http/StaticRoutes.scala`'s SPA fallback (server side) |
 | Wire a new env var | `server/.../config/AppConfig.scala` + `application.conf` + `docker-compose.yml` |

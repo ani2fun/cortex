@@ -19,8 +19,8 @@ java -version && sbt --version && node -v && docker compose version
 ## Day-one setup
 
 ```bash
-git clone <repo> codefolio
-cd codefolio
+git clone <repo> cortex
+cd cortex
 docker compose up -d db redis mongo go-judge   # first go-judge build is ~1.9 GB
 (cd client && npm install)
 sbt compile        # triggers OpenAPI codegen — first run downloads ~1 GB of deps (3–10 min)
@@ -78,20 +78,27 @@ The Dockerfile builds the SPA, copies the dist into the JVM image, and the serve
 
 ## Environment variables
 
-These are the ones you'll actually touch. Defaults live in `server/src/main/resources/application.conf`; production overrides live in `docker-compose.yml`.
+These are the ones you'll actually touch. Every config value is read once in `config/AppConfig.scala` into a typed `AppConfig` tree (the HOCON block is rooted at `cortex { … }`); the names below are the `${?ENV}` overrides declared in `server/src/main/resources/application.conf`. Production overrides live in `docker-compose.yml` / the K8s manifests.
 
-| Var | Where it's read | Default | What for |
-| --- | --- | --- | --- |
-| `PORT` | `AppConfig.scala` | `8080` | server listen port |
-| `STATIC_DIR` | `AppConfig.scala` | `./client/dist` (dev) / `/app/static` (Docker) | where the Vite output lives |
-| `DATABASE_URL`, `DATABASE_USERNAME`, `DATABASE_PASSWORD` | `db/DataSource.scala` | local Postgres | Hello demo storage |
-| `REDIS_URL` | `cache/RedisCache.scala` | `redis://localhost:6379` | Hello demo cache |
-| `MONGO_URL`, `MONGO_DB` | `eventlog/HelloEventLog.scala` | `mongodb://localhost:27017` / `codefolio` | Hello demo event log |
-| `EXECUTOR_URL` | `config/AppConfig.scala` (`RunnerConfig`) | `http://go-judge:5050` (compose) / `http://localhost:5050` (`bin/dev`) | go-judge sandbox for `/api/run` |
-| `EXECUTOR_AUTHN_TOKEN` | `config/AppConfig.scala` (`RunnerConfig`) | unset | optional bearer token (go-judge `ES_AUTH_TOKEN`) |
-| `CORTEX_ROOT` | `CortexHandler.scala` | `./content/cortex` (dev) / `/app/content/cortex` (Docker) | where books live |
+| Var | Default | What for |
+| --- | --- | --- |
+| `PORT` | `8080` | server listen port |
+| `STATIC_DIR` | `./client/dist` (dev) / `/app/static` (Docker) | where the Vite output lives |
+| `DB_URL`, `DB_USER`, `DB_PASSWORD` | local Postgres (`…/cortex`, `cortex`/`cortex`) | Hello demo storage |
+| `REDIS_URL` | `redis://localhost:6379` | Hello demo cache + `/api/run` rate limiter |
+| `MONGO_URI`, `MONGO_DB` | `mongodb://localhost:27017` / `cortex` | Hello demo event log |
+| `EXECUTOR_URL` | `http://localhost:5050` (`bin/dev`) / `http://go-judge:5050` (compose) | go-judge sandbox for `/api/run` |
+| `EXECUTOR_AUTHN_TOKEN` | unset | optional bearer token (go-judge `ES_AUTH_TOKEN`) |
+| `CORTEX_ROOT` | `./content/cortex` (dev) / `/app/content/cortex` (Docker) | where books live |
+| `BLOG_ROOT` | `./content/blogs` (dev) / `/app/content/blogs` (Docker) | where blog posts live |
+| `CORTEX_AUTO_RELOAD`, `BLOG_AUTO_RELOAD` | `true` (dev) / `false` (prod) | mtime-rewalk the content tree per request |
+| `AUTH_ENABLED` | `true` (`application.conf`) / `false` (`bin/dev`) | enforce Keycloak JWT auth + rate limiting |
+| `KEYCLOAK_ISSUER_URL`, `KEYCLOAK_REALM`, `KEYCLOAK_CLIENT_ID` | prod realm `apps-prod` at `keycloak.kakde.eu`, client `cortex-web` | OIDC coordinates handed to the SPA via `/api/auth/config` |
+| `LIKEC4_URL` | `http://likec4` (prod) / `http://localhost:8090` (`bin/dev`) | upstream for the `/c4/*` LikeC4 proxy |
 
 If `EXECUTOR_URL` is not set, `/api/run` returns 503 (`RunFailure.NotConfigured`). That's a feature: it makes the misconfiguration visible immediately rather than silently swallowing executions.
+
+For fast content/runner iteration, `AUTH_ENABLED=false ./bin/dev` skips Keycloak entirely — the JWT verifier short-circuits, the rate limiter no-ops, the editor is unlocked for everyone, and the SPA never loads `keycloak-js`. `bin/dev` defaults to that; opt into the full sign-in flow with `AUTH_ENABLED=true ./bin/dev` (it then starts a local Keycloak container with a `tester`/`tester` user). See ADR-0013.
 
 ## Useful commands
 

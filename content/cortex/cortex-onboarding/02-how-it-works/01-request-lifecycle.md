@@ -68,17 +68,17 @@ sequenceDiagram
   participant Ro as scalajs-react Router
   participant Cp as ChapterPage
   participant Ac as ApiClient
-  participant Kh as CortexHandler
+  participant Kh as CortexPipeline
   participant Md as render.ts<br/>(unified pipeline)
   participant Cc as ChapterContent<br/>walker
 
-  U->>Br: paste/reload<br/>/cortex/distributed-systems/introduction
-  Br->>Sv: GET /cortex/...
+  U->>Br: paste/reload<br/>/system-design/foundations-cap-and-pacelc
+  Br->>Sv: GET /system-design/...
   Sv-->>Br: index.html (SPA fallback)
   Br->>Ro: window.location parsed
   Ro->>Cp: render ChapterPage(book, chapter)
   Cp->>Ac: getCortexChapter(book, chapter)
-  Ac->>Sv: GET /api/cortex/distributed-systems/introduction
+  Ac->>Sv: GET /api/cortex/system-design/foundations-cap-and-pacelc
   Sv->>Kh: tapir routes
   Kh->>Kh: lookup slug → relative path (cached tree walk),<br/>read chapter.md (path-traversal guard)
   Kh-->>Ac: ChapterPayload { raw, frontmatter, prev, next }
@@ -93,9 +93,11 @@ sequenceDiagram
   Cc-->>U: full chapter visible
 ```
 
+Note the two different URL shapes: the **browser** path is root-based (`/system-design/foundations-cap-and-pacelc`), while the **API** path the SPA fetches keeps its `/api/cortex/{book}/{chapter}` form. The `/cortex/...` browser prefix that this app used to carry is gone — the book index is at `/` now — but old `/cortex/<book>/<chapter>` links still resolve: the client router has a legacy rewrite rule that strips the prefix and replaces history.
+
 ### What's worth pausing on
 
-**The SPA fallback (steps 2–3).** A direct reload of any `/cortex/...` URL would 404 if the server didn't have a fallback. `HttpApp.scala`'s `staticRoutes` lists every top-level SPA route explicitly and serves `index.html` for them. We don't use a single catch-all wildcard because zio-http's route table doesn't reliably resolve specific tapir routes ahead of a sibling wildcard, and the wildcard would shadow `/api/*`.
+**The SPA fallback (steps 2–3).** A direct reload of any in-app URL would 404 if the server didn't have a fallback. `StaticRoutes.scala` derives its fallback list from `AppRoutes.SpaRoutes` (plus the book slugs it finds on disk) and serves `index.html` for each, so a hard reload of `/system-design/...` re-enters the SPA. We don't use a single catch-all wildcard because zio-http's route table doesn't reliably resolve specific tapir routes ahead of a sibling wildcard, and the wildcard would shadow `/api/*`.
 
 **Two-stage loading (steps 5–11).** `ChapterPage` keeps `Option[Either[String, Loaded]]` state. `None` = loading, `Some(Left(_))` = error, `Some(Right(_))` = loaded. The `Loaded` case carries **both** the API payload and the post-render result — they're fetched in one chained `Future`:
 
@@ -135,4 +137,4 @@ This pattern (server emits placeholders, client mounts components) is the only r
 ## A note on what *isn't* in these flows
 
 - **No SSR.** The server doesn't render React. It only serves `index.html` plus assets and JSON. This is on purpose — the markdown pipeline is JS-native, server-side rendering would either duplicate the pipeline on the JVM (impractical: D2 is WASM, mermaid is JS) or run a headless browser (overkill).
-- **No DB writes from production traffic.** The portfolio sections read from bundled JSON; the Cortex reads from disk. Postgres / Redis / Mongo are exercised by the **Hello demo** at `/demo` only — kept around because they're useful smoke tests of the persistence layer.
+- **No DB writes from production traffic.** The book and the blog read from disk. Postgres / Redis / Mongo are exercised by the **Hello demo** at `/demo` only — kept around because they're useful smoke tests of the persistence layer. (Redis does double duty as the `/api/run` rate-limiter store, but that's a counter, not durable state.)

@@ -13,7 +13,7 @@ The Scala ecosystem has two real build tools: **sbt** (older, more feature-compl
 - **Cross-projects are a first-class concept.** The `crossProject(JSPlatform, JVMPlatform)` shape used in `build.sbt` is sbt-native; replicating it in Mill requires more boilerplate.
 - **Ecosystem familiarity.** Every Scala dev knows the sbt CLI; switching tools costs time without buying anything for a project this size.
 
-The build root is [build.sbt](build.sbt). It defines four sbt projects:
+The build root is `build.sbt`. It defines four sbt projects:
 
 ```scala
 lazy val shared = crossProject(JSPlatform, JVMPlatform)…   // cross-compiles
@@ -45,14 +45,14 @@ addSbtPlugin("org.scalameta"               % "sbt-scalafmt"             % "2.5.2
 |---|---|
 | `sbt-scalajs` | Compiles Scala source to JavaScript. Defines `fastLinkJS` (debug, fast) and `fullLinkJS` (release, optimised). |
 | `sbt-scalajs-crossproject` | Adds the `crossProject(JSPlatform, JVMPlatform)` DSL. Without it, you'd hand-write two parallel projects with the same source set. |
-| `sbt-native-packager` | Wraps the JVM build into a launcher. `server/Universal/stage` produces `server/target/universal/stage/` with `bin/codefolio-server`, `lib/*.jar`, and a startup script. The Docker runtime stage copies this directly. |
+| `sbt-native-packager` | Wraps the JVM build into a launcher. `server/Universal/stage` produces `server/target/universal/stage/` with `bin/cortex-server`, `lib/*.jar`, and a startup script. The Docker runtime stage copies this directly. |
 | `sbt-revolver` | Adds `~reStart` (auto-restart on file change) and `reStop`. The dev server runs in a forked JVM so editor saves trigger a quick restart instead of waiting for a slow `sbt run` boot. |
-| `sbt-openapi-codegen` | The codegen pipeline (see [Shared & Codegen](/cortex/codefolio-onboarding/deep-dive-shared-and-codegen)). Reads `api/openapi.yaml`, emits Scala. |
+| `sbt-openapi-codegen` | The codegen pipeline (see [Shared & Codegen](/cortex/cortex-onboarding/deep-dive-shared-and-codegen)). Reads `api/openapi.yaml`, emits Scala. |
 | `sbt-scalafmt` | Wires `scalafmt` into sbt. `sbt scalafmtAll` formats; `sbt scalafmtCheckAll` fails CI on drift. |
 
 **If you remove `sbt-revolver`:** every server change becomes `Ctrl-C` + `sbt server/run` + 5s of cold start. With it, edits restart in <1s.
 
-**If you remove `sbt-native-packager`:** the Docker runtime stage has nothing to copy. You'd build a fat-jar instead, which works but is harder to introspect (no separate `lib/` to mount, no `bin/codefolio-server` launcher).
+**If you remove `sbt-native-packager`:** the Docker runtime stage has nothing to copy. You'd build a fat-jar instead, which works but is harder to introspect (no separate `lib/` to mount, no `bin/cortex-server` launcher).
 
 ## Why `sbt-revolver`'s `reStart` and not `~run`
 
@@ -64,7 +64,7 @@ The other reason: **sbt-revolver's lifecycle is explicit.** `reStop` kills the f
 
 ## The forked-JVM cwd setting
 
-[build.sbt:82-83](build.sbt):
+`build.sbt`:
 
 ```scala
 Compile / run / baseDirectory := (LocalRootProject / baseDirectory).value,
@@ -94,7 +94,7 @@ We use Vite for two reasons:
 
 ## The Vite plugin set
 
-[client/vite.config.mjs](client/vite.config.mjs):
+`client/vite.config.mjs`:
 
 ```javascript
 plugins: [
@@ -105,13 +105,13 @@ plugins: [
 
 Only two plugins. The Tailwind v4 plugin handles all CSS — no PostCSS, no separate Tailwind step. The Scala.js plugin handles all Scala — exposes the linker output as an importable module.
 
-**Why `cwd: ".."`?** Vite runs from `client/`. The Scala.js linker is invoked via sbt, which expects to be in the build root. Without `cwd: ".."`, the plugin tries to invoke sbt inside `client/`, which has no `build.sbt` of its own. The fix is one line; finding the bug if you don't know to look for it takes hours. (Mentioned in [Local Development](/cortex/codefolio-onboarding/working-on-it-local-development)'s foot-guns list.)
+**Why `cwd: ".."`?** Vite runs from `client/`. The Scala.js linker is invoked via sbt, which expects to be in the build root. Without `cwd: ".."`, the plugin tries to invoke sbt inside `client/`, which has no `build.sbt` of its own. The fix is one line; finding the bug if you don't know to look for it takes hours. (Mentioned in [Local Development](/cortex/cortex-onboarding/working-on-it-local-development)'s foot-guns list.)
 
 **`projectID: "client"`** tells the plugin which sbt module's linker output to import. Maps to `client/fastLinkJS` in the sbt task graph.
 
 ## Manual chunks — what we lazy-load and why
 
-Already covered in [Client Stack](/cortex/codefolio-onboarding/deep-dive-client-stack#bundle-splitting), but worth repeating because the trade-off is the entire reason the home page loads fast:
+Already covered in [Client Stack](/cortex/cortex-onboarding/deep-dive-client-stack#bundle-splitting), but worth repeating because the trade-off is the entire reason the book index loads fast:
 
 ```javascript
 manualChunks(id) {
@@ -126,9 +126,9 @@ manualChunks(id) {
 }
 ```
 
-**Without `manualChunks`:** Rollup inlines these into the main bundle. Home page goes from ~400KB to ~5MB. First paint slows by seconds on a slow connection.
+**Without `manualChunks`:** Rollup inlines these into the main bundle. The first-load bundle goes from ~400KB to ~5MB. First paint slows by seconds on a slow connection.
 
-**With `manualChunks`:** each library gets its own file. The TypeScript pipeline `await import("...")`s them only when a chapter actually contains a relevant block. The Hero/About/Experience path on `/` never touches them.
+**With `manualChunks`:** each library gets its own file. The TypeScript pipeline `await import("...")`s them only when a chapter actually contains a relevant block. The book index at `/` and the blog index at `/blogs` never touch them.
 
 The `chunkSizeWarningLimit: 800` is bumped because these chunks are *intentionally* large and the default 500KB warning would always fire.
 
@@ -141,8 +141,8 @@ Tailwind v4 dropped support for `tailwind.config.ts` in favour of CSS-first conf
 ```css
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
-@source "../client/target/scala-3.6.2/codefolio-client-fastopt";
-@source "../client/target/scala-3.6.2/codefolio-client-opt";
+@source "../client/target/scala-3.6.2/cortex-client-fastopt";
+@source "../client/target/scala-3.6.2/cortex-client-opt";
 @custom-variant dark (&:is(.dark *));
 @theme inline { /* color tokens */ }
 @utility container { margin-inline: auto; }
@@ -173,7 +173,7 @@ The included `changes/v1-init.sql`:
 
 ```sql
 --liquibase formatted sql
---changeset codefolio:1-create-visits
+--changeset cortex:1-create-visits
 CREATE TABLE visits (id INT PRIMARY KEY, count BIGINT NOT NULL);
 INSERT INTO visits (id, count) VALUES (1, 0);
 --rollback DROP TABLE visits;
@@ -191,13 +191,13 @@ Why Liquibase over Flyway?
 
 For a personal project, both work. Liquibase wins on rollback annotations (`--rollback DROP TABLE`) being free, and on the YAML master allowing flexible inclusion. If you have a specific allergy to YAML, Flyway's "just SQL" approach is simpler.
 
-The annoying part: **Liquibase logs through `java.util.logging`**, and sbt-revolver tags everything on stderr as `[ERROR]`. We bridge JUL→SLF4J in `Main.scala` (`SLF4JBridgeHandler.install()`) — without that bridge, every dev startup looks alarming. Covered in [Server Stack](/cortex/codefolio-onboarding/deep-dive-server-stack#liquibase-yaml--julslf4j-bridge).
+The annoying part: **Liquibase logs through `java.util.logging`**, and sbt-revolver tags everything on stderr as `[ERROR]`. We bridge JUL→SLF4J in `Main.scala` (`SLF4JBridgeHandler.install()`) — without that bridge, every dev startup looks alarming. Covered in [Server Stack](/cortex/cortex-onboarding/deep-dive-server-stack#liquibase-yaml--julslf4j-bridge).
 
 **If you switch to Flyway:** trivially possible, but you lose inline rollback annotations and you're now writing SQL files only. Adapt to taste.
 
 ## scalafmt — the format choices that matter
 
-[.scalafmt.conf](.scalafmt.conf):
+`.scalafmt.conf`:
 
 ```hocon
 version = 3.8.3
@@ -253,7 +253,7 @@ prefix() { sed -u -e "s/^/${colour}[${label}]${c_reset} /"; }
 
 ## The Dockerfile — multi-stage, JRE-only runtime
 
-[Dockerfile](Dockerfile):
+`Dockerfile`:
 
 **Stage 1 (`builder`):** `sbtscala/scala-sbt:eclipse-temurin-21.0.5_11_1.10.7_3.6.2`. Includes JDK 21, sbt 1.10.7, Scala 3.6.2 — pinned versions so the build is reproducible. Adds Node 20 for the Vite step.
 
@@ -274,11 +274,13 @@ The deps copy + `sbt update` happens *before* the source copy. Docker layer cach
 COPY --from=builder /build/server/target/universal/stage /app
 COPY --from=builder /build/client/dist /app/static
 COPY --from=builder /build/content     /app/content
-ENV STATIC_DIR=/app/static CORTEX_ROOT=/app/content/cortex PORT=8080
-CMD ["bin/codefolio-server"]
+ENV STATIC_DIR=/app/static
+ENV CORTEX_ROOT=/app/content/cortex
+ENV PORT=8080
+CMD ["bin/cortex-server"]
 ```
 
-Three artefacts copied from the builder: server launcher, frontend bundle, cortex content. No source, no sbt, no Node — the runtime image is ~200MB instead of ~2GB.
+Three artefacts copied from the builder: server launcher, frontend bundle, and the content tree (`cortex/` books + `blogs/` posts). No source, no sbt, no Node — the runtime image is ~200MB instead of ~2GB.
 
 **If you collapse to a single stage:** the runtime image carries sbt, the JDK, Node, and `node_modules/`. Image size balloons. CVE surface area grows. Don't.
 
