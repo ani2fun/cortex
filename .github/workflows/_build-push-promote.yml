@@ -96,6 +96,11 @@ jobs:
           import yaml
 
           path = Path(os.environ["KUSTOMIZATION_PATH"])
+          if not path.exists():
+              print(f"::warning::{path} not found — the app's manifests aren't on infra "
+                    "main yet. Skipping image-tag promotion; it auto-runs on the next build "
+                    "once the path exists (the image was still built + pushed to GHCR).")
+              raise SystemExit(0)
           data = yaml.safe_load(path.read_text())
           image_repo = os.environ["IMAGE_REPO"]
           accepted_names = {
@@ -136,7 +141,7 @@ jobs:
         run: |
           git -C infra pull --rebase --autostash origin main
 
-          git -C infra add "${{ inputs.infra_kustomization_file }}"
+          git -C infra add "${{ inputs.infra_kustomization_file }}" 2>/dev/null || true
 
           if git -C infra diff --cached --quiet; then
             echo "No infra changes to commit."
