@@ -51,11 +51,6 @@ object Router:
     val reservedSeg = AppRoutes.SpaRoutes.iterator.map(_.segment).mkString("|")
     val bookSeg     = string(s"(?!(?:$reservedSeg)(?:$$|/))[^/?#]+")
 
-    // Chapter slugs are hierarchical (`linear-structures/arrays/two-sum`), so the chapter matcher
-    // must span `/` — unlike `seg` it only stops at `?`/`#`. `bookSeg` still consumes a single
-    // segment, so `/{book}/{a/b/c}` parses as book=`{book}`, chapter=`a/b/c`, and rebuilds the same.
-    val chapterSeg = string("[^?#]+")
-
     // The | operator composes route rules. Each rule is "pattern ~> render".
     // `trimSlashes` normalises trailing/duplicate slashes before matching.
     val rules =
@@ -77,8 +72,11 @@ object Router:
           "^/?cortex(?:/(.*))?$".r,
           m => Some(redirectToPath(Path(Option(m.group(1)).getOrElse("")))(SetRouteVia.HistoryReplace))
         )
-        // /{book}/{chapter} — the chapter reader. `bookSeg` keeps the reserved segments out.
-        | dynamicRouteCT((bookSeg / seg).caseClass[Page.Chapter]) ~>
+        // /{book}/{chapter…} — the chapter reader. Chapter slugs are hierarchical
+        // (`linear-structures/arrays/two-sum`); `string(...)` matches only a SINGLE path segment, so the
+        // chapter uses `remainingPath`, which captures the whole tail after the book INCLUDING `/`.
+        // `bookSeg` still consumes one segment and keeps the reserved words out.
+        | dynamicRouteCT((bookSeg / remainingPath).caseClass[Page.Chapter]) ~>
         dynRender((p: Page.Chapter) => ChapterPage.Component(ChapterPage.Props(p.book, p.chapter)))
         // /{book} — redirect to the book's first chapter (BookRedirectPage navigates on mount).
         | dynamicRouteCT(bookSeg.caseClass[Page.BookRedirect]) ~>
