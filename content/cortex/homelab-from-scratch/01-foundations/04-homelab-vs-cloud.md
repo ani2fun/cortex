@@ -47,7 +47,7 @@ For a personal cluster running portfolio sites and side-projects, **99% is fine*
 - **No surprise bills.** Egress is your home internet plan. There is no metered API. You can't accidentally `terraform apply` a $4,000 mistake at 2 a.m.
 - **No vendor lock-in.** The same `kubectl apply` works on any future cluster. You don't depend on EKS-specific IRSA, GCP-specific Workload Identity, or AWS-specific service mesh.
 - **Data sovereignty.** Your photos, your code, your model weights, your customers' PII — never leave a network you control.
-- **Learning, end-to-end.** A managed service hides everything interesting. A homelab makes you [debug `rp_filter` once](/cortex/homelab-from-scratch/private-mesh-when-the-mesh-misbehaves) and you remember it forever — the kernel's "martian source" log line, the strict-vs-loose modes, the asymmetric path that the cloud's networking team has already solved for you.
+- **Learning, end-to-end.** A managed service hides everything interesting. A homelab makes you [debug `rp_filter` once](/cortex/homelab-from-scratch/private-mesh/when-the-mesh-misbehaves) and you remember it forever — the kernel's "martian source" log line, the strict-vs-loose modes, the asymmetric path that the cloud's networking team has already solved for you.
 - **Latency to your stuff.** Local DNS resolves in 0.5 ms; the round trip to your cloud region is 30–80 ms. Anything chatty (database queries, model inference) feels noticeably faster on metal you can touch.
 
 ### Homelab — what you give up
@@ -158,4 +158,4 @@ flowchart TD
 
 That's the rational case for what we're about to build. The next section turns the abstract into a domain name.
 
-→ Next: [Buy a domain on GoDaddy](/cortex/homelab-from-scratch/domain-and-dns-buy-a-domain-on-godaddy)
+→ Next: [Buy a domain on GoDaddy](/cortex/homelab-from-scratch/domain-and-dns/buy-a-domain-on-godaddy)

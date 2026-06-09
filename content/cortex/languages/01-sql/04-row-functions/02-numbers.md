@@ -46,7 +46,7 @@ This chapter is about numeric functions and the type traps. By the end you'll kn
 
 # Numeric types refresher
 
-From [Data Definition](/cortex/languages/sql-foundations-data-definition#column-types):
+From [Data Definition](/cortex/languages/sql/foundations/data-definition#column-types):
 
 | Type | Range | When to use |
 |---|---|---|
@@ -351,10 +351,10 @@ Integer division (`/ 1000 / 3600 * 3600`) for the bucketing — *intentional* in
 
 # Cross-links
 
-- **Previous in this module:** [Strings](/cortex/languages/sql-row-functions-strings) — same per-row philosophy, different data type.
-- **Next in this module:** [Dates and Times](/cortex/languages/sql-row-functions-dates-and-times) — date arithmetic, intervals, time zones.
-- **Forward reference:** [Schema and Constraints](/cortex/languages/sql-index) — choosing `NUMERIC(p, s)` vs `INT` vs `BIGINT` at schema-design time.
-- **Forward reference:** [NULL and Three-Valued Logic](/cortex/languages/sql-row-functions-null-and-three-valued-logic) — `NULLIF` lives there; the safe-divide pattern relies on its NULL-propagation behaviour.
+- **Previous in this module:** [Strings](/cortex/languages/sql/row-functions/strings) — same per-row philosophy, different data type.
+- **Next in this module:** [Dates and Times](/cortex/languages/sql/row-functions/dates-and-times) — date arithmetic, intervals, time zones.
+- **Forward reference:** [Schema and Constraints](/cortex/languages/sql/index) — choosing `NUMERIC(p, s)` vs `INT` vs `BIGINT` at schema-design time.
+- **Forward reference:** [NULL and Three-Valued Logic](/cortex/languages/sql/row-functions/null-and-three-valued-logic) — `NULLIF` lives there; the safe-divide pattern relies on its NULL-propagation behaviour.
 
 ***
 

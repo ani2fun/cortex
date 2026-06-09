@@ -152,12 +152,12 @@ This is a structural lesson — LCA powers node-distance and shared-path queries
 
 LCA is a clean example of the BST ordering paying off:
 
-- **BST vs general-tree LCA** — the BST version is an `O(h)`, `O(1)`-space descent; the [general binary-tree LCA](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-lowest-common-ancestor-pattern) needs an `O(n)` recursive search because there's no ordering to exploit. Always check whether the tree is a BST before reaching for the heavier algorithm.
+- **BST vs general-tree LCA** — the BST version is an `O(h)`, `O(1)`-space descent; the [general binary-tree LCA](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-lowest-common-ancestor/pattern) needs an `O(n)` recursive search because there's no ordering to exploit. Always check whether the tree is a BST before reaching for the heavier algorithm.
 - **It builds on search** — LCA is just *two searches walked in lockstep until they diverge*. The same comparison-guided descent underlies search, insert, and floor/ceiling.
 - **Distance falls out of it** — the distance between two nodes is `depth(p) + depth(q) − 2·depth(LCA)`: walk to the LCA, then count the remaining steps down to each. Many "shortest path in a tree" questions reduce to "find the LCA, then measure."
 
-**Prerequisites:** [Recursive Searching in BSTs](/cortex/data-structures-and-algorithms/trees-binary-search-tree-recursive-searching-in-binary-search-trees).
-**What's next:** walk a BST's keys in sorted order, one `next()` at a time — [Iterators in BSTs](/cortex/data-structures-and-algorithms/trees-binary-search-tree-iterators-in-binary-search-trees).
+**Prerequisites:** [Recursive Searching in BSTs](/cortex/data-structures-and-algorithms/trees/binary-search-tree/recursive-searching-in-binary-search-trees).
+**What's next:** walk a BST's keys in sorted order, one `next()` at a time — [Iterators in BSTs](/cortex/data-structures-and-algorithms/trees/binary-search-tree/iterators-in-binary-search-trees).
 
 ## Recall
 

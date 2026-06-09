@@ -80,7 +80,7 @@ Two stable engineering instincts emerge:
 1. **PC + EC** systems are for *truth-of-record* data — money, identity, inventory, anything where the answer "I am not sure" is preferable to a wrong answer.
 2. **PA + EL** systems are for *experience* data — likes, views, presence, search, anything where "stale by 30 seconds" is fine and "unavailable for 30 seconds" is a disaster.
 
-Most real companies run **both kinds side by side**. We will see this directly in [Capstone 38 (news feed)](/cortex/system-design/capstones-news-feed) and [Capstone 44 (payments)](/cortex/system-design/capstones-payment-system).
+Most real companies run **both kinds side by side**. We will see this directly in [Capstone 38 (news feed)](/cortex/system-design/capstones/news-feed) and [Capstone 44 (payments)](/cortex/system-design/capstones/payment-system).
 
 ## 4. Worked Example
 
@@ -318,11 +318,11 @@ You will discover that **last-writer-wins silently lost one of the writes** — 
 
 - **Believing CAP applies to single-datacentre systems.** Inside one datacentre, partitions are extremely rare. CAP *technically* still applies but in practice you tune for latency, not partitions. PACELC's "Else" tells the real story.
 - **Calling a system "CA".** Either it is single-machine (CAP irrelevant), or it is lying about its partition behaviour (most common — the system silently fails closed during a partition and the docs do not say so).
-- **Confusing eventual consistency with "any old answer".** Real eventual-consistency systems guarantee *bounded staleness* and *monotonic reads* if you ask for them. We will get into this in [Lesson 13 — Consistency models](/cortex/system-design/building-blocks-consistency-models). If a vendor says "eventually consistent" and cannot quote a staleness bound, walk away.
+- **Confusing eventual consistency with "any old answer".** Real eventual-consistency systems guarantee *bounded staleness* and *monotonic reads* if you ask for them. We will get into this in [Lesson 13 — Consistency models](/cortex/system-design/building-blocks/consistency-models). If a vendor says "eventually consistent" and cannot quote a staleness bound, walk away.
 - **Forgetting that "linearizable" reads are an *option* in CP systems.** Many CP systems (etcd, Spanner) offer "stale read" or "follower read" knobs that trade some consistency for lower latency. Knowing they exist is what distinguishes a senior from a junior using the same database.
 - **Designing for the partition that never happens.** If partitions in your network occur once a year for 30 seconds, designing the entire architecture around the rare partition is a bad investment. Design for the *common* case (no partition, low latency), but have a *plan* for partition (drain shedding, fail-closed, alerting).
 - **Sync replication != CP.** A system that "synchronously replicates" but does not require a quorum of acks (just one) is *not* CP — a single failure can lose the write.
-- **Two-phase commit is not magic.** 2PC blocks on the slowest participant and does not survive coordinator failure cleanly. Modern alternatives — Raft, Paxos, Spanner's Paxos+TrueTime, Calvin — are what production uses. We cover them in [Lesson 14](/cortex/system-design/building-blocks-consensus-paxos-and-raft).
+- **Two-phase commit is not magic.** 2PC blocks on the slowest participant and does not survive coordinator failure cleanly. Modern alternatives — Raft, Paxos, Spanner's Paxos+TrueTime, Calvin — are what production uses. We cover them in [Lesson 14](/cortex/system-design/building-blocks/consensus-paxos-and-raft).
 
 ## 8. Practice
 
@@ -375,4 +375,4 @@ You will discover that **last-writer-wins silently lost one of the writes** — 
 
 ---
 
-**Next:** the *normal day* trade-off PACELC pointed at — **latency vs throughput** — and the two ridiculously simple equations (Little's Law and the USL) that explain why doubling servers does not double throughput. → [Lesson 5 — Latency, throughput, and the USL](/cortex/system-design/foundations-latency-throughput-usl)
+**Next:** the *normal day* trade-off PACELC pointed at — **latency vs throughput** — and the two ridiculously simple equations (Little's Law and the USL) that explain why doubling servers does not double throughput. → [Lesson 5 — Latency, throughput, and the USL](/cortex/system-design/foundations/latency-throughput-usl)

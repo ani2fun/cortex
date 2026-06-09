@@ -6,9 +6,9 @@ The structures here trade certainty for **scale**. A regular hash-set tells you 
 
 ## Start Here — the learning path
 
-- [Skip List](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-skip-list)
-- [Bloom Filter](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-bloom-filter)
-- [Count-Min Sketch](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-count-min-sketch)
-- [HyperLogLog](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-hyperloglog)
-- [Treap](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-treap)
-- [Persistent Data Structures](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-persistent-data-structures)
+- [Skip List](/cortex/data-structures-and-algorithms/probabilistic-and-advanced/skip-list)
+- [Bloom Filter](/cortex/data-structures-and-algorithms/probabilistic-and-advanced/bloom-filter)
+- [Count-Min Sketch](/cortex/data-structures-and-algorithms/probabilistic-and-advanced/count-min-sketch)
+- [HyperLogLog](/cortex/data-structures-and-algorithms/probabilistic-and-advanced/hyperloglog)
+- [Treap](/cortex/data-structures-and-algorithms/probabilistic-and-advanced/treap)
+- [Persistent Data Structures](/cortex/data-structures-and-algorithms/probabilistic-and-advanced/persistent-data-structures)

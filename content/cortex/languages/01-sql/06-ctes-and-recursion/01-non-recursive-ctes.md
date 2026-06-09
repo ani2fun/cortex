@@ -282,9 +282,9 @@ Four CTEs, each named, each one transformation step. Easy to read, easy to debug
 
 # Cross-links
 
-- **Previous module:** [Anti-joins and Existence](/cortex/languages/sql-multiple-tables-anti-joins-and-existence) — many anti-join queries become CTEs at scale.
-- **Next in this module:** [Recursive CTEs](/cortex/languages/sql-ctes-and-recursion-recursive-ctes) — `WITH RECURSIVE` for hierarchies and graph traversal.
-- **Forward reference:** [EXPLAIN and Query Plans](/cortex/languages/sql-index) — how the planner treats CTEs (inlined vs materialised).
+- **Previous module:** [Anti-joins and Existence](/cortex/languages/sql/multiple-tables/anti-joins-and-existence) — many anti-join queries become CTEs at scale.
+- **Next in this module:** [Recursive CTEs](/cortex/languages/sql/ctes-and-recursion/recursive-ctes) — `WITH RECURSIVE` for hierarchies and graph traversal.
+- **Forward reference:** [EXPLAIN and Query Plans](/cortex/languages/sql/index) — how the planner treats CTEs (inlined vs materialised).
 
 ***
 

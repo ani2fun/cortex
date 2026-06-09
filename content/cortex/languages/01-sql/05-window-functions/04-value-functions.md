@@ -224,7 +224,7 @@ FROM customers;
 
 Returns the country's second-highest scorer. Same frame caveat as `LAST_VALUE` — you usually want an explicit frame.
 
-If `n` exceeds the frame size, returns NULL. For "rank-2 per group" you can also use `ROW_NUMBER() = 2` (covered in [Ranking](/cortex/languages/sql-window-functions-ranking)) — usually the cleaner option.
+If `n` exceeds the frame size, returns NULL. For "rank-2 per group" you can also use `ROW_NUMBER() = 2` (covered in [Ranking](/cortex/languages/sql/window-functions/ranking)) — usually the cleaner option.
 
 ---
 
@@ -265,7 +265,7 @@ WITH g AS (
 SELECT * FROM g WHERE gap_ms > 3600000;
 ```
 
-`LAG` plus a comparison flags the gaps. Useful for sessionisation (covered in [Window Patterns](/cortex/languages/sql-window-functions-window-patterns)).
+`LAG` plus a comparison flags the gaps. Useful for sessionisation (covered in [Window Patterns](/cortex/languages/sql/window-functions/window-patterns)).
 
 ## Reaching across many rows
 
@@ -374,10 +374,10 @@ Postgres 16+'s `IGNORE NULLS` carries the most recent non-NULL price forward to 
 
 # Cross-links
 
-- **Previous in this module:** [Ranking](/cortex/languages/sql-window-functions-ranking) — a different family of window functions, sharing the same `OVER` mechanics.
-- **Next in this module:** [Window Patterns](/cortex/languages/sql-window-functions-window-patterns) — the canonical real-world shapes that compose ranking and value functions: top-N per group, gaps and islands, sessionisation.
-- **Forward reference:** [CTEs and Recursion](/cortex/languages/sql-index) — when a window-function query gets long, a CTE per layer reads better than nested subqueries.
-- **Cited:** [Frames](/cortex/languages/sql-window-functions-frames) — `LAST_VALUE`'s frame surprise is the canonical "this is why frames matter" example.
+- **Previous in this module:** [Ranking](/cortex/languages/sql/window-functions/ranking) — a different family of window functions, sharing the same `OVER` mechanics.
+- **Next in this module:** [Window Patterns](/cortex/languages/sql/window-functions/window-patterns) — the canonical real-world shapes that compose ranking and value functions: top-N per group, gaps and islands, sessionisation.
+- **Forward reference:** [CTEs and Recursion](/cortex/languages/sql/index) — when a window-function query gets long, a CTE per layer reads better than nested subqueries.
+- **Cited:** [Frames](/cortex/languages/sql/window-functions/frames) — `LAST_VALUE`'s frame surprise is the canonical "this is why frames matter" example.
 
 ***
 

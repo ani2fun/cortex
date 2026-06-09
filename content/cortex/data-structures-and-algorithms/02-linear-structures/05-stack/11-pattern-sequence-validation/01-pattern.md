@@ -126,7 +126,7 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [Parentheses Checker](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-sequence-validation-problems-parentheses-checker), [Minimum Edits](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-sequence-validation-problems-minimum-edits), [Redundant Parentheses](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-sequence-validation-problems-redundant-parentheses), and [Balanced Span](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-sequence-validation-problems-balanced-span).
+Drill the family in **Practice** — [Parentheses Checker](/cortex/data-structures-and-algorithms/linear-structures/stack/pattern-sequence-validation/problems/parentheses-checker), [Minimum Edits](/cortex/data-structures-and-algorithms/linear-structures/stack/pattern-sequence-validation/problems/minimum-edits), [Redundant Parentheses](/cortex/data-structures-and-algorithms/linear-structures/stack/pattern-sequence-validation/problems/redundant-parentheses), and [Balanced Span](/cortex/data-structures-and-algorithms/linear-structures/stack/pattern-sequence-validation/problems/balanced-span).
 
 ## Reflect & Connect
 
@@ -134,10 +134,10 @@ The stack-as-matching-register shows up wherever structure must nest correctly:
 
 - **The family** — bracket matching, detecting **redundant** parentheses (`((a))`), **minimum edits** to balance a string, validating XML/HTML tag nesting, and checking expression well-formedness.
 - **Counter vs stack is the lesson** — one bracket type is a counting problem (`O(1)` space); the instant types can mix, you need the stack to know *which* opener is innermost. Recognizing that boundary tells you which tool the problem needs.
-- **It's the front half of parsing** — every recursive-descent parser and expression evaluator leans on this exact "match the most recent open" mechanic. The [next pattern](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-linear-evaluation-pattern) keeps the stack but, instead of just matching, *computes* with what it pops.
+- **It's the front half of parsing** — every recursive-descent parser and expression evaluator leans on this exact "match the most recent open" mechanic. The [next pattern](/cortex/data-structures-and-algorithms/linear-structures/stack/pattern-linear-evaluation/pattern) keeps the stack but, instead of just matching, *computes* with what it pops.
 
-**Prerequisites:** [What Is a Stack?](/cortex/data-structures-and-algorithms/linear-structures-stack-what-is-a-stack).
-**What's next:** pop operands and operators to compute a result — [Linear Evaluation](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-linear-evaluation-pattern).
+**Prerequisites:** [What Is a Stack?](/cortex/data-structures-and-algorithms/linear-structures/stack/what-is-a-stack).
+**What's next:** pop operands and operators to compute a result — [Linear Evaluation](/cortex/data-structures-and-algorithms/linear-structures/stack/pattern-linear-evaluation/pattern).
 
 ## Recall
 

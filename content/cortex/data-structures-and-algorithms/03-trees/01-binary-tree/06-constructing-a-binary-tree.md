@@ -9,7 +9,7 @@ prereqs:
 
 ## Why It Exists
 
-The [traversal lessons](/cortex/data-structures-and-algorithms/trees-binary-tree-recursive-traversals-in-binary-trees) ran *forward*: tree in, sequence out. This lesson runs the arrow *backward*: sequence in, tree out. That's exactly the problem you face whenever a tree has to be written to disk, sent over a network, or restored from a snapshot — you have a flat list of values and you must rebuild the precise shape that produced it.
+The [traversal lessons](/cortex/data-structures-and-algorithms/trees/binary-tree/recursive-traversals-in-binary-trees) ran *forward*: tree in, sequence out. This lesson runs the arrow *backward*: sequence in, tree out. That's exactly the problem you face whenever a tree has to be written to disk, sent over a network, or restored from a snapshot — you have a flat list of values and you must rebuild the precise shape that produced it.
 
 The catch is that **one traversal is lossy**. A preorder of `[1, 2]` could mean "1 with left child 2" *or* "1 with right child 2" — same sequence, different trees. To recover the shape you need **two** traversals, and one of them must be **inorder**. Here's why that combination works: the non-inorder traversal (preorder or postorder) tells you *which node is the root* — it's the first preorder value, or the last postorder value. Then inorder does the thing only it can do: everything *left* of the root in the inorder array is the left subtree, everything *right* is the right subtree. Root from one traversal, the left/right *split* from inorder — recurse on each half and the whole tree falls out by divide-and-conquer. With a hashmap from value to inorder position, each split is `O(1)` and the rebuild is `O(N)`. (And the one pairing that *doesn't* work is preorder + postorder, for a reason worth seeing — [Trace It](#trace-it).)
 
@@ -202,7 +202,7 @@ Both print `rebuilt preorder: [1, 2, 4, 5, 3]` — the same tree, rebuilt from a
 - **Preorder + postorder can't split.** Without inorder, a single-child node is ambiguous (you saw two trees with identical pre *and* post). The pairing only works for full binary trees.
 - **The hashmap is what makes it `O(N)`.** Linear search for the root in inorder is `O(N²)`; a `value → index` map drops each split to `O(1)`.
 - **In practice, serialize with null markers.** Real serialize/deserialize uses *one* preorder traversal that writes an explicit marker for each `null` — those markers encode the shape, so a single sequence becomes unambiguous (no second traversal needed). Two-array reconstruction is the interview version; null-marked preorder is the production one.
-- **Next: growing a tree.** [Insertion](/cortex/data-structures-and-algorithms/trees-binary-tree-insertion-in-binary-trees) adds nodes one at a time into an existing tree — the incremental cousin of building one all at once.
+- **Next: growing a tree.** [Insertion](/cortex/data-structures-and-algorithms/trees/binary-tree/insertion-in-binary-trees) adds nodes one at a time into an existing tree — the incremental cousin of building one all at once.
 
 ## Recall
 
@@ -240,5 +240,5 @@ Both print `rebuilt preorder: [1, 2, 4, 5, 3]` — the same tree, rebuilt from a
 ## Sources & Verify
 
 - **CLRS**, *Introduction to Algorithms*, §10.4 (tree representations) and the tree-reconstruction exercises; **LeetCode** 105 (preorder + inorder) and 106 (postorder + inorder) are the canonical problems; 297 (serialize/deserialize) is the null-marker variant.
-- The [recursive-traversals lesson](/cortex/data-structures-and-algorithms/trees-binary-tree-recursive-traversals-in-binary-trees) for the orders this inverts, and the [linked representation](/cortex/data-structures-and-algorithms/trees-binary-tree-linked-list-implementation-of-binary-trees) for the `TreeNode` being rebuilt.
+- The [recursive-traversals lesson](/cortex/data-structures-and-algorithms/trees/binary-tree/recursive-traversals-in-binary-trees) for the orders this inverts, and the [linked representation](/cortex/data-structures-and-algorithms/trees/binary-tree/linked-list-implementation-of-binary-trees) for the `TreeNode` being rebuilt.
 - The round-trip `preorder [1,2,4,5,3]` / `inorder [4,2,5,1,3]`, and the ambiguity demo (left-child and right-child trees sharing `pre [1,2]` + `post [2,1]` but differing in `inorder`), come from the runnable blocks above (deterministic) — re-run to verify.

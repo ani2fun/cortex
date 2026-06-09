@@ -181,7 +181,7 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [Pairwise Swap](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-pattern-reversal-subproblem-problems-pairwise-swap), [Reverse K Segments](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-pattern-reversal-subproblem-problems-reverse-k-segments), [Reverse Increasing Groups](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-pattern-reversal-subproblem-problems-reverse-increasing-groups), and [Reverse Alternate Segments](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-pattern-reversal-subproblem-problems-reverse-alternate-segments).
+Drill the family in **Practice** — [Pairwise Swap](/cortex/data-structures-and-algorithms/linear-structures/doubly-linked-list/pattern-reversal-subproblem/problems/pairwise-swap), [Reverse K Segments](/cortex/data-structures-and-algorithms/linear-structures/doubly-linked-list/pattern-reversal-subproblem/problems/reverse-k-segments), [Reverse Increasing Groups](/cortex/data-structures-and-algorithms/linear-structures/doubly-linked-list/pattern-reversal-subproblem/problems/reverse-increasing-groups), and [Reverse Alternate Segments](/cortex/data-structures-and-algorithms/linear-structures/doubly-linked-list/pattern-reversal-subproblem/problems/reverse-alternate-segments).
 
 ## Reflect & Connect
 
@@ -191,8 +191,8 @@ The chunk-reversal skeleton is the same across structures; the doubly twist is t
 - **Four pointers, not two** — the transferable doubly lesson: every seam is two assignments. The cheapest reliable check is to walk the result *backward* from the tail and confirm it mirrors the forward walk — exactly the kind of bug a forward-only test misses.
 - **The trade-off, again** — the second pointer made whole-list reversal simpler but makes chunk *stitching* heavier. That's the recurring doubly bargain: more links to maintain, more capability per node.
 
-**Prerequisites:** [Reversal](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-pattern-reversal-pattern).
-**What's next:** use the two outward pointers to converge from both ends — [Two Pointers](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-pattern-two-pointers-pattern).
+**Prerequisites:** [Reversal](/cortex/data-structures-and-algorithms/linear-structures/doubly-linked-list/pattern-reversal/pattern).
+**What's next:** use the two outward pointers to converge from both ends — [Two Pointers](/cortex/data-structures-and-algorithms/linear-structures/doubly-linked-list/pattern-two-pointers/pattern).
 
 ## Recall
 

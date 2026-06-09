@@ -116,18 +116,18 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [Middle Node Search](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-fast-and-slow-pointers-problems-middle-node-search), [Split List in Half](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-fast-and-slow-pointers-problems-split-list-in-half), [Equal Halves](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-fast-and-slow-pointers-problems-equal-halves), and [Palindrome Checker](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-fast-and-slow-pointers-problems-palindrome-checker).
+Drill the family in **Practice** — [Middle Node Search](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-fast-and-slow-pointers/problems/middle-node-search), [Split List in Half](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-fast-and-slow-pointers/problems/split-list-in-half), [Equal Halves](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-fast-and-slow-pointers/problems/equal-halves), and [Palindrome Checker](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-fast-and-slow-pointers/problems/palindrome-checker).
 
 ## Reflect & Connect
 
 The two-speed walk is one of the most reused list tricks because the speed ratio is really a *measuring tape*:
 
 - **Midpoint family** — find the middle, **split** a list in half (find middle, sever), and **palindrome check** (find middle, reverse the second half, compare against the first — reversal as a sub-step, exactly the earlier pattern).
-- **Cycle detection (Floyd's tortoise & hare)** — the deepest use: if the list has a cycle, the fast pointer eventually *laps* the slow one and they collide; if there's no cycle, fast just exits. That single idea also locates the cycle's entry point — see [Detecting a Cycle](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-detecting-cycle-in-singly-linked-lists).
+- **Cycle detection (Floyd's tortoise & hare)** — the deepest use: if the list has a cycle, the fast pointer eventually *laps* the slow one and they collide; if there's no cycle, fast just exits. That single idea also locates the cycle's entry point — see [Detecting a Cycle](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/detecting-cycle-in-singly-linked-lists).
 - **Gap vs ratio** — contrast the previous pattern: a fixed *gap* encodes "distance from the end"; a fixed *speed ratio* encodes "fraction of the length." Pick the one whose invariant matches the question.
 
-**Prerequisites:** [What Is a Linked List?](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-what-is-a-linked-list).
-**What's next:** use the midpoint to cut a list cleanly in two — [Split](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-split-pattern).
+**Prerequisites:** [What Is a Linked List?](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/what-is-a-linked-list).
+**What's next:** use the midpoint to cut a list cleanly in two — [Split](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-split/pattern).
 
 ## Recall
 

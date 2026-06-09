@@ -6,29 +6,29 @@ Backtracking is brute force in tree form. Every problem with the shape "list eve
 
 ## Start Here — the learning path
 
-- [Introduction to Backtracking](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-introduction-to-backtracking)
-- [Pattern: Unconditional Enumeration](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-unconditional-enumeration-pattern)
-- [Pattern: Conditional Enumeration](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-conditional-enumeration-pattern)
-- [Pattern: Backtracking Search](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-backtracking-search-pattern)
+- [Introduction to Backtracking](/cortex/data-structures-and-algorithms/algorithms-by-strategy/backtracking/introduction-to-backtracking)
+- [Pattern: Unconditional Enumeration](/cortex/data-structures-and-algorithms/algorithms-by-strategy/backtracking/pattern-unconditional-enumeration/pattern)
+- [Pattern: Conditional Enumeration](/cortex/data-structures-and-algorithms/algorithms-by-strategy/backtracking/pattern-conditional-enumeration/pattern)
+- [Pattern: Backtracking Search](/cortex/data-structures-and-algorithms/algorithms-by-strategy/backtracking/pattern-backtracking-search/pattern)
 
 ## Practice
 
 Do these after the matching pattern in Start Here.
 
 ### Unconditional Enumeration
-- [Unique Subsets](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-unconditional-enumeration-problems-unique-subsets)
-- [Case Transformations](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-unconditional-enumeration-problems-case-transformations)
-- [Number Sequence](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-unconditional-enumeration-problems-number-sequence)
-- [Phone Combinations](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-unconditional-enumeration-problems-phone-combinations)
+- [Unique Subsets](/cortex/data-structures-and-algorithms/algorithms-by-strategy/backtracking/pattern-unconditional-enumeration/problems/unique-subsets)
+- [Case Transformations](/cortex/data-structures-and-algorithms/algorithms-by-strategy/backtracking/pattern-unconditional-enumeration/problems/case-transformations)
+- [Number Sequence](/cortex/data-structures-and-algorithms/algorithms-by-strategy/backtracking/pattern-unconditional-enumeration/problems/number-sequence)
+- [Phone Combinations](/cortex/data-structures-and-algorithms/algorithms-by-strategy/backtracking/pattern-unconditional-enumeration/problems/phone-combinations)
 
 ### Conditional Enumeration
-- [Generate Parentheses](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-conditional-enumeration-problems-generate-parentheses)
-- [Target Sum Combinations](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-conditional-enumeration-problems-target-sum-combinations)
-- [Generate IP Addresses](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-conditional-enumeration-problems-generate-ip-addresses)
-- [String Permutations](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-conditional-enumeration-problems-string-permutations)
+- [Generate Parentheses](/cortex/data-structures-and-algorithms/algorithms-by-strategy/backtracking/pattern-conditional-enumeration/problems/generate-parentheses)
+- [Target Sum Combinations](/cortex/data-structures-and-algorithms/algorithms-by-strategy/backtracking/pattern-conditional-enumeration/problems/target-sum-combinations)
+- [Generate IP Addresses](/cortex/data-structures-and-algorithms/algorithms-by-strategy/backtracking/pattern-conditional-enumeration/problems/generate-ip-addresses)
+- [String Permutations](/cortex/data-structures-and-algorithms/algorithms-by-strategy/backtracking/pattern-conditional-enumeration/problems/string-permutations)
 
 ### Backtracking Search
-- [Rat in a Maze](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-backtracking-search-problems-rat-in-a-maze)
-- [Word Quest](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-backtracking-search-problems-word-quest)
-- [Solve N Queens](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-backtracking-search-problems-solve-n-queens)
-- [Solve Sudoku](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-backtracking-search-problems-solve-sudoku)
+- [Rat in a Maze](/cortex/data-structures-and-algorithms/algorithms-by-strategy/backtracking/pattern-backtracking-search/problems/rat-in-a-maze)
+- [Word Quest](/cortex/data-structures-and-algorithms/algorithms-by-strategy/backtracking/pattern-backtracking-search/problems/word-quest)
+- [Solve N Queens](/cortex/data-structures-and-algorithms/algorithms-by-strategy/backtracking/pattern-backtracking-search/problems/solve-n-queens)
+- [Solve Sudoku](/cortex/data-structures-and-algorithms/algorithms-by-strategy/backtracking/pattern-backtracking-search/problems/solve-sudoku)

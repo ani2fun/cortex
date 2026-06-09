@@ -9,7 +9,7 @@ prereqs:
 
 You type `recieve` and the search box asks "did you mean *receive*?" Behind it: the site computed the **edit distance** between your query and dictionary words and returned the closest. Edit distance (Levenshtein) is the minimum number of single-character **insertions, deletions, and substitutions** to turn one string into another — the engine behind spell-checkers, fuzzy search, DNA alignment, `diff`, and OCR correction.
 
-It's the [LCS](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-longest-common-subsequence) grid with one upgrade: where LCS had two moves on a mismatch, edit distance has **three** (insert, delete, replace), and it *minimises* a cost instead of maximising a length. Same `(i, j)` state, same `O(m·n)` table — the recurrence's three-way `min` is the whole lesson.
+It's the [LCS](/cortex/data-structures-and-algorithms/algorithms-by-strategy/dynamic-programming/longest-common-subsequence) grid with one upgrade: where LCS had two moves on a mismatch, edit distance has **three** (insert, delete, replace), and it *minimises* a cost instead of maximising a length. Same `(i, j)` state, same `O(m·n)` table — the recurrence's three-way `min` is the whole lesson.
 
 ## See It Work
 

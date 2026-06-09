@@ -39,7 +39,7 @@ An **LSM-tree** (O'Neil, Cheng, Gawlick & O'Neil, 1996) inverts this. Its moving
 | **SSTable** | when the memtable fills, it's flushed to disk as an *immutable, sorted* file ("Sorted String Table") |
 | **Compaction** | a background job that merge-sorts SSTables together, discarding overwritten values and expired tombstones |
 | **Tombstone** | a delete is a *write* of a "this key is gone" marker, resolved at compaction |
-| **Bloom filter** | a tiny probabilistic index per SSTable that answers "this key is *definitely not* here" so reads can skip files (see [Lesson 23](/cortex/system-design/storage-and-search-probabilistic-data-structures)) |
+| **Bloom filter** | a tiny probabilistic index per SSTable that answers "this key is *definitely not* here" so reads can skip files (see [Lesson 23](/cortex/system-design/storage-and-search/probabilistic-data-structures)) |
 
 (The memtable/SSTable vocabulary comes straight from Google's 2006 **Bigtable** paper, which is where most of today's LSM engines trace their lineage.)
 
@@ -200,4 +200,4 @@ The decision rule is almost embarrassingly simple: **is your workload write-boun
 
 ---
 
-> **Next:** [23. Probabilistic data structures](/cortex/system-design/storage-and-search-probabilistic-data-structures) — we kept saying "a bloom filter lets an LSM-tree skip SSTables that can't contain your key." That bloom filter is a **probabilistic data structure**: it trades a sliver of accuracy (it can say "maybe" but never a false "no") for a thousand-fold cut in memory. Next we meet the family — bloom filters, HyperLogLog, count-min sketch — and the beautiful idea that *being approximately right in a kilobyte beats being exactly right in a gigabyte.*
+> **Next:** [23. Probabilistic data structures](/cortex/system-design/storage-and-search/probabilistic-data-structures) — we kept saying "a bloom filter lets an LSM-tree skip SSTables that can't contain your key." That bloom filter is a **probabilistic data structure**: it trades a sliver of accuracy (it can say "maybe" but never a false "no") for a thousand-fold cut in memory. Next we meet the family — bloom filters, HyperLogLog, count-min sketch — and the beautiful idea that *being approximately right in a kilobyte beats being exactly right in a gigabyte.*

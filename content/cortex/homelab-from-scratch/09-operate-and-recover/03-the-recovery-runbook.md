@@ -86,11 +86,11 @@ Total time: ~10 minutes. Skipping any of this turns a 6-hour rebuild into a 12-h
 
 For each node:
 
-1. Install Ubuntu 24.04 LTS Server (chapter [Install Ubuntu 24.04](/cortex/homelab-from-scratch/the-nodes-install-ubuntu-24-04)).
+1. Install Ubuntu 24.04 LTS Server (chapter [Install Ubuntu 24.04](/cortex/homelab-from-scratch/the-nodes/install-ubuntu-24-04)).
 2. Set hostname during install: `ms-1`, `wk-1`, `wk-2`, or `ctb-edge-1`.
 3. Install your SSH public key for `root` (or `ubuntu`).
 4. Set static IPs on the home boxes.
-5. Run `prepare-host.sh` from the infra repo (chapter [Baseline host prep](/cortex/homelab-from-scratch/the-nodes-baseline-host-prep)).
+5. Run `prepare-host.sh` from the infra repo (chapter [Baseline host prep](/cortex/homelab-from-scratch/the-nodes/baseline-host-prep)).
 
 **Gate.** All four nodes pass `swapon --show` (empty), `lsmod | grep -E 'br_netfilter|vxlan'`, and accept SSH from your laptop.
 
@@ -244,4 +244,4 @@ The trustworthy version of this chapter is the one you've actually executed end-
 
 Tag a calendar reminder. Future you will thank present you.
 
-→ Next: [Where to grow from here](/cortex/homelab-from-scratch/operate-and-recover-where-to-grow-from-here)
+→ Next: [Where to grow from here](/cortex/homelab-from-scratch/operate-and-recover/where-to-grow-from-here)

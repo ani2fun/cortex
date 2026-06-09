@@ -9,7 +9,7 @@ prereqs:
 
 The last two lessons hunted for *one* palindrome inside a string — the longest subsequence, then the longest contiguous substring. Now the demand flips: split the **whole** string so that *every* piece is a palindrome, with as few cuts as possible. `"abbbc"` looks hostile until you read it as `a | bbb | c` — three palindromic pieces, two cuts.
 
-The naïve move is to try every partition, but a length-`n` string has `2^(n−1)` ways to drop dividers — brute force collapses immediately. Underneath, though, every cut decision depends only on the prefix before it: classic optimal substructure with overlapping subproblems. This is the lesson where the palindrome work pays off — the [boolean isPalindrome table](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-longest-palindromic-substring) from the previous lesson becomes a *lookup* that a second, 1D DP builds on. ([LeetCode 132](https://leetcode.com/problems/palindrome-partitioning-ii/).)
+The naïve move is to try every partition, but a length-`n` string has `2^(n−1)` ways to drop dividers — brute force collapses immediately. Underneath, though, every cut decision depends only on the prefix before it: classic optimal substructure with overlapping subproblems. This is the lesson where the palindrome work pays off — the [boolean isPalindrome table](/cortex/data-structures-and-algorithms/algorithms-by-strategy/dynamic-programming/longest-palindromic-substring) from the previous lesson becomes a *lookup* that a second, 1D DP builds on. ([LeetCode 132](https://leetcode.com/problems/palindrome-partitioning-ii/).)
 
 ## See It Work
 
@@ -223,7 +223,7 @@ Both print `[aa, b]` then `[a, aabaa]`. The reconstruction confirms the Trace-It
 - **1D answer, 2D oracle.** The DP itself is 1D (`cuts[i]` over prefixes), even though it queries a 2D palindrome table. Recognising that the table is a precompute, not the recurrence, is the whole modelling lesson.
 - **Precompute to drop a complexity class.** Building `is_pal` once turns the inner palindrome check from `O(n)` to `O(1)`, taking the algorithm from `O(n³)` to `O(n²)`. "Cache the expensive predicate" recurs across DP.
 - **Greedy fails, DP wins.** Longest-palindromic-prefix-first is locally optimal but globally wrong (`"aaabaa"`): a short first piece can unlock a long one. When an early choice can foreclose the best ending, enumerate all decompositions.
-- **Same skeleton as word break.** The [next lesson](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-word-break) is the *identical* 1D prefix DP — "can this prefix be split into valid pieces?" — with a dictionary lookup swapped in for the palindrome check. Fix-the-last-piece transfers wholesale.
+- **Same skeleton as word break.** The [next lesson](/cortex/data-structures-and-algorithms/algorithms-by-strategy/dynamic-programming/word-break) is the *identical* 1D prefix DP — "can this prefix be split into valid pieces?" — with a dictionary lookup swapped in for the palindrome check. Fix-the-last-piece transfers wholesale.
 - **Min-cut vs enumerate-all.** This finds the *cheapest* partition with DP; [LeetCode 131](https://leetcode.com/problems/palindrome-partitioning/) asks for *every* palindrome partition, which is backtracking (enumerate, prune on non-palindromic pieces) — a different tool for a different question.
 
 ## Recall

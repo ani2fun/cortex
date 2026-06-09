@@ -159,7 +159,7 @@ kubectl delete pod pod-on-wk1 pod-on-wk2
 
 If the ping works, your data plane is functional end-to-end: pod → veth → host route → Calico VXLAN → WireGuard → physical NIC → home router → ISP → Contabo → reverse, three times.
 
-If it fails, the most common cause is the MTU. Re-run the MTU test from [When the mesh misbehaves](/cortex/homelab-from-scratch/private-mesh-when-the-mesh-misbehaves), but with the smaller Calico MTU value of 1370 minus the 28 ICMP+IP overhead = 1342 in the `-s` flag.
+If it fails, the most common cause is the MTU. Re-run the MTU test from [When the mesh misbehaves](/cortex/homelab-from-scratch/private-mesh/when-the-mesh-misbehaves), but with the smaller Calico MTU value of 1370 minus the 28 ICMP+IP overhead = 1342 in the `-s` flag.
 
 ## What you should have now
 
@@ -169,4 +169,4 @@ If it fails, the most common cause is the MTU. Re-run the MTU test from [When th
 
 Now we just have to *tell* the cluster which node should run what. That's the next chapter.
 
-→ Next: [Where things are allowed to run](/cortex/homelab-from-scratch/kubernetes-base-where-things-are-allowed-to-run)
+→ Next: [Where things are allowed to run](/cortex/homelab-from-scratch/kubernetes-base/where-things-are-allowed-to-run)

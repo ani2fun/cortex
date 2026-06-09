@@ -143,7 +143,7 @@ Returns `'Maria from Germany'`, `'John from USA'`, etc.
 
 > **Dialect note:** SQL Server uses `+` for string concatenation, not `||`. MySQL uses `CONCAT(a, b, c)`. Postgres and SQLite use `||`. The Postgres-canonical syntax in this book is `||`. If you switch to MySQL, swap to `CONCAT()`.
 
-A subtlety: `||` propagates `NULL`. `'hello' || NULL` is `NULL`, not `'hello'`. If `country` is `NULL` for a customer, the entire `bio` for that row is `NULL`. Use `COALESCE(country, 'unknown')` to substitute a default. We'll meet `COALESCE` properly in [NULL and three-valued logic](/cortex/languages/sql-index).
+A subtlety: `||` propagates `NULL`. `'hello' || NULL` is `NULL`, not `'hello'`. If `country` is `NULL` for a customer, the entire `bio` for that row is `NULL`. Use `COALESCE(country, 'unknown')` to substitute a default. We'll meet `COALESCE` properly in [NULL and three-valued logic](/cortex/languages/sql/index).
 
 ## Function calls
 
@@ -155,7 +155,7 @@ SELECT first_name,
 FROM customers;
 ```
 
-Hundreds of built-in functions ship with Postgres — string functions (`UPPER`, `LOWER`, `LENGTH`, `SUBSTRING`, `TRIM`, `REPLACE`), numeric functions (`ABS`, `ROUND`, `CEIL`, `FLOOR`), date functions (`NOW`, `DATE_TRUNC`, `EXTRACT`, `AGE`), conversion functions (`CAST`, `TO_CHAR`, `TO_NUMBER`). The [Row Functions](/cortex/languages/sql-index) module of this book is dedicated to them.
+Hundreds of built-in functions ship with Postgres — string functions (`UPPER`, `LOWER`, `LENGTH`, `SUBSTRING`, `TRIM`, `REPLACE`), numeric functions (`ABS`, `ROUND`, `CEIL`, `FLOOR`), date functions (`NOW`, `DATE_TRUNC`, `EXTRACT`, `AGE`), conversion functions (`CAST`, `TO_CHAR`, `TO_NUMBER`). The [Row Functions](/cortex/languages/sql/index) module of this book is dedicated to them.
 
 For now: a function call inside `SELECT` produces a value per row, just like a column reference does. The result is a new column.
 
@@ -188,7 +188,7 @@ Output:
  Peter      |     0 | low
 ```
 
-A `CASE` evaluates each `WHEN` clause top-to-bottom and returns the first one whose condition is true; if none match and there's an `ELSE`, the `ELSE` value; if none match and there's no `ELSE`, the result is `NULL`. The [CASE Expressions](/cortex/languages/sql-index) chapter goes deep; for projection purposes, just know that `CASE` is a value-producing expression, so you can put it anywhere a column reference can go.
+A `CASE` evaluates each `WHEN` clause top-to-bottom and returns the first one whose condition is true; if none match and there's an `ELSE`, the `ELSE` value; if none match and there's no `ELSE`, the result is `NULL`. The [CASE Expressions](/cortex/languages/sql/index) chapter goes deep; for projection purposes, just know that `CASE` is a value-producing expression, so you can put it anywhere a column reference can go.
 
 ---
 
@@ -204,7 +204,7 @@ SELECT first_name AS name, score * 0.1 AS bonus FROM customers;
 SELECT first_name name, score * 0.1 bonus FROM customers;
 ```
 
-Both produce a result with columns `name` and `bonus`. The `AS` is conventionally used because skipping it is *legal but ambiguous-looking* — `SELECT first_name name` looks like a typo. **This book uses `AS` everywhere except for table aliases (where it's conventionally dropped — see [Joins](/cortex/languages/sql-index)).**
+Both produce a result with columns `name` and `bonus`. The `AS` is conventionally used because skipping it is *legal but ambiguous-looking* — `SELECT first_name name` looks like a typo. **This book uses `AS` everywhere except for table aliases (where it's conventionally dropped — see [Joins](/cortex/languages/sql/index)).**
 
 ## When you *need* an alias
 
@@ -364,7 +364,7 @@ In fact, in Postgres they often produce the *same execution plan*. `GROUP BY` an
 
 # The alias-namespace trap
 
-This is the single most asked-about beginner SQL question, and it's worth understanding deeply because it's the place where the [logical execution order](/cortex/languages/sql-foundations-introduction-to-sql) suddenly *matters*.
+This is the single most asked-about beginner SQL question, and it's worth understanding deeply because it's the place where the [logical execution order](/cortex/languages/sql/foundations/introduction-to-sql) suddenly *matters*.
 
 ## The trap
 
@@ -382,7 +382,7 @@ You get: `ERROR: column "bonus" does not exist`.
 
 ## Why
 
-`WHERE` runs at step 2 of the [logical execution order](/cortex/languages/sql-foundations-introduction-to-sql#the-logical-execution-order). Aliases bind in `SELECT`, which is step 6. At step 2, the alias `bonus` doesn't exist yet. The engine doesn't know what you mean.
+`WHERE` runs at step 2 of the [logical execution order](/cortex/languages/sql/foundations/introduction-to-sql#the-logical-execution-order). Aliases bind in `SELECT`, which is step 6. At step 2, the alias `bonus` doesn't exist yet. The engine doesn't know what you mean.
 
 ```mermaid
 ---
@@ -435,7 +435,7 @@ FROM (
 WHERE c.bonus > 50;
 ```
 
-Because the inner `SELECT` has already run by the time the outer `WHERE` evaluates, the alias is in scope. We'll meet subqueries properly in [Working with Multiple Tables](/cortex/languages/sql-index).
+Because the inner `SELECT` has already run by the time the outer `WHERE` evaluates, the alias is in scope. We'll meet subqueries properly in [Working with Multiple Tables](/cortex/languages/sql/index).
 
 **(c) Use a CTE.** Same idea as (b), prettier syntax:
 
@@ -447,7 +447,7 @@ WITH scored AS (
 SELECT * FROM scored WHERE bonus > 50;
 ```
 
-Common Table Expressions (CTEs) get their own [chapter](/cortex/languages/sql-index). For now: `WITH name AS (subquery) SELECT … FROM name` is a way of naming a sub-result so you can refer to it in the outer query. The alias `bonus` is in scope inside the CTE and inside the outer `SELECT`.
+Common Table Expressions (CTEs) get their own [chapter](/cortex/languages/sql/index). For now: `WITH name AS (subquery) SELECT … FROM name` is a way of naming a sub-result so you can refer to it in the outer query. The alias `bonus` is in scope inside the CTE and inside the outer `SELECT`.
 
 ## When aliases *do* work
 
@@ -561,7 +561,7 @@ Five columns in the output, four of them computed. Aliases on every computed col
 
 1. **List every customer's name and `score / 100` as a percentage.** *Hint: arithmetic in SELECT; integer division will bite you.*
 2. **Produce a table of "First name, Country (uppercase), Bonus = score × 0.1" for every customer.** *Hint: three columns; `UPPER()` on country; arithmetic on score.*
-3. **Without using `DISTINCT`, list every distinct country a customer is from.** *Hint: which clause from the [logical execution order](/cortex/languages/sql-foundations-introduction-to-sql#the-logical-execution-order) groups rows by a column and returns one row per group?*
+3. **Without using `DISTINCT`, list every distinct country a customer is from.** *Hint: which clause from the [logical execution order](/cortex/languages/sql/foundations/introduction-to-sql#the-logical-execution-order) groups rows by a column and returns one row per group?*
 4. **Predict the output of:**
    ```sql
    SELECT DISTINCT first_name, country FROM customers;
@@ -586,10 +586,10 @@ Five columns in the output, four of them computed. Aliases on every computed col
 
 # Cross-links
 
-- **Previous in this module:** [Introduction to SQL](/cortex/languages/sql-foundations-introduction-to-sql) — the logical execution order this chapter's alias-trap section depends on.
-- **Next in this module:** [Filtering](/cortex/languages/sql-foundations-filtering) — `WHERE`, the row-filtering counterpart to projection. Together with `SELECT`, these are 90% of every read query you'll write.
-- **Cited from later chapters** — projection shows up in every query in the book. The [Joins](/cortex/languages/sql-index) chapter uses table-qualified column names heavily; the [Aggregation](/cortex/languages/sql-index) module relies on `SELECT` aliases for `GROUP BY` outputs; the [Window Functions](/cortex/languages/sql-index) chapter projects window expressions.
-- **Forward reference:** [NULL and three-valued logic](/cortex/languages/sql-index) — the `||` propagation behaviour mentioned in this chapter is a special case of the general rule that operations on `NULL` return `NULL`. The full treatment of why is in the 3VL chapter.
+- **Previous in this module:** [Introduction to SQL](/cortex/languages/sql/foundations/introduction-to-sql) — the logical execution order this chapter's alias-trap section depends on.
+- **Next in this module:** [Filtering](/cortex/languages/sql/foundations/filtering) — `WHERE`, the row-filtering counterpart to projection. Together with `SELECT`, these are 90% of every read query you'll write.
+- **Cited from later chapters** — projection shows up in every query in the book. The [Joins](/cortex/languages/sql/index) chapter uses table-qualified column names heavily; the [Aggregation](/cortex/languages/sql/index) module relies on `SELECT` aliases for `GROUP BY` outputs; the [Window Functions](/cortex/languages/sql/index) chapter projects window expressions.
+- **Forward reference:** [NULL and three-valued logic](/cortex/languages/sql/index) — the `||` propagation behaviour mentioned in this chapter is a special case of the general rule that operations on `NULL` return `NULL`. The full treatment of why is in the 3VL chapter.
 
 ***
 

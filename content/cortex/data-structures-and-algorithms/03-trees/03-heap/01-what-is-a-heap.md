@@ -122,8 +122,8 @@ A heap *is* the **priority queue** of every standard library — Python's `heapq
 
 Why a heap and not a sorted array or a balanced tree? All three can do the job, but the heap wins on *constant factors and simplicity*: no per-node allocation, no pointers, no rebalancing — just an array and some index arithmetic, which is cache-friendly and short to code. The price is that a heap is **only** good at the extremes: it gives you the min (or max) instantly, but finding or removing some *arbitrary* middle value is `O(n)` — it keeps no total order, only "the root is the most extreme."
 
-**Prerequisites:** [Arrays](/cortex/data-structures-and-algorithms/linear-structures-arrays-what-is-an-array) and [Measuring Cost](/cortex/data-structures-and-algorithms/foundations-measuring-cost).
-**What's next:** a heap is your first *tree* — flattened into an array. Next come real, pointer-linked trees: the [Binary Tree](/cortex/data-structures-and-algorithms/trees-binary-tree-introduction-to-binary-trees).
+**Prerequisites:** [Arrays](/cortex/data-structures-and-algorithms/linear-structures/arrays/what-is-an-array) and [Measuring Cost](/cortex/data-structures-and-algorithms/foundations/measuring-cost).
+**What's next:** a heap is your first *tree* — flattened into an array. Next come real, pointer-linked trees: the [Binary Tree](/cortex/data-structures-and-algorithms/trees/binary-tree/introduction-to-binary-trees).
 
 ## Recall
 

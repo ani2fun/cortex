@@ -60,7 +60,7 @@ flowchart LR
 
 ### 3.1 Layer 4 vs Layer 7
 
-The **L4 / L7** distinction is the single most important load-balancer vocabulary item. It refers to the [OSI layer](/cortex/system-design/building-blocks-networking-primer) at which the LB makes its routing decision.
+The **L4 / L7** distinction is the single most important load-balancer vocabulary item. It refers to the [OSI layer](/cortex/system-design/building-blocks/networking-primer) at which the LB makes its routing decision.
 
 - **L4** operates on the TCP/IP 5-tuple: source IP, source port, destination IP, destination port, protocol. It does not look inside the TCP payload. Once a connection is established, every packet on that connection goes to the same backend. The LB is essentially a smart NAT.
 - **L7** terminates the TCP connection itself, **decrypts TLS**, parses the application protocol (typically HTTP), and *then* decides which backend gets the request. It can route by path, header, cookie, method, request body, anything visible.
@@ -136,7 +136,7 @@ Drag the sliders below. With one virtual node per physical, the load distributio
 
 At any setting, the "gap" readout shows how many fewer keys re-map when you add one more node under consistent hashing versus plain modulo hashing. With 4 nodes and 24 keys, modulo will re-map ~18 of 24 keys when you go to 5; consistent hashing re-maps ~5. That's the entire argument for the algorithm.
 
-Consistent hashing is everywhere once you know to look for it. [Memcached client libraries](https://github.com/memcached/memcached/wiki/ConfiguringClient) (libketama since 2007), [Cassandra's partition map](https://cassandra.apache.org/doc/latest/cassandra/architecture/dynamo.html#consistent-hashing), [Amazon Dynamo's partition assignment](https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf), [Akamai's edge cache placement](https://www.akamai.com/blog/web-performance/akamai-and-the-evolution-of-caching). [Lesson 8 (caching)](/cortex/system-design/building-blocks-caching), [Lesson 12 (sharding)](/cortex/system-design/building-blocks-sharding-and-partitioning), and [Capstone 37 (URL shortener)](/cortex/system-design/capstones-url-shortener) all reach for this same ring.
+Consistent hashing is everywhere once you know to look for it. [Memcached client libraries](https://github.com/memcached/memcached/wiki/ConfiguringClient) (libketama since 2007), [Cassandra's partition map](https://cassandra.apache.org/doc/latest/cassandra/architecture/dynamo.html#consistent-hashing), [Amazon Dynamo's partition assignment](https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf), [Akamai's edge cache placement](https://www.akamai.com/blog/web-performance/akamai-and-the-evolution-of-caching). [Lesson 8 (caching)](/cortex/system-design/building-blocks/caching), [Lesson 12 (sharding)](/cortex/system-design/building-blocks/sharding-and-partitioning), and [Capstone 37 (URL shortener)](/cortex/system-design/capstones/url-shortener) all reach for this same ring.
 
 ### 3.4 Health checks
 
@@ -222,7 +222,7 @@ If many backends restart simultaneously (a rolling deploy, say), the LB's active
 
 ### 6.4 Hot keys under consistent hashing
 
-Consistent hashing distributes *keys* evenly, but **not request rate**. If 80% of your traffic is for one key (the "viral video" problem), that one key's backend is 80% loaded while the rest are idle. The remedy is to **add virtual nodes** (which spreads load more uniformly), or to **replicate** the hot key across multiple backends with explicit fan-out. The widget above shows the virtual-node effect; [Lesson 12 (sharding)](/cortex/system-design/building-blocks-sharding-and-partitioning) revisits hot-key remediation in depth.
+Consistent hashing distributes *keys* evenly, but **not request rate**. If 80% of your traffic is for one key (the "viral video" problem), that one key's backend is 80% loaded while the rest are idle. The remedy is to **add virtual nodes** (which spreads load more uniformly), or to **replicate** the hot key across multiple backends with explicit fan-out. The widget above shows the virtual-node effect; [Lesson 12 (sharding)](/cortex/system-design/building-blocks/sharding-and-partitioning) revisits hot-key remediation in depth.
 
 ### 6.5 Session affinity defeats rebalancing
 
@@ -297,4 +297,4 @@ The LB hits `/healthz`. During the Postgres hiccup, all backends look healthy; s
 
 ---
 
-> **Next:** [8. Caching](/cortex/system-design/building-blocks-caching) — once you have multiple backends fronted by a load balancer, the next question is what they're allowed to cache, where the cache lives, and what happens when the cache is wrong. Consistent hashing makes another appearance there: distributed caches use the same ring math to decide *which* cache node owns each key.
+> **Next:** [8. Caching](/cortex/system-design/building-blocks/caching) — once you have multiple backends fronted by a load balancer, the next question is what they're allowed to cache, where the cache lives, and what happens when the cache is wrong. Consistent hashing makes another appearance there: distributed caches use the same ring math to decide *which* cache node owns each key.

@@ -139,7 +139,7 @@ public class Main {
 }
 ```
 
-Now make the four-pointer dance automatic with [Reversal](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-pattern-reversal-pattern) and the [Two Pointers](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-pattern-two-pointers-pattern) walk that *only* a doubly list can run.
+Now make the four-pointer dance automatic with [Reversal](/cortex/data-structures-and-algorithms/linear-structures/doubly-linked-list/pattern-reversal/pattern) and the [Two Pointers](/cortex/data-structures-and-algorithms/linear-structures/doubly-linked-list/pattern-two-pointers/pattern) walk that *only* a doubly list can run.
 
 ## Reflect & Connect
 
@@ -151,8 +151,8 @@ The doubly linked list earns its second pointer wherever a system must remove or
 
 When does the *singly* list still win? When memory is tight (one pointer per node, not two) and the walk is forward-only — stacks, queues, and free lists. And recall Stroustrup's warning from the last lesson: for pure iteration a packed array beats either list on cache. The doubly list's niche is precise — `O(1)` edits at a *known* handle, both ends, or backward walks.
 
-**Prerequisites:** [Linked Lists](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-what-is-a-linked-list) and [Measuring Cost](/cortex/data-structures-and-algorithms/foundations-measuring-cost).
-**What's next:** the first structures *built on* lists — [Stacks](/cortex/data-structures-and-algorithms/linear-structures-stack-what-is-a-stack), where restricting access to one end turns a list into a discipline.
+**Prerequisites:** [Linked Lists](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/what-is-a-linked-list) and [Measuring Cost](/cortex/data-structures-and-algorithms/foundations/measuring-cost).
+**What's next:** the first structures *built on* lists — [Stacks](/cortex/data-structures-and-algorithms/linear-structures/stack/what-is-a-stack), where restricting access to one end turns a list into a discipline.
 
 ## Recall
 

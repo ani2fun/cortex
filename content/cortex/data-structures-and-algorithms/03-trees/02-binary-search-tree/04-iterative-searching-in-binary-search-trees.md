@@ -9,7 +9,7 @@ prereqs:
 
 ## Why It Exists
 
-[Recursive search](/cortex/data-structures-and-algorithms/trees-binary-search-tree-recursive-searching-in-binary-search-trees) is clean, but each call frame costs stack space — `O(h)` of it. On a deep tree (and a degenerate BST can be height `n`), that's a real stack-overflow risk and per-call overhead.
+[Recursive search](/cortex/data-structures-and-algorithms/trees/binary-search-tree/recursive-searching-in-binary-search-trees) is clean, but each call frame costs stack space — `O(h)` of it. On a deep tree (and a degenerate BST can be height `n`), that's a real stack-overflow risk and per-call overhead.
 
 The fix is to notice that BST search is **tail-recursive**: the recursive call is the *last* thing each invocation does, with no work waiting afterward. Any tail recursion converts mechanically to a loop — keep a "current node" pointer, and instead of recursing, just reassign it and loop. The descent is identical, the time is still `O(h)`, but the space drops to `O(1)`. For production code and deep trees, the iterative form is usually preferred.
 
@@ -149,8 +149,8 @@ Iterative search is a small lesson with a transferable habit:
 - **When to pick which** — recursion for readability when depth is bounded (balanced trees, where `h ≈ log n`); iteration for deep/untrusted structures and hot paths. The choice is about *space and safety*, not time — both are `O(h)`.
 - **Insertion goes iterative too** — the same one-pointer walk finds the empty slot; attach there. Deletion is the one BST operation that resists a clean loop (it needs the successor and parent links), so it usually stays recursive.
 
-**Prerequisites:** [Recursive Searching in BSTs](/cortex/data-structures-and-algorithms/trees-binary-search-tree-recursive-searching-in-binary-search-trees).
-**What's next:** add new keys while preserving the invariant — [Insertion in BSTs](/cortex/data-structures-and-algorithms/trees-binary-search-tree-insertion-in-binary-search-trees).
+**Prerequisites:** [Recursive Searching in BSTs](/cortex/data-structures-and-algorithms/trees/binary-search-tree/recursive-searching-in-binary-search-trees).
+**What's next:** add new keys while preserving the invariant — [Insertion in BSTs](/cortex/data-structures-and-algorithms/trees/binary-search-tree/insertion-in-binary-search-trees).
 
 ## Recall
 

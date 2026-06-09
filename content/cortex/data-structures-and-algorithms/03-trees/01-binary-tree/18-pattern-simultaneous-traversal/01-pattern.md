@@ -145,7 +145,7 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [Identical Trees](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-simultaneous-traversal-problems-identical-trees), [Symmetry Detection](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-simultaneous-traversal-problems-symmetry-detection), [Subtree Detection](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-simultaneous-traversal-problems-subtree-detection), and [Merge Trees](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-simultaneous-traversal-problems-merge-trees).
+Drill the family in **Practice** — [Identical Trees](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-simultaneous-traversal/problems/identical-trees), [Symmetry Detection](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-simultaneous-traversal/problems/symmetry-detection), [Subtree Detection](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-simultaneous-traversal/problems/subtree-detection), and [Merge Trees](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-simultaneous-traversal/problems/merge-trees).
 
 ## Reflect & Connect
 
@@ -153,10 +153,10 @@ Simultaneous traversal is single-tree recursion lifted to operate on a *pair*:
 
 - **The family** — identical-tree, mirror symmetry, subtree-of (`is_same` at every node), merge-by-sum, and *n*-tree comparison (recurse on a tuple). All recurse on paired nodes with `None`-aware base cases; only the per-pair action and the *pairing* differ.
 - **The pairing is the algorithm** — same-side pairing = equality / merge / subtree; cross-side pairing = mirror. The base cases and `val` step are shared boilerplate; the recursive pairing is where the meaning lives.
-- **It's a product traversal** — you're walking the two trees' structures together, the same way [merging two sorted lists](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-merge-pattern) advances two cursors in lockstep. Whenever a problem hands you *two* recursive structures to relate, reach for one recursion over the pair, not two separate walks.
+- **It's a product traversal** — you're walking the two trees' structures together, the same way [merging two sorted lists](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-merge/pattern) advances two cursors in lockstep. Whenever a problem hands you *two* recursive structures to relate, reach for one recursion over the pair, not two separate walks.
 
-**Prerequisites:** [Recursive Traversals](/cortex/data-structures-and-algorithms/trees-binary-tree-recursive-traversals-in-binary-trees).
-**What's next:** you've finished the binary-tree pattern catalog — move to a structure built for prefix queries over strings, the [Trie](/cortex/data-structures-and-algorithms/trees-trie-introduction-to-tries).
+**Prerequisites:** [Recursive Traversals](/cortex/data-structures-and-algorithms/trees/binary-tree/recursive-traversals-in-binary-trees).
+**What's next:** you've finished the binary-tree pattern catalog — move to a structure built for prefix queries over strings, the [Trie](/cortex/data-structures-and-algorithms/trees/trie/introduction-to-tries).
 
 ## Recall
 

@@ -125,8 +125,8 @@ Bits show up wherever space or speed is tight, or a set is small and fixed:
 
 This is foundational technique, not a structure — and two later topics lean on it directly: **bitmask dynamic programming** (where a subset *is* an integer) and the **linear basis** (XOR spans). The bit *patterns* in this section drill the recognition and the moves.
 
-**Prerequisites:** [How a Computer Stores Data](/cortex/data-structures-and-algorithms/foundations-how-a-computer-stores-data) (bits and binary) and [Measuring Cost](/cortex/data-structures-and-algorithms/foundations-measuring-cost).
-**What's next:** the first bit pattern — reading and writing a specific bit, in [Kth Bit](/cortex/data-structures-and-algorithms/bit-tricks-pattern-kth-bit-pattern).
+**Prerequisites:** [How a Computer Stores Data](/cortex/data-structures-and-algorithms/foundations/how-a-computer-stores-data) (bits and binary) and [Measuring Cost](/cortex/data-structures-and-algorithms/foundations/measuring-cost).
+**What's next:** the first bit pattern — reading and writing a specific bit, in [Kth Bit](/cortex/data-structures-and-algorithms/bit-tricks/pattern-kth-bit/pattern).
 
 ## Recall
 
@@ -169,5 +169,5 @@ This is foundational technique, not a structure — and two later topics lean on
 
 - **Henry S. Warren, Jr., *Hacker's Delight*, 2nd ed.** — the canonical reference for bit-level tricks (`x & -x`, population count, and dozens more), with correctness arguments.
 - **cp-algorithms.com**, "Bit manipulation" — the test/set/clear/toggle idioms and the `1 << i` mask, in interview/CP form.
-- Builds directly on [How a Computer Stores Data](/cortex/data-structures-and-algorithms/foundations-how-a-computer-stores-data) — the binary representation and "everything is bits" model.
+- Builds directly on [How a Computer Stores Data](/cortex/data-structures-and-algorithms/foundations/how-a-computer-stores-data) — the binary representation and "everything is bits" model.
 - Both runnable blocks are verified by running; each operator's effect is shown in the printed binary.

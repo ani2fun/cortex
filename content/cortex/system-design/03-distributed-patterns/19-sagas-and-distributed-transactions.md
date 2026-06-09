@@ -6,7 +6,7 @@ summary: A business operation that spans several services has no global ACID tra
 # 19. Sagas and distributed transactions
 
 ## TL;DR
-> A single business action — "place an order" — often means touching several services: reserve inventory, charge the card, book a courier. Each owns its own database, so there is **no global transaction** to make all three commit or roll back together (and a distributed transaction / two-phase commit across them is too fragile to lean on — [Lesson 14](/cortex/system-design/building-blocks-consensus-paxos-and-raft)). A **saga** gets all-or-nothing *behaviour* instead: run the steps as a sequence of **local** transactions, and if step *k* fails, run **compensating transactions** to semantically undo steps *k−1 … 1*. Compensation is a real action with real cost (a *refund*, not a magic rewind), and a saga deliberately gives up **isolation** — other transactions can see the half-done middle. You coordinate it one of two ways: **orchestration** (a central conductor issues commands) or **choreography** (services react to each other's events). The idea is old — Garcia-Molina and Salem published *Sagas* in 1987 — and it's everywhere in microservices today.
+> A single business action — "place an order" — often means touching several services: reserve inventory, charge the card, book a courier. Each owns its own database, so there is **no global transaction** to make all three commit or roll back together (and a distributed transaction / two-phase commit across them is too fragile to lean on — [Lesson 14](/cortex/system-design/building-blocks/consensus-paxos-and-raft)). A **saga** gets all-or-nothing *behaviour* instead: run the steps as a sequence of **local** transactions, and if step *k* fails, run **compensating transactions** to semantically undo steps *k−1 … 1*. Compensation is a real action with real cost (a *refund*, not a magic rewind), and a saga deliberately gives up **isolation** — other transactions can see the half-done middle. You coordinate it one of two ways: **orchestration** (a central conductor issues commands) or **choreography** (services react to each other's events). The idea is old — Garcia-Molina and Salem published *Sagas* in 1987 — and it's everywhere in microservices today.
 
 ## 1. Motivation
 
@@ -29,7 +29,7 @@ That's the whole model. Local commits you can't atomically undo, compensations t
 **Saga.** A sequence of local transactions `T₁, T₂, … Tₙ`, each committing independently in its own service, with a matching **compensating transaction** `Cᵢ` for each `Tᵢ`. Two recovery directions:
 
 - **Backward recovery** — if `Tₖ` fails, run `Cₖ₋₁, Cₖ₋₂, … C₁` to undo the work already done.
-- **Forward recovery** — for steps that *must* eventually succeed, keep retrying `Tₖ` (with backoff, [Lesson 17](/cortex/system-design/distributed-patterns-idempotency-retries-backoff)) rather than unwinding.
+- **Forward recovery** — for steps that *must* eventually succeed, keep retrying `Tₖ` (with backoff, [Lesson 17](/cortex/system-design/distributed-patterns/idempotency-retries-backoff)) rather than unwinding.
 
 A compensation is a **semantic undo**, not a rollback: the inverse of "charge $50" is "refund $50" (a new transaction that leaves an audit trail), not "pretend the charge never happened."
 
@@ -55,7 +55,7 @@ Three services, three local transactions, in order:
 
 **Happy path:** `T₁ → T₂ → T₃` all commit; the order is placed. **Failure path:** `T₁` and `T₂` succeed, but `T₃` fails — every courier is down. There is no global rollback. The orchestrator runs **backward recovery**: `C₂` refund the $50, then `C₁` release the inventory. The customer ends up charged nothing and the stock is back; the *behaviour* was all-or-nothing even though, for a few seconds, money had really moved.
 
-**The isolation failure, made concrete.** Between `T₁` (reserve inventory) and the `T₃` failure, the inventory count was genuinely lower. Another customer's order, running concurrently, may have seen "only 0 left" and been refused — reacting to an intermediate saga state that was about to be undone. That's the lost-isolation tax: a saga's middle is *visible*, so a competing transaction can make decisions on data that's still in flight. (This is the same "what consistency does the reader see?" question from [Lesson 13](/cortex/system-design/building-blocks-consistency-models), now spanning services.)
+**The isolation failure, made concrete.** Between `T₁` (reserve inventory) and the `T₃` failure, the inventory count was genuinely lower. Another customer's order, running concurrently, may have seen "only 0 left" and been refused — reacting to an intermediate saga state that was about to be undone. That's the lost-isolation tax: a saga's middle is *visible*, so a competing transaction can make decisions on data that's still in flight. (This is the same "what consistency does the reader see?" question from [Lesson 13](/cortex/system-design/building-blocks/consistency-models), now spanning services.)
 
 ```mermaid
 ---
@@ -128,7 +128,7 @@ And the most important trade: **build an orchestrator yourself vs use a durable-
 - **Some actions can't be compensated.** You can't un-send an email or un-launch a missile. Order the saga so **irreversible steps come last** (after everything reversible has succeeded), or model the irreversible thing as a **reservation** first (reserve seat → confirm) so the "reserve" is what you compensate. The step after which you can no longer abort is the *pivot* — past it, you can only go forward.
 - **Choreography flow becomes unfollowable.** Event-driven sagas with many participants turn into a "pinball machine" where no one can say what the full flow is, and event cycles can form. When you can't draw the flow on a whiteboard, switch to orchestration.
 - **Orchestrator state must be durable.** A crashed orchestrator that loses its place leaves sagas stranded (order charged, never shipped, never compensated). Persist saga state after every step — this is the entire reason durable-execution engines exist.
-- **Every step and compensation must be idempotent.** Retries ([Lesson 17](/cortex/system-design/distributed-patterns-idempotency-retries-backoff)) and at-least-once events ([Lesson 15](/cortex/system-design/distributed-patterns-message-queues-and-streams)) mean a step can run twice; "charge" and "refund" must dedupe on a saga/step id or you'll double-charge or double-refund.
+- **Every step and compensation must be idempotent.** Retries ([Lesson 17](/cortex/system-design/distributed-patterns/idempotency-retries-backoff)) and at-least-once events ([Lesson 15](/cortex/system-design/distributed-patterns/message-queues-and-streams)) mean a step can run twice; "charge" and "refund" must dedupe on a saga/step id or you'll double-charge or double-refund.
 - **A saga is not a transaction.** There is no instant in which the operation is atomically all-or-nothing; there's a *window* of partial state. Design the product for that window ("your order is processing"), don't pretend it doesn't exist.
 
 ## 8. Practice
@@ -159,7 +159,7 @@ And the most important trade: **build an orchestrator yourself vs use a durable-
 > <details>
 > <summary>Solution</summary>
 >
-> The compensation isn't **idempotent**. A timeout is ambiguous ([Lesson 17](/cortex/system-design/distributed-patterns-idempotency-retries-backoff)) — the first refund may have succeeded — so the retry issues a *second* refund. Fix: give each compensation a stable **idempotency key** (e.g. `saga_id + step + "compensate"`) so the payment service recognises the retry and returns the original refund instead of issuing a new one. The same discipline applies to the forward steps. The deeper lesson: compensations are *real transactions* subject to the exact same at-least-once/timeout hazards as the forward path, so they need the exact same idempotency protection — a saga that retries non-idempotent compensations just converts one bug into a refund leak.
+> The compensation isn't **idempotent**. A timeout is ambiguous ([Lesson 17](/cortex/system-design/distributed-patterns/idempotency-retries-backoff)) — the first refund may have succeeded — so the retry issues a *second* refund. Fix: give each compensation a stable **idempotency key** (e.g. `saga_id + step + "compensate"`) so the payment service recognises the retry and returns the original refund instead of issuing a new one. The same discipline applies to the forward steps. The deeper lesson: compensations are *real transactions* subject to the exact same at-least-once/timeout hazards as the forward path, so they need the exact same idempotency protection — a saga that retries non-idempotent compensations just converts one bug into a refund leak.
 >
 > </details>
 
@@ -173,4 +173,4 @@ And the most important trade: **build an orchestrator yourself vs use a durable-
 
 ---
 
-> **Next:** [20. Rate limiting](/cortex/system-design/distributed-patterns-rate-limiting) — sagas, retries, and fan-out all generate bursts of traffic, and the way you protect a service from being overwhelmed (by clients, by retries, by a noisy neighbour) is rate limiting. We'll implement token bucket, leaky bucket, and sliding window, and see why the naïve "fixed window" counter lets through double the traffic you intended.
+> **Next:** [20. Rate limiting](/cortex/system-design/distributed-patterns/rate-limiting) — sagas, retries, and fan-out all generate bursts of traffic, and the way you protect a service from being overwhelmed (by clients, by retries, by a noisy neighbour) is rate limiting. We'll implement token bucket, leaky bucket, and sliding window, and see why the naïve "fixed window" counter lets through double the traffic you intended.

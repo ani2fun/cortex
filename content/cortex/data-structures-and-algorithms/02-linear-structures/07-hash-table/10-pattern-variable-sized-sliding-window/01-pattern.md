@@ -9,7 +9,7 @@ prereqs:
 
 ## Why It Exists
 
-This is the array [variable sliding window](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-variable-sliding-window-pattern) raised to *composition* constraints. There, validity was a number (a sum ≤ target). Here it's about *which elements and how many*: "the longest substring with **no repeating** character," "the longest with **at most `k` distinct**," "the shortest window **containing all** of a target set." The window's validity depends on its element counts — so its state is a **hash map**.
+This is the array [variable sliding window](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-variable-sliding-window/pattern) raised to *composition* constraints. There, validity was a number (a sum ≤ target). Here it's about *which elements and how many*: "the longest substring with **no repeating** character," "the longest with **at most `k` distinct**," "the shortest window **containing all** of a target set." The window's validity depends on its element counts — so its state is a **hash map**.
 
 Brute force re-examines every start/end pair — `O(n²)`. The fix is the same breathing window as before, with a count map as state: **grow** the right edge (add the entering element to the map), and whenever the constraint breaks, **shrink** the left edge (remove elements) until it holds again. Each pointer only ever moves forward, so the whole sweep is `O(n)` despite the inner shrink loop.
 
@@ -120,18 +120,18 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [Unique Character Span](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-variable-sized-sliding-window-problems-unique-character-span), [K Characters Span](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-variable-sized-sliding-window-problems-k-characters-span), [Maximal Character Swap](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-variable-sized-sliding-window-problems-maximal-character-swap), [Subarray Sum Equals K](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-variable-sized-sliding-window-problems-subarray-sum-equals-k), and [Twin in Proximity](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-variable-sized-sliding-window-problems-twin-in-proximity).
+Drill the family in **Practice** — [Unique Character Span](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-variable-sized-sliding-window/problems/unique-character-span), [K Characters Span](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-variable-sized-sliding-window/problems/k-characters-span), [Maximal Character Swap](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-variable-sized-sliding-window/problems/maximal-character-swap), [Subarray Sum Equals K](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-variable-sized-sliding-window/problems/subarray-sum-equals-k), and [Twin in Proximity](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-variable-sized-sliding-window/problems/twin-in-proximity).
 
 ## Reflect & Connect
 
 This is among the most common interview patterns — "longest/shortest substring satisfying a count condition" is almost always a map-backed variable window:
 
 - **The family, by validity test** — `count[ch] > 1` (no repeats), `len(count) > k` (at most `k` distinct), "map covers the target" (minimum window substring), or longest-with-at-most-`k`-of-some-value. The skeleton is fixed; the test selects the problem.
-- **It's [variable sliding window](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-variable-sliding-window-pattern) + [counting](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-counting-pattern)** — the array pattern's grow/shrink machinery with a frequency map as the validity state.
+- **It's [variable sliding window](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-variable-sliding-window/pattern) + [counting](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-counting/pattern)** — the array pattern's grow/shrink machinery with a frequency map as the validity state.
 - **Longest vs shortest flips the shrink rule** — for *longest valid*, shrink only while invalid and measure after; for *shortest valid*, shrink while still valid and measure inside the loop. Same window, opposite shrink condition.
 
-**Prerequisites:** [Fixed-Size Sliding Window](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-fixed-sized-sliding-window-pattern).
-**What's next:** answer subarray-sum questions with a running total and a map of seen prefixes — [Prefix Sum](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-prefix-sum-pattern).
+**Prerequisites:** [Fixed-Size Sliding Window](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-fixed-sized-sliding-window/pattern).
+**What's next:** answer subarray-sum questions with a running total and a map of seen prefixes — [Prefix Sum](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-prefix-sum/pattern).
 
 ## Recall
 

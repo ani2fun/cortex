@@ -111,7 +111,7 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [Minimum Meeting Rooms](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-maximum-overlap-problems-minimum-meeting-rooms) and [Peak Resource Requirement](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-maximum-overlap-problems-peak-resource-requirement).
+Drill the family in **Practice** — [Minimum Meeting Rooms](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-maximum-overlap/problems/minimum-meeting-rooms) and [Peak Resource Requirement](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-maximum-overlap/problems/peak-resource-requirement).
 
 ## Reflect & Connect
 
@@ -123,7 +123,7 @@ The sweep line generalizes far past counting:
 
 This closes the array pattern family — scans, two-pointer variants, sliding windows, and now the interval/sweep techniques. Together they're the toolkit for nearly every linear-array problem.
 
-**Prerequisites:** [Interval Merging](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-interval-merging-pattern).
+**Prerequisites:** [Interval Merging](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-interval-merging/pattern).
 
 ## Recall
 

@@ -9,7 +9,7 @@ prereqs:
 
 ## Why It Exists
 
-You learned the [mechanics of binary search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-binary-search) — `lo`/`hi`/`mid`, halve each step. This lesson is about **recognition**: when does a problem call for it, and what's the one template you reuse?
+You learned the [mechanics of binary search](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/binary-search) — `lo`/`hi`/`mid`, halve each step. This lesson is about **recognition**: when does a problem call for it, and what's the one template you reuse?
 
 The trigger is simple. If the data is **sorted** (or you can decide, in `O(1)`, which half of the search space to discard), binary search turns an `O(n)` scan into `O(log n)`. That covers far more than "find `x` in a sorted array": validating membership, finding a shared/intersecting element of two sorted arrays, locating a position — and, with the variants, boundaries, rotations, and "binary search on the answer." Learn to *see* the sorted/monotone structure, and the template does the rest.
 
@@ -57,7 +57,7 @@ flowchart TB
 
 <p align="center"><strong>recognize the ordered search space, probe the middle, and discard the half that can't contain the answer; one template, many variants.</strong></p>
 
-Every member of the family is this template with a different midpoint test: exact match (`== target`), first `≥`/`>` ([lower](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-lower-bound)/[upper bound](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-upper-bound)), which-half-is-sorted ([rotated array](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-sorted-rotated-array)), or `feasible(mid)` ([predicate search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-minimum-predicate-search)). All are `O(log n)` (or `O(log(range) × cost(test))`).
+Every member of the family is this template with a different midpoint test: exact match (`== target`), first `≥`/`>` ([lower](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/lower-bound)/[upper bound](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/upper-bound)), which-half-is-sorted ([rotated array](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/sorted-rotated-array)), or `feasible(mid)` ([predicate search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-minimum-predicate-search)). All are `O(log n)` (or `O(log(range) × cost(test))`).
 
 ### Key Takeaway
 
@@ -117,18 +117,18 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [Recovery Validation](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-binary-search-problems-recovery-validation), [Reverse Binary Search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-binary-search-problems-reverse-binary-search), [Minimum Shared Element](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-binary-search-problems-minimum-shared-element), and [Intersecting Elements](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-binary-search-problems-intersecting-elements).
+Drill the family in **Practice** — [Recovery Validation](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/pattern-binary-search/problems/recovery-validation), [Reverse Binary Search](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/pattern-binary-search/problems/reverse-binary-search), [Minimum Shared Element](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/pattern-binary-search/problems/minimum-shared-element), and [Intersecting Elements](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/pattern-binary-search/problems/intersecting-elements).
 
 ## Reflect & Connect
 
 This pattern is the umbrella; the rest of the section is its variants:
 
-- **The family, by midpoint test** — exact match (this lesson), first `≥`/`>` ([lower](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-lower-bound) / [upper bound](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-upper-bound)), which-half-is-sorted ([rotated array](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-sorted-rotated-array)), and `feasible(mid)` ([min](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-minimum-predicate-search) / [max predicate](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-maximum-predicate-search)).
+- **The family, by midpoint test** — exact match (this lesson), first `≥`/`>` ([lower](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/lower-bound) / [upper bound](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/upper-bound)), which-half-is-sorted ([rotated array](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/sorted-rotated-array)), and `feasible(mid)` ([min](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-minimum-predicate-search) / [max predicate](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-maximum-predicate-search)).
 - **Recognition beats memorization** — you don't memorize five algorithms; you learn one template and the trigger ("ordered space + cheap halving test"), then swap the midpoint test. Most "I didn't see it was binary search" misses are failures to spot a *constructible* monotone search space.
 - **Invariant discipline carries across all variants** — choose inclusive `[lo, hi]` or half-open `[lo, hi)` and keep `mid`, the loop test, and the updates consistent; that single habit prevents the off-by-one bugs binary search is infamous for.
 
-**Prerequisites:** [Binary Search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-binary-search).
-**What's next:** the boundary variant — first position where a condition becomes true — [Lower Bound](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-lower-bound-pattern).
+**Prerequisites:** [Binary Search](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/binary-search).
+**What's next:** the boundary variant — first position where a condition becomes true — [Lower Bound](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/pattern-lower-bound/pattern).
 
 ## Recall
 

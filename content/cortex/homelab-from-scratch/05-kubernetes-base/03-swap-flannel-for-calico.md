@@ -160,4 +160,4 @@ If you're running this professionally on bare metal in one datacenter, Cilium is
 
 Next, the workers join.
 
-→ Next: [Join the workers](/cortex/homelab-from-scratch/kubernetes-base-join-the-workers)
+→ Next: [Join the workers](/cortex/homelab-from-scratch/kubernetes-base/join-the-workers)

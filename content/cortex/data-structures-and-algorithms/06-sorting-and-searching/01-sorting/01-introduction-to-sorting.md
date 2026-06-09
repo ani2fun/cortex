@@ -96,15 +96,15 @@ public class Main {
 
 This section's lessons map onto the classification above:
 
-- **Elementary `O(n²)`** — [bubble](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-bubble-sort), selection, insertion: simple, stable/in-place, good for tiny or nearly-sorted inputs.
+- **Elementary `O(n²)`** — [bubble](/cortex/data-structures-and-algorithms/sorting-and-searching/sorting/bubble-sort), selection, insertion: simple, stable/in-place, good for tiny or nearly-sorted inputs.
 - **Efficient `O(n log n)`** — merge (stable, out-of-place), quick (in-place, fast in practice), heap (in-place, worst-case `O(n log n)`).
 - **Non-comparison** — counting sort: `O(n + k)` for bounded integer keys, beating the comparison lower bound.
 - **Partition family** — Dutch-national-flag, three-way quicksort, and quickselect all build on quicksort's partition step.
 
 A practical note: real-world libraries don't pick one — they *combine*. Python's Timsort and Java's `Arrays.sort` use insertion sort for small runs and merge/quick for the bulk, getting adaptivity *and* `O(n log n)`. The lessons ahead are the building blocks those hybrids assemble.
 
-**Prerequisites:** [What Is an Array?](/cortex/data-structures-and-algorithms/linear-structures-arrays-what-is-an-array).
-**What's next:** the simplest sort, swapping adjacent pairs — [Bubble Sort](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-bubble-sort).
+**Prerequisites:** [What Is an Array?](/cortex/data-structures-and-algorithms/linear-structures/arrays/what-is-an-array).
+**What's next:** the simplest sort, swapping adjacent pairs — [Bubble Sort](/cortex/data-structures-and-algorithms/sorting-and-searching/sorting/bubble-sort).
 
 ## Recall
 

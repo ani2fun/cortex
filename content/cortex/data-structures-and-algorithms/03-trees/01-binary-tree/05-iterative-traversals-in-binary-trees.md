@@ -9,9 +9,9 @@ prereqs:
 
 ## Why It Exists
 
-The [recursive traversals](/cortex/data-structures-and-algorithms/trees-binary-tree-recursive-traversals-in-binary-trees) are beautiful — three lines each — but they have a hidden dependency: the **call stack**. Every recursive call pushes a frame, and the call stack is small and fixed (a megabyte or so; Python caps recursion near 1000 frames). Feed a recursive traversal a degenerate tree — a right-leaning chain of 10,000 nodes — and it doesn't return an answer, it *crashes*: `RecursionError` in Python, `StackOverflowError` in Java.
+The [recursive traversals](/cortex/data-structures-and-algorithms/trees/binary-tree/recursive-traversals-in-binary-trees) are beautiful — three lines each — but they have a hidden dependency: the **call stack**. Every recursive call pushes a frame, and the call stack is small and fixed (a megabyte or so; Python caps recursion near 1000 frames). Feed a recursive traversal a degenerate tree — a right-leaning chain of 10,000 nodes — and it doesn't return an answer, it *crashes*: `RecursionError` in Python, `StackOverflowError` in Java.
 
-The fix is to notice that **the recursion was always using a stack** — we just let the language manage it. Make that stack *explicit*: a plain stack object you push and pop yourself. Now the bookkeeping lives on the **heap** (gigabytes, grows on demand) instead of the call stack, so the traversal scales to any depth without overflowing. You get the same preorder, inorder, and postorder, the same `O(n)` time and `O(h)` space — just no crash. (The one traversal that *doesn't* use a stack is level-order, which uses a **queue** — that's [breadth-first](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-pattern), a different lesson.) The one subtlety to internalize: a stack is **LIFO**, so it reverses the order you push — to visit the left child first, you must push it *last*.
+The fix is to notice that **the recursion was always using a stack** — we just let the language manage it. Make that stack *explicit*: a plain stack object you push and pop yourself. Now the bookkeeping lives on the **heap** (gigabytes, grows on demand) instead of the call stack, so the traversal scales to any depth without overflowing. You get the same preorder, inorder, and postorder, the same `O(n)` time and `O(h)` space — just no crash. (The one traversal that *doesn't* use a stack is level-order, which uses a **queue** — that's [breadth-first](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-level-order-traversal/pattern), a different lesson.) The one subtlety to internalize: a stack is **LIFO**, so it reverses the order you push — to visit the left child first, you must push it *last*.
 
 ## See It Work
 
@@ -217,10 +217,10 @@ Both print `postorder (iterative): [4, 5, 2, 3, 1]` — matching the recursive p
 
 - **Recursion was a stack all along.** The call stack held one root-to-node path; an explicit stack holds the same thing. Making it explicit just relocates it from the tiny call stack to the vast heap.
 - **LIFO inverts push order.** The defining gotcha: to visit `left` first, push it *last*. Every iterative-traversal bug starts here.
-- **Each order has an explicit form.** Preorder (push-right-then-left), inorder (dive-left then pop-and-go-right), postorder (two stacks, or modified-preorder reversed). Same three orders as [recursion](/cortex/data-structures-and-algorithms/trees-binary-tree-recursive-traversals-in-binary-trees), same `O(n)`/`O(h)` cost.
-- **Level-order is the exception.** Swap the stack for a [queue](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-pattern) and depth-first becomes breadth-first — the one traversal that isn't stack-based.
+- **Each order has an explicit form.** Preorder (push-right-then-left), inorder (dive-left then pop-and-go-right), postorder (two stacks, or modified-preorder reversed). Same three orders as [recursion](/cortex/data-structures-and-algorithms/trees/binary-tree/recursive-traversals-in-binary-trees), same `O(n)`/`O(h)` cost.
+- **Level-order is the exception.** Swap the stack for a [queue](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-level-order-traversal/pattern) and depth-first becomes breadth-first — the one traversal that isn't stack-based.
 - **When to reach for it.** Trees deep enough to overflow recursion, or when you need explicit control (pause/resume a walk, or the `O(1)`-space Morris traversal that threads the tree instead of using any stack).
-- **Next: building a tree.** [Constructing a binary tree](/cortex/data-structures-and-algorithms/trees-binary-tree-constructing-a-binary-tree) runs traversals in reverse — given preorder + inorder arrays, rebuild the unique tree they describe.
+- **Next: building a tree.** [Constructing a binary tree](/cortex/data-structures-and-algorithms/trees/binary-tree/constructing-a-binary-tree) runs traversals in reverse — given preorder + inorder arrays, rebuild the unique tree they describe.
 
 ## Recall
 
@@ -258,5 +258,5 @@ Both print `postorder (iterative): [4, 5, 2, 3, 1]` — matching the recursive p
 ## Sources & Verify
 
 - **CLRS**, *Introduction to Algorithms*, §10.4 and §12.1 — stack-based and recursive tree walks; **Sedgewick & Wayne**, *Algorithms* §3.2 — non-recursive inorder traversal with an explicit stack.
-- The [recursive-traversals lesson](/cortex/data-structures-and-algorithms/trees-binary-tree-recursive-traversals-in-binary-trees) for the orders these reproduce, and the [stack lesson](/cortex/data-structures-and-algorithms/linear-structures-stack-what-is-a-stack) for the LIFO push/pop primitive.
+- The [recursive-traversals lesson](/cortex/data-structures-and-algorithms/trees/binary-tree/recursive-traversals-in-binary-trees) for the orders these reproduce, and the [stack lesson](/cortex/data-structures-and-algorithms/linear-structures/stack/what-is-a-stack) for the LIFO push/pop primitive.
 - `preorder [1,2,4,5,3]`, `inorder [4,2,5,1,3]`, the push-order flip `[1,3,2,5,4]`, and `postorder [4,5,2,3,1]` all come from the runnable blocks above (deterministic) — re-run to verify.

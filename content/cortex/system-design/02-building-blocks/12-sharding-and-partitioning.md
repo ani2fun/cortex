@@ -6,7 +6,7 @@ summary: Splitting a dataset across N machines under three strategies — range,
 # 12. Sharding and partitioning
 
 ## TL;DR
-> **Sharding splits a dataset across N independent machines, with each one owning a slice of the keyspace.** Orthogonal to replication ([Lesson 11](/cortex/system-design/building-blocks-replication)) — production systems usually do both. There are three partitioning strategies: **range** (each shard owns a contiguous key range — like dictionary volumes A–F, G–M, …), **hash** (each shard owns keys whose hash falls in its slice — random-looking but uniform), and **directory** (an explicit map maintained by the router). The senior moment of this lesson is the **hot shard**: even with hash partitioning, a Zipfian-skewed workload can put one shard at 5× the load of the others. The widget below lets you crank the skew and switch strategies to see it. The fix — **virtual shards** — is the same trick the consistent-hash ring uses in [Lesson 7](/cortex/system-design/building-blocks-load-balancing).
+> **Sharding splits a dataset across N independent machines, with each one owning a slice of the keyspace.** Orthogonal to replication ([Lesson 11](/cortex/system-design/building-blocks/replication)) — production systems usually do both. There are three partitioning strategies: **range** (each shard owns a contiguous key range — like dictionary volumes A–F, G–M, …), **hash** (each shard owns keys whose hash falls in its slice — random-looking but uniform), and **directory** (an explicit map maintained by the router). The senior moment of this lesson is the **hot shard**: even with hash partitioning, a Zipfian-skewed workload can put one shard at 5× the load of the others. The widget below lets you crank the skew and switch strategies to see it. The fix — **virtual shards** — is the same trick the consistent-hash ring uses in [Lesson 7](/cortex/system-design/building-blocks/load-balancing).
 
 ## 1. Motivation
 
@@ -67,7 +67,7 @@ A *shard* is a complete instance of the underlying datastore (a Postgres server,
 
 Two facts to internalise before going further:
 
-1. **Sharding is independent of replication.** A 32-shard cluster can have 0, 1, or N replicas per shard. Each shard handles replication internally; the router is unaware. In Notion's setup, each of the 32 physical Postgres instances is itself a single-leader replica set ([Lesson 11](/cortex/system-design/building-blocks-replication)).
+1. **Sharding is independent of replication.** A 32-shard cluster can have 0, 1, or N replicas per shard. Each shard handles replication internally; the router is unaware. In Notion's setup, each of the 32 physical Postgres instances is itself a single-leader replica set ([Lesson 11](/cortex/system-design/building-blocks/replication)).
 2. **Cross-shard queries are expensive.** A `JOIN` across two tables on different shards is a scatter-gather across the router; ordering and pagination are application-side. Most production sharded systems avoid cross-shard queries by *choosing the partition key to keep related rows on the same shard*.
 
 ### 3.2 Three partitioning strategies
@@ -107,7 +107,7 @@ Then the third trick: **virtual shards**. The "hash + virtual" strategy treats e
 
 ### 3.4 Resharding — the dreaded migration
 
-Eventually you outgrow the current shard count. With **hash partitioning**, naïvely changing `N` from 8 to 16 reshuffles every key: `hash(k) % 8` is unrelated to `hash(k) % 16`. That's a full data migration. **With consistent hashing**, only roughly `1/N` of keys move when you add a shard — the same property the widget in [Lesson 7](/cortex/system-design/building-blocks-load-balancing) made visceral. Production sharded systems use consistent hashing (or a close cousin like rendezvous hashing) precisely so resharding is cheap.
+Eventually you outgrow the current shard count. With **hash partitioning**, naïvely changing `N` from 8 to 16 reshuffles every key: `hash(k) % 8` is unrelated to `hash(k) % 16`. That's a full data migration. **With consistent hashing**, only roughly `1/N` of keys move when you add a shard — the same property the widget in [Lesson 7](/cortex/system-design/building-blocks/load-balancing) made visceral. Production sharded systems use consistent hashing (or a close cousin like rendezvous hashing) precisely so resharding is cheap.
 
 The Notion migration moved billions of rows from one monolithic Postgres into 480 logical shards across 32 databases in a single weekend with minimal downtime, because they had pre-designed the logical-shard scheme. **Plan for resharding before you need it**; retrofitting consistent hashing onto an existing modulo-hashed system is the expensive migration story you don't want to live through.
 
@@ -160,11 +160,11 @@ Even with uniform hash partitioning, a single popular key (the celebrity user, t
 
 ### 6.3 Cross-shard transaction
 
-A single transaction touching rows on multiple shards is hard. You can't use a regular database transaction (each shard is its own database). The substitutes: **two-phase commit** (works, slow, not survivable to coordinator failure); **sagas** (a sequence of compensating actions on failure — see [Lesson 19](/cortex/system-design/distributed-patterns-sagas-and-distributed-transactions)); **just don't do it** (model the data so transactions stay within one shard). The third is by far the most common production answer.
+A single transaction touching rows on multiple shards is hard. You can't use a regular database transaction (each shard is its own database). The substitutes: **two-phase commit** (works, slow, not survivable to coordinator failure); **sagas** (a sequence of compensating actions on failure — see [Lesson 19](/cortex/system-design/distributed-patterns/sagas-and-distributed-transactions)); **just don't do it** (model the data so transactions stay within one shard). The third is by far the most common production answer.
 
 ### 6.4 The router becomes the bottleneck
 
-If you funnel every query through a single central router, the router itself becomes a SPOF and a throughput ceiling. Mitigations: **library router** (compile the routing logic into every client; the function is stateless); **N-way load-balance the central router** behind an [L4 load balancer](/cortex/system-design/building-blocks-load-balancing); **share the shard map via gossip** (every node knows the topology). The router complexity is real but tractable.
+If you funnel every query through a single central router, the router itself becomes a SPOF and a throughput ceiling. Mitigations: **library router** (compile the routing logic into every client; the function is stateless); **N-way load-balance the central router** behind an [L4 load balancer](/cortex/system-design/building-blocks/load-balancing); **share the shard map via gossip** (every node knows the topology). The router complexity is real but tractable.
 
 ### 6.5 Reshuffling under load
 
@@ -194,7 +194,7 @@ The two access patterns want different partition keys.
 
 **Choice B — partition by `(warehouse_id, day)`.** Pattern (b) is cheap. Pattern (a) becomes a scatter-gather. Bad if it's the dominant access pattern.
 
-**Choice C — denormalise.** Two separate sharded tables (`orders_by_user`, `orders_by_warehouse`), each partitioned for its pattern. Writes go to both — the application maintains the duality. Same trick Cassandra teaches in [Lesson 10](/cortex/system-design/building-blocks-nosql-families) (denormalise at write time, optimise reads per pattern). 2× the write cost; both reads are local.
+**Choice C — denormalise.** Two separate sharded tables (`orders_by_user`, `orders_by_warehouse`), each partitioned for its pattern. Writes go to both — the application maintains the duality. Same trick Cassandra teaches in [Lesson 10](/cortex/system-design/building-blocks/nosql-families) (denormalise at write time, optimise reads per pattern). 2× the write cost; both reads are local.
 
 The senior answer is **C**, with the caveat that you only adopt the second table once pattern (b) actually becomes a measurable problem at production scale. Don't preemptively double your write cost for a query that runs once a day.
 
@@ -254,4 +254,4 @@ The lesson: **the migration's cost depends on the partitioning math AND the migr
 
 ---
 
-> **Next:** [13. Consistency models](/cortex/system-design/building-blocks-consistency-models) — once you have data sharded across N machines and replicated R ways, the question becomes "what consistency does the user actually see?" The answer is a small but important taxonomy — strong, eventual, monotonic, causal — and the senior moment is reaching for the right one per query, not per cluster.
+> **Next:** [13. Consistency models](/cortex/system-design/building-blocks/consistency-models) — once you have data sharded across N machines and replicated R ways, the question becomes "what consistency does the user actually see?" The answer is a small but important taxonomy — strong, eventual, monotonic, causal — and the senior moment is reaching for the right one per query, not per cluster.

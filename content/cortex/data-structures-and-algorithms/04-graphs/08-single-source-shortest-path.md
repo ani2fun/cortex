@@ -9,7 +9,7 @@ prereqs:
 
 ## Why It Exists
 
-"From here, what's the cheapest way to reach everywhere else?" is the question behind every map app, every routing protocol, every cost-minimising planner. You already have one shortest-path tool — [BFS](/cortex/data-structures-and-algorithms/graphs-traversing-a-graph) — but it measures **hops**, and on a *weighted* graph hops aren't cost: a 2-hop path of cheap edges can beat a 1-hop expensive edge. The right notion of "closest" is **smallest accumulated weight**, not fewest edges.
+"From here, what's the cheapest way to reach everywhere else?" is the question behind every map app, every routing protocol, every cost-minimising planner. You already have one shortest-path tool — [BFS](/cortex/data-structures-and-algorithms/graphs/traversing-a-graph) — but it measures **hops**, and on a *weighted* graph hops aren't cost: a 2-hop path of cheap edges can beat a 1-hop expensive edge. The right notion of "closest" is **smallest accumulated weight**, not fewest edges.
 
 Two algorithms cover the cases. **Dijkstra** generalises BFS by replacing the queue with a **min-heap keyed by distance**: always expand the closest-so-far node, and (given **non-negative** weights) its distance is final the moment it's popped. **Bellman-Ford** drops the non-negative assumption: it just **relaxes every edge `V−1` times**, which is slower (`O(VE)`) but correct with negative weights — and one extra round detects a **negative cycle** (a loop you can ride to `−∞`). Pick Dijkstra when weights are non-negative; Bellman-Ford when they aren't.
 
@@ -145,11 +145,11 @@ Shortest path is a family selected by edge weights:
 
 - **Dijkstra vs Bellman-Ford** — Dijkstra is faster (`O((V+E) log V)`) but assumes non-negative weights; Bellman-Ford is slower (`O(VE)`) but handles negatives and *detects negative cycles*. The decision is purely "are any weights negative?" — and Dijkstra fails *silently* (wrong answer, no error) if you ignore it.
 - **BFS is Dijkstra with all weights 1** — and Dijkstra is BFS with a priority queue. The progression queue → min-heap, depth → distance, is one idea applied at three weight regimes (unweighted → non-negative → arbitrary). Recognising it means you never memorise three unrelated algorithms.
-- **The min-heap is the engine** — Dijkstra is the headline application of the [binary heap](/cortex/data-structures-and-algorithms/trees-heap-what-is-a-heap); the lazy-push-instead-of-decrease-key trick (tolerate stale entries, skip them on pop) is a broadly useful pattern for heap-driven algorithms.
+- **The min-heap is the engine** — Dijkstra is the headline application of the [binary heap](/cortex/data-structures-and-algorithms/trees/heap/what-is-a-heap); the lazy-push-instead-of-decrease-key trick (tolerate stale entries, skip them on pop) is a broadly useful pattern for heap-driven algorithms.
 - **In production** — Google/Apple Maps (Dijkstra/A\* over road graphs), OSPF link-state routing (Dijkstra), RIP distance-vector routing (Bellman-Ford, for its cycle awareness), and arbitrage detection in currency graphs (negative cycle ⇔ profit loop, found by Bellman-Ford).
 
-**Prerequisites:** [Traversing a Graph](/cortex/data-structures-and-algorithms/graphs-traversing-a-graph).
-**What's next:** when you need the distance between *every* pair of nodes at once — [All-Pairs Shortest Path](/cortex/data-structures-and-algorithms/graphs-all-pairs-shortest-path).
+**Prerequisites:** [Traversing a Graph](/cortex/data-structures-and-algorithms/graphs/traversing-a-graph).
+**What's next:** when you need the distance between *every* pair of nodes at once — [All-Pairs Shortest Path](/cortex/data-structures-and-algorithms/graphs/all-pairs-shortest-path).
 
 ## Recall
 

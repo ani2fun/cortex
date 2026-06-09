@@ -122,8 +122,8 @@ Insertion sort is the best of the elementary sorts and a real production buildin
 - **It's inside the big sorts** — Timsort (Python, Java objects) and introsort (C++) fall back to insertion sort below a size threshold (~16–32 elements), because its low constant factor beats the recursion overhead of `O(n log n)` sorts on tiny inputs.
 - **Variants** — *binary* insertion sort uses binary search to find the gap in `O(log n)` comparisons (though still `O(n)` shifts); shell sort generalizes it with gapped passes to move elements farther per step. The "shift, don't swap" idea also recurs in array-insertion and the merge step of merge sort.
 
-**Prerequisites:** [What Is an Array?](/cortex/data-structures-and-algorithms/linear-structures-arrays-what-is-an-array).
-**What's next:** drop comparisons entirely and sort by counting — [Counting Sort](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-counting-sort).
+**Prerequisites:** [What Is an Array?](/cortex/data-structures-and-algorithms/linear-structures/arrays/what-is-an-array).
+**What's next:** drop comparisons entirely and sort by counting — [Counting Sort](/cortex/data-structures-and-algorithms/sorting-and-searching/sorting/counting-sort).
 
 ## Recall
 

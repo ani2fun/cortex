@@ -9,9 +9,9 @@ prereqs:
 
 ## Why It Exists
 
-"Is there a cycle?" is one of the most-asked questions of a graph. A cycle in a build's dependency graph is a circular `import` that won't compile; a cycle in a lock-acquisition graph is a **deadlock**; a cycle in a task scheduler means there's no valid order to run things ([topological sort](/cortex/data-structures-and-algorithms/graphs-topological-sort) fails exactly when a cycle exists). Spreadsheets reject cyclic formulas for the same reason.
+"Is there a cycle?" is one of the most-asked questions of a graph. A cycle in a build's dependency graph is a circular `import` that won't compile; a cycle in a lock-acquisition graph is a **deadlock**; a cycle in a task scheduler means there's no valid order to run things ([topological sort](/cortex/data-structures-and-algorithms/graphs/topological-sort) fails exactly when a cycle exists). Spreadsheets reject cyclic formulas for the same reason.
 
-Both answers are a [DFS](/cortex/data-structures-and-algorithms/graphs-traversing-a-graph) — but the *rule* for "I found a cycle" differs by graph type, and that difference trips people up. In an **undirected** graph, finding an already-visited neighbour means a cycle *unless* it's the parent you just came from (every edge is two-way, so walking back isn't a loop). In a **directed** graph, that's not enough: you need a back edge to a node that's **still on the current DFS path** — being merely "visited" isn't a cycle. Getting the right rule for the right graph is the lesson.
+Both answers are a [DFS](/cortex/data-structures-and-algorithms/graphs/traversing-a-graph) — but the *rule* for "I found a cycle" differs by graph type, and that difference trips people up. In an **undirected** graph, finding an already-visited neighbour means a cycle *unless* it's the parent you just came from (every edge is two-way, so walking back isn't a loop). In a **directed** graph, that's not enough: you need a back edge to a node that's **still on the current DFS path** — being merely "visited" isn't a cycle. Getting the right rule for the right graph is the lesson.
 
 ## See It Work
 
@@ -143,12 +143,12 @@ Then: detect a cycle in an undirected graph with **DSU** (union edges; same-set 
 Cycle detection is the canonical "same DFS, graph-type-specific rule" lesson:
 
 - **Two rules, one skeleton** — undirected excludes the *parent* (edges are bidirectional, so the come-from edge isn't a loop); directed checks *path membership* (grey), because a back edge loops only if it points to an unfinished ancestor. Picking the wrong rule is the classic bug — the undirected rule false-positives on the directed diamond.
-- **Directed cycle detection ⇔ "is it a DAG?"** — a directed graph has a valid [topological order](/cortex/data-structures-and-algorithms/graphs-topological-sort) *if and only if* it has no cycle. The grey-node check here is exactly the failure condition topo sort watches for; the two algorithms are the same DFS read two ways.
-- **The 3-colour pattern recurs** — white/grey/black (unvisited / in-progress / done) is the general DFS-state vocabulary; it reappears in [strongly-connected components](/cortex/data-structures-and-algorithms/graphs-strongly-connected-components), [bridges and articulation points](/cortex/data-structures-and-algorithms/graphs-bridges-and-articulation-points), and any algorithm that distinguishes tree/back/forward/cross edges.
-- **Two tools for undirected** — DFS-parent and [DSU](/cortex/data-structures-and-algorithms/trees-disjoint-set-union-introduction-to-disjoint-set-union) (union-find) both detect undirected cycles in near-linear time; DSU shines when edges arrive as a stream (Kruskal's MST uses exactly this to skip cycle-forming edges).
+- **Directed cycle detection ⇔ "is it a DAG?"** — a directed graph has a valid [topological order](/cortex/data-structures-and-algorithms/graphs/topological-sort) *if and only if* it has no cycle. The grey-node check here is exactly the failure condition topo sort watches for; the two algorithms are the same DFS read two ways.
+- **The 3-colour pattern recurs** — white/grey/black (unvisited / in-progress / done) is the general DFS-state vocabulary; it reappears in [strongly-connected components](/cortex/data-structures-and-algorithms/graphs/strongly-connected-components), [bridges and articulation points](/cortex/data-structures-and-algorithms/graphs/bridges-and-articulation-points), and any algorithm that distinguishes tree/back/forward/cross edges.
+- **Two tools for undirected** — DFS-parent and [DSU](/cortex/data-structures-and-algorithms/trees/disjoint-set-union/introduction-to-disjoint-set-union) (union-find) both detect undirected cycles in near-linear time; DSU shines when edges arrive as a stream (Kruskal's MST uses exactly this to skip cycle-forming edges).
 
-**Prerequisites:** [Traversing a Graph](/cortex/data-structures-and-algorithms/graphs-traversing-a-graph).
-**What's next:** order a DAG so every edge points "forward" — and see why it's possible *exactly when* there's no cycle — [Topological Sort](/cortex/data-structures-and-algorithms/graphs-topological-sort).
+**Prerequisites:** [Traversing a Graph](/cortex/data-structures-and-algorithms/graphs/traversing-a-graph).
+**What's next:** order a DAG so every edge points "forward" — and see why it's possible *exactly when* there's no cycle — [Topological Sort](/cortex/data-structures-and-algorithms/graphs/topological-sort).
 
 ## Recall
 

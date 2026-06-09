@@ -92,7 +92,7 @@ Concretely, the K3s server starts with these flags:
 Why each removal:
 
 - **Flannel** is fine for clusters that don't need NetworkPolicy and don't span unusual networks. We need both: NetworkPolicy to keep Postgres internal, and Calico's VXLAN to ride cleanly over WireGuard. So out it goes.
-- **The bundled Traefik** runs on every node, listening on `:80` and `:443` via NodePort. We want exactly *one* Traefik, on the edge, with `hostNetwork: true`. The bundled chart gets in the way. (We will install Traefik manually in [Pin Traefik to the edge](/cortex/homelab-from-scratch/the-edge-pin-traefik-to-the-edge) — same software, very different deployment.)
+- **The bundled Traefik** runs on every node, listening on `:80` and `:443` via NodePort. We want exactly *one* Traefik, on the edge, with `hostNetwork: true`. The bundled chart gets in the way. (We will install Traefik manually in [Pin Traefik to the edge](/cortex/homelab-from-scratch/the-edge/pin-traefik-to-the-edge) — same software, very different deployment.)
 - **ServiceLB** turns every Service of type `LoadBalancer` into a `hostPort` listener on each node — fine for some homelabs, terrible for the "only the edge is public" model. Our Services are mostly `ClusterIP`; the public path goes through Traefik on the edge.
 - **Network Policy** is K3s' bundled implementation; Calico replaces it.
 
@@ -126,4 +126,4 @@ This binds the kube-apiserver to the WireGuard interface, *not* the LAN interfac
 
 If you forget these flags, K3s defaults to the host's first IPv4 address — usually the LAN address — and the edge node can't reach the API server at all. The cluster will still come up, agent installs will fail with TLS errors, and you'll spend an hour wondering why. Don't forget these flags.
 
-→ Next: [Install the control-plane](/cortex/homelab-from-scratch/kubernetes-base-install-the-control-plane)
+→ Next: [Install the control-plane](/cortex/homelab-from-scratch/kubernetes-base/install-the-control-plane)

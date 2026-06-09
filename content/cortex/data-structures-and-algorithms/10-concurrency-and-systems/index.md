@@ -6,8 +6,8 @@ Every data structure in this book so far assumed **one thread**. The moment you 
 
 ## Start Here — the learning path
 
-- [CAS and Atomics](/cortex/data-structures-and-algorithms/concurrency-and-systems-cas-and-atomics)
-- [Lock-Free Queue](/cortex/data-structures-and-algorithms/concurrency-and-systems-lock-free-queue)
-- [Concurrent Hash Map](/cortex/data-structures-and-algorithms/concurrency-and-systems-concurrent-hash-map)
-- [RCU and Hazard Pointers](/cortex/data-structures-and-algorithms/concurrency-and-systems-rcu-and-hazard-pointers)
-- [Distributed Data Structures (Teaser)](/cortex/data-structures-and-algorithms/concurrency-and-systems-distributed-data-structures-teaser)
+- [CAS and Atomics](/cortex/data-structures-and-algorithms/concurrency-and-systems/cas-and-atomics)
+- [Lock-Free Queue](/cortex/data-structures-and-algorithms/concurrency-and-systems/lock-free-queue)
+- [Concurrent Hash Map](/cortex/data-structures-and-algorithms/concurrency-and-systems/concurrent-hash-map)
+- [RCU and Hazard Pointers](/cortex/data-structures-and-algorithms/concurrency-and-systems/rcu-and-hazard-pointers)
+- [Distributed Data Structures (Teaser)](/cortex/data-structures-and-algorithms/concurrency-and-systems/distributed-data-structures-teaser)

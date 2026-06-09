@@ -69,7 +69,7 @@ A cache can live at four places in the request path. Each tier shortens the trip
 | **Client** | Browser HTTP cache, service worker, mobile-app local store | ~0 ms | static assets, idempotent GETs, user-specific data | invalidation across devices |
 | **CDN edge** | Edge POP near the user | 5–30 ms | static + cacheable API responses | regional consistency, cold-edge stampedes |
 | **Application** | In-process LRU on the app server | 1–10 µs | hot per-instance data | per-instance staleness — invalidation across the fleet is *hard* |
-| **Distributed** | Redis / Memcached cluster, separate from app | 0.3–2 ms intra-DC | anything the fleet should agree on; rate limiters; sessions | hot keys, sharding by [consistent hash](/cortex/system-design/building-blocks-load-balancing) |
+| **Distributed** | Redis / Memcached cluster, separate from app | 0.3–2 ms intra-DC | anything the fleet should agree on; rate limiters; sessions | hot keys, sharding by [consistent hash](/cortex/system-design/building-blocks/load-balancing) |
 
 The four tiers are not mutually exclusive — production systems run **all of them**. The combination is sometimes called an "L1/L2 cache" by analogy with CPU caches: L1 is the in-process LRU, L2 is the distributed Redis. Stack Overflow runs exactly this shape; so does Facebook (Nishtala et al. §3.2).
 
@@ -183,7 +183,7 @@ The single most common cache failure in production. A hot key's TTL fires while 
 
 ### 6.2 Cold-start stampede
 
-A new app process or a new CDN POP has an empty cache. The first request for *every* hot key misses. If you bring up the new instance during peak traffic, the origin sees a synchronised flood. Mitigations: **gradual ramp-in** (NGINX `slow_start` in [Lesson 7](/cortex/system-design/building-blocks-load-balancing)), explicit **pre-warm** scripts that hit the new instance with synthetic traffic before adding it to rotation, or **shared L2** so the new L1 misses fall through to a warm shared cache rather than the origin.
+A new app process or a new CDN POP has an empty cache. The first request for *every* hot key misses. If you bring up the new instance during peak traffic, the origin sees a synchronised flood. Mitigations: **gradual ramp-in** (NGINX `slow_start` in [Lesson 7](/cortex/system-design/building-blocks/load-balancing)), explicit **pre-warm** scripts that hit the new instance with synthetic traffic before adding it to rotation, or **shared L2** so the new L1 misses fall through to a warm shared cache rather than the origin.
 
 ### 6.3 Negative caching footgun
 
@@ -193,7 +193,7 @@ If your code only caches successful lookups, every miss for a key-that-doesn't-e
 
 Two writers race: Writer A updates the row, then deletes the cache key; Writer B did the same a millisecond later for the same row but their delete fires before A's update has propagated to the replica that Reader R is about to query from. R reads the old value, writes it back to the cache. Now the cache has the OLD value indefinitely (until TTL).
 
-Fixes: write-through with serial updates, version-stamped cache values (`{"v": 17, "data": ...}` — readers refuse to overwrite a higher version), or just accept the race and bound staleness with short TTLs. [Lesson 11 (replication)](/cortex/system-design/building-blocks-replication) revisits the underlying replication-lag mechanism.
+Fixes: write-through with serial updates, version-stamped cache values (`{"v": 17, "data": ...}` — readers refuse to overwrite a higher version), or just accept the race and bound staleness with short TTLs. [Lesson 11 (replication)](/cortex/system-design/building-blocks/replication) revisits the underlying replication-lag mechanism.
 
 ### 6.5 Hot key on a distributed cache
 
@@ -203,7 +203,7 @@ Even with consistent hashing across Redis shards, **one** key can still be 80% o
 - **L1-in-front**: cache the hottest 100 keys in process on every app server so they never reach Redis.
 - **Sharding by composite key**: if the access pattern is `(user_id, item_id)`, hash on `item_id` AND on `user_id % K` to spread the load.
 
-[Lesson 12 (sharding)](/cortex/system-design/building-blocks-sharding-and-partitioning) explores hot-shard remediation in depth.
+[Lesson 12 (sharding)](/cortex/system-design/building-blocks/sharding-and-partitioning) explores hot-shard remediation in depth.
 
 ### 6.6 Write-back data loss
 
@@ -248,7 +248,7 @@ The deeper answer: **coalescing protects the origin from cliff-edge load**. The 
 
 ### Exercise 3 — Design a deep health check that survives a stampede
 
-In [Lesson 7](/cortex/system-design/building-blocks-load-balancing) we said "`/healthz` should be cheap; `/ready` can be deep". Your `/ready` endpoint runs a representative query against the database. Suppose the load balancer hits `/ready` on every backend every 5 seconds. The cache fronting the database has a 60-second TTL on the readiness query result. Walk through what happens when the cached readiness result expires, and design a `/ready` that doesn't itself contribute to a stampede.
+In [Lesson 7](/cortex/system-design/building-blocks/load-balancing) we said "`/healthz` should be cheap; `/ready` can be deep". Your `/ready` endpoint runs a representative query against the database. Suppose the load balancer hits `/ready` on every backend every 5 seconds. The cache fronting the database has a 60-second TTL on the readiness query result. Walk through what happens when the cached readiness result expires, and design a `/ready` that doesn't itself contribute to a stampede.
 
 <details>
 <summary>Solution</summary>
@@ -277,4 +277,4 @@ Option 1 is the production-grade answer. The general principle: **health checks 
 
 ---
 
-> **Next:** [9. Relational databases](/cortex/system-design/building-blocks-relational-databases) — now that you've got an in-memory cache absorbing most of the read load, the next question is what the *origin* looks like under the remaining load. Schema, indexes, transactions, isolation levels, query plans. We'll get our hands on PostgreSQL `EXPLAIN ANALYZE` and watch a B-tree walk.
+> **Next:** [9. Relational databases](/cortex/system-design/building-blocks/relational-databases) — now that you've got an in-memory cache absorbing most of the read load, the next question is what the *origin* looks like under the remaining load. Schema, indexes, transactions, isolation levels, query plans. We'll get our hands on PostgreSQL `EXPLAIN ANALYZE` and watch a B-tree walk.

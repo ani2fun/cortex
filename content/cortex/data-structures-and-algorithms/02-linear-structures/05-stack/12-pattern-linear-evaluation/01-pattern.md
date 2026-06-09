@@ -126,7 +126,7 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [Canonicalise Path](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-linear-evaluation-problems-canonicalise-path), [Bracketed Reversal](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-linear-evaluation-problems-bracketed-reversal), [String Expansion](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-linear-evaluation-problems-string-expansion), and [Formula Parsing](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-linear-evaluation-problems-formula-parsing).
+Drill the family in **Practice** — [Canonicalise Path](/cortex/data-structures-and-algorithms/linear-structures/stack/pattern-linear-evaluation/problems/canonicalise-path), [Bracketed Reversal](/cortex/data-structures-and-algorithms/linear-structures/stack/pattern-linear-evaluation/problems/bracketed-reversal), [String Expansion](/cortex/data-structures-and-algorithms/linear-structures/stack/pattern-linear-evaluation/problems/string-expansion), and [Formula Parsing](/cortex/data-structures-and-algorithms/linear-structures/stack/pattern-linear-evaluation/problems/formula-parsing).
 
 ## Reflect & Connect
 
@@ -136,7 +136,7 @@ Drill the family in **Practice** — [Canonicalise Path](/cortex/data-structures
 - **The stack holds deferred work** — operands and partial results wait until there's enough context to combine them. That's the same instinct as the validation pattern, but now you *compute* on pop instead of merely matching.
 - **It's the back half of a calculator** — convert infix to postfix (the shunting-yard algorithm, which uses an *operator* stack to resolve precedence), then evaluate the postfix with this pattern. Together they're how calculators and compilers turn `3 + 4 * 2` into `11`.
 
-**Prerequisites:** [What Is a Stack?](/cortex/data-structures-and-algorithms/linear-structures-stack-what-is-a-stack).
+**Prerequisites:** [What Is a Stack?](/cortex/data-structures-and-algorithms/linear-structures/stack/what-is-a-stack).
 
 ## Recall
 

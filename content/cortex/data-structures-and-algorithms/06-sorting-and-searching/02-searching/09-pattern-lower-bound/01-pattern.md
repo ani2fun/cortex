@@ -9,7 +9,7 @@ prereqs:
 
 ## Why It Exists
 
-You learned [lower bound's mechanics](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-lower-bound) — half-open range, `hi = mid`, no equality branch. This lesson is about **recognizing** when a problem is secretly a lower-bound search.
+You learned [lower bound's mechanics](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/lower-bound) — half-open range, `hi = mid`, no equality branch. This lesson is about **recognizing** when a problem is secretly a lower-bound search.
 
 The trigger is any of these phrasings: "the **first** index where…", "the **leftmost** occurrence", "the **insert position**", "how many elements are **less than** `x`", or "the **smallest** element `≥ x`". All reduce to the same thing: a monotone `false → true` predicate over a sorted range, where you want the **first `true`**. Once you spot that shape, the half-open template solves it in `O(log n)` — and the returned index doubles as a *count* of everything before it.
 
@@ -69,7 +69,7 @@ Recognize lower bound by "first / leftmost / insert / count-of-smaller / smalles
 
 Before you read on: this returned `2` — and `2` is *both* "insert `5` here" *and* "there are 2 elements smaller than 5." Why does one lower-bound call answer both questions at once?
 
-Because the boundary index *partitions* the array: everything at indices `[0, lower_bound)` is `< target`, and everything at `[lower_bound, end)` is `≥ target`. So the index *counts* the left partition (elements `< target` = the index value), and it's also exactly where `target` belongs to keep that partition intact (the insert point). "First index `≥ target`," "count of elements `< target`," and "insert position" are three names for the *same boundary*. Recognizing that one lower-bound call yields all three — plus, paired with [upper bound](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-upper-bound-pattern), range counts — is why this is a pattern and not just a function.
+Because the boundary index *partitions* the array: everything at indices `[0, lower_bound)` is `< target`, and everything at `[lower_bound, end)` is `≥ target`. So the index *counts* the left partition (elements `< target` = the index value), and it's also exactly where `target` belongs to keep that partition intact (the insert point). "First index `≥ target`," "count of elements `< target`," and "insert position" are three names for the *same boundary*. Recognizing that one lower-bound call yields all three — plus, paired with [upper bound](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/pattern-upper-bound/pattern), range counts — is why this is a pattern and not just a function.
 
 ## Your Turn
 
@@ -108,18 +108,18 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [Search Insert Position](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-lower-bound-problems-search-insert-position), [First and Last Position](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-lower-bound-problems-first-and-last-position), [Closest Element](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-lower-bound-problems-closest-element), and [K Closest Elements](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-lower-bound-problems-k-closest-elements).
+Drill the family in **Practice** — [Search Insert Position](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/pattern-lower-bound/problems/search-insert-position), [First and Last Position](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/pattern-lower-bound/problems/first-and-last-position), [Closest Element](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/pattern-lower-bound/problems/closest-element), and [K Closest Elements](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/pattern-lower-bound/problems/k-closest-elements).
 
 ## Reflect & Connect
 
 Lower bound is the "first true" half of boundary search:
 
-- **The family** — insert position, first occurrence (with [upper bound](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-upper-bound-pattern), the full first-and-last range), closest element (the answer is at `lower_bound` or just before it), and K-closest (lower bound + expand outward).
+- **The family** — insert position, first occurrence (with [upper bound](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/pattern-upper-bound/pattern), the full first-and-last range), closest element (the answer is at `lower_bound` or just before it), and K-closest (lower bound + expand outward).
 - **The boundary is three things** — insert point, first occurrence, count of smaller. Internalize that and many "count / position" problems collapse to a single `O(log n)` call.
 - **It generalizes to predicate search** — `arr[mid] ≥ target` is just one monotone predicate; replace it with `feasible(mid)` and lower bound becomes [binary search on the answer](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-minimum-predicate-search). The recognition skill — "is there a monotone false→true boundary?" — is the same.
 
-**Prerequisites:** [Lower Bound](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-lower-bound).
-**What's next:** the rightmost-boundary mirror — [Upper Bound](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-upper-bound-pattern).
+**Prerequisites:** [Lower Bound](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/lower-bound).
+**What's next:** the rightmost-boundary mirror — [Upper Bound](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/pattern-upper-bound/pattern).
 
 ## Recall
 

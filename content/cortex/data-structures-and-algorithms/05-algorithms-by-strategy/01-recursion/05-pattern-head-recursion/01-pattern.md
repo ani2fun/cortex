@@ -9,7 +9,7 @@ prereqs:
 
 Head recursion puts the recursive call at the *head* of the body — right after the base-case check, before any real work. By the time this frame does anything, the recursive call has already returned the smaller subproblem's answer; the frame just combines it with its own input.
 
-This is the [ATM queue](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-recursion) exactly: the question races to the front of the line first, then each person adds 1 as the answer travels back. **The descent is silent; the ascent does the work.** Recognising this pattern tells you *when* a frame's contribution runs (on the way back up) — which is the difference between code that prints digits forwards and code that prints them backwards from the very same recursion.
+This is the [ATM queue](/cortex/data-structures-and-algorithms/algorithms-by-strategy/recursion/recursion) exactly: the question races to the front of the line first, then each person adds 1 as the answer travels back. **The descent is silent; the ascent does the work.** Recognising this pattern tells you *when* a frame's contribution runs (on the way back up) — which is the difference between code that prints digits forwards and code that prints them backwards from the very same recursion.
 
 ```mermaid
 ---
@@ -171,7 +171,7 @@ Both print `120`. The descent reaches `fact(1) = 1`, then the multiplications fi
 
 - **Head vs. tail is *where the work lands*.** Head recursion combines on the ascent (it needs the smaller answer first); [tail recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-tail-recursion) does its work on the descent, carrying a running result in an accumulator so nothing is left to do on the way back. The digit-print flip above is the cleanest demonstration of the difference.
 - **The ascent gives reversal for free.** Any "emit in reverse of the natural peeling order" task — print a number's digits left-to-right while peeling from the right, reverse a list by recursing then appending — is a head-recursion fit.
-- **Mind the scaffolding tax.** `O(n)` stack depth is fine when `n` is modest, but linear-depth head recursion on huge inputs risks the stack-overflow modes from [nested functions](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-nested-functions). Convert to a loop when depth could approach the stack limit.
+- **Mind the scaffolding tax.** `O(n)` stack depth is fine when `n` is modest, but linear-depth head recursion on huge inputs risks the stack-overflow modes from [nested functions](/cortex/data-structures-and-algorithms/algorithms-by-strategy/recursion/nested-functions). Convert to a loop when depth could approach the stack limit.
 - **Big data: pass by reference.** In copy-semantics languages (C++, Rust) passing a large container by value copies it on every one of the `n` calls (`O(n·m)`); pass by reference so all frames share one object. High-level languages already share references.
 
 ## Recall

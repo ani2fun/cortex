@@ -12,7 +12,7 @@ prereqs:
 
 In 1962, Adelson-Velsky and Landis published the first binary search tree that could *guarantee* `O(log n)` on any input order. The idea: enforce a strict invariant after every insert and delete — **for every node, the heights of its left and right subtrees differ by at most 1** — and restore it by paying a constant amount of rebalancing work.
 
-That invariant defeats the [sorted-input cliff](/cortex/data-structures-and-algorithms/trees-self-balancing-bst-overview-self-balancing-bst-overview): insert `1, 2, 3, …` and a plain BST becomes an `O(n)` chain, but an AVL tree rotates itself back into shape after each insert, holding its height near `log₂ n`. AVL is the **shallowest** of all self-balancing BSTs — height ≤ `1.44 · log₂ n`, about 30% shorter than a red-black tree — which is exactly why it's the pick for **read-heavy** workloads: fewer levels per lookup. The price is more rotation work on writes, a fair trade when reads dominate.
+That invariant defeats the [sorted-input cliff](/cortex/data-structures-and-algorithms/trees/self-balancing-bst-overview/self-balancing-bst-overview): insert `1, 2, 3, …` and a plain BST becomes an `O(n)` chain, but an AVL tree rotates itself back into shape after each insert, holding its height near `log₂ n`. AVL is the **shallowest** of all self-balancing BSTs — height ≤ `1.44 · log₂ n`, about 30% shorter than a red-black tree — which is exactly why it's the pick for **read-heavy** workloads: fewer levels per lookup. The price is more rotation work on writes, a fair trade when reads dominate.
 
 ## See It Work
 
@@ -175,13 +175,13 @@ Then climb the ladder: verify the invariant recursively (return `(height, isAvl)
 
 AVL is the strict end of the balance spectrum:
 
-- **AVL vs Red-Black** — same `O(log n)`, but AVL is ~30% shallower (`1.44 log n` vs `2 log n`) and pays for it on writes (delete can cascade `O(log n)` rotations vs RB's ≤3). Read-heavy → AVL; mixed/write-heavy → [Red-Black](/cortex/data-structures-and-algorithms/trees-red-black-tree-introduction-to-red-black-trees), which is what every standard library actually ships.
+- **AVL vs Red-Black** — same `O(log n)`, but AVL is ~30% shallower (`1.44 log n` vs `2 log n`) and pays for it on writes (delete can cascade `O(log n)` rotations vs RB's ≤3). Read-heavy → AVL; mixed/write-heavy → [Red-Black](/cortex/data-structures-and-algorithms/trees/red-black-tree/introduction-to-red-black-trees), which is what every standard library actually ships.
 - **The height field is free augmentation real estate** — AVL already stores per-node metadata, so adding a `size` (subtree node count) turns it into an **order-statistics tree**: `kthSmallest` and `rank(key)` in `O(log n)`. The same augment-and-maintain-through-rotations trick generalises to interval trees and segment-tree-like structures.
 - **Rotations are the universal BST primitive** — the left/right rotation you learned here is the *same* operation red-black trees, treaps, and splay trees use; only the *policy* for when to apply it differs. Master "single vs double = outer vs inner grandchild" and every balanced-BST rebalance reads the same way.
 - **In production** — AVL appears in PostgreSQL's GiST (in-memory index parts) and some in-memory DB engines, but RB-trees dominate standard libraries. AVL's claim to fame is pedagogical clarity and the tightest height bound when reads are everything.
 
-**Prerequisites:** [Self-Balancing BSTs Overview](/cortex/data-structures-and-algorithms/trees-self-balancing-bst-overview-self-balancing-bst-overview), [Binary Search Tree](/cortex/data-structures-and-algorithms/trees-binary-search-tree-introduction-to-binary-search-trees).
-**What's next:** the looser, write-cheaper balance that ships everywhere — the [Red-Black Tree](/cortex/data-structures-and-algorithms/trees-red-black-tree-introduction-to-red-black-trees).
+**Prerequisites:** [Self-Balancing BSTs Overview](/cortex/data-structures-and-algorithms/trees/self-balancing-bst-overview/self-balancing-bst-overview), [Binary Search Tree](/cortex/data-structures-and-algorithms/trees/binary-search-tree/introduction-to-binary-search-trees).
+**What's next:** the looser, write-cheaper balance that ships everywhere — the [Red-Black Tree](/cortex/data-structures-and-algorithms/trees/red-black-tree/introduction-to-red-black-trees).
 
 ## Recall
 

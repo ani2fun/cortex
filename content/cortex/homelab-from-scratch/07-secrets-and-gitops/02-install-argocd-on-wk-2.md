@@ -225,4 +225,4 @@ argocd app list
 
 Next we'll show Argo CD what to deploy.
 
-→ Next: [The app-of-apps pattern](/cortex/homelab-from-scratch/secrets-and-gitops-the-app-of-apps-pattern)
+→ Next: [The app-of-apps pattern](/cortex/homelab-from-scratch/secrets-and-gitops/the-app-of-apps-pattern)

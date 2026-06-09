@@ -8,7 +8,7 @@ prereqs:
 
 ## Why It Exists
 
-Everything earlier in this module lived on **one machine**: threads sharing memory, coordinated with [CAS](/cortex/data-structures-and-algorithms/concurrency-and-systems-cas-and-atomics) and atomics. **Distributed** data structures live across *many* machines connected by an unreliable network — and that breaks the assumptions single-machine concurrency leans on:
+Everything earlier in this module lived on **one machine**: threads sharing memory, coordinated with [CAS](/cortex/data-structures-and-algorithms/concurrency-and-systems/cas-and-atomics) and atomics. **Distributed** data structures live across *many* machines connected by an unreliable network — and that breaks the assumptions single-machine concurrency leans on:
 
 - **Partitions happen.** Two replicas can both be alive yet unable to talk. You can't block waiting for the other side — it may never answer.
 - **There is no shared clock or shared memory.** Each machine has its own copy of the state; "the current value" isn't a single cell anyone can CAS.
@@ -201,7 +201,7 @@ Both print `roots equal? false`, then `differing leaf index: 3 -> dave vs DAVE`,
 - **CRDTs = a conflict-free merge.** Make the merge commutative, associative, and idempotent (a semilattice join) and replicas reach the same value regardless of message order or duplication — no consensus needed.
 - **Vector clocks = a partial order.** They distinguish "X causally before Y" from "X and Y concurrent." The concurrent case is the *conflict* a single timestamp would silently drop.
 - **Merkle trees = hash the structure.** Equal roots certify equality in one comparison; differing roots localise the change in O(log n). Anti-entropy repair, Git, blockchains.
-- **Same instinct as lock-free code.** From [CAS](/cortex/data-structures-and-algorithms/concurrency-and-systems-cas-and-atomics) to the [lock-free queue](/cortex/data-structures-and-algorithms/concurrency-and-systems-lock-free-queue) to CRDTs: design the operation so the dangerous interleavings *can't* yield a wrong answer — locally with atomics, globally with algebra. This is a teaser; distributed systems (consensus, replication, CAP) is a whole subject from here.
+- **Same instinct as lock-free code.** From [CAS](/cortex/data-structures-and-algorithms/concurrency-and-systems/cas-and-atomics) to the [lock-free queue](/cortex/data-structures-and-algorithms/concurrency-and-systems/lock-free-queue) to CRDTs: design the operation so the dangerous interleavings *can't* yield a wrong answer — locally with atomics, globally with algebra. This is a teaser; distributed systems (consensus, replication, CAP) is a whole subject from here.
 
 ## Recall
 

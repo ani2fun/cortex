@@ -214,7 +214,7 @@ Both print `[3, 2, 1]`, `[4, 3, 2, 1]`, then `True`. `v2` shares `v1` *entirely*
 - **Path copying = clone the path, share the subtrees.** A tree update copies only the root-to-change nodes (`O(log n)`) and points them at the untouched, shared subtrees. The classic, composable persistence technique.
 - **Immutability is the enabler.** Sharing is safe only because nodes are never mutated. Persistence and immutability are inseparable — "never overwrite, always allocate-and-rewire."
 - **Three techniques, one goal.** Path copying (simplest), fat nodes (timestamped fields), and version trees / DSST (`O(1)` amortised). Path copying dominates in practice and in functional languages.
-- **It's everywhere in real systems.** Undo/redo stacks, Git's commit DAG (each commit shares unchanged trees/blobs), MVCC databases and copy-on-write filesystems (Btrfs, ZFS), React/Redux immutable state, and Clojure/Scala persistent maps and vectors. A [treap](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-treap) or any balanced BST becomes persistent simply by path-copying its updates — closing this Part's tour of structures that bend the usual time/space/exactness rules.
+- **It's everywhere in real systems.** Undo/redo stacks, Git's commit DAG (each commit shares unchanged trees/blobs), MVCC databases and copy-on-write filesystems (Btrfs, ZFS), React/Redux immutable state, and Clojure/Scala persistent maps and vectors. A [treap](/cortex/data-structures-and-algorithms/probabilistic-and-advanced/treap) or any balanced BST becomes persistent simply by path-copying its updates — closing this Part's tour of structures that bend the usual time/space/exactness rules.
 
 ## Recall
 

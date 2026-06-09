@@ -61,7 +61,7 @@ This chapter is the catalogue: **patterns to avoid, fixes that work, and the rul
 
 # Function on column
 
-Already covered in [B-Tree Indexes: Sargability](/cortex/languages/sql-indexes-and-performance-b-tree-indexes#sargability) and [Strings](/cortex/languages/sql-row-functions-strings#sargability). The summary:
+Already covered in [B-Tree Indexes: Sargability](/cortex/languages/sql/indexes-and-performance/b-tree-indexes#sargability) and [Strings](/cortex/languages/sql/row-functions/strings#sargability). The summary:
 
 ```mermaid
 ---
@@ -165,7 +165,7 @@ The `UNION ALL` rewrite assumes you can de-duplicate the overlap (otherwise you'
 
 # NOT IN with subqueries
 
-The famous bug from [Anti-joins and Existence](/cortex/languages/sql-multiple-tables-anti-joins-and-existence#not-in):
+The famous bug from [Anti-joins and Existence](/cortex/languages/sql/multiple-tables/anti-joins-and-existence#not-in):
 
 ```sql
 -- ❌ Returns no rows if any inner result is NULL. Also slower than NOT EXISTS in some planners.
@@ -202,7 +202,7 @@ Modern Postgres often rewrites correlated subqueries into joins, but not always.
 
 # SELECT *
 
-Covered in [SELECT and Projection](/cortex/languages/sql-foundations-select-and-projection#select-star). Quick recap:
+Covered in [SELECT and Projection](/cortex/languages/sql/foundations/select-and-projection#select-star). Quick recap:
 
 - Returns more data than needed (slower wire transfer).
 - Blocks index-only scans.
@@ -236,7 +236,7 @@ Often plans badly. Sometimes a `UNION ALL` of two `EXISTS`-filtered queries is f
 
 ## Reading `EXPLAIN` for these
 
-A query with one of these anti-patterns typically shows up in `EXPLAIN ANALYZE` as a `Seq Scan` where you expected an `Index Scan`, with high actual time. The diagnosis flow is in [EXPLAIN and Query Plans: common diagnoses](/cortex/languages/sql-indexes-and-performance-explain-and-query-plans#common-diagnoses).
+A query with one of these anti-patterns typically shows up in `EXPLAIN ANALYZE` as a `Seq Scan` where you expected an `Index Scan`, with high actual time. The diagnosis flow is in [EXPLAIN and Query Plans: common diagnoses](/cortex/languages/sql/indexes-and-performance/explain-and-query-plans#common-diagnoses).
 
 ---
 
@@ -294,8 +294,8 @@ Most production SQL bugs that look like "the database is slow" trace back to one
 
 # Cross-links
 
-- **Previous in this module:** [EXPLAIN and Query Plans](/cortex/languages/sql-indexes-and-performance-explain-and-query-plans).
-- **Module complete.** Next: [Transactions and Concurrency](/cortex/languages/sql-transactions-and-concurrency-index).
+- **Previous in this module:** [EXPLAIN and Query Plans](/cortex/languages/sql/indexes-and-performance/explain-and-query-plans).
+- **Module complete.** Next: [Transactions and Concurrency](/cortex/languages/sql/transactions-and-concurrency/index).
 
 ***
 

@@ -9,7 +9,7 @@ prereqs:
 
 A metric crosses your screen and you ask: *what's the longest run where it kept improving?* — not *consecutive*, because you're allowed to skip the dips. The graph might be 10,000 points; the answer might be 47. That's the **Longest Increasing Subsequence** (LIS): the longest subsequence (keep relative order, but pick any subset) that's strictly increasing. It powers version-control diff tools, trend detection, and patience-sorting card games.
 
-LIS is the [linear-DP](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-linear-dp) shape with a twist that matters: `lis(i)` (the longest increasing subsequence *ending at* `i`) looks back at **every** earlier index, not a fixed handful. That's the transfer challenge the linear-DP lesson left you with — and the reason LIS *can't* be space-optimised to a rolling window.
+LIS is the [linear-DP](/cortex/data-structures-and-algorithms/algorithms-by-strategy/dynamic-programming/linear-dp) shape with a twist that matters: `lis(i)` (the longest increasing subsequence *ending at* `i`) looks back at **every** earlier index, not a fixed handful. That's the transfer challenge the linear-DP lesson left you with — and the reason LIS *can't* be space-optimised to a rolling window.
 
 ## See It Work
 

@@ -144,18 +144,18 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [Alternate Node Fusion](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-merge-problems-alternate-node-fusion), [Merge Sorted Lists](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-merge-problems-merge-sorted-lists), [Merge Sorted Lists II](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-merge-problems-merge-sorted-lists-ii), and [List Addition](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-merge-problems-list-addition).
+Drill the family in **Practice** — [Alternate Node Fusion](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-merge/problems/alternate-node-fusion), [Merge Sorted Lists](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-merge/problems/merge-sorted-lists), [Merge Sorted Lists II](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-merge/problems/merge-sorted-lists-ii), and [List Addition](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-merge/problems/list-addition).
 
 ## Reflect & Connect
 
 The dummy-head + tail-splice skeleton is the reusable core; the variants only change the *selector*:
 
 - **Sorted merge** (smaller head wins), **alternate fusion** (interleave regardless of value — selector just alternates), **add two numbers** (walk both, sum digits with a carry — a merge with arithmetic instead of comparison).
-- **Merge K sorted lists** scales the idea — either fold pairwise (`O(N log k)`) or pull the global minimum from a [heap](/cortex/data-structures-and-algorithms/trees-heap-what-is-a-heap) of the `k` heads. Same "take the smallest front" instinct, more fronts.
+- **Merge K sorted lists** scales the idea — either fold pairwise (`O(N log k)`) or pull the global minimum from a [heap](/cortex/data-structures-and-algorithms/trees/heap/what-is-a-heap) of the `k` heads. Same "take the smallest front" instinct, more fronts.
 - **It's the inverse of split, and the heart of merge sort** — split a list at the middle (fast/slow), sort each half, then *merge* them back. The whole-list version of "combine sorted pieces" is exactly this pattern called recursively.
 
-**Prerequisites:** [What Is a Linked List?](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-what-is-a-linked-list).
-**What's next:** combine split, reverse, and merge into one restructuring — [Reorder](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-reorder-pattern).
+**Prerequisites:** [What Is a Linked List?](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/what-is-a-linked-list).
+**What's next:** combine split, reverse, and merge into one restructuring — [Reorder](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-reorder/pattern).
 
 ## Recall
 

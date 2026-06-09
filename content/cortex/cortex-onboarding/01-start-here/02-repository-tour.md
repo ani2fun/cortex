@@ -186,7 +186,7 @@ What's in there:
 
 The payoff: rename `Greeting.message` → `Greeting.greeting` in `api/openapi.yaml`, run `sbt compile`, and the **server pipeline** and the **client API client** both stop compiling in the same build. The contract becomes a compile-time check.
 
-The canonical walk-through of this is the [Hello World, End to End](/cortex/cortex-onboarding/how-it-works-hello-world-end-to-end) chapter — it traces one `/api/hello` request through every step of the stack and shows exactly where the shared module pays off. The full mechanical details (`crossProject(JSPlatform, JVMPlatform)`, `crossType(CrossType.Pure)`, codegen plugin settings, how each generated file is laid out) are in the [Shared & Codegen](/cortex/cortex-onboarding/deep-dive-shared-and-codegen) deep-dive.
+The canonical walk-through of this is the [Hello World, End to End](/cortex/cortex-onboarding/how-it-works/hello-world-end-to-end) chapter — it traces one `/api/hello` request through every step of the stack and shows exactly where the shared module pays off. The full mechanical details (`crossProject(JSPlatform, JVMPlatform)`, `crossType(CrossType.Pure)`, codegen plugin settings, how each generated file is laid out) are in the [Shared & Codegen](/cortex/cortex-onboarding/deep-dive/shared-and-codegen) deep-dive.
 
 ## What lives in `content/`
 
@@ -205,7 +205,7 @@ content/blogs/                             ← flat .md posts surfaced at /blogs
 └── *.md                                   ← YAML frontmatter drives the index
 ```
 
-**Convention over configuration** — the on-disk layout *is* the index. Each immediate subdir of `content/cortex/` is a book; nested directories become sidebar sections (any depth, capped at 6); `.md` files are chapters; numeric prefixes (`01-`, `02-`) drive ordering. To add a chapter you drop a `.md` file in the right directory and reload — that's it. Blog posts are simpler still: flat `.md` files under `content/blogs/`, ordered by their `publishedAt` frontmatter. (See [Extending the Project](/cortex/cortex-onboarding/working-on-it-extending).)
+**Convention over configuration** — the on-disk layout *is* the index. Each immediate subdir of `content/cortex/` is a book; nested directories become sidebar sections (any depth, capped at 6); `.md` files are chapters; numeric prefixes (`01-`, `02-`) drive ordering. To add a chapter you drop a `.md` file in the right directory and reload — that's it. Blog posts are simpler still: flat `.md` files under `content/blogs/`, ordered by their `publishedAt` frontmatter. (See [Extending the Project](/cortex/cortex-onboarding/working-on-it/extending).)
 
 ## What lives in `runner/go-judge/`
 

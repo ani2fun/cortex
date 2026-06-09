@@ -51,7 +51,7 @@ flowchart LR
 
 <p align="center"><strong>carry a running prefix sum; at each step look up <code>running − k</code> in the map of seen prefixes to count subarrays ending here, then record the current prefix.</strong></p>
 
-Each element is one map lookup and one map update — `O(1)` average — so the whole count is **`O(n)` time, `O(n)` space**. The map is really a *frequency counter over prefix values* (the [counting](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-counting-pattern) pattern again), and the prefix-difference identity is what lets a hash lookup replace a nested loop. (Unlike the sliding window, this works with **negative numbers** too, since it never assumes the sum grows monotonically.)
+Each element is one map lookup and one map update — `O(1)` average — so the whole count is **`O(n)` time, `O(n)` space**. The map is really a *frequency counter over prefix values* (the [counting](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-counting/pattern) pattern again), and the prefix-difference identity is what lets a hash lookup replace a nested loop. (Unlike the sliding window, this works with **negative numbers** too, since it never assumes the sum grows monotonically.)
 
 ### Key Takeaway
 
@@ -113,7 +113,7 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [First Equilibrium Point](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-prefix-sum-problems-first-equilibrium-point), [Self-Excluded Array Product](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-prefix-sum-problems-self-excluded-array-product), [Balanced Binary Subarray](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-prefix-sum-problems-balanced-binary-subarray), and [Zero-Sum Subarrays](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-prefix-sum-problems-zero-sum-subarrays).
+Drill the family in **Practice** — [First Equilibrium Point](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-prefix-sum/problems/first-equilibrium-point), [Self-Excluded Array Product](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-prefix-sum/problems/self-excluded-array-product), [Balanced Binary Subarray](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-prefix-sum/problems/balanced-binary-subarray), and [Zero-Sum Subarrays](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-prefix-sum/problems/zero-sum-subarrays).
 
 ## Reflect & Connect
 
@@ -121,9 +121,9 @@ Prefix sums plus a map answer a whole class of subarray questions in one pass:
 
 - **The family** — count subarrays summing to `k`, **longest** subarray summing to `k` (map prefix → *earliest index*), count **zero-sum** subarrays (`k = 0`), **balanced** binary subarrays (map `0 → −1`, then it's zero-sum). The prefix-difference identity underlies them all.
 - **Map of counts vs map of indices** — for *how many*, store prefix → frequency (above); for *longest/shortest*, store prefix → first index. Pick by what the problem asks.
-- **It works where sliding windows fail** — a [variable window](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-variable-sized-sliding-window-pattern) assumes growing the window monotonically changes validity, which breaks with negative numbers. Prefix-sum + map makes no monotonicity assumption, so it's the tool for "subarray sum = k" with negatives. And for *static* range-sum queries, a plain prefix array answers each in `O(1)` with no map at all.
+- **It works where sliding windows fail** — a [variable window](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-variable-sized-sliding-window/pattern) assumes growing the window monotonically changes validity, which breaks with negative numbers. Prefix-sum + map makes no monotonicity assumption, so it's the tool for "subarray sum = k" with negatives. And for *static* range-sum queries, a plain prefix array answers each in `O(1)` with no map at all.
 
-**Prerequisites:** [What Is a Hash Table?](/cortex/data-structures-and-algorithms/linear-structures-hash-table-what-is-a-hash-table).
+**Prerequisites:** [What Is a Hash Table?](/cortex/data-structures-and-algorithms/linear-structures/hash-table/what-is-a-hash-table).
 
 ## Recall
 

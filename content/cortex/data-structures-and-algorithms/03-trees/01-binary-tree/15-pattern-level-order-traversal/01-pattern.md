@@ -169,18 +169,18 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [Level Sum](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-problems-level-sum), [Deepest Leaves Sum](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-problems-deepest-leaves-sum), [Complete Binary Tree Check](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-problems-complete-binary-tree-check), [Zigzag Traversal](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-problems-zigzag-traversal), and [Cousin Check](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-problems-cousin-check).
+Drill the family in **Practice** — [Level Sum](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-level-order-traversal/problems/level-sum), [Deepest Leaves Sum](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-level-order-traversal/problems/deepest-leaves-sum), [Complete Binary Tree Check](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-level-order-traversal/problems/complete-binary-tree-check), [Zigzag Traversal](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-level-order-traversal/problems/zigzag-traversal), and [Cousin Check](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-level-order-traversal/problems/cousin-check).
 
 ## Reflect & Connect
 
 Level-order is the breadth-first counterpart to every depth-first tree pattern:
 
 - **The family** — per-level group / sum / average, right-side view, zigzag, deepest-leaves sum, complete-tree check, cousins. All share the queue + `len(queue)` snapshot; only the per-level bookkeeping differs.
-- **BFS vs DFS** — depth-first ([preorder](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateless-pattern)/[postorder](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless-pattern)) follows *paths* with a stack/recursion; breadth-first follows *levels* with a queue. Reach for BFS the moment the question mentions depth, levels, "nearest," or shortest unweighted distance.
+- **BFS vs DFS** — depth-first ([preorder](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-preorder-traversal-stateless/pattern)/[postorder](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-postorder-traversal-stateless/pattern)) follows *paths* with a stack/recursion; breadth-first follows *levels* with a queue. Reach for BFS the moment the question mentions depth, levels, "nearest," or shortest unweighted distance.
 - **It's graph BFS on a tree** — this exact queue + frontier-by-frontier expansion is [graph breadth-first search](/cortex/data-structures-and-algorithms/graphs-pattern-breadth-first-search-pattern); a tree is just a graph with no cycles, so no `visited` set is needed. Learn it here and graph shortest-path BFS is the same loop.
 
-**Prerequisites:** [Recursive Traversals](/cortex/data-structures-and-algorithms/trees-binary-tree-recursive-traversals-in-binary-trees).
-**What's next:** group nodes by horizontal column instead of by level — BFS carrying a coordinate — [Level-Order Traversal (Columns)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-columns-pattern).
+**Prerequisites:** [Recursive Traversals](/cortex/data-structures-and-algorithms/trees/binary-tree/recursive-traversals-in-binary-trees).
+**What's next:** group nodes by horizontal column instead of by level — BFS carrying a coordinate — [Level-Order Traversal (Columns)](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-level-order-traversal-columns/pattern).
 
 ## Recall
 

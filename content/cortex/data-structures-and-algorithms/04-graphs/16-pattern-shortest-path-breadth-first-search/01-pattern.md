@@ -209,7 +209,7 @@ Both print `4` then `-1`: the clear diagonal-friendly path is 4 cells, and a blo
 
 ## Reflect & Connect
 
-- **BFS is Dijkstra with all weights = 1.** When every edge costs the same, the priority queue collapses to a plain FIFO queue and "process the cheapest frontier node" becomes "process the nearest." The moment edges have *different* weights, you need [Dijkstra](/cortex/data-structures-and-algorithms/graphs-single-source-shortest-path) and a heap.
+- **BFS is Dijkstra with all weights = 1.** When every edge costs the same, the priority queue collapses to a plain FIFO queue and "process the cheapest frontier node" becomes "process the nearest." The moment edges have *different* weights, you need [Dijkstra](/cortex/data-structures-and-algorithms/graphs/single-source-shortest-path) and a heap.
 - **0/1 weights → 0-1 BFS.** If edges cost only 0 or 1, a *double-ended* queue (push 0-cost neighbours to the front, 1-cost to the back) gives Dijkstra's answer in `O(V + E)` — a neat midpoint between BFS and Dijkstra.
 - **Multi-source BFS** seeds the queue with *all* sources at distance 0 (rotting oranges, nearest-exit, fire spread). One sweep computes every cell's distance to its nearest source — same code, many start nodes.
 - **DFS finds *a* path, BFS finds the *shortest*.** If a problem asks for *all* paths or *any* path, reach for the [DFS pattern](/cortex/data-structures-and-algorithms/graphs-pattern-depth-first-search); if it asks for *fewest steps* on uniform-cost moves, it's BFS.

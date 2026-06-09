@@ -156,7 +156,7 @@ Between the edge and the origin, well-run CDNs add an **origin shield**: a singl
   title="Browser → DNS → CDN → origin: the system context"
 ></iframe>
 
-> Pan and zoom inside the frame. This is the topology every Part-2 lesson refers back to. [Lesson 8 (caching)](/cortex/system-design/building-blocks-caching) will zoom into the CDN edge; [Lesson 11 (replication)](/cortex/system-design/building-blocks-replication) will zoom into the database tier; [Capstone 37 (URL shortener)](/cortex/system-design/capstones-url-shortener) will lay a real read/write path through all of it.
+> Pan and zoom inside the frame. This is the topology every Part-2 lesson refers back to. [Lesson 8 (caching)](/cortex/system-design/building-blocks/caching) will zoom into the CDN edge; [Lesson 11 (replication)](/cortex/system-design/building-blocks/replication) will zoom into the database tier; [Capstone 37 (URL shortener)](/cortex/system-design/capstones/url-shortener) will lay a real read/write path through all of it.
 
 The CDN container view makes the edge / shield split concrete:
 
@@ -280,7 +280,7 @@ A DNS-based failover plan ("if region A dies, point the A record at region B") o
 
 ### 6.5 CDN cache stampede on cold edge
 
-A new edge cache, or an expiring popular object, presents a window where every concurrent request misses. Without coordination, *every* request fires an origin fetch — your popular object gets a thundering herd that can knock the origin over. Mitigations: origin shielding (one regional cache absorbs duplicates); request coalescing at the edge (the first miss takes a lock, subsequent misses wait for it); stale-while-revalidate (serve the old object until the new one arrives). [Lesson 8 (caching)](/cortex/system-design/building-blocks-caching) builds a stampede simulator.
+A new edge cache, or an expiring popular object, presents a window where every concurrent request misses. Without coordination, *every* request fires an origin fetch — your popular object gets a thundering herd that can knock the origin over. Mitigations: origin shielding (one regional cache absorbs duplicates); request coalescing at the edge (the first miss takes a lock, subsequent misses wait for it); stale-while-revalidate (serve the old object until the new one arrives). [Lesson 8 (caching)](/cortex/system-design/building-blocks/caching) builds a stampede simulator.
 
 ### 6.6 Anycast routing drift and BGP withdrawals
 
@@ -349,7 +349,7 @@ If origin handles only the misses, and incoming = 10,000 req/s, and origin must 
 
 This is why CDN economics are so brutal: a small dip in hit ratio (99% → 95%) turns into a 5× increase in origin traffic (100 → 500 req/s), which may already be past the falling-over threshold. Capacity-plan origin for the **worst-case hit ratio you can tolerate during a stampede**, not the steady-state ratio.
 
-A longer TTL (60 s → 3600 s) generally helps the hit ratio because each cached object handles 60× more requests before expiring. For a stable read distribution, you'd see most of the benefit on the long-tail content — the top items are constantly being re-requested anyway. Cold-edge populations and content invalidation become a bigger consideration than steady-state hit ratio in practice. (We come back to this in [Lesson 8 (caching)](/cortex/system-design/building-blocks-caching).)
+A longer TTL (60 s → 3600 s) generally helps the hit ratio because each cached object handles 60× more requests before expiring. For a stable read distribution, you'd see most of the benefit on the long-tail content — the top items are constantly being re-requested anyway. Cold-edge populations and content invalidation become a bigger consideration than steady-state hit ratio in practice. (We come back to this in [Lesson 8 (caching)](/cortex/system-design/building-blocks/caching).)
 
 </details>
 
@@ -363,6 +363,6 @@ A longer TTL (60 s → 3600 s) generally helps the hit ratio because each cached
 
 ---
 
-Networking is not a *layer* of a system design — it's the *medium* every other layer sits in. Every cache exists to skip a network round-trip. Every replica exists to put bytes closer to users. Every consensus protocol's cost is "how many RTTs to agree?" You will return to RTT counting in [Lesson 8 (caching)](/cortex/system-design/building-blocks-caching) for the cache stampede, [Lesson 11 (replication)](/cortex/system-design/building-blocks-replication) for cross-region async replication's 80–200 ms staleness window, [Lesson 14 (consensus)](/cortex/system-design/building-blocks-consensus-paxos-and-raft) for Raft's commit-latency floor (1 RTT to a follower + 1 fsync), and in every capstone from [37](/cortex/system-design/capstones-url-shortener) onwards.
+Networking is not a *layer* of a system design — it's the *medium* every other layer sits in. Every cache exists to skip a network round-trip. Every replica exists to put bytes closer to users. Every consensus protocol's cost is "how many RTTs to agree?" You will return to RTT counting in [Lesson 8 (caching)](/cortex/system-design/building-blocks/caching) for the cache stampede, [Lesson 11 (replication)](/cortex/system-design/building-blocks/replication) for cross-region async replication's 80–200 ms staleness window, [Lesson 14 (consensus)](/cortex/system-design/building-blocks/consensus-paxos-and-raft) for Raft's commit-latency floor (1 RTT to a follower + 1 fsync), and in every capstone from [37](/cortex/system-design/capstones/url-shortener) onwards.
 
-> **Next:** [7. Load balancing](/cortex/system-design/building-blocks-load-balancing) — once you've got requests landing at the nearest edge, the next question is how to spread them across backend instances when one shows up versus a hundred show up.
+> **Next:** [7. Load balancing](/cortex/system-design/building-blocks/load-balancing) — once you've got requests landing at the nearest edge, the next question is how to spread them across backend instances when one shows up versus a hundred show up.

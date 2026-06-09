@@ -203,7 +203,7 @@ ORDER BY score;
 
 8 rows / 4 buckets = 2 rows per quartile. With 9 rows / 4 buckets, the first bucket gets 3 rows and the rest get 2.
 
-`NTILE` is **rank-based**, not value-based. The rows are sorted by `ORDER BY` and split into buckets of equal *count*, not equal value range. For value-based bucketing (everyone with score < 250 → 'low'), use `CASE WHEN` ([CASE Expressions](/cortex/languages/sql-row-functions-case-expressions)).
+`NTILE` is **rank-based**, not value-based. The rows are sorted by `ORDER BY` and split into buckets of equal *count*, not equal value range. For value-based bucketing (everyone with score < 250 → 'low'), use `CASE WHEN` ([CASE Expressions](/cortex/languages/sql/row-functions/case-expressions)).
 
 ---
 
@@ -269,7 +269,7 @@ Without one, `ROW_NUMBER() OVER (ORDER BY score DESC)` puts tied rows in *some* 
 ROW_NUMBER() OVER (ORDER BY score DESC, id ASC)
 ```
 
-Same advice as in [Ordering and Pagination](/cortex/languages/sql-foundations-ordering-and-pagination#stability-and-tiebreakers). Critical when the rank determines pagination or filtering.
+Same advice as in [Ordering and Pagination](/cortex/languages/sql/foundations/ordering-and-pagination#stability-and-tiebreakers). Critical when the rank determines pagination or filtering.
 
 ## `NTILE` doesn't always make even buckets
 
@@ -359,10 +359,10 @@ For each hour, the latest event. The pattern: bucket → `PARTITION BY` the buck
 
 # Cross-links
 
-- **Previous in this module:** [Frames](/cortex/languages/sql-window-functions-frames) — frames don't apply to ranking functions, but the `OVER`/`PARTITION BY`/`ORDER BY` mechanics carry over.
-- **Next in this module:** [Value Functions](/cortex/languages/sql-window-functions-value-functions) — `LAG`, `LEAD`, `FIRST_VALUE` — for "previous row," "next row," "first row in window" patterns.
-- **Forward reference:** [Window Patterns](/cortex/languages/sql-window-functions-window-patterns) — the canonical real-world shapes built on ranking + value functions.
-- **Forward reference:** [B-Tree Indexes](/cortex/languages/sql-index) — a covering index on `(customer_id, sales DESC)` makes the "top N per customer" query nearly free.
+- **Previous in this module:** [Frames](/cortex/languages/sql/window-functions/frames) — frames don't apply to ranking functions, but the `OVER`/`PARTITION BY`/`ORDER BY` mechanics carry over.
+- **Next in this module:** [Value Functions](/cortex/languages/sql/window-functions/value-functions) — `LAG`, `LEAD`, `FIRST_VALUE` — for "previous row," "next row," "first row in window" patterns.
+- **Forward reference:** [Window Patterns](/cortex/languages/sql/window-functions/window-patterns) — the canonical real-world shapes built on ranking + value functions.
+- **Forward reference:** [B-Tree Indexes](/cortex/languages/sql/index) — a covering index on `(customer_id, sales DESC)` makes the "top N per customer" query nearly free.
 
 ***
 
@@ -374,4 +374,4 @@ Ranking functions label each row with its position. Three patterns to internalis
 2. **Top-N per group: rank in a CTE, filter `rn ≤ N` in the outer query.** This pattern replaces correlated subqueries and self-joins for an entire category of question. Get fluent at it.
 3. **Window functions can't appear in `WHERE`.** Wrap any rank-based filter in a CTE or subquery. This is the consistent rule across all window functions and the most common "wait, why does this fail" moment when learning them.
 
-With these and frames, the [Window Functions](/cortex/languages/sql-window-functions-index) module is mostly in your fingertips. The next chapter ([Value Functions](/cortex/languages/sql-window-functions-value-functions)) covers the row-relative functions (`LAG`, `LEAD`, etc.), and the [final chapter](/cortex/languages/sql-window-functions-window-patterns) ties everything together with the canonical production patterns.
+With these and frames, the [Window Functions](/cortex/languages/sql/window-functions/index) module is mostly in your fingertips. The next chapter ([Value Functions](/cortex/languages/sql/window-functions/value-functions)) covers the row-relative functions (`LAG`, `LEAD`, etc.), and the [final chapter](/cortex/languages/sql/window-functions/window-patterns) ties everything together with the canonical production patterns.

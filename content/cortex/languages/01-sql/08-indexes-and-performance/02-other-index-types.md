@@ -271,8 +271,8 @@ Each index type has its niche; mixing them in one schema is normal.
 
 # Cross-links
 
-- **Previous in this module:** [B-Tree Indexes](/cortex/languages/sql-indexes-and-performance-b-tree-indexes).
-- **Next in this module:** [EXPLAIN and Query Plans](/cortex/languages/sql-indexes-and-performance-explain-and-query-plans).
+- **Previous in this module:** [B-Tree Indexes](/cortex/languages/sql/indexes-and-performance/b-tree-indexes).
+- **Next in this module:** [EXPLAIN and Query Plans](/cortex/languages/sql/indexes-and-performance/explain-and-query-plans).
 
 ***
 

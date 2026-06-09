@@ -8,7 +8,7 @@ prereqs:
 
 ## Why It Exists
 
-Wrap an ordinary [hash map](/cortex/data-structures-and-algorithms/linear-structures-hash-table-what-is-a-hash-table) in a `synchronized` block and it's correct — but it's a *queue with a hash interface*. Every `get` and `put` acquires one global lock, so threads can't touch the map at the same time even when they're working on completely unrelated keys. Under load, that single lock is the bottleneck and your eight cores run like one.
+Wrap an ordinary [hash map](/cortex/data-structures-and-algorithms/linear-structures/hash-table/what-is-a-hash-table) in a `synchronized` block and it's correct — but it's a *queue with a hash interface*. Every `get` and `put` acquires one global lock, so threads can't touch the map at the same time even when they're working on completely unrelated keys. Under load, that single lock is the bottleneck and your eight cores run like one.
 
 The fix is to lock *less of the map at once*. **Lock striping** partitions the table into `N` segments (stripes), each with its own lock; a write locks only the stripe its key hashes to, so two threads writing keys in *different* stripes proceed in parallel — up to `N`-way concurrency instead of 1. Reads can skip locking entirely (a bucket-head read is atomic). That's pre-Java-8 `ConcurrentHashMap`. Java 8+ pushes the idea further — no segment objects, just **CAS on each bucket head** with a short lock only when a bucket is contended, plus treeifying long collision chains. The principle is constant: shrink the unit of mutual exclusion from "the whole map" to "one stripe" to "one bucket."
 
@@ -195,7 +195,7 @@ Both print the same scaling: `1 stripe` → 1-way, busiest holds all `64`; `4 st
 - **Striping's limit is collision on a stripe.** Two keys on different stripes are concurrent; two on the same stripe still serialize. You get `~N`-way concurrency *on average*, never a guarantee — which is why finer (per-bucket) granularity wins.
 - **Reads are lock-free.** A bucket-head read is atomic, so the read-heavy common case never blocks. This alone makes a concurrent map far faster than a synchronized one.
 - **Linearizable, weakly-consistent iterators.** Single operations appear atomic; iterators reflect *some* point in time, never crash, and `size()` is approximate under concurrency. You trade a consistent snapshot for non-blocking traversal.
-- **It builds on the rest of Part 10.** Per-bucket updates are [CAS](/cortex/data-structures-and-algorithms/concurrency-and-systems-cas-and-atomics) retry loops (like the [lock-free queue](/cortex/data-structures-and-algorithms/concurrency-and-systems-lock-free-queue)); safe resize and node reclamation lean on [RCU/hazard pointers](/cortex/data-structures-and-algorithms/concurrency-and-systems-rcu-and-hazard-pointers). The concurrent hash map is where all of Part 10's primitives meet in one production structure.
+- **It builds on the rest of Part 10.** Per-bucket updates are [CAS](/cortex/data-structures-and-algorithms/concurrency-and-systems/cas-and-atomics) retry loops (like the [lock-free queue](/cortex/data-structures-and-algorithms/concurrency-and-systems/lock-free-queue)); safe resize and node reclamation lean on [RCU/hazard pointers](/cortex/data-structures-and-algorithms/concurrency-and-systems/rcu-and-hazard-pointers). The concurrent hash map is where all of Part 10's primitives meet in one production structure.
 
 ## Recall
 

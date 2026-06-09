@@ -176,10 +176,10 @@ Linear probing is open addressing at its simplest, and it frames the whole famil
 
 - **Open addressing vs chaining** — open addressing wins on **cache locality** (one contiguous array, no pointer-chasing) and memory (no list nodes), but it can't exceed load factor 1, needs **tombstones** for deletion, and suffers clustering. Chaining tolerates `α > 1` and deletes trivially. The trade is locality vs simplicity.
 - **The tombstone is the subtle part** — deletion can't just empty a slot, or every key probed *past* the deleted one becomes unreachable. Tombstones preserve probe chains but accumulate, so churn-heavy tables rehash periodically.
-- **Primary clustering motivates the sequels** — the `+1` walk merges runs. The [next lesson](/cortex/data-structures-and-algorithms/linear-structures-hash-table-quadratic-probing) replaces it with a quadratic jump to scatter colliding keys and break those clusters.
+- **Primary clustering motivates the sequels** — the `+1` walk merges runs. The [next lesson](/cortex/data-structures-and-algorithms/linear-structures/hash-table/quadratic-probing) replaces it with a quadratic jump to scatter colliding keys and break those clusters.
 
-**Prerequisites:** [What Is a Hash Table?](/cortex/data-structures-and-algorithms/linear-structures-hash-table-what-is-a-hash-table) (and the contrast with [Separate Chaining](/cortex/data-structures-and-algorithms/linear-structures-hash-table-separate-chaining)).
-**What's next:** swap the one-step walk for a quadratic jump — [Quadratic Probing](/cortex/data-structures-and-algorithms/linear-structures-hash-table-quadratic-probing).
+**Prerequisites:** [What Is a Hash Table?](/cortex/data-structures-and-algorithms/linear-structures/hash-table/what-is-a-hash-table) (and the contrast with [Separate Chaining](/cortex/data-structures-and-algorithms/linear-structures/hash-table/separate-chaining)).
+**What's next:** swap the one-step walk for a quadratic jump — [Quadratic Probing](/cortex/data-structures-and-algorithms/linear-structures/hash-table/quadratic-probing).
 
 ## Recall
 

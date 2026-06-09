@@ -115,7 +115,7 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [Three Sum](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-subproblem-problems-three-sum), then [Four Sum](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-subproblem-problems-four-sum) and [K Rotations](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-subproblem-problems-k-rotations).
+Drill the family in **Practice** — [Three Sum](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers-subproblem/problems/three-sum), then [Four Sum](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers-subproblem/problems/four-sum) and [K Rotations](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers-subproblem/problems/k-rotations).
 
 ## Reflect & Connect
 
@@ -127,8 +127,8 @@ This is the pattern that scales two pointers past pairs:
 
 The tradeoff echoes the reduction lesson: 3Sum has a hash-based variant too, but the sort-plus-nested-two-pointer version is `O(1)` extra space and far easier to dedupe. Beyond this section, "decompose into a subproblem a known technique solves" is the meta-move behind divide-and-conquer and dynamic programming later in the book.
 
-**Prerequisites:** [Two Pointers Reduction](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-reduction-pattern) (the inner sweep this calls).
-**What's next:** two pointers walking two *different* sequences at once — [Simultaneous Traversal](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-simultaneous-traversal-pattern).
+**Prerequisites:** [Two Pointers Reduction](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers-reduction/pattern) (the inner sweep this calls).
+**What's next:** two pointers walking two *different* sequences at once — [Simultaneous Traversal](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-simultaneous-traversal/pattern).
 
 ## Recall
 

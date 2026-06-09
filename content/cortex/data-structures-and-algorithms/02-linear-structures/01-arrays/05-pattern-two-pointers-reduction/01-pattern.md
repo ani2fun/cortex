@@ -114,7 +114,7 @@ public class Main {
 }
 ```
 
-Now drill the family in this section's **Practice** — start with [Two Sum](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-reduction-problems-two-sum), then [Largest Container](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-reduction-problems-largest-container).
+Now drill the family in this section's **Practice** — start with [Two Sum](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers-reduction/problems/two-sum), then [Largest Container](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers-reduction/problems/largest-container).
 
 ## Reflect & Connect
 
@@ -126,8 +126,8 @@ Reduction is the bridge from "two pointers as a trick" to "two pointers as a too
 
 The tradeoff worth knowing: Two Sum also has a *hash-table* solution that's `O(n)` time without sorting — but `O(n)` space. The two-pointer reduction is `O(1)` space and keeps the array sorted for free, which is why it wins when the input is already sorted or sorting is cheap.
 
-**Prerequisites:** [Two Pointers](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-pattern) and [Measuring Cost](/cortex/data-structures-and-algorithms/foundations-measuring-cost).
-**What's next:** two pointers as one step *inside* a bigger algorithm — [Two Pointers Subproblem](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-subproblem-pattern).
+**Prerequisites:** [Two Pointers](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers/pattern) and [Measuring Cost](/cortex/data-structures-and-algorithms/foundations/measuring-cost).
+**What's next:** two pointers as one step *inside* a bigger algorithm — [Two Pointers Subproblem](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers-subproblem/pattern).
 
 ## Recall
 

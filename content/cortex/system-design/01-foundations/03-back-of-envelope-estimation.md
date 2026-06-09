@@ -104,7 +104,7 @@ The read path is **25× the write path**. That is the *single most important num
 - Writes can be slow; reads cannot.
 - The architecture is read-optimised.
 
-This is exactly why Twitter's core design uses *fan-out on write* — pre-compute every follower's timeline at write time so reads are O(1) cache hits. We will design that exact pipeline in [Capstone 38](/cortex/system-design/capstones-news-feed).
+This is exactly why Twitter's core design uses *fan-out on write* — pre-compute every follower's timeline at write time so reads are O(1) cache hits. We will design that exact pipeline in [Capstone 38](/cortex/system-design/capstones/news-feed).
 
 ### Calculation 3 — Storage growth
 
@@ -232,7 +232,7 @@ The instinct to be precise is wrong. The instinct to slap "× 10 for safety" on 
 - **Forgetting metadata.** A "tweet" is not 280 bytes. It is 280 chars *plus* a 64-bit ID, an author ID, a timestamp, geolocation, language, source, hashtags array, mention array, attachment URLs, retweet status, like-count cache, etc. — **easily 1 KB**, often 4 KB. The same goes for "messages", "events", "rows".
 - **Forgetting indexes.** Storage is not just user data. Every secondary index, every search index, every materialised view, every analytics aggregate is **another full copy** of the data, often partially. The 3× "indexes / derived" multiplier is *generous on the low end*.
 - **Conflating write QPS with row growth.** Edits, deletes, and revisions all count toward write QPS but reduce or stay-flat for storage growth. Likes, retweets, saves all count as writes but add ~50 bytes each, not 1 KB. Be specific.
-- **Ignoring multi-region replication overhead.** A "1 KB write" replicated to 3 regions is *3 KB of cross-region bandwidth*, dominated by the cross-region cost in dollars. We will quantify this in [Lesson 11 — Replication](/cortex/system-design/building-blocks-replication).
+- **Ignoring multi-region replication overhead.** A "1 KB write" replicated to 3 regions is *3 KB of cross-region bandwidth*, dominated by the cross-region cost in dollars. We will quantify this in [Lesson 11 — Replication](/cortex/system-design/building-blocks/replication).
 - **Estimating averages and shipping for them.** A QPS estimate is the *integral over time*. Real traffic has spikes. Provision for the **99th-percentile minute**, not the daily average.
 - **Trusting your peak factor.** "We expect 3× peaks". Then a celebrity tweets your URL and traffic is **300×** for 90 seconds. The right design has a **shedding strategy** (rate limit, queue, serve from cache) for the case where the estimate is wrong.
 
@@ -285,4 +285,4 @@ The instinct to be precise is wrong. The instinct to slap "× 10 for safety" on 
 
 ---
 
-**Next:** the most-misunderstood theorem in distributed systems. We will demystify CAP, fix it with PACELC, and *feel* a partition with a runnable simulator. → [Lesson 4 — The CAP theorem and PACELC, honestly](/cortex/system-design/foundations-cap-and-pacelc)
+**Next:** the most-misunderstood theorem in distributed systems. We will demystify CAP, fix it with PACELC, and *feel* a partition with a runnable simulator. → [Lesson 4 — The CAP theorem and PACELC, honestly](/cortex/system-design/foundations/cap-and-pacelc)

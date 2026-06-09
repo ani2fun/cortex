@@ -8,7 +8,7 @@ prereqs:
 
 ## Why It Exists
 
-[Naive](/cortex/data-structures-and-algorithms/strings-string-matching-naive), [KMP](/cortex/data-structures-and-algorithms/strings-kmp), and [Z](/cortex/data-structures-and-algorithms/strings-z-algorithm) all compare *characters*. Rabin-Karp compares *numbers*: hash the pattern to a single integer, then slide a window over the text and compare each window's hash to the pattern's. A hash match is a *candidate* — you confirm it with a quick character check, because different strings can hash alike.
+[Naive](/cortex/data-structures-and-algorithms/strings/string-matching-naive), [KMP](/cortex/data-structures-and-algorithms/strings/kmp), and [Z](/cortex/data-structures-and-algorithms/strings/z-algorithm) all compare *characters*. Rabin-Karp compares *numbers*: hash the pattern to a single integer, then slide a window over the text and compare each window's hash to the pattern's. A hash match is a *candidate* — you confirm it with a quick character check, because different strings can hash alike.
 
 The catch that makes it practical is the **rolling hash**: when the window slides one position, you don't re-hash all `m` characters — you update the hash in `O(1)` by removing the departing character and folding in the arriving one. That gives expected `O(n + m)`. And because matching is now "does this number appear in my set of hashes?", Rabin-Karp does something KMP and Z can't do cheaply: search for **many patterns at once**, or find **any repeated substring** — just hash every window and look for collisions. That's the engine behind plagiarism detection and duplicate-block finding.
 
@@ -87,7 +87,7 @@ cmp -> verify
 
 Three load-bearing facts:
 
-- **Verification is non-negotiable for correctness.** Equal hashes do *not* guarantee equal strings — the hash maps many strings to each value. So a hash match triggers an `O(m)` character check. Skip it and you have a **Monte Carlo** algorithm (fast, but may report false matches); keep it and you have a **Las Vegas** algorithm (always correct, expected-fast) — the exact distinction from [randomized algorithms](/cortex/data-structures-and-algorithms/algorithms-by-strategy-randomized-algorithms-introduction-to-randomized-algorithms).
+- **Verification is non-negotiable for correctness.** Equal hashes do *not* guarantee equal strings — the hash maps many strings to each value. So a hash match triggers an `O(m)` character check. Skip it and you have a **Monte Carlo** algorithm (fast, but may report false matches); keep it and you have a **Las Vegas** algorithm (always correct, expected-fast) — the exact distinction from [randomized algorithms](/cortex/data-structures-and-algorithms/algorithms-by-strategy/randomized-algorithms/introduction-to-randomized-algorithms).
 - **Expected `O(n + m)`, worst `O(n · m)`.** With a good hash, collisions are rare, so verification fires `O(1)` times overall and the scan is linear. But a pathological input (or an adversary who crafts colliding strings) can make every window collide, forcing a verify at each — back to naive's quadratic. A large prime modulus and a random base make that astronomically unlikely.
 - **The superpower is many-at-once.** Hash every length-`m` window into a set, and membership tests answer "does *any* of these patterns occur?" or "does any substring repeat?" in one pass — something KMP/Z would need a separate run per pattern for. This is why plagiarism detectors and `rsync`-style block matchers use rolling hashes.
 
@@ -188,8 +188,8 @@ Both print `['ana']` then `['abc', 'bca', 'cab']`. In `"banana"`, only `"ana"` r
 - **Compare numbers, then confirm.** The hash is a cheap filter that rejects almost every position; the character check confirms the survivors. Equal hashes never *prove* equality — verification does.
 - **Rolling makes it linear.** Updating the hash in `O(1)` per shift (drop the weighted leaving char, shift, add the entering char) is the whole reason it beats re-hashing. Expected `O(n + m)`.
 - **Las Vegas vs Monte Carlo, concretely.** Verify on a hash match → always correct, expected-fast (Las Vegas). Trust the hash blindly → fast but occasionally wrong (Monte Carlo). Same code, one `if`.
-- **The all-windows superpower.** Hash every window into a set and you get multi-pattern search, duplicate-substring detection, and 2-D pattern matching essentially for free — the use cases [KMP](/cortex/data-structures-and-algorithms/strings-kmp)/[Z](/cortex/data-structures-and-algorithms/strings-z-algorithm) handle poorly.
-- **Pick the modulus and base well.** A large prime modulus and a *random* base make adversarial collisions astronomically unlikely — the same "randomize to defeat worst-case inputs" idea as randomized [hash tables](/cortex/data-structures-and-algorithms/linear-structures-hash-table-what-is-a-hash-table) resisting HashDoS. A tiny or fixed hash is exploitable.
+- **The all-windows superpower.** Hash every window into a set and you get multi-pattern search, duplicate-substring detection, and 2-D pattern matching essentially for free — the use cases [KMP](/cortex/data-structures-and-algorithms/strings/kmp)/[Z](/cortex/data-structures-and-algorithms/strings/z-algorithm) handle poorly.
+- **Pick the modulus and base well.** A large prime modulus and a *random* base make adversarial collisions astronomically unlikely — the same "randomize to defeat worst-case inputs" idea as randomized [hash tables](/cortex/data-structures-and-algorithms/linear-structures/hash-table/what-is-a-hash-table) resisting HashDoS. A tiny or fixed hash is exploitable.
 
 ## Recall
 

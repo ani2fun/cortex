@@ -10,9 +10,9 @@ prereqs:
 
 ## Why It Exists
 
-If you've used Java's `TreeMap`, C++'s `std::map`, Linux's `epoll`, or the CFS scheduler that picks which thread runs next, you've used a **red-black tree** — the workhorse self-balancing BST of production code. It isn't the shallowest ([AVL](/cortex/data-structures-and-algorithms/trees-avl-tree-introduction-to-avl-trees) is), nor the simplest (a treap is), nor the most concurrent (skip lists win there). What it *is* is the **best pragmatic compromise**: `O(log n)` on every operation, rebalancing capped at a *constant* number of rotations, and an overhead of just **one colour bit** per node.
+If you've used Java's `TreeMap`, C++'s `std::map`, Linux's `epoll`, or the CFS scheduler that picks which thread runs next, you've used a **red-black tree** — the workhorse self-balancing BST of production code. It isn't the shallowest ([AVL](/cortex/data-structures-and-algorithms/trees/avl-tree/introduction-to-avl-trees) is), nor the simplest (a treap is), nor the most concurrent (skip lists win there). What it *is* is the **best pragmatic compromise**: `O(log n)` on every operation, rebalancing capped at a *constant* number of rotations, and an overhead of just **one colour bit** per node.
 
-[AVL](/cortex/data-structures-and-algorithms/trees-avl-tree-introduction-to-avl-trees) holds a strict height invariant and pays for it — a delete can cascade `O(log n)` rotations. Red-black relaxes the balance (height ≤ `2 log₂ n` instead of `1.44 log₂ n`) in exchange for **≤2 rotations per insert and ≤3 per delete**, no matter the tree size. On mixed and write-heavy workloads that trade wins decisively, which is why it's what virtually every standard library ships. The mechanism is five colour invariants restored after each mutation by recolourings (cheap, possibly many) and a bounded number of rotations.
+[AVL](/cortex/data-structures-and-algorithms/trees/avl-tree/introduction-to-avl-trees) holds a strict height invariant and pays for it — a delete can cascade `O(log n)` rotations. Red-black relaxes the balance (height ≤ `2 log₂ n` instead of `1.44 log₂ n`) in exchange for **≤2 rotations per insert and ≤3 per delete**, no matter the tree size. On mixed and write-heavy workloads that trade wins decisively, which is why it's what virtually every standard library ships. The mechanism is five colour invariants restored after each mutation by recolourings (cheap, possibly many) and a bounded number of rotations.
 
 ## See It Work
 
@@ -255,13 +255,13 @@ Then climb the ladder: verify all five invariants on a given tree; trace the thr
 
 Red-black is the balance the industry settled on:
 
-- **RB vs AVL** — same `O(log n)`, but RB trades ~30% more height for *bounded* rotations (≤2 insert / ≤3 delete vs AVL's `O(log n)` delete cascade) and a 1-bit overhead. Mixed/write-heavy → RB; read-heavy → [AVL](/cortex/data-structures-and-algorithms/trees-avl-tree-introduction-to-avl-trees).
-- **It's a 2-3-4 tree in disguise** — a red node "merged" into its black parent forms a multi-key node; a red-black tree is an `O(1)`-pointer encoding of a [B-tree](/cortex/data-structures-and-algorithms/trees-b-tree-introduction-to-b-trees) of order 4. The colour invariants are exactly the B-tree's "all leaves at the same depth," re-expressed for a binary structure. That's where they "came from."
-- **Same rotation primitive** — the left/right rotations are identical to [AVL](/cortex/data-structures-and-algorithms/trees-avl-tree-introduction-to-avl-trees)'s; only the *trigger* (colour rule vs height rule) differs. Learn rotations once, reuse everywhere.
+- **RB vs AVL** — same `O(log n)`, but RB trades ~30% more height for *bounded* rotations (≤2 insert / ≤3 delete vs AVL's `O(log n)` delete cascade) and a 1-bit overhead. Mixed/write-heavy → RB; read-heavy → [AVL](/cortex/data-structures-and-algorithms/trees/avl-tree/introduction-to-avl-trees).
+- **It's a 2-3-4 tree in disguise** — a red node "merged" into its black parent forms a multi-key node; a red-black tree is an `O(1)`-pointer encoding of a [B-tree](/cortex/data-structures-and-algorithms/trees/b-tree/introduction-to-b-trees) of order 4. The colour invariants are exactly the B-tree's "all leaves at the same depth," re-expressed for a binary structure. That's where they "came from."
+- **Same rotation primitive** — the left/right rotations are identical to [AVL](/cortex/data-structures-and-algorithms/trees/avl-tree/introduction-to-avl-trees)'s; only the *trigger* (colour rule vs height rule) differs. Learn rotations once, reuse everywhere.
 - **In production** — Linux `lib/rbtree.c` (CFS scheduler keyed on `vruntime`, epoll, the page cache, EXT4 range trees), Java `TreeMap`/`TreeSet`, C++ `std::map`/`std::set`. When a sorted in-memory map is needed and you don't say otherwise, you get a red-black tree.
 
-**Prerequisites:** [Self-Balancing BSTs Overview](/cortex/data-structures-and-algorithms/trees-self-balancing-bst-overview-self-balancing-bst-overview), [Binary Search Tree](/cortex/data-structures-and-algorithms/trees-binary-search-tree-introduction-to-binary-search-trees).
-**What's next:** push fanout from 2 to hundreds so the tree fits disk-block access — the [B-Tree](/cortex/data-structures-and-algorithms/trees-b-tree-introduction-to-b-trees).
+**Prerequisites:** [Self-Balancing BSTs Overview](/cortex/data-structures-and-algorithms/trees/self-balancing-bst-overview/self-balancing-bst-overview), [Binary Search Tree](/cortex/data-structures-and-algorithms/trees/binary-search-tree/introduction-to-binary-search-trees).
+**What's next:** push fanout from 2 to hundreds so the tree fits disk-block access — the [B-Tree](/cortex/data-structures-and-algorithms/trees/b-tree/introduction-to-b-trees).
 
 ## Recall
 

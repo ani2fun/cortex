@@ -9,7 +9,7 @@ prereqs:
 
 ## Why It Exists
 
-The [segment tree](/cortex/data-structures-and-algorithms/trees-segment-tree-introduction-to-segment-trees) solves range queries with updates in `O(log n)` — but it's a few hundred lines, a `4n` array, two recursive functions, and lazy bookkeeping. For the *specific, common* case of **prefix sums with point updates** ("sum of `A[1..i]`" and "`A[i] += δ`"), that's overkill.
+The [segment tree](/cortex/data-structures-and-algorithms/trees/segment-tree/introduction-to-segment-trees) solves range queries with updates in `O(log n)` — but it's a few hundred lines, a `4n` array, two recursive functions, and lazy bookkeeping. For the *specific, common* case of **prefix sums with point updates** ("sum of `A[1..i]`" and "`A[i] += δ`"), that's overkill.
 
 The **Fenwick tree** (or **Binary Indexed Tree**, BIT) does exactly that case in **six lines per operation**, one flat array, no recursion. The whole structure rests on one identity from two's-complement arithmetic: `i & (-i)` isolates the **lowest set bit** of `i`. That single expression both defines which range each array cell covers *and* drives the `O(log n)` walks for query and update. Less general than a segment tree (no range-min, no arbitrary monoid), but half the code, half the memory, and a smaller constant — the default when prefix sums are all you need.
 
@@ -197,12 +197,12 @@ Then climb the ladder: build in `O(n)` (add `bit[i]` into `bit[i + lowbit(i)]`) 
 
 The Fenwick tree is the specialist where the segment tree is the generalist:
 
-- **vs Segment tree** — same `O(log n)`, but Fenwick is ~half the code/memory and a smaller constant *for prefix-sum-style queries only*. The price of that economy: the aggregate must be **invertible** (range = `prefix(r) − prefix(l−1)`), so sum and xor work but min/max don't — those need a [segment tree](/cortex/data-structures-and-algorithms/trees-segment-tree-introduction-to-segment-trees) or a sparse table.
-- **The lowbit trick is the whole structure** — `i & -i` (the [set-bit-finder](/cortex/data-structures-and-algorithms/bit-tricks-pattern-set-bit-finder-pattern) identity) defines each cell's range and drives both walks. No node objects, no pointers, no recursion — just index arithmetic over one array. It's the cleanest example of "a clever index scheme replaces an explicit tree" (the same idea as the implicit binary heap).
+- **vs Segment tree** — same `O(log n)`, but Fenwick is ~half the code/memory and a smaller constant *for prefix-sum-style queries only*. The price of that economy: the aggregate must be **invertible** (range = `prefix(r) − prefix(l−1)`), so sum and xor work but min/max don't — those need a [segment tree](/cortex/data-structures-and-algorithms/trees/segment-tree/introduction-to-segment-trees) or a sparse table.
+- **The lowbit trick is the whole structure** — `i & -i` (the [set-bit-finder](/cortex/data-structures-and-algorithms/bit-tricks/pattern-set-bit-finder/pattern) identity) defines each cell's range and drives both walks. No node objects, no pointers, no recursion — just index arithmetic over one array. It's the cleanest example of "a clever index scheme replaces an explicit tree" (the same idea as the implicit binary heap).
 - **Classic uses** — counting inversions (BIT over value ranks while scanning), order statistics / rank queries, range-add with point-query via a difference array, and 2D prefix sums. It's a staple of competitive programming precisely because it's so short to type correctly under time pressure.
 
-**Prerequisites:** [Segment Tree](/cortex/data-structures-and-algorithms/trees-segment-tree-introduction-to-segment-trees), [Set-Bit Finder](/cortex/data-structures-and-algorithms/bit-tricks-pattern-set-bit-finder-pattern).
-**What's next:** leave trees-as-ordered-data behind for trees-as-connectivity — near-`O(1)` union and find over disjoint sets — the [Disjoint Set Union](/cortex/data-structures-and-algorithms/trees-disjoint-set-union-introduction-to-disjoint-set-union).
+**Prerequisites:** [Segment Tree](/cortex/data-structures-and-algorithms/trees/segment-tree/introduction-to-segment-trees), [Set-Bit Finder](/cortex/data-structures-and-algorithms/bit-tricks/pattern-set-bit-finder/pattern).
+**What's next:** leave trees-as-ordered-data behind for trees-as-connectivity — near-`O(1)` union and find over disjoint sets — the [Disjoint Set Union](/cortex/data-structures-and-algorithms/trees/disjoint-set-union/introduction-to-disjoint-set-union).
 
 ## Recall
 

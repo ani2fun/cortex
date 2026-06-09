@@ -112,7 +112,7 @@ public class Main {
 }
 ```
 
-Want the two collision strategies in full? [Separate Chaining](/cortex/data-structures-and-algorithms/linear-structures-hash-table-separate-chaining) builds the linked-list-per-bucket version from scratch; the probing lessons cover open addressing.
+Want the two collision strategies in full? [Separate Chaining](/cortex/data-structures-and-algorithms/linear-structures/hash-table/separate-chaining) builds the linked-list-per-bucket version from scratch; the probing lessons cover open addressing.
 
 ## Reflect & Connect
 
@@ -123,8 +123,8 @@ The hash table is the workhorse of practical computing — any time you map keys
 
 Two cautions to carry forward. First, `O(1)` is an *average* — a poor hash function (or an adversary feeding worst-case keys) collapses it to `O(n)`, which is why production tables use well-mixed hashes and randomized seeds. Second, the order is gone: a hash table scatters keys by hash, so it gives up the *sorted* or *insertion* order that an array or a balanced tree keeps. When you need ordering, that's the tradeoff that sends you elsewhere.
 
-**Prerequisites:** [Arrays](/cortex/data-structures-and-algorithms/linear-structures-arrays-what-is-an-array), [Linked Lists](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-what-is-a-linked-list), and [Measuring Cost](/cortex/data-structures-and-algorithms/foundations-measuring-cost).
-**What's next:** a structure that keeps the *largest* item always within reach — the [Heap](/cortex/data-structures-and-algorithms/trees-heap-what-is-a-heap).
+**Prerequisites:** [Arrays](/cortex/data-structures-and-algorithms/linear-structures/arrays/what-is-an-array), [Linked Lists](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/what-is-a-linked-list), and [Measuring Cost](/cortex/data-structures-and-algorithms/foundations/measuring-cost).
+**What's next:** a structure that keeps the *largest* item always within reach — the [Heap](/cortex/data-structures-and-algorithms/trees/heap/what-is-a-heap).
 
 ## Recall
 

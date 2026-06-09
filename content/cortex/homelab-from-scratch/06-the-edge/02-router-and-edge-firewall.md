@@ -38,7 +38,7 @@ Two boxes, two firewalls, two responsibilities:
 
 ## The home router
 
-If you got through [Bring up the mesh](/cortex/homelab-from-scratch/private-mesh-bring-up-the-mesh), this is already done. To recap:
+If you got through [Bring up the mesh](/cortex/homelab-from-scratch/private-mesh/bring-up-the-mesh), this is already done. To recap:
 
 | Public port | Protocol | Internal IP | Internal port |
 |---|---|---|---|
@@ -164,4 +164,4 @@ Every port should be `filtered`. The home WAN should look completely silent exce
 
 The next chapter lets us issue real Let's Encrypt certificates for any subdomain we want — using the API token we already have.
 
-→ Next: [TLS on autopilot](/cortex/homelab-from-scratch/the-edge-tls-on-autopilot)
+→ Next: [TLS on autopilot](/cortex/homelab-from-scratch/the-edge/tls-on-autopilot)

@@ -151,4 +151,4 @@ On the laptop side, you'll create a peer config that lists `ms-1` (or `vm-1`, de
 
 The next chapter assembles the four `wg0.conf` files using these keys and brings the mesh up.
 
-→ Next: [Bring up the mesh](/cortex/homelab-from-scratch/private-mesh-bring-up-the-mesh)
+→ Next: [Bring up the mesh](/cortex/homelab-from-scratch/private-mesh/bring-up-the-mesh)

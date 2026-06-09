@@ -116,11 +116,11 @@ This is a structural lesson — drill sorting in the pattern sets.
 Selection sort is the "minimize writes" elementary sort, and it sets up something bigger:
 
 - **Selection vs bubble** — both are `O(n²)` comparisons, but they trade differently: bubble sort is *adaptive and stable* but does many swaps; selection sort does the *fewest swaps* (`O(n)`) but is *neither adaptive nor stable*. Pick by whether writes or order-preservation matter more.
-- **The min-extraction idea scales up** — selection sort repeatedly extracts the minimum via a *linear scan* (`O(n)` each). Replace that linear scan with a **heap**, which extracts the minimum in `O(log n)`, and selection sort becomes **[heapsort](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-heapsort)** — the same "select the next-smallest" strategy, made `O(n log n)`.
+- **The min-extraction idea scales up** — selection sort repeatedly extracts the minimum via a *linear scan* (`O(n)` each). Replace that linear scan with a **heap**, which extracts the minimum in `O(log n)`, and selection sort becomes **[heapsort](/cortex/data-structures-and-algorithms/sorting-and-searching/sorting/heapsort)** — the same "select the next-smallest" strategy, made `O(n log n)`.
 - **Not stable is a real gotcha** — if you're sorting records and need a stable result, selection sort silently reorders equal keys; reach for insertion or merge sort instead.
 
-**Prerequisites:** [What Is an Array?](/cortex/data-structures-and-algorithms/linear-structures-arrays-what-is-an-array).
-**What's next:** build the sorted region by inserting each element into place — [Insertion Sort](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-insertion-sort).
+**Prerequisites:** [What Is an Array?](/cortex/data-structures-and-algorithms/linear-structures/arrays/what-is-an-array).
+**What's next:** build the sorted region by inserting each element into place — [Insertion Sort](/cortex/data-structures-and-algorithms/sorting-and-searching/sorting/insertion-sort).
 
 ## Recall
 

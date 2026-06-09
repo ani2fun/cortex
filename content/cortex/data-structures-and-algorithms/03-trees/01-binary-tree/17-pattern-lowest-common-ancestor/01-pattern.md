@@ -11,7 +11,7 @@ prereqs:
 
 The **lowest common ancestor** of two nodes `p` and `q` is the deepest node that has *both* as descendants — the point where their two root-to-node paths converge. It's the backbone of "distance between two nodes," "is X an ancestor of Y," and a dozen tree-relationship queries.
 
-On a [BST you could exploit ordering](/cortex/data-structures-and-algorithms/trees-binary-search-tree-lowest-common-ancestor-in-binary-search-trees) — walk down, turn left when both targets are smaller, right when both are larger, and the first node that *splits* them is the LCA. But a **general** binary tree has no such order; the only way to know where the targets are is to *look*. So you do a single [postorder](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless-pattern) pass: each call reports "did I find a target somewhere below me?" by **bubbling the target up**. The node that hears "yes" from its **left** *and* "yes" from its **right** is sitting exactly at the split — it's the LCA. `O(n)` time, `O(h)` stack, one traversal.
+On a [BST you could exploit ordering](/cortex/data-structures-and-algorithms/trees/binary-search-tree/lowest-common-ancestor-in-binary-search-trees) — walk down, turn left when both targets are smaller, right when both are larger, and the first node that *splits* them is the LCA. But a **general** binary tree has no such order; the only way to know where the targets are is to *look*. So you do a single [postorder](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-postorder-traversal-stateless/pattern) pass: each call reports "did I find a target somewhere below me?" by **bubbling the target up**. The node that hears "yes" from its **left** *and* "yes" from its **right** is sitting exactly at the split — it's the LCA. `O(n)` time, `O(h)` stack, one traversal.
 
 ## See It Work
 
@@ -141,18 +141,18 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [Lowest Common Ancestor](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-lowest-common-ancestor-problems-lowest-common-ancestor), [LCA with Existence Check](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-lowest-common-ancestor-problems-lca-with-existence-check), [LCA of N Random Nodes](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-lowest-common-ancestor-problems-lca-of-n-random-nodes), [LCA of the Deepest Leaves](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-lowest-common-ancestor-problems-lca-of-the-deepest-leaves), and [Distance Between Two Nodes](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-lowest-common-ancestor-problems-distance-between-two-nodes).
+Drill the family in **Practice** — [Lowest Common Ancestor](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-lowest-common-ancestor/problems/lowest-common-ancestor), [LCA with Existence Check](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-lowest-common-ancestor/problems/lca-with-existence-check), [LCA of N Random Nodes](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-lowest-common-ancestor/problems/lca-of-n-random-nodes), [LCA of the Deepest Leaves](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-lowest-common-ancestor/problems/lca-of-the-deepest-leaves), and [Distance Between Two Nodes](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-lowest-common-ancestor/problems/distance-between-two-nodes).
 
 ## Reflect & Connect
 
 LCA is the canonical "answer lives at the split point" postorder:
 
 - **The family** — plain LCA, LCA-with-existence-check (verify both were found), LCA of the deepest leaves, distance between two nodes (`depth(p) + depth(q) − 2·depth(LCA)`), and LCA of many nodes (fold pairwise). All share the bubble-up-and-split core.
-- **BST vs general tree** — a [BST LCA](/cortex/data-structures-and-algorithms/trees-binary-search-tree-lowest-common-ancestor-in-binary-search-trees) *navigates* by comparing values (`O(h)`, no recursion needed); the general-tree LCA *searches* every node (`O(n)`). Order buys you the shortcut; without it you pay the full traversal.
-- **It's stateful-postorder's cousin** — like [diameter / max-path-sum](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateful-pattern), the answer is decided at an interior node using *both* subtrees. Here the "accumulator" is implicit: the single node that receives two non-`None` returns. Mind the existence precondition — it's the one assumption holding the early-return up.
+- **BST vs general tree** — a [BST LCA](/cortex/data-structures-and-algorithms/trees/binary-search-tree/lowest-common-ancestor-in-binary-search-trees) *navigates* by comparing values (`O(h)`, no recursion needed); the general-tree LCA *searches* every node (`O(n)`). Order buys you the shortcut; without it you pay the full traversal.
+- **It's stateful-postorder's cousin** — like [diameter / max-path-sum](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-postorder-traversal-stateful/pattern), the answer is decided at an interior node using *both* subtrees. Here the "accumulator" is implicit: the single node that receives two non-`None` returns. Mind the existence precondition — it's the one assumption holding the early-return up.
 
-**Prerequisites:** [Postorder Traversal (Stateless)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless-pattern).
-**What's next:** walk *two* trees at once in lockstep — same-tree, mirror, merge, subtree-check — [Simultaneous Traversal](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-simultaneous-traversal-pattern).
+**Prerequisites:** [Postorder Traversal (Stateless)](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-postorder-traversal-stateless/pattern).
+**What's next:** walk *two* trees at once in lockstep — same-tree, mirror, merge, subtree-check — [Simultaneous Traversal](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-simultaneous-traversal/pattern).
 
 ## Recall
 

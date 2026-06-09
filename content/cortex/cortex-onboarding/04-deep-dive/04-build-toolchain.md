@@ -47,7 +47,7 @@ addSbtPlugin("org.scalameta"               % "sbt-scalafmt"             % "2.5.2
 | `sbt-scalajs-crossproject` | Adds the `crossProject(JSPlatform, JVMPlatform)` DSL. Without it, you'd hand-write two parallel projects with the same source set. |
 | `sbt-native-packager` | Wraps the JVM build into a launcher. `server/Universal/stage` produces `server/target/universal/stage/` with `bin/cortex-server`, `lib/*.jar`, and a startup script. The Docker runtime stage copies this directly. |
 | `sbt-revolver` | Adds `~reStart` (auto-restart on file change) and `reStop`. The dev server runs in a forked JVM so editor saves trigger a quick restart instead of waiting for a slow `sbt run` boot. |
-| `sbt-openapi-codegen` | The codegen pipeline (see [Shared & Codegen](/cortex/cortex-onboarding/deep-dive-shared-and-codegen)). Reads `api/openapi.yaml`, emits Scala. |
+| `sbt-openapi-codegen` | The codegen pipeline (see [Shared & Codegen](/cortex/cortex-onboarding/deep-dive/shared-and-codegen)). Reads `api/openapi.yaml`, emits Scala. |
 | `sbt-scalafmt` | Wires `scalafmt` into sbt. `sbt scalafmtAll` formats; `sbt scalafmtCheckAll` fails CI on drift. |
 
 **If you remove `sbt-revolver`:** every server change becomes `Ctrl-C` + `sbt server/run` + 5s of cold start. With it, edits restart in <1s.
@@ -105,13 +105,13 @@ plugins: [
 
 Only two plugins. The Tailwind v4 plugin handles all CSS — no PostCSS, no separate Tailwind step. The Scala.js plugin handles all Scala — exposes the linker output as an importable module.
 
-**Why `cwd: ".."`?** Vite runs from `client/`. The Scala.js linker is invoked via sbt, which expects to be in the build root. Without `cwd: ".."`, the plugin tries to invoke sbt inside `client/`, which has no `build.sbt` of its own. The fix is one line; finding the bug if you don't know to look for it takes hours. (Mentioned in [Local Development](/cortex/cortex-onboarding/working-on-it-local-development)'s foot-guns list.)
+**Why `cwd: ".."`?** Vite runs from `client/`. The Scala.js linker is invoked via sbt, which expects to be in the build root. Without `cwd: ".."`, the plugin tries to invoke sbt inside `client/`, which has no `build.sbt` of its own. The fix is one line; finding the bug if you don't know to look for it takes hours. (Mentioned in [Local Development](/cortex/cortex-onboarding/working-on-it/local-development)'s foot-guns list.)
 
 **`projectID: "client"`** tells the plugin which sbt module's linker output to import. Maps to `client/fastLinkJS` in the sbt task graph.
 
 ## Manual chunks — what we lazy-load and why
 
-Already covered in [Client Stack](/cortex/cortex-onboarding/deep-dive-client-stack#bundle-splitting), but worth repeating because the trade-off is the entire reason the book index loads fast:
+Already covered in [Client Stack](/cortex/cortex-onboarding/deep-dive/client-stack#bundle-splitting), but worth repeating because the trade-off is the entire reason the book index loads fast:
 
 ```javascript
 manualChunks(id) {
@@ -191,7 +191,7 @@ Why Liquibase over Flyway?
 
 For a personal project, both work. Liquibase wins on rollback annotations (`--rollback DROP TABLE`) being free, and on the YAML master allowing flexible inclusion. If you have a specific allergy to YAML, Flyway's "just SQL" approach is simpler.
 
-The annoying part: **Liquibase logs through `java.util.logging`**, and sbt-revolver tags everything on stderr as `[ERROR]`. We bridge JUL→SLF4J in `Main.scala` (`SLF4JBridgeHandler.install()`) — without that bridge, every dev startup looks alarming. Covered in [Server Stack](/cortex/cortex-onboarding/deep-dive-server-stack#liquibase-yaml--julslf4j-bridge).
+The annoying part: **Liquibase logs through `java.util.logging`**, and sbt-revolver tags everything on stderr as `[ERROR]`. We bridge JUL→SLF4J in `Main.scala` (`SLF4JBridgeHandler.install()`) — without that bridge, every dev startup looks alarming. Covered in [Server Stack](/cortex/cortex-onboarding/deep-dive/server-stack#liquibase-yaml--julslf4j-bridge).
 
 **If you switch to Flyway:** trivially possible, but you lose inline rollback annotations and you're now writing SQL files only. Adapt to taste.
 

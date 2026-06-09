@@ -107,7 +107,7 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [First Non-Repeating Character](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-counting-problems-first-non-repeating-character), [Constructibility Check](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-counting-problems-constructibility-check), [Anagram Checker](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-counting-problems-anagram-checker), [Build Palindrome](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-counting-problems-build-palindrome), and [Cluster Anagrams](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-counting-problems-cluster-anagrams).
+Drill the family in **Practice** — [First Non-Repeating Character](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-counting/problems/first-non-repeating-character), [Constructibility Check](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-counting/problems/constructibility-check), [Anagram Checker](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-counting/problems/anagram-checker), [Build Palindrome](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-counting/problems/build-palindrome), and [Cluster Anagrams](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-counting/problems/cluster-anagrams).
 
 ## Reflect & Connect
 
@@ -117,8 +117,8 @@ A frequency map is one of the most reused tools in algorithms — spotting "this
 - **The map is a multiset** — counting treats the hash map as a bag of elements with multiplicities; comparing, subtracting, or thresholding those multiplicities solves the problem.
 - **It's the substrate for sliding windows** — when the "window state" is "which elements, and how many," a count map *is* that state. The next patterns slide a window while maintaining exactly such a map.
 
-**Prerequisites:** [What Is a Hash Table?](/cortex/data-structures-and-algorithms/linear-structures-hash-table-what-is-a-hash-table).
-**What's next:** use a hash map to build and look up keys you construct on the fly — [Pattern Generation](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-pattern-generation-pattern).
+**Prerequisites:** [What Is a Hash Table?](/cortex/data-structures-and-algorithms/linear-structures/hash-table/what-is-a-hash-table).
+**What's next:** use a hash map to build and look up keys you construct on the fly — [Pattern Generation](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-pattern-generation/pattern).
 
 ## Recall
 

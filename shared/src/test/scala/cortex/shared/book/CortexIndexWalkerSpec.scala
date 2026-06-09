@@ -93,7 +93,7 @@ object CortexIndexWalkerSpec extends ZIOSpecDefault:
         val Right(r) = CortexIndexWalker.walk(List(tree)): @unchecked
         assertTrue(
           r.index.books.head.chapters.map(_.slug) ==
-            List("foundations-index", "foundations-first", "foundations-second", "foundations-third")
+            List("foundations/index", "foundations/first", "foundations/second", "foundations/third")
         )
       },
       test("nested sections become groupPath entries; chapter slug joins all order-stripped segments") {
@@ -111,7 +111,7 @@ object CortexIndexWalkerSpec extends ZIOSpecDefault:
         val Right(r) = CortexIndexWalker.walk(List(tree)): @unchecked
         val chapters = r.index.books.head.chapters
         assertTrue(
-          chapters.map(_.slug) == List("start-here", "system-next-step"),
+          chapters.map(_.slug) == List("start-here", "system/next-step"),
           chapters.head.groupPath.isEmpty,
           chapters(1).groupPath == Some(Seq("System"))
         )
@@ -284,7 +284,7 @@ object CortexIndexWalkerSpec extends ZIOSpecDefault:
           )
         )
         val Right(r) = CortexIndexWalker.walk(List(tree)): @unchecked
-        assertTrue(r.index.books.head.chapters.map(_.slug) == List("intro", "foundations-what"))
+        assertTrue(r.index.books.head.chapters.map(_.slug) == List("intro", "foundations/what"))
       },
       test("a book at the top level literally named 'examples' is skipped too") {
         val tree = List(
@@ -376,7 +376,7 @@ object CortexIndexWalkerSpec extends ZIOSpecDefault:
         val map      = r.reverseMaps("guide")
         assertTrue(
           map("start") == "01-start.md",
-          map("system-next") == "02-system/01-next.md"
+          map("system/next") == "02-system/01-next.md"
         )
       }
     ),
@@ -506,6 +506,17 @@ object CortexIndexWalkerSpec extends ZIOSpecDefault:
           !CortexIndexWalker.slugLike(""),
           !CortexIndexWalker.slugLike("has space"),
           !CortexIndexWalker.slugLike("has.dot")
+        )
+      },
+      test("chapterPathLike accepts '/'-joined slug segments; rejects empty segments and '..'") {
+        assertTrue(
+          CortexIndexWalker.chapterPathLike("arrays"),
+          CortexIndexWalker.chapterPathLike("linear-structures/arrays/two-sum"),
+          !CortexIndexWalker.chapterPathLike(""),
+          !CortexIndexWalker.chapterPathLike("a//b"),
+          !CortexIndexWalker.chapterPathLike("/leading"),
+          !CortexIndexWalker.chapterPathLike("trailing/"),
+          !CortexIndexWalker.chapterPathLike("a/../b")
         )
       }
     )

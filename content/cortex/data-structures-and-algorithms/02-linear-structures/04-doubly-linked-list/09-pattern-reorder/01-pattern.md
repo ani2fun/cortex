@@ -160,7 +160,7 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [Relocate Node](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-pattern-reorder-problems-relocate-node), [Parity Order](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-pattern-reorder-problems-parity-order), [Value Partition](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-pattern-reorder-problems-value-partition), and [Shuffle List](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-pattern-reorder-problems-shuffle-list).
+Drill the family in **Practice** — [Relocate Node](/cortex/data-structures-and-algorithms/linear-structures/doubly-linked-list/pattern-reorder/problems/relocate-node), [Parity Order](/cortex/data-structures-and-algorithms/linear-structures/doubly-linked-list/pattern-reorder/problems/parity-order), [Value Partition](/cortex/data-structures-and-algorithms/linear-structures/doubly-linked-list/pattern-reorder/problems/value-partition), and [Shuffle List](/cortex/data-structures-and-algorithms/linear-structures/doubly-linked-list/pattern-reorder/problems/shuffle-list).
 
 ## Reflect & Connect
 
@@ -168,9 +168,9 @@ Reorder on a doubly list is the singly technique plus one disciplined repair pas
 
 - **Classify-and-concatenate** still covers it — by index parity (above), by value (`< x` chain and `≥ x` chain), by any per-node rule. Identical to the singly version on the `next` chain.
 - **The `prev`-rebuild sweep is the transferable idiom** — `prev` is a function of `next`, so for any non-trivial doubly restructuring, manipulate one pointer and derive the other last. One write-site for `prev` means one place a bug can live.
-- **The doubly bonus: the fold needs no reversal** — the singly *fold* `L0→Ln→L1→Ln-1→…` required split + reverse + merge. A doubly list with a **tail** and `prev` can weave directly: take from the front via `next`, take from the back via `prev`, alternate. No reversal at all — the backward pointer that made [two-pointers](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-pattern-two-pointers-pattern) cheap makes the fold cheap too.
+- **The doubly bonus: the fold needs no reversal** — the singly *fold* `L0→Ln→L1→Ln-1→…` required split + reverse + merge. A doubly list with a **tail** and `prev` can weave directly: take from the front via `next`, take from the back via `prev`, alternate. No reversal at all — the backward pointer that made [two-pointers](/cortex/data-structures-and-algorithms/linear-structures/doubly-linked-list/pattern-two-pointers/pattern) cheap makes the fold cheap too.
 
-**Prerequisites:** [Reversal as a Subproblem](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-pattern-reversal-subproblem-pattern).
+**Prerequisites:** [Reversal as a Subproblem](/cortex/data-structures-and-algorithms/linear-structures/doubly-linked-list/pattern-reversal-subproblem/pattern).
 
 ## Recall
 

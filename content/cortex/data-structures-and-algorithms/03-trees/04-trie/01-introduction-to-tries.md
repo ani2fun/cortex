@@ -195,7 +195,7 @@ Then climb the ladder: **Implement Trie** ([LeetCode 208](https://leetcode.com/p
 
 The trie is the data structure of prefixes:
 
-- **The family** — autocomplete (`words_with_prefix`), spell-check "did you mean…" (DFS with an edit budget), multi-pattern stream matching ([Aho–Corasick](/cortex/data-structures-and-algorithms/strings-aho-corasick) = trie + failure links), word-search puzzles (trie-pruned board DFS), and longest-prefix IP match.
+- **The family** — autocomplete (`words_with_prefix`), spell-check "did you mean…" (DFS with an edit budget), multi-pattern stream matching ([Aho–Corasick](/cortex/data-structures-and-algorithms/strings/aho-corasick) = trie + failure links), word-search puzzles (trie-pruned board DFS), and longest-prefix IP match.
 - **Compression — the radix trie** — a plain trie wastes a long single-child chain on `internationalisation`. A **compressed (radix / PATRICIA) trie** collapses each single-child chain into one edge labelled with the whole substring; insert/delete get fancier (you must *split* edges) but stay `O(L)`. Cat-and-dog shrinks from 6 nodes to 3:
 
 ```mermaid
@@ -212,11 +212,11 @@ flowchart LR
 
 <p align="center"><strong>A plain trie spends one node per character (<code>c-a-t</code>, <code>d-o-g</code> = 6 nodes); a radix (PATRICIA) trie collapses each single-child chain into one labelled edge, shrinking the same two words to 3 nodes.</strong></p>
 
-- **When a trie wins (and loses)** — it shines when prefixes are *shared* **and** you need *prefix* queries. For pure exact-match, a [hash table](/cortex/data-structures-and-algorithms/linear-structures-hash-table-what-is-a-hash-table) is faster and simpler; for sorted iteration, a BST suffices. With unrelated keys (UUIDs, hashes) nothing is shared, so the trie degenerates to one node per character with no savings.
-- **In production** — Linux's `fib_trie.c` routes every packet through a level-compressed radix trie (RCU for lock-free reads); DuckDB and HyPer index memory with the **Adaptive Radix Tree** (node layouts of 4/16/48/256 by population); B+-tree leaves do prefix compression, the radix idea applied to disk blocks — you'll see it again in the [B-tree chapter](/cortex/data-structures-and-algorithms/trees-b-tree-introduction-to-b-trees).
+- **When a trie wins (and loses)** — it shines when prefixes are *shared* **and** you need *prefix* queries. For pure exact-match, a [hash table](/cortex/data-structures-and-algorithms/linear-structures/hash-table/what-is-a-hash-table) is faster and simpler; for sorted iteration, a BST suffices. With unrelated keys (UUIDs, hashes) nothing is shared, so the trie degenerates to one node per character with no savings.
+- **In production** — Linux's `fib_trie.c` routes every packet through a level-compressed radix trie (RCU for lock-free reads); DuckDB and HyPer index memory with the **Adaptive Radix Tree** (node layouts of 4/16/48/256 by population); B+-tree leaves do prefix compression, the radix idea applied to disk blocks — you'll see it again in the [B-tree chapter](/cortex/data-structures-and-algorithms/trees/b-tree/introduction-to-b-trees).
 
-**Prerequisites:** [Binary Tree](/cortex/data-structures-and-algorithms/trees-binary-tree-introduction-to-binary-trees), [Hash Table](/cortex/data-structures-and-algorithms/linear-structures-hash-table-what-is-a-hash-table).
-**What's next:** trees that *keep themselves short* so search stays `O(log n)` — the [self-balancing overview](/cortex/data-structures-and-algorithms/trees-self-balancing-bst-overview-self-balancing-bst-overview).
+**Prerequisites:** [Binary Tree](/cortex/data-structures-and-algorithms/trees/binary-tree/introduction-to-binary-trees), [Hash Table](/cortex/data-structures-and-algorithms/linear-structures/hash-table/what-is-a-hash-table).
+**What's next:** trees that *keep themselves short* so search stays `O(log n)` — the [self-balancing overview](/cortex/data-structures-and-algorithms/trees/self-balancing-bst-overview/self-balancing-bst-overview).
 
 ## Recall
 

@@ -122,7 +122,7 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [Reverse Bits](/cortex/data-structures-and-algorithms/bit-tricks-pattern-restructuring-problems-reverse-bits) and [Circular Shift Bits](/cortex/data-structures-and-algorithms/bit-tricks-pattern-restructuring-problems-circular-shift-bits).
+Drill the family in **Practice** — [Reverse Bits](/cortex/data-structures-and-algorithms/bit-tricks/pattern-restructuring/problems/reverse-bits) and [Circular Shift Bits](/cortex/data-structures-and-algorithms/bit-tricks/pattern-restructuring/problems/circular-shift-bits).
 
 ## Reflect & Connect
 
@@ -132,8 +132,8 @@ Restructuring is "lossless bit movement," and it recurs in low-level code:
 - **OR-of-complementary-shifts is the rotate idiom** — it appears verbatim in cryptographic round functions (many ciphers rotate state each round) and hash mixing. Recognize it and rotations stop looking like magic.
 - **Mind the width** — `k %= width` before rotating, mask after shifting, and use Java's `>>>` (unsigned) rather than `>>` (sign-extending) when the top bit might be set. A faster, loop-free reversal exists via divide-and-conquer with magic masks (`0x55555555`, `0x33333333`, …) — `O(log width)` — but the LSB loop is the readable default.
 
-**Prerequisites:** [Kth-Bit Operations](/cortex/data-structures-and-algorithms/bit-tricks-pattern-kth-bit-pattern).
-**What's next:** the single most useful bitwise identity — [XOR](/cortex/data-structures-and-algorithms/bit-tricks-pattern-xor-pattern).
+**Prerequisites:** [Kth-Bit Operations](/cortex/data-structures-and-algorithms/bit-tricks/pattern-kth-bit/pattern).
+**What's next:** the single most useful bitwise identity — [XOR](/cortex/data-structures-and-algorithms/bit-tricks/pattern-xor/pattern).
 
 ## Recall
 

@@ -71,7 +71,7 @@ The most common shape in 2026. One node accepts all writes; the rest follow.
   title="Single-leader replication"
 ></iframe>
 
-The replicas apply the leader's **write-ahead log** ([Lesson 9](/cortex/system-design/building-blocks-relational-databases)) in order. Postgres calls this *streaming replication*; MySQL calls it *binlog replication*; same shape. Within single-leader there are two flavours:
+The replicas apply the leader's **write-ahead log** ([Lesson 9](/cortex/system-design/building-blocks/relational-databases)) in order. Postgres calls this *streaming replication*; MySQL calls it *binlog replication*; same shape. Within single-leader there are two flavours:
 
 - **Synchronous** — the leader waits for ≥ 1 replica to acknowledge the write before returning success. Strong durability; one slow replica blocks all writes.
 - **Asynchronous** — the leader returns success after writing its own WAL. The replicas catch up eventually. Fast; if the leader dies before a replica replays the latest writes, *those writes are lost*.
@@ -223,7 +223,7 @@ The default 2026 stack for a startup: **single-leader Postgres with one or two a
 
 ### 6.1 Split brain on transient partition
 
-The GitHub October 2018 story is the canonical version. **A network partition between the primary and the failover orchestrator is misinterpreted as primary failure**; the orchestrator promotes a replica; the original primary recovers and now both are accepting writes. Mitigations: longer failover hysteresis (don't promote until partition has persisted for, say, 60 s); fence the old primary by changing the storage attachment; require a quorum of orchestrator nodes to agree before promoting; *manual* failover for ambiguous cases. The fundamental fix is recognising that automatic failover trades a small reduction in MTTR for occasional split brain — and that **the right primitive for "quorum agreement on who is leader" is consensus** ([Lesson 14](/cortex/system-design/building-blocks-consensus-paxos-and-raft)). Etcd-backed leader leases are how managed Postgres products (CrunchyData, RDS Multi-AZ) avoid the split-brain failure mode at the cost of an extra dependency.
+The GitHub October 2018 story is the canonical version. **A network partition between the primary and the failover orchestrator is misinterpreted as primary failure**; the orchestrator promotes a replica; the original primary recovers and now both are accepting writes. Mitigations: longer failover hysteresis (don't promote until partition has persisted for, say, 60 s); fence the old primary by changing the storage attachment; require a quorum of orchestrator nodes to agree before promoting; *manual* failover for ambiguous cases. The fundamental fix is recognising that automatic failover trades a small reduction in MTTR for occasional split brain — and that **the right primitive for "quorum agreement on who is leader" is consensus** ([Lesson 14](/cortex/system-design/building-blocks/consensus-paxos-and-raft)). Etcd-backed leader leases are how managed Postgres products (CrunchyData, RDS Multi-AZ) avoid the split-brain failure mode at the cost of an extra dependency.
 
 ### 6.2 Asymmetric replication lag
 
@@ -326,4 +326,4 @@ The senior move: **`QUORUM` is a per-query choice, not a cluster-wide setting**.
 
 ---
 
-> **Next:** [12. Sharding and partitioning](/cortex/system-design/building-blocks-sharding-and-partitioning) — replication makes copies of the *whole* dataset across nodes. Sharding splits the dataset *across* nodes, with each node owning a slice. The two are orthogonal — production systems usually do both — but the failure modes are very different. The widget there is `HotShardSimulator`, and it's a worthy successor to the `ConsistentHashRing` from Lesson 7.
+> **Next:** [12. Sharding and partitioning](/cortex/system-design/building-blocks/sharding-and-partitioning) — replication makes copies of the *whole* dataset across nodes. Sharding splits the dataset *across* nodes, with each node owning a slice. The two are orthogonal — production systems usually do both — but the failure modes are very different. The widget there is `HotShardSimulator`, and it's a worthy successor to the `ConsistentHashRing` from Lesson 7.

@@ -9,7 +9,7 @@ prereqs:
 
 ## Why It Exists
 
-The [BST intro](/cortex/data-structures-and-algorithms/trees-binary-search-tree-introduction-to-binary-search-trees) said every operation is `O(h)` and that "balanced" means `O(log n)` while "degenerate" means `O(n)`. Those two words — *height* and *balanced* — are doing all the work, so they deserve precise definitions.
+The [BST intro](/cortex/data-structures-and-algorithms/trees/binary-search-tree/introduction-to-binary-search-trees) said every operation is `O(h)` and that "balanced" means `O(log n)` while "degenerate" means `O(n)`. Those two words — *height* and *balanced* — are doing all the work, so they deserve precise definitions.
 
 **Height** is the length of the longest root-to-leaf path. Since search, insert, and delete each follow one such path, the height *is* the cost. **Balance** is the property that keeps height small: a tree is *height-balanced* when, at every node, its left and right subtrees differ in height by at most 1. That local rule has a global payoff — it forces `h = O(log n)`, so the BST keeps its promise. Defining this precisely is the foundation for the self-balancing trees (AVL, red-black) that *enforce* it.
 
@@ -177,10 +177,10 @@ Height and balance are the lens for everything tree-shaped:
 
 - **Cost = height** — search, insert, delete, successor, range — all `O(h)`. Optimizing a BST *is* minimizing its height.
 - **Flavors of "balanced"** — *height-balanced* (subtree heights differ by ≤ 1, AVL's invariant), the looser *red-black* invariant (no path more than twice another → `h ≤ 2 log n`), and *perfectly balanced* (all leaves on ≤ 2 levels, what a sorted array achieves). They trade rebalancing frequency against height tightness.
-- **The Fibonacci bound is the AVL guarantee** — `h ≤ 1.44 log n` is exactly the worst case [AVL trees](/cortex/data-structures-and-algorithms/trees-avl-tree-introduction-to-avl-trees) maintain; red-black trees accept a slightly taller `2 log n` for cheaper rebalancing. Knowing the bound tells you *how good* "balanced" is.
+- **The Fibonacci bound is the AVL guarantee** — `h ≤ 1.44 log n` is exactly the worst case [AVL trees](/cortex/data-structures-and-algorithms/trees/avl-tree/introduction-to-avl-trees) maintain; red-black trees accept a slightly taller `2 log n` for cheaper rebalancing. Knowing the bound tells you *how good* "balanced" is.
 
-**Prerequisites:** [Introduction to Binary Search Trees](/cortex/data-structures-and-algorithms/trees-binary-search-tree-introduction-to-binary-search-trees).
-**What's next:** the first operation that rides the height — [Recursive Searching in BSTs](/cortex/data-structures-and-algorithms/trees-binary-search-tree-recursive-searching-in-binary-search-trees).
+**Prerequisites:** [Introduction to Binary Search Trees](/cortex/data-structures-and-algorithms/trees/binary-search-tree/introduction-to-binary-search-trees).
+**What's next:** the first operation that rides the height — [Recursive Searching in BSTs](/cortex/data-structures-and-algorithms/trees/binary-search-tree/recursive-searching-in-binary-search-trees).
 
 ## Recall
 

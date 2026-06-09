@@ -62,7 +62,7 @@ In the Cloudflare dashboard:
 5. Click **Continue to summary** → review → **Create Token**.
 6. **Copy the token immediately.** Cloudflare shows it once. There is no "reveal it later" button — if you lose it, you delete it and mint a new one.
 
-The token is a 40-character base32-ish string. Save it in your password manager *now*, then save it again where the cluster will read it from in [Sealed Secrets](/cortex/homelab-from-scratch/secrets-and-gitops-sealed-secrets) — your password manager and the SealedSecret are the only two places this lives. Not in chat. Not in `.bash_history`. Not in a README.
+The token is a 40-character base32-ish string. Save it in your password manager *now*, then save it again where the cluster will read it from in [Sealed Secrets](/cortex/homelab-from-scratch/secrets-and-gitops/sealed-secrets) — your password manager and the SealedSecret are the only two places this lives. Not in chat. Not in `.bash_history`. Not in a README.
 
 ## Test the token
 
@@ -102,7 +102,7 @@ Three places, in this order:
 2. **As a `SealedSecret`** committed to your infra repo. The Sealed Secrets controller decrypts it back into the real Secret when Argo CD applies the manifest. This means *the encrypted credential lives in Git, the plaintext only ever exists in cluster RAM*.
 3. **In your password manager**, as the master copy. If the cluster is destroyed and the Sealed Secrets master key is lost, you regenerate the cluster, generate a new Sealed Secrets keypair, and reseal this token from the password manager copy.
 
-The mechanics of each step are in [Sealed Secrets](/cortex/homelab-from-scratch/secrets-and-gitops-sealed-secrets) and [TLS on autopilot](/cortex/homelab-from-scratch/the-edge-tls-on-autopilot). For now, just know: **this token is the single most security-sensitive thing you've created so far.** Treat it like a SSH private key.
+The mechanics of each step are in [Sealed Secrets](/cortex/homelab-from-scratch/secrets-and-gitops/sealed-secrets) and [TLS on autopilot](/cortex/homelab-from-scratch/the-edge/tls-on-autopilot). For now, just know: **this token is the single most security-sensitive thing you've created so far.** Treat it like a SSH private key.
 
 ## What you should have now
 
@@ -112,4 +112,4 @@ The mechanics of each step are in [Sealed Secrets](/cortex/homelab-from-scratch/
 
 That's the end of the pre-cluster prep. Next we choose hardware and start putting Ubuntu on it.
 
-→ Next: [Pick your hardware](/cortex/homelab-from-scratch/the-nodes-pick-your-hardware)
+→ Next: [Pick your hardware](/cortex/homelab-from-scratch/the-nodes/pick-your-hardware)

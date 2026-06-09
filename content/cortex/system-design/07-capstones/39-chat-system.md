@@ -14,7 +14,7 @@ When Facebook acquired WhatsApp in **February 2014** for $19 billion, the engine
 
 That stat is the whole lesson in disguise. A chat system's hard problem is **not** "store a message and show it" — that part is easy. The hard problem is that chat is **connection-oriented**: every active user holds a **persistent, stateful, long-lived connection** waiting for messages to be *pushed* to them in real time, and you have hundreds of millions of those at once, each of which can vanish the instant the user walks into an elevator or switches from Wi-Fi to cellular. Holding those connections cheaply, knowing *which server* holds *which user*, routing a message across that fleet to the right one, and doing it all **in order and exactly once** even as connections flap — that is the system.
 
-This capstone is the mirror image of the [news feed](/cortex/system-design/capstones-news-feed). The feed was read-heavy, eventually-consistent, and *pull* (you assemble it when the user opens the app). Chat is **push** (the server shoves messages down a held-open connection), **ordered**, **real-time**, and **durable**. Where the feed's enemy was the celebrity, chat's enemies are **the dropped connection**, **the duplicate**, and **the cost of presence**.
+This capstone is the mirror image of the [news feed](/cortex/system-design/capstones/news-feed). The feed was read-heavy, eventually-consistent, and *pull* (you assemble it when the user opens the app). Chat is **push** (the server shoves messages down a held-open connection), **ordered**, **real-time**, and **durable**. Where the feed's enemy was the celebrity, chat's enemies are **the dropped connection**, **the duplicate**, and **the cost of presence**.
 
 ## 2. Requirements and scope
 
@@ -36,7 +36,7 @@ This capstone is the mirror image of the [news feed](/cortex/system-design/capst
 
 ## 3. Back-of-envelope estimation
 
-Numbers ([estimation](/cortex/system-design/foundations-back-of-envelope-estimation)) — and for chat, the *connection* count matters as much as the message rate. Assume **500 million daily active users**, online concurrently, each sending **~40 messages/day**.
+Numbers ([estimation](/cortex/system-design/foundations/back-of-envelope-estimation)) — and for chat, the *connection* count matters as much as the message rate. Assume **500 million daily active users**, online concurrently, each sending **~40 messages/day**.
 
 | Quantity | Calculation | Result |
 |---|---|---|
@@ -46,7 +46,7 @@ Numbers ([estimation](/cortex/system-design/foundations-back-of-envelope-estimat
 | Gateway servers | 500M ÷ ~1M conns/server | **~500 (plus headroom → ~1,000)** |
 | Storage/day | 20B × ~300 bytes | **~6 TB/day (~2.2 PB/year)** |
 
-The line that defines the architecture is **concurrent connections**: ~500 million persistent connections is the load, and *connection density per server* (how WhatsApp-like you can get) directly sets your fleet size and cost. At a conservative 1M connections/gateway you need ~500 gateways; at WhatsApp's 2M you'd need half that. The **message store** is a ~2.2 PB/year, append-mostly, time-ordered workload — a textbook fit for an LSM-tree-backed [wide-column store](/cortex/system-design/storage-and-search-lsm-trees-vs-btrees) (Cassandra/ScyllaDB), keyed by conversation. And ~700K messages/s peak means message routing must be cheap and horizontal.
+The line that defines the architecture is **concurrent connections**: ~500 million persistent connections is the load, and *connection density per server* (how WhatsApp-like you can get) directly sets your fleet size and cost. At a conservative 1M connections/gateway you need ~500 gateways; at WhatsApp's 2M you'd need half that. The **message store** is a ~2.2 PB/year, append-mostly, time-ordered workload — a textbook fit for an LSM-tree-backed [wide-column store](/cortex/system-design/storage-and-search/lsm-trees-vs-btrees) (Cassandra/ScyllaDB), keyed by conversation. And ~700K messages/s peak means message routing must be cheap and horizontal.
 
 ## 4. API
 
@@ -62,12 +62,12 @@ WebSocket  wss://chat.example.com/connect        (authenticated; held open)
 GET /conversations/{id}/messages?before={seq}      (history, cursor/keyset paginated)
 ```
 
-The `client_msg_id` is the key field: the client generates it once per message and **reuses it on retries**, so the server can **dedup** ([idempotency](/cortex/system-design/distributed-patterns-idempotency-retries-backoff)) — a retry over a flaky network never creates a second message. The server assigns the authoritative **`seq`** (a per-conversation sequence number) that defines ordering.
+The `client_msg_id` is the key field: the client generates it once per message and **reuses it on retries**, so the server can **dedup** ([idempotency](/cortex/system-design/distributed-patterns/idempotency-retries-backoff)) — a retry over a flaky network never creates a second message. The server assigns the authoritative **`seq`** (a per-conversation sequence number) that defines ordering.
 
 ## 5. Data model and the central decision
 
 Three stores, each shaped to its access pattern:
-- **Message store:** `(conversation_id, seq) → {sender, text, client_msg_id, ts, …}`, where `seq` is a **monotonic per-conversation sequence**. This gives both **ordering** (sort by seq) and **history** (range scan); it's write-heavy and append-mostly → a [wide-column / LSM](/cortex/system-design/storage-and-search-lsm-trees-vs-btrees) store sharded by `conversation_id`.
+- **Message store:** `(conversation_id, seq) → {sender, text, client_msg_id, ts, …}`, where `seq` is a **monotonic per-conversation sequence**. This gives both **ordering** (sort by seq) and **history** (range scan); it's write-heavy and append-mostly → a [wide-column / LSM](/cortex/system-design/storage-and-search/lsm-trees-vs-btrees) store sharded by `conversation_id`.
 - **Session registry:** `user_id → gateway_id` (which server holds this user's live connection) plus presence/heartbeat state, in **Redis** — millions of lookups/sec, in memory.
 - **Conversation membership:** who's in each conversation (for group fan-out).
 
@@ -75,7 +75,7 @@ The **central design decision** is *how a message reaches a recipient who is con
 
 1. The sender's gateway hands the message to the **message service**, which **persists** it (assigning `seq`) and **dedups** by `client_msg_id`.
 2. The message service consults the **session registry** to find the recipient's gateway.
-3. It **routes** the message to that gateway over an **inter-server pub/sub** ([pub/sub](/cortex/system-design/distributed-patterns-pubsub-and-fanout) — Redis Pub/Sub, NATS, or Kafka), and that gateway **pushes** it down the recipient's held-open connection.
+3. It **routes** the message to that gateway over an **inter-server pub/sub** ([pub/sub](/cortex/system-design/distributed-patterns/pubsub-and-fanout) — Redis Pub/Sub, NATS, or Kafka), and that gateway **pushes** it down the recipient's held-open connection.
 4. If the registry shows the recipient is **offline**, the message is already persisted; the system fires a **push notification** and delivers on reconnect.
 
 That "persist → find the gateway → route via pub/sub → push" loop is the heart of every real-time chat system.
@@ -161,11 +161,11 @@ The elegant part is that the message is **persisted before it's routed**, so del
 At 100× — **~50 billion concurrent connections is absurd, but realistically billions of connections and ~70 million messages/second** (WhatsApp's actual peak order-of-magnitude) — here's what bends:
 
 - **Connection density is the cost driver.** The whole game is connections-per-gateway. This is *why* WhatsApp used Erlang (cheap per-connection processes) and tuned the OS (file descriptors, ephemeral ports, TCP buffers). At 100× you add gateways and push them to the **edge / regionally** so connections terminate close to users.
-- **Presence is the silent killer.** Naïvely, when one user comes online you notify *all* their contacts, and "typing…" events fan out continuously — at scale this can dwarf actual message traffic. Mitigate by making presence **lazy / on-demand** (compute it when someone opens a chat, not push it to everyone), batching/debouncing status changes, and isolating the presence path so it can't starve messaging ([bulkheads](/cortex/system-design/distributed-patterns-circuit-breakers-and-bulkheads)).
-- **The reconnect storm.** When a gateway (or a whole zone) dies, *all* its millions of connections reconnect **at once** — a thundering herd that can topple the next gateway and the registry. Clients must reconnect with **exponential backoff + jitter** ([Lesson 17](/cortex/system-design/distributed-patterns-idempotency-retries-backoff)); the registry must absorb a re-registration spike.
-- **The session registry gets hot.** Millions of `user → gateway` lookups and updates per second; shard it (by user) and keep it in memory ([Redis/caching](/cortex/system-design/building-blocks-caching)). It's also the source of truth for routing, so its availability is critical.
-- **Group fan-out.** A message to a 1,000-member group is a 1,000-way routed fan-out (the [pub/sub fan-out](/cortex/system-design/distributed-patterns-pubsub-and-fanout) pattern again) — and must stay ordered per conversation. Huge groups get the "celebrity" treatment: pull/lazy delivery for inactive members.
-- **The message store write rate.** ~70M messages/s is a colossal write workload; the LSM/wide-column store shards by conversation and is provisioned for write throughput (sequential appends, the LSM sweet spot — [Lesson 22](/cortex/system-design/storage-and-search-lsm-trees-vs-btrees)).
+- **Presence is the silent killer.** Naïvely, when one user comes online you notify *all* their contacts, and "typing…" events fan out continuously — at scale this can dwarf actual message traffic. Mitigate by making presence **lazy / on-demand** (compute it when someone opens a chat, not push it to everyone), batching/debouncing status changes, and isolating the presence path so it can't starve messaging ([bulkheads](/cortex/system-design/distributed-patterns/circuit-breakers-and-bulkheads)).
+- **The reconnect storm.** When a gateway (or a whole zone) dies, *all* its millions of connections reconnect **at once** — a thundering herd that can topple the next gateway and the registry. Clients must reconnect with **exponential backoff + jitter** ([Lesson 17](/cortex/system-design/distributed-patterns/idempotency-retries-backoff)); the registry must absorb a re-registration spike.
+- **The session registry gets hot.** Millions of `user → gateway` lookups and updates per second; shard it (by user) and keep it in memory ([Redis/caching](/cortex/system-design/building-blocks/caching)). It's also the source of truth for routing, so its availability is critical.
+- **Group fan-out.** A message to a 1,000-member group is a 1,000-way routed fan-out (the [pub/sub fan-out](/cortex/system-design/distributed-patterns/pubsub-and-fanout) pattern again) — and must stay ordered per conversation. Huge groups get the "celebrity" treatment: pull/lazy delivery for inactive members.
+- **The message store write rate.** ~70M messages/s is a colossal write workload; the LSM/wide-column store shards by conversation and is provisioned for write throughput (sequential appends, the LSM sweet spot — [Lesson 22](/cortex/system-design/storage-and-search/lsm-trees-vs-btrees)).
 
 The throughline: chat scales by making **connections cheap**, **presence lazy**, and **reconnects polite**.
 
@@ -217,7 +217,7 @@ Every line is a design decision: `seen()`/`client_msg_id` is **dedup** (effectiv
 - **The reconnect storm.** A gateway dying sends millions of clients reconnecting simultaneously, which can topple the next gateway and the registry. Mandatory **exponential backoff + jitter** on the client and a registry that can absorb the re-registration burst (§8).
 - **Presence cost.** "Online/typing/last-seen" fan-out can quietly become your dominant load. Make presence lazy/on-demand, debounce "typing…", and never let presence traffic starve message delivery.
 - **Out-of-order or gaps.** Network reordering or a missed push can leave a client with a gap in `seq`. The per-conversation sequence lets the client *detect* the gap (a missing number) and request the missing range — ordering is enforced by the client reconciling against `seq`, not by hoping the network behaves.
-- **Group fan-out + ordering.** A group message must reach every member *and* preserve per-conversation order for each. Large groups need lazy delivery for inactive members (the [feed celebrity problem](/cortex/system-design/capstones-news-feed) in miniature), with the authoritative `seq` keeping everyone consistent.
+- **Group fan-out + ordering.** A group message must reach every member *and* preserve per-conversation order for each. Large groups need lazy delivery for inactive members (the [feed celebrity problem](/cortex/system-design/capstones/news-feed) in miniature), with the authoritative `seq` keeping everyone consistent.
 
 ## 12. Practice
 
@@ -227,7 +227,7 @@ Every line is a design decision: `seen()`/`client_msg_id` is **dedup** (effectiv
 > <details>
 > <summary>Solution</summary>
 >
-> The client attaches a **`client_msg_id`** generated once for that message and **reused on every retry**. The server, before storing, checks whether it has already seen that `(conversation, client_msg_id)`; if so, it returns the **same** `seq` it assigned the first time and does **not** create a second message ([idempotency](/cortex/system-design/distributed-patterns-idempotency-retries-backoff)). So the retry is a no-op and the recipient sees the message once. **Why not true exactly-once?** Over an unreliable network you can never simultaneously guarantee "delivered" *and* "delivered only once" with certainty — the ack itself can be lost either way. So you choose **at-least-once delivery** (never lose a message — the unacceptable failure) plus **dedup by id** (squash the duplicates that at-least-once produces). The result is *effectively*-once: no loss, no visible duplication. The mistake that breaks it is the client generating a **new** id per attempt — then each retry looks like a fresh message.
+> The client attaches a **`client_msg_id`** generated once for that message and **reused on every retry**. The server, before storing, checks whether it has already seen that `(conversation, client_msg_id)`; if so, it returns the **same** `seq` it assigned the first time and does **not** create a second message ([idempotency](/cortex/system-design/distributed-patterns/idempotency-retries-backoff)). So the retry is a no-op and the recipient sees the message once. **Why not true exactly-once?** Over an unreliable network you can never simultaneously guarantee "delivered" *and* "delivered only once" with certainty — the ack itself can be lost either way. So you choose **at-least-once delivery** (never lose a message — the unacceptable failure) plus **dedup by id** (squash the duplicates that at-least-once produces). The result is *effectively*-once: no loss, no visible duplication. The mistake that breaks it is the client generating a **new** id per attempt — then each retry looks like a fresh message.
 >
 > </details>
 
@@ -244,11 +244,11 @@ Every line is a design decision: `seen()`/`client_msg_id` is **dedup** (effectiv
 ## In the Wild
 
 - **[High Scalability — "How WhatsApp Grew to Nearly 500 Million Users…"](http://highscalability.com/blog/2014/3/31/how-whatsapp-grew-to-nearly-500-million-users-11000-cores-an.html)** (2014) — the §1 numbers: ~2M connections/server on Erlang, tens of billions of messages/day, a tiny team. The canonical "chat is a connection-management problem" case study.
-- **[Discord — "How Discord Stores Trillions of Messages"](https://discord.com/blog/how-discord-stores-trillions-of-messages)** — the message-store side at scale: the wide-column (Cassandra → ScyllaDB) design behind §5, including the read/write patterns of a giant chat history (the same store you met in [Lesson 22](/cortex/system-design/storage-and-search-lsm-trees-vs-btrees)).
+- **[Discord — "How Discord Stores Trillions of Messages"](https://discord.com/blog/how-discord-stores-trillions-of-messages)** — the message-store side at scale: the wide-column (Cassandra → ScyllaDB) design behind §5, including the read/write patterns of a giant chat history (the same store you met in [Lesson 22](/cortex/system-design/storage-and-search/lsm-trees-vs-btrees)).
 - **[Slack — "Real-time messaging" / Flannel](https://slack.engineering/real-time-messaging/)** — the gateway + edge-cache architecture for holding millions of WebSocket connections and pushing events, with presence and the connection-flap realities of §8.
 - **[RFC 6455 — The WebSocket Protocol](https://datatracker.ietf.org/doc/html/rfc6455)** — the protocol underneath the whole design: a single TCP connection upgraded to full-duplex, the thing that makes server-push (and thus real-time chat) possible.
 - **[Signal Protocol](https://signal.org/docs/)** — the end-to-end encryption layer this lesson scoped out, for when "the server must never read messages" is a requirement; a great next read on how delivery and ordering survive when the payload is opaque.
 
 ---
 
-> **Next:** [40. Video streaming](/cortex/system-design/capstones-video-streaming) — chat moved tiny messages with strict ordering; video moves *enormous* immutable blobs where the game is bytes-to-eyeballs at the lowest cost and latency. Next we design the pipeline that ingests a raw upload, **transcodes** it into a ladder of resolutions, chops it into segments, and serves them through a **CDN** with **adaptive bitrate** — plus the storage math that makes petabytes of video affordable, tying straight back to [object storage](/cortex/system-design/storage-and-search-object-storage).
+> **Next:** [40. Video streaming](/cortex/system-design/capstones/video-streaming) — chat moved tiny messages with strict ordering; video moves *enormous* immutable blobs where the game is bytes-to-eyeballs at the lowest cost and latency. Next we design the pipeline that ingests a raw upload, **transcodes** it into a ladder of resolutions, chops it into segments, and serves them through a **CDN** with **adaptive bitrate** — plus the storage math that makes petabytes of video affordable, tying straight back to [object storage](/cortex/system-design/storage-and-search/object-storage).

@@ -150,18 +150,18 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [Range Summation](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-range-postorder-problems-range-summation), [Range Diameter](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-range-postorder-problems-range-diameter), [Range Leaves](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-range-postorder-problems-range-leaves), and [Range Exclusive Trim](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-range-postorder-problems-range-exclusive-trim).
+Drill the family in **Practice** — [Range Summation](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-range-postorder/problems/range-summation), [Range Diameter](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-range-postorder/problems/range-diameter), [Range Leaves](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-range-postorder/problems/range-leaves), and [Range Exclusive Trim](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-range-postorder/problems/range-exclusive-trim).
 
 ## Reflect & Connect
 
 Range-postorder is "let the ordering prune your traversal":
 
 - **The family** — range sum/count/collect, trim-to-range, range-restricted aggregates (diameter, leaf count within bounds). All compare the node to the bounds and skip the half that can't qualify.
-- **Pruning is the win** — the BST property certifies an entire subtree as out-of-range with one comparison, turning an `O(n)` filter into `O(visited)`. Contrast [sorted traversal](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-sorted-traversal-pattern), which visits *every* key in order — here we deliberately *avoid* visiting the irrelevant ones.
+- **Pruning is the win** — the BST property certifies an entire subtree as out-of-range with one comparison, turning an `O(n)` filter into `O(visited)`. Contrast [sorted traversal](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-sorted-traversal/pattern), which visits *every* key in order — here we deliberately *avoid* visiting the irrelevant ones.
 - **Postorder enables structural edits** — trimming returns the rebuilt subtree from each call, so a parent wires in the trimmed child; fixing children before the parent (postorder) is the discipline behind any "rebuild the tree as you go" operation, and it recurs in the general binary-tree bottom-up patterns.
 
-**Prerequisites:** [Introduction to Binary Search Trees](/cortex/data-structures-and-algorithms/trees-binary-search-tree-introduction-to-binary-search-trees).
-**What's next:** two values from both ends of the sorted order — [Two-Pointer on a BST](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-two-pointer-pattern).
+**Prerequisites:** [Introduction to Binary Search Trees](/cortex/data-structures-and-algorithms/trees/binary-search-tree/introduction-to-binary-search-trees).
+**What's next:** two values from both ends of the sorted order — [Two-Pointer on a BST](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-two-pointer/pattern).
 
 ## Recall
 

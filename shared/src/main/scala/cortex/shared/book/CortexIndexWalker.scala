@@ -152,6 +152,14 @@ object CortexIndexWalker:
   def slugLike(s: String): Boolean =
     s.nonEmpty && s.forall(c => c.isLetterOrDigit || c == '-' || c == '_')
 
+  /**
+   * A hierarchical chapter slug: a non-empty `/`-joined path whose every segment is itself [[slugLike]].
+   * Empty segments (`""`, from a leading/trailing/doubled `/`) and `..` are rejected, so this doubles as the
+   * path-traversal guard for the multi-segment `{chapter}` route param.
+   */
+  def chapterPathLike(s: String): Boolean =
+    s.nonEmpty && s.split("/", -1).forall(slugLike)
+
   /** Strip a leading numeric ordering prefix: `01-foo` → `foo`, `1.bar` → `bar`. */
   def stripOrderPrefix(name: String): String =
     val m = "^\\d+[._-]?".r.findPrefixOf(name).getOrElse("")
@@ -255,7 +263,7 @@ object CortexIndexWalker:
         .map { f =>
           val pathSegs = pathInBook :+ f.name
           val slug     = chapterSlugFromPath(pathSegs.toList)
-          if !slugLike(slug) then Left(IndexError.InvalidSlug(pathSegs.mkString("/"), slug))
+          if !chapterPathLike(slug) then Left(IndexError.InvalidSlug(pathSegs.mkString("/"), slug))
           else
             val fallback  = humanise(f.name.stripSuffix(".md"))
             val title     = Frontmatter.extractTitle(f.content, fallback)
@@ -284,8 +292,11 @@ object CortexIndexWalker:
           }
 
   /**
-   * Build a chapter slug from its in-book path segments. `["02-system", "01-next-step.md"]` →
-   * `"system-next-step"`. Each segment is `.md`-stripped, order-prefix-stripped, slugified, and joined.
+   * Build a hierarchical chapter slug from its in-book path segments. `["02-system", "01-next-step.md"]` →
+   * `"system/next-step"`. Each segment is `.md`-stripped, order-prefix-stripped, slugified, and joined with
+   * `/` so the slug mirrors the directory tree. Ordering prefixes are intentionally dropped: the URL encodes
+   * a chapter's *identity*, not its *position*, so reordering chapters never churns their URLs (or the
+   * tutor's problem_id).
    */
   private def chapterSlugFromPath(pathSegs: List[String]): String =
     pathSegs.iterator
@@ -293,7 +304,7 @@ object CortexIndexWalker:
       .filter(_.nonEmpty)
       .map(seg => slugify(stripOrderPrefix(seg)))
       .filter(_.nonEmpty)
-      .mkString("-")
+      .mkString("/")
 
   /** Sort children by numeric prefix (`01-foo` before `02-bar`), then by lowercased name. */
   private def ordered(entries: List[CortexEntry]): List[CortexEntry] =

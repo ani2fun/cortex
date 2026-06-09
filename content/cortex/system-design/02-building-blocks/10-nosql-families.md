@@ -6,7 +6,7 @@ summary: KV, document, wide-column, graph — four very different data models wi
 # 10. NoSQL families
 
 ## TL;DR
-> "NoSQL" is not one thing; it's the name we give to **four families of databases with very different shapes**. KV stores (DynamoDB, Redis, etcd) get you out of the way for `get(key) → value`. Document stores (MongoDB, Couchbase) let each row be its own JSON. Wide-column stores (Cassandra, ScyllaDB) optimise for `(partition, row, column)` access at huge scale. Graph databases (Neo4j, ArangoDB) make multi-hop relationship queries cheap. The lesson is not "NoSQL beats SQL" — it's **the shape of your access pattern is the load-bearing decision**, and once you can name the four shapes, the choice becomes much easier. For most workloads that look "NoSQL-ish", a well-indexed [relational database](/cortex/system-design/building-blocks-relational-databases) is still the right answer.
+> "NoSQL" is not one thing; it's the name we give to **four families of databases with very different shapes**. KV stores (DynamoDB, Redis, etcd) get you out of the way for `get(key) → value`. Document stores (MongoDB, Couchbase) let each row be its own JSON. Wide-column stores (Cassandra, ScyllaDB) optimise for `(partition, row, column)` access at huge scale. Graph databases (Neo4j, ArangoDB) make multi-hop relationship queries cheap. The lesson is not "NoSQL beats SQL" — it's **the shape of your access pattern is the load-bearing decision**, and once you can name the four shapes, the choice becomes much easier. For most workloads that look "NoSQL-ish", a well-indexed [relational database](/cortex/system-design/building-blocks/relational-databases) is still the right answer.
 
 ## 1. Motivation
 
@@ -22,7 +22,7 @@ That is the lesson. **The data model — the shape of the keys and the access pa
 
 A paper-records office holds **five kinds of records**, each in their own storage shape:
 
-- The **bookkeeper's ledger** is the relational database from [Lesson 9](/cortex/system-design/building-blocks-relational-databases). Rows, columns, ledger pages, lookup books. Strong consistency. Joins are first-class.
+- The **bookkeeper's ledger** is the relational database from [Lesson 9](/cortex/system-design/building-blocks/relational-databases). Rows, columns, ledger pages, lookup books. Strong consistency. Joins are first-class.
 - The **shoe rack at the front door** is the **key-value store**. Every shoe has a tag (the key). To get a shoe, you read the tag, you grab the shoe. No querying "all the shoes my size" — that's not what the rack does.
 - The **filing cabinet of variable-shape folders** is the **document store**. Each folder contains a self-describing document (a JSON-ish blob). Folders are alphabetised by their name; you can also build alternate indexes by content (Mongo's secondary indexes), but each folder is its own world.
 - The **sparse spreadsheet keyed by `(partition, row, column)`** is the **wide-column store**. Every row in a partition can have a wildly different set of columns; most rows in fact have very few. The clustering allows "give me all the columns for this `(partition, row)`" to be one disk seek.
@@ -36,9 +36,9 @@ The senior move is not "pick the shoe rack because it's the newest piece of furn
 
 **Shape:** `key → value`. The value is opaque to the database — a string, a JSON blob, a serialised protobuf, anything. The only operations are `get(key)`, `put(key, value)`, `delete(key)`.
 
-**Examples:** **DynamoDB** (managed, AWS), **Redis** (in-memory, often used as a side cache — see [Lesson 8](/cortex/system-design/building-blocks-caching)), **etcd / Consul** (config + service discovery, with strong consistency), **RocksDB** (embedded, the underlying engine for many other things).
+**Examples:** **DynamoDB** (managed, AWS), **Redis** (in-memory, often used as a side cache — see [Lesson 8](/cortex/system-design/building-blocks/caching)), **etcd / Consul** (config + service discovery, with strong consistency), **RocksDB** (embedded, the underlying engine for many other things).
 
-**Scaling shape:** partition the keyspace via [consistent hashing](/cortex/system-design/building-blocks-load-balancing). Each node owns a slice of the ring. Adding a node moves `1/N` of the keys; removing one moves another `1/N`.
+**Scaling shape:** partition the keyspace via [consistent hashing](/cortex/system-design/building-blocks/load-balancing). Each node owns a slice of the ring. Adding a node moves `1/N` of the keys; removing one moves another `1/N`.
 
 | Property | KV stores |
 |---|---|
@@ -55,7 +55,7 @@ The senior move is not "pick the shoe rack because it's the newest piece of furn
 
 **Examples:** **MongoDB** (the canonical), **Couchbase**, **DocumentDB** (AWS managed Mongo-compatible), **FerretDB**.
 
-**Scaling shape:** shard collections by a chosen field. Each shard is a [replica set](/cortex/system-design/building-blocks-replication) (a primary + N secondaries).
+**Scaling shape:** shard collections by a chosen field. Each shard is a [replica set](/cortex/system-design/building-blocks/replication) (a primary + N secondaries).
 
 | Property | Document stores |
 |---|---|
@@ -186,13 +186,13 @@ Pattern (1): `MATCH (m:Message)-[:IN_CHANNEL]->(c:Channel {id: 42}) RETURN m ORD
 
 ### Conclusion
 
-Pick the data model whose primary operations match your highest-volume access patterns. *Then* pick the engine. A real chat-app system might use **two** stores: Cassandra for messages (pattern 1 at scale), and Postgres for everything else (users, follows, settings). [Capstone 39 (Chat)](/cortex/system-design/capstones-chat-system) walks this in depth.
+Pick the data model whose primary operations match your highest-volume access patterns. *Then* pick the engine. A real chat-app system might use **two** stores: Cassandra for messages (pattern 1 at scale), and Postgres for everything else (users, follows, settings). [Capstone 39 (Chat)](/cortex/system-design/capstones/chat-system) walks this in depth.
 
 ## 5. Trade-offs
 
 | Family | Strongest property | Weakest property | Picks itself when… |
 |---|---|---|---|
-| **Relational** ([Lesson 9](/cortex/system-design/building-blocks-relational-databases)) | rich SQL + ACID + multi-way joins | horizontal write scaling | your access patterns are heterogeneous; correctness matters more than write throughput |
+| **Relational** ([Lesson 9](/cortex/system-design/building-blocks/relational-databases)) | rich SQL + ACID + multi-way joins | horizontal write scaling | your access patterns are heterogeneous; correctness matters more than write throughput |
 | **KV** | predictable get/put latency at any scale | range scans, secondary indexes, joins | one or two known access patterns, very high QPS |
 | **Document** | flexible per-document schema | cross-document transactions, joins, schema-drift mess | rapidly-evolving variable-shape data |
 | **Wide-column** | huge-partition range reads at low latency | partition-key is the design; cannot retrofit | time-series-like access at "this partition" granularity |
@@ -214,7 +214,7 @@ The pitch for document stores is "schema-less". The reality is **schema enforced
 
 ### 6.3 Wide-column — the partition key is the entire design
 
-Choosing the partition key is the load-bearing engineering decision. Get it right, and Cassandra serves trillions of messages at low latency. Get it wrong — say, partition by `user_id` for the messages table when one user has 10M messages and most have 50 — and you have a *hot partition*: one node serving the popular user is melted while the rest of the cluster is idle. The remediation patterns are explored in [Lesson 12 (sharding)](/cortex/system-design/building-blocks-sharding-and-partitioning) but the takeaway here is: **you cannot retrofit a partition key change**. Pick carefully or accept a full table rewrite later.
+Choosing the partition key is the load-bearing engineering decision. Get it right, and Cassandra serves trillions of messages at low latency. Get it wrong — say, partition by `user_id` for the messages table when one user has 10M messages and most have 50 — and you have a *hot partition*: one node serving the popular user is melted while the rest of the cluster is idle. The remediation patterns are explored in [Lesson 12 (sharding)](/cortex/system-design/building-blocks/sharding-and-partitioning) but the takeaway here is: **you cannot retrofit a partition key change**. Pick carefully or accept a full table rewrite later.
 
 ### 6.4 Graph — deep traversals are slow
 
@@ -226,7 +226,7 @@ Three of the four families (KV, document, wide-column) don't do joins, or do the
 
 ### 6.6 Cross-family — eventual consistency footguns
 
-DynamoDB's default reads are *eventually consistent* and can be 20 ms stale. Cassandra's default `LOCAL_ONE` consistency level returns data that may not yet be on a quorum of replicas. MongoDB's default read preference returns data from the primary, which is strongly consistent — until your driver / client config silently switches to `secondaryPreferred`. **Always know your read consistency level**; never let "the default" be the answer. [Lesson 13 (consistency models)](/cortex/system-design/building-blocks-consistency-models) goes into the precise semantics.
+DynamoDB's default reads are *eventually consistent* and can be 20 ms stale. Cassandra's default `LOCAL_ONE` consistency level returns data that may not yet be on a quorum of replicas. MongoDB's default read preference returns data from the primary, which is strongly consistent — until your driver / client config silently switches to `secondaryPreferred`. **Always know your read consistency level**; never let "the default" be the answer. [Lesson 13 (consistency models)](/cortex/system-design/building-blocks/consistency-models) goes into the precise semantics.
 
 ## 7. Practice
 
@@ -294,9 +294,9 @@ In all three cases, the pattern is the same: **NoSQL families are specialists; t
 - **[DeCandia et al., *Dynamo: Amazon's Highly Available Key-value Store*, SOSP 2007](https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf)** — the paper that defines what "NoSQL" actually means. Consistent hashing, vector clocks, sloppy quorums, hinted handoff. Foundation reading.
 - **[Lakshman + Malik, *Cassandra — A Decentralized Structured Storage System*, LADIS 2009](https://www.cs.cornell.edu/projects/ladis2009/papers/lakshman-ladis2009.pdf)** — the Facebook paper that introduced Cassandra. Combines Dynamo's distribution with Bigtable's column model.
 - **[Discord, *How Discord Stores Billions of Messages*](https://discord.com/blog/how-discord-stores-billions-of-messages)** (2017) and **[*How Discord Stores Trillions of Messages*](https://discord.com/blog/how-discord-stores-trillions-of-messages)** (2023). The two together are a complete case study: the data model survived a full engine migration. Read both.
-- **[Werner Vogels, *Eventually Consistent*, CACM 2009](https://queue.acm.org/detail.cfm?id=1466448)** — Amazon CTO's accessible introduction to consistency models. Pairs naturally with [Lesson 13](/cortex/system-design/building-blocks-consistency-models).
+- **[Werner Vogels, *Eventually Consistent*, CACM 2009](https://queue.acm.org/detail.cfm?id=1466448)** — Amazon CTO's accessible introduction to consistency models. Pairs naturally with [Lesson 13](/cortex/system-design/building-blocks/consistency-models).
 - **[AWS, *DynamoDB Best Practices*](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/best-practices.html)** — the AWS docs make the partition-key design philosophy explicit. Even if you never touch DynamoDB, the design discipline applies to every wide-column / KV system.
 
 ---
 
-> **Next:** [11. Replication](/cortex/system-design/building-blocks-replication) — every system in this lesson and the last one *replicates* its data across nodes for durability + read scaling + failover. Replication has its own taxonomy (leader-follower, multi-leader, leaderless) and its own famous failure modes (replication lag, lost-update conflicts, split brain). The simulator widget arrives there.
+> **Next:** [11. Replication](/cortex/system-design/building-blocks/replication) — every system in this lesson and the last one *replicates* its data across nodes for durability + read scaling + failover. Replication has its own taxonomy (leader-follower, multi-leader, leaderless) and its own famous failure modes (replication lag, lost-update conflicts, split brain). The simulator widget arrives there.

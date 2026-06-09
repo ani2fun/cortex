@@ -11,7 +11,7 @@ prereqs:
 
 Many tree questions are about whole **root-to-leaf paths**: "sum all root-to-leaf *numbers* (the path `1→2→3` reads as 123)," "does any path sum to `k`?", "count the even-valued paths." A path is only *complete* at a leaf, so the work has two halves: build up the path value on the way **down**, and decide/aggregate once you **reach a leaf**.
 
-The stateless approach threads the accumulated value **down as an argument** (extend it at each node — `acc*10 + val` for numbers, `acc + val` for sums) and combines the per-leaf results **up through the return values** (sum, OR, count). There's no shared mutable path: each call owns its accumulated value, and the returns fold the leaf answers together. It's [preorder-stateless](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateless-pattern)'s push-down *plus* a postorder-style aggregate-up — exactly the right shape when you want a *summary* of the paths, not the paths themselves.
+The stateless approach threads the accumulated value **down as an argument** (extend it at each node — `acc*10 + val` for numbers, `acc + val` for sums) and combines the per-leaf results **up through the return values** (sum, OR, count). There's no shared mutable path: each call owns its accumulated value, and the returns fold the leaf answers together. It's [preorder-stateless](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-preorder-traversal-stateless/pattern)'s push-down *plus* a postorder-style aggregate-up — exactly the right shape when you want a *summary* of the paths, not the paths themselves.
 
 ## See It Work
 
@@ -71,7 +71,7 @@ Root-to-leaf-stateless carries the path value **down** by argument and folds the
 | `3` | `1` | `13` | yes | `13` |
 | `1` | — | — | — | `12 + 13 = 25` |
 
-Before you read on: this *aggregates* the paths (sums them) but never builds the list `[12, 13]`. The [stateful variant](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateful-pattern) keeps a shared mutable path and backtracks. When is the stateless "carry-down-by-argument, aggregate-up-by-return" form the right choice, and when must you switch to the stateful one?
+Before you read on: this *aggregates* the paths (sums them) but never builds the list `[12, 13]`. The [stateful variant](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-root-to-leaf-path-stateful/pattern) keeps a shared mutable path and backtracks. When is the stateless "carry-down-by-argument, aggregate-up-by-return" form the right choice, and when must you switch to the stateful one?
 
 Use **stateless** when you only need a *summary* of the paths — their sum, whether any satisfies a predicate, how many do. The accumulated value (a number, a running sum, a parity bit) is a small immutable thing you pass down, and a single number folds up via the returns; there's nothing to collect and nothing to clean up, so it's the simpler, less bug-prone choice. Switch to **stateful** when you need the *actual paths themselves* — "return the list of all root-to-leaf paths" — because you must build and snapshot each concrete path, which means a shared mutable list with append-on-enter / pop-on-exit backtracking. The dividing question is "do I need the *paths* or just a *number about* them?" A summary → stateless (carry a value, aggregate); the concrete paths → stateful (shared list, backtrack). Reaching for a shared mutable path when a passed-down value would do is over-engineering and invites the missing-pop bug.
 
@@ -120,18 +120,18 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [Root-to-Leaf Path Sum Check](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateless-problems-root-to-leaf-path-sum-check), [Binary Summation of Tree](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateless-problems-binary-summation-of-tree), [Even Path](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateless-problems-even-path), and [Odd Count](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateless-problems-odd-count).
+Drill the family in **Practice** — [Root-to-Leaf Path Sum Check](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-root-to-leaf-path-stateless/problems/root-to-leaf-path-sum-check), [Binary Summation of Tree](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-root-to-leaf-path-stateless/problems/binary-summation-of-tree), [Even Path](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-root-to-leaf-path-stateless/problems/even-path), and [Odd Count](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-root-to-leaf-path-stateless/problems/odd-count).
 
 ## Reflect & Connect
 
 Root-to-leaf-stateless is "summarize the paths without storing them":
 
 - **The family** — sum of root-to-leaf numbers, "does any path sum to `k`?", binary-path value, even/odd path counts. The aggregator (`+`, `or`, count) picks the query; the descent is identical.
-- **Two flows, one pass** — accumulator down (argument), answer up (return). It fuses [preorder](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateless-pattern)'s push-down with a [postorder](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless-pattern)-style aggregate-up — most real tree code is exactly this combination.
-- **Stateless vs stateful** — when you need a *number about* the paths, carry a value down and aggregate up (here). When you need the *paths themselves*, use a [shared mutable path with backtracking](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateful-pattern). Prefer the value-passing form unless you truly must collect concrete paths.
+- **Two flows, one pass** — accumulator down (argument), answer up (return). It fuses [preorder](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-preorder-traversal-stateless/pattern)'s push-down with a [postorder](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-postorder-traversal-stateless/pattern)-style aggregate-up — most real tree code is exactly this combination.
+- **Stateless vs stateful** — when you need a *number about* the paths, carry a value down and aggregate up (here). When you need the *paths themselves*, use a [shared mutable path with backtracking](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-root-to-leaf-path-stateful/pattern). Prefer the value-passing form unless you truly must collect concrete paths.
 
-**Prerequisites:** [Preorder Traversal (Stateless)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateless-pattern).
-**What's next:** collect the actual paths with a shared, backtracked path list — [Root-to-Leaf Path (Stateful)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateful-pattern).
+**Prerequisites:** [Preorder Traversal (Stateless)](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-preorder-traversal-stateless/pattern).
+**What's next:** collect the actual paths with a shared, backtracked path list — [Root-to-Leaf Path (Stateful)](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-root-to-leaf-path-stateful/pattern).
 
 ## Recall
 

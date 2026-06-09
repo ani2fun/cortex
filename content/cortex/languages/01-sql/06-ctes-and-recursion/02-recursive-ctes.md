@@ -276,7 +276,7 @@ The standard requires the recursive reference to be in the `FROM` clause of the 
 
 ## Performance
 
-Recursive CTEs are iterative — each level scans previous-level rows. Cost is `O(depth × per-level rows)`. Wide trees with many levels become expensive. For deep recursive walks on large data, consider **closure tables** (denormalised "ancestor" columns) — covered in [Hierarchies and Graphs](/cortex/languages/sql-index).
+Recursive CTEs are iterative — each level scans previous-level rows. Cost is `O(depth × per-level rows)`. Wide trees with many levels become expensive. For deep recursive walks on large data, consider **closure tables** (denormalised "ancestor" columns) — covered in [Hierarchies and Graphs](/cortex/languages/sql/index).
 
 ---
 
@@ -338,9 +338,9 @@ Generate a complete time-axis (no gaps for empty hours), then `LEFT JOIN` the ac
 
 # Cross-links
 
-- **Previous in this module:** [Non-recursive CTEs](/cortex/languages/sql-ctes-and-recursion-non-recursive-ctes) — the syntactic foundation. Recursive CTEs are non-recursive CTEs with a self-reference.
-- **Module complete.** Next: [Schema and Constraints](/cortex/languages/sql-schema-and-constraints-index).
-- **Forward reference:** [Hierarchies and Graphs](/cortex/languages/sql-index) (Advanced Patterns) — closure tables, materialised paths, and other patterns for hierarchical data when recursion alone isn't enough.
+- **Previous in this module:** [Non-recursive CTEs](/cortex/languages/sql/ctes-and-recursion/non-recursive-ctes) — the syntactic foundation. Recursive CTEs are non-recursive CTEs with a self-reference.
+- **Module complete.** Next: [Schema and Constraints](/cortex/languages/sql/schema-and-constraints/index).
+- **Forward reference:** [Hierarchies and Graphs](/cortex/languages/sql/index) (Advanced Patterns) — closure tables, materialised paths, and other patterns for hierarchical data when recursion alone isn't enough.
 
 ***
 
@@ -352,4 +352,4 @@ Recursive CTEs walk trees and graphs. Three patterns to internalise:
 2. **Always include a termination predicate** in the recursive member, or you get an infinite loop.
 3. **Cycles need protection.** `UNION` deduplicates; explicit path-tracking with arrays is more robust. For deep graphs, consider denormalising into closure tables instead of pure recursion.
 
-With this chapter, the [CTEs and Recursion](/cortex/languages/sql-ctes-and-recursion-index) module is complete.
+With this chapter, the [CTEs and Recursion](/cortex/languages/sql/ctes-and-recursion/index) module is complete.

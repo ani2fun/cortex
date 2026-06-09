@@ -179,10 +179,10 @@ Quadratic probing is the middle rung of the open-addressing ladder:
 
 - **Primary vs secondary clustering** — quadratic probing eliminates primary (different-home keys merging) but keeps secondary (same-home keys sharing a path). Naming which clustering a scheme fixes is the way to reason about probe strategies.
 - **The coverage caveat is real** — square offsets don't visit every slot, so the prime-capacity + `α < 0.5` rule (or the `(i²+i)/2` triangular-number variant) isn't optional; ignore it and inserts can fail with the table half-empty.
-- **It motivates double hashing** — to kill secondary clustering you need each key to have its *own* probe step, not one determined solely by the home slot. That's the [next lesson](/cortex/data-structures-and-algorithms/linear-structures-hash-table-double-hashing): derive the step from a second hash of the key.
+- **It motivates double hashing** — to kill secondary clustering you need each key to have its *own* probe step, not one determined solely by the home slot. That's the [next lesson](/cortex/data-structures-and-algorithms/linear-structures/hash-table/double-hashing): derive the step from a second hash of the key.
 
-**Prerequisites:** [Linear Probing](/cortex/data-structures-and-algorithms/linear-structures-hash-table-linear-probing).
-**What's next:** give every key its own probe step via a second hash — [Double Hashing](/cortex/data-structures-and-algorithms/linear-structures-hash-table-double-hashing).
+**Prerequisites:** [Linear Probing](/cortex/data-structures-and-algorithms/linear-structures/hash-table/linear-probing).
+**What's next:** give every key its own probe step via a second hash — [Double Hashing](/cortex/data-structures-and-algorithms/linear-structures/hash-table/double-hashing).
 
 ## Recall
 

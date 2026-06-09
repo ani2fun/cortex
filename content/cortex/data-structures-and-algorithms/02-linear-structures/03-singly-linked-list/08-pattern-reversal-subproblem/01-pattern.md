@@ -161,7 +161,7 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [Pairwise Swap](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-reversal-subproblem-problems-pairwise-swap), [Reverse K Segments](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-reversal-subproblem-problems-reverse-k-segments), [Reverse Increasing Groups](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-reversal-subproblem-problems-reverse-increasing-groups), and [Reverse Alternate Segments](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-reversal-subproblem-problems-reverse-alternate-segments).
+Drill the family in **Practice** — [Pairwise Swap](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-reversal-subproblem/problems/pairwise-swap), [Reverse K Segments](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-reversal-subproblem/problems/reverse-k-segments), [Reverse Increasing Groups](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-reversal-subproblem/problems/reverse-increasing-groups), and [Reverse Alternate Segments](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-reversal-subproblem/problems/reverse-alternate-segments).
 
 ## Reflect & Connect
 
@@ -171,8 +171,8 @@ Once reversal is a callable subroutine, a whole family opens up — they differ 
 - **The stitch is the transferable skill** — "track the node before and the node after the part you're mutating" recurs in segment-reversal, list partitioning, and merging. The dummy-node trick (a uniform predecessor so the head isn't a special case) is worth keeping in your reflexes.
 - **It composes upward** — reorder problems (`L0→Ln→L1→Ln-1→…`) and palindrome checks combine a *split* and a *reversal*; the next two patterns build exactly that machinery.
 
-**Prerequisites:** [Reversal](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-reversal-pattern).
-**What's next:** slide a fixed-size window of nodes along the list — [Sliding-Window Traversal](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-sliding-window-traversal-pattern).
+**Prerequisites:** [Reversal](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-reversal/pattern).
+**What's next:** slide a fixed-size window of nodes along the list — [Sliding-Window Traversal](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-sliding-window-traversal/pattern).
 
 ## Recall
 

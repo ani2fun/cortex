@@ -341,10 +341,10 @@ These exercises assume Postgres-or-better. SQLite users: read the queries; the c
 
 # Cross-links
 
-- **Previous in this module:** [Aggregate Functions](/cortex/languages/sql-aggregation-aggregate-functions) — the building blocks (`SUM`, `COUNT`, `AVG`) that compute the values inside each grouping.
-- **Module complete.** Next: [Row Functions](/cortex/languages/sql-index) — string, number, date, NULL, and CASE functions; the per-row counterpart to aggregation's per-group functions.
-- **Forward reference:** [Window Functions](/cortex/languages/sql-index) — when you want subtotals *alongside* the original rows, not collapsed into separate rows. Window aggregates are the alternative for some of the same shapes.
-- **Forward reference:** [Indexes and Performance](/cortex/languages/sql-index) — multi-dimensional aggregations are expensive; covering indexes and materialised views are the production answers when these queries appear in hot paths.
+- **Previous in this module:** [Aggregate Functions](/cortex/languages/sql/aggregation/aggregate-functions) — the building blocks (`SUM`, `COUNT`, `AVG`) that compute the values inside each grouping.
+- **Module complete.** Next: [Row Functions](/cortex/languages/sql/index) — string, number, date, NULL, and CASE functions; the per-row counterpart to aggregation's per-group functions.
+- **Forward reference:** [Window Functions](/cortex/languages/sql/index) — when you want subtotals *alongside* the original rows, not collapsed into separate rows. Window aggregates are the alternative for some of the same shapes.
+- **Forward reference:** [Indexes and Performance](/cortex/languages/sql/index) — multi-dimensional aggregations are expensive; covering indexes and materialised views are the production answers when these queries appear in hot paths.
 
 ***
 
@@ -356,4 +356,4 @@ Multi-dimensional aggregation gives you subtotals at multiple levels in one pass
 2. **The rolled-up rows have `NULL` in the rolled-up columns — and so might your real data.** Use the `GROUPING()` function to disambiguate, and consider rendering the rolled-up `NULL`s as a literal string (`'ALL'`, `'TOTAL'`) for human readers.
 3. **One query, one pass over the data, atomic snapshot.** Compared to four `UNION ALL`'d queries, the multi-dimensional operators are faster and consistent. They're why BI tools generate this syntax under the hood — and why your dashboards should too once you're past prototype scale.
 
-With this chapter, the [Aggregation](/cortex/languages/sql-aggregation-index) module — and Phase 2 of the SQL curriculum — is complete. You can now combine rows from multiple tables and summarise them at any level; the next module ([Row Functions](/cortex/languages/sql-index)) shifts back to per-row computations: strings, dates, numbers, and the `CASE` expression.
+With this chapter, the [Aggregation](/cortex/languages/sql/aggregation/index) module — and Phase 2 of the SQL curriculum — is complete. You can now combine rows from multiple tables and summarise them at any level; the next module ([Row Functions](/cortex/languages/sql/index)) shifts back to per-row computations: strings, dates, numbers, and the `CASE` expression.

@@ -129,7 +129,7 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [Pairwise Bits Swap](/cortex/data-structures-and-algorithms/bit-tricks-pattern-bitmasking-problems-pairwise-bits-swap) and [Unique Subsets](/cortex/data-structures-and-algorithms/bit-tricks-pattern-bitmasking-problems-unique-subsets).
+Drill the family in **Practice** — [Pairwise Bits Swap](/cortex/data-structures-and-algorithms/bit-tricks/pattern-bitmasking/problems/pairwise-bits-swap) and [Unique Subsets](/cortex/data-structures-and-algorithms/bit-tricks/pattern-bitmasking/problems/unique-subsets).
 
 ## Reflect & Connect
 
@@ -139,8 +139,8 @@ Bitmasking is where bit tricks meet combinatorics:
 - **Set operations are kth-bit operations** — membership `&`, add `|`, remove `& ~` — so this pattern is the kth-bit toolkit applied to a set-as-integer. Iterating *submasks* of a mask (`sub = (sub - 1) & mask`) is the next level, used in subset-sum DP.
 - **The `2^n` ceiling is the design signal** — bitmasking makes exponential search *feasible for small n*, not fast for large `n`. Seeing `n ≤ ~20` in the constraints is the hint to reach for it.
 
-**Prerequisites:** [Kth-Bit Operations](/cortex/data-structures-and-algorithms/bit-tricks-pattern-kth-bit-pattern).
-**What's next:** classic bit-trick applications — parity, power-of-two, fast exponentiation — in [Bit-Manipulation Applications](/cortex/data-structures-and-algorithms/bit-tricks-pattern-applications-pattern).
+**Prerequisites:** [Kth-Bit Operations](/cortex/data-structures-and-algorithms/bit-tricks/pattern-kth-bit/pattern).
+**What's next:** classic bit-trick applications — parity, power-of-two, fast exponentiation — in [Bit-Manipulation Applications](/cortex/data-structures-and-algorithms/bit-tricks/pattern-applications/pattern).
 
 ## Recall
 

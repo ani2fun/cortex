@@ -9,7 +9,7 @@ prereqs:
 
 You're asked the sum of a subarray — or a submatrix — over and over, for different ranges. Re-adding the elements each time is `O(n)` (or `O(m·n)`) per query; do it `q` times and you've paid `O(q·n)`. **Prefix sums** trade a one-time precompute for `O(1)` queries forever after: store cumulative totals, then every range answer is a subtraction.
 
-In 1-D, `prefix[i]` = sum of the first `i` elements, and `sum(l..r) = prefix[r+1] − prefix[l]`. In 2-D, `P[i][j]` = sum of the rectangle from the origin to `(i-1, j-1)`, and any rectangle sum is a **four-corner inclusion-exclusion**. The same precompute, paired with a hashmap of prefix counts, also answers "how many subarrays sum to exactly `K`?" in one pass — the technique you met in the [hash-table prefix-sum pattern](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-prefix-sum-pattern), now generalised to ranges and rectangles.
+In 1-D, `prefix[i]` = sum of the first `i` elements, and `sum(l..r) = prefix[r+1] − prefix[l]`. In 2-D, `P[i][j]` = sum of the rectangle from the origin to `(i-1, j-1)`, and any rectangle sum is a **four-corner inclusion-exclusion**. The same precompute, paired with a hashmap of prefix counts, also answers "how many subarrays sum to exactly `K`?" in one pass — the technique you met in the [hash-table prefix-sum pattern](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-prefix-sum/pattern), now generalised to ranges and rectangles.
 
 ## See It Work
 
@@ -160,15 +160,15 @@ public class Main {
 }
 ```
 
-Both print `2`. In `[1,1,1]` with `K=2`, the subarrays `[0,1]` and `[1,2]` qualify; in `[1,2,3]` with `K=3`, it's `[1,2]` and `[2,3]`... wait — `[3]` and `[1,2]`. The `{0: 1}` seed is what lets a subarray that *starts at index 0* count (its closing prefix equals `K`, and `prefix − K = 0` is already in the map). This is the prefix-sum idea at its most powerful — `O(n)` time, one pass, no nested loop — and it's the [hash-table prefix-sum pattern](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-prefix-sum-pattern) you've seen, viewed through the range lens.
+Both print `2`. In `[1,1,1]` with `K=2`, the subarrays `[0,1]` and `[1,2]` qualify; in `[1,2,3]` with `K=3`, it's `[1,2]` and `[2,3]`... wait — `[3]` and `[1,2]`. The `{0: 1}` seed is what lets a subarray that *starts at index 0* count (its closing prefix equals `K`, and `prefix − K = 0` is already in the map). This is the prefix-sum idea at its most powerful — `O(n)` time, one pass, no nested loop — and it's the [hash-table prefix-sum pattern](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-prefix-sum/pattern) you've seen, viewed through the range lens.
 
 ## Reflect & Connect
 
 - **Precompute, then subtract.** The whole pattern is "cumulative totals make range queries `O(1)`." 1-D is one subtraction; 2-D is four-corner inclusion-exclusion. Worth it only when you query repeatedly.
 - **Inclusion-exclusion is the 2-D crux.** Overlapping cumulative regions double-count their intersection; add it back. Four terms, not three — the most common 2-D prefix bug (it silently undercounts).
 - **Padding removes branches.** A leading zero (1-D) or zero row/column (2-D) keeps every index valid, which is why the formulas carry `+1` offsets.
-- **The hashmap fusion answers "count subarrays summing to K".** Seed `{0: 1}`, track prefix counts, look up `prefix − K`. The seed is essential (it counts subarrays anchored at the start) — the same load-bearing base case as [subset sum](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-subset-sum-pattern)'s `dp[0]`.
-- **When the array changes, escalate.** Prefix sums assume the data is *static* — one update invalidates `O(n)` of the prefix array. For mutable ranges, use a [Fenwick (BIT)](/cortex/data-structures-and-algorithms/trees-fenwick-tree-introduction-to-fenwick-trees) or [segment tree](/cortex/data-structures-and-algorithms/trees-segment-tree-introduction-to-segment-trees) — `O(log n)` query *and* update.
+- **The hashmap fusion answers "count subarrays summing to K".** Seed `{0: 1}`, track prefix counts, look up `prefix − K`. The seed is essential (it counts subarrays anchored at the start) — the same load-bearing base case as [subset sum](/cortex/data-structures-and-algorithms/algorithms-by-strategy/dynamic-programming/pattern-subset-sum/pattern)'s `dp[0]`.
+- **When the array changes, escalate.** Prefix sums assume the data is *static* — one update invalidates `O(n)` of the prefix array. For mutable ranges, use a [Fenwick (BIT)](/cortex/data-structures-and-algorithms/trees/fenwick-tree/introduction-to-fenwick-trees) or [segment tree](/cortex/data-structures-and-algorithms/trees/segment-tree/introduction-to-segment-trees) — `O(log n)` query *and* update.
 
 ## Recall
 

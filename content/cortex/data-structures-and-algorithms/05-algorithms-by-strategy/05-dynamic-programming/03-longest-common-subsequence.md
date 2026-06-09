@@ -146,7 +146,7 @@ Both print `2` then `4`. The LCS of `"sea"`/`"eat"` is `"ea"` (length 2), so `3 
 ## Reflect & Connect
 
 - **This is 2D DP = multidimensional recursion + cache.** The grid of `(i, j)` subproblems and the `O(2^{m+n}) → O(m·n)` collapse are precisely the [multidimensional-recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multidimensional-recursion) prediction, now realised.
-- **The diagonal carries the semantics.** Match → diagonal (advance both); mismatch → max of the two ways to drop one character. Edit distance ([next lessons](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-edit-distance)) is the same grid with *three* moves (insert/delete/replace) instead of two.
+- **The diagonal carries the semantics.** Match → diagonal (advance both); mismatch → max of the two ways to drop one character. Edit distance ([next lessons](/cortex/data-structures-and-algorithms/algorithms-by-strategy/dynamic-programming/edit-distance)) is the same grid with *three* moves (insert/delete/replace) instead of two.
 - **An LCS family fans out from here.** Shortest common supersequence (`m + n − LCS`), minimum deletions (`m + n − 2·LCS`), diff/patch, and longest palindromic subsequence (LCS of a string with its reverse) all reuse this exact table.
 - **Subsequence, not substring.** LCS allows gaps; the *longest common substring* (next lesson) demands contiguity and resets the cell to 0 on a mismatch — a one-line change with a very different table.
 

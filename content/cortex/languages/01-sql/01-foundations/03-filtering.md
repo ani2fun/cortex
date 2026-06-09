@@ -22,7 +22,7 @@ The query returns four rows. The fifth — the customer with `NULL` country — 
 
 This is not a bug in the abandoned-cart job. It is the way SQL filtering works. **`NULL` is not a value. It is the *absence* of a value, and the rules for comparing it to anything — including itself — are different from what every imperative language teaches you.** The query is doing exactly what it says; the bug is in the engineer's mental model. Every senior SQL engineer has written that bug at least once, usually at 2 a.m.
 
-This chapter is about `WHERE`. Six families of predicates — comparison, logical, range, set-membership, pattern-matching, and existence. The mechanics of how `WHERE` evaluates them per row. And the NULL trap, which gets a brief introduction here and a full chapter ([NULL and three-valued logic](/cortex/languages/sql-index)) later, because every working SQL engineer needs the reflexes for it.
+This chapter is about `WHERE`. Six families of predicates — comparison, logical, range, set-membership, pattern-matching, and existence. The mechanics of how `WHERE` evaluates them per row. And the NULL trap, which gets a brief introduction here and a full chapter ([NULL and three-valued logic](/cortex/languages/sql/index)) later, because every working SQL engineer needs the reflexes for it.
 
 By the end you'll be able to write any row-level filter you need, predict whether `NOT IN` will silently swallow your `NULL`s, and read a complex `WHERE` clause without parenthesising-by-feel.
 
@@ -47,9 +47,9 @@ By the end you'll be able to write any row-level filter you need, predict whethe
 
 # What `WHERE` does
 
-`WHERE` runs at **step 2** of the [logical execution order](/cortex/languages/sql-foundations-introduction-to-sql#the-logical-execution-order), right after `FROM`. It looks at every row produced by `FROM`, evaluates a **predicate** against each row, and **keeps the rows for which the predicate is `TRUE`**.
+`WHERE` runs at **step 2** of the [logical execution order](/cortex/languages/sql/foundations/introduction-to-sql#the-logical-execution-order), right after `FROM`. It looks at every row produced by `FROM`, evaluates a **predicate** against each row, and **keeps the rows for which the predicate is `TRUE`**.
 
-A predicate is any expression that evaluates to one of three values: `TRUE`, `FALSE`, or `UNKNOWN` (which Postgres displays as `NULL`). That third value is the source of every NULL trap in this chapter, and is the central reason the [NULL and three-valued logic](/cortex/languages/sql-index) chapter exists.
+A predicate is any expression that evaluates to one of three values: `TRUE`, `FALSE`, or `UNKNOWN` (which Postgres displays as `NULL`). That third value is the source of every NULL trap in this chapter, and is the central reason the [NULL and three-valued logic](/cortex/languages/sql/index) chapter exists.
 
 The crucial sentence: **`WHERE` keeps rows where the predicate is `TRUE`. Rows where the predicate is `FALSE` *or* `UNKNOWN` are dropped.** That's the rule. Memorise it. The unknown-rows-get-dropped behaviour is what bites engineers who think `NULL` will pass through "not equal" filters.
 
@@ -279,7 +279,7 @@ WHERE order_date >= TIMESTAMP '2026-04-01 00:00:00'
   AND order_date <  TIMESTAMP '2026-05-01 00:00:00';
 ```
 
-Half-open ranges are the production-grade pattern for time windows; closed ranges (`BETWEEN`) are fine for plain `DATE` columns where the day-resolution boundary isn't a concern. We'll go deeper in [Dates and Times](/cortex/languages/sql-index).
+Half-open ranges are the production-grade pattern for time windows; closed ranges (`BETWEEN`) are fine for plain `DATE` columns where the day-resolution boundary isn't a concern. We'll go deeper in [Dates and Times](/cortex/languages/sql/index).
 
 ---
 
@@ -310,7 +310,7 @@ SELECT first_name FROM customers
 WHERE id IN (SELECT customer_id FROM orders);
 ```
 
-We meet subquery `IN` properly in [Subqueries](/cortex/languages/sql-index).
+We meet subquery `IN` properly in [Subqueries](/cortex/languages/sql/index).
 
 ## `NOT IN` and the NULL footgun
 
@@ -354,7 +354,7 @@ SELECT first_name FROM customers c
 WHERE NOT EXISTS (SELECT 1 FROM orders o WHERE o.customer_id = c.id);
 ```
 
-We'll meet `EXISTS` in [Anti-joins and existence](/cortex/languages/sql-index). For now: **prefer `NOT EXISTS` over `NOT IN` in production code** — it's correct under `NULL` and the optimiser handles both equally well.
+We'll meet `EXISTS` in [Anti-joins and existence](/cortex/languages/sql/index). For now: **prefer `NOT EXISTS` over `NOT IN` in production code** — it's correct under `NULL` and the optimiser handles both equally well.
 
 ---
 
@@ -423,11 +423,11 @@ For pattern matching beyond `LIKE`'s simple wildcards, Postgres has `~` (match) 
 WHERE first_name ~ '^[MP]';
 ```
 
-Standard SQL has `SIMILAR TO`, which is between `LIKE` and full regex. Most production code that needs more than `LIKE` jumps to the engine-specific regex form. SQL regex is its own large topic; we'll touch on it in [String Functions](/cortex/languages/sql-index).
+Standard SQL has `SIMILAR TO`, which is between `LIKE` and full regex. Most production code that needs more than `LIKE` jumps to the engine-specific regex form. SQL regex is its own large topic; we'll touch on it in [String Functions](/cortex/languages/sql/index).
 
 ## Performance
 
-`LIKE 'pattern%'` (anchored at the start) can use a B-tree index. `LIKE '%pattern'` (anchored at the end) and `LIKE '%pattern%'` (unanchored) cannot — the index has to scan every row. For unanchored pattern search at scale, Postgres has GIN-based trigram indexes via the `pg_trgm` extension, which we'll meet in [Other Index Types](/cortex/languages/sql-index).
+`LIKE 'pattern%'` (anchored at the start) can use a B-tree index. `LIKE '%pattern'` (anchored at the end) and `LIKE '%pattern%'` (unanchored) cannot — the index has to scan every row. For unanchored pattern search at scale, Postgres has GIN-based trigram indexes via the `pg_trgm` extension, which we'll meet in [Other Index Types](/cortex/languages/sql/index).
 
 ---
 
@@ -504,7 +504,7 @@ SELECT * FROM customers WHERE country IS NOT NULL;
 SELECT * FROM customers WHERE COALESCE(country, 'unknown') <> 'Germany';
 ```
 
-`COALESCE(a, b)` returns `a` if `a` is non-null, else `b`. Now the predicate evaluates to `TRUE` or `FALSE` for every row — no `UNKNOWN`, no silently dropped rows. Full treatment in [NULL and three-valued logic](/cortex/languages/sql-index).
+`COALESCE(a, b)` returns `a` if `a` is non-null, else `b`. Now the predicate evaluates to `TRUE` or `FALSE` for every row — no `UNKNOWN`, no silently dropped rows. Full treatment in [NULL and three-valued logic](/cortex/languages/sql/index).
 
 **(c) Use `IS DISTINCT FROM` for null-safe inequality.** Postgres standard SQL provides `IS DISTINCT FROM` and `IS NOT DISTINCT FROM`, which treat `NULL` as just another value:
 
@@ -543,7 +543,7 @@ WHERE o.sales > 200;
 
 Surprise: this **converts the LEFT JOIN into an INNER JOIN**. Customers with no orders had `o.sales = NULL`, the predicate `NULL > 200` is `UNKNOWN`, those rows get dropped — exactly what `LEFT JOIN` was supposed to preserve.
 
-The fix: put the post-join filter *inside* the join condition, or use `WHERE o.sales > 200 OR o.sales IS NULL`. Full treatment in [Joins](/cortex/languages/sql-index).
+The fix: put the post-join filter *inside* the join condition, or use `WHERE o.sales > 200 OR o.sales IS NULL`. Full treatment in [Joins](/cortex/languages/sql/index).
 
 ## `WHERE` runs before grouping
 
@@ -559,7 +559,7 @@ SELECT customer_id FROM orders WHERE COUNT(*) > 1 GROUP BY customer_id;
 SELECT customer_id FROM orders GROUP BY customer_id HAVING COUNT(*) > 1;
 ```
 
-This is in the alias-namespace explanation in [SELECT and Projection](/cortex/languages/sql-foundations-select-and-projection#the-alias-namespace-trap), but it bites in `WHERE` form often enough to repeat here.
+This is in the alias-namespace explanation in [SELECT and Projection](/cortex/languages/sql/foundations/select-and-projection#the-alias-namespace-trap), but it bites in `WHERE` form often enough to repeat here.
 
 ## Implicit Boolean coercion is mostly absent
 
@@ -591,7 +591,7 @@ SELECT * FROM customers WHERE ABS(score) > 500;
 SELECT * FROM customers WHERE score > 500 OR score < -500;
 ```
 
-This is a *performance* gotcha rather than a correctness one — but it's important enough that the [Indexes and Performance](/cortex/languages/sql-index) module spends a chapter on **sargability**: writing predicates the planner can use an index for. The rule of thumb: `WHERE column op constant` is sargable; `WHERE function(column) op constant` usually isn't.
+This is a *performance* gotcha rather than a correctness one — but it's important enough that the [Indexes and Performance](/cortex/languages/sql/index) module spends a chapter on **sargability**: writing predicates the planner can use an index for. The rule of thumb: `WHERE column op constant` is sargable; `WHERE function(column) op constant` usually isn't.
 
 ---
 
@@ -599,7 +599,7 @@ This is a *performance* gotcha rather than a correctness one — but it's import
 
 Three concrete places where filtering shows up in real codefolio code.
 
-**(1) The `/api/recent` query.** It surfaces the last ten `/api/hello` events from MongoDB. The SQL-shaped equivalent against the `hello_events` table from the [sample schema](/cortex/languages/sql-foundations-introduction-to-sql#the-sample-schema):
+**(1) The `/api/recent` query.** It surfaces the last ten `/api/hello` events from MongoDB. The SQL-shaped equivalent against the `hello_events` table from the [sample schema](/cortex/languages/sql/foundations/introduction-to-sql#the-sample-schema):
 
 ```sql
 SELECT timestamp_ms, visits
@@ -608,7 +608,7 @@ ORDER BY timestamp_ms DESC
 LIMIT 10;
 ```
 
-No `WHERE` — the endpoint returns the most recent ten regardless of any filter. But notice the ordering on `timestamp_ms`. Postgres's *descending B-tree index* on `timestamp_ms` makes this query `O(log n)`; without one, it's a sort over the whole table. The [Indexes](/cortex/languages/sql-index) module shows how to add the right index.
+No `WHERE` — the endpoint returns the most recent ten regardless of any filter. But notice the ordering on `timestamp_ms`. Postgres's *descending B-tree index* on `timestamp_ms` makes this query `O(log n)`; without one, it's a sort over the whole table. The [Indexes](/cortex/languages/sql/index) module shows how to add the right index.
 
 **(2) Filtering by user role for an internal dashboard.** Imagine codefolio grew an admin panel that shows orders flagged for review. Engineers commonly write:
 
@@ -641,7 +641,7 @@ Note the **half-open** time window — `>=` start of yesterday, `<` start of tod
 
 # Practice ladder
 
-Spin up the [sample schema](/cortex/languages/sql-foundations-introduction-to-sql#the-sample-schema) in `psql` and try each one. Hints, not answers.
+Spin up the [sample schema](/cortex/languages/sql/foundations/introduction-to-sql#the-sample-schema) in `psql` and try each one. Hints, not answers.
 
 1. **Customers with `score > 500` *and* from the USA.** *Hint: two predicates joined with `AND`.*
 2. **Customers from Germany *or* with `score >= 750`.** *Hint: two predicates joined with `OR`. Use parentheses if mixing with anything else.*
@@ -649,7 +649,7 @@ Spin up the [sample schema](/cortex/languages/sql-foundations-introduction-to-sq
 4. **Customers whose `country` is one of Germany, USA, or UK.** *Hint: `IN`.*
 5. **Customers whose first name does *not* start with `'M'`.** *Hint: `NOT LIKE`.*
 6. **Customers whose `country` is unknown (`NULL`).** *Hint: which special operator?*
-7. **Predict the number of rows returned by this query, given the [sample schema](/cortex/languages/sql-foundations-introduction-to-sql#the-sample-schema):**
+7. **Predict the number of rows returned by this query, given the [sample schema](/cortex/languages/sql/foundations/introduction-to-sql#the-sample-schema):**
    ```sql
    SELECT * FROM customers WHERE country NOT IN ('Germany', NULL);
    ```
@@ -660,12 +660,12 @@ Spin up the [sample schema](/cortex/languages/sql-foundations-introduction-to-sq
 
 # Cross-links
 
-- **Previous in this module:** [SELECT and Projection](/cortex/languages/sql-foundations-select-and-projection) — the column-list half of every read query.
-- **Next in this module:** [Ordering and Pagination](/cortex/languages/sql-foundations-ordering-and-pagination) — once you've selected and filtered, the next two clauses (`ORDER BY`, `LIMIT`) shape the order and size of the result.
-- **Forward reference:** [NULL and three-valued logic](/cortex/languages/sql-index) — the full treatment of `NULL`, including `COALESCE`, `NULLIF`, `IS DISTINCT FROM`, and the family of bugs that come from `NULL` propagation through expressions.
-- **Forward reference:** [Anti-joins and existence](/cortex/languages/sql-index) — the `NOT EXISTS` form that solves the `NOT IN`/`NULL` footgun mentioned in [Set membership](#set-membership).
-- **Forward reference:** [Indexes and query plans](/cortex/languages/sql-index) — sargability, the property that lets the planner use an index for a `WHERE` predicate.
-- **Forward reference:** [Joins](/cortex/languages/sql-index) — the `WHERE`-on-the-wrong-side-of-a-LEFT-JOIN pitfall mentioned in [Edge cases](#edge-cases-and-pitfalls).
+- **Previous in this module:** [SELECT and Projection](/cortex/languages/sql/foundations/select-and-projection) — the column-list half of every read query.
+- **Next in this module:** [Ordering and Pagination](/cortex/languages/sql/foundations/ordering-and-pagination) — once you've selected and filtered, the next two clauses (`ORDER BY`, `LIMIT`) shape the order and size of the result.
+- **Forward reference:** [NULL and three-valued logic](/cortex/languages/sql/index) — the full treatment of `NULL`, including `COALESCE`, `NULLIF`, `IS DISTINCT FROM`, and the family of bugs that come from `NULL` propagation through expressions.
+- **Forward reference:** [Anti-joins and existence](/cortex/languages/sql/index) — the `NOT EXISTS` form that solves the `NOT IN`/`NULL` footgun mentioned in [Set membership](#set-membership).
+- **Forward reference:** [Indexes and query plans](/cortex/languages/sql/index) — sargability, the property that lets the planner use an index for a `WHERE` predicate.
+- **Forward reference:** [Joins](/cortex/languages/sql/index) — the `WHERE`-on-the-wrong-side-of-a-LEFT-JOIN pitfall mentioned in [Edge cases](#edge-cases-and-pitfalls).
 
 ***
 

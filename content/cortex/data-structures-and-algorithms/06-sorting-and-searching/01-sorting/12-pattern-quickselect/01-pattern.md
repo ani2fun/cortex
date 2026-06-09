@@ -138,7 +138,7 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [Kth Smallest Element](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-pattern-quickselect-problems-kth-smallest-element), [Median Finder](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-pattern-quickselect-problems-median-finder), [K Closest Elements](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-pattern-quickselect-problems-k-closest-elements), and [K Most Frequent Elements](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-pattern-quickselect-problems-k-most-frequent-elements).
+Drill the family in **Practice** — [Kth Smallest Element](/cortex/data-structures-and-algorithms/sorting-and-searching/sorting/pattern-quickselect/problems/kth-smallest-element), [Median Finder](/cortex/data-structures-and-algorithms/sorting-and-searching/sorting/pattern-quickselect/problems/median-finder), [K Closest Elements](/cortex/data-structures-and-algorithms/sorting-and-searching/sorting/pattern-quickselect/problems/k-closest-elements), and [K Most Frequent Elements](/cortex/data-structures-and-algorithms/sorting-and-searching/sorting/pattern-quickselect/problems/k-most-frequent-elements).
 
 ## Reflect & Connect
 
@@ -148,8 +148,8 @@ Quickselect is the "I need one order statistic, not the whole order" tool:
 - **Quickselect vs heap vs sort** — for the `k`-th element: quickselect is `O(n)` average (best when you want it *once*, in memory); a [size-k heap](/cortex/data-structures-and-algorithms/trees-heap-pattern-top-k-elements) is `O(n log k)` and works on *streams*; a full sort is `O(n log n)` but gives you *everything*. Pick by whether data streams and whether you need the rest sorted.
 - **It's "binary search on an unsorted array"** — both discard half the search space each step based on a comparison. Quickselect's `O(n)` (vs binary search's `O(log n)`) is because each partition step costs `O(n)`, not `O(1)`. The median-of-medians variant guarantees `O(n)` worst-case, a classic theory result.
 
-**Prerequisites:** [Quicksort](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-quicksort).
-**What's next:** sort by a custom ordering rather than natural order — [Custom Compare](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-pattern-custom-compare-pattern).
+**Prerequisites:** [Quicksort](/cortex/data-structures-and-algorithms/sorting-and-searching/sorting/quicksort).
+**What's next:** sort by a custom ordering rather than natural order — [Custom Compare](/cortex/data-structures-and-algorithms/sorting-and-searching/sorting/pattern-custom-compare/pattern).
 
 ## Recall
 

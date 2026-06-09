@@ -42,7 +42,7 @@ Three ingredients turn an optimization into a binary search:
 
 1. **The answer range** `[lo, hi]` — bounds on the value you're optimizing (here, speed `1` to `max(piles)`).
 2. **A monotone predicate** `feasible(x)` — `false` below the threshold, `true` at and above it. (Higher speed → fewer hours → once feasible, stays feasible.)
-3. **A lower-bound search** over the range: this is exactly [lower bound](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-lower-bound) with `feasible(mid)` playing the role of `arr[mid] ≥ target` — find the *first* `x` where the predicate flips to `true`.
+3. **A lower-bound search** over the range: this is exactly [lower bound](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/lower-bound) with `feasible(mid)` playing the role of `arr[mid] ≥ target` — find the *first* `x` where the predicate flips to `true`.
 
 ```mermaid
 flowchart TB
@@ -127,7 +127,7 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [Punctual Arrival Speed](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-minimum-predicate-search-problems-punctual-arrival-speed), [Penalty with Balls](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-minimum-predicate-search-problems-penalty-with-balls), [Minimum Shipping Capacity](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-minimum-predicate-search-problems-minimum-shipping-capacity), and [Trip Completion Frenzy](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-minimum-predicate-search-problems-trip-completion-frenzy).
+Drill the family in **Practice** — [Punctual Arrival Speed](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/pattern-minimum-predicate-search/problems/punctual-arrival-speed), [Penalty with Balls](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/pattern-minimum-predicate-search/problems/penalty-with-balls), [Minimum Shipping Capacity](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/pattern-minimum-predicate-search/problems/minimum-shipping-capacity), and [Trip Completion Frenzy](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/pattern-minimum-predicate-search/problems/trip-completion-frenzy).
 
 ## Reflect & Connect
 
@@ -137,7 +137,7 @@ Drill the family in **Practice** — [Punctual Arrival Speed](/cortex/data-struc
 - **It's lower bound in disguise** — the answer range is the "array," `feasible` is the comparison; finding the first `true` is the lower-bound template. The [maximum-predicate](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-maximum-predicate-search) mirror finds the *largest* `x` with `true…true, false…false`.
 - **The recognition trigger** — "minimize/maximize `X` such that some condition holds," especially when `X` ranges over integers and a brute-force check `feasible(X)` is easy but trying every `X` is too slow. The leap is realizing feasibility is monotone, so you binary-search instead of scanning.
 
-**Prerequisites:** [Lower Bound](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-lower-bound).
+**Prerequisites:** [Lower Bound](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/lower-bound).
 **What's next:** the mirror — the *largest* value that still satisfies a predicate — [Maximum Predicate Search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-maximum-predicate-search).
 
 ## Recall

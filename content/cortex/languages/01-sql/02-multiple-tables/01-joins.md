@@ -176,7 +176,7 @@ ORDER BY c.id, o.order_id;
 
 `LEFT JOIN` is the right tool whenever you want to keep every row of the "primary" side and *augment* it with optional information from another table. "Customers and their last order, even customers who never ordered." "Products and their reviews, even products with no reviews." "Users and their preferences, with sensible defaults if no preferences row exists."
 
-The `NULL` columns are the signal: a `LEFT JOIN` says "here are some rows; if you see `NULL` in the right-side columns, this row had no match." The next chapter ([Anti-joins and Existence](/cortex/languages/sql-multiple-tables-anti-joins-and-existence)) shows how to filter for *only* the unmatched rows.
+The `NULL` columns are the signal: a `LEFT JOIN` says "here are some rows; if you see `NULL` in the right-side columns, this row had no match." The next chapter ([Anti-joins and Existence](/cortex/languages/sql/multiple-tables/anti-joins-and-existence)) shows how to filter for *only* the unmatched rows.
 
 ---
 
@@ -315,7 +315,7 @@ Get this rule wrong and a `LEFT JOIN` silently behaves like an `INNER JOIN`. The
 
 Joins chain: `A JOIN B ON ... JOIN C ON ...`. Each step joins the running result to the next table. The order matters for *readability*; the planner is free to execute in any order it thinks is fastest.
 
-A four-table join from the [sample schema](/cortex/languages/sql-foundations-introduction-to-sql#the-sample-schema):
+A four-table join from the [sample schema](/cortex/languages/sql/foundations/introduction-to-sql#the-sample-schema):
 
 ```sql run
 CREATE TABLE customers (id INT, first_name TEXT, country TEXT, score INT);
@@ -334,7 +334,7 @@ GROUP BY c.country, c.id, c.first_name
 ORDER BY c.country, total_sales DESC;
 ```
 
-That brings two tables together, groups, aggregates, and orders. We'll cover `GROUP BY` in detail in [the next module](/cortex/languages/sql-aggregation-index); the join shape is the relevant part here.
+That brings two tables together, groups, aggregates, and orders. We'll cover `GROUP BY` in detail in [the next module](/cortex/languages/sql/aggregation/index); the join shape is the relevant part here.
 
 When chaining joins, **each `ON` clause must reference the running result and the new table**, not just any two tables. If `B` joins to `A` on `B.a_id = A.id`, and `C` joins to `B` on `C.b_id = B.id`, you can't `JOIN C ON C.b_id = B.id` unless `B` is in scope — meaning you've already joined it. The order in which joins appear is the order in which their `ON` clauses can reference earlier tables.
 
@@ -386,7 +386,7 @@ ORDER BY e.id;
 
 Note we use a **`LEFT JOIN`** because Alice (CEO) has `manager_id = NULL` — using an INNER JOIN would drop her. Both aliases (`e`, `m`) refer to the same physical table; the alias is what makes the query make sense.
 
-For deeper hierarchical traversal — "everyone in Alice's reporting chain" — you reach for **recursive CTEs**, covered in the [CTEs and Recursion](/cortex/languages/sql-index) module.
+For deeper hierarchical traversal — "everyone in Alice's reporting chain" — you reach for **recursive CTEs**, covered in the [CTEs and Recursion](/cortex/languages/sql/index) module.
 
 ---
 
@@ -423,7 +423,7 @@ SELECT * FROM customers c NATURAL JOIN orders;
 
 ## `ON ... = NULL` doesn't match
 
-A foreign-key column with NULL means "this row has no link." `ON c.id = o.customer_id` won't match a row where `o.customer_id` is NULL — same NULL trap as in [Filtering](/cortex/languages/sql-foundations-filtering#the-null-trap). To deliberately match NULL on both sides, use `IS NOT DISTINCT FROM`:
+A foreign-key column with NULL means "this row has no link." `ON c.id = o.customer_id` won't match a row where `o.customer_id` is NULL — same NULL trap as in [Filtering](/cortex/languages/sql/foundations/filtering#the-null-trap). To deliberately match NULL on both sides, use `IS NOT DISTINCT FROM`:
 
 ```sql
 ON c.id IS NOT DISTINCT FROM o.customer_id
@@ -433,7 +433,7 @@ ON c.id IS NOT DISTINCT FROM o.customer_id
 
 ## The order of joins is not the execution order
 
-When you write `A JOIN B JOIN C JOIN D`, the planner is free to execute the joins in any order — it might join `A` and `C` first if that's cheaper, then bring in `B` and `D`. Don't assume the textual order is the execution order. The result is always the same; the cost can differ enormously. We'll see this in [EXPLAIN and Query Plans](/cortex/languages/sql-index).
+When you write `A JOIN B JOIN C JOIN D`, the planner is free to execute the joins in any order — it might join `A` and `C` first if that's cheaper, then bring in `B` and `D`. Don't assume the textual order is the execution order. The result is always the same; the cost can differ enormously. We'll see this in [EXPLAIN and Query Plans](/cortex/languages/sql/index).
 
 ---
 
@@ -462,13 +462,13 @@ WHERE e.customer_id IS NOT NULL
   AND c.id IS NULL;
 ```
 
-This is the **anti-join** pattern — "rows in events with no matching customer." Full coverage in [Anti-joins and Existence](/cortex/languages/sql-multiple-tables-anti-joins-and-existence). It's how reconciliation jobs catch dangling references in production data — usually as a scheduled query that emits a list to a monitoring dashboard.
+This is the **anti-join** pattern — "rows in events with no matching customer." Full coverage in [Anti-joins and Existence](/cortex/languages/sql/multiple-tables/anti-joins-and-existence). It's how reconciliation jobs catch dangling references in production data — usually as a scheduled query that emits a list to a monitoring dashboard.
 
 ---
 
 # Practice ladder
 
-Use the [sample schema](/cortex/languages/sql-foundations-introduction-to-sql#the-sample-schema) — runnable blocks above bundle the seed data inline.
+Use the [sample schema](/cortex/languages/sql/foundations/introduction-to-sql#the-sample-schema) — runnable blocks above bundle the seed data inline.
 
 1. **List every customer's name and the date of each of their orders.** *Hint: `INNER JOIN customers c JOIN orders o ON …`.*
 2. **List every customer, plus the dates of their orders if any. Customers with no orders should still appear, with NULLs for date.** *Hint: which join keeps unmatched left rows?*
@@ -493,11 +493,11 @@ Use the [sample schema](/cortex/languages/sql-foundations-introduction-to-sql#th
 
 # Cross-links
 
-- **Previous in this module:** [Working with Multiple Tables — index](/cortex/languages/sql-multiple-tables-index).
-- **Next in this module:** [Set Operators](/cortex/languages/sql-multiple-tables-set-operators) — the cousin operation: combining *result-sets* (`UNION`, `INTERSECT`, `EXCEPT`) rather than columns.
-- **Forward reference:** [Subqueries](/cortex/languages/sql-multiple-tables-subqueries) — when "join" isn't the right shape; when a query-inside-a-query is.
-- **Forward reference:** [Anti-joins and Existence](/cortex/languages/sql-multiple-tables-anti-joins-and-existence) — the LEFT JOIN ... IS NULL idiom for "rows where no match" plus the NOT EXISTS alternative.
-- **Forward reference:** [B-Tree Indexes](/cortex/languages/sql-index) and [EXPLAIN and Query Plans](/cortex/languages/sql-index) — what the planner does with a join, and how to make it fast.
+- **Previous in this module:** [Working with Multiple Tables — index](/cortex/languages/sql/multiple-tables/index).
+- **Next in this module:** [Set Operators](/cortex/languages/sql/multiple-tables/set-operators) — the cousin operation: combining *result-sets* (`UNION`, `INTERSECT`, `EXCEPT`) rather than columns.
+- **Forward reference:** [Subqueries](/cortex/languages/sql/multiple-tables/subqueries) — when "join" isn't the right shape; when a query-inside-a-query is.
+- **Forward reference:** [Anti-joins and Existence](/cortex/languages/sql/multiple-tables/anti-joins-and-existence) — the LEFT JOIN ... IS NULL idiom for "rows where no match" plus the NOT EXISTS alternative.
+- **Forward reference:** [B-Tree Indexes](/cortex/languages/sql/index) and [EXPLAIN and Query Plans](/cortex/languages/sql/index) — what the planner does with a join, and how to make it fast.
 
 ***
 

@@ -248,6 +248,6 @@ ping -c3 172.27.15.13    # wk-2
 ping -c3 172.27.15.12
 ```
 
-When all four steps work on every node, the mesh is up and the rest of the book builds on it. If any step fails, the next chapter ([When the mesh misbehaves](/cortex/homelab-from-scratch/private-mesh-when-the-mesh-misbehaves)) is the playbook for finding out why.
+When all four steps work on every node, the mesh is up and the rest of the book builds on it. If any step fails, the next chapter ([When the mesh misbehaves](/cortex/homelab-from-scratch/private-mesh/when-the-mesh-misbehaves)) is the playbook for finding out why.
 
-→ Next: [When the mesh misbehaves](/cortex/homelab-from-scratch/private-mesh-when-the-mesh-misbehaves)
+→ Next: [When the mesh misbehaves](/cortex/homelab-from-scratch/private-mesh/when-the-mesh-misbehaves)

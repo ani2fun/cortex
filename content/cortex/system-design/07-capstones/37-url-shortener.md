@@ -12,7 +12,7 @@ summary: The canonical first system design, done end-to-end — requirements, ba
 
 In **March 2018**, Google announced it was winding down **goo.gl**, its URL shortener — it stopped minting new links, and years later, in **2025**, began switching off the inactive ones. Think about what that means. A short link is an implicit *forever-promise*: somebody put `goo.gl/xY3z` in a printed flyer, a slide deck, a QR code, a research paper — places you can't go back and edit. The moment the shortener stops resolving that code, the destination vanishes from every one of those places at once. A URL shortener isn't a cute toy; it's a **durable, read-heavy redirection layer that the rest of the world has hard-coded references into**, and when it fails, it fails *everywhere link-rot can reach*.
 
-That tension is exactly why the URL shortener is the canonical first capstone. On the surface it's a one-line idea — "store a short code, redirect to the long URL." Underneath, it forces every decision this book has built toward: it's read-heavy, so you reach for [caching](/cortex/system-design/building-blocks-caching); it must scale, so you reach for [sharding](/cortex/system-design/building-blocks-sharding-and-partitioning); it must never lose a mapping, so you think about durability; it must generate unique codes under concurrency, so you think about distributed ID generation; and it must survive a redirect storm, so you think about CDNs and the shape of real traffic. It's small enough to hold in your head and rich enough to exercise the whole toolkit.
+That tension is exactly why the URL shortener is the canonical first capstone. On the surface it's a one-line idea — "store a short code, redirect to the long URL." Underneath, it forces every decision this book has built toward: it's read-heavy, so you reach for [caching](/cortex/system-design/building-blocks/caching); it must scale, so you reach for [sharding](/cortex/system-design/building-blocks/sharding-and-partitioning); it must never lose a mapping, so you think about durability; it must generate unique codes under concurrency, so you think about distributed ID generation; and it must survive a redirect storm, so you think about CDNs and the shape of real traffic. It's small enough to hold in your head and rich enough to exercise the whole toolkit.
 
 This is also the **dry run for the capstone format.** Every capstone (37–46) follows the same arc: pin the **requirements**, do the **back-of-envelope estimation**, sketch the **API** and **data model**, draw the **architecture** (a Mermaid hot-path sequence, a D2 topology, and a C4 container view), find the **bottlenecks**, then answer the question that separates a design from a daydream — **"what breaks at 100×?"** — and close with **trade-offs** and an **illustrative prototype**. Let's build it.
 
@@ -28,14 +28,14 @@ Pin down *what we're building* before *how*, because the "how" is dictated by a 
 **Non-functional (these drive the design):**
 - **Read-heavy:** redirects ≫ creates — assume **~100:1**. The redirect path must be fast and cheap; the create path can be heavier.
 - **Low latency:** a redirect should add only a few milliseconds — it sits in front of someone else's page load.
-- **High availability + durability:** a lost mapping is a dead link forever (§1). Availability matters more than strong consistency here — a brand-new code being readable a few hundred milliseconds late is fine (it's an [AP-leaning](/cortex/system-design/foundations-cap-and-pacelc) workload).
+- **High availability + durability:** a lost mapping is a dead link forever (§1). Availability matters more than strong consistency here — a brand-new code being readable a few hundred milliseconds late is fine (it's an [AP-leaning](/cortex/system-design/foundations/cap-and-pacelc) workload).
 - **Short, hard-to-guess codes** that don't run out.
 
 **Out of scope:** spam/abuse detection, the analytics pipeline itself (we'll note where it hooks in), and user accounts. Naming the boundary is part of the design.
 
 ## 3. Back-of-envelope estimation
 
-Numbers first ([estimation](/cortex/system-design/foundations-back-of-envelope-estimation)) — they decide the code length, the storage tier, and the cache size. Assume **100 million new URLs/day** and the ~100:1 ratio → **10 billion redirects/day**.
+Numbers first ([estimation](/cortex/system-design/foundations/back-of-envelope-estimation)) — they decide the code length, the storage tier, and the cache size. Assume **100 million new URLs/day** and the ~100:1 ratio → **10 billion redirects/day**.
 
 | Quantity | Calculation | Result |
 |---|---|---|
@@ -45,11 +45,11 @@ Numbers first ([estimation](/cortex/system-design/foundations-back-of-envelope-e
 | Codes over 5 years | 100M × 365 × 5 | **~182.5 billion** |
 | Storage over 5 years | 182.5B × ~500 bytes/record | **~91 TB** |
 
-Two of those numbers settle real decisions. **Code length:** base62 with **6 characters** gives `62⁶ ≈ 56.8 billion` codes — which we'd *exhaust in under two years* at this rate. **7 characters** gives `62⁷ ≈ 3.5 trillion` — enough for ~96 years. So **7 base62 characters** it is. **Storage:** ~91 TB over five years is comfortable for a [sharded KV store](/cortex/system-design/storage-and-search-lsm-trees-vs-btrees); it's not "big data," it's just steady growth. And the read rate (~116K/s, peaking ~230K/s) tells us the redirect path *cannot* hit the database every time — which is what makes the cache the centerpiece.
+Two of those numbers settle real decisions. **Code length:** base62 with **6 characters** gives `62⁶ ≈ 56.8 billion` codes — which we'd *exhaust in under two years* at this rate. **7 characters** gives `62⁷ ≈ 3.5 trillion` — enough for ~96 years. So **7 base62 characters** it is. **Storage:** ~91 TB over five years is comfortable for a [sharded KV store](/cortex/system-design/storage-and-search/lsm-trees-vs-btrees); it's not "big data," it's just steady growth. And the read rate (~116K/s, peaking ~230K/s) tells us the redirect path *cannot* hit the database every time — which is what makes the cache the centerpiece.
 
 ## 4. API
 
-Two endpoints, designed with the discipline from [Lesson 28](/cortex/system-design/application-architecture-api-design):
+Two endpoints, designed with the discipline from [Lesson 28](/cortex/system-design/application-architecture/api-design):
 
 ```
 POST /shorten           {"url": "https://example.com/very/long/path?q=1"}
@@ -60,11 +60,11 @@ GET /{code}             e.g. GET /aZ3kP9q
   404 Not Found         (unknown or expired code)
 ```
 
-`POST /shorten` should be **idempotent** ([Lesson 17](/cortex/system-design/distributed-patterns-idempotency-retries-backoff)): a client retry after a timeout must not mint a *second* code for the same intent — accept an `Idempotency-Key`, or (a common shortcut) return the existing code if the exact URL was already shortened by this user. And it should be **rate-limited** ([Lesson 20](/cortex/system-design/distributed-patterns-rate-limiting)) — creating links is a favorite of spammers. The redirect returns **`302`, not `301`** (the reasoning is in §7 and §9): a 302 keeps every click flowing through your server (so analytics and abuse-checks see it) and keeps the destination changeable, where a 301 is permanently browser-cached and goes invisible.
+`POST /shorten` should be **idempotent** ([Lesson 17](/cortex/system-design/distributed-patterns/idempotency-retries-backoff)): a client retry after a timeout must not mint a *second* code for the same intent — accept an `Idempotency-Key`, or (a common shortcut) return the existing code if the exact URL was already shortened by this user. And it should be **rate-limited** ([Lesson 20](/cortex/system-design/distributed-patterns/rate-limiting)) — creating links is a favorite of spammers. The redirect returns **`302`, not `301`** (the reasoning is in §7 and §9): a 302 keeps every click flowing through your server (so analytics and abuse-checks see it) and keeps the destination changeable, where a 301 is permanently browser-cached and goes invisible.
 
 ## 5. Short-code generation and data model
 
-The data model is trivially a key-value pair — `short_code → {long_url, created_at, owner, expiry?}` — which is why a **KV store** (or a single-table NoSQL design, [Lesson 23 of the building blocks](/cortex/system-design/building-blocks-nosql-families)) is the natural fit: the redirect is a **point lookup by primary key**, the one access pattern KV engines are fastest at.
+The data model is trivially a key-value pair — `short_code → {long_url, created_at, owner, expiry?}` — which is why a **KV store** (or a single-table NoSQL design, [Lesson 23 of the building blocks](/cortex/system-design/building-blocks/nosql-families)) is the natural fit: the redirect is a **point lookup by primary key**, the one access pattern KV engines are fastest at.
 
 The interesting decision is **how to generate the code**. Four approaches, in roughly increasing robustness:
 
@@ -79,7 +79,7 @@ A **KGS** (or a partitioned distributed counter à la Twitter's Snowflake, base6
 
 ## 6. Architecture
 
-The system is four moving parts: a **stateless API/redirector** tier behind a [load balancer](/cortex/system-design/building-blocks-load-balancing), a **read-through cache** (Redis) that absorbs the redirect storm, a **sharded KV store** that is the durable source of truth, and a **key-generation service**. Topology (D2):
+The system is four moving parts: a **stateless API/redirector** tier behind a [load balancer](/cortex/system-design/building-blocks/load-balancing), a **read-through cache** (Redis) that absorbs the redirect storm, a **sharded KV store** that is the durable source of truth, and a **key-generation service**. Topology (D2):
 
 ```d2
 direction: right
@@ -109,7 +109,7 @@ And the same system as a C4 container view (who-talks-to-whom, with responsibili
   title="URL shortener — container view"
 ></iframe>
 
-The cache is the star. Because the API tier is **stateless**, you scale it by adding boxes ([horizontal scaling](/cortex/system-design/production-operations-capacity-planning-and-autoscaling)); the KV store is sharded by code so it grows linearly; but the thing that makes ~230K redirects/second *affordable* is that you almost never touch the KV store, because link popularity is wildly skewed (§8).
+The cache is the star. Because the API tier is **stateless**, you scale it by adding boxes ([horizontal scaling](/cortex/system-design/production-operations/capacity-planning-and-autoscaling)); the KV store is sharded by code so it grows linearly; but the thing that makes ~230K redirects/second *affordable* is that you almost never touch the KV store, because link popularity is wildly skewed (§8).
 
 ## 7. The hot path
 
@@ -158,9 +158,9 @@ The redirect is the whole ballgame, and the key choice is **301 vs 302**. A **30
 
 At the baseline (~230K reads/s peak) the design is comfortable. Now the capstone question: **what breaks at 100× — ~23 million redirects/second, ~10 billion new URLs/day?**
 
-- **The cache becomes the system.** This is where the *shape* of traffic saves you: link popularity is **Zipfian** — a tiny fraction of links (a viral tweet, a campaign QR code) get the overwhelming majority of clicks. So a cache holding the hot set (tens of GB) can serve **>95% of reads** ([caching](/cortex/system-design/building-blocks-caching)), and the KV store only sees the cold long tail. At 100× you scale the cache into a **sharded Redis cluster** and push it outward.
+- **The cache becomes the system.** This is where the *shape* of traffic saves you: link popularity is **Zipfian** — a tiny fraction of links (a viral tweet, a campaign QR code) get the overwhelming majority of clicks. So a cache holding the hot set (tens of GB) can serve **>95% of reads** ([caching](/cortex/system-design/building-blocks/caching)), and the KV store only sees the cold long tail. At 100× you scale the cache into a **sharded Redis cluster** and push it outward.
 - **Push redirects to the edge (CDN).** The single biggest 100× move: cache the `302` responses at a **CDN/edge** close to users. A redirect for a hot code is identical for everyone, so the edge can answer it in ~1 ms without your origin being involved at all — turning 23M/s at the origin into a trickle. (You trade some analytics granularity for survival; sample at the edge or accept eventual click counts.)
-- **The KV store shards.** ~91 TB → ~9 PB at 100×; shard by code across many nodes ([sharding](/cortex/system-design/building-blocks-sharding-and-partitioning)). Because lookups are by primary key, sharding is clean — no cross-shard joins.
+- **The KV store shards.** ~91 TB → ~9 PB at 100×; shard by code across many nodes ([sharding](/cortex/system-design/building-blocks/sharding-and-partitioning)). Because lookups are by primary key, sharding is clean — no cross-shard joins.
 - **The ID generator must not become a hot spot.** A single counter at 10B creates/day (~115K/s) is a bottleneck and a single point of failure; use a **KGS handing out blocks** of codes to each app server, or a partitioned **Snowflake-style** generator, so code minting is local and coordination-free.
 - **Go multi-region.** At global 100× scale you replicate read-only (codes are immutable once created, which makes this *easy* — no write-conflict problem) and route users to the nearest region; creates can funnel to a home region or use region-prefixed codes.
 
@@ -172,8 +172,8 @@ The throughline: the redirect is cacheable and immutable, so **the 100× answer 
 |---|---|---|
 | Code generation | **KGS / Snowflake** vs hash vs counter | KGS: unique by construction, unguessable, no hot counter — pick this; hashing invites collisions; a raw counter is guessable + a write bottleneck |
 | Redirect status | **302** vs 301 | 302 keeps clicks countable and destinations changeable; 301 is browser-cached → invisible analytics, frozen destination |
-| Datastore | **KV / single-table NoSQL** vs relational | the access pattern is a pure point lookup by key; a KV/LSM engine ([Lesson 22](/cortex/system-design/storage-and-search-lsm-trees-vs-btrees)) is the fastest fit |
-| Consistency | **AP / read-through cache** vs strong | a new code readable a few hundred ms late is fine; availability of redirects matters far more ([CAP](/cortex/system-design/foundations-cap-and-pacelc)) |
+| Datastore | **KV / single-table NoSQL** vs relational | the access pattern is a pure point lookup by key; a KV/LSM engine ([Lesson 22](/cortex/system-design/storage-and-search/lsm-trees-vs-btrees)) is the fastest fit |
+| Consistency | **AP / read-through cache** vs strong | a new code readable a few hundred ms late is fine; availability of redirects matters far more ([CAP](/cortex/system-design/foundations/cap-and-pacelc)) |
 | 100× redirects | **CDN/edge cache** vs scale origin | a hot redirect is identical for all users → answer it at the edge for ~1 ms and spare the origin entirely |
 
 ## 10. Build It
@@ -217,7 +217,7 @@ The shape *is* the lesson: `shorten` mints a unique code (no runtime collision c
 
 - **The dead-link forever-promise (§1).** Once a code is published you can never safely reuse it for a different URL — a stale QR code would send people somewhere wrong. Treat codes as **immutable and permanent**; expiry must *deactivate* (404), never *recycle* the code.
 - **Cache stampede on a viral link.** A link goes viral and *isn't* cached yet; thousands of simultaneous misses hammer one KV shard. Mitigate with request coalescing / single-flight and a short negative-cache for 404s.
-- **Open-redirect abuse.** Shorteners are beloved by phishers (the short code hides the destination). Validate/normalize URLs on create, check against malicious-URL lists, and rate-limit creation ([Lesson 20](/cortex/system-design/distributed-patterns-rate-limiting)).
+- **Open-redirect abuse.** Shorteners are beloved by phishers (the short code hides the destination). Validate/normalize URLs on create, check against malicious-URL lists, and rate-limit creation ([Lesson 20](/cortex/system-design/distributed-patterns/rate-limiting)).
 - **Guessable codes leak data.** Sequential (counter-derived) codes let anyone enumerate every link ever made — a privacy hole. Use random/KGS codes if links shouldn't be discoverable.
 - **Analytics vs. the CDN.** Edge-caching redirects (§8) means clicks no longer all reach your origin, so exact real-time counts get harder. Decide up front: sample at the edge, accept eventual counts, or keep a thin always-hit path for links that need precise analytics.
 
@@ -263,4 +263,4 @@ The shape *is* the lesson: `shorten` mints a unique code (no runtime collision c
 
 ---
 
-> **Next:** [38. News feed](/cortex/system-design/capstones-news-feed) — the URL shortener was read-heavy but *simple*: one immutable key-value mapping. The news feed is the opposite — every user's home timeline is a *personalized, constantly-changing* merge of everyone they follow, and the central decision is **fan-out on write vs. fan-out on read** (precompute each follower's feed when you post, or assemble it when they open the app?). It's where caching, [pub/sub fan-out](/cortex/system-design/distributed-patterns-pubsub-and-fanout), and the "celebrity problem" collide.
+> **Next:** [38. News feed](/cortex/system-design/capstones/news-feed) — the URL shortener was read-heavy but *simple*: one immutable key-value mapping. The news feed is the opposite — every user's home timeline is a *personalized, constantly-changing* merge of everyone they follow, and the central decision is **fan-out on write vs. fan-out on read** (precompute each follower's feed when you post, or assemble it when they open the app?). It's where caching, [pub/sub fan-out](/cortex/system-design/distributed-patterns/pubsub-and-fanout), and the "celebrity problem" collide.

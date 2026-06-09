@@ -8,7 +8,7 @@ prereqs:
 
 ## Why It Exists
 
-The [suffix array](/cortex/data-structures-and-algorithms/strings-suffix-array) indexes a text by *sorting* its suffixes. The **suffix automaton** (SAM) indexes it as a *machine*: the smallest deterministic finite automaton whose paths from the start spell exactly the substrings of the string. Feed it a pattern and walk the transitions — if you never fall off, the pattern is a substring, in `O(m)`.
+The [suffix array](/cortex/data-structures-and-algorithms/strings/suffix-array) indexes a text by *sorting* its suffixes. The **suffix automaton** (SAM) indexes it as a *machine*: the smallest deterministic finite automaton whose paths from the start spell exactly the substrings of the string. Feed it a pattern and walk the transitions — if you never fall off, the pattern is a substring, in `O(m)`.
 
 Two things make it remarkable. It's built **online** — one character at a time, `O(n)` total — so it can ingest a stream. And despite a length-`n` string having up to `O(n²)` distinct substrings, the automaton has at most `2n − 1` **states**: a startling collapse that comes from grouping substrings by *where they end*. Once built, it answers substring membership, counts distinct substrings, finds the longest common substring of two strings, and counts occurrences — all by walking states and suffix links. It's the automaton cousin of the suffix tree (a "DAWG"), and the most compact full-text index you can build incrementally.
 
@@ -133,7 +133,7 @@ link -> size
 Three ideas to hold (the mechanics are fiddly; the model is what matters):
 
 - **States are end-position equivalence classes.** Two substrings are equivalent if they occur at exactly the same end positions in `s` — they behave identically for any future character, so one state represents both. Each state covers a *contiguous range* of lengths (`length[link[v]] + 1 .. length[v]`), and there are at most `2n − 1` of them. That collapse is the SAM's reason for being.
-- **Suffix links form a tree.** `link[v]` points to the state holding the longest suffix of `v`'s strings that lives in a *different* (strictly larger) endpos class. Following links shortens the string and enlarges its occurrence set — the same "fall back to a shorter match" idea as [KMP](/cortex/data-structures-and-algorithms/strings-kmp)'s failure function, lifted to an automaton. The links alone form a tree (it's the suffix tree of the *reversed* string).
+- **Suffix links form a tree.** `link[v]` points to the state holding the longest suffix of `v`'s strings that lives in a *different* (strictly larger) endpos class. Following links shortens the string and enlarges its occurrence set — the same "fall back to a shorter match" idea as [KMP](/cortex/data-structures-and-algorithms/strings/kmp)'s failure function, lifted to an automaton. The links alone form a tree (it's the suffix tree of the *reversed* string).
 - **Construction is online with cloning.** `extend(c)` adds one character: it threads the new transition down the suffix-link chain, and when an existing transition `q` isn't a clean one-character extension, it **clones** `q` to split its endpos class correctly. Each `extend` is amortized `O(1)`, so the whole build is `O(n)` — and it works on a stream, no lookahead.
 
 > **Key takeaway.** A suffix automaton is the minimal DFA accepting all substrings of `s`: states are **end-position equivalence classes** (≤ `2n − 1` of them, despite `O(n²)` substrings), suffix links form a tree of shrinking suffixes, and it's built **online in `O(n)`** by cloning a state on each transition conflict. Substring membership is an `O(m)` walk; distinct-substring counts and longest-common-substring fall out of the state/link structure.
@@ -266,7 +266,7 @@ public class Main {
 }
 ```
 
-Both print `15` then `3` — the *same* numbers the [suffix array](/cortex/data-structures-and-algorithms/strings-suffix-array) lesson got from `n(n+1)/2 − Σ lcp`. Two completely different indexes (sorted suffixes vs. an automaton) compute the identical distinct-substring count, which is a satisfying cross-check that both are capturing the same underlying structure. Here the SAM's per-state length-range *directly* counts the new substrings each class introduces.
+Both print `15` then `3` — the *same* numbers the [suffix array](/cortex/data-structures-and-algorithms/strings/suffix-array) lesson got from `n(n+1)/2 − Σ lcp`. Two completely different indexes (sorted suffixes vs. an automaton) compute the identical distinct-substring count, which is a satisfying cross-check that both are capturing the same underlying structure. Here the SAM's per-state length-range *directly* counts the new substrings each class introduces.
 
 ## Reflect & Connect
 
@@ -274,7 +274,7 @@ Both print `15` then `3` — the *same* numbers the [suffix array](/cortex/data-
 - **Suffix links are KMP's idea, automated.** `link[v]` is the longest strictly-shorter suffix in a different class — "fall back on mismatch," generalised to a tree over states. The links alone are the suffix tree of the reversed string.
 - **Online and `O(n)`.** `extend(c)` (with its occasional clone) runs amortized `O(1)`, so the SAM ingests a stream without lookahead — an edge over the suffix array's offline sort.
 - **One index, many queries.** Substring membership `O(m)`, distinct-substring count (per-state length ranges), longest common substring of two strings (run the second string through the first's SAM), occurrence counting (endpos-set sizes via the link tree). The structure pays for itself across queries.
-- **Where it sits.** [Suffix array](/cortex/data-structures-and-algorithms/strings-suffix-array) (offline, sorted, cache-friendly) and suffix automaton (online, automaton, streaming) are the two compact full-text indexes; both relate to the suffix tree. Choose the array for static bulk indexing, the SAM when you build incrementally or need automaton-style queries.
+- **Where it sits.** [Suffix array](/cortex/data-structures-and-algorithms/strings/suffix-array) (offline, sorted, cache-friendly) and suffix automaton (online, automaton, streaming) are the two compact full-text indexes; both relate to the suffix tree. Choose the array for static bulk indexing, the SAM when you build incrementally or need automaton-style queries.
 
 ## Recall
 

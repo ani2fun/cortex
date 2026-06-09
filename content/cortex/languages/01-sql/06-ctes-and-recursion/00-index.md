@@ -13,10 +13,10 @@ CTEs also unlock **recursion** — queries that reference themselves to traverse
 
 ## Place in the curriculum
 
-- **Prerequisites:** [Subqueries](/cortex/languages/sql-multiple-tables-subqueries) — a CTE is a named subquery; the syntax is the only difference.
-- **Followed by:** [Schema and Constraints](/cortex/languages/sql-index). Once you can express complex queries cleanly, modelling them well at the schema level is the natural next concern.
+- **Prerequisites:** [Subqueries](/cortex/languages/sql/multiple-tables/subqueries) — a CTE is a named subquery; the syntax is the only difference.
+- **Followed by:** [Schema and Constraints](/cortex/languages/sql/index). Once you can express complex queries cleanly, modelling them well at the schema level is the natural next concern.
 
 ## Chapters
 
-1. [Non-recursive CTEs](/cortex/languages/sql-ctes-and-recursion-non-recursive-ctes) — `WITH name AS (...)`. Multi-step queries, modularity, materialisation hints.
-2. [Recursive CTEs](/cortex/languages/sql-ctes-and-recursion-recursive-ctes) — `WITH RECURSIVE`. Walking hierarchies, generating sequences, graph traversal.
+1. [Non-recursive CTEs](/cortex/languages/sql/ctes-and-recursion/non-recursive-ctes) — `WITH name AS (...)`. Multi-step queries, modularity, materialisation hints.
+2. [Recursive CTEs](/cortex/languages/sql/ctes-and-recursion/recursive-ctes) — `WITH RECURSIVE`. Walking hierarchies, generating sequences, graph traversal.

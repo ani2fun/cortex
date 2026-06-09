@@ -95,7 +95,7 @@ It's *not* fast for:
 - **Suffix or anywhere matching** (`LIKE '%foo'`, `LIKE '%foo%'`): can't use the sort order.
 - **Operators other than `=`, `<`, `>`, `BETWEEN`**: e.g., regex `~`, full-text search.
 
-For these cases, other index types ([Other Index Types](/cortex/languages/sql-indexes-and-performance-other-index-types)) are the answer.
+For these cases, other index types ([Other Index Types](/cortex/languages/sql/indexes-and-performance/other-index-types)) are the answer.
 
 ---
 
@@ -290,10 +290,10 @@ Don't add indexes prophylactically. Don't accept slow queries as "just how it is
 
 # Cross-links
 
-- **Previous module:** [Schema and Constraints](/cortex/languages/sql-schema-and-constraints-index).
-- **Next in this module:** [Other Index Types](/cortex/languages/sql-indexes-and-performance-other-index-types).
-- **Forward reference:** [EXPLAIN and Query Plans](/cortex/languages/sql-indexes-and-performance-explain-and-query-plans) — how to confirm the planner is using your index.
-- **DSA cross-reference:** [B-Tree](/cortex/data-structures-and-algorithms/trees-b-tree-introduction-to-b-trees) — the data structure behind the index.
+- **Previous module:** [Schema and Constraints](/cortex/languages/sql/schema-and-constraints/index).
+- **Next in this module:** [Other Index Types](/cortex/languages/sql/indexes-and-performance/other-index-types).
+- **Forward reference:** [EXPLAIN and Query Plans](/cortex/languages/sql/indexes-and-performance/explain-and-query-plans) — how to confirm the planner is using your index.
+- **DSA cross-reference:** [B-Tree](/cortex/data-structures-and-algorithms/trees/b-tree/introduction-to-b-trees) — the data structure behind the index.
 
 ***
 

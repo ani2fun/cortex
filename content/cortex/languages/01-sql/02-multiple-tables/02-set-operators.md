@@ -402,7 +402,7 @@ This is the right *shape* of the chapter's hook — combining email-shaped data 
 
 # Practice ladder
 
-Use the [sample schema](/cortex/languages/sql-foundations-introduction-to-sql#the-sample-schema), or the small `customers`/`staff` schema from this chapter's runnable blocks.
+Use the [sample schema](/cortex/languages/sql/foundations/introduction-to-sql#the-sample-schema), or the small `customers`/`staff` schema from this chapter's runnable blocks.
 
 1. **Combine `customers.first_name` and `staff.first_name` into one list. Should duplicates be kept?** *Hint: which operator do you reach for if duplicates are okay? If not?*
 2. **Find the names of people who are both customers and staff.** *Hint: `INTERSECT` — or the equivalent `INNER JOIN`.*
@@ -422,10 +422,10 @@ Use the [sample schema](/cortex/languages/sql-foundations-introduction-to-sql#th
 
 # Cross-links
 
-- **Previous in this module:** [Joins](/cortex/languages/sql-multiple-tables-joins) — combining columns horizontally; the cousin to set operators' vertical combine.
-- **Next in this module:** [Subqueries](/cortex/languages/sql-multiple-tables-subqueries) — query-inside-a-query patterns that overlap with both joins and set operators.
-- **Forward reference:** [Anti-joins and Existence](/cortex/languages/sql-multiple-tables-anti-joins-and-existence) — the `EXCEPT`-vs-`NOT EXISTS`-vs-`NOT IN`-vs-`LEFT JOIN ... IS NULL` family of "rows not in another set" patterns.
-- **Forward reference:** [Indexes and Performance](/cortex/languages/sql-index) — when `UNION ALL` enables parallel-scanning of partitioned tables, and when `UNION`'s deduplication blocks streaming.
+- **Previous in this module:** [Joins](/cortex/languages/sql/multiple-tables/joins) — combining columns horizontally; the cousin to set operators' vertical combine.
+- **Next in this module:** [Subqueries](/cortex/languages/sql/multiple-tables/subqueries) — query-inside-a-query patterns that overlap with both joins and set operators.
+- **Forward reference:** [Anti-joins and Existence](/cortex/languages/sql/multiple-tables/anti-joins-and-existence) — the `EXCEPT`-vs-`NOT EXISTS`-vs-`NOT IN`-vs-`LEFT JOIN ... IS NULL` family of "rows not in another set" patterns.
+- **Forward reference:** [Indexes and Performance](/cortex/languages/sql/index) — when `UNION ALL` enables parallel-scanning of partitioned tables, and when `UNION`'s deduplication blocks streaming.
 
 ***
 

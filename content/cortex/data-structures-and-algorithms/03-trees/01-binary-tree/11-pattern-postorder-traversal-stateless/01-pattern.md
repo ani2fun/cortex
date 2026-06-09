@@ -9,7 +9,7 @@ prereqs:
 
 ## Why It Exists
 
-[Preorder](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateless-pattern) pushed context *down* — for problems where a node depends on its **ancestors**. The mirror question is just as common: a node's answer depends on its **children**. A node's height is `1 + max(child heights)`; its subtree sum is `node + left sum + right sum`; "is my subtree balanced/full/perfect?" depends entirely on what the subtrees report.
+[Preorder](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-preorder-traversal-stateless/pattern) pushed context *down* — for problems where a node depends on its **ancestors**. The mirror question is just as common: a node's answer depends on its **children**. A node's height is `1 + max(child heights)`; its subtree sum is `node + left sum + right sum`; "is my subtree balanced/full/perfect?" depends entirely on what the subtrees report.
 
 **Postorder** (left, right, *then* node) is the shape: solve both children *first*, then synthesize the node's answer from their returned values. Each call **returns a value up** the tree — bottom-up, with no shared accumulator (so it's "stateless": a node's result is a pure function of its children's results). It's the workhorse for any aggregate or structural property of a subtree.
 
@@ -126,7 +126,7 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [Sum of Leaves](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless-problems-sum-of-leaves), [Height of a Binary Tree](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless-problems-height-of-a-binary-tree), [Maximum Root-to-Leaf Path Sum](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless-problems-maximum-root-to-leaf-path-sum), and [Is It a Full Binary Tree](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless-problems-is-it-a-full-binary-tree).
+Drill the family in **Practice** — [Sum of Leaves](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-postorder-traversal-stateless/problems/sum-of-leaves), [Height of a Binary Tree](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-postorder-traversal-stateless/problems/height-of-a-binary-tree), [Maximum Root-to-Leaf Path Sum](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-postorder-traversal-stateless/problems/maximum-root-to-leaf-path-sum), and [Is It a Full Binary Tree](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-postorder-traversal-stateless/problems/is-it-a-full-binary-tree).
 
 ## Reflect & Connect
 
@@ -134,10 +134,10 @@ Postorder-stateless is the "my answer depends on my children" template:
 
 - **The family** — height, subtree sum, node count, is-balanced, is-full/perfect, and **diameter** (return height, track the best left-height + right-height seen). Each folds children's returns into the node's.
 - **Return a tuple for multi-fact** — when a node needs several things from each child (balanced needs height *and* a balance flag; diameter needs height *and* the running best), return them together in one pass instead of re-walking subtrees — the `O(n)` vs `O(n²)` difference.
-- **It's the mirror of [preorder](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateless-pattern)** — preorder pushes context *down* (ancestors → node), postorder folds results *up* (children → node). Many problems combine both: pass context down *and* aggregate up — the general recursive-tree DP. When a node needs child results, reach for postorder.
+- **It's the mirror of [preorder](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-preorder-traversal-stateless/pattern)** — preorder pushes context *down* (ancestors → node), postorder folds results *up* (children → node). Many problems combine both: pass context down *and* aggregate up — the general recursive-tree DP. When a node needs child results, reach for postorder.
 
-**Prerequisites:** [Recursive Traversals in Binary Trees](/cortex/data-structures-and-algorithms/trees-binary-tree-recursive-traversals-in-binary-trees).
-**What's next:** bottom-up with a shared accumulator that survives across subtrees — [Postorder Traversal (Stateful)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateful-pattern).
+**Prerequisites:** [Recursive Traversals in Binary Trees](/cortex/data-structures-and-algorithms/trees/binary-tree/recursive-traversals-in-binary-trees).
+**What's next:** bottom-up with a shared accumulator that survives across subtrees — [Postorder Traversal (Stateful)](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-postorder-traversal-stateful/pattern).
 
 ## Recall
 

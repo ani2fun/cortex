@@ -273,4 +273,4 @@ Now the deploy loop is "push → 6 seconds → applied" instead of "push → 3 m
 
 That closes the loop. Code → image → manifest → cluster, all auditable in Git, all human-reviewable.
 
-→ Next: [PostgreSQL on a pinned node](/cortex/homelab-from-scratch/stateful-services-postgresql-on-a-pinned-node)
+→ Next: [PostgreSQL on a pinned node](/cortex/homelab-from-scratch/stateful-services/postgresql-on-a-pinned-node)

@@ -186,7 +186,7 @@ Both print `2` then `0`. `"mbadm"` has LPS `3` (`"mam"` or `"mbm"`), so two char
 
 - **First interval DP.** State is a *range* `s[i..j]`, not a prefix; long ranges are built from shorter inner ranges, so you fill by **increasing length** (or `i` descending). Matrix-chain multiplication, palindrome partitioning, and optimal BST all share this skeleton.
 - **The fill order is load-bearing.** `dp[i][j]` reads `dp[i+1][j-1]` — an *inner* cell. Naïve row-major iteration computes it in the wrong order and silently returns garbage; length-first ordering is the fix.
-- **LPS = LCS(s, reverse(s)).** A palindromic subsequence is a subsequence common to a string and its reverse. If you remember [LCS](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-longest-common-subsequence), you already know LPS — feed it `s` and `s[::-1]`.
+- **LPS = LCS(s, reverse(s)).** A palindromic subsequence is a subsequence common to a string and its reverse. If you remember [LCS](/cortex/data-structures-and-algorithms/algorithms-by-strategy/dynamic-programming/longest-common-subsequence), you already know LPS — feed it `s` and `s[::-1]`.
 - **`n − LPS` is a free corollary.** Minimum insertions (or deletions) to make `s` a palindrome is `n − LPS(s)`: keep the palindromic core, fix everything else. Same table, one subtraction — the recurring DP move of deriving a second answer from a solved subproblem.
 - **Subsequence, not substring.** This is the gappy version; the contiguous *longest palindromic **substring*** (next lesson) can't drop the middle and needs a different expansion. Same "palindromes anchor at both ends" intuition, different table.
 

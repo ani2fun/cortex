@@ -107,7 +107,7 @@ CREATE TABLE post_tags (post_id INT, tag TEXT);
 
 Why: comma-separated lists make queries painful. "Posts tagged 'sql'" requires `LIKE '%sql%'` (slow, fragile — matches "sqlite" too). The child-table form makes it `WHERE tag = 'sql'` — fast, indexable, exact.
 
-Postgres arrays and JSONB technically violate strict 1NF, but they're a pragmatic alternative to child tables for *short, opaque* lists. The judgment call is in [Types](/cortex/languages/sql-schema-and-constraints-types#arrays).
+Postgres arrays and JSONB technically violate strict 1NF, but they're a pragmatic alternative to child tables for *short, opaque* lists. The judgment call is in [Types](/cortex/languages/sql/schema-and-constraints/types#arrays).
 
 ---
 
@@ -249,9 +249,9 @@ Don't denormalise prematurely. Don't tolerate update anomalies; normalise. Denor
 
 # Cross-links
 
-- **Previous in this module:** [Keys and References](/cortex/languages/sql-schema-and-constraints-keys-and-references).
-- **Module complete.** Next: [Indexes and Performance](/cortex/languages/sql-indexes-and-performance-index).
-- **Forward reference:** [Window Functions](/cortex/languages/sql-window-functions-index) — when you can express a denormalised metric as a window function, you may not need the denormalised column at all.
+- **Previous in this module:** [Keys and References](/cortex/languages/sql/schema-and-constraints/keys-and-references).
+- **Module complete.** Next: [Indexes and Performance](/cortex/languages/sql/indexes-and-performance/index).
+- **Forward reference:** [Window Functions](/cortex/languages/sql/window-functions/index) — when you can express a denormalised metric as a window function, you may not need the denormalised column at all.
 
 ***
 

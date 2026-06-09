@@ -53,7 +53,7 @@ The four properties this gives you — **ACID** — are the foundation of relati
 
 **C — Consistency.** A transaction takes the database from one valid state to another. Constraints (PK, FK, CHECK, UNIQUE) are enforced at commit time. If a transaction would violate any, it's rolled back.
 
-**I — Isolation.** Concurrent transactions don't interfere. The exact level of isolation is configurable — covered in [Isolation Levels](/cortex/languages/sql-transactions-and-concurrency-isolation-levels). The default isolation prevents most anomalies.
+**I — Isolation.** Concurrent transactions don't interfere. The exact level of isolation is configurable — covered in [Isolation Levels](/cortex/languages/sql/transactions-and-concurrency/isolation-levels). The default isolation prevents most anomalies.
 
 **D — Durability.** Once a transaction has committed, its changes survive crashes. The database has fsync'd the changes to disk before reporting "COMMITTED" to the client.
 
@@ -249,8 +249,8 @@ The pattern: `BEGIN` → work → `COMMIT` (with `ROLLBACK` on any failure). Hik
 
 # Cross-links
 
-- **Previous module:** [Indexes and Performance](/cortex/languages/sql-indexes-and-performance-index).
-- **Next in this module:** [Isolation Levels](/cortex/languages/sql-transactions-and-concurrency-isolation-levels).
+- **Previous module:** [Indexes and Performance](/cortex/languages/sql/indexes-and-performance/index).
+- **Next in this module:** [Isolation Levels](/cortex/languages/sql/transactions-and-concurrency/isolation-levels).
 
 ***
 

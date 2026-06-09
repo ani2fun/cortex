@@ -64,7 +64,7 @@ flowchart TB
 
 <p align="center"><strong>search down by comparison; where the search falls off (an empty child), splice in the new leaf. Only one new link is added.</strong></p>
 
-Insertion is `O(h)` — a search down plus an `O(1)` attach. The crucial property: **new keys are always added as leaves; existing nodes never move.** (That's the opposite of [deletion](/cortex/data-structures-and-algorithms/trees-binary-search-tree-deletion-in-binary-search-trees), which may restructure.) The price of this simplicity is that the *insertion order alone* fixes the shape: insert in random/balanced order and the tree stays bushy (`h ≈ log n`); insert sorted data and every key becomes a right child, giving a height-`n` chain. Plain BSTs can't prevent this — self-balancing trees rotate *during* insertion to keep `h = O(log n)`.
+Insertion is `O(h)` — a search down plus an `O(1)` attach. The crucial property: **new keys are always added as leaves; existing nodes never move.** (That's the opposite of [deletion](/cortex/data-structures-and-algorithms/trees/binary-search-tree/deletion-in-binary-search-trees), which may restructure.) The price of this simplicity is that the *insertion order alone* fixes the shape: insert in random/balanced order and the tree stays bushy (`h ≈ log n`); insert sorted data and every key becomes a right child, giving a height-`n` chain. Plain BSTs can't prevent this — self-balancing trees rotate *during* insertion to keep `h = O(log n)`.
 
 ### Key Takeaway
 
@@ -143,10 +143,10 @@ Insertion is "search, then attach a leaf" — simple, with one consequential sid
 
 - **New keys are always leaves** — insertion only adds a link; it never relocates an existing node. This is the cleanest BST mutation, and the conceptual opposite of deletion, which must fill the hole left by a removed node.
 - **Order determines shape** — the same keys produce a balanced tree or a chain depending on insertion order. Bulk-loading *sorted* data into a plain BST is the classic mistake; insert in random or median-first order to stay bushy, or use a self-balancing tree.
-- **Balancing breaks the "never move" rule** — [AVL](/cortex/data-structures-and-algorithms/trees-avl-tree-introduction-to-avl-trees) and [red-black](/cortex/data-structures-and-algorithms/trees-red-black-tree-introduction-to-red-black-trees) trees do the same search-and-attach, then perform `O(1)` **rotations** back up the path to restore balance, guaranteeing `h = O(log n)` regardless of order. Plain-BST insertion is the foundation they build on.
+- **Balancing breaks the "never move" rule** — [AVL](/cortex/data-structures-and-algorithms/trees/avl-tree/introduction-to-avl-trees) and [red-black](/cortex/data-structures-and-algorithms/trees/red-black-tree/introduction-to-red-black-trees) trees do the same search-and-attach, then perform `O(1)` **rotations** back up the path to restore balance, guaranteeing `h = O(log n)` regardless of order. Plain-BST insertion is the foundation they build on.
 
-**Prerequisites:** [Recursive Searching in BSTs](/cortex/data-structures-and-algorithms/trees-binary-search-tree-recursive-searching-in-binary-search-trees).
-**What's next:** the hard inverse — removing a key and filling the hole — [Deletion in BSTs](/cortex/data-structures-and-algorithms/trees-binary-search-tree-deletion-in-binary-search-trees).
+**Prerequisites:** [Recursive Searching in BSTs](/cortex/data-structures-and-algorithms/trees/binary-search-tree/recursive-searching-in-binary-search-trees).
+**What's next:** the hard inverse — removing a key and filling the hole — [Deletion in BSTs](/cortex/data-structures-and-algorithms/trees/binary-search-tree/deletion-in-binary-search-trees).
 
 ## Recall
 

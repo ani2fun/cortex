@@ -9,7 +9,7 @@ prereqs:
 
 ## Why It Exists
 
-[Root-to-leaf-stateless](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateless-pattern) answered *summaries* — the sum of all paths, whether any path hits `k`, how many are even. But some questions want the **paths themselves**: "return every root-to-leaf path," "list all paths summing to `k`." Now a passed-down number isn't enough — you have to *materialize* each concrete sequence of nodes.
+[Root-to-leaf-stateless](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-root-to-leaf-path-stateless/pattern) answered *summaries* — the sum of all paths, whether any path hits `k`, how many are even. But some questions want the **paths themselves**: "return every root-to-leaf path," "list all paths summing to `k`." Now a passed-down number isn't enough — you have to *materialize* each concrete sequence of nodes.
 
 The trick is to maintain **one** shared list that always holds the path from the root to the node you're currently visiting. You **append** the node on the way in, and at a leaf you **snapshot** a copy of that list into your results; then — the crucial move — you **pop** the node on the way out, so the list is exactly right for the next branch. That append-enter / pop-exit dance is **backtracking**: a single mutable buffer reused across the whole tree instead of building a fresh path per node. It costs `O(n)` work to walk plus `O(L)` to copy out the `L` leaf paths.
 
@@ -152,7 +152,7 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [Root-to-Leaf Paths Summing to Target](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateful-problems-root-to-leaf-paths-summing-to-target), [Equal Evens and Odds Paths](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateful-problems-equal-evens-and-odds-paths), [Duplicate Paths](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateful-problems-duplicate-paths), and [Prefix Paths](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateful-problems-prefix-paths).
+Drill the family in **Practice** — [Root-to-Leaf Paths Summing to Target](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-root-to-leaf-path-stateful/problems/root-to-leaf-paths-summing-to-target), [Equal Evens and Odds Paths](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-root-to-leaf-path-stateful/problems/equal-evens-and-odds-paths), [Duplicate Paths](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-root-to-leaf-path-stateful/problems/duplicate-paths), and [Prefix Paths](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-root-to-leaf-path-stateful/problems/prefix-paths).
 
 ## Reflect & Connect
 
@@ -160,10 +160,10 @@ Stateful root-to-leaf is the materialize-the-paths sibling of the stateless summ
 
 - **The family** — all root-to-leaf paths, path-sum II (paths equal to `k`), paths matching a parity/duplicate condition. The descent and backtracking are identical; only the leaf test and what you snapshot change.
 - **It's backtracking** — append-enter / record / pop-exit is the exact skeleton behind subsets, permutations, and combinations. A tree makes the "choice" structure literal: each edge is a choice, each leaf a complete candidate.
-- **Stateless vs stateful, decided** — need a *number about* the paths (sum/exists/count)? Carry a value down and aggregate up — [stateless](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateless-pattern), no cleanup. Need the *paths themselves*? Shared list + backtracking — stateful. The cost of stateful is the discipline: balanced push/pop and a copy at the leaf.
+- **Stateless vs stateful, decided** — need a *number about* the paths (sum/exists/count)? Carry a value down and aggregate up — [stateless](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-root-to-leaf-path-stateless/pattern), no cleanup. Need the *paths themselves*? Shared list + backtracking — stateful. The cost of stateful is the discipline: balanced push/pop and a copy at the leaf.
 
-**Prerequisites:** [Root-to-Leaf Path (Stateless)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateless-pattern).
-**What's next:** stop going depth-first — visit the tree level by level with a queue — [Level-Order Traversal](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-pattern).
+**Prerequisites:** [Root-to-Leaf Path (Stateless)](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-root-to-leaf-path-stateless/pattern).
+**What's next:** stop going depth-first — visit the tree level by level with a queue — [Level-Order Traversal](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-level-order-traversal/pattern).
 
 ## Recall
 

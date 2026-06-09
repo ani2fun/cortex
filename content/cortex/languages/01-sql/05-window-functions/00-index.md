@@ -14,13 +14,13 @@ This is the module that turns "I can write SQL" into "I can write *modern* SQL."
 
 ## Place in the curriculum
 
-- **Prerequisites:** [Aggregation](/cortex/languages/sql-aggregation-index) — windows reuse the same aggregate functions (`SUM`, `COUNT`, `AVG`, `RANK`, etc.) but apply them over a *window of rows*, not a *group of rows*. Comfort with `GROUP BY` is essential. Also [Ordering and Pagination](/cortex/languages/sql-foundations-ordering-and-pagination) for the `ORDER BY` semantics inside `OVER`.
-- **Followed by:** [CTEs and Recursion](/cortex/languages/sql-index). Many window-function patterns benefit from a CTE wrapper to name the windowed columns before filtering or further aggregating.
+- **Prerequisites:** [Aggregation](/cortex/languages/sql/aggregation/index) — windows reuse the same aggregate functions (`SUM`, `COUNT`, `AVG`, `RANK`, etc.) but apply them over a *window of rows*, not a *group of rows*. Comfort with `GROUP BY` is essential. Also [Ordering and Pagination](/cortex/languages/sql/foundations/ordering-and-pagination) for the `ORDER BY` semantics inside `OVER`.
+- **Followed by:** [CTEs and Recursion](/cortex/languages/sql/index). Many window-function patterns benefit from a CTE wrapper to name the windowed columns before filtering or further aggregating.
 
 ## Chapters
 
-1. [Window Basics](/cortex/languages/sql-window-functions-window-basics) — the `OVER`, `PARTITION BY`, `ORDER BY` triple. The mental model that turns every window function into "a regular aggregate, computed over this window per row."
-2. [Frames](/cortex/languages/sql-window-functions-frames) — `ROWS` vs `RANGE` vs `GROUPS`, `BETWEEN ... AND ...`, the default frame and why it surprises people.
-3. [Ranking](/cortex/languages/sql-window-functions-ranking) — `ROW_NUMBER`, `RANK`, `DENSE_RANK`, `NTILE`, `PERCENT_RANK`. The functions that label each row with its position.
-4. [Value Functions](/cortex/languages/sql-window-functions-value-functions) — `LAG`, `LEAD`, `FIRST_VALUE`, `LAST_VALUE`, `NTH_VALUE`. "The previous row," "the first row in this window," etc.
-5. [Window Patterns](/cortex/languages/sql-window-functions-window-patterns) — gaps and islands, sessionisation, top-N per group, running totals, the canonical "I see this in production" patterns.
+1. [Window Basics](/cortex/languages/sql/window-functions/window-basics) — the `OVER`, `PARTITION BY`, `ORDER BY` triple. The mental model that turns every window function into "a regular aggregate, computed over this window per row."
+2. [Frames](/cortex/languages/sql/window-functions/frames) — `ROWS` vs `RANGE` vs `GROUPS`, `BETWEEN ... AND ...`, the default frame and why it surprises people.
+3. [Ranking](/cortex/languages/sql/window-functions/ranking) — `ROW_NUMBER`, `RANK`, `DENSE_RANK`, `NTILE`, `PERCENT_RANK`. The functions that label each row with its position.
+4. [Value Functions](/cortex/languages/sql/window-functions/value-functions) — `LAG`, `LEAD`, `FIRST_VALUE`, `LAST_VALUE`, `NTH_VALUE`. "The previous row," "the first row in this window," etc.
+5. [Window Patterns](/cortex/languages/sql/window-functions/window-patterns) — gaps and islands, sessionisation, top-N per group, running totals, the canonical "I see this in production" patterns.

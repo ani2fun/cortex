@@ -12,7 +12,7 @@ prereqs:
 
 Some tasks must happen before others: a package depends on its dependencies, a build target on its inputs, a course on its prerequisites, an Airflow stage on the stages upstream. Model each "X must come before Y" as a directed edge `X → Y`, and the question becomes: **is there a linear order in which every edge points forward** — i.e. you never do something before its prerequisites?
 
-That order is a **topological sort**. `npm`/`pip`/`cargo` use it to install dependencies bottom-up; `make`/`bazel`/`gradle` to build targets in the right order; a course planner to sequence classes. It exists **only on a DAG** — a directed *acyclic* graph — because a cycle (`A` needs `B` needs `A`) has no valid order, which is exactly the [cycle](/cortex/data-structures-and-algorithms/graphs-cycle-detection) connection: a directed graph is topologically sortable **if and only if** it's acyclic. Two algorithms produce the order: DFS finish-order (reversed), and Kahn's indegree peeling (which reports a cycle as a side effect).
+That order is a **topological sort**. `npm`/`pip`/`cargo` use it to install dependencies bottom-up; `make`/`bazel`/`gradle` to build targets in the right order; a course planner to sequence classes. It exists **only on a DAG** — a directed *acyclic* graph — because a cycle (`A` needs `B` needs `A`) has no valid order, which is exactly the [cycle](/cortex/data-structures-and-algorithms/graphs/cycle-detection) connection: a directed graph is topologically sortable **if and only if** it's acyclic. Two algorithms produce the order: DFS finish-order (reversed), and Kahn's indegree peeling (which reports a cycle as a side effect).
 
 ## See It Work
 
@@ -136,12 +136,12 @@ Then: solve **Course Schedule** (LeetCode 207/210 — can all courses be taken? 
 Topological sort is the DAG's defining operation:
 
 - **DFS vs Kahn's** — same `O(V+E)`, different shape. DFS reuses the traversal you know (record on finish + reverse) but recurses; Kahn's is iterative (no stack-depth risk), matches the "do what's unblocked" mental model, and **detects cycles for free** (leftover nodes = a cycle). Both yield *a* valid order — usually different ones, since a DAG has many.
-- **Sortable ⇔ acyclic** — this is the same fact [cycle detection](/cortex/data-structures-and-algorithms/graphs-cycle-detection) proved from the other side. Kahn's *is* a cycle detector (count outputs); the DFS method's grey-node check is the cycle guard. Topo sort and directed cycle detection are two readings of one DFS/peeling process.
+- **Sortable ⇔ acyclic** — this is the same fact [cycle detection](/cortex/data-structures-and-algorithms/graphs/cycle-detection) proved from the other side. Kahn's *is* a cycle detector (count outputs); the DFS method's grey-node check is the cycle guard. Topo sort and directed cycle detection are two readings of one DFS/peeling process.
 - **It unlocks DAG dynamic programming** — once nodes are in topological order, you can relax/compute them in one pass (longest path, shortest path in a DAG, counting paths), because every dependency is already finalized when you reach a node. Topo order is the evaluation order for any DAG recurrence.
 - **In production** — `make`/`bazel` (build targets), `npm`/`pip`/`cargo` (dependency install order), Airflow/Prefect/Argo (workflow stages), spreadsheet recalculation (cell dependency DAG), and compiler instruction scheduling. All "order things respecting dependencies."
 
-**Prerequisites:** [Traversing a Graph](/cortex/data-structures-and-algorithms/graphs-traversing-a-graph), [Cycle Detection](/cortex/data-structures-and-algorithms/graphs-cycle-detection).
-**What's next:** weighted graphs where you want the *cheapest* route, not just any order — [Single-Source Shortest Path](/cortex/data-structures-and-algorithms/graphs-single-source-shortest-path).
+**Prerequisites:** [Traversing a Graph](/cortex/data-structures-and-algorithms/graphs/traversing-a-graph), [Cycle Detection](/cortex/data-structures-and-algorithms/graphs/cycle-detection).
+**What's next:** weighted graphs where you want the *cheapest* route, not just any order — [Single-Source Shortest Path](/cortex/data-structures-and-algorithms/graphs/single-source-shortest-path).
 
 ## Recall
 

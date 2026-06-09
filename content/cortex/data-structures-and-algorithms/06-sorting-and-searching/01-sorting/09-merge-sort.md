@@ -11,7 +11,7 @@ prereqs:
 
 Quicksort is fast on average but has an `O(n²)` worst case and isn't stable. When you need a *guarantee* — `O(n log n)` no matter the input, and equal elements kept in order — merge sort is the dependable choice.
 
-Its idea is the purest divide-and-conquer: a single element is already sorted, and two *sorted* halves can be combined into one sorted whole by **merging** — repeatedly taking the smaller of the two fronts (the [merge pattern](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-merge-pattern) you've seen on linked lists). So split the array in half, recursively sort each half, then merge. The split is *always* even (you choose the midpoint, unlike quicksort's input-dependent pivot), so the recursion is always `log n` deep with `O(n)` merge work per level — `O(n log n)`, guaranteed, every time.
+Its idea is the purest divide-and-conquer: a single element is already sorted, and two *sorted* halves can be combined into one sorted whole by **merging** — repeatedly taking the smaller of the two fronts (the [merge pattern](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-merge/pattern) you've seen on linked lists). So split the array in half, recursively sort each half, then merge. The split is *always* even (you choose the midpoint, unlike quicksort's input-dependent pivot), so the recursion is always `log n` deep with `O(n)` merge work per level — `O(n log n)`, guaranteed, every time.
 
 ## See It Work
 
@@ -137,12 +137,12 @@ This is a structural lesson — drill sorting in the pattern sets.
 
 Merge sort is the guaranteed, stable `O(n log n)` sort, and its niches are exactly where quicksort struggles:
 
-- **Linked lists** — merge sort needs no random access and merges with `O(1)` extra space on lists (just relink nodes — the [linked-list merge pattern](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-merge-pattern)), so it's *the* sort for linked structures, where quicksort's array-style partition is awkward.
+- **Linked lists** — merge sort needs no random access and merges with `O(1)` extra space on lists (just relink nodes — the [linked-list merge pattern](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-merge/pattern)), so it's *the* sort for linked structures, where quicksort's array-style partition is awkward.
 - **External sorting** — when data is too large for RAM, merge sort streams sorted runs from disk and merges them with sequential reads — the basis of database and big-data sort. Quicksort's random access thrashes external storage.
-- **Stability + guarantee** — Python's Timsort and Java's `Arrays.sort` for objects are merge-sort hybrids precisely because users need *stable* sorting with a worst-case guarantee. The trade vs [quicksort](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-quicksort): merge sort pays `O(n)` space for an ironclad `O(n log n)` and stability; quicksort is in-place and faster in practice but neither.
+- **Stability + guarantee** — Python's Timsort and Java's `Arrays.sort` for objects are merge-sort hybrids precisely because users need *stable* sorting with a worst-case guarantee. The trade vs [quicksort](/cortex/data-structures-and-algorithms/sorting-and-searching/sorting/quicksort): merge sort pays `O(n)` space for an ironclad `O(n log n)` and stability; quicksort is in-place and faster in practice but neither.
 
-**Prerequisites:** [What Is an Array?](/cortex/data-structures-and-algorithms/linear-structures-arrays-what-is-an-array).
-**What's next:** sort in place with `O(n log n)` *worst-case* using a heap — [Heapsort](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-heapsort).
+**Prerequisites:** [What Is an Array?](/cortex/data-structures-and-algorithms/linear-structures/arrays/what-is-an-array).
+**What's next:** sort in place with `O(n log n)` *worst-case* using a heap — [Heapsort](/cortex/data-structures-and-algorithms/sorting-and-searching/sorting/heapsort).
 
 ## Recall
 

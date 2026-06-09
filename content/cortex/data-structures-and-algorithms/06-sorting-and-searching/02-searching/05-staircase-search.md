@@ -9,7 +9,7 @@ prereqs:
 
 ## Why It Exists
 
-[2D binary search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-2d-binary-search) needed a *fully* sorted matrix — one you could flatten into a single ascending array. But a very common matrix is only **row-sorted and column-sorted**: each row ascends left-to-right and each column ascends top-to-bottom, yet a row's first element is *not* guaranteed larger than the previous row's last. Such a matrix can't be flattened, so binary search doesn't apply.
+[2D binary search](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/2d-binary-search) needed a *fully* sorted matrix — one you could flatten into a single ascending array. But a very common matrix is only **row-sorted and column-sorted**: each row ascends left-to-right and each column ascends top-to-bottom, yet a row's first element is *not* guaranteed larger than the previous row's last. Such a matrix can't be flattened, so binary search doesn't apply.
 
 The staircase search exploits a special vantage point: the **top-right corner**. That cell is the *largest* in its row and the *smallest* in its column. So a single comparison is decisive — if it's bigger than the target, the whole column beneath it is bigger too (eliminate the column); if it's smaller, the whole row to its left is smaller (eliminate the row). Each step removes an entire row or column, so the walk visits at most `m + n` cells — `O(m + n)`, `O(1)` space.
 
@@ -133,12 +133,12 @@ This is a structural lesson — drill searching in the pattern sets.
 
 The staircase is the matrix search for when you *can't* flatten:
 
-- **Match the algorithm to the matrix** — *fully* sorted (rows chain) → [2D binary search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-2d-binary-search), `O(log(m·n))`; *row- and column-sorted only* → staircase, `O(m + n)`. Reading the precondition correctly is half the problem.
+- **Match the algorithm to the matrix** — *fully* sorted (rows chain) → [2D binary search](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/2d-binary-search), `O(log(m·n))`; *row- and column-sorted only* → staircase, `O(m + n)`. Reading the precondition correctly is half the problem.
 - **The "monotone corner" idea generalizes** — any time two sorted axes meet at a corner where they oppose, one comparison prunes a whole line. The same staircase counts elements `< x` in such a matrix, and a similar two-pointer-from-opposite-ends move appears in "find a pair summing to k" on a sorted array.
 - **It's a two-pointer in 2D** — `row` only increases, `col` only decreases, each at most `m` and `n` times — the same "pointers move monotonically, so the total work is linear" reasoning as the array two-pointer and sliding-window patterns.
 
-**Prerequisites:** [2D Binary Search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-2d-binary-search).
-**What's next:** binary search on an array that's been rotated — [Sorted Rotated Array](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-sorted-rotated-array).
+**Prerequisites:** [2D Binary Search](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/2d-binary-search).
+**What's next:** binary search on an array that's been rotated — [Sorted Rotated Array](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/sorted-rotated-array).
 
 ## Recall
 

@@ -168,4 +168,4 @@ Save it. You'll paste it into the agent install commands as `K3S_TOKEN=...`.
 
 Next: install Calico. After that, `ms-1` will go to `Ready` and we can join the workers.
 
-→ Next: [Swap Flannel for Calico](/cortex/homelab-from-scratch/kubernetes-base-swap-flannel-for-calico)
+→ Next: [Swap Flannel for Calico](/cortex/homelab-from-scratch/kubernetes-base/swap-flannel-for-calico)

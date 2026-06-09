@@ -108,7 +108,7 @@ Click into the app in the UI to see *what's* out of sync — the diff is usually
 
 ### `curl whoami.homelab.example` doesn't return 200
 
-The same debug ladder from [Publish whoami](/cortex/homelab-from-scratch/the-edge-publish-whoami) — DNS, TLS, Ingress, Service, pod, in that order. Most often: a worker rebooted and Traefik's connection pool to the Service stalled. `kubectl rollout restart deployment/traefik -n traefik` is the heavy hammer.
+The same debug ladder from [Publish whoami](/cortex/homelab-from-scratch/the-edge/publish-whoami) — DNS, TLS, Ingress, Service, pod, in that order. Most often: a worker rebooted and Traefik's connection pool to the Service stalled. `kubectl rollout restart deployment/traefik -n traefik` is the heavy hammer.
 
 ### `nmap` shows extra ports open
 
@@ -162,4 +162,4 @@ Everyone sets up a homelab and then doesn't look at it for a month. That's fine 
 
 The morning routine catches all of those. It's not about being on top of every metric; it's about noticing that one number is suddenly different from yesterday.
 
-→ Next: [Backups that actually work](/cortex/homelab-from-scratch/operate-and-recover-backups-that-actually-work)
+→ Next: [Backups that actually work](/cortex/homelab-from-scratch/operate-and-recover/backups-that-actually-work)

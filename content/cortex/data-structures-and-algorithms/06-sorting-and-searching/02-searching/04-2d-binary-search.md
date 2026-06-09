@@ -55,7 +55,7 @@ flowchart LR
 
 <p align="center"><strong>number the cells row-major; the sorted matrix is a sorted 1D array in disguise, so binary-search the index and decode each probe to (row, col).</strong></p>
 
-Every step is `O(1)` index arithmetic plus one comparison, and the range halves each step, so it's **`O(log(m·n))` time, `O(1)` space**. The crucial precondition is that the matrix is *fully* sorted (row-major ascending). If instead the matrix is only **row-sorted and column-sorted** — where a row's first element is *not* guaranteed larger than the previous row's last — this flattening breaks, and you need the [staircase search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-staircase-search) instead.
+Every step is `O(1)` index arithmetic plus one comparison, and the range halves each step, so it's **`O(log(m·n))` time, `O(1)` space**. The crucial precondition is that the matrix is *fully* sorted (row-major ascending). If instead the matrix is only **row-sorted and column-sorted** — where a row's first element is *not* guaranteed larger than the previous row's last — this flattening breaks, and you need the [staircase search](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/staircase-search) instead.
 
 ### Key Takeaway
 
@@ -127,12 +127,12 @@ This is a structural lesson — drill searching in the pattern sets.
 
 2D binary search is "recognize the 1D structure hiding in 2D":
 
-- **The two matrix flavors** — *fully sorted* (row-major ascending) → flatten the index, `O(log(m·n))` (this lesson); *row- and column-sorted only* → can't flatten, use the [staircase search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-staircase-search) at `O(m + n)`. Always check which precondition the matrix actually satisfies — applying flatten-search to a merely row/col-sorted matrix gives wrong answers.
+- **The two matrix flavors** — *fully sorted* (row-major ascending) → flatten the index, `O(log(m·n))` (this lesson); *row- and column-sorted only* → can't flatten, use the [staircase search](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/staircase-search) at `O(m + n)`. Always check which precondition the matrix actually satisfies — applying flatten-search to a merely row/col-sorted matrix gives wrong answers.
 - **Virtual flattening is a reusable trick** — index arithmetic (`i // cols`, `i % cols`) lets you treat any row-major buffer as 1D without copying. The same idea underlies image/grid storage, flattened tensors, and addressing a 2D array as a contiguous block.
 - **`log(m·n) = log m + log n`** — collapsing dimensions doesn't change the asymptotics, but a single search is simpler than nested searches. Prefer the form with fewer boundary conditions.
 
-**Prerequisites:** [Binary Search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-binary-search).
-**What's next:** the row-and-column-sorted matrix that *can't* be flattened — [Staircase Search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-staircase-search).
+**Prerequisites:** [Binary Search](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/binary-search).
+**What's next:** the row-and-column-sorted matrix that *can't* be flattened — [Staircase Search](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/staircase-search).
 
 ## Recall
 

@@ -9,7 +9,7 @@ prereqs:
 
 You paste a run-on into a search box: `"leetcode"`. Is that one word, or `"leet"` + `"code"`, or nonsense? With no spaces, every position is a possible boundary and the characters alone won't tell you — you need a dictionary and a procedure. The same problem is everywhere spaces aren't: segmenting Chinese/Japanese text, parsing a domain like `"choosespain.com"`, tokenising hashtags.
 
-Structurally, this is the [palindrome-partitioning](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-palindrome-partitioning) DP wearing a different hat. The state is still 1D over prefixes; we still **fix the last piece**. Two things change: the per-piece test is now *"is this chunk in the dictionary?"* (a hash-set lookup) instead of *"is this chunk a palindrome?"*, and the aggregator is **OR** — we only need to know whether *some* split works, not the cheapest one. ([LeetCode 139](https://leetcode.com/problems/word-break/).)
+Structurally, this is the [palindrome-partitioning](/cortex/data-structures-and-algorithms/algorithms-by-strategy/dynamic-programming/palindrome-partitioning) DP wearing a different hat. The state is still 1D over prefixes; we still **fix the last piece**. Two things change: the per-piece test is now *"is this chunk in the dictionary?"* (a hash-set lookup) instead of *"is this chunk a palindrome?"*, and the aggregator is **OR** — we only need to know whether *some* split works, not the cheapest one. ([LeetCode 139](https://leetcode.com/problems/word-break/).)
 
 ## See It Work
 
@@ -165,9 +165,9 @@ Both print `3` then `1`. `"aaa"` segments three ways with `{a, aa}` (`a|a|a`, `a
 
 ## Reflect & Connect
 
-- **One skeleton, three questions.** The 1D prefix DP "fix the last piece" answers *can we?* (OR), *cheapest?* (MIN, [palindrome partitioning](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-palindrome-partitioning)), and *how many?* (SUM) — by swapping only the aggregator. Recognising the shared shape is worth more than memorising any one instance.
+- **One skeleton, three questions.** The 1D prefix DP "fix the last piece" answers *can we?* (OR), *cheapest?* (MIN, [palindrome partitioning](/cortex/data-structures-and-algorithms/algorithms-by-strategy/dynamic-programming/palindrome-partitioning)), and *how many?* (SUM) — by swapping only the aggregator. Recognising the shared shape is worth more than memorising any one instance.
 - **Memoisation is the whole point here.** Naïve recursion re-solves each suffix through exponentially many prefixes (266k calls); caching on the suffix makes it `O(n²)`. Word break is the canonical "overlapping subproblems" demonstration.
-- **The predicate must be `O(1)`.** Hash the dictionary into a set so "is this a word?" is a membership test, not a scan. (For huge dictionaries or prefix queries, a [trie](/cortex/data-structures-and-algorithms/trees-trie-introduction-to-tries) replaces the set and prunes impossible branches early.)
+- **The predicate must be `O(1)`.** Hash the dictionary into a set so "is this a word?" is a membership test, not a scan. (For huge dictionaries or prefix queries, a [trie](/cortex/data-structures-and-algorithms/trees/trie/introduction-to-tries) replaces the set and prunes impossible branches early.)
 - **`dp[0] = True` is load-bearing.** The empty-prefix base case is what lets the *first* word ever set `dp[len(word)]`. Forget it and the whole array stays `False`. (Min-cut's `cuts` base played the same role.)
 - **Enumerating is a different beast.** [Word Break II](https://leetcode.com/problems/word-break-ii/) (return every sentence) can't be polynomial — there can be exponentially many sentences, so it's backtracking, not DP. Counting them (this Your Turn) stays `O(n²)`; *listing* them cannot.
 

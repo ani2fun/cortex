@@ -225,7 +225,7 @@ The classic use is **zero-padding identifiers** — turning `42` into `00042` fo
 
 # Pattern matching
 
-The simplest tier is `LIKE`, covered briefly in [Filtering](/cortex/languages/sql-foundations-filtering#pattern-matching). `%` matches zero or more characters, `_` matches exactly one.
+The simplest tier is `LIKE`, covered briefly in [Filtering](/cortex/languages/sql/foundations/filtering#pattern-matching). `%` matches zero or more characters, `_` matches exactly one.
 
 ```sql run
 CREATE TABLE customers (id INT, first_name TEXT);
@@ -253,7 +253,7 @@ WHERE email REGEXP '^[a-z0-9.]+@example\.com$';
 -- SQL Server: no built-in regex; use LIKE patterns or extend with a CLR function.
 ```
 
-Regex in SQL is the same regex you know — but **it's expensive**. `LIKE 'foo%'` can use a B-tree index; `~ '^foo'` *might* (depends on planner). `LIKE '%foo'` and most non-anchored regex always require a full table scan. We'll cover this in [Indexes and Performance](/cortex/languages/sql-index).
+Regex in SQL is the same regex you know — but **it's expensive**. `LIKE 'foo%'` can use a B-tree index; `~ '^foo'` *might* (depends on planner). `LIKE '%foo'` and most non-anchored regex always require a full table scan. We'll cover this in [Indexes and Performance](/cortex/languages/sql/index).
 
 ---
 
@@ -279,7 +279,7 @@ Two production fixes:
 CREATE INDEX users_email_lower ON users (LOWER(email));
 ```
 
-**The lesson: every per-row function in a `WHERE` is a candidate sargability bug.** Audit hot-path queries for these. The full discussion is in [Indexes and Performance](/cortex/languages/sql-index); flagging them now so you start spotting them.
+**The lesson: every per-row function in a `WHERE` is a candidate sargability bug.** Audit hot-path queries for these. The full discussion is in [Indexes and Performance](/cortex/languages/sql/index); flagging them now so you start spotting them.
 
 ---
 
@@ -301,7 +301,7 @@ In standard SQL (and Postgres), `''` (empty string) is *not* the same as `NULL`.
 SELECT * FROM a JOIN b ON a.code = b.code;   -- might miss matches if one side is CHAR
 ```
 
-Use `VARCHAR(n)` or `TEXT` instead; they don't pad. (Covered in the [Schema and Constraints](/cortex/languages/sql-index) module.) If you're stuck with `CHAR`, use `RTRIM` on both sides.
+Use `VARCHAR(n)` or `TEXT` instead; they don't pad. (Covered in the [Schema and Constraints](/cortex/languages/sql/index) module.) If you're stuck with `CHAR`, use `RTRIM` on both sides.
 
 ## Concatenating with NULL
 
@@ -372,10 +372,10 @@ The `WHERE email <> LOWER(TRIM(email))` filter is the trick: only update the row
 
 # Cross-links
 
-- **Previous module:** [Aggregation](/cortex/languages/sql-aggregation-index) — once you have rows, summarise them. Now: per-row enrichment.
-- **Next in this module:** [Numbers](/cortex/languages/sql-row-functions-numbers) — the numeric counterpart to this chapter.
-- **Forward reference:** [Indexes and Performance](/cortex/languages/sql-index) — sargability, expression indexes, the LIKE-with-trigram pattern for unanchored search.
-- **Forward reference:** [NULL and Three-Valued Logic](/cortex/languages/sql-row-functions-null-and-three-valued-logic) — the full treatment of why `||` propagates NULL and how `COALESCE` + `NULLIF` repair it.
+- **Previous module:** [Aggregation](/cortex/languages/sql/aggregation/index) — once you have rows, summarise them. Now: per-row enrichment.
+- **Next in this module:** [Numbers](/cortex/languages/sql/row-functions/numbers) — the numeric counterpart to this chapter.
+- **Forward reference:** [Indexes and Performance](/cortex/languages/sql/index) — sargability, expression indexes, the LIKE-with-trigram pattern for unanchored search.
+- **Forward reference:** [NULL and Three-Valued Logic](/cortex/languages/sql/row-functions/null-and-three-valued-logic) — the full treatment of why `||` propagates NULL and how `COALESCE` + `NULLIF` repair it.
 
 ***
 

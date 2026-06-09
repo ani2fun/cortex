@@ -54,7 +54,7 @@ flowchart TB
 
 <p align="center"><strong>read the exponent's bits low-to-high; square the base each step; multiply it into the result only when the current bit is set.</strong></p>
 
-The other applications are direct primitive uses: **parity** `n & 1` (the lowest bit *is* odd/even), **power-of-two** `n & (n-1) == 0` (one set bit — the [set-bit-finder](/cortex/data-structures-and-algorithms/bit-tricks-pattern-set-bit-finder-pattern) identity), **bit-parity** (popcount mod 2, via Kernighan's loop). Each is `O(1)` except bit-parity (`O(set bits)`); fast exponentiation is `O(log exp)`.
+The other applications are direct primitive uses: **parity** `n & 1` (the lowest bit *is* odd/even), **power-of-two** `n & (n-1) == 0` (one set bit — the [set-bit-finder](/cortex/data-structures-and-algorithms/bit-tricks/pattern-set-bit-finder/pattern) identity), **bit-parity** (popcount mod 2, via Kernighan's loop). Each is `O(1)` except bit-parity (`O(set bits)`); fast exponentiation is `O(log exp)`.
 
 ### Key Takeaway
 
@@ -117,20 +117,20 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [Parity Checker](/cortex/data-structures-and-algorithms/bit-tricks-pattern-applications-problems-parity-checker), [Power of 2](/cortex/data-structures-and-algorithms/bit-tricks-pattern-applications-problems-power-of-2), [Set-Bit Parity](/cortex/data-structures-and-algorithms/bit-tricks-pattern-applications-problems-parity-checker-ii-set-bit-parity), and [Fast Exponentiation](/cortex/data-structures-and-algorithms/bit-tricks-pattern-applications-problems-power-function-fast-exponentiation).
+Drill the family in **Practice** — [Parity Checker](/cortex/data-structures-and-algorithms/bit-tricks/pattern-applications/problems/parity-checker), [Power of 2](/cortex/data-structures-and-algorithms/bit-tricks/pattern-applications/problems/power-of-2), [Set-Bit Parity](/cortex/data-structures-and-algorithms/bit-tricks/pattern-applications/problems/parity-checker-ii-set-bit-parity), and [Fast Exponentiation](/cortex/data-structures-and-algorithms/bit-tricks/pattern-applications/problems/power-function-fast-exponentiation).
 
 ## Reflect & Connect
 
 These applications are where the whole toolkit pays off — each composes primitives from the earlier patterns:
 
 - **The family** — numeric parity (`n & 1`), power-of-two (`n & (n-1)`), bit-parity / popcount-mod-2 (Kernighan), and fast (binary) exponentiation, whose **modular** variant `pow(base, exp, m)` underpins RSA, Diffie–Hellman, and Miller–Rabin primality.
-- **Composition is the point** — fast exponentiation reads exponent bits ([kth-bit](/cortex/data-structures-and-algorithms/bit-tricks-pattern-kth-bit-pattern)), power-of-two uses `n & (n-1)` ([set-bit-finder](/cortex/data-structures-and-algorithms/bit-tricks-pattern-set-bit-finder-pattern)), and the same square-and-combine schedule generalizes to *matrix* exponentiation (linear recurrences like Fibonacci in `O(log n)`).
+- **Composition is the point** — fast exponentiation reads exponent bits ([kth-bit](/cortex/data-structures-and-algorithms/bit-tricks/pattern-kth-bit/pattern)), power-of-two uses `n & (n-1)` ([set-bit-finder](/cortex/data-structures-and-algorithms/bit-tricks/pattern-set-bit-finder/pattern)), and the same square-and-combine schedule generalizes to *matrix* exponentiation (linear recurrences like Fibonacci in `O(log n)`).
 - **The deeper takeaway** — low-level bit code isn't impenetrable; it's a small algebraic system with a handful of named patterns. Once you can name the primitives, you can decode any bit-manipulation routine on sight.
 
 This closes the bit-manipulation toolkit: six patterns — kth-bit, set-bit-finder, restructuring, XOR, bitmasking, and these applications — each built from the same few operators.
 
-**Prerequisites:** [XOR](/cortex/data-structures-and-algorithms/bit-tricks-pattern-xor-pattern).
-**What's next:** revisit the section overview and its problem sets in [Bit Manipulation](/cortex/data-structures-and-algorithms/bit-tricks-bit-manipulation).
+**Prerequisites:** [XOR](/cortex/data-structures-and-algorithms/bit-tricks/pattern-xor/pattern).
+**What's next:** revisit the section overview and its problem sets in [Bit Manipulation](/cortex/data-structures-and-algorithms/bit-tricks/bit-manipulation).
 
 ## Recall
 

@@ -9,7 +9,7 @@ prereqs:
 
 ## Why It Exists
 
-[Postorder-stateless](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless-pattern) returned one value per node, and the answer was the *root's* return. But a whole class of problems — the **diameter** (longest path between any two nodes), the **maximum path sum**, "distribute coins" — has an answer that lives at *some interior node* and combines **both** of that node's subtrees, yet **can't be passed up**: a path through a node uses both its children, but the *parent* can only extend through *one* of them.
+[Postorder-stateless](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-postorder-traversal-stateless/pattern) returned one value per node, and the answer was the *root's* return. But a whole class of problems — the **diameter** (longest path between any two nodes), the **maximum path sum**, "distribute coins" — has an answer that lives at *some interior node* and combines **both** of that node's subtrees, yet **can't be passed up**: a path through a node uses both its children, but the *parent* can only extend through *one* of them.
 
 So you split the two roles. The recursion **returns** the single-branch contribution (a height, a one-sided gain — "what I can offer my parent if it extends through me"), while a **shared accumulator** (an outer variable) is updated with the *through-the-node* value that uses both subtrees. The answer is the accumulator, not the return value. That separation — return one thing, track another — is the signature of stateful postorder, and the heart of tree DP.
 
@@ -136,7 +136,7 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [Diameter of Tree](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateful-problems-diameter-of-tree), [Descendants Sum Count](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateful-problems-descendants-sum-count), [Distribute Coins](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateful-problems-distribute-coins), and [Longest Monotonic Path](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateful-problems-longest-monotonic-path).
+Drill the family in **Practice** — [Diameter of Tree](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-postorder-traversal-stateful/problems/diameter-of-tree), [Descendants Sum Count](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-postorder-traversal-stateful/problems/descendants-sum-count), [Distribute Coins](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-postorder-traversal-stateful/problems/distribute-coins), and [Longest Monotonic Path](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-postorder-traversal-stateful/problems/longest-monotonic-path).
 
 ## Reflect & Connect
 
@@ -144,10 +144,10 @@ Stateful postorder is bottom-up recursion where the answer and the return value 
 
 - **The family** — diameter, maximum path sum, longest univalue/monotonic path, distribute-coins (return the surplus/deficit a subtree passes up, accumulate the moves). All return a one-branch value while tracking a through-node answer.
 - **Return one thing, track another** — the return is "what I contribute to my parent" (one branch, extendable); the accumulator gets "the best complete answer here" (both branches, not extendable). Conflating them is the classic bug.
-- **It's tree DP** — this *is* dynamic programming on a tree: each node's contribution is computed once from its children's, and a global optimum is tracked across all nodes. The same "local return + global best" structure recurs in interval and graph DP. Combined with [preorder](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateless-pattern)'s push-down, it covers nearly all single-pass tree computations.
+- **It's tree DP** — this *is* dynamic programming on a tree: each node's contribution is computed once from its children's, and a global optimum is tracked across all nodes. The same "local return + global best" structure recurs in interval and graph DP. Combined with [preorder](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-preorder-traversal-stateless/pattern)'s push-down, it covers nearly all single-pass tree computations.
 
-**Prerequisites:** [Postorder Traversal (Stateless)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless-pattern).
-**What's next:** root-to-leaf paths the stateless way — carrying the path down by argument — [Root-to-Leaf Path (Stateless)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateless-pattern).
+**Prerequisites:** [Postorder Traversal (Stateless)](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-postorder-traversal-stateless/pattern).
+**What's next:** root-to-leaf paths the stateless way — carrying the path down by argument — [Root-to-Leaf Path (Stateless)](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-root-to-leaf-path-stateless/pattern).
 
 ## Recall
 

@@ -6,7 +6,7 @@ prereqs: []
 
 # Widget Payload Reference
 
-A `d3 widget=<layout>` fenced block hand-authors a **static** diagram: you write the exact `VizGraph` JSON — nodes, edges, cursors, per-step annotations — and the layout draws it. Reach for one when you want a fixed, curated illustration that always renders the same way (a textbook BST, a single sliding-window snapshot, a labelled segment tree) and you do not want it tied to running code. When instead you want a diagram **derived from an actual program trace** — step through real Python/Java execution and watch the structure mutate — use a runnable `viz=…` block; those are demonstrated live in the [Renderer Gallery](/cortex/data-structures-and-algorithms/appendix-widget-catalog-renderer-gallery). The schema below is shared by every static layout, so each per-layout section only documents its **deltas**: the slot/edge/meta conventions specific to that structure, plus one representative payload copied verbatim.
+A `d3 widget=<layout>` fenced block hand-authors a **static** diagram: you write the exact `VizGraph` JSON — nodes, edges, cursors, per-step annotations — and the layout draws it. Reach for one when you want a fixed, curated illustration that always renders the same way (a textbook BST, a single sliding-window snapshot, a labelled segment tree) and you do not want it tied to running code. When instead you want a diagram **derived from an actual program trace** — step through real Python/Java execution and watch the structure mutate — use a runnable `viz=…` block; those are demonstrated live in the [Renderer Gallery](/cortex/data-structures-and-algorithms/appendix-widget-catalog/renderer-gallery). The schema below is shared by every static layout, so each per-layout section only documents its **deltas**: the slot/edge/meta conventions specific to that structure, plus one representative payload copied verbatim.
 
 ## Common payload schema
 
@@ -80,7 +80,7 @@ A horizontal row of circle nodes, one per element, placed at `x = slot × CELL_D
 }
 ```
 
-See it live → [Renderer Gallery](/cortex/data-structures-and-algorithms/appendix-widget-catalog-renderer-gallery) — the trace-driven array-1d renderer.
+See it live → [Renderer Gallery](/cortex/data-structures-and-algorithms/appendix-widget-catalog/renderer-gallery) — the trace-driven array-1d renderer.
 
 ### list-single / list-double
 
@@ -118,7 +118,7 @@ A horizontal left-to-right chain of circle nodes ordered by `next`-labelled edge
 }
 ```
 
-See it live → [Renderer Gallery](/cortex/data-structures-and-algorithms/appendix-widget-catalog-renderer-gallery) — the trace-driven list-single / list-double renderer.
+See it live → [Renderer Gallery](/cortex/data-structures-and-algorithms/appendix-widget-catalog/renderer-gallery) — the trace-driven list-single / list-double renderer.
 
 ### stack + queue
 
@@ -180,7 +180,7 @@ Two slot-addressed layouts. `stack` is a **vertical column** (slot 0 at the bott
 }
 ```
 
-See it live → [Renderer Gallery](/cortex/data-structures-and-algorithms/appendix-widget-catalog-renderer-gallery) — the trace-driven stack + queue renderer.
+See it live → [Renderer Gallery](/cortex/data-structures-and-algorithms/appendix-widget-catalog/renderer-gallery) — the trace-driven stack + queue renderer.
 
 ### stack (call-stack)
 
@@ -211,7 +211,7 @@ The same `stack` layout applied to call frames: a LIFO column of activation reco
 }
 ```
 
-See it live → [Renderer Gallery](/cortex/data-structures-and-algorithms/appendix-widget-catalog-renderer-gallery) — the trace-driven call-stack renderer.
+See it live → [Renderer Gallery](/cortex/data-structures-and-algorithms/appendix-widget-catalog/renderer-gallery) — the trace-driven call-stack renderer.
 
 ## Trees & heaps
 
@@ -254,7 +254,7 @@ A rooted binary tree laid out by a Reingold-Tilford-style recursive slot algorit
 }
 ```
 
-See it live → [Renderer Gallery](/cortex/data-structures-and-algorithms/appendix-widget-catalog-renderer-gallery) — the trace-driven tree-binary renderer.
+See it live → [Renderer Gallery](/cortex/data-structures-and-algorithms/appendix-widget-catalog/renderer-gallery) — the trace-driven tree-binary renderer.
 
 ### tree-binary (heap)
 
@@ -292,7 +292,7 @@ A heap is a complete binary tree, so it reuses the `tree-binary` layout and key 
 }
 ```
 
-See it live → [Renderer Gallery](/cortex/data-structures-and-algorithms/appendix-widget-catalog-renderer-gallery) — the trace-driven tree-binary (heap) renderer.
+See it live → [Renderer Gallery](/cortex/data-structures-and-algorithms/appendix-widget-catalog/renderer-gallery) — the trace-driven tree-binary (heap) renderer.
 
 ### trie
 
@@ -338,7 +338,7 @@ An N-ary prefix tree using the same recursive slot algorithm as `tree-binary`, b
 }
 ```
 
-See it live → [Renderer Gallery](/cortex/data-structures-and-algorithms/appendix-widget-catalog-renderer-gallery) — the trace-driven trie renderer.
+See it live → [Renderer Gallery](/cortex/data-structures-and-algorithms/appendix-widget-catalog/renderer-gallery) — the trace-driven trie renderer.
 
 ### segment-tree
 
@@ -380,7 +380,7 @@ A complete binary tree addressed by 1-based BFS index — each node's position d
 }
 ```
 
-See it live → [Renderer Gallery](/cortex/data-structures-and-algorithms/appendix-widget-catalog-renderer-gallery) — the trace-driven segment-tree renderer.
+See it live → [Renderer Gallery](/cortex/data-structures-and-algorithms/appendix-widget-catalog/renderer-gallery) — the trace-driven segment-tree renderer.
 
 ### fenwick
 
@@ -416,7 +416,7 @@ A Fenwick (Binary Indexed Tree) drawn as a **1-indexed horizontal row** of cells
 }
 ```
 
-See it live → [Renderer Gallery](/cortex/data-structures-and-algorithms/appendix-widget-catalog-renderer-gallery) — the trace-driven fenwick renderer.
+See it live → [Renderer Gallery](/cortex/data-structures-and-algorithms/appendix-widget-catalog/renderer-gallery) — the trace-driven fenwick renderer.
 
 ## Maps, sets & advanced
 
@@ -449,7 +449,7 @@ A dictionary rendered as a **vertical column of entry nodes**, one row per key�
 }
 ```
 
-See it live → [Renderer Gallery](/cortex/data-structures-and-algorithms/appendix-widget-catalog-renderer-gallery) — the trace-driven hashmap renderer.
+See it live → [Renderer Gallery](/cortex/data-structures-and-algorithms/appendix-widget-catalog/renderer-gallery) — the trace-driven hashmap renderer.
 
 ### graph-generic
 
@@ -488,7 +488,7 @@ Arbitrary graphs — directed or undirected, cyclic or acyclic. The layout auto-
 }
 ```
 
-See it live → [Renderer Gallery](/cortex/data-structures-and-algorithms/appendix-widget-catalog-renderer-gallery) — the trace-driven graph-generic renderer.
+See it live → [Renderer Gallery](/cortex/data-structures-and-algorithms/appendix-widget-catalog/renderer-gallery) — the trace-driven graph-generic renderer.
 
 ### union-find
 
@@ -525,7 +525,7 @@ A Disjoint Set Union (DSU) drawn as a horizontal row of `n` circle nodes, each l
 }
 ```
 
-See it live → [Renderer Gallery](/cortex/data-structures-and-algorithms/appendix-widget-catalog-renderer-gallery) — the trace-driven union-find renderer.
+See it live → [Renderer Gallery](/cortex/data-structures-and-algorithms/appendix-widget-catalog/renderer-gallery) — the trace-driven union-find renderer.
 
 ### bitset
 
@@ -561,7 +561,7 @@ A fixed-width array of bits drawn as a **compact horizontal row** of circle node
 }
 ```
 
-See it live → [Renderer Gallery](/cortex/data-structures-and-algorithms/appendix-widget-catalog-renderer-gallery) — the trace-driven bitset renderer.
+See it live → [Renderer Gallery](/cortex/data-structures-and-algorithms/appendix-widget-catalog/renderer-gallery) — the trace-driven bitset renderer.
 
 ### skiplist
 
@@ -611,4 +611,4 @@ A multi-level skip list drawn as a **grid of circle nodes** — each (level, slo
 }
 ```
 
-See it live → [Renderer Gallery](/cortex/data-structures-and-algorithms/appendix-widget-catalog-renderer-gallery) — the trace-driven skiplist renderer.
+See it live → [Renderer Gallery](/cortex/data-structures-and-algorithms/appendix-widget-catalog/renderer-gallery) — the trace-driven skiplist renderer.

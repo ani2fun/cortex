@@ -153,10 +153,10 @@ Separate chaining is the most forgiving collision strategy:
 
 - **Deletion is trivial** — unlink the entry from its chain, no bookkeeping. (Open addressing, the next lessons, needs *tombstones* to delete safely — chaining's big simplicity win.)
 - **The load factor governs everything** — `α = n/capacity` is the expected chain length, so keeping it low (by resizing/rehashing) is what preserves `O(1)`. Chaining tolerates `α > 1` gracefully; open addressing cannot.
-- **The trade-off is memory and cache** — every entry carries list/pointer overhead, and walking a chain chases pointers all over memory (cache-unfriendly). Open addressing stores everything in the array itself for better locality — at the cost of harder deletion and clustering. That's the [next lesson](/cortex/data-structures-and-algorithms/linear-structures-hash-table-linear-probing).
+- **The trade-off is memory and cache** — every entry carries list/pointer overhead, and walking a chain chases pointers all over memory (cache-unfriendly). Open addressing stores everything in the array itself for better locality — at the cost of harder deletion and clustering. That's the [next lesson](/cortex/data-structures-and-algorithms/linear-structures/hash-table/linear-probing).
 
-**Prerequisites:** [What Is a Hash Table?](/cortex/data-structures-and-algorithms/linear-structures-hash-table-what-is-a-hash-table).
-**What's next:** resolve collisions *inside* the array instead of in side-chains — [Linear Probing](/cortex/data-structures-and-algorithms/linear-structures-hash-table-linear-probing).
+**Prerequisites:** [What Is a Hash Table?](/cortex/data-structures-and-algorithms/linear-structures/hash-table/what-is-a-hash-table).
+**What's next:** resolve collisions *inside* the array instead of in side-chains — [Linear Probing](/cortex/data-structures-and-algorithms/linear-structures/hash-table/linear-probing).
 
 ## Recall
 

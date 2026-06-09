@@ -110,7 +110,7 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [Only Set Bit](/cortex/data-structures-and-algorithms/bit-tricks-pattern-set-bit-finder-problems-only-set-bit) and [Rightmost Set Bit](/cortex/data-structures-and-algorithms/bit-tricks-pattern-set-bit-finder-problems-rightmost-set-bit).
+Drill the family in **Practice** — [Only Set Bit](/cortex/data-structures-and-algorithms/bit-tricks/pattern-set-bit-finder/problems/only-set-bit) and [Rightmost Set Bit](/cortex/data-structures-and-algorithms/bit-tricks/pattern-set-bit-finder/problems/rightmost-set-bit).
 
 ## Reflect & Connect
 
@@ -120,8 +120,8 @@ These two identities are *primitives* you'll use without re-deriving:
 - **Two's complement is the engine** — `-n == ~n + 1`, which is exactly why `n & -n` keeps only the lowest set bit. Understanding the negation makes the trick obvious rather than magic.
 - **They compose upward** — `n & (n-1)` is the heart of popcount, which feeds parity and Hamming-distance problems; `n & -n` underlies Fenwick (binary-indexed) trees, where the isolated lowest bit *is* the index step. You'll meet both again as single steps in bigger algorithms.
 
-**Prerequisites:** [Kth-Bit Operations](/cortex/data-structures-and-algorithms/bit-tricks-pattern-kth-bit-pattern).
-**What's next:** rearrange the bits of a number wholesale — [Bit Restructuring](/cortex/data-structures-and-algorithms/bit-tricks-pattern-restructuring-pattern).
+**Prerequisites:** [Kth-Bit Operations](/cortex/data-structures-and-algorithms/bit-tricks/pattern-kth-bit/pattern).
+**What's next:** rearrange the bits of a number wholesale — [Bit Restructuring](/cortex/data-structures-and-algorithms/bit-tricks/pattern-restructuring/pattern).
 
 ## Recall
 

@@ -137,18 +137,18 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [Reverse a List](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-reversal-problems-reverse-a-list), [Reverse First K Nodes](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-reversal-problems-reverse-first-k-nodes), [Reverse Last K Nodes](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-reversal-problems-reverse-last-k-nodes), and [Reverse the Given Segment](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-reversal-problems-reverse-the-given-segment).
+Drill the family in **Practice** — [Reverse a List](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-reversal/problems/reverse-a-list), [Reverse First K Nodes](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-reversal/problems/reverse-first-k-nodes), [Reverse Last K Nodes](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-reversal/problems/reverse-last-k-nodes), and [Reverse the Given Segment](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-reversal/problems/reverse-the-given-segment).
 
 ## Reflect & Connect
 
 The three-pointer flip is one of the highest-leverage list moves — it shows up wherever something must go backward:
 
 - **Whole-list, prefix, suffix, segment** — the *same loop*, just bounded differently. To reverse an inner segment `[i, j]`: walk to the node before `i`, reverse exactly `j − i + 1` nodes, then **stitch** the reversed piece back to the untouched parts on both sides. The pointers before `i` and after `j` never move.
-- **Reversal as a sub-step** — palindrome check (reverse the second half, then compare against the first), and reorder-style problems (`L0→Ln→L1→Ln-1→…`) split the list, reverse one half, and weave. That composition is the [next pattern](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-reversal-subproblem-pattern).
+- **Reversal as a sub-step** — palindrome check (reverse the second half, then compare against the first), and reorder-style problems (`L0→Ln→L1→Ln-1→…`) split the list, reverse one half, and weave. That composition is the [next pattern](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-reversal-subproblem/pattern).
 - **Iterative beats recursive here** — a recursive reversal is elegant but costs `O(n)` stack space; the three-pointer loop is `O(1)`. On a long list, recursion risks a stack overflow the loop never will.
 
-**Prerequisites:** [What Is a Linked List?](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-what-is-a-linked-list).
-**What's next:** reversal as a building block inside larger walks — [Reversal as a Subproblem](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-reversal-subproblem-pattern).
+**Prerequisites:** [What Is a Linked List?](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/what-is-a-linked-list).
+**What's next:** reversal as a building block inside larger walks — [Reversal as a Subproblem](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-reversal-subproblem/pattern).
 
 ## Recall
 

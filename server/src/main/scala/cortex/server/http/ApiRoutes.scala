@@ -217,9 +217,12 @@ object ApiRoutes:
 
     val cortexChapterEndpoint = handlerEndpoint(
       endpoint.get
-        .in("api" / "cortex" / path[String]("book") / path[String]("chapter"))
+        // The hierarchical chapter slug rides in the `path` QUERY param, not a URL path segment, so
+        // its `/` separators never need %2F-encoding (which proxies/servers handle inconsistently).
+        .in("api" / "cortex" / path[String]("book") / "chapter")
+        .in(query[String]("path"))
         .out(jsonBody[ChapterPayload])
-    ) { case (book, chapter) => cortex.chapter(book, chapter) }
+    ) { case (book, chapterPath) => cortex.chapter(book, chapterPath) }
 
     val blogIndexEndpoint = handlerEndpoint(
       endpoint.get.in("api" / "blogs" / "index").out(jsonBody[BlogIndex])

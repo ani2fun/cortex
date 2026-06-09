@@ -121,13 +121,13 @@ Then: store a **weighted** graph (cells hold weights, with `∞`/`-1` as the no-
 
 The matrix is one half of the representation choice every graph program makes:
 
-- **Matrix vs list** — the [adjacency list](/cortex/data-structures-and-algorithms/graphs-adjacency-list-representation) (next lesson) stores, per node, just its actual neighbours: `O(V + E)` space and `O(degree)` neighbour iteration. It wins for sparse graphs (almost all of them); the matrix wins for dense graphs and `O(1)` edge tests. This is *the* first decision in graph code.
+- **Matrix vs list** — the [adjacency list](/cortex/data-structures-and-algorithms/graphs/adjacency-list-representation) (next lesson) stores, per node, just its actual neighbours: `O(V + E)` space and `O(degree)` neighbour iteration. It wins for sparse graphs (almost all of them); the matrix wins for dense graphs and `O(1)` edge tests. This is *the* first decision in graph code.
 - **Symmetry is a property check** — an undirected graph's matrix equals its transpose (`adj[i][j] == adj[j][i]`); a directed graph's generally doesn't. Reading symmetry off the matrix tells you the edge semantics at a glance.
-- **Where the matrix is the *right* call** — [Floyd-Warshall](/cortex/data-structures-and-algorithms/graphs-all-pairs-shortest-path) all-pairs shortest paths runs `O(N³)` directly over the matrix and lives on `O(1)` edge access; dense graphs, tournament tables, and small `N` all favour it. The killer-app question is always "dense or sparse?"
+- **Where the matrix is the *right* call** — [Floyd-Warshall](/cortex/data-structures-and-algorithms/graphs/all-pairs-shortest-path) all-pairs shortest paths runs `O(N³)` directly over the matrix and lives on `O(1)` edge access; dense graphs, tournament tables, and small `N` all favour it. The killer-app question is always "dense or sparse?"
 - **It rides on the 1D array** — the `N×N` logical grid is a contiguous block addressed by `i*N + j`. Same row-major arithmetic as any 2D array, which is why the lookup is a single fetch.
 
-**Prerequisites:** [Introduction to Graphs](/cortex/data-structures-and-algorithms/graphs-introduction-to-graphs).
-**What's next:** the sparse-friendly representation that flips every trade-off — [Adjacency List](/cortex/data-structures-and-algorithms/graphs-adjacency-list-representation).
+**Prerequisites:** [Introduction to Graphs](/cortex/data-structures-and-algorithms/graphs/introduction-to-graphs).
+**What's next:** the sparse-friendly representation that flips every trade-off — [Adjacency List](/cortex/data-structures-and-algorithms/graphs/adjacency-list-representation).
 
 ## Recall
 

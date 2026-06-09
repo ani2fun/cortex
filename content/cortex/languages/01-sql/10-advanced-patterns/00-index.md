@@ -16,7 +16,7 @@ The SQL toolkit is mostly composed by Module 9. This last module covers four pat
 
 ## Chapters
 
-1. [Hierarchies and Graphs](/cortex/languages/sql-advanced-patterns-hierarchies-and-graphs) — adjacency lists, closure tables, materialised paths, ltree (Postgres). When recursion isn't enough.
-2. [JSON in SQL](/cortex/languages/sql-advanced-patterns-json-in-sql) — `JSONB`, indexing JSON paths, when to use JSON vs columns.
-3. [Pivoting and Unpivoting](/cortex/languages/sql-advanced-patterns-pivoting-and-unpivoting) — turning rows into columns and vice versa.
-4. [Time-Series Patterns](/cortex/languages/sql-advanced-patterns-time-series-patterns) — bucketing, gap-filling, retention windows, the patterns specific to time-stamped data at scale.
+1. [Hierarchies and Graphs](/cortex/languages/sql/advanced-patterns/hierarchies-and-graphs) — adjacency lists, closure tables, materialised paths, ltree (Postgres). When recursion isn't enough.
+2. [JSON in SQL](/cortex/languages/sql/advanced-patterns/json-in-sql) — `JSONB`, indexing JSON paths, when to use JSON vs columns.
+3. [Pivoting and Unpivoting](/cortex/languages/sql/advanced-patterns/pivoting-and-unpivoting) — turning rows into columns and vice versa.
+4. [Time-Series Patterns](/cortex/languages/sql/advanced-patterns/time-series-patterns) — bucketing, gap-filling, retention windows, the patterns specific to time-stamped data at scale.

@@ -98,7 +98,7 @@ Honestly: not much.
 
 - **One extra hop of latency.** WireGuard adds ~0.1 ms over a LAN. Over the WireGuard mesh between `vm-1` and `wk-1`, it's the round-trip through your ISP, plus the UDP encryption/decryption — usually under 30 ms even on residential connections. Negligible for HTTP, perceptible only on chatty databases (which is why Postgres lives on a home node, not in the cloud).
 - **One extra interface to debug.** When something doesn't work, the answer is sometimes "the WireGuard interface is broken" rather than "the application is broken." Chapter 4 of this section is about exactly that.
-- **MTU math.** Every layer of encapsulation eats bytes from the maximum payload. WireGuard adds 60 bytes of overhead, leaving 1420 bytes of MTU. Calico VXLAN over WireGuard adds another 50, leaving 1370. We'll cover this in [Swap Flannel for Calico](/cortex/homelab-from-scratch/kubernetes-base-swap-flannel-for-calico).
+- **MTU math.** Every layer of encapsulation eats bytes from the maximum payload. WireGuard adds 60 bytes of overhead, leaving 1420 bytes of MTU. Calico VXLAN over WireGuard adds another 50, leaving 1370. We'll cover this in [Swap Flannel for Calico](/cortex/homelab-from-scratch/kubernetes-base/swap-flannel-for-calico).
 
 The only unconditional cost is **one extra concept to understand** — WireGuard. Once you have, you'll never want to run a homelab without it.
 
@@ -120,4 +120,4 @@ If you've used OpenVPN, you'll find WireGuard about a tenth as much config and t
 - Every node able to ping every other node by `172.27.15.x` address.
 - Confidence that nothing on the home boxes is reachable from outside the mesh, except the WireGuard handshake itself.
 
-→ Next: [WireGuard keys and the IP plan](/cortex/homelab-from-scratch/private-mesh-wireguard-keys-and-ip-plan)
+→ Next: [WireGuard keys and the IP plan](/cortex/homelab-from-scratch/private-mesh/wireguard-keys-and-ip-plan)

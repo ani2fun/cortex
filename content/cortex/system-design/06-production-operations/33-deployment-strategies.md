@@ -14,7 +14,7 @@ On **1 August 2012**, Knight Capital was one of the largest market-makers in U.S
 
 Every failure in that story is a deployment-strategy failure: a **manual, inconsistent deploy** that left one server on old code; a **repurposed flag** that meant different things in different versions; **no automated verification** that all servers matched; and, fatally, **no fast kill-switch or rollback** when the orders started flooding out. There was no canary to catch it on 1% of traffic, no blue-green switch to flip back, no feature flag to disable in one click. It is the most expensive illustration in computing of why *how* you ship matters as much as *what* you ship.
 
-The instinct this lesson installs is that a release is the **riskiest routine thing you do** to a healthy system, and the entire job of a deployment strategy is to make that risk **small and reversible** — to expose a new version to as few users as possible until you've *watched* it behave ([Lesson 32](/cortex/system-design/production-operations-observability)), and to make undoing it a single, boring, tested action. "Move fast and break things" is fine; "move fast and *can't unbreak* things" is Knight Capital.
+The instinct this lesson installs is that a release is the **riskiest routine thing you do** to a healthy system, and the entire job of a deployment strategy is to make that risk **small and reversible** — to expose a new version to as few users as possible until you've *watched* it behave ([Lesson 32](/cortex/system-design/production-operations/observability)), and to make undoing it a single, boring, tested action. "Move fast and break things" is fine; "move fast and *can't unbreak* things" is Knight Capital.
 
 ## 2. Intuition (Analogy)
 
@@ -44,7 +44,7 @@ The strategies, on the axes that decide between them:
 
 **Rolling** is Kubernetes' default: it brings up new pods while scaling old ones down, keeping the total count steady — so there's no downtime, but old and new run **simultaneously** during the rollout. **Recreate** kills the old version before starting the new — no version overlap, but a gap of downtime. **Blue-green** keeps two full production environments and flips a router from blue (current) to green (new); rollback is flipping back. **Canary** sends a subset of traffic to the new version, verifies it, and ramps up — the only strategy that *limits how many users a bad release can hurt*.
 
-**Progressive delivery** is canary + **automated analysis**: a controller (Argo Rollouts, Flagger) shifts traffic in steps, checks the new version's **golden signals** ([Lesson 32](/cortex/system-design/production-operations-observability)) against thresholds at each step, and **auto-promotes** if healthy or **auto-rolls-back** if not — no human staring at a dashboard at 2 a.m.
+**Progressive delivery** is canary + **automated analysis**: a controller (Argo Rollouts, Flagger) shifts traffic in steps, checks the new version's **golden signals** ([Lesson 32](/cortex/system-design/production-operations/observability)) against thresholds at each step, and **auto-promotes** if healthy or **auto-rolls-back** if not — no human staring at a dashboard at 2 a.m.
 
 You measure the whole delivery system with the **DORA four keys**: **deployment frequency** and **lead time for changes** (velocity), **change failure rate** and **time to restore service** (stability). Elite teams keep change-failure-rate in the **0–15%** range and restore service in **under an hour** — and notice that two of the four metrics are about *recovering*, not preventing: fast rollback is a first-class goal.
 
@@ -76,7 +76,7 @@ flowchart LR
 
 You're shipping `checkout` v2 to a fleet handling **1,000 requests/second**, and v2 has a latent bug that errors on **20%** of the requests it serves. It takes about **10 minutes** to notice and act.
 
-**Without a canary (deploy to 100%).** Every request hits v2. In 10 minutes that's `1,000 × 600 = 600,000` requests, and 20% fail → **120,000 failed requests** slammed onto real users before you roll back. That's a chunk of your error budget ([Lesson 32](/cortex/system-design/production-operations-observability)) gone in one deploy, and a lot of angry customers.
+**Without a canary (deploy to 100%).** Every request hits v2. In 10 minutes that's `1,000 × 600 = 600,000` requests, and 20% fail → **120,000 failed requests** slammed onto real users before you roll back. That's a chunk of your error budget ([Lesson 32](/cortex/system-design/production-operations/observability)) gone in one deploy, and a lot of angry customers.
 
 **With a canary (5%, automated analysis).** Only 5% of traffic reaches v2: `600,000 × 0.05 = 30,000` requests through the canary, 20% fail → **6,000 failed requests** — a **20× reduction** in user-facing damage. And it's better than that, because the canary's error rate (20%, far above the ~1% threshold) **trips the automated analysis within the first minute or two and rolls back automatically**, so you don't even spend the full 10 minutes. The canary converted "everyone is broken for 10 minutes" into "a small, monitored slice is broken for a minute or two." That is the entire value proposition, quantified.
 
@@ -138,7 +138,7 @@ The honest guidance: **rolling** is the right default for most stateless service
 - **No fast rollback / irreversible deploy.** A deploy you can't undo is a bet. Always have a **tested** rollback (and rehearse it) — it's the biggest lever on time-to-restore, a DORA stability metric.
 - **A backward-incompatible DB migration breaks rollback.** Blue-green and canary assume you can switch *back*, but a schema change the old code can't read makes that impossible. Use **expand-contract (parallel-change)** migrations — add new columns, deploy code that handles both, backfill, cut over, and only then remove the old — so the schema never gets ahead of code you might roll back to. Decouple schema changes from feature deploys.
 - **Canary watching the wrong signal (or too little traffic).** A canary that checks only "pods started" misses elevated errors/latency (§4); a canary with too little traffic has no statistical signal. Gate on **SLO-relevant golden signals** with enough volume and bake time to be meaningful.
-- **Mixed-version incompatibility.** Rolling/canary run old and new at once; if v2 changes an API, queue message, or DB contract that v1 can't handle (or vice-versa), the mixed state breaks. Make changes **backward- and forward-compatible across one version** (the same discipline as API versioning, [Lesson 28](/cortex/system-design/application-architecture-api-design)).
+- **Mixed-version incompatibility.** Rolling/canary run old and new at once; if v2 changes an API, queue message, or DB contract that v1 can't handle (or vice-versa), the mixed state breaks. Make changes **backward- and forward-compatible across one version** (the same discipline as API versioning, [Lesson 28](/cortex/system-design/application-architecture/api-design)).
 - **Feature-flag debt.** Flags left on forever, or used as long-lived config, multiply untested code-path combinations and become a Knight-Capital-style reuse hazard. Set expiry on flags, remove them once a release is permanent, and audit long-lived ones.
 
 ## 8. Practice
@@ -183,4 +183,4 @@ The honest guidance: **rolling** is the right default for most stateless service
 
 ---
 
-> **Next:** [34. Capacity planning and autoscaling](/cortex/system-design/production-operations-capacity-planning-and-autoscaling) — a safe deploy gets new code out; capacity planning makes sure there are enough machines to run it when traffic triples at 9 a.m. Next: how to size a fleet from first principles (back to Little's Law), horizontal vs vertical scaling, autoscaling on the right signal, and why naïve autoscaling can amplify an outage instead of absorbing it.
+> **Next:** [34. Capacity planning and autoscaling](/cortex/system-design/production-operations/capacity-planning-and-autoscaling) — a safe deploy gets new code out; capacity planning makes sure there are enough machines to run it when traffic triples at 9 a.m. Next: how to size a fleet from first principles (back to Little's Law), horizontal vs vertical scaling, autoscaling on the right signal, and why naïve autoscaling can amplify an outage instead of absorbing it.

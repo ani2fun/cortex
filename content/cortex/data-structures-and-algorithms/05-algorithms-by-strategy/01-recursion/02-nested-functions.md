@@ -9,7 +9,7 @@ prereqs:
 
 You've written nested calls a thousand times — `main` calls `parse`, `parse` calls `tokenize`, `tokenize` calls `peek`. So ordinary you stopped noticing. But *what exactly* happens at the moment of a call? Where do the arguments go? How does the program know where to resume when the callee returns? And why does this same everyday mechanism crash the process when recursion goes too deep?
 
-This lesson is the bridge between the [memory model](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-introduction-to-memory-model) and recursion. Every nested call adds a tier of scaffolding; the previous tier stays paused, holding its place, until the new tier finishes. That pausing-and-resuming is exactly what the **stack** bookkeeps — and stack overflow is what happens when the pausing nests deeper than the bookkeeping can hold.
+This lesson is the bridge between the [memory model](/cortex/data-structures-and-algorithms/algorithms-by-strategy/recursion/introduction-to-memory-model) and recursion. Every nested call adds a tier of scaffolding; the previous tier stays paused, holding its place, until the new tier finishes. That pausing-and-resuming is exactly what the **stack** bookkeeps — and stack overflow is what happens when the pausing nests deeper than the bookkeeping can hold.
 
 ## See It Work
 

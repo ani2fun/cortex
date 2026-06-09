@@ -91,7 +91,7 @@ flowchart LR
 
 <p align="center"><strong>The fundamental difference. Regular aggregates collapse. Window functions keep every row and add an aggregated column.</strong></p>
 
-The keyword is `OVER`. Any aggregate function (`SUM`, `COUNT`, `AVG`, `MIN`, `MAX`) plus `OVER (...)` becomes a window function. There are also dedicated window functions (`ROW_NUMBER`, `RANK`, `LAG`, `LEAD`) that *only* exist as window functions — covered in [Ranking](/cortex/languages/sql-window-functions-ranking) and [Value Functions](/cortex/languages/sql-window-functions-value-functions).
+The keyword is `OVER`. Any aggregate function (`SUM`, `COUNT`, `AVG`, `MIN`, `MAX`) plus `OVER (...)` becomes a window function. There are also dedicated window functions (`ROW_NUMBER`, `RANK`, `LAG`, `LEAD`) that *only* exist as window functions — covered in [Ranking](/cortex/languages/sql/window-functions/ranking) and [Value Functions](/cortex/languages/sql/window-functions/value-functions).
 
 The window — the set of rows visible to the function for a given output row — is defined by the `OVER (...)` clause. It has three pieces:
 
@@ -185,7 +185,7 @@ For customer 1's three orders (ordered by date):
 
 Each row sees the rows up to and including itself, in date order. The "running" semantics come from the `ORDER BY` inside `OVER` — without it, the aggregate would be the entire customer's total (no row-by-row accumulation).
 
-This is the **default frame** for ordered windows: `RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW`. Frames are the topic of the [next chapter](/cortex/languages/sql-window-functions-frames). For now, just know that `ORDER BY` inside `OVER` changes the meaning from "the whole partition" to "everything up to this row."
+This is the **default frame** for ordered windows: `RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW`. Frames are the topic of the [next chapter](/cortex/languages/sql/window-functions/frames). For now, just know that `ORDER BY` inside `OVER` changes the meaning from "the whole partition" to "everything up to this row."
 
 ---
 
@@ -266,7 +266,7 @@ SELECT first_name, AVG(score) OVER () FROM customers;
 
 ## Window functions run after `WHERE`, before `ORDER BY`
 
-In the [logical execution order](/cortex/languages/sql-foundations-introduction-to-sql#the-logical-execution-order), window functions run at step 6.5 — after `SELECT` projection and before `ORDER BY`. This means:
+In the [logical execution order](/cortex/languages/sql/foundations/introduction-to-sql#the-logical-execution-order), window functions run at step 6.5 — after `SELECT` projection and before `ORDER BY`. This means:
 
 - `WHERE` filters rows *before* the window is computed. The window only sees post-`WHERE` rows.
 - `ORDER BY` (the outer one) sorts the result *after* the window has computed.
@@ -361,10 +361,10 @@ Per-row detail with per-group context — exactly what window functions exist fo
 
 # Cross-links
 
-- **Previous module:** [Aggregation](/cortex/languages/sql-aggregation-index) — the `GROUP BY` aggregates that this module repurposes as windowed.
-- **Next in this module:** [Frames](/cortex/languages/sql-window-functions-frames) — the third piece of `OVER`. Defaults and `ROWS`/`RANGE`/`GROUPS`.
-- **Forward reference:** [Ranking](/cortex/languages/sql-window-functions-ranking) and [Value Functions](/cortex/languages/sql-window-functions-value-functions) — dedicated window functions that have no aggregate counterpart.
-- **Forward reference:** [Window Patterns](/cortex/languages/sql-window-functions-window-patterns) — the canonical real-world shapes: top-N per group, gaps and islands, sessionisation.
+- **Previous module:** [Aggregation](/cortex/languages/sql/aggregation/index) — the `GROUP BY` aggregates that this module repurposes as windowed.
+- **Next in this module:** [Frames](/cortex/languages/sql/window-functions/frames) — the third piece of `OVER`. Defaults and `ROWS`/`RANGE`/`GROUPS`.
+- **Forward reference:** [Ranking](/cortex/languages/sql/window-functions/ranking) and [Value Functions](/cortex/languages/sql/window-functions/value-functions) — dedicated window functions that have no aggregate counterpart.
+- **Forward reference:** [Window Patterns](/cortex/languages/sql/window-functions/window-patterns) — the canonical real-world shapes: top-N per group, gaps and islands, sessionisation.
 
 ***
 

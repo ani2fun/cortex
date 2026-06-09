@@ -111,7 +111,7 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [Preceding Superior Element](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-previous-closest-occurrence-problems-preceding-superior-element), [Preceding Inferior Element](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-previous-closest-occurrence-problems-preceding-inferior-element), [Preceding Superior Element II](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-previous-closest-occurrence-problems-preceding-superior-element-ii), and [Preceding Inferior Element II](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-previous-closest-occurrence-problems-preceding-inferior-element-ii).
+Drill the family in **Practice** — [Preceding Superior Element](/cortex/data-structures-and-algorithms/linear-structures/stack/pattern-previous-closest-occurrence/problems/preceding-superior-element), [Preceding Inferior Element](/cortex/data-structures-and-algorithms/linear-structures/stack/pattern-previous-closest-occurrence/problems/preceding-inferior-element), [Preceding Superior Element II](/cortex/data-structures-and-algorithms/linear-structures/stack/pattern-previous-closest-occurrence/problems/preceding-superior-element-ii), and [Preceding Inferior Element II](/cortex/data-structures-and-algorithms/linear-structures/stack/pattern-previous-closest-occurrence/problems/preceding-inferior-element-ii).
 
 ## Reflect & Connect
 
@@ -119,10 +119,10 @@ The monotonic stack is one of the highest-value stack patterns — recognizing i
 
 - **Four cousins from two knobs** — *direction* (previous = scan left→right; next = scan right→left) × *comparison* (greater = decreasing stack; smaller = increasing stack). Same code, swapped operator or swapped scan order.
 - **The "shadowing" insight is the core** — an element that's dominated and blocked can be discarded forever; the stack holds only the still-relevant candidates. That's why the amortized cost is `O(1)` per element even with an inner loop.
-- **It underlies bigger algorithms** — largest rectangle in a histogram, daily temperatures, stock span, and the `O(n)` "next greater element" all reduce to a monotonic stack. The [next pattern](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-next-closest-occurrence-pattern) is the right-to-left mirror of this one.
+- **It underlies bigger algorithms** — largest rectangle in a histogram, daily temperatures, stock span, and the `O(n)` "next greater element" all reduce to a monotonic stack. The [next pattern](/cortex/data-structures-and-algorithms/linear-structures/stack/pattern-next-closest-occurrence/pattern) is the right-to-left mirror of this one.
 
-**Prerequisites:** [What Is a Stack?](/cortex/data-structures-and-algorithms/linear-structures-stack-what-is-a-stack).
-**What's next:** the same idea scanning the other way — [Next Closest Occurrence](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-next-closest-occurrence-pattern).
+**Prerequisites:** [What Is a Stack?](/cortex/data-structures-and-algorithms/linear-structures/stack/what-is-a-stack).
+**What's next:** the same idea scanning the other way — [Next Closest Occurrence](/cortex/data-structures-and-algorithms/linear-structures/stack/pattern-next-closest-occurrence/pattern).
 
 ## Recall
 

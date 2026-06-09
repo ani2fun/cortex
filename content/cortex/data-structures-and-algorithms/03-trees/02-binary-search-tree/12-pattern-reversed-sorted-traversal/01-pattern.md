@@ -9,7 +9,7 @@ prereqs:
 
 ## Why It Exists
 
-[Sorted traversal](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-sorted-traversal-pattern) walked the BST in-order (left → node → right) for *ascending* keys. Flip the two recursive directions — **right → node → left** — and you visit the keys in *descending* order instead. That mirror is the natural fit for "**k-th largest**", "assign **ranks** (largest = rank 1)", and a class of **running-accumulator** problems.
+[Sorted traversal](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-sorted-traversal/pattern) walked the BST in-order (left → node → right) for *ascending* keys. Flip the two recursive directions — **right → node → left** — and you visit the keys in *descending* order instead. That mirror is the natural fit for "**k-th largest**", "assign **ranks** (largest = rank 1)", and a class of **running-accumulator** problems.
 
 The accumulator insight is what makes this pattern more than "sorted traversal backwards." Walking descending means that by the time you reach any node, you've **already visited every key larger than it**. So a single running total, updated as you go, lets you set each node to "the sum of all keys ≥ it" (the *greater-sum tree*) or "its rank among all keys" — in one `O(n)` pass, no second traversal.
 
@@ -161,7 +161,7 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [Rank Nodes](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-reversed-sorted-traversal-problems-rank-nodes), [Kth Largest Element](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-reversed-sorted-traversal-problems-kth-largest-element), [Enriched Sum Tree](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-reversed-sorted-traversal-problems-enriched-sum-tree), and [Multiple Replacement](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-reversed-sorted-traversal-problems-multiple-replacement).
+Drill the family in **Practice** — [Rank Nodes](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-reversed-sorted-traversal/problems/rank-nodes), [Kth Largest Element](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-reversed-sorted-traversal/problems/kth-largest-element), [Enriched Sum Tree](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-reversed-sorted-traversal/problems/enriched-sum-tree), and [Multiple Replacement](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-reversed-sorted-traversal/problems/multiple-replacement).
 
 ## Reflect & Connect
 
@@ -171,8 +171,8 @@ Reversed traversal is sorted traversal's mirror, plus the accumulator twist:
 - **The accumulator is the differentiator** — descending order means "everything larger is already processed," so a running sum/count gives greater-than aggregates in one pass. (Symmetrically, ascending in-order with a running total gives *smaller-than* aggregates.) Same "visit in an order that makes the running aggregate exactly what you need" idea as prefix sums and the sweep line.
 - **Direction is the only knob** — sorted traversal and reversed traversal share one template; left-first vs right-first is the whole difference. Pick by whether the problem is about smaller-than or larger-than.
 
-**Prerequisites:** [Sorted Traversal](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-sorted-traversal-pattern).
-**What's next:** prune whole subtrees out of range during traversal — [Range Postorder](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-range-postorder-pattern).
+**Prerequisites:** [Sorted Traversal](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-sorted-traversal/pattern).
+**What's next:** prune whole subtrees out of range during traversal — [Range Postorder](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-range-postorder/pattern).
 
 ## Recall
 

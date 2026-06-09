@@ -247,7 +247,7 @@ spec:
 
 Things worth highlighting:
 
-- **`nodeSelector: kakde.eu/postgresql: "true"`** — this is what pins it to `wk-1`. Match the label you set in [Where things are allowed to run](/cortex/homelab-from-scratch/kubernetes-base-where-things-are-allowed-to-run).
+- **`nodeSelector: kakde.eu/postgresql: "true"`** — this is what pins it to `wk-1`. Match the label you set in [Where things are allowed to run](/cortex/homelab-from-scratch/kubernetes-base/where-things-are-allowed-to-run).
 - **`PGDATA=/var/lib/postgresql/data/pgdata`** — Postgres complains if `/var/lib/postgresql/data` itself is the data directory because the directory has files (the lost+found) Postgres doesn't recognise. Always use a subdirectory.
 - **Three probes** that all run the same `pg_isready` check. The startupProbe gives Postgres up to 5 minutes to come up; the readinessProbe takes over after, so traffic doesn't hit Postgres mid-startup; the livenessProbe restarts the pod if it goes silent.
 - **`storageClassName: local-path`** — K3s' bundled `local-path-provisioner` creates a directory on the node's filesystem and binds the PVC to it. Simple, fast, single-node.
@@ -295,4 +295,4 @@ Promise yourself: **migrate to CNPG when you outgrow this**, not before. The tri
 
 The next chapter locks down access — only the apps that should reach Postgres can.
 
-→ Next: [Network policies keep Postgres internal](/cortex/homelab-from-scratch/stateful-services-network-policies-keep-postgres-internal)
+→ Next: [Network policies keep Postgres internal](/cortex/homelab-from-scratch/stateful-services/network-policies-keep-postgres-internal)

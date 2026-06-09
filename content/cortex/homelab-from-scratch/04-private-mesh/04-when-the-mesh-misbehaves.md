@@ -235,7 +235,7 @@ If the second ping returns "frag needed" with `mtu = 1420`, your MTU on `wg0` is
 
 The common fix: lower `MTU` in `[Interface]` to `1380` or `1360` and `wg-quick down/up` the interface. Lossy or 5G/4G paths sometimes need 1280.
 
-For Calico over WireGuard, the inner pod MTU should always be ~50 bytes less than the WireGuard MTU. If WG MTU is 1420, set Calico VXLAN MTU to 1370. We'll cover this in [Swap Flannel for Calico](/cortex/homelab-from-scratch/kubernetes-base-swap-flannel-for-calico).
+For Calico over WireGuard, the inner pod MTU should always be ~50 bytes less than the WireGuard MTU. If WG MTU is 1420, set Calico VXLAN MTU to 1370. We'll cover this in [Swap Flannel for Calico](/cortex/homelab-from-scratch/kubernetes-base/swap-flannel-for-calico).
 
 ## Bug 4 — AllowedIPs typo
 
@@ -288,4 +288,4 @@ ethtool -i wg0    # confirms it's the wireguard kernel module
 
 That's the whole mesh, end-to-end, with the four classic bugs and how to find them.
 
-→ Next: [Why K3s?](/cortex/homelab-from-scratch/kubernetes-base-why-k3s)
+→ Next: [Why K3s?](/cortex/homelab-from-scratch/kubernetes-base/why-k3s)

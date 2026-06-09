@@ -279,4 +279,4 @@ Plus the user-data table from Postgres (`pg_dump --table=user_entity --table=use
 
 Section 8 done. The next section is what to do every day to keep this running, and how to recover when it doesn't.
 
-→ Next: [Quick health check](/cortex/homelab-from-scratch/operate-and-recover-quick-health-check)
+→ Next: [Quick health check](/cortex/homelab-from-scratch/operate-and-recover/quick-health-check)

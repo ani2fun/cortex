@@ -157,13 +157,13 @@ Then: write the **iterative** DFS with an explicit stack; count **connected comp
 
 These two walks are the substrate of the whole graph-algorithms chapter:
 
-- **DFS's family** — [cycle detection](/cortex/data-structures-and-algorithms/graphs-cycle-detection), [topological sort](/cortex/data-structures-and-algorithms/graphs-topological-sort) (DFS finish-order), [connected components](/cortex/data-structures-and-algorithms/graphs-pattern-connected-components-pattern), strongly-connected components, bridges/articulation points. Anything about "explore a whole region" or "ordering by dependency" is DFS.
-- **BFS's family** — [shortest path in an unweighted graph](/cortex/data-structures-and-algorithms/graphs-pattern-shortest-path-breadth-first-search-pattern) (the ripple reaches every node by its fewest-hops distance), level-order, "nearest first," and [grid traversal](/cortex/data-structures-and-algorithms/graphs-traversing-a-grid) (a grid is a graph; neighbours are the 4 cells). The moment a problem says "fewest," reach for BFS.
+- **DFS's family** — [cycle detection](/cortex/data-structures-and-algorithms/graphs/cycle-detection), [topological sort](/cortex/data-structures-and-algorithms/graphs/topological-sort) (DFS finish-order), [connected components](/cortex/data-structures-and-algorithms/graphs/pattern-connected-components/pattern), strongly-connected components, bridges/articulation points. Anything about "explore a whole region" or "ordering by dependency" is DFS.
+- **BFS's family** — [shortest path in an unweighted graph](/cortex/data-structures-and-algorithms/graphs/pattern-shortest-path-breadth-first-search/pattern) (the ripple reaches every node by its fewest-hops distance), level-order, "nearest first," and [grid traversal](/cortex/data-structures-and-algorithms/graphs/traversing-a-grid) (a grid is a graph; neighbours are the 4 cells). The moment a problem says "fewest," reach for BFS.
 - **Same skeleton, different container** — DFS is BFS with a **stack** instead of a **queue**: both pop a frontier node and push its unvisited neighbours; LIFO goes deep, FIFO goes wide. Internalise the visited-set + two-level-loop skeleton once and you've written 90% of every graph algorithm.
-- **The complexity you'll quote forever** — `O(V + E)` (with an adjacency list): each vertex dequeued/recursed once, each edge inspected once. It's why the [adjacency list](/cortex/data-structures-and-algorithms/graphs-adjacency-list-representation) is the default representation — a matrix would force `O(V²)`.
+- **The complexity you'll quote forever** — `O(V + E)` (with an adjacency list): each vertex dequeued/recursed once, each edge inspected once. It's why the [adjacency list](/cortex/data-structures-and-algorithms/graphs/adjacency-list-representation) is the default representation — a matrix would force `O(V²)`.
 
-**Prerequisites:** [Adjacency List](/cortex/data-structures-and-algorithms/graphs-adjacency-list-representation).
-**What's next:** apply BFS/DFS to the most common graph in interviews — a 2D grid — [Traversing a Grid](/cortex/data-structures-and-algorithms/graphs-traversing-a-grid).
+**Prerequisites:** [Adjacency List](/cortex/data-structures-and-algorithms/graphs/adjacency-list-representation).
+**What's next:** apply BFS/DFS to the most common graph in interviews — a 2D grid — [Traversing a Grid](/cortex/data-structures-and-algorithms/graphs/traversing-a-grid).
 
 ## Recall
 

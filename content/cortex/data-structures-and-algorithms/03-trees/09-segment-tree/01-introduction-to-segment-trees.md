@@ -271,11 +271,11 @@ The segment tree is the general-purpose range-query workhorse:
 
 - **Any associative aggregate works** — sum, min, max, gcd, xor, "leftmost 1." The structure only needs a *monoid*: an associative combine with an identity. Swap `+`/`0` for `min`/`∞` and you have a range-minimum tree, same code shape.
 - **Lazy propagation is the deferral pattern** — "mark work pending at the highest covering node, do it only when someone looks below." The same idea recurs in lazy evaluation, copy-on-write, and database MVCC. It's what turns range updates from `O(n)` into `O(log n)`.
-- **vs Fenwick (BIT)** — the [Fenwick tree](/cortex/data-structures-and-algorithms/trees-fenwick-tree-introduction-to-fenwick-trees) is a tighter, simpler structure for *prefix-sum*-style queries (less code, smaller constant) but far less general — no easy range-min, no arbitrary monoid. Reach for Fenwick when you only need invertible prefix aggregates; reach for a segment tree when you need min/max/gcd or range assignment.
+- **vs Fenwick (BIT)** — the [Fenwick tree](/cortex/data-structures-and-algorithms/trees/fenwick-tree/introduction-to-fenwick-trees) is a tighter, simpler structure for *prefix-sum*-style queries (less code, smaller constant) but far less general — no easy range-min, no arbitrary monoid. Reach for Fenwick when you only need invertible prefix aggregates; reach for a segment tree when you need min/max/gcd or range assignment.
 - **vs sparse table** — for a *static* array (no updates) and an idempotent op (min/max/gcd), a sparse table answers queries in `O(1)` after `O(n log n)` build. Segment trees win the moment updates enter the picture.
 
-**Prerequisites:** [Binary Tree](/cortex/data-structures-and-algorithms/trees-binary-tree-introduction-to-binary-trees), [Asymptotic Analysis](/cortex/data-structures-and-algorithms/foundations-asymptotic-analysis).
-**What's next:** the leaner cousin for prefix sums — fewer lines, smaller constant, a beautiful bit trick — the [Fenwick Tree](/cortex/data-structures-and-algorithms/trees-fenwick-tree-introduction-to-fenwick-trees).
+**Prerequisites:** [Binary Tree](/cortex/data-structures-and-algorithms/trees/binary-tree/introduction-to-binary-trees), [Asymptotic Analysis](/cortex/data-structures-and-algorithms/foundations/asymptotic-analysis).
+**What's next:** the leaner cousin for prefix sums — fewer lines, smaller constant, a beautiful bit trick — the [Fenwick Tree](/cortex/data-structures-and-algorithms/trees/fenwick-tree/introduction-to-fenwick-trees).
 
 ## Recall
 

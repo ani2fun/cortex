@@ -7,7 +7,7 @@ prereqs:
 
 ## Why It Exists
 
-The [previous lesson](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-longest-palindromic-subsequence) found the longest palindromic *subsequence* — characters that read the same both ways, gaps allowed. **Substring** is the contiguous version: the palindrome must be one continuous slice of the original, no skipping. That two-character change to the problem statement changes the DP entirely. The subsequence table *counted* (how long a palindrome can we build?); the substring table is **boolean** (is this exact slice a palindrome?), and the longest true slice is the answer.
+The [previous lesson](/cortex/data-structures-and-algorithms/algorithms-by-strategy/dynamic-programming/longest-palindromic-subsequence) found the longest palindromic *subsequence* — characters that read the same both ways, gaps allowed. **Substring** is the contiguous version: the palindrome must be one continuous slice of the original, no skipping. That two-character change to the problem statement changes the DP entirely. The subsequence table *counted* (how long a palindrome can we build?); the substring table is **boolean** (is this exact slice a palindrome?), and the longest true slice is the answer.
 
 It's the engine behind "find the longest mirror sequence" in DNA, the textbook demo for the `O(n)` Manacher trick, and the cleanest case where *contiguity* — not the matching rule — is what reshapes the algorithm.
 
@@ -84,14 +84,14 @@ inner -> result
 
 Two things to hold onto:
 
-- **It's interval DP again** — the same shape as [LPS](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-longest-palindromic-subsequence): `dp[i][j]` ranges over a *substring*, depends on the **inner** cell `dp[i+1][j-1]`, and must be filled by increasing length (a row-major loop would read the inside before it's computed). What changed from LPS is the cell's *type* — boolean "is it a palindrome?" instead of an integer length — and that the answer is the longest `True` span you saw, not `dp[0][n-1]`.
+- **It's interval DP again** — the same shape as [LPS](/cortex/data-structures-and-algorithms/algorithms-by-strategy/dynamic-programming/longest-palindromic-subsequence): `dp[i][j]` ranges over a *substring*, depends on the **inner** cell `dp[i+1][j-1]`, and must be filled by increasing length (a row-major loop would read the inside before it's computed). What changed from LPS is the cell's *type* — boolean "is it a palindrome?" instead of an integer length — and that the answer is the longest `True` span you saw, not `dp[0][n-1]`.
 - **Expand around center is the lighter alternative.** A palindrome is defined by its center, and there are only `2n−1` of them (`n` single-character cores for odd lengths, `n−1` between-character cores for even). Expand outward from each while the mirror holds. Same `O(n²)` time but `O(1)` space — no table — and it's the implementation most people actually write. (Manacher's algorithm gets it to `O(n)`, but it's a specialist tool.)
 
 > **Key takeaway.** Longest palindromic *substring* is a **boolean** interval DP: `dp[i][j] = (s[i]==s[j]) and (j−i<2 or dp[i+1][j-1])` — ends match *and* the inside is already a palindrome. Fill by increasing length; the answer is the longest `True` span. The `O(1)`-space twin is **expand-around-center** over the `2n−1` centers.
 
 ## Trace It
 
-This is the substring/subsequence line drawn as sharply as it gets. Reuse `"bbbab"` from the [last lesson](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-longest-palindromic-subsequence), where the longest palindromic *subsequence* was `4` — drop the lone `a` and keep `"bbbb"`.
+This is the substring/subsequence line drawn as sharply as it gets. Reuse `"bbbab"` from the [last lesson](/cortex/data-structures-and-algorithms/algorithms-by-strategy/dynamic-programming/longest-palindromic-subsequence), where the longest palindromic *subsequence* was `4` — drop the lone `a` and keep `"bbbb"`.
 
 **Predict before you run:** for `"bbbab"`, can the longest palindromic *substring* also reach `4`, or must it be shorter?
 

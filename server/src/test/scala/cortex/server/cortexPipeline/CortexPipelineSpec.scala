@@ -61,13 +61,13 @@ object CortexPipelineSpec extends ZIOSpecDefault:
               book.description == "Architecture notes",
               book.tags == Some(Seq("scala", "zio")),
               book.estimatedReadingMinutes == Some(12),
-              chapters.map(_.slug) == List("start-here", "system-next-step"),
+              chapters.map(_.slug) == List("start-here", "system/next-step"),
               chapters(1).groupPath == Some(Seq("System")),
               payload.frontmatter.title == "Start Here",
               payload.frontmatter.summary == Some("Begin with the system shape."),
               payload.raw.trim == "# Heading From Body\n\nThe first chapter body.",
               payload.prevSlug.isEmpty,
-              payload.nextSlug == Some("system-next-step")
+              payload.nextSlug == Some("system/next-step")
             )
           ).provideLayer(pipelineLayer(root))
         yield result
@@ -79,9 +79,14 @@ object CortexPipelineSpec extends ZIOSpecDefault:
           root <- tempRoot
           _    <- write(root.resolve("book/01-safe.md"), "# Safe")
           result <- (for
-            pipeline <- ZIO.service[CortexPipeline]
-            outcome  <- pipeline.chapter("../book", "safe").either
-          yield assertTrue(outcome == Left(CortexFailure.NotFound)))
+            pipeline      <- ZIO.service[CortexPipeline]
+            bookTraversal <- pipeline.chapter("../book", "safe").either
+            // The chapter slug is now multi-segment (`/`-joined), so guard its traversal too.
+            chapterTraversal <- pipeline.chapter("book", "safe/../../etc").either
+          yield assertTrue(
+            bookTraversal == Left(CortexFailure.NotFound),
+            chapterTraversal == Left(CortexFailure.NotFound)
+          ))
             .provideLayer(pipelineLayer(root))
         yield result
       }

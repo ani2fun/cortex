@@ -151,10 +151,10 @@ Both print `true` then `false`. `[1,5,11,5]` splits as `{11}` vs `{1,5,5}` (each
 ## Reflect & Connect
 
 - **0/1 vs unbounded is a loop direction.** Descending capacity → each item used once (0/1); ascending → unlimited copies (unbounded). Same recurrence, same array. Internalise *why*: descending reads pre-item values, ascending reads post-item values.
-- **Subset-sum is boolean knapsack.** Set values = weights, ask "reach exactly `T`?" with `or` instead of `max`. Partition, "[target sum](https://leetcode.com/problems/target-sum/)," and "[coin change](https://leetcode.com/problems/coin-change/)" are all this skeleton — subset-sum gets [its own pattern lesson](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-subset-sum-pattern) later in this section.
+- **Subset-sum is boolean knapsack.** Set values = weights, ask "reach exactly `T`?" with `or` instead of `max`. Partition, "[target sum](https://leetcode.com/problems/target-sum/)," and "[coin change](https://leetcode.com/problems/coin-change/)" are all this skeleton — subset-sum gets [its own pattern lesson](/cortex/data-structures-and-algorithms/algorithms-by-strategy/dynamic-programming/pattern-subset-sum/pattern) later in this section.
 - **Pseudo-polynomial ≠ polynomial.** `O(n·W)` is exponential in the *bit-length* of `W`; 0/1 knapsack is NP-complete. The table is only fast for small `W` — for huge capacities you need approximation (FPTAS) or branch-and-bound.
 - **Recover the chosen items by backtracing.** Walk `dp` from `dp[n][W]`: if `dp[i][c] != dp[i-1][c]`, item `i` was taken — subtract its weight and continue. The same parent-pointer move from LCS, edit distance, and palindrome partitioning.
-- **Memoisation tamed a `2ⁿ` tree.** This is the backtracking include/exclude search with a cache on `(i, c)`. Seeing that equivalence is the real lesson — most "choose a subset under a constraint" problems are a knapsack wearing a costume, and the [next lesson](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-knapsack-applications) cashes that in.
+- **Memoisation tamed a `2ⁿ` tree.** This is the backtracking include/exclude search with a cache on `(i, c)`. Seeing that equivalence is the real lesson — most "choose a subset under a constraint" problems are a knapsack wearing a costume, and the [next lesson](/cortex/data-structures-and-algorithms/algorithms-by-strategy/dynamic-programming/knapsack-applications) cashes that in.
 
 ## Recall
 

@@ -9,7 +9,7 @@ prereqs:
 
 Some backtracking problems have **no bad leaves**: every complete candidate the tree can produce *is* a valid answer. List all subsets of a set, all length-`n` sequences over an alphabet, all letter combinations of a phone number — there's nothing to reject and nothing to prune. This is **unconditional enumeration**, the simplest backtracking pattern: walk the whole state-space tree and record every leaf.
 
-It's the phone-PIN problem from the [backtracking intro](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-introduction-to-backtracking), generalised. The only thing that varies between problems is the *shape of the choices* — include-or-exclude per element (subsets), a value `1..k` per slot (sequences), a letter per digit (phone). The skeleton — choose → recurse → undo, record at the leaf — never changes.
+It's the phone-PIN problem from the [backtracking intro](/cortex/data-structures-and-algorithms/algorithms-by-strategy/backtracking/introduction-to-backtracking), generalised. The only thing that varies between problems is the *shape of the choices* — include-or-exclude per element (subsets), a value `1..k` per slot (sequences), a letter per digit (phone). The skeleton — choose → recurse → undo, record at the leaf — never changes.
 
 ```mermaid
 ---

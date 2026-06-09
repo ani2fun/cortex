@@ -181,12 +181,12 @@ Double hashing is the top rung of the open-addressing ladder:
 
 - **The ladder** — *linear* (step `+1`, primary clustering) → *quadratic* (step `i²`, fixes primary, leaves secondary) → *double hashing* (step `h2(key)`, fixes both). Each rung removes the previous one's clustering by making the probe depend on more than the home slot.
 - **`h2`'s two rules are non-negotiable** — never `0` (else infinite loop) and coprime with capacity (else partial coverage). A prime capacity makes every non-zero step coprime, which is why double-hashing tables are usually sized to a prime.
-- **The trade-off vs linear probing** — double hashing has the best clustering behavior (near-uniform), but pays with a second hash per probe and poor cache locality, since consecutive probes jump across the array. Linear probing's contiguous walk is faster *per probe* and cache-friendly; double hashing wins when clustering would otherwise dominate. Real engineering picks per workload — which is the lens the [hash-table overview](/cortex/data-structures-and-algorithms/linear-structures-hash-table-what-is-a-hash-table) frames.
+- **The trade-off vs linear probing** — double hashing has the best clustering behavior (near-uniform), but pays with a second hash per probe and poor cache locality, since consecutive probes jump across the array. Linear probing's contiguous walk is faster *per probe* and cache-friendly; double hashing wins when clustering would otherwise dominate. Real engineering picks per workload — which is the lens the [hash-table overview](/cortex/data-structures-and-algorithms/linear-structures/hash-table/what-is-a-hash-table) frames.
 
 This completes the collision-resolution track: separate chaining plus the three open-addressing probe sequences.
 
-**Prerequisites:** [Quadratic Probing](/cortex/data-structures-and-algorithms/linear-structures-hash-table-quadratic-probing).
-**What's next:** revisit how these strategies fit the bigger picture in [What Is a Hash Table?](/cortex/data-structures-and-algorithms/linear-structures-hash-table-what-is-a-hash-table).
+**Prerequisites:** [Quadratic Probing](/cortex/data-structures-and-algorithms/linear-structures/hash-table/quadratic-probing).
+**What's next:** revisit how these strategies fit the bigger picture in [What Is a Hash Table?](/cortex/data-structures-and-algorithms/linear-structures/hash-table/what-is-a-hash-table).
 
 ## Recall
 

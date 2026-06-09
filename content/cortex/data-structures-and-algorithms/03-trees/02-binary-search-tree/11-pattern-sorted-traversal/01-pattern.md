@@ -161,7 +161,7 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [Lowest Absolute Variance](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-sorted-traversal-problems-lowest-absolute-variance), [BST Validator](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-sorted-traversal-problems-bst-validator), [BST to Sorted Array](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-sorted-traversal-problems-bst-to-sorted-array), and [BST to DLL](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-sorted-traversal-problems-bst-to-dll).
+Drill the family in **Practice** — [Lowest Absolute Variance](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-sorted-traversal/problems/lowest-absolute-variance), [BST Validator](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-sorted-traversal/problems/bst-validator), [BST to Sorted Array](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-sorted-traversal/problems/bst-to-sorted-array), and [BST to DLL](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-sorted-traversal/problems/bst-to-dll).
 
 ## Reflect & Connect
 
@@ -169,10 +169,10 @@ Sorted traversal is the BST's defining superpower made into a pattern:
 
 - **The family** — k-th smallest, validate, min adjacent difference, closest value, BST↔sorted-array, BST→doubly-linked-list (an in-order walk relinking nodes). All are "in-order + per-visit logic."
 - **Process on the fly** — track `prev` (validate, min-diff) or a counter (k-th), and you avoid the `O(n)` list. The early-exit for k-th makes it `O(k + h)`. This is the same "stream, don't store" instinct as the linked-list and array one-pass patterns.
-- **Two natural extensions** — a *reversed* in-order (right, node, left) yields **descending** order for "k-th largest" (the [next pattern](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-reversed-sorted-traversal-pattern)); and pairing an ascending [iterator](/cortex/data-structures-and-algorithms/trees-binary-search-tree-iterators-in-binary-search-trees) with a descending one solves "two-sum on a BST" by the array two-pointer method.
+- **Two natural extensions** — a *reversed* in-order (right, node, left) yields **descending** order for "k-th largest" (the [next pattern](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-reversed-sorted-traversal/pattern)); and pairing an ascending [iterator](/cortex/data-structures-and-algorithms/trees/binary-search-tree/iterators-in-binary-search-trees) with a descending one solves "two-sum on a BST" by the array two-pointer method.
 
-**Prerequisites:** [Introduction to Binary Search Trees](/cortex/data-structures-and-algorithms/trees-binary-search-tree-introduction-to-binary-search-trees).
-**What's next:** the mirror walk for descending order — [Reversed Sorted Traversal](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-reversed-sorted-traversal-pattern).
+**Prerequisites:** [Introduction to Binary Search Trees](/cortex/data-structures-and-algorithms/trees/binary-search-tree/introduction-to-binary-search-trees).
+**What's next:** the mirror walk for descending order — [Reversed Sorted Traversal](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-reversed-sorted-traversal/pattern).
 
 ## Recall
 

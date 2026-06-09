@@ -9,7 +9,7 @@ prereqs:
 
 ## Why It Exists
 
-[Insertion](/cortex/data-structures-and-algorithms/trees-binary-search-tree-insertion-in-binary-search-trees) was easy — a new key always attaches as a leaf, nothing moves. Deletion is the hard inverse: pull a node out and you leave a **hole** that has to be filled so the BST invariant (left < node < right) still holds everywhere. How you fill it depends on how many children the doomed node has.
+[Insertion](/cortex/data-structures-and-algorithms/trees/binary-search-tree/insertion-in-binary-search-trees) was easy — a new key always attaches as a leaf, nothing moves. Deletion is the hard inverse: pull a node out and you leave a **hole** that has to be filled so the BST invariant (left < node < right) still holds everywhere. How you fill it depends on how many children the doomed node has.
 
 The cases:
 
@@ -196,11 +196,11 @@ This is a structural lesson — deletion completes the BST's mutating operations
 Deletion is the BST operation that exposes the real subtlety:
 
 - **Three cases, one reduction** — leaf and one-child are trivial; the two-child case *reduces* to one of them by promoting the in-order successor (whose own removal is easy). Recognizing "hard case reduces to easy case" is the structural insight.
-- **Deletion can unbalance the tree** — like insertion, it changes the shape; self-balancing trees ([AVL](/cortex/data-structures-and-algorithms/trees-avl-tree-introduction-to-avl-trees), [red-black](/cortex/data-structures-and-algorithms/trees-red-black-tree-introduction-to-red-black-trees)) run rotations *after* a delete to restore `O(log n)` height, just as they do after insert.
+- **Deletion can unbalance the tree** — like insertion, it changes the shape; self-balancing trees ([AVL](/cortex/data-structures-and-algorithms/trees/avl-tree/introduction-to-avl-trees), [red-black](/cortex/data-structures-and-algorithms/trees/red-black-tree/introduction-to-red-black-trees)) run rotations *after* a delete to restore `O(log n)` height, just as they do after insert.
 - **A known wart: asymmetric (Hibbard) deletion** — always taking the *successor* biases the tree leftward over many delete/insert cycles, gradually raising height toward `√n`. Production code alternates successor/predecessor or uses a balanced tree. It's a reminder that "correct" and "stays efficient under churn" are different bars — the latter is what balanced trees guarantee.
 
-**Prerequisites:** [Insertion in BSTs](/cortex/data-structures-and-algorithms/trees-binary-search-tree-insertion-in-binary-search-trees).
-**What's next:** build a balanced BST from sorted data in one shot — [Constructing a BST](/cortex/data-structures-and-algorithms/trees-binary-search-tree-constructing-a-binary-search-tree).
+**Prerequisites:** [Insertion in BSTs](/cortex/data-structures-and-algorithms/trees/binary-search-tree/insertion-in-binary-search-trees).
+**What's next:** build a balanced BST from sorted data in one shot — [Constructing a BST](/cortex/data-structures-and-algorithms/trees/binary-search-tree/constructing-a-binary-search-tree).
 
 ## Recall
 

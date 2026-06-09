@@ -6,4 +6,4 @@ Chapters in this section, ordered from fundamentals to advanced topics.
 
 ## Start Here — the learning path
 
-- [Introduction to Randomized Algorithms](/cortex/data-structures-and-algorithms/algorithms-by-strategy-randomized-algorithms-introduction-to-randomized-algorithms)
+- [Introduction to Randomized Algorithms](/cortex/data-structures-and-algorithms/algorithms-by-strategy/randomized-algorithms/introduction-to-randomized-algorithms)

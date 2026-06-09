@@ -107,10 +107,10 @@ Strings are where the array's lessons pay off on the most common data there is. 
 - **The immutability/`join` rule** is one of the most frequent real performance bugs — a log builder, a CSV writer, a template renderer that does `+=` in a loop. Reach for a list-and-join or a `StringBuilder` by reflex.
 - **A "character" isn't always one byte.** ASCII fits in one byte, but Unicode characters (UTF-8) take one to four. So `len` in bytes and `len` in characters can differ, and slicing mid-character corrupts text. For interview-level work, treat a string as an array of characters; just know the byte/char distinction exists when you handle real-world text.
 
-Because a string *is* an array, the array scan patterns apply directly — the [Two Pointers](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-pattern) problems (palindrome, reverse) are string problems. And a whole field of *string algorithms* — substring search, matching — builds on this foundation later in the book.
+Because a string *is* an array, the array scan patterns apply directly — the [Two Pointers](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers/pattern) problems (palindrome, reverse) are string problems. And a whole field of *string algorithms* — substring search, matching — builds on this foundation later in the book.
 
-**Prerequisites:** [Arrays](/cortex/data-structures-and-algorithms/linear-structures-arrays-what-is-an-array) and [Measuring Cost](/cortex/data-structures-and-algorithms/foundations-measuring-cost).
-**What's next:** the last linear-structures foundation — working directly in binary with [Bit Manipulation](/cortex/data-structures-and-algorithms/bit-tricks-bit-manipulation).
+**Prerequisites:** [Arrays](/cortex/data-structures-and-algorithms/linear-structures/arrays/what-is-an-array) and [Measuring Cost](/cortex/data-structures-and-algorithms/foundations/measuring-cost).
+**What's next:** the last linear-structures foundation — working directly in binary with [Bit Manipulation](/cortex/data-structures-and-algorithms/bit-tricks/bit-manipulation).
 
 ## Recall
 

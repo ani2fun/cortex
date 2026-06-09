@@ -14,11 +14,11 @@ Every other module so far has assumed your queries return correctly. This one is
 ## Place in the curriculum
 
 - **Prerequisites:** comfort with `JOIN`, `WHERE`, schema design.
-- **Followed by:** [Transactions and Concurrency](/cortex/languages/sql-index). Indexes affect concurrency too — they reduce lock contention and enable better isolation.
+- **Followed by:** [Transactions and Concurrency](/cortex/languages/sql/index). Indexes affect concurrency too — they reduce lock contention and enable better isolation.
 
 ## Chapters
 
-1. [B-Tree Indexes](/cortex/languages/sql-indexes-and-performance-b-tree-indexes) — how a B-tree works, when an index helps, sargability, covering indexes.
-2. [Other Index Types](/cortex/languages/sql-indexes-and-performance-other-index-types) — Hash, GIN, GiST, BRIN, partial indexes, expression indexes.
-3. [EXPLAIN and Query Plans](/cortex/languages/sql-indexes-and-performance-explain-and-query-plans) — reading the planner's output, scan types, join algorithms, cost vs actual.
-4. [Query Anti-Patterns](/cortex/languages/sql-indexes-and-performance-anti-patterns) — function-on-column, leading wildcards, OR vs UNION, the patterns that block index use.
+1. [B-Tree Indexes](/cortex/languages/sql/indexes-and-performance/b-tree-indexes) — how a B-tree works, when an index helps, sargability, covering indexes.
+2. [Other Index Types](/cortex/languages/sql/indexes-and-performance/other-index-types) — Hash, GIN, GiST, BRIN, partial indexes, expression indexes.
+3. [EXPLAIN and Query Plans](/cortex/languages/sql/indexes-and-performance/explain-and-query-plans) — reading the planner's output, scan types, join algorithms, cost vs actual.
+4. [Query Anti-Patterns](/cortex/languages/sql/indexes-and-performance/anti-patterns) — function-on-column, leading wildcards, OR vs UNION, the patterns that block index use.

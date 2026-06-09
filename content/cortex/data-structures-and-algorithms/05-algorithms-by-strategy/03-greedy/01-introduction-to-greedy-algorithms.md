@@ -163,7 +163,7 @@ Both print `2` then `4`: two arrows cover the four overlapping balloons; four di
 
 - **Greedy is fragile — demand the proof.** A greedy algorithm without a stated exchange argument (or a citation to a known one) is a code smell. Either prove "greedy stays ahead" / "exchange without loss," or find the counterexample.
 - **0/1 knapsack is the classic failure.** Greedy by value-per-weight strands capacity; the fix is [dynamic programming](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multidimensional-recursion). The *fractional* knapsack (items splittable) *is* greedy-amenable — a small change in the problem flips the verdict.
-- **Greedy lives all over graphs.** [Dijkstra](/cortex/data-structures-and-algorithms/graphs-single-source-shortest-path) (closest unvisited vertex) and [Kruskal/Prim MST](/cortex/data-structures-and-algorithms/graphs-minimum-spanning-trees) (cheapest safe edge) are greedy — each proven by an exchange/cut argument.
+- **Greedy lives all over graphs.** [Dijkstra](/cortex/data-structures-and-algorithms/graphs/single-source-shortest-path) (closest unvisited vertex) and [Kruskal/Prim MST](/cortex/data-structures-and-algorithms/graphs/minimum-spanning-trees) (cheapest safe edge) are greedy — each proven by an exchange/cut argument.
 - **In production:** gzip/JPEG/MP3 entropy-code with Huffman; OS schedulers use Earliest-Deadline-First and Shortest-Job-First; caches greedily evict LRU/LFU; register allocators greedily colour. Greedy is also the go-to *approximation* for NP-hard problems (set cover's greedy gives the best possible `O(log n)` ratio).
 
 ## Recall

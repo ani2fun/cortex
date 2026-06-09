@@ -227,8 +227,8 @@ Both print `3` then `1`. The grid version is the identical pattern — the only 
 
 ## Reflect & Connect
 
-- **Undirected here; directed needs more.** "Connected component" is an undirected notion. In a *directed* graph the analogous idea is the [strongly connected component](/cortex/data-structures-and-algorithms/graphs-strongly-connected-components) — mutually reachable, both directions — which needs Tarjan/Kosaraju, not a plain flood-fill.
-- **Union-Find is the online alternative.** This flood-fill is the *offline* approach: you have the whole graph and sweep it once. When edges arrive incrementally and you must answer "same component?" as you go, [disjoint-set union](/cortex/data-structures-and-algorithms/trees-disjoint-set-union-introduction-to-disjoint-set-union) is the right tool — near-`O(1)` amortised per union/query.
+- **Undirected here; directed needs more.** "Connected component" is an undirected notion. In a *directed* graph the analogous idea is the [strongly connected component](/cortex/data-structures-and-algorithms/graphs/strongly-connected-components) — mutually reachable, both directions — which needs Tarjan/Kosaraju, not a plain flood-fill.
+- **Union-Find is the online alternative.** This flood-fill is the *offline* approach: you have the whole graph and sweep it once. When edges arrive incrementally and you must answer "same component?" as you go, [disjoint-set union](/cortex/data-structures-and-algorithms/trees/disjoint-set-union/introduction-to-disjoint-set-union) is the right tool — near-`O(1)` amortised per union/query.
 - **BFS and DFS are interchangeable** for the inner flood — same `O(V + E)`. Pick BFS (an explicit queue) on huge grids to avoid recursion-depth overflow; the outer loop and the global `visited` set are unchanged.
 - **Grids are implicit graphs.** Most "regions / islands / flood-fill" problems are this pattern with delta-generated neighbours. Recognise the shape and you reuse one skeleton across maps, mazes, and image segmentation.
 

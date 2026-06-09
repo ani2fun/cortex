@@ -142,17 +142,17 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [Relocate Node](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-reorder-problems-relocate-node), [Parity Order](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-reorder-problems-parity-order), [Value Partition](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-reorder-problems-value-partition), and [Shuffle List](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-reorder-problems-shuffle-list).
+Drill the family in **Practice** — [Relocate Node](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-reorder/problems/relocate-node), [Parity Order](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-reorder/problems/parity-order), [Value Partition](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-reorder/problems/value-partition), and [Shuffle List](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-reorder/problems/shuffle-list).
 
 ## Reflect & Connect
 
 Reorder is where the linked-list toolkit comes together:
 
 - **Classify-and-concatenate** covers most of it — by index parity (above), by **value** (a `< x` chain and a `≥ x` chain, kept stable, then joined — the partition step of quicksort on lists), by any per-node predicate.
-- **The capstone composition** — the classic *fold* reorder `L0→Ln→L1→Ln-1→…` is built entirely from the patterns you already have: **split** the list at the middle ([fast & slow](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-fast-and-slow-pointers-pattern)), **[reverse](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-reversal-pattern)** the second half, then **[merge](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-merge-pattern)** the two halves alternately. Recognizing a hard reorder as "split + reverse + merge" is the whole skill.
+- **The capstone composition** — the classic *fold* reorder `L0→Ln→L1→Ln-1→…` is built entirely from the patterns you already have: **split** the list at the middle ([fast & slow](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-fast-and-slow-pointers/pattern)), **[reverse](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-reversal/pattern)** the second half, then **[merge](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-merge/pattern)** the two halves alternately. Recognizing a hard reorder as "split + reverse + merge" is the whole skill.
 - **Always save the heads you'll overwrite** — re-threading destroys the original links as you go; the one or two pointers you stash up front (`even_head` here) are what keep the rebuilt chains reachable.
 
-**Prerequisites:** [Merge](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-merge-pattern).
+**Prerequisites:** [Merge](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-merge/pattern).
 
 ## Recall
 

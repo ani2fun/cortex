@@ -16,7 +16,7 @@ The goal is not breadth-as-a-checklist. The goal is for you to be able to **read
 
 - Every chapter opens with a hook — a real-world scenario or a "you've done this and not realised" moment — before any formal syntax.
 - Code blocks use **PostgreSQL** as the canonical dialect; brief inline callouts mark divergences for SQLite, MySQL, and SQL Server T-SQL when the difference matters in practice.
-- The same **sample schema** (three tables: `customers`, `orders`, `hello_events`) is used across every chapter. It's defined once in the [Introduction to SQL](/cortex/languages/sql-foundations-introduction-to-sql) chapter and re-used everywhere; you can always run any chapter's queries against the same data.
+- The same **sample schema** (three tables: `customers`, `orders`, `hello_events`) is used across every chapter. It's defined once in the [Introduction to SQL](/cortex/languages/sql/foundations/introduction-to-sql) chapter and re-used everywhere; you can always run any chapter's queries against the same data.
 - Every chapter closes with **Production reality** (where this lives in real systems — Postgres internals, codefolio's own schema, real EXPLAIN output), a **Practice ladder** of 3–5 problems with hints (not solutions), and a **Final takeaway** of 2–4 punchy bullets.
 
 ---
@@ -25,7 +25,7 @@ The goal is not breadth-as-a-checklist. The goal is for you to be able to **read
 
 The curriculum is organised as **Modules → Tutorials**. Each module is a self-contained area you can read top-to-bottom; each tutorial states its prerequisites in frontmatter so you can navigate sideways too.
 
-1. [**Foundations**](/cortex/languages/sql-foundations-index) — what SQL is, the logical execution order, SELECT and projection, filtering, ordering and pagination, DDL, DML.
+1. [**Foundations**](/cortex/languages/sql/foundations/index) — what SQL is, the logical execution order, SELECT and projection, filtering, ordering and pagination, DDL, DML.
 2. **Working with Multiple Tables** *(coming soon)* — joins, set operators, subqueries, anti-joins.
 3. **Aggregation** *(coming soon)* — GROUP BY, aggregate functions, ROLLUP/CUBE/GROUPING SETS.
 4. **Row Functions** *(coming soon)* — strings, numbers, dates, NULL handling and three-valued logic, CASE expressions.
@@ -155,7 +155,7 @@ The yellow nodes (Introduction, NULL/3VL, Window Basics, EXPLAIN) are the four l
 
 ## Sample schema
 
-Every chapter in this book uses one shared three-table schema. The full DDL and seed data live in the [Introduction to SQL](/cortex/languages/sql-foundations-introduction-to-sql) chapter; the high-level shape is:
+Every chapter in this book uses one shared three-table schema. The full DDL and seed data live in the [Introduction to SQL](/cortex/languages/sql/foundations/introduction-to-sql) chapter; the high-level shape is:
 
 ```mermaid
 ---

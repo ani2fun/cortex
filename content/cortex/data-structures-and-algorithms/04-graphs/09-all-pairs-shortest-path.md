@@ -9,7 +9,7 @@ prereqs:
 
 ## Why It Exists
 
-[Single-source shortest path](/cortex/data-structures-and-algorithms/graphs-single-source-shortest-path) answers "cheapest route from *one* node." But routing tables, network-latency analyses, and "closest facility" queries want the distance between **every** pair of nodes at once.
+[Single-source shortest path](/cortex/data-structures-and-algorithms/graphs/single-source-shortest-path) answers "cheapest route from *one* node." But routing tables, network-latency analyses, and "closest facility" queries want the distance between **every** pair of nodes at once.
 
 The obvious approach — run Dijkstra `N` times, once per source — costs `O(N·(N+E) log N)` and only works with non-negative weights (negatives force `N` Bellman-Fords at `O(N²E)`). **Floyd-Warshall** does it in a clean `O(N³)` with a *four-line* triple loop: it handles negative edges (just not negative cycles), has tiny constant factors (integer add + compare, cache-friendly over a matrix), and is trivial to memorise. For dense graphs it beats N-Dijkstras by a `log N` factor; below ~10⁴ nodes its simplicity wins regardless. It's one of the most elegant dynamic programs you'll meet.
 
@@ -136,11 +136,11 @@ Floyd-Warshall is the all-pairs workhorse and a model dynamic program:
 
 - **Which all-pairs strategy?** — Dense graph or negative edges → **Floyd-Warshall** (`O(N³)`, simple, cache-friendly). Sparse, non-negative, large `N` → **`N`×Dijkstra** (`O(N(N+E) log N)`, wins asymptotically when `E ≪ N²`). Sparse with negatives → Johnson's algorithm (reweight + `N`×Dijkstra). The decision is density × sign of weights.
 - **It's the canonical "DP over a third dimension"** — the trick of adding one resource at a time (here, one allowed intermediate per outer pass) recurs across DP: knapsack adds one item, edit distance adds one prefix character, interval DP adds one split point. Recognise "stage the subproblems so each read is already final" and the loop order is forced.
-- **The matrix representation finally pays off** — Floyd-Warshall lives on `dist[i][k]`/`dist[k][j]` `O(1)` lookups, exactly what the [adjacency matrix](/cortex/data-structures-and-algorithms/graphs-adjacency-matrix-representation) was built for. The one major algorithm where the matrix beats the list.
+- **The matrix representation finally pays off** — Floyd-Warshall lives on `dist[i][k]`/`dist[k][j]` `O(1)` lookups, exactly what the [adjacency matrix](/cortex/data-structures-and-algorithms/graphs/adjacency-matrix-representation) was built for. The one major algorithm where the matrix beats the list.
 - **In production** — small-network routing tables, all-pairs latency/throughput matrices, "closest depot/server" precomputation, and graph-analysis (transitive closure, reachability) over dense relationship graphs.
 
-**Prerequisites:** [Single-Source Shortest Path](/cortex/data-structures-and-algorithms/graphs-single-source-shortest-path).
-**What's next:** networks where edges have *capacities* and you want maximum throughput — [Max-Flow / Min-Cut](/cortex/data-structures-and-algorithms/graphs-max-flow-min-cut-theorem).
+**Prerequisites:** [Single-Source Shortest Path](/cortex/data-structures-and-algorithms/graphs/single-source-shortest-path).
+**What's next:** networks where edges have *capacities* and you want maximum throughput — [Max-Flow / Min-Cut](/cortex/data-structures-and-algorithms/graphs/max-flow-min-cut-theorem).
 
 ## Recall
 

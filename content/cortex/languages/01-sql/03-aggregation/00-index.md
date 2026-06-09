@@ -14,11 +14,11 @@ This module covers the three pieces: the mechanics of `GROUP BY` and `HAVING`, t
 
 ## Place in the curriculum
 
-- **Prerequisites:** [Foundations](/cortex/languages/sql-foundations-index) and [Joins](/cortex/languages/sql-multiple-tables-joins). `GROUP BY` is a step in the [logical execution order](/cortex/languages/sql-foundations-introduction-to-sql#the-logical-execution-order), and most aggregation queries operate on joined tables.
-- **Followed by:** [Window Functions](/cortex/languages/sql-index). Window functions generalise aggregation — you can keep one row per *original* row while computing aggregates across a window of related rows.
+- **Prerequisites:** [Foundations](/cortex/languages/sql/foundations/index) and [Joins](/cortex/languages/sql/multiple-tables/joins). `GROUP BY` is a step in the [logical execution order](/cortex/languages/sql/foundations/introduction-to-sql#the-logical-execution-order), and most aggregation queries operate on joined tables.
+- **Followed by:** [Window Functions](/cortex/languages/sql/index). Window functions generalise aggregation — you can keep one row per *original* row while computing aggregates across a window of related rows.
 
 ## Chapters
 
-1. [GROUP BY and HAVING](/cortex/languages/sql-aggregation-group-by-and-having) — the mechanics: how rows collapse into groups, what columns are legal in `SELECT` after a `GROUP BY`, and the difference between `WHERE` (filters rows before grouping) and `HAVING` (filters groups after).
-2. [Aggregate Functions](/cortex/languages/sql-aggregation-aggregate-functions) — `COUNT`, `SUM`, `AVG`, `MIN`, `MAX`, `STRING_AGG`/`GROUP_CONCAT`, plus the modifiers (`DISTINCT`, `FILTER`) that change their meaning. Plus the NULL behaviour that surprises everyone the first time.
-3. [Grouping Sets, ROLLUP, CUBE](/cortex/languages/sql-aggregation-grouping-sets-rollup-cube) — multi-dimensional aggregation in a single query: subtotals by country, subtotals by month, subtotals by both. The right tool for spreadsheet-style "what does the data look like at every level."
+1. [GROUP BY and HAVING](/cortex/languages/sql/aggregation/group-by-and-having) — the mechanics: how rows collapse into groups, what columns are legal in `SELECT` after a `GROUP BY`, and the difference between `WHERE` (filters rows before grouping) and `HAVING` (filters groups after).
+2. [Aggregate Functions](/cortex/languages/sql/aggregation/aggregate-functions) — `COUNT`, `SUM`, `AVG`, `MIN`, `MAX`, `STRING_AGG`/`GROUP_CONCAT`, plus the modifiers (`DISTINCT`, `FILTER`) that change their meaning. Plus the NULL behaviour that surprises everyone the first time.
+3. [Grouping Sets, ROLLUP, CUBE](/cortex/languages/sql/aggregation/grouping-sets-rollup-cube) — multi-dimensional aggregation in a single query: subtotals by country, subtotals by month, subtotals by both. The right tool for spreadsheet-style "what does the data look like at every level."

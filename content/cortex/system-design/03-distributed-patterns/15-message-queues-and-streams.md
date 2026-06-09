@@ -112,7 +112,7 @@ on message(order_id, charge_cents, idempotency_key):
     ack
 ```
 
-Now the crash-after-charge-before-ack case is safe: the redelivery hits `already_processed`, does nothing, and acks. The customer is charged **exactly once** — not because the broker performed magic, but because *you made the duplicate a no-op*. (Real payment APIs like Stripe expose exactly this idempotency-key mechanism for the same reason; we use it directly in [Capstone 44 — payments](/cortex/system-design/capstones-payment-system).)
+Now the crash-after-charge-before-ack case is safe: the redelivery hits `already_processed`, does nothing, and acks. The customer is charged **exactly once** — not because the broker performed magic, but because *you made the duplicate a no-op*. (Real payment APIs like Stripe expose exactly this idempotency-key mechanism for the same reason; we use it directly in [Capstone 44 — payments](/cortex/system-design/capstones/payment-system).)
 
 ## 5. Build It
 
@@ -202,7 +202,7 @@ A third common choice is **Amazon SQS** — a managed queue. Standard SQS gives 
 > <details>
 > <summary>Solution</summary>
 >
-> Partition by **`conversation_id`** — all messages for one conversation hash to the same partition, so they're strictly ordered; different conversations spread across the 12 partitions for parallelism. The risk: a single mega-conversation (a 100k-member channel) is a **hot partition** — it can't be split without breaking its ordering, so that one partition caps your throughput for that conversation. Same hot-key problem as [Lesson 12 — sharding](/cortex/system-design/building-blocks-sharding-and-partitioning); the remedy (sub-keying by time bucket) costs you cross-bucket ordering.
+> Partition by **`conversation_id`** — all messages for one conversation hash to the same partition, so they're strictly ordered; different conversations spread across the 12 partitions for parallelism. The risk: a single mega-conversation (a 100k-member channel) is a **hot partition** — it can't be split without breaking its ordering, so that one partition caps your throughput for that conversation. Same hot-key problem as [Lesson 12 — sharding](/cortex/system-design/building-blocks/sharding-and-partitioning); the remedy (sub-keying by time bucket) costs you cross-bucket ordering.
 >
 > </details>
 
@@ -216,4 +216,4 @@ A third common choice is **Amazon SQS** — a managed queue. Standard SQS gives 
 
 ---
 
-> **Next:** [16. Pub/sub and fan-out](/cortex/system-design/distributed-patterns-pubsub-and-fanout) — a log lets many consumers read the same events, which is the foundation of *publish/subscribe*. We'll look at fan-out patterns, when to fan out on write vs on read, and how a "simple" notification feature turns into a thundering herd.
+> **Next:** [16. Pub/sub and fan-out](/cortex/system-design/distributed-patterns/pubsub-and-fanout) — a log lets many consumers read the same events, which is the foundation of *publish/subscribe*. We'll look at fan-out patterns, when to fan out on write vs on read, and how a "simple" notification feature turns into a thundering herd.

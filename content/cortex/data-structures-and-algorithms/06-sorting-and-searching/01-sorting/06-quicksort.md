@@ -150,11 +150,11 @@ This is a structural lesson — drill sorting in the pattern sets.
 Quicksort is the workhorse comparison sort, and its partition step seeds a whole family:
 
 - **Pivot choice is everything** — random or median-of-three pivots make the `O(n²)` worst case practically impossible; a fixed end-pivot makes sorted input the worst case. Production "introsort" even watches recursion depth and falls back to heapsort if a pathological input pushes it too deep — guaranteeing `O(n log n)`.
-- **Partition is reused everywhere** — find the `k`-th smallest element in `O(n)` average by partitioning but recursing into only *one* side ([quickselect](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-pattern-quickselect)); sort arrays with many duplicates faster by partitioning into *three* regions ([Dutch national flag](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-dutch-national-flag-sort) and [three-way quicksort](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-three-way-quicksort)).
-- **Quicksort vs merge sort** — quicksort is in-place and usually faster (better locality, smaller constant) but `O(n²)` worst case and unstable; [merge sort](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-merge-sort) guarantees `O(n log n)` and is stable but needs `O(n)` scratch. In-memory arrays → quicksort; linked lists or external/stable sorting → merge sort.
+- **Partition is reused everywhere** — find the `k`-th smallest element in `O(n)` average by partitioning but recursing into only *one* side ([quickselect](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-pattern-quickselect)); sort arrays with many duplicates faster by partitioning into *three* regions ([Dutch national flag](/cortex/data-structures-and-algorithms/sorting-and-searching/sorting/dutch-national-flag-sort) and [three-way quicksort](/cortex/data-structures-and-algorithms/sorting-and-searching/sorting/three-way-quicksort)).
+- **Quicksort vs merge sort** — quicksort is in-place and usually faster (better locality, smaller constant) but `O(n²)` worst case and unstable; [merge sort](/cortex/data-structures-and-algorithms/sorting-and-searching/sorting/merge-sort) guarantees `O(n log n)` and is stable but needs `O(n)` scratch. In-memory arrays → quicksort; linked lists or external/stable sorting → merge sort.
 
-**Prerequisites:** [What Is an Array?](/cortex/data-structures-and-algorithms/linear-structures-arrays-what-is-an-array).
-**What's next:** quicksort's partition specialized to three regions — [Dutch National Flag Sort](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-dutch-national-flag-sort).
+**Prerequisites:** [What Is an Array?](/cortex/data-structures-and-algorithms/linear-structures/arrays/what-is-an-array).
+**What's next:** quicksort's partition specialized to three regions — [Dutch National Flag Sort](/cortex/data-structures-and-algorithms/sorting-and-searching/sorting/dutch-national-flag-sort).
 
 ## Recall
 

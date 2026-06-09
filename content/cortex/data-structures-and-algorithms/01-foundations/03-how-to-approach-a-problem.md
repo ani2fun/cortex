@@ -114,8 +114,8 @@ Now break it on purpose: change `smart` to `n * (n + 1)` (drop the `/ 2`) and re
 
 This routine is the backbone of every problem ahead. Patterns like two pointers and sliding window are all just *named ways of removing waste* from a brute force — which is exactly Step 4. Keep the loop in your head and no problem is truly blank anymore.
 
-**Prerequisites:** [Measuring Cost](/cortex/data-structures-and-algorithms/foundations-measuring-cost) — you judge "improve" in Big-O.
-**What's next:** the data structures themselves, starting with the one built directly on the memory model — [arrays](/cortex/data-structures-and-algorithms/linear-structures-arrays-what-is-an-array).
+**Prerequisites:** [Measuring Cost](/cortex/data-structures-and-algorithms/foundations/measuring-cost) — you judge "improve" in Big-O.
+**What's next:** the data structures themselves, starting with the one built directly on the memory model — [arrays](/cortex/data-structures-and-algorithms/linear-structures/arrays/what-is-an-array).
 
 ## Recall
 

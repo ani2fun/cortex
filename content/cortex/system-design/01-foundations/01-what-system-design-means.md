@@ -257,7 +257,7 @@ The mistakes that distinguish junior from senior thinking — every one of these
 - **Treating "the cloud" as infinite and infallible.** It is not. Regions go down. Availability zones lose power. AWS's worst regional outages have run roughly 7–20 hours of degraded service in us-east-1 — and even then it has never lost an entire region (all zones) at once. Design for it.
 - **Assuming the network is reliable.** It is not — partitions happen, packets vanish, DNS lies. (This is fallacy #1 of the [Eight Fallacies of Distributed Systems](https://en.wikipedia.org/wiki/Fallacies_of_distributed_computing). We will dedicate a lesson to it later.)
 - **Building distributed systems before you have a single-machine system that works.** Distribution multiplies bugs by the number of nodes. If you cannot make one machine reliable, six of them will not save you. They will compound your suffering.
-- **Caching as a reflex.** "Add a cache" is the duct tape of system design. It hides slowness, then explodes spectacularly the first time the cache layer fails and 100% of your traffic hits the cold backend. (Cache stampedes get their own treatment in [Lesson 8](/cortex/system-design/building-blocks-caching).)
+- **Caching as a reflex.** "Add a cache" is the duct tape of system design. It hides slowness, then explodes spectacularly the first time the cache layer fails and 100% of your traffic hits the cold backend. (Cache stampedes get their own treatment in [Lesson 8](/cortex/system-design/building-blocks/caching).)
 - **Forgetting people.** A system that needs 10 engineers to operate but the team has 3 is *broken by design*, no matter how elegant the architecture.
 
 How would you notice you are committing one of these mistakes? You stop being able to answer the question "*what does this system look like at 10× current load, and what fails first?*" without staring at the ceiling for 30 seconds.
@@ -278,7 +278,7 @@ If you cannot answer that on demand for the system you are designing, you have n
 > - "I need it to be a single source of truth — no stale reads, ever."
 > - "I need it to stay up if any one region goes down."
 >
-> Pick *two* and write one paragraph explaining to the PM, in plain language, why you cannot give them the third without changing one of the other two. (We will formalise this in [Lesson 4 — CAP and PACELC](/cortex/system-design/foundations-cap-and-pacelc). The point of doing it now is to feel the *intuition* before the formalism.)
+> Pick *two* and write one paragraph explaining to the PM, in plain language, why you cannot give them the third without changing one of the other two. (We will formalise this in [Lesson 4 — CAP and PACELC](/cortex/system-design/foundations/cap-and-pacelc). The point of doing it now is to feel the *intuition* before the formalism.)
 
 <details>
 <summary><strong>Hint for Exercise 3</strong></summary>
@@ -293,10 +293,10 @@ Your two regions cannot agree on the latest write *and* keep responding *and* ke
 
 - **[Discord — How Discord Stores Trillions of Messages](https://discord.com/blog/how-discord-stores-trillions-of-messages)** (2023) — A study in *deliberate* migration from Cassandra to ScyllaDB, including the months of measurement that justified the move. Notice how much of the post is about *measurement*, not implementation.
 
-- **[Stripe — Designing Robust and Predictable APIs with Idempotency](https://stripe.com/blog/idempotency)** (2017) — Senior-grade thinking about making payments retryable without double-charging anyone. We will use this directly in [Lesson 17](/cortex/system-design/distributed-patterns-idempotency-retries-backoff) and [Capstone 44](/cortex/system-design/capstones-payment-system).
+- **[Stripe — Designing Robust and Predictable APIs with Idempotency](https://stripe.com/blog/idempotency)** (2017) — Senior-grade thinking about making payments retryable without double-charging anyone. We will use this directly in [Lesson 17](/cortex/system-design/distributed-patterns/idempotency-retries-backoff) and [Capstone 44](/cortex/system-design/capstones/payment-system).
 
 - **[Cloudflare — How we built Pingora, the proxy that connects Cloudflare to the Internet](https://blog.cloudflare.com/how-we-built-pingora-the-proxy-that-connects-cloudflare-to-the-internet/)** (2022) — A masterclass in *replacing* a load-bearing component (Nginx) with a custom one (Pingora) only after years of measurement justified the cost.
 
 ---
 
-**Next:** the second-most-important habit a senior engineer cultivates — knowing how slow each kind of computer operation actually is. Without that, every design conversation devolves into vibes. With it, you can ballpark any design's feasibility in 30 seconds. → [Lesson 2 — Numbers every engineer should know](/cortex/system-design/foundations-numbers-every-engineer-should-know)
+**Next:** the second-most-important habit a senior engineer cultivates — knowing how slow each kind of computer operation actually is. Without that, every design conversation devolves into vibes. With it, you can ballpark any design's feasibility in 30 seconds. → [Lesson 2 — Numbers every engineer should know](/cortex/system-design/foundations/numbers-every-engineer-should-know)

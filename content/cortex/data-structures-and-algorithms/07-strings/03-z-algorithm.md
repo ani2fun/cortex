@@ -7,7 +7,7 @@ prereqs:
 
 ## Why It Exists
 
-[KMP](/cortex/data-structures-and-algorithms/strings-kmp) reaches `O(n + m)` with the failure function. The **Z-algorithm** reaches the same bound with a different precomputed array — and it's arguably easier to remember and reason about. The **Z-array** answers, for every position `i`: *how long is the substring starting at `i` that matches a prefix of the whole string?* That single definition powers pattern matching, periodicity tests, and counting distinct substrings.
+[KMP](/cortex/data-structures-and-algorithms/strings/kmp) reaches `O(n + m)` with the failure function. The **Z-algorithm** reaches the same bound with a different precomputed array — and it's arguably easier to remember and reason about. The **Z-array** answers, for every position `i`: *how long is the substring starting at `i` that matches a prefix of the whole string?* That single definition powers pattern matching, periodicity tests, and counting distinct substrings.
 
 Where KMP's `lps` looks *backward* (longest prefix that's also a suffix *ending* at `i`), the Z-array looks *forward* (longest prefix-match *starting* at `i`). They're two views of the same self-similarity, and the Z-array's framing makes one of the cleanest linear-time string algorithms — once you see the **Z-box** trick that stops it being quadratic.
 
@@ -191,7 +191,7 @@ Both print `2` then `3`. `"issi"` occurs twice in `"mississippi"` (indices 1 and
 - **The Z-box is the linearity.** Reusing `z[i-l]` inside `[l, r]` and only extending past the edge bounds total comparisons to `O(n)`. Drop the box and you're back to `O(n²)` on repetitive input.
 - **The separator is mandatory.** Matching via `P + SEP + T` only works because `SEP` (absent from both) caps Z-values at `|P|`, making `z[i] == |P|` an exact match test. It's the most common Z-matching bug.
 - **Standalone power.** Beyond matching, the Z-array gives string periodicity, the number of distinct substrings (with suffix structures), and competitive-programming staples — often in fewer lines than KMP.
-- **Where it sits.** [Naive](/cortex/data-structures-and-algorithms/strings-string-matching-naive) → [KMP](/cortex/data-structures-and-algorithms/strings-kmp) (backward failure function) → Z (forward prefix-match) → [Rabin-Karp](/cortex/data-structures-and-algorithms/strings-rabin-karp-and-rolling-hash) (hashing). Four routes to fast matching, each with a different mental model.
+- **Where it sits.** [Naive](/cortex/data-structures-and-algorithms/strings/string-matching-naive) → [KMP](/cortex/data-structures-and-algorithms/strings/kmp) (backward failure function) → Z (forward prefix-match) → [Rabin-Karp](/cortex/data-structures-and-algorithms/strings/rabin-karp-and-rolling-hash) (hashing). Four routes to fast matching, each with a different mental model.
 
 ## Recall
 

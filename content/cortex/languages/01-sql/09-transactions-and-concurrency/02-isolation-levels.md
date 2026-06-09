@@ -113,7 +113,7 @@ Postgres's `REPEATABLE READ` is actually **snapshot isolation** — slightly str
 
 The mechanism: each transaction sees a *snapshot* of the database as of its `BEGIN`. All reads see that snapshot, regardless of what other transactions commit in the meantime. Concurrent writes don't block reads (the reader sees the snapshot's old value); concurrent writes to the *same row* fail with a serialization error if both try to commit.
 
-This is the Postgres MVCC story — covered in [MVCC and Locking](/cortex/languages/sql-transactions-and-concurrency-mvcc-and-locking).
+This is the Postgres MVCC story — covered in [MVCC and Locking](/cortex/languages/sql/transactions-and-concurrency/mvcc-and-locking).
 
 ---
 
@@ -179,7 +179,7 @@ In Postgres, a long-running `REPEATABLE READ` transaction holds back the snapsho
 For most application code:
 
 - **`READ COMMITTED`** for routine CRUD. Fast, blocks little, prevents dirty reads.
-- **Explicit row locks** (`SELECT ... FOR UPDATE`) for "read, decide, write" patterns where you need to ensure no concurrent change between read and write. Covered in [MVCC and Locking](/cortex/languages/sql-transactions-and-concurrency-mvcc-and-locking).
+- **Explicit row locks** (`SELECT ... FOR UPDATE`) for "read, decide, write" patterns where you need to ensure no concurrent change between read and write. Covered in [MVCC and Locking](/cortex/languages/sql/transactions-and-concurrency/mvcc-and-locking).
 - **`REPEATABLE READ` (snapshot)** for reports that need internal consistency — every join sees the same view of the world.
 - **`SERIALIZABLE` + retry loop** for the rare cases where you genuinely need full serializability and the contention is low enough that retries aren't a throughput killer.
 
@@ -199,8 +199,8 @@ The codefolio `/api/hello` increment uses `READ COMMITTED` (the Postgres default
 
 # Cross-links
 
-- **Previous in this module:** [ACID and Transactions](/cortex/languages/sql-transactions-and-concurrency-acid-and-transactions).
-- **Next in this module:** [MVCC and Locking](/cortex/languages/sql-transactions-and-concurrency-mvcc-and-locking).
+- **Previous in this module:** [ACID and Transactions](/cortex/languages/sql/transactions-and-concurrency/acid-and-transactions).
+- **Next in this module:** [MVCC and Locking](/cortex/languages/sql/transactions-and-concurrency/mvcc-and-locking).
 
 ***
 

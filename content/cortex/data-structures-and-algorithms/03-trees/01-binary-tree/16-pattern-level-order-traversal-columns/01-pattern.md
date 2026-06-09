@@ -9,7 +9,7 @@ prereqs:
 
 ## Why It Exists
 
-[Level-order](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-pattern) groups nodes by **depth** (horizontal rows). But some questions group by **horizontal position** instead: "print the tree in vertical columns left to right," "what's the **top view** (the node you'd see looking straight down each column)?", "the **bottom view**?", "the diagonal order?" These need a second coordinate — not how *deep* a node is, but how far *left or right* it sits.
+[Level-order](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-level-order-traversal/pattern) groups nodes by **depth** (horizontal rows). But some questions group by **horizontal position** instead: "print the tree in vertical columns left to right," "what's the **top view** (the node you'd see looking straight down each column)?", "the **bottom view**?", "the diagonal order?" These need a second coordinate — not how *deep* a node is, but how far *left or right* it sits.
 
 Give every node a **column index**: the root is column `0`, a left child is `col − 1`, a right child is `col + 1`. Run a BFS that carries `(node, col)` and **bucket** each node into `cols[col]`. Because BFS visits nodes in increasing depth, every bucket fills **top-to-bottom** automatically. Read the buckets from the smallest column to the largest and you have vertical order; keep only the **first** node in each bucket and you have the top view; the **last**, the bottom view. One traversal, three answers — all from attaching a coordinate. `O(n)` time, `O(n)` space.
 
@@ -168,7 +168,7 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [Top View](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-columns-problems-top-view), [Bottom View](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-columns-problems-bottom-view), [Vertical Traversal](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-columns-problems-vertical-traversal), and [Diagonal Traversal](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-columns-problems-diagonal-traversal).
+Drill the family in **Practice** — [Top View](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-level-order-traversal-columns/problems/top-view), [Bottom View](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-level-order-traversal-columns/problems/bottom-view), [Vertical Traversal](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-level-order-traversal-columns/problems/vertical-traversal), and [Diagonal Traversal](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-level-order-traversal-columns/problems/diagonal-traversal).
 
 ## Reflect & Connect
 
@@ -178,8 +178,8 @@ Column-order is level-order with a *second* coordinate threaded through the queu
 - **Coordinate-carrying BFS** — the queue can carry *anything* alongside the node: a column (here), a depth, a running path, a `(row, col)` for a grid. The same "enqueue node + metadata" trick reappears in [grid BFS](/cortex/data-structures-and-algorithms/graphs-pattern-grid-traversal-pattern), where each cell carries its coordinates and distance.
 - **Why first/last = top/bottom** — it's BFS's depth-ordering doing the work. Whenever a problem says "the first/nearest thing along some axis," check whether a breadth-first order already sorts your buckets for you before reaching for an explicit sort.
 
-**Prerequisites:** [Level-Order Traversal](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-pattern).
-**What's next:** find where two nodes' paths converge — the lowest common ancestor — [Lowest Common Ancestor](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-lowest-common-ancestor-pattern).
+**Prerequisites:** [Level-Order Traversal](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-level-order-traversal/pattern).
+**What's next:** find where two nodes' paths converge — the lowest common ancestor — [Lowest Common Ancestor](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-lowest-common-ancestor/pattern).
 
 ## Recall
 

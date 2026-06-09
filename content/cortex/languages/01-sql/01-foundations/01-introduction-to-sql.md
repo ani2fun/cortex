@@ -69,7 +69,7 @@ That definition is correct but useless. Here's the more useful definition: SQL i
 
 That's an enormous abstraction. A modern relational database like PostgreSQL is millions of lines of code dedicated to picking the *how* well. The query planner reads your SQL, considers dozens of possible execution plans (sequential scan? index lookup? hash join? merge join?), estimates the cost of each based on table statistics, and picks the cheapest one. You wrote six lines. The planner spent maybe a millisecond turning those into the actual execution.
 
-This is why a SQL programmer who has *never* thought about how the database works can still write fast queries 90% of the time. The planner does most of the lifting. The other 10% — when the planner picks badly, when statistics are stale, when the query shape blocks an index, when a JOIN explodes from a million rows to a billion — is what the [Indexes and Performance](/cortex/languages/sql-index) module of this book teaches you to debug. But you can be productive long before then.
+This is why a SQL programmer who has *never* thought about how the database works can still write fast queries 90% of the time. The planner does most of the lifting. The other 10% — when the planner picks badly, when statistics are stale, when the query shape blocks an index, when a JOIN explodes from a million rows to a billion — is what the [Indexes and Performance](/cortex/languages/sql/index) module of this book teaches you to debug. But you can be productive long before then.
 
 **A first SQL query you can read — and run — right now:**
 
@@ -144,7 +144,7 @@ flowchart LR
 
 <p align="center"><strong>The query planner is the bridge between declarative SQL and the actual loop that runs. You don't see it. It runs once per query, picks the cheapest plan from a search space of dozens, and hands the plan to the executor. The plan you'd have written by hand in Python is hidden inside that orange box.</strong></p>
 
-The flip side: when the planner picks badly, the abstraction leaks. Your "what" hasn't changed, but the "how" silently went from milliseconds to minutes. Senior SQL engineers spend most of their performance work *learning to predict what the planner will do* and adjusting the query (or the schema, or the indexes) when it picks the wrong plan. That's a topic for [EXPLAIN and query plans](/cortex/languages/sql-index); for now, just internalise that the abstraction is leaky and that's *okay*.
+The flip side: when the planner picks badly, the abstraction leaks. Your "what" hasn't changed, but the "how" silently went from milliseconds to minutes. Senior SQL engineers spend most of their performance work *learning to predict what the planner will do* and adjusting the query (or the schema, or the indexes) when it picks the wrong plan. That's a topic for [EXPLAIN and query plans](/cortex/languages/sql/index); for now, just internalise that the abstraction is leaky and that's *okay*.
 
 ---
 
@@ -175,7 +175,7 @@ SQL statements fall into five families. You'll meet all of them in this book.
 | **TCL** | Transaction Control Language | Group statements into atomic transactions | `BEGIN`, `COMMIT`, `ROLLBACK`, `SAVEPOINT` |
 | **DCL** | Data Control Language | Manage access control | `GRANT`, `REVOKE` |
 
-The first three are what 95% of application code uses. Most of this book is about DQL — `SELECT` and its many variations. DML gets a chapter ([Data Manipulation](/cortex/languages/sql-foundations-data-manipulation)). DDL gets a chapter and a deeper module ([Data Definition](/cortex/languages/sql-foundations-data-definition), [Schema and Constraints](/cortex/languages/sql-index)). TCL is foundational for [Transactions and Concurrency](/cortex/languages/sql-index). DCL is operational and out of scope for this book — most engineers configure access via Terraform, Liquibase, or a cloud console, not by hand-writing `GRANT`.
+The first three are what 95% of application code uses. Most of this book is about DQL — `SELECT` and its many variations. DML gets a chapter ([Data Manipulation](/cortex/languages/sql/foundations/data-manipulation)). DDL gets a chapter and a deeper module ([Data Definition](/cortex/languages/sql/foundations/data-definition), [Schema and Constraints](/cortex/languages/sql/index)). TCL is foundational for [Transactions and Concurrency](/cortex/languages/sql/index). DCL is operational and out of scope for this book — most engineers configure access via Terraform, Liquibase, or a cloud console, not by hand-writing `GRANT`.
 
 > *Predict before reading on:* without scrolling, which family does each of these belong to?
 >
@@ -423,8 +423,8 @@ UNION ALL SELECT 'hello_events', COUNT(*) FROM hello_events;
 ## What each table is for
 
 - **`customers`** — five rows, three countries. Small enough that you can hold every row in your head when reasoning about a query. Five customers gives us enough variety for filtering, grouping, and joining without overwhelming the page.
-- **`orders`** — six rows. Notice **customer 5 (Peter) has no orders** — that's deliberate, so anti-joins and `LEFT JOIN`s have something to demonstrate. Notice **order 1006 references customer_id 9 which doesn't exist** — also deliberate, so referential-integrity chapters have a real example. Real schemas constrain this with a foreign key; we'll add the constraint in [Schema and Constraints](/cortex/languages/sql-index) and watch the orphan row fail to insert.
-- **`hello_events`** — six rows representing six `/api/hello` requests across three hour-buckets. Realistic time-series shape. Used for [Window Functions](/cortex/languages/sql-index), [Time-series patterns](/cortex/languages/sql-index), and [JSON in SQL](/cortex/languages/sql-index) chapters.
+- **`orders`** — six rows. Notice **customer 5 (Peter) has no orders** — that's deliberate, so anti-joins and `LEFT JOIN`s have something to demonstrate. Notice **order 1006 references customer_id 9 which doesn't exist** — also deliberate, so referential-integrity chapters have a real example. Real schemas constrain this with a foreign key; we'll add the constraint in [Schema and Constraints](/cortex/languages/sql/index) and watch the orphan row fail to insert.
+- **`hello_events`** — six rows representing six `/api/hello` requests across three hour-buckets. Realistic time-series shape. Used for [Window Functions](/cortex/languages/sql/index), [Time-series patterns](/cortex/languages/sql/index), and [JSON in SQL](/cortex/languages/sql/index) chapters.
 
 ## Why this schema
 
@@ -451,7 +451,7 @@ A handful of "gotchas" that catch every SQL beginner and a non-trivial number of
 
 ## NULL is not "no value", it's "unknown"
 
-`NULL` doesn't equal anything — not even another `NULL`. `WHERE x = NULL` is *never true*, even when `x` is `NULL`. Use `WHERE x IS NULL` instead. This is the single most common bug in beginner SQL, and the [NULL and three-valued logic](/cortex/languages/sql-index) chapter is dedicated entirely to it.
+`NULL` doesn't equal anything — not even another `NULL`. `WHERE x = NULL` is *never true*, even when `x` is `NULL`. Use `WHERE x IS NULL` instead. This is the single most common bug in beginner SQL, and the [NULL and three-valued logic](/cortex/languages/sql/index) chapter is dedicated entirely to it.
 
 ## `SELECT *` is fine to type, dangerous to ship
 
@@ -487,7 +487,7 @@ CREATE TABLE visits (
 INSERT INTO visits (count) VALUES (0);
 ```
 
-That's a real production table. It has one row. Every `/api/hello` request runs `UPDATE visits SET count = count + 1 RETURNING count;` — DML against a one-row table to atomically increment a counter. Two SQL features in one statement: the `UPDATE` and the `RETURNING` clause that gives you the new value back without a second query. We'll meet `RETURNING` properly in [Data Manipulation](/cortex/languages/sql-foundations-data-manipulation).
+That's a real production table. It has one row. Every `/api/hello` request runs `UPDATE visits SET count = count + 1 RETURNING count;` — DML against a one-row table to atomically increment a counter. Two SQL features in one statement: the `UPDATE` and the `RETURNING` clause that gives you the new value back without a second query. We'll meet `RETURNING` properly in [Data Manipulation](/cortex/languages/sql/foundations/data-manipulation).
 
 **The `psql` shell** is your friend. From the codefolio repo root:
 
@@ -532,10 +532,10 @@ Each problem below has a hint, not a solution. The point is to make you flex the
 
 # Cross-links
 
-- **Next in this module:** [SELECT and Projection](/cortex/languages/sql-foundations-select-and-projection) — the column-list half of the FROM/SELECT pair, including aliases, computed columns, `DISTINCT`, and the alias-namespace trap from problem (6) above.
-- **Then:** [Filtering](/cortex/languages/sql-foundations-filtering) — `WHERE` properly: comparison, range, set-membership, pattern-matching predicates, and the NULL trap.
+- **Next in this module:** [SELECT and Projection](/cortex/languages/sql/foundations/select-and-projection) — the column-list half of the FROM/SELECT pair, including aliases, computed columns, `DISTINCT`, and the alias-namespace trap from problem (6) above.
+- **Then:** [Filtering](/cortex/languages/sql/foundations/filtering) — `WHERE` properly: comparison, range, set-membership, pattern-matching predicates, and the NULL trap.
 - **Cited from every later chapter** — the *logical execution order* in this chapter is the single most-referenced idea in the rest of the SQL book. Every join chapter, every aggregation chapter, every window-function chapter assumes you have it in your fingertips.
-- **DSA cross-reference:** the relational model rests on the [Hash Table](/cortex/data-structures-and-algorithms/linear-structures-hash-table-introduction-to-hash-tables) and [B-Tree](/cortex/data-structures-and-algorithms/trees-b-tree-introduction-to-b-trees) chapters from the DSA book — the two data structures that make primary-key lookups fast. You don't need to read those to write SQL, but if you want to know *why* an indexed lookup is `O(log n)` instead of `O(n)`, that's where to start.
+- **DSA cross-reference:** the relational model rests on the [Hash Table](/cortex/data-structures-and-algorithms/linear-structures-hash-table-introduction-to-hash-tables) and [B-Tree](/cortex/data-structures-and-algorithms/trees/b-tree/introduction-to-b-trees) chapters from the DSA book — the two data structures that make primary-key lookups fast. You don't need to read those to write SQL, but if you want to know *why* an indexed lookup is `O(log n)` instead of `O(n)`, that's where to start.
 
 ***
 

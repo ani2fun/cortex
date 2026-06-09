@@ -7,7 +7,7 @@ prereqs:
 
 ## Why It Exists
 
-The enumeration patterns built an *output* — a list, a string — separate from the input. **Backtracking search** is different: the **state itself is the candidate solution**. A maze, a chessboard, a sudoku grid — the algorithm *mutates the world* as it walks, and when the world reaches a goal state, the answer is wherever the world ended up. This is the 8-queens hook from the [backtracking intro](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-introduction-to-backtracking) made concrete.
+The enumeration patterns built an *output* — a list, a string — separate from the input. **Backtracking search** is different: the **state itself is the candidate solution**. A maze, a chessboard, a sudoku grid — the algorithm *mutates the world* as it walks, and when the world reaches a goal state, the answer is wherever the world ended up. This is the 8-queens hook from the [backtracking intro](/cortex/data-structures-and-algorithms/algorithms-by-strategy/backtracking/introduction-to-backtracking) made concrete.
 
 Each frame **applies** a choice (place a queen, mark a cell visited, write a digit), **recurses**, and on failure **undoes** the mutation so the next sibling starts in a clean world. The undo was implicit in enumeration (`pop` the last element); here it's explicit and structural — the *same* board square gets a queen placed and removed, the *same* cell toggled. The world is shared, so it must be restored *exactly* before the parent's loop tries the next option. Get the undo wrong and every later branch sees a polluted world.
 

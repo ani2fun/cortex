@@ -9,9 +9,9 @@ prereqs:
 
 ## Why It Exists
 
-A list has an obvious order — front to back. A [binary tree](/cortex/data-structures-and-algorithms/trees-binary-tree-linked-list-implementation-of-binary-trees) has none: from a node you can go *left* or *right*, and there's no single "next." A **traversal** is the rule that imposes a linear order on the tree — the recipe for visiting every node exactly once. The surprise is how little code it takes, and how much the *order of three lines* changes the result.
+A list has an obvious order — front to back. A [binary tree](/cortex/data-structures-and-algorithms/trees/binary-tree/linked-list-implementation-of-binary-trees) has none: from a node you can go *left* or *right*, and there's no single "next." A **traversal** is the rule that imposes a linear order on the tree — the recipe for visiting every node exactly once. The surprise is how little code it takes, and how much the *order of three lines* changes the result.
 
-Every recursive traversal does the same three things at each node: **visit** this node, recurse **left**, recurse **right**. The only choice is *when* you visit relative to the two recursive calls — and that single choice gives three classical orders. Visit first → **preorder**. Visit between → **inorder**. Visit last → **postorder**. Each is `O(N)` time (every node touched once) and `O(h)` space (the recursion stack goes as deep as the tree's height). And each one is the natural tool for a different job: preorder hands you the root before its subtrees, which is how you *copy or serialize* a tree; inorder, run over a [binary search tree](/cortex/data-structures-and-algorithms/trees-binary-search-tree-introduction-to-binary-search-trees), emits the values in *sorted* order; postorder visits both children before their parent, which is how you *free* a tree or *evaluate an expression tree*. One function, one moved line, three superpowers.
+Every recursive traversal does the same three things at each node: **visit** this node, recurse **left**, recurse **right**. The only choice is *when* you visit relative to the two recursive calls — and that single choice gives three classical orders. Visit first → **preorder**. Visit between → **inorder**. Visit last → **postorder**. Each is `O(N)` time (every node touched once) and `O(h)` space (the recursion stack goes as deep as the tree's height). And each one is the natural tool for a different job: preorder hands you the root before its subtrees, which is how you *copy or serialize* a tree; inorder, run over a [binary search tree](/cortex/data-structures-and-algorithms/trees/binary-search-tree/introduction-to-binary-search-trees), emits the values in *sorted* order; postorder visits both children before their parent, which is how you *free* a tree or *evaluate an expression tree*. One function, one moved line, three superpowers.
 
 ## See It Work
 
@@ -85,7 +85,7 @@ flowchart TB
 | **Postorder** | `L, R, visit` | **last** | Free/delete a tree, or **evaluate an expression tree** — you must finish both children before the parent. (= **postfix** notation.) |
 
 - **Cost is the same for all three.** Each visits every node exactly once → `O(N)` time. The only memory is the recursion stack, which is as deep as the tree is tall → `O(h)` space: `O(log N)` for a balanced tree, `O(N)` for a degenerate skew.
-- **The base case is the `null` child.** All three functions return the empty list for `None` — the same null-child boundary the [linked representation](/cortex/data-structures-and-algorithms/trees-binary-tree-linked-list-implementation-of-binary-trees) is built on. No `null` check, and the first leaf's child dereference crashes.
+- **The base case is the `null` child.** All three functions return the empty list for `None` — the same null-child boundary the [linked representation](/cortex/data-structures-and-algorithms/trees/binary-tree/linked-list-implementation-of-binary-trees) is built on. No `null` check, and the first leaf's child dereference crashes.
 - **All three are depth-first.** They dive to a leaf before backtracking. The breadth-first cousin — level-order — needs a queue instead of the call stack, and gets its own lesson.
 
 > **Key takeaway.** A recursive traversal visits every node once via `visit` + recurse-`left` + recurse-`right`; *where* the `visit` sits among the two recursive calls picks the order. Visit-first = **preorder** (root first → serialize). Visit-between = **inorder** (sorted, on a BST). Visit-last = **postorder** (children before parent → free/evaluate). All three are `O(N)` time and `O(h)` space, bottoming out on the `null` child.
@@ -130,7 +130,7 @@ inorder   -> 2 + 3 * 4
 postorder -> 2 3 + 4 *
 ```
 
-These are exactly the three notations from the [stack expression lessons](/cortex/data-structures-and-algorithms/linear-structures-stack-infix-postfix-and-prefix-notations): **preorder is prefix**, **inorder is infix**, **postorder is postfix**. A traversal order *is* a notation — that's not a coincidence, it's the same structure read two ways. Notice the catch: the inorder string `2 + 3 * 4` has lost the parentheses, so read with normal precedence it means `2 + (3 * 4)`, not `(2 + 3) * 4`. That's *why* infix needs parentheses and precedence rules while prefix and postfix don't — the tree shape carries the grouping, and only inorder throws it away. Postorder (`2 3 + 4 *`) is exactly what a stack evaluator consumes left-to-right, which is why postorder is the traversal that *evaluates* an expression tree.
+These are exactly the three notations from the [stack expression lessons](/cortex/data-structures-and-algorithms/linear-structures/stack/infix-postfix-and-prefix-notations): **preorder is prefix**, **inorder is infix**, **postorder is postfix**. A traversal order *is* a notation — that's not a coincidence, it's the same structure read two ways. Notice the catch: the inorder string `2 + 3 * 4` has lost the parentheses, so read with normal precedence it means `2 + (3 * 4)`, not `(2 + 3) * 4`. That's *why* infix needs parentheses and precedence rules while prefix and postfix don't — the tree shape carries the grouping, and only inorder throws it away. Postorder (`2 3 + 4 *`) is exactly what a stack evaluator consumes left-to-right, which is why postorder is the traversal that *evaluates* an expression tree.
 
 </details>
 
@@ -187,9 +187,9 @@ Both print `inorder: [1, 3, 4, 5, 8, 9]` — perfectly sorted. The BST's orderin
 
 - **One function, three orders.** `visit` + recurse-`left` + recurse-`right`; move the `visit` line and you move between preorder, inorder, and postorder. Nothing else changes.
 - **Order follows the job.** Root-first preorder serializes; sorted inorder reads a BST; children-first postorder frees a tree and evaluates an expression tree. Pick the order by what has to happen first.
-- **A traversal order is a notation.** Preorder/inorder/postorder of an [expression tree](/cortex/data-structures-and-algorithms/linear-structures-stack-infix-postfix-and-prefix-notations) are prefix/infix/postfix — and only infix needs parentheses, because inorder is the one that drops the tree's grouping.
+- **A traversal order is a notation.** Preorder/inorder/postorder of an [expression tree](/cortex/data-structures-and-algorithms/linear-structures/stack/infix-postfix-and-prefix-notations) are prefix/infix/postfix — and only infix needs parentheses, because inorder is the one that drops the tree's grouping.
 - **Cost is structural.** `O(N)` time always; `O(h)` space because the recursion stack tracks the current root-to-node path — the same `O(h)` that becomes `O(N)` on a skew and `O(log N)` when balanced.
-- **Next: making the stack explicit.** The recursion *is* a stack. The [iterative traversals](/cortex/data-structures-and-algorithms/trees-binary-tree-iterative-traversals-in-binary-trees) lesson replaces the call stack with an explicit one — same orders, no recursion — which is how you traverse a tree too deep to recurse safely.
+- **Next: making the stack explicit.** The recursion *is* a stack. The [iterative traversals](/cortex/data-structures-and-algorithms/trees/binary-tree/iterative-traversals-in-binary-trees) lesson replaces the call stack with an explicit one — same orders, no recursion — which is how you traverse a tree too deep to recurse safely.
 
 ## Recall
 
@@ -227,5 +227,5 @@ Both print `inorder: [1, 3, 4, 5, 8, 9]` — perfectly sorted. The BST's orderin
 ## Sources & Verify
 
 - **CLRS**, *Introduction to Algorithms*, §12.1 (Binary search trees — inorder tree walk) — the `O(N)` inorder traversal and the sorted-order property; **Sedgewick & Wayne**, *Algorithms* §3.2 — pre/in/post order on linked tree nodes.
-- The [stack expression-notation lessons](/cortex/data-structures-and-algorithms/linear-structures-stack-infix-postfix-and-prefix-notations) for prefix/infix/postfix, and the [iterative-traversals lesson](/cortex/data-structures-and-algorithms/trees-binary-tree-iterative-traversals-in-binary-trees) for the same three orders without recursion.
+- The [stack expression-notation lessons](/cortex/data-structures-and-algorithms/linear-structures/stack/infix-postfix-and-prefix-notations) for prefix/infix/postfix, and the [iterative-traversals lesson](/cortex/data-structures-and-algorithms/trees/binary-tree/iterative-traversals-in-binary-trees) for the same three orders without recursion.
 - `preorder [1,2,4,5,3]`, `inorder [4,2,5,1,3]`, `postorder [4,5,2,3,1]`; the expression-tree `* + 2 3 4` / `2 + 3 * 4` / `2 3 + 4 *`; and the sorted BST inorder `[1,3,4,5,8,9]` all come from the runnable blocks above (deterministic) — re-run to verify.

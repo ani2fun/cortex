@@ -11,7 +11,7 @@ prereqs:
 
 Quicksort is fast but `O(n²)` in the worst case; merge sort guarantees `O(n log n)` but needs `O(n)` scratch space. Heapsort is the sort that gives you **both** guarantees at once: `O(n log n)` worst-case *and* fully in-place (`O(1)` extra space). No other common comparison sort offers that combination.
 
-The idea is **selection sort, made fast**. Selection sort repeatedly finds the maximum of the unsorted region — by a linear `O(n)` scan, which is what makes it `O(n²)`. Heapsort stores the unsorted region as a [binary heap](/cortex/data-structures-and-algorithms/trees-heap-what-is-a-heap), so the maximum is *always at the root* and removing it costs only `O(log n)`. Build the heap once, then repeatedly extract the max to the end of the array. `n` extractions at `O(log n)` each → `O(n log n)`, guaranteed.
+The idea is **selection sort, made fast**. Selection sort repeatedly finds the maximum of the unsorted region — by a linear `O(n)` scan, which is what makes it `O(n²)`. Heapsort stores the unsorted region as a [binary heap](/cortex/data-structures-and-algorithms/trees/heap/what-is-a-heap), so the maximum is *always at the root* and removing it costs only `O(log n)`. Build the heap once, then repeatedly extract the max to the end of the array. `n` extractions at `O(log n)` each → `O(n log n)`, guaranteed.
 
 ## See It Work
 
@@ -138,11 +138,11 @@ This is a structural lesson — drill sorting in the pattern sets.
 
 Heapsort is the guarantee-everything sort — and a lesson in why big-O isn't the whole story:
 
-- **It's selection sort with a heap** — both repeatedly extract the maximum; selection sort scans `O(n)` to find it, heapsort pops the root in `O(log n)`. Swapping the data structure under "find the max" is the entire upgrade from `O(n²)` to `O(n log n)` (cross-reference [selection sort](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-selection-sort)).
+- **It's selection sort with a heap** — both repeatedly extract the maximum; selection sort scans `O(n)` to find it, heapsort pops the root in `O(log n)`. Swapping the data structure under "find the max" is the entire upgrade from `O(n²)` to `O(n log n)` (cross-reference [selection sort](/cortex/data-structures-and-algorithms/sorting-and-searching/sorting/selection-sort)).
 - **Why it's not used more, despite great guarantees** — heapsort jumps all over the array (parent-to-child index `2i+1`), so it has poor **cache locality**; quicksort's local scans are faster in practice even though both are `O(n log n)`. Heapsort's real production role is as **introsort's safety net**: start with quicksort, and if recursion goes too deep (a pathological input), switch to heapsort to *guarantee* `O(n log n)`.
 - **The `O(n)` build is a reusable fact** — bottom-up heapify is linear, which is why constructing a heap (or a priority queue) from a known array beats inserting elements one at a time.
 
-**Prerequisites:** [What Is a Heap?](/cortex/data-structures-and-algorithms/trees-heap-what-is-a-heap).
+**Prerequisites:** [What Is a Heap?](/cortex/data-structures-and-algorithms/trees/heap/what-is-a-heap).
 **What's next:** reuse quicksort's partition to find the k-th element without fully sorting — [Quickselect](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-pattern-quickselect).
 
 ## Recall

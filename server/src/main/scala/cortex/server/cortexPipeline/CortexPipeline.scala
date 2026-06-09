@@ -243,7 +243,7 @@ final private class CortexPipelineLive(
     state.get.map(_.index)
 
   override def chapter(book: String, chapter: String): IO[CortexFailure, ChapterPayload] =
-    if !CortexIndexWalker.slugLike(book) || !CortexIndexWalker.slugLike(chapter) then
+    if !CortexIndexWalker.slugLike(book) || !CortexIndexWalker.chapterPathLike(chapter) then
       ZIO.fail(CortexFailure.NotFound)
     else
       for

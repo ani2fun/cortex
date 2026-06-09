@@ -100,7 +100,7 @@ Hold onto this picture, because the whole book builds on it:
 - **cache** speed is about *which* addresses you touch and in what order.
 
 **Prerequisites:** none — this is the floor.
-**What's next:** you can now see *where* data lives. The next question is *how much work* an operation costs — and for that we need a way to measure it that doesn't depend on your laptop's speed. That's [Measuring Cost](/cortex/data-structures-and-algorithms/foundations-asymptotic-analysis).
+**What's next:** you can now see *where* data lives. The next question is *how much work* an operation costs — and for that we need a way to measure it that doesn't depend on your laptop's speed. That's [Measuring Cost](/cortex/data-structures-and-algorithms/foundations/asymptotic-analysis).
 
 ## Recall
 

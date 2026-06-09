@@ -287,12 +287,12 @@ flowchart TB
 
 <p align="center"><strong>A B+-tree stores data only in the leaves (internal nodes are pure routing) and links the leaves in a list — so a range query descends once, then walks the leaf chain.</strong></p>
 
-- **A red-black tree IS a B-tree** — recall from the [red-black chapter](/cortex/data-structures-and-algorithms/trees-red-black-tree-introduction-to-red-black-trees): merge each red node into its black parent and you get an order-4 B-tree (a 2-3-4 tree). The colour invariants are the B-tree's "all leaves same depth," re-expressed for binary nodes. B-trees generalise that idea to *any* fanout.
-- **Fanout = match the storage level** — order 200–1000 for disk pages, order ~6 for an in-memory cache-line-sized node (Rust's `BTreeMap`). The structure is the same; only `m` changes to fit the [memory hierarchy](/cortex/data-structures-and-algorithms/foundations-memory-model-and-cache).
+- **A red-black tree IS a B-tree** — recall from the [red-black chapter](/cortex/data-structures-and-algorithms/trees/red-black-tree/introduction-to-red-black-trees): merge each red node into its black parent and you get an order-4 B-tree (a 2-3-4 tree). The colour invariants are the B-tree's "all leaves same depth," re-expressed for binary nodes. B-trees generalise that idea to *any* fanout.
+- **Fanout = match the storage level** — order 200–1000 for disk pages, order ~6 for an in-memory cache-line-sized node (Rust's `BTreeMap`). The structure is the same; only `m` changes to fit the [memory hierarchy](/cortex/data-structures-and-algorithms/foundations/memory-model-and-cache).
 - **In production** — Postgres `nbtree` (note: it doesn't shrink on delete; `VACUUM` reclaims pages), MySQL InnoDB clustered indexes, ext4/NTFS/Btrfs metadata. When data outgrows RAM, the answer is almost always a B+-tree.
 
-**Prerequisites:** [Self-Balancing BSTs Overview](/cortex/data-structures-and-algorithms/trees-self-balancing-bst-overview-self-balancing-bst-overview), [Memory Model & Cache](/cortex/data-structures-and-algorithms/foundations-memory-model-and-cache).
-**What's next:** trees that answer *range aggregate* queries (sum/min over `[l, r]`) in `O(log n)` — the [Segment Tree](/cortex/data-structures-and-algorithms/trees-segment-tree-introduction-to-segment-trees).
+**Prerequisites:** [Self-Balancing BSTs Overview](/cortex/data-structures-and-algorithms/trees/self-balancing-bst-overview/self-balancing-bst-overview), [Memory Model & Cache](/cortex/data-structures-and-algorithms/foundations/memory-model-and-cache).
+**What's next:** trees that answer *range aggregate* queries (sum/min over `[l, r]`) in `O(log n)` — the [Segment Tree](/cortex/data-structures-and-algorithms/trees/segment-tree/introduction-to-segment-trees).
 
 ## Recall
 

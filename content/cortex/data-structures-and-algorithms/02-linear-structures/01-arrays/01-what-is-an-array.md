@@ -140,10 +140,10 @@ And it isn't only textbook structures. The same contiguous block is the workhors
 - **A Postgres B-tree index** stores each 8 KB page as a *sorted array* and binary-searches inside it, so a lookup on a billion-row table is just a handful of array searches.
 - **A hash table is an array of buckets** — Java's `HashMap` is literally a `Node<K,V>[] table`, and Python's `dict` an array of entries. The hash code picks the index; the array does the rest.
 
-**Prerequisites:** [How a Computer Stores Data](/cortex/data-structures-and-algorithms/foundations-how-a-computer-stores-data) and [Measuring Cost](/cortex/data-structures-and-algorithms/foundations-measuring-cost).
-**What's next:** how a fixed array becomes a growable one — [Dynamic Arrays](/cortex/data-structures-and-algorithms/linear-structures-arrays-dynamic-arrays).
+**Prerequisites:** [How a Computer Stores Data](/cortex/data-structures-and-algorithms/foundations/how-a-computer-stores-data) and [Measuring Cost](/cortex/data-structures-and-algorithms/foundations/measuring-cost).
+**What's next:** how a fixed array becomes a growable one — [Dynamic Arrays](/cortex/data-structures-and-algorithms/linear-structures/arrays/dynamic-arrays).
 
-> Going deeper? Multi-dimensional arrays — grids, matrices, and row-major vs. column-major layout — get their own lesson: [Multidimensional](/cortex/data-structures-and-algorithms/linear-structures-arrays-multidimensional).
+> Going deeper? Multi-dimensional arrays — grids, matrices, and row-major vs. column-major layout — get their own lesson: [Multidimensional](/cortex/data-structures-and-algorithms/linear-structures/arrays/multidimensional).
 
 ## Recall
 

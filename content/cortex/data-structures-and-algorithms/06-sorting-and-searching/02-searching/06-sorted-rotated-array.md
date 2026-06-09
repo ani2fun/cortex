@@ -145,7 +145,7 @@ Rotated-array search shows binary search applies beyond strictly sorted data:
 - **Duplicates are the gotcha** — `arr[lo] == arr[mid]` makes "which half is sorted" ambiguous, so you fall back to shrinking `lo`/`hi` past the duplicate, degrading to `O(n)` worst case. Always ask whether the input can contain duplicates.
 - **The deep idea: binary search needs a decision, not sortedness** — any structure where you can rule out half the search space with one `O(1)` test admits a `O(log n)` search. Rotated arrays, bitonic arrays, and "find a peak" all qualify, as does the general [predicate search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-minimum-predicate-search) — binary search on the *answer* rather than the data.
 
-**Prerequisites:** [Binary Search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-binary-search).
+**Prerequisites:** [Binary Search](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/binary-search).
 
 ## Recall
 

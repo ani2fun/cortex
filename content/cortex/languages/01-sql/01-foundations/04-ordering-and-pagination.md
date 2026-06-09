@@ -22,7 +22,7 @@ Both reports are about pagination, and both are correct. The first is a *perform
 
 Both are solved by the same idea: **stop counting rows; start tracking the value of the last row you saw.** That's keyset pagination, and it's the technique behind every "load more" button on every social-feed app you've ever used. It's also a technique that works against an indexed column and runs in the same milliseconds at page 200 as at page 1.
 
-This chapter is about `ORDER BY` and `LIMIT`/`OFFSET` — the two clauses you write at the *bottom* of a query and that the database executes at the *end* of the [logical execution order](/cortex/languages/sql-foundations-introduction-to-sql#the-logical-execution-order). They look like cosmetic clauses ("just sort and trim"); they're not. Together they are how a query becomes a *page* the user sees.
+This chapter is about `ORDER BY` and `LIMIT`/`OFFSET` — the two clauses you write at the *bottom* of a query and that the database executes at the *end* of the [logical execution order](/cortex/languages/sql/foundations/introduction-to-sql#the-logical-execution-order). They look like cosmetic clauses ("just sort and trim"); they're not. Together they are how a query becomes a *page* the user sees.
 
 ---
 
@@ -45,7 +45,7 @@ This chapter is about `ORDER BY` and `LIMIT`/`OFFSET` — the two clauses you wr
 
 # What `ORDER BY` does
 
-`ORDER BY` runs at **step 8** of the [logical execution order](/cortex/languages/sql-foundations-introduction-to-sql#the-logical-execution-order), after `SELECT`. Its job is to take the projected rows and put them in a deterministic order.
+`ORDER BY` runs at **step 8** of the [logical execution order](/cortex/languages/sql/foundations/introduction-to-sql#the-logical-execution-order), after `SELECT`. Its job is to take the projected rows and put them in a deterministic order.
 
 The crucial sentence: **without `ORDER BY`, the order of rows returned by a query is undefined.** Many beginners write:
 
@@ -139,7 +139,7 @@ FROM customers
 ORDER BY bonus DESC;
 ```
 
-This is one of the few clauses where aliases work. (See [The alias-namespace trap](/cortex/languages/sql-foundations-select-and-projection#the-alias-namespace-trap) for the full story.)
+This is one of the few clauses where aliases work. (See [The alias-namespace trap](/cortex/languages/sql/foundations/select-and-projection#the-alias-namespace-trap) for the full story.)
 
 ## Sorting by ordinal position
 
@@ -338,7 +338,7 @@ If there's an index on `(score DESC, id ASC)`, the planner does an **index range
 CREATE INDEX customers_by_score_id ON customers (score DESC, id ASC);
 ```
 
-A composite index on the sort keys is what turns keyset pagination from "asymptotically nice" into "actually fast." Without the index, the planner falls back to a sequential scan + sort, which negates the win. We'll go deep on this in [B-Tree Indexes](/cortex/languages/sql-index).
+A composite index on the sort keys is what turns keyset pagination from "asymptotically nice" into "actually fast." Without the index, the planner falls back to a sequential scan + sort, which negates the win. We'll go deep on this in [B-Tree Indexes](/cortex/languages/sql/index).
 
 ## Why this is correct
 
@@ -403,7 +403,7 @@ Returns zero rows but a valid result-set with the column metadata. Some clients 
 SELECT first_name FROM customers ORDER BY score DESC LIMIT 1;
 ```
 
-The customer with the highest score. The cleanest "top 1" pattern in SQL — equivalent in spirit to `MAX(score)` for the score itself, but lets you return *the customer* (not just the value). For "all customers tied at the top," see [Window functions: ranking](/cortex/languages/sql-index).
+The customer with the highest score. The cleanest "top 1" pattern in SQL — equivalent in spirit to `MAX(score)` for the score itself, but lets you return *the customer* (not just the value). For "all customers tied at the top," see [Window functions: ranking](/cortex/languages/sql/index).
 
 ---
 
@@ -461,11 +461,11 @@ Functional in dev. Linearly slower in prod. After a year of `/api/hello` traffic
 
 # Cross-links
 
-- **Previous in this module:** [Filtering](/cortex/languages/sql-foundations-filtering) — `WHERE` runs at step 2, `ORDER BY` runs at step 8. Together they answer "which rows, in what order."
-- **Next in this module:** [Data Definition](/cortex/languages/sql-foundations-data-definition) — `CREATE TABLE`, types, constraints. The schema your `ORDER BY` lives on top of.
-- **Forward reference:** [Window functions: ranking](/cortex/languages/sql-index) — `ROW_NUMBER`, `RANK`, `DENSE_RANK` for "give me the top N per group" and "label each row with its position", which keyset pagination's tiebreaker logic generalises into.
-- **Forward reference:** [B-Tree Indexes](/cortex/languages/sql-index) — the index that makes keyset pagination `O(log n)`. Without the index, all the elegance evaporates into a sequential scan.
-- **DSA cross-reference:** [B-Tree](/cortex/data-structures-and-algorithms/trees-b-tree-introduction-to-b-trees) — why a B-tree index supports range scans efficiently. The shape of the B-tree is what makes "find the entry after `(750, 3)` and walk forward 50 leaves" the natural operation it is.
+- **Previous in this module:** [Filtering](/cortex/languages/sql/foundations/filtering) — `WHERE` runs at step 2, `ORDER BY` runs at step 8. Together they answer "which rows, in what order."
+- **Next in this module:** [Data Definition](/cortex/languages/sql/foundations/data-definition) — `CREATE TABLE`, types, constraints. The schema your `ORDER BY` lives on top of.
+- **Forward reference:** [Window functions: ranking](/cortex/languages/sql/index) — `ROW_NUMBER`, `RANK`, `DENSE_RANK` for "give me the top N per group" and "label each row with its position", which keyset pagination's tiebreaker logic generalises into.
+- **Forward reference:** [B-Tree Indexes](/cortex/languages/sql/index) — the index that makes keyset pagination `O(log n)`. Without the index, all the elegance evaporates into a sequential scan.
+- **DSA cross-reference:** [B-Tree](/cortex/data-structures-and-algorithms/trees/b-tree/introduction-to-b-trees) — why a B-tree index supports range scans efficiently. The shape of the B-tree is what makes "find the entry after `(750, 3)` and walk forward 50 leaves" the natural operation it is.
 
 ***
 

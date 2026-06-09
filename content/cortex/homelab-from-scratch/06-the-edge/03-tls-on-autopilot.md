@@ -86,7 +86,7 @@ You'd pick **DNS-01** when:
 
 **This homelab uses DNS-01 for everything.** The wildcard convenience and the "works before there's any HTTP listener" property are worth the extra setup. We register the Cloudflare token once, every Ingress reuses the same ClusterIssuer, and we never think about TLS again.
 
-The token from [The Cloudflare API token](/cortex/homelab-from-scratch/domain-and-dns-the-cloudflare-api-token) is the credential cert-manager uses to write those temporary TXT records.
+The token from [The Cloudflare API token](/cortex/homelab-from-scratch/domain-and-dns/the-cloudflare-api-token) is the credential cert-manager uses to write those temporary TXT records.
 
 ## Why cert-manager (and why Let's Encrypt)
 
@@ -284,4 +284,4 @@ Apply, wait, the wildcard cert lands in the `traefik` namespace. We won't use it
 
 The pipeline is built. Next, we light it up by deploying whoami and watching the cert auto-issue.
 
-→ Next: [Publish whoami](/cortex/homelab-from-scratch/the-edge-publish-whoami)
+→ Next: [Publish whoami](/cortex/homelab-from-scratch/the-edge/publish-whoami)

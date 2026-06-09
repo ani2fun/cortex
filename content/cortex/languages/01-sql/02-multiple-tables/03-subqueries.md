@@ -16,7 +16,7 @@ A junior engineer is asked: "Find the customer with the highest score." They wri
 SELECT first_name FROM customers WHERE score = MAX(score);
 ```
 
-It errors out — `MAX(score)` is an aggregate, and `WHERE` runs *before* aggregates compute (see the [logical execution order](/cortex/languages/sql-foundations-introduction-to-sql#the-logical-execution-order)). They try `HAVING`, which doesn't help because there's no `GROUP BY`. They try `ORDER BY score DESC LIMIT 1`, which works for one row but produces the wrong answer if there's a tie.
+It errors out — `MAX(score)` is an aggregate, and `WHERE` runs *before* aggregates compute (see the [logical execution order](/cortex/languages/sql/foundations/introduction-to-sql#the-logical-execution-order)). They try `HAVING`, which doesn't help because there's no `GROUP BY`. They try `ORDER BY score DESC LIMIT 1`, which works for one row but produces the wrong answer if there's a tie.
 
 The right answer involves a **subquery** — a query whose *result* is used as a value or a table inside another query:
 
@@ -171,7 +171,7 @@ ORDER BY totals.total_sales DESC;
 
 The inner query computes per-customer totals. The outer query joins customers to those totals and filters. **Derived tables are *required* to have an alias** in standard SQL (`totals` here); Postgres enforces this strictly.
 
-For multi-step queries with many derived tables, [Common Table Expressions](/cortex/languages/sql-index) (`WITH` clauses) read better. Both have the same semantic — a CTE is just a derived table named at the top of the query rather than inline.
+For multi-step queries with many derived tables, [Common Table Expressions](/cortex/languages/sql/index) (`WITH` clauses) read better. Both have the same semantic — a CTE is just a derived table named at the top of the query rather than inline.
 
 ---
 
@@ -195,7 +195,7 @@ The subquery produces a column of customer IDs; the outer `WHERE` keeps customer
 
 ## NOT IN is treacherous with NULL
 
-`NOT IN` against a subquery has the same NULL trap as `NOT IN (literal list)` — covered in [Filtering](/cortex/languages/sql-foundations-filtering#set-membership). If the subquery returns *any* `NULL`, `NOT IN` returns zero rows, silently:
+`NOT IN` against a subquery has the same NULL trap as `NOT IN (literal list)` — covered in [Filtering](/cortex/languages/sql/foundations/filtering#set-membership). If the subquery returns *any* `NULL`, `NOT IN` returns zero rows, silently:
 
 ```sql
 -- ⚠ If any orders.customer_id is NULL, this returns NO customers.
@@ -214,7 +214,7 @@ FROM customers c
 WHERE NOT EXISTS (SELECT 1 FROM orders o WHERE o.customer_id = c.id);
 ```
 
-This handles `NULL` correctly and tends to optimise as well or better. The full treatment is in [Anti-joins and Existence](/cortex/languages/sql-multiple-tables-anti-joins-and-existence). For now: **prefer `NOT EXISTS` over `NOT IN` whenever a subquery is involved**.
+This handles `NULL` correctly and tends to optimise as well or better. The full treatment is in [Anti-joins and Existence](/cortex/languages/sql/multiple-tables/anti-joins-and-existence). For now: **prefer `NOT EXISTS` over `NOT IN` whenever a subquery is involved**.
 
 ---
 
@@ -449,7 +449,7 @@ WHERE e.timestamp_ms = (SELECT MAX(e2.timestamp_ms)
                         WHERE e2.customer_id = e.customer_id);
 ```
 
-A correlated scalar subquery. The "modern" replacement uses window functions (`ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY timestamp_ms DESC)`) — covered in [Window Functions](/cortex/languages/sql-index). The correlated-subquery form predates window functions and you'll see both in real code.
+A correlated scalar subquery. The "modern" replacement uses window functions (`ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY timestamp_ms DESC)`) — covered in [Window Functions](/cortex/languages/sql/index). The correlated-subquery form predates window functions and you'll see both in real code.
 
 In codefolio's actual stack, the [`/api/recent` query](https://github.com/) uses a simple `ORDER BY timestamp_ms DESC LIMIT 10` — no subquery needed. But the moment we add "recent events per customer" to the dashboard, we'll either reach for a correlated subquery or a window function. The shape of the question — "the latest record *per group*" — is the canonical use-case for both.
 
@@ -457,7 +457,7 @@ In codefolio's actual stack, the [`/api/recent` query](https://github.com/) uses
 
 # Practice ladder
 
-Use the [sample schema](/cortex/languages/sql-foundations-introduction-to-sql#the-sample-schema). Runnable blocks above bundle the seed data inline.
+Use the [sample schema](/cortex/languages/sql/foundations/introduction-to-sql#the-sample-schema). Runnable blocks above bundle the seed data inline.
 
 1. **Find the customer with the lowest score.** *Hint: scalar subquery with `MIN`. Or `ORDER BY score ASC LIMIT 1`.*
 2. **List all customers whose score is above the average.** *Hint: scalar subquery with `AVG`.*
@@ -475,10 +475,10 @@ Use the [sample schema](/cortex/languages/sql-foundations-introduction-to-sql#th
 
 # Cross-links
 
-- **Previous in this module:** [Set Operators](/cortex/languages/sql-multiple-tables-set-operators) — vertical combine; subqueries can sit *inside* either side of a set operator.
-- **Next in this module:** [Anti-joins and Existence](/cortex/languages/sql-multiple-tables-anti-joins-and-existence) — the family of "rows where no match" patterns: `NOT EXISTS`, `LEFT JOIN ... IS NULL`, `EXCEPT`, and why `NOT IN` is the wrong choice.
-- **Forward reference:** [CTEs](/cortex/languages/sql-index) — when subqueries get long, name them at the top of the query with `WITH name AS (subquery)`. Same semantics, much better readability.
-- **Forward reference:** [Window Functions](/cortex/languages/sql-index) — the modern replacement for "latest record per group" and other correlated-subquery patterns. Faster, cleaner, more powerful.
+- **Previous in this module:** [Set Operators](/cortex/languages/sql/multiple-tables/set-operators) — vertical combine; subqueries can sit *inside* either side of a set operator.
+- **Next in this module:** [Anti-joins and Existence](/cortex/languages/sql/multiple-tables/anti-joins-and-existence) — the family of "rows where no match" patterns: `NOT EXISTS`, `LEFT JOIN ... IS NULL`, `EXCEPT`, and why `NOT IN` is the wrong choice.
+- **Forward reference:** [CTEs](/cortex/languages/sql/index) — when subqueries get long, name them at the top of the query with `WITH name AS (subquery)`. Same semantics, much better readability.
+- **Forward reference:** [Window Functions](/cortex/languages/sql/index) — the modern replacement for "latest record per group" and other correlated-subquery patterns. Faster, cleaner, more powerful.
 
 ***
 

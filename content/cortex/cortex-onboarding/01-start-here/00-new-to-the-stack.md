@@ -51,9 +51,9 @@ You do **not** need to know these before starting — just recognise them.
 ## Recommended reading order for a beginner
 
 1. **This page** (you're here).
-2. **[Hello World, End to End](/cortex/cortex-onboarding/how-it-works-hello-world-end-to-end)** — the single best chapter to start with. It traces one real request through every layer, so the abstract pieces above become concrete.
-3. **[Overview](/cortex/cortex-onboarding/start-here-overview)** and **[Repository Tour](/cortex/cortex-onboarding/start-here-repository-tour)** — the big-picture map.
-4. **[Local Development](/cortex/cortex-onboarding/working-on-it-local-development)** — get it running on your machine.
+2. **[Hello World, End to End](/cortex/cortex-onboarding/how-it-works/hello-world-end-to-end)** — the single best chapter to start with. It traces one real request through every layer, so the abstract pieces above become concrete.
+3. **[Overview](/cortex/cortex-onboarding/start-here/overview)** and **[Repository Tour](/cortex/cortex-onboarding/start-here/repository-tour)** — the big-picture map.
+4. **[Local Development](/cortex/cortex-onboarding/working-on-it/local-development)** — get it running on your machine.
 5. The **Deep dive** section — read these as *reference* when you need them, not cover-to-cover on day one.
 
 ## External tutorials worth an afternoon
@@ -63,4 +63,4 @@ You do **not** need to know these before starting — just recognise them.
 - **The frontend model** — [React: Thinking in React](https://react.dev/learn) then [scalajs-react](https://github.com/japgolly/scalajs-react).
 - **The API-first idea** — [tapir's "Quickstart"](https://tapir.softwaremill.com/en/latest/quickstart.html).
 
-Don't try to master these first. Get the app running ([Local Development](/cortex/cortex-onboarding/working-on-it-local-development)), read the Hello World trace, and learn each library the moment you first need it.
+Don't try to master these first. Get the app running ([Local Development](/cortex/cortex-onboarding/working-on-it/local-development)), read the Hello World trace, and learn each library the moment you first need it.

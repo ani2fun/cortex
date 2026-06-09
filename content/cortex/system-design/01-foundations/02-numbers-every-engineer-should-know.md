@@ -96,7 +96,7 @@ Two related numbers you will need for the rest of the track:
 | Modern DDR5 memory bandwidth (per channel) | ~50 GB/s | Per 64-bit DIMM/channel (DDR5-6400 ≈ 51 GB/s); ~25 GB/s per 32-bit sub-channel. RAM is ~3–4× faster than NVMe Gen5 |
 | Inter-AZ (intra-region) per-instance bandwidth | ~5–10 Gbps single-flow | Internal AWS / GCP backbone; ~5 Gbps per flow, ~10 Gbps in a cluster placement group, 100 Gbps spines exist. Cross-*region* is a separate, WAN-bound scope. |
 
-The bandwidth column matters because **a 1 GB transfer** does not take 10 µs (the latency of one packet) — it takes ~800 ms over a 10 Gbps link, dominated by bandwidth, not latency. Throughput = concurrency ÷ latency (equivalently, Little's Law: concurrency = latency × throughput). We will use this exact relationship in [Lesson 5 — Little's Law](/cortex/system-design/foundations-latency-throughput-usl).
+The bandwidth column matters because **a 1 GB transfer** does not take 10 µs (the latency of one packet) — it takes ~800 ms over a 10 Gbps link, dominated by bandwidth, not latency. Throughput = concurrency ÷ latency (equivalently, Little's Law: concurrency = latency × throughput). We will use this exact relationship in [Lesson 5 — Little's Law](/cortex/system-design/foundations/latency-throughput-usl).
 
 ## 4. Worked Example
 
@@ -233,7 +233,7 @@ That last one is why "just put the database in the other region" is almost never
 - **Quoting medians when only tails matter.** If 1% of your requests are 100× slower than the median, your *user* experiences the tail every fifth page load (a page with 100 dependent calls hits the 99th-percentile call ~once). [The Tail at Scale (Dean & Barroso, 2013)](https://research.google/pubs/the-tail-at-scale/) is required reading.
 - **Optimising L1 cache when network is the bottleneck.** A 100 ns memory access embedded inside a 100 ms cross-region call is *one millionth* of the latency. Senior engineers triage where the time actually goes *before* optimising.
 - **Forgetting that even a "fast" SSD is still ~1,000× slower than RAM (and a spinning-disk seek ~100,000×).** This is why caching exists. This is also why "we made the database faster" hits a wall — the disk is still the disk.
-- **Trusting cloud "best-case" latencies.** Vendors quote *un-loaded* RTT. Loaded systems queue. A "1 ms" service averages ~10 ms at 90% CPU utilisation (M/M/1: response = service ÷ (1 − utilisation)), and its p99 tail can hit ~50 ms; a 50 ms *typical* figure needs ~98% utilisation. We will quantify this in [Lesson 5 — Little's Law](/cortex/system-design/foundations-latency-throughput-usl).
+- **Trusting cloud "best-case" latencies.** Vendors quote *un-loaded* RTT. Loaded systems queue. A "1 ms" service averages ~10 ms at 90% CPU utilisation (M/M/1: response = service ÷ (1 − utilisation)), and its p99 tail can hit ~50 ms; a 50 ms *typical* figure needs ~98% utilisation. We will quantify this in [Lesson 5 — Little's Law](/cortex/system-design/foundations/latency-throughput-usl).
 - **Comparing wall-clock from different machines.** Same code, different CPU, can be 10× different. Always measure on the hardware you will run on.
 - **Forgetting cold caches.** First-request latency is dominated by everything that *should* have been hot but was not — DNS, TLS handshake, JIT, page cache, CDN warm-up. Every system has a "first 30 seconds" pathology. Production load tests should always include cold-start measurement.
 
@@ -302,4 +302,4 @@ That last one is why "just put the database in the other region" is almost never
 
 ---
 
-**Next:** the *combinatorial* skill that turns these numbers into design decisions — back-of-envelope estimation. By the end of [Lesson 3](/cortex/system-design/foundations-back-of-envelope-estimation), you will be able to estimate the QPS, storage, and bandwidth of any system in 5 minutes, with nothing but multiplication. → [Lesson 3 — Back-of-envelope estimation](/cortex/system-design/foundations-back-of-envelope-estimation)
+**Next:** the *combinatorial* skill that turns these numbers into design decisions — back-of-envelope estimation. By the end of [Lesson 3](/cortex/system-design/foundations/back-of-envelope-estimation), you will be able to estimate the QPS, storage, and bandwidth of any system in 5 minutes, with nothing but multiplication. → [Lesson 3 — Back-of-envelope estimation](/cortex/system-design/foundations/back-of-envelope-estimation)

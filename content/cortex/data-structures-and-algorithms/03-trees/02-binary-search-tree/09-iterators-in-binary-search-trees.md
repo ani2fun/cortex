@@ -170,12 +170,12 @@ This is a structural lesson — completing the BST's structural operations; the 
 
 The BST iterator is "recursion made resumable," and the technique transfers widely:
 
-- **Explicit stack = pausable recursion** — the iterator is exactly the [iterative in-order traversal](/cortex/data-structures-and-algorithms/trees-binary-tree-iterative-traversals-in-binary-trees) you saw on binary trees, frozen between steps. Any recursion can be made step-by-step by managing its stack yourself; iterators do this to yield values lazily.
-- **It unlocks two-iterator tricks** — "is there a pair summing to `k` in this BST?" becomes the [array two-pointer](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-pattern) with a forward iterator (ascending) and a reverse one (descending) — `O(n)` time, `O(h)` space, no flattening. Merging `k` BSTs in sorted order uses `k` iterators in a heap.
+- **Explicit stack = pausable recursion** — the iterator is exactly the [iterative in-order traversal](/cortex/data-structures-and-algorithms/trees/binary-tree/iterative-traversals-in-binary-trees) you saw on binary trees, frozen between steps. Any recursion can be made step-by-step by managing its stack yourself; iterators do this to yield values lazily.
+- **It unlocks two-iterator tricks** — "is there a pair summing to `k` in this BST?" becomes the [array two-pointer](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers/pattern) with a forward iterator (ascending) and a reverse one (descending) — `O(n)` time, `O(h)` space, no flattening. Merging `k` BSTs in sorted order uses `k` iterators in a heap.
 - **Amortized `O(1)`, `O(h)` space is the win** — better than flatten-to-list (`O(n)` space, eager) whenever you might stop early or interleave with other work. Morris traversal trades to `O(1)` space but mutates the tree mid-walk — usually not worth it.
 
-**Prerequisites:** [Iterative Traversals in Binary Trees](/cortex/data-structures-and-algorithms/trees-binary-tree-iterative-traversals-in-binary-trees).
-**What's next:** the BST pattern layer begins — exploit in-order = sorted in [Sorted Traversal](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-sorted-traversal-pattern).
+**Prerequisites:** [Iterative Traversals in Binary Trees](/cortex/data-structures-and-algorithms/trees/binary-tree/iterative-traversals-in-binary-trees).
+**What's next:** the BST pattern layer begins — exploit in-order = sorted in [Sorted Traversal](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-sorted-traversal/pattern).
 
 ## Recall
 

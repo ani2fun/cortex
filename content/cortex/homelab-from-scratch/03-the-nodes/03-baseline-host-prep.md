@@ -185,4 +185,4 @@ timedatectl status | grep 'System clock synchronized'
 
 All four nodes should pass these checks before we touch WireGuard.
 
-→ Next: [SSH and firewall hardening](/cortex/homelab-from-scratch/the-nodes-ssh-and-firewall-hardening)
+→ Next: [SSH and firewall hardening](/cortex/homelab-from-scratch/the-nodes/ssh-and-firewall-hardening)

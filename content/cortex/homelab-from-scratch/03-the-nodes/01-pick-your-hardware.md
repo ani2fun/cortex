@@ -110,4 +110,4 @@ Never use the provider's "managed Kubernetes" or "container hosting" products fo
 - A managed or unmanaged gigabit switch if your home boxes don't already share one.
 - Ethernet cables for the home boxes. Wi-Fi works for `wk-2` if needed; `ms-1` and `wk-1` should be wired.
 
-→ Next: [Install Ubuntu 24.04](/cortex/homelab-from-scratch/the-nodes-install-ubuntu-24-04)
+→ Next: [Install Ubuntu 24.04](/cortex/homelab-from-scratch/the-nodes/install-ubuntu-24-04)

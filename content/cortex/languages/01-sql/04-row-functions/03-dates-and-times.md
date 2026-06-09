@@ -46,7 +46,7 @@ This chapter is about parsing, formatting, truncating, and arithmetic on tempora
 
 # Date and time types
 
-From [Data Definition](/cortex/languages/sql-foundations-data-definition#column-types):
+From [Data Definition](/cortex/languages/sql/foundations/data-definition#column-types):
 
 | Type | What it is | Storage |
 |---|---|---|
@@ -354,10 +354,10 @@ Use codefolio's Postgres for full date-function support. The runnable blocks bel
 
 # Cross-links
 
-- **Previous in this module:** [Numbers](/cortex/languages/sql-row-functions-numbers) — date arithmetic uses numeric helpers (`EXTRACT(EPOCH FROM ...)`, `EXTRACT(YEAR FROM ...)`).
-- **Next in this module:** [NULL and Three-Valued Logic](/cortex/languages/sql-row-functions-null-and-three-valued-logic) — date columns are commonly nullable; the NULL trap matters here.
-- **Forward reference:** [Window Functions: patterns](/cortex/languages/sql-window-functions-window-patterns) — sessionisation and gap-filling are date-arithmetic-heavy patterns.
-- **Forward reference:** [Schema and Constraints](/cortex/languages/sql-index) — `TIMESTAMPTZ` vs `TIMESTAMP` is a schema decision; this chapter explains the difference, that chapter applies it.
+- **Previous in this module:** [Numbers](/cortex/languages/sql/row-functions/numbers) — date arithmetic uses numeric helpers (`EXTRACT(EPOCH FROM ...)`, `EXTRACT(YEAR FROM ...)`).
+- **Next in this module:** [NULL and Three-Valued Logic](/cortex/languages/sql/row-functions/null-and-three-valued-logic) — date columns are commonly nullable; the NULL trap matters here.
+- **Forward reference:** [Window Functions: patterns](/cortex/languages/sql/window-functions/window-patterns) — sessionisation and gap-filling are date-arithmetic-heavy patterns.
+- **Forward reference:** [Schema and Constraints](/cortex/languages/sql/index) — `TIMESTAMPTZ` vs `TIMESTAMP` is a schema decision; this chapter explains the difference, that chapter applies it.
 
 ***
 

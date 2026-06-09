@@ -225,7 +225,7 @@ Returns Maria, Georg, Martin, Peter — everyone except John (who actually opted
 
 ## Why `NOT IN` breaks
 
-Recall the desugaring from [Filtering — Set Membership](/cortex/languages/sql-foundations-filtering#set-membership):
+Recall the desugaring from [Filtering — Set Membership](/cortex/languages/sql/foundations/filtering#set-membership):
 
 ```
 id NOT IN (a, b, NULL)
@@ -357,13 +357,13 @@ WHERE NOT EXISTS (
 );
 ```
 
-Run this regularly to find foreign-key references that have been orphaned. In a schema with proper `FOREIGN KEY` constraints, this should always return zero rows; in legacy schemas or schemas with `ON DELETE SET NULL`, the query helps you find dangling references. Codefolio's [sample schema](/cortex/languages/sql-foundations-introduction-to-sql#the-sample-schema) is *deliberately* lacking the FK so we can demonstrate this — order 1006 references customer 9 which doesn't exist, so the query above returns `1006`.
+Run this regularly to find foreign-key references that have been orphaned. In a schema with proper `FOREIGN KEY` constraints, this should always return zero rows; in legacy schemas or schemas with `ON DELETE SET NULL`, the query helps you find dangling references. Codefolio's [sample schema](/cortex/languages/sql/foundations/introduction-to-sql#the-sample-schema) is *deliberately* lacking the FK so we can demonstrate this — order 1006 references customer 9 which doesn't exist, so the query above returns `1006`.
 
 ---
 
 # Practice ladder
 
-Use the [sample schema](/cortex/languages/sql-foundations-introduction-to-sql#the-sample-schema). Runnable blocks above bundle the seed data inline.
+Use the [sample schema](/cortex/languages/sql/foundations/introduction-to-sql#the-sample-schema). Runnable blocks above bundle the seed data inline.
 
 1. **Customers who have not placed any orders.** *Hint: `NOT EXISTS` is the canonical form.*
 2. **The same query, but written as `LEFT JOIN ... IS NULL`.** *Hint: which column do you check for NULL? It must be `NOT NULL` in the source table.*
@@ -382,10 +382,10 @@ Use the [sample schema](/cortex/languages/sql-foundations-introduction-to-sql#th
 
 # Cross-links
 
-- **Previous in this module:** [Subqueries](/cortex/languages/sql-multiple-tables-subqueries) — `EXISTS` is a subquery; this chapter's `NOT EXISTS` is its mirror.
-- **Module complete.** Next module: [Aggregation](/cortex/languages/sql-aggregation-index) — once you can combine rows, summarising them is the natural next step.
-- **Forward reference:** [Schema and Constraints](/cortex/languages/sql-index) — `FOREIGN KEY` constraints prevent orphan rows in the first place. The queries in this chapter help you find orphans in schemas where the FK was never added.
-- **Forward reference:** [Indexes and Performance](/cortex/languages/sql-index) — what plan the planner picks for an anti-join, and how an index on the join key changes the cost from a sequential scan to a B-tree probe.
+- **Previous in this module:** [Subqueries](/cortex/languages/sql/multiple-tables/subqueries) — `EXISTS` is a subquery; this chapter's `NOT EXISTS` is its mirror.
+- **Module complete.** Next module: [Aggregation](/cortex/languages/sql/aggregation/index) — once you can combine rows, summarising them is the natural next step.
+- **Forward reference:** [Schema and Constraints](/cortex/languages/sql/index) — `FOREIGN KEY` constraints prevent orphan rows in the first place. The queries in this chapter help you find orphans in schemas where the FK was never added.
+- **Forward reference:** [Indexes and Performance](/cortex/languages/sql/index) — what plan the planner picks for an anti-join, and how an index on the join key changes the cost from a sequential scan to a B-tree probe.
 
 ***
 
@@ -397,4 +397,4 @@ Anti-joins are "rows where no match." Three patterns to internalise:
 2. **`NOT IN` against a subquery is a bug waiting to happen.** The day someone adds a `NULL` to the inner column, your query silently returns zero rows. Reserve `NOT IN` for literal lists you wrote yourself.
 3. **Reconciliation queries — the workhorse use case for anti-joins — should be on a schedule.** "Rows in source not in target," "orphan FKs," "events without their corresponding customer record." Wire them to alerting; the day they return rows is the day your pipeline drifted, and you want to know before users do.
 
-Master these three and the anti-join shape becomes routine. With this chapter, the [Working with Multiple Tables](/cortex/languages/sql-multiple-tables-index) module is complete — you can now combine rows from any number of tables, in any of the standard shapes.
+Master these three and the anti-join shape becomes routine. With this chapter, the [Working with Multiple Tables](/cortex/languages/sql/multiple-tables/index) module is complete — you can now combine rows from any number of tables, in any of the standard shapes.

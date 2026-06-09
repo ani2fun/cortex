@@ -123,7 +123,7 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [Sum of Path](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateless-problems-sum-of-path), [Depth Assignment](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateless-problems-depth-assignment), [Concatenated Path](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateless-problems-concatenated-path), and [Increasing Path](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateless-problems-increasing-path).
+Drill the family in **Practice** — [Sum of Path](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-preorder-traversal-stateless/problems/sum-of-path), [Depth Assignment](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-preorder-traversal-stateless/problems/depth-assignment), [Concatenated Path](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-preorder-traversal-stateless/problems/concatenated-path), and [Increasing Path](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-preorder-traversal-stateless/problems/increasing-path).
 
 ## Reflect & Connect
 
@@ -131,10 +131,10 @@ Preorder-stateless is the "what do my ancestors tell me?" template:
 
 - **The family** — root-to-leaf path sum, depth/level assignment, accumulated path string, running max on the path ("count good nodes ≥ all ancestors"), and "is the root-to-leaf path strictly increasing?" All thread one accumulated value down; only the combine step differs.
 - **Argument-passing = statelessness** — context lives in the call argument, so each call is a pure function of its inputs and the call stack restores the parent's state automatically. No backtracking cleanup, no cross-branch leakage.
-- **It's half of the traversal duo** — preorder pushes context *down* (top-down); [postorder](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless-pattern) combines results *up* (bottom-up). When a node needs ancestor info, go preorder; when it needs child results, go postorder. The [stateful preorder](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateful-pattern) variant uses a shared accumulator when you must collect across branches.
+- **It's half of the traversal duo** — preorder pushes context *down* (top-down); [postorder](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-postorder-traversal-stateless/pattern) combines results *up* (bottom-up). When a node needs ancestor info, go preorder; when it needs child results, go postorder. The [stateful preorder](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-preorder-traversal-stateful/pattern) variant uses a shared accumulator when you must collect across branches.
 
-**Prerequisites:** [Recursive Traversals in Binary Trees](/cortex/data-structures-and-algorithms/trees-binary-tree-recursive-traversals-in-binary-trees).
-**What's next:** the same descent, but carrying a *mutable* accumulator across branches — [Preorder Traversal (Stateful)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateful-pattern).
+**Prerequisites:** [Recursive Traversals in Binary Trees](/cortex/data-structures-and-algorithms/trees/binary-tree/recursive-traversals-in-binary-trees).
+**What's next:** the same descent, but carrying a *mutable* accumulator across branches — [Preorder Traversal (Stateful)](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-preorder-traversal-stateful/pattern).
 
 ## Recall
 

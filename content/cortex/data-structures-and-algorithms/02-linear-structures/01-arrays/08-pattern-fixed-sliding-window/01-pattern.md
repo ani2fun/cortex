@@ -102,7 +102,7 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [Subarray Size Equals K](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-fixed-sliding-window-problems-subarray-size-equals-k) and [Maximum Ones](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-fixed-sliding-window-problems-maximum-ones).
+Drill the family in **Practice** — [Subarray Size Equals K](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-fixed-sliding-window/problems/subarray-size-equals-k) and [Maximum Ones](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-fixed-sliding-window/problems/maximum-ones).
 
 ## Reflect & Connect
 
@@ -112,8 +112,8 @@ The fixed window is the simplest "stop recomputing, start maintaining" pattern, 
 - **The slidable test is the real lesson** — before reaching for it, ask "can one element's contribution be added and removed in `O(1)`?" If not (median, "number of distinct values" sometimes), you need a heavier structure and the easy `O(n)` is gone.
 - **It's the rigid cousin of the variable window** — here the size is *fixed* by the problem; next, the window *grows and shrinks* based on a condition.
 
-**Prerequisites:** [Two Pointers](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-pattern).
-**What's next:** let the window resize itself to satisfy a condition — the [Variable Sliding Window](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-variable-sliding-window-pattern).
+**Prerequisites:** [Two Pointers](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers/pattern).
+**What's next:** let the window resize itself to satisfy a condition — the [Variable Sliding Window](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-variable-sliding-window/pattern).
 
 ## Recall
 

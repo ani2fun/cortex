@@ -6,85 +6,85 @@ Use this page as the chapter map for arrays. The guides are ordered from fundame
 
 ## Start Here — the learning path
 
-- [Arrays](/cortex/data-structures-and-algorithms/linear-structures-arrays-what-is-an-array)
-- [Dynamic Arrays](/cortex/data-structures-and-algorithms/linear-structures-arrays-dynamic-arrays)
-- [Multidimensional Arrays](/cortex/data-structures-and-algorithms/linear-structures-arrays-multidimensional)
-- [Pattern: Two Pointers](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-pattern)
-- [Pattern: Two Pointers Reduction](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-reduction-pattern)
-- [Pattern: Two Pointers Subproblem](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-subproblem-pattern)
-- [Pattern: Simultaneous Traversal](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-simultaneous-traversal-pattern)
-- [Pattern: Fixed Sliding Window](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-fixed-sliding-window-pattern)
-- [Pattern: Variable Sliding Window](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-variable-sliding-window-pattern)
-- [Pattern: Interval Merging](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-interval-merging-pattern)
-- [Pattern: Maximum Overlap](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-maximum-overlap-pattern)
+- [Arrays](/cortex/data-structures-and-algorithms/linear-structures/arrays/what-is-an-array)
+- [Dynamic Arrays](/cortex/data-structures-and-algorithms/linear-structures/arrays/dynamic-arrays)
+- [Multidimensional Arrays](/cortex/data-structures-and-algorithms/linear-structures/arrays/multidimensional)
+- [Pattern: Two Pointers](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers/pattern)
+- [Pattern: Two Pointers Reduction](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers-reduction/pattern)
+- [Pattern: Two Pointers Subproblem](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers-subproblem/pattern)
+- [Pattern: Simultaneous Traversal](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-simultaneous-traversal/pattern)
+- [Pattern: Fixed Sliding Window](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-fixed-sliding-window/pattern)
+- [Pattern: Variable Sliding Window](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-variable-sliding-window/pattern)
+- [Pattern: Interval Merging](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-interval-merging/pattern)
+- [Pattern: Maximum Overlap](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-maximum-overlap/pattern)
 
 ## Practice
 
 Do these after the matching pattern in Start Here.
 
 ### Two Pointers
-- [Flip Characters](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-problems-flip-characters)
-- [Palindrome Checker](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-problems-palindrome-checker)
-- [Vowel Exchange](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-problems-vowel-exchange)
-- [Reverse Words](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-problems-reverse-words)
-- [Reverse Segments](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-problems-reverse-segments)
-- [Reverse Word Order](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-problems-reverse-word-order)
+- [Flip Characters](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers/problems/flip-characters)
+- [Palindrome Checker](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers/problems/palindrome-checker)
+- [Vowel Exchange](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers/problems/vowel-exchange)
+- [Reverse Words](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers/problems/reverse-words)
+- [Reverse Segments](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers/problems/reverse-segments)
+- [Reverse Word Order](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers/problems/reverse-word-order)
 
 ### Two Pointers Reduction
-- [Two Sum](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-reduction-problems-two-sum)
-- [Target Limited Two Sum](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-reduction-problems-target-limited-two-sum)
-- [Duplicate Aware Two Sum](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-reduction-problems-duplicate-aware-two-sum)
-- [Largest Container](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-reduction-problems-largest-container)
+- [Two Sum](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers-reduction/problems/two-sum)
+- [Target Limited Two Sum](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers-reduction/problems/target-limited-two-sum)
+- [Duplicate Aware Two Sum](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers-reduction/problems/duplicate-aware-two-sum)
+- [Largest Container](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers-reduction/problems/largest-container)
 
 ### Two Pointers Subproblem
-- [K Rotations](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-subproblem-problems-k-rotations)
-- [Three Sum](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-subproblem-problems-three-sum)
-- [Approximate Three Sum](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-subproblem-problems-approximate-three-sum)
-- [Four Sum](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-subproblem-problems-four-sum)
+- [K Rotations](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers-subproblem/problems/k-rotations)
+- [Three Sum](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers-subproblem/problems/three-sum)
+- [Approximate Three Sum](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers-subproblem/problems/approximate-three-sum)
+- [Four Sum](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers-subproblem/problems/four-sum)
 
 ### Simultaneous Traversal
-- [Subsequence Checker](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-simultaneous-traversal-problems-subsequence-checker)
-- [Merge Sorted Arrays](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-simultaneous-traversal-problems-merge-sorted-arrays)
-- [Unique Intersections](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-simultaneous-traversal-problems-unique-intersections)
-- [Repeated Intersections](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-simultaneous-traversal-problems-repeated-intersections)
+- [Subsequence Checker](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-simultaneous-traversal/problems/subsequence-checker)
+- [Merge Sorted Arrays](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-simultaneous-traversal/problems/merge-sorted-arrays)
+- [Unique Intersections](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-simultaneous-traversal/problems/unique-intersections)
+- [Repeated Intersections](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-simultaneous-traversal/problems/repeated-intersections)
 
 ### Fixed Sliding Window
-- [Subarray Size Equals K](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-fixed-sliding-window-problems-subarray-size-equals-k)
-- [Maximum Ones](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-fixed-sliding-window-problems-maximum-ones)
-- [Negative Window](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-fixed-sliding-window-problems-negative-window)
-- [Even Odd Count](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-fixed-sliding-window-problems-even-odd-count)
+- [Subarray Size Equals K](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-fixed-sliding-window/problems/subarray-size-equals-k)
+- [Maximum Ones](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-fixed-sliding-window/problems/maximum-ones)
+- [Negative Window](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-fixed-sliding-window/problems/negative-window)
+- [Even Odd Count](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-fixed-sliding-window/problems/even-odd-count)
 
 ### Variable Sliding Window
-- [Consecutive Ones](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-variable-sliding-window-problems-consecutive-ones)
-- [Product Conundrum](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-variable-sliding-window-problems-product-conundrum)
-- [Maximum Subarray Sum](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-variable-sliding-window-problems-maximum-subarray-sum)
-- [Consecutive Ones with K Flips](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-variable-sliding-window-problems-consecutive-ones-with-k-flips)
+- [Consecutive Ones](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-variable-sliding-window/problems/consecutive-ones)
+- [Product Conundrum](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-variable-sliding-window/problems/product-conundrum)
+- [Maximum Subarray Sum](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-variable-sliding-window/problems/maximum-subarray-sum)
+- [Consecutive Ones with K Flips](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-variable-sliding-window/problems/consecutive-ones-with-k-flips)
 
 ### Interval Merging
-- [Verify Schedule](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-interval-merging-problems-verify-schedule)
-- [Overlap Reduction](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-interval-merging-problems-overlap-reduction)
-- [Employee Free Time](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-interval-merging-problems-employee-free-time)
-- [Insert Interval](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-interval-merging-problems-insert-interval)
+- [Verify Schedule](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-interval-merging/problems/verify-schedule)
+- [Overlap Reduction](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-interval-merging/problems/overlap-reduction)
+- [Employee Free Time](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-interval-merging/problems/employee-free-time)
+- [Insert Interval](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-interval-merging/problems/insert-interval)
 
 ### Maximum Overlap
-- [Minimum Meeting Rooms](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-maximum-overlap-problems-minimum-meeting-rooms)
-- [Remove Intervals](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-maximum-overlap-problems-remove-intervals)
-- [Busiest Interval](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-maximum-overlap-problems-busiest-interval)
-- [Peak Resource Requirement](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-maximum-overlap-problems-peak-resource-requirement)
+- [Minimum Meeting Rooms](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-maximum-overlap/problems/minimum-meeting-rooms)
+- [Remove Intervals](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-maximum-overlap/problems/remove-intervals)
+- [Busiest Interval](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-maximum-overlap/problems/busiest-interval)
+- [Peak Resource Requirement](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-maximum-overlap/problems/peak-resource-requirement)
 
 ## Reference
 
 Quick-recall and design material. Skim, don't study top to bottom.
 
-- [Memorize: Two Pointers](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-memorize)
-- [Memorize: Two Pointers Reduction](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-reduction-memorize)
-- [Memorize: Two Pointers Subproblem](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-subproblem-memorize)
-- [Memorize: Simultaneous Traversal](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-simultaneous-traversal-memorize)
-- [Memorize: Fixed Sliding Window](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-fixed-sliding-window-memorize)
-- [Memorize: Variable Sliding Window](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-variable-sliding-window-memorize)
-- [Memorize: Interval Merging](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-interval-merging-memorize)
-- [Memorize: Maximum Overlap](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-maximum-overlap-memorize)
-- [Design a Dynamic Array](/cortex/data-structures-and-algorithms/linear-structures-arrays-design-a-dynamic-array-design-a-dynamic-array)
-- [Pattern Synthesis: Arrays](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-synthesis)
-- [Binary Search — full trace](/cortex/data-structures-and-algorithms/linear-structures-arrays-binary-search-visualise)
-- [Memorize: Arrays](/cortex/data-structures-and-algorithms/linear-structures-arrays-memorize)
+- [Memorize: Two Pointers](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers/memorize)
+- [Memorize: Two Pointers Reduction](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers-reduction/memorize)
+- [Memorize: Two Pointers Subproblem](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers-subproblem/memorize)
+- [Memorize: Simultaneous Traversal](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-simultaneous-traversal/memorize)
+- [Memorize: Fixed Sliding Window](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-fixed-sliding-window/memorize)
+- [Memorize: Variable Sliding Window](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-variable-sliding-window/memorize)
+- [Memorize: Interval Merging](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-interval-merging/memorize)
+- [Memorize: Maximum Overlap](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-maximum-overlap/memorize)
+- [Design a Dynamic Array](/cortex/data-structures-and-algorithms/linear-structures/arrays/design-a-dynamic-array/design-a-dynamic-array)
+- [Pattern Synthesis: Arrays](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-synthesis)
+- [Binary Search — full trace](/cortex/data-structures-and-algorithms/linear-structures/arrays/binary-search-visualise)
+- [Memorize: Arrays](/cortex/data-structures-and-algorithms/linear-structures/arrays/memorize)

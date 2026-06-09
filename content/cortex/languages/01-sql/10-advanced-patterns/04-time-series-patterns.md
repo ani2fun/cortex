@@ -43,7 +43,7 @@ Time-series data has shape-specific challenges: bucketing into intervals, fillin
 
 # Time bucketing
 
-Group events into intervals. From [Dates and Times](/cortex/languages/sql-row-functions-dates-and-times):
+Group events into intervals. From [Dates and Times](/cortex/languages/sql/row-functions/dates-and-times):
 
 ```sql
 -- Hourly buckets.
@@ -137,7 +137,7 @@ This is *the* canonical fix for time-series gaps.
 
 # Rolling windows
 
-7-day rolling average — covered in [Window Functions: Frames](/cortex/languages/sql-window-functions-frames):
+7-day rolling average — covered in [Window Functions: Frames](/cortex/languages/sql/window-functions/frames):
 
 ```sql
 SELECT day, events,
@@ -181,7 +181,7 @@ Result: rows per (cohort, weeks_after) with counts of returning users. Pivot thi
 
 # Time-bound aggregations with FILTER
 
-From [Aggregate Functions: FILTER](/cortex/languages/sql-aggregation-aggregate-functions#filter-clause):
+From [Aggregate Functions: FILTER](/cortex/languages/sql/aggregation/aggregate-functions#filter-clause):
 
 ```sql
 SELECT
@@ -239,9 +239,9 @@ For codefolio-scale data (thousands of events / day), regular Postgres handles a
 
 # Cross-links
 
-- **Previous in this module:** [Pivoting and Unpivoting](/cortex/languages/sql-advanced-patterns-pivoting-and-unpivoting).
+- **Previous in this module:** [Pivoting and Unpivoting](/cortex/languages/sql/advanced-patterns/pivoting-and-unpivoting).
 - **Module complete. SQL section complete.**
-- **Cited:** [Dates and Times](/cortex/languages/sql-row-functions-dates-and-times), [Window Functions](/cortex/languages/sql-window-functions-index), [Aggregate Functions](/cortex/languages/sql-aggregation-aggregate-functions).
+- **Cited:** [Dates and Times](/cortex/languages/sql/row-functions/dates-and-times), [Window Functions](/cortex/languages/sql/window-functions/index), [Aggregate Functions](/cortex/languages/sql/aggregation/aggregate-functions).
 
 ***
 

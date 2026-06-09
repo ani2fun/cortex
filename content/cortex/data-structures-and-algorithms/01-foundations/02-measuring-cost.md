@@ -112,10 +112,10 @@ Each time `n` doubles, the count goes up 4×. That is what `O(n²)` *feels* like
 
 Big-O is the yardstick for the rest of the book. Every data structure is sold on its costs ("insert is `O(1)`, search is `O(n)`"), and every pattern you'll learn is a trick to drop an algorithm from a worse shape to a better one — usually `O(n²)` down to `O(n)` or `O(n log n)`.
 
-**Prerequisites:** [How a Computer Stores Data](/cortex/data-structures-and-algorithms/foundations-how-a-computer-stores-data) — `O(1)` index access is where this starts.
-**What's next:** a repeatable way to attack any problem, using this yardstick to measure "better" — [How to Approach a Problem](/cortex/data-structures-and-algorithms/foundations-how-to-approach-a-problem).
+**Prerequisites:** [How a Computer Stores Data](/cortex/data-structures-and-algorithms/foundations/how-a-computer-stores-data) — `O(1)` index access is where this starts.
+**What's next:** a repeatable way to attack any problem, using this yardstick to measure "better" — [How to Approach a Problem](/cortex/data-structures-and-algorithms/foundations/how-to-approach-a-problem).
 
-> A note on rigor: strictly, Big-O is an *upper* bound — here we use it the way working programmers do, to mean "grows like." For the precise definitions (Θ, Ω, the limit definitions, and proofs), see the deeper reference lesson [Asymptotic Analysis](/cortex/data-structures-and-algorithms/foundations-asymptotic-analysis).
+> A note on rigor: strictly, Big-O is an *upper* bound — here we use it the way working programmers do, to mean "grows like." For the precise definitions (Θ, Ω, the limit definitions, and proofs), see the deeper reference lesson [Asymptotic Analysis](/cortex/data-structures-and-algorithms/foundations/asymptotic-analysis).
 
 ## Recall
 

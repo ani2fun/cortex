@@ -8,9 +8,9 @@ prereqs:
 
 ## Why It Exists
 
-You have a text and a *dictionary* of patterns — a virus database, a profanity list, a set of DNA motifs — and you want every occurrence of every pattern. Running [KMP](/cortex/data-structures-and-algorithms/strings-kmp) once per pattern costs `O(k·n)` for `k` patterns: the text is re-scanned `k` times. **Aho-Corasick** does it in a *single* pass: `O(n + Σ|pattern| + matches)`, independent of how many patterns share the text.
+You have a text and a *dictionary* of patterns — a virus database, a profanity list, a set of DNA motifs — and you want every occurrence of every pattern. Running [KMP](/cortex/data-structures-and-algorithms/strings/kmp) once per pattern costs `O(k·n)` for `k` patterns: the text is re-scanned `k` times. **Aho-Corasick** does it in a *single* pass: `O(n + Σ|pattern| + matches)`, independent of how many patterns share the text.
 
-The idea fuses two structures you already know. Put all patterns in a [trie](/cortex/data-structures-and-algorithms/trees-trie-introduction-to-tries) (so shared prefixes are walked once). Then add **failure links** — exactly KMP's "where do I jump on a mismatch?", but lifted from a single string to the whole trie: each node's failure link points to the node spelling the *longest proper suffix* that's also in the trie. Walk the text once, following trie edges where you can and failure links where you can't, and you match the entire dictionary at once. It's the engine inside `grep -F`, `fgrep`, and intrusion-detection systems.
+The idea fuses two structures you already know. Put all patterns in a [trie](/cortex/data-structures-and-algorithms/trees/trie/introduction-to-tries) (so shared prefixes are walked once). Then add **failure links** — exactly KMP's "where do I jump on a mismatch?", but lifted from a single string to the whole trie: each node's failure link points to the node spelling the *longest proper suffix* that's also in the trie. Walk the text once, following trie edges where you can and failure links where you can't, and you match the entire dictionary at once. It's the engine inside `grep -F`, `fgrep`, and intrusion-detection systems.
 
 ## See It Work
 
@@ -279,7 +279,7 @@ Both print `6` then `4`. In `"mississippi"`, the overlapping patterns `is`, `si`
 - **Failure links are built by BFS.** `fail[v]` is shallower than `v`, so a breadth-first (increasing-depth) sweep always has it ready. It's the longest proper suffix of `v`'s string that's still a trie node.
 - **Output links are non-optional for overlaps.** When patterns are suffixes of one another (`he` ⊂ `she`), reporting them all requires chaining `out[v] += out[fail[v]]`. The classic bug is omitting it and missing the shorter matches.
 - **One pass beats k passes.** `O(n + Σ|pattern| + matches)` versus `O(k·n)` for per-pattern KMP. The win grows with the dictionary size — which is why `grep -F`, antivirus scanners, and network IDS use it.
-- **Where it sits.** It's the multi-pattern capstone of Part 7: [naive](/cortex/data-structures-and-algorithms/strings-string-matching-naive) → [KMP](/cortex/data-structures-and-algorithms/strings-kmp)/[Z](/cortex/data-structures-and-algorithms/strings-z-algorithm) (one pattern) → [Rabin-Karp](/cortex/data-structures-and-algorithms/strings-rabin-karp-and-rolling-hash) (hashing, multi-pattern via a set) → Aho-Corasick (a trie automaton, all patterns in one deterministic pass).
+- **Where it sits.** It's the multi-pattern capstone of Part 7: [naive](/cortex/data-structures-and-algorithms/strings/string-matching-naive) → [KMP](/cortex/data-structures-and-algorithms/strings/kmp)/[Z](/cortex/data-structures-and-algorithms/strings/z-algorithm) (one pattern) → [Rabin-Karp](/cortex/data-structures-and-algorithms/strings/rabin-karp-and-rolling-hash) (hashing, multi-pattern via a set) → Aho-Corasick (a trie automaton, all patterns in one deterministic pass).
 
 ## Recall
 

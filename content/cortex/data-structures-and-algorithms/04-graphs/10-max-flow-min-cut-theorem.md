@@ -155,13 +155,13 @@ Then: use **BFS** for the augmenting path (Edmonds-Karp, `O(VE²)`); recover the
 
 Max-flow / min-cut is a master key that unlocks problems that don't look like flow at all:
 
-- **Bipartite matching IS max flow** — add a super-source to all left nodes and a super-sink from all right nodes, every edge capacity 1; the max flow equals the maximum matching. That's the [next lesson](/cortex/data-structures-and-algorithms/graphs-maximum-bipartite-matching), and it's the canonical "reduce your problem to max flow" move.
+- **Bipartite matching IS max flow** — add a super-source to all left nodes and a super-sink from all right nodes, every edge capacity 1; the max flow equals the maximum matching. That's the [next lesson](/cortex/data-structures-and-algorithms/graphs/maximum-bipartite-matching), and it's the canonical "reduce your problem to max flow" move.
 - **The theorem reframes optimisation as separation** — "maximise throughput" (flow) and "find the cheapest bottleneck" (cut) are the *same* number. This flow/cut duality powers image segmentation (min cut separates foreground/background), project selection, and baseball elimination — wildly different problems, all solved by one max-flow call.
 - **Reverse edges = reversible greed** — the residual-edge "undo" lane is a reusable idea: let a greedy algorithm record enough state to cancel a choice, and "pick anything" becomes provably optimal. It's why Ford-Fulkerson is a *method* you can specialise (Edmonds-Karp's BFS, Dinic's blocking flows) rather than a single brittle algorithm.
 - **Integrality** — with integer capacities, max flow is an integer and Ford-Fulkerson produces an integer flow. That's what makes the unit-capacity matching reduction give a clean 0/1 answer.
 
-**Prerequisites:** [Traversing a Graph](/cortex/data-structures-and-algorithms/graphs-traversing-a-graph).
-**What's next:** the headline application — match every left node to a right node, as a unit-capacity max flow — [Maximum Bipartite Matching](/cortex/data-structures-and-algorithms/graphs-maximum-bipartite-matching).
+**Prerequisites:** [Traversing a Graph](/cortex/data-structures-and-algorithms/graphs/traversing-a-graph).
+**What's next:** the headline application — match every left node to a right node, as a unit-capacity max flow — [Maximum Bipartite Matching](/cortex/data-structures-and-algorithms/graphs/maximum-bipartite-matching).
 
 ## Recall
 

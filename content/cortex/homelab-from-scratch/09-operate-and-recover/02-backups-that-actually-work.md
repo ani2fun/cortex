@@ -203,4 +203,4 @@ A homelab probably doesn't need ransomware-grade defences. But "encrypted on a t
 
 The next chapter assumes all of this. It's the runbook for "the cluster is gone; here's how to bring it back."
 
-→ Next: [The recovery runbook](/cortex/homelab-from-scratch/operate-and-recover-the-recovery-runbook)
+→ Next: [The recovery runbook](/cortex/homelab-from-scratch/operate-and-recover/the-recovery-runbook)

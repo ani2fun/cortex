@@ -21,7 +21,7 @@ The query returns 100,000 rows. Most users are missing.
 
 The bug is `NULL`. `last_login` is nullable; users who never logged in have `NULL`. `NULL != CURRENT_DATE - 90` is **`UNKNOWN`**, not `TRUE`. `WHERE` drops `UNKNOWN` rows. So the 3,000,000 users with `NULL last_login` *all silently disappear* — exactly the people the churn dashboard most needs to surface.
 
-Every working SQL engineer has written this bug at least once. The chapter on [Filtering](/cortex/languages/sql-foundations-filtering#the-null-trap) introduced the rule: NULL comparisons return `UNKNOWN`, and `WHERE` treats `UNKNOWN` as a drop. This chapter is the deeper treatment — the truth tables behind every NULL behaviour, the four operators that handle NULLs explicitly, and the patterns that turn the three-valued logic from a footgun into a tool.
+Every working SQL engineer has written this bug at least once. The chapter on [Filtering](/cortex/languages/sql/foundations/filtering#the-null-trap) introduced the rule: NULL comparisons return `UNKNOWN`, and `WHERE` treats `UNKNOWN` as a drop. This chapter is the deeper treatment — the truth tables behind every NULL behaviour, the four operators that handle NULLs explicitly, and the patterns that turn the three-valued logic from a footgun into a tool.
 
 By the end you'll be able to read any predicate involving NULLs and predict its output; you'll know the difference between `IS DISTINCT FROM` and `<>`; you'll have the reflex to wrap nullable columns in `COALESCE` whenever a comparison would silently drop them.
 
@@ -248,7 +248,7 @@ Standard `<>` would silently miss NULL→Germany transitions. `IS DISTINCT FROM`
 
 # Aggregates and NULL
 
-A reminder from [Aggregate Functions](/cortex/languages/sql-aggregation-aggregate-functions#null-behaviour): aggregates **silently exclude NULLs** (with `COUNT(*)` as the exception).
+A reminder from [Aggregate Functions](/cortex/languages/sql/aggregation/aggregate-functions#null-behaviour): aggregates **silently exclude NULLs** (with `COUNT(*)` as the exception).
 
 | Aggregate | NULL handling |
 |---|---|
@@ -275,9 +275,9 @@ JOIN ... ON a.x IS NOT DISTINCT FROM b.y
 
 But this is rare in practice — usually NULL in a foreign-key column means "no relationship," and you don't want to match it against another NULL "no relationship" on the other side. Two "no relationships" aren't equivalent; they're both *missing*.
 
-`LEFT JOIN` produces NULLs in the right-side columns when there's no match. `WHERE right_col IS NULL` is the standard "anti-join" pattern (covered in [Anti-joins](/cortex/languages/sql-multiple-tables-anti-joins-and-existence)).
+`LEFT JOIN` produces NULLs in the right-side columns when there's no match. `WHERE right_col IS NULL` is the standard "anti-join" pattern (covered in [Anti-joins](/cortex/languages/sql/multiple-tables/anti-joins-and-existence)).
 
-The trap: a `WHERE right_col = ...` predicate after a `LEFT JOIN` silently turns it into an `INNER JOIN` (also covered in [Joins](/cortex/languages/sql-multiple-tables-joins#on-vs-where)). The fix: put the inner-side filter in `ON`, not `WHERE`.
+The trap: a `WHERE right_col = ...` predicate after a `LEFT JOIN` silently turns it into an `INNER JOIN` (also covered in [Joins](/cortex/languages/sql/multiple-tables/joins#on-vs-where)). The fix: put the inner-side filter in `ON`, not `WHERE`.
 
 ---
 
@@ -285,7 +285,7 @@ The trap: a `WHERE right_col = ...` predicate after a `LEFT JOIN` silently turns
 
 ## NULL ordering
 
-`ORDER BY` has to put NULLs *somewhere*. Default is dialect-specific (Postgres puts NULLs last for `ASC`, first for `DESC`; SQL Server / MySQL go the other way). **Always specify `NULLS FIRST` or `NULLS LAST` for deterministic output.** (Covered in [Ordering and Pagination](/cortex/languages/sql-foundations-ordering-and-pagination#nulls-ordering).)
+`ORDER BY` has to put NULLs *somewhere*. Default is dialect-specific (Postgres puts NULLs last for `ASC`, first for `DESC`; SQL Server / MySQL go the other way). **Always specify `NULLS FIRST` or `NULLS LAST` for deterministic output.** (Covered in [Ordering and Pagination](/cortex/languages/sql/foundations/ordering-and-pagination#nulls-ordering).)
 
 ## NULL in `IN` and `NOT IN`
 
@@ -294,7 +294,7 @@ SELECT * FROM customers WHERE id IN (1, 2, NULL);     -- NULL doesn't match anyt
 SELECT * FROM customers WHERE id NOT IN (1, 2, NULL); -- TREACHEROUS: returns ZERO rows.
 ```
 
-`NOT IN` against a list with NULL is the famous bug from [Filtering](/cortex/languages/sql-foundations-filtering#set-membership). Use `NOT EXISTS` instead.
+`NOT IN` against a list with NULL is the famous bug from [Filtering](/cortex/languages/sql/foundations/filtering#set-membership). Use `NOT EXISTS` instead.
 
 ## NULL in unique constraints
 
@@ -394,10 +394,10 @@ ORDER BY hour_bucket;
 
 # Cross-links
 
-- **Previous in this module:** [Dates and Times](/cortex/languages/sql-row-functions-dates-and-times) — date columns are commonly nullable; this chapter's patterns apply.
-- **Next in this module:** [CASE Expressions](/cortex/languages/sql-row-functions-case-expressions) — the if-else construct that lets you encode NULL handling explicitly inline.
-- **Forward reference:** [Anti-joins and Existence](/cortex/languages/sql-multiple-tables-anti-joins-and-existence) — the `NOT EXISTS` pattern that's null-safe by construction.
-- **Cited from many chapters:** [Filtering](/cortex/languages/sql-foundations-filtering), [Joins](/cortex/languages/sql-multiple-tables-joins), [Aggregate Functions](/cortex/languages/sql-aggregation-aggregate-functions). NULL is the cross-cutting concern that touches every operator.
+- **Previous in this module:** [Dates and Times](/cortex/languages/sql/row-functions/dates-and-times) — date columns are commonly nullable; this chapter's patterns apply.
+- **Next in this module:** [CASE Expressions](/cortex/languages/sql/row-functions/case-expressions) — the if-else construct that lets you encode NULL handling explicitly inline.
+- **Forward reference:** [Anti-joins and Existence](/cortex/languages/sql/multiple-tables/anti-joins-and-existence) — the `NOT EXISTS` pattern that's null-safe by construction.
+- **Cited from many chapters:** [Filtering](/cortex/languages/sql/foundations/filtering), [Joins](/cortex/languages/sql/multiple-tables/joins), [Aggregate Functions](/cortex/languages/sql/aggregation/aggregate-functions). NULL is the cross-cutting concern that touches every operator.
 
 ***
 
@@ -407,6 +407,6 @@ NULL is the one piece of SQL that surprises every engineer at least once. Three 
 
 1. **NULL is "unknown," not "missing." Comparisons return `UNKNOWN`, which `WHERE` drops.** The asymmetry between `FALSE` (deliberately rejected) and `UNKNOWN` (silently rejected) is where every NULL bug lives.
 2. **Use `IS NULL`, `IS NOT NULL`, `IS DISTINCT FROM`, `COALESCE`, and `NULLIF` to handle NULL explicitly.** Each has its niche. The reflex to reach for one of them whenever a column might be nullable is the single biggest difference between a junior and a senior SQL writer.
-3. **`NOT IN` against a subquery is the most common NULL bug.** The fix is `NOT EXISTS`, which is null-safe by construction. (Covered fully in [Anti-joins and Existence](/cortex/languages/sql-multiple-tables-anti-joins-and-existence).)
+3. **`NOT IN` against a subquery is the most common NULL bug.** The fix is `NOT EXISTS`, which is null-safe by construction. (Covered fully in [Anti-joins and Existence](/cortex/languages/sql/multiple-tables/anti-joins-and-existence).)
 
 Master these three and NULL becomes a tool you wield deliberately, not a trap that catches you.

@@ -18,19 +18,19 @@ The goal is not breadth-as-a-checklist. The goal is for you to be able to **reac
 
 The curriculum is organised as **Modules → Topics → Tutorials**. Each module is a self-contained area you can read top-to-bottom; each tutorial states its prerequisites so you can navigate sideways too.
 
-1. [**Foundations**](/cortex/data-structures-and-algorithms/foundations-index) — asymptotic analysis, recurrence relations, amortised analysis, proof techniques, the memory model.
-2. [**Linear Structures**](/cortex/data-structures-and-algorithms/linear-structures-index) — arrays, strings, linked lists, stacks, queues, hash tables.
-3. [**Trees**](/cortex/data-structures-and-algorithms/trees-index) — binary trees, BSTs, heaps, tries, balanced BSTs (AVL, RB), B-trees, segment and Fenwick trees, union-find.
-4. [**Graphs**](/cortex/data-structures-and-algorithms/graphs-index) — representations, BFS/DFS, shortest paths, MSTs, SCCs, bridges, network flow, 2-SAT.
-5. [**Algorithms by Strategy**](/cortex/data-structures-and-algorithms/algorithms-by-strategy-index) — recursion, divide-and-conquer, greedy, backtracking, dynamic programming, randomised algorithms.
-6. [**Sorting and Searching**](/cortex/data-structures-and-algorithms/sorting-and-searching-index) — every classical sort and search, plus the patterns that wrap them.
-7. [**Strings**](/cortex/data-structures-and-algorithms/strings-index) — KMP, Z-algorithm, Rabin-Karp, suffix arrays and automata, Aho-Corasick.
-8. [**Bit Tricks**](/cortex/data-structures-and-algorithms/bit-tricks-index) — the operations that turn linear-time loops into single instructions.
-9. [**Probabilistic and Advanced**](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-index) — skip lists, Bloom filters, Count-Min sketch, HyperLogLog, treaps, persistent structures.
-10. [**Concurrency and Systems**](/cortex/data-structures-and-algorithms/concurrency-and-systems-index) — CAS, lock-free queues, concurrent hash maps, hazard pointers.
-11. [**DSA in Real Systems**](/cortex/data-structures-and-algorithms/dsa-in-real-systems-index) — Postgres B-trees, Linux RB-trees, Redis encodings, Git's DAG, LSM trees, routing tables.
+1. [**Foundations**](/cortex/data-structures-and-algorithms/foundations/index) — asymptotic analysis, recurrence relations, amortised analysis, proof techniques, the memory model.
+2. [**Linear Structures**](/cortex/data-structures-and-algorithms/linear-structures/index) — arrays, strings, linked lists, stacks, queues, hash tables.
+3. [**Trees**](/cortex/data-structures-and-algorithms/trees/index) — binary trees, BSTs, heaps, tries, balanced BSTs (AVL, RB), B-trees, segment and Fenwick trees, union-find.
+4. [**Graphs**](/cortex/data-structures-and-algorithms/graphs/index) — representations, BFS/DFS, shortest paths, MSTs, SCCs, bridges, network flow, 2-SAT.
+5. [**Algorithms by Strategy**](/cortex/data-structures-and-algorithms/algorithms-by-strategy/index) — recursion, divide-and-conquer, greedy, backtracking, dynamic programming, randomised algorithms.
+6. [**Sorting and Searching**](/cortex/data-structures-and-algorithms/sorting-and-searching/index) — every classical sort and search, plus the patterns that wrap them.
+7. [**Strings**](/cortex/data-structures-and-algorithms/strings/index) — KMP, Z-algorithm, Rabin-Karp, suffix arrays and automata, Aho-Corasick.
+8. [**Bit Tricks**](/cortex/data-structures-and-algorithms/bit-tricks/index) — the operations that turn linear-time loops into single instructions.
+9. [**Probabilistic and Advanced**](/cortex/data-structures-and-algorithms/probabilistic-and-advanced/index) — skip lists, Bloom filters, Count-Min sketch, HyperLogLog, treaps, persistent structures.
+10. [**Concurrency and Systems**](/cortex/data-structures-and-algorithms/concurrency-and-systems/index) — CAS, lock-free queues, concurrent hash maps, hazard pointers.
+11. [**DSA in Real Systems**](/cortex/data-structures-and-algorithms/dsa-in-real-systems/index) — Postgres B-trees, Linux RB-trees, Redis encodings, Git's DAG, LSM trees, routing tables.
 
-**Appendix:** [**Widget Catalog**](/cortex/data-structures-and-algorithms/appendix-widget-catalog-index) — the authoring reference for the D3.js interactive widgets used throughout this book: one chapter per widget with representative payloads and payload-schema cards.
+**Appendix:** [**Widget Catalog**](/cortex/data-structures-and-algorithms/appendix-widget-catalog/index) — the authoring reference for the D3.js interactive widgets used throughout this book: one chapter per widget with representative payloads and payload-schema cards.
 
 **Revision:** [**Quick Reference**](/cortex/data-structures-and-algorithms/quick-reference) — a dense, collapsible cheat-sheet of every pattern's intuition, triggers, complexity, and Python skeleton. Built for fast recall, not first reads.
 
@@ -147,4 +147,4 @@ flowchart LR
 
 The book is being elevated to senior-engineer quality on the `dsa-qa-improvement` branch. Some chapters listed under each module are still **stubs** — you'll see them flagged in the module index pages. The existing chapters from the prior layout have been preserved and reorganised; their slug paths changed when modules were renamed, so any external bookmarks should be re-derived from the curriculum map above.
 
-Start with [Foundations: Asymptotic Analysis](/cortex/data-structures-and-algorithms/foundations-asymptotic-analysis) if you don't have a strong instinct for what `O(n)` actually means.
+Start with [Foundations: Asymptotic Analysis](/cortex/data-structures-and-algorithms/foundations/asymptotic-analysis) if you don't have a strong instinct for what `O(n)` actually means.

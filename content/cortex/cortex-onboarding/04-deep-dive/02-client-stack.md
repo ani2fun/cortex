@@ -3,13 +3,13 @@ title: Client Stack — Why Each Library
 summary: Scala.js, scalajs-react hooks, sttp + FetchBackend, the JS interop boundary — what each idiom buys us and what breaks if you swap it.
 ---
 
-This chapter is the client-side companion to [Server Stack](/cortex/cortex-onboarding/deep-dive-server-stack). Same format: per-decision, **what we use**, **why this and not the obvious alternative**, **what breaks if you change it**. If you're new to Scala.js, the section on the hook builder is the one to internalise — every component in the codebase follows the same pattern.
+This chapter is the client-side companion to [Server Stack](/cortex/cortex-onboarding/deep-dive/server-stack). Same format: per-decision, **what we use**, **why this and not the obvious alternative**, **what breaks if you change it**. If you're new to Scala.js, the section on the hook builder is the one to internalise — every component in the codebase follows the same pattern.
 
 ## Why Scala.js + scalajs-react
 
 The frontend is Scala 3 compiled to JavaScript via Scala.js. The React binding is `japgolly.scalajs-react` 3.0.x. Two concrete benefits:
 
-1. **One language, two runtimes.** The same `RunRequest(language, source, stdin)` case class lives on both sides. Edit `api/openapi.yaml`, recompile, and both server and client break in step (see [Shared & Codegen](/cortex/cortex-onboarding/deep-dive-shared-and-codegen)). No copy-paste, no DTO drift.
+1. **One language, two runtimes.** The same `RunRequest(language, source, stdin)` case class lives on both sides. Edit `api/openapi.yaml`, recompile, and both server and client break in step (see [Shared & Codegen](/cortex/cortex-onboarding/deep-dive/shared-and-codegen)). No copy-paste, no DTO drift.
 2. **Pure logic on both sides.** `shared/runner/CodeExecutor` (package `cortex.shared.runner`) is the run-state machine: `Idle → Running → Done`. It compiles to JVM bytecode and runs in zio-test, *and* it compiles to JS and runs in the browser. Same code, two test surfaces. The component file (`client/src/main/scala/cortex/client/components/book/RunnableCodeBlock.scala`) calls this out explicitly: "State machine lives in `CodeExecutor` (shared module — testable on the JVM); this file owns the React surface only."
 
 Alternatives we passed on:
@@ -78,7 +78,7 @@ Two functions stacked:
 
 The shape is ugly the first time you see it. It's also exactly the right shape: the selector decouples "what does this effect depend on" from "what does it do", which makes it easy to refactor a dependency without touching the body.
 
-**If you wrap the body in another `Callback { … }`:** classic bug. `articleRef.foreach { article => … }` already returns a `Callback`. Wrapping the inside in `Callback { mount(...) }` constructs a new Callback that's never run — placeholders stay empty, no error fires. There's a comment on this in `ChapterContent.scala`. (See [Local Development](/cortex/cortex-onboarding/working-on-it-local-development) for the foot-gun list.)
+**If you wrap the body in another `Callback { … }`:** classic bug. `articleRef.foreach { article => … }` already returns a `Callback`. Wrapping the inside in `Callback { mount(...) }` constructs a new Callback that's never run — placeholders stay empty, no error fires. There's a comment on this in `ChapterContent.scala`. (See [Local Development](/cortex/cortex-onboarding/working-on-it/local-development) for the foot-gun list.)
 
 ## `useRefBy` — the leak-prevention pattern
 
@@ -103,7 +103,7 @@ val tearDown: Callback = Callback {
 
 ## The placeholder walker — bridging HTML and React
 
-Two-step rendering, fully explained in [Markdown Pipeline](/cortex/cortex-onboarding/how-it-works-markdown-pipeline) but worth the deep dive here:
+Two-step rendering, fully explained in [Markdown Pipeline](/cortex/cortex-onboarding/how-it-works/markdown-pipeline) but worth the deep dive here:
 
 1. The TS pipeline emits HTML with `<div class="runnable-code" data-source="…">` placeholders.
 2. After `dangerouslySetInnerHTML` settles, the Scala walker `querySelectorAll`s each placeholder class and uses `ReactDOMClient.createRoot(node).render(…)` to mount a Scala.js React component into it.

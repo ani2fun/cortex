@@ -122,12 +122,12 @@ This is a structural lesson — drill searching in the pattern sets.
 
 Lower bound is the boundary-finding half of binary search:
 
-- **The family** — first index `≥ x` (this lesson), first index `> x` ([upper bound](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-upper-bound)), the leftmost occurrence of a duplicate, and the insertion point for keeping an array sorted.
+- **The family** — first index `≥ x` (this lesson), first index `> x` ([upper bound](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/upper-bound)), the leftmost occurrence of a duplicate, and the insertion point for keeping an array sorted.
 - **Counting falls out for free** — the lower-bound index *is* the number of elements `< target`; `upper_bound − lower_bound` is the count of elements *equal* to the target; lower/upper bounds of `a` and `b` give the count in a range `[a, b)`. One `O(log n)` primitive answers a whole class of range-count queries.
 - **The half-open discipline is the transferable skill** — `[lo, hi)` with `hi = mid` (not `mid−1`) and no early return is a cleaner, less bug-prone binary-search template than the inclusive `[lo, hi]` form, precisely because there's only one boundary to reason about. Many practitioners write *all* their binary searches as lower-bound-style predicate searches — which is exactly what the [predicate-search patterns](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-minimum-predicate-search) generalize.
 
-**Prerequisites:** [Binary Search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-binary-search).
-**What's next:** the sibling boundary — first index *strictly greater* than the target — [Upper Bound](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-upper-bound).
+**Prerequisites:** [Binary Search](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/binary-search).
+**What's next:** the sibling boundary — first index *strictly greater* than the target — [Upper Bound](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/upper-bound).
 
 ## Recall
 

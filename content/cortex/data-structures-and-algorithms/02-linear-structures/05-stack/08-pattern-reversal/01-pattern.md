@@ -106,7 +106,7 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [Stack Inversion](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-reversal-problems-stack-inversion), [Reverse the String](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-reversal-problems-reverse-the-string), [Reverse an Array](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-reversal-problems-reverse-an-array), and [Reverse Word Order](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-reversal-problems-reverse-word-order).
+Drill the family in **Practice** — [Stack Inversion](/cortex/data-structures-and-algorithms/linear-structures/stack/pattern-reversal/problems/stack-inversion), [Reverse the String](/cortex/data-structures-and-algorithms/linear-structures/stack/pattern-reversal/problems/reverse-the-string), [Reverse an Array](/cortex/data-structures-and-algorithms/linear-structures/stack/pattern-reversal/problems/reverse-an-array), and [Reverse Word Order](/cortex/data-structures-and-algorithms/linear-structures/stack/pattern-reversal/problems/reverse-word-order).
 
 ## Reflect & Connect
 
@@ -116,8 +116,8 @@ Stack-reversal is the simplest stack pattern, and it clarifies *when* a stack ea
 - **The space trade-off is the real decision** — for an array you own, two-pointer in-place reversal is `O(1)` space and beats this. Choose the stack when access is sequential-only (a queue, a stream), when you're already holding a stack, or when reversal is a *step* inside a larger stack algorithm.
 - **It's the same idea as recursion** — the call stack reverses naturally: recurse to the end, then act on the way back up, and you process elements last-to-first. "Reverse by recursion" and "reverse with an explicit stack" are the same mechanism, one implicit and one explicit. The next patterns keep the stack but make the *pop condition* smarter.
 
-**Prerequisites:** [What Is a Stack?](/cortex/data-structures-and-algorithms/linear-structures-stack-what-is-a-stack).
-**What's next:** keep a stack, but pop based on a comparison — [Previous Closest Occurrence](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-previous-closest-occurrence-pattern).
+**Prerequisites:** [What Is a Stack?](/cortex/data-structures-and-algorithms/linear-structures/stack/what-is-a-stack).
+**What's next:** keep a stack, but pop based on a comparison — [Previous Closest Occurrence](/cortex/data-structures-and-algorithms/linear-structures/stack/pattern-previous-closest-occurrence/pattern).
 
 ## Recall
 

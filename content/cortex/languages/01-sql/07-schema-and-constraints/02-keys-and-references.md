@@ -182,7 +182,7 @@ CREATE TABLE memberships (
 
 A given (user, group) pair appears at most once.
 
-**Unique vs primary key:** PK is one per table; UNIQUE can be many. PK implies NOT NULL; UNIQUE permits NULL (and allows multiple NULLs in standard SQL — see the [Filtering NULL trap](/cortex/languages/sql-foundations-filtering#the-null-trap) for why).
+**Unique vs primary key:** PK is one per table; UNIQUE can be many. PK implies NOT NULL; UNIQUE permits NULL (and allows multiple NULLs in standard SQL — see the [Filtering NULL trap](/cortex/languages/sql/foundations/filtering#the-null-trap) for why).
 
 **Postgres 15+: `UNIQUE NULLS NOT DISTINCT`** treats NULL values as equal for uniqueness, so only one NULL is allowed. Use when "missing" should also be unique.
 
@@ -292,9 +292,9 @@ Two constraints: FK to `customers` (rejects orphans), CHECK on `sales` (rejects 
 
 # Cross-links
 
-- **Previous in this module:** [Types](/cortex/languages/sql-schema-and-constraints-types).
-- **Next in this module:** [Normalisation](/cortex/languages/sql-schema-and-constraints-normalisation).
-- **Forward reference:** [B-Tree Indexes](/cortex/languages/sql-indexes-and-performance-b-tree-indexes) — PKs and UNIQUE constraints automatically create indexes; FK columns benefit from explicit indexes for join performance.
+- **Previous in this module:** [Types](/cortex/languages/sql/schema-and-constraints/types).
+- **Next in this module:** [Normalisation](/cortex/languages/sql/schema-and-constraints/normalisation).
+- **Forward reference:** [B-Tree Indexes](/cortex/languages/sql/indexes-and-performance/b-tree-indexes) — PKs and UNIQUE constraints automatically create indexes; FK columns benefit from explicit indexes for join performance.
 
 ***
 

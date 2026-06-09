@@ -124,7 +124,7 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [Row-Specific Words](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-pattern-generation-problems-row-specific-words), [Homomorphic Strings](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-pattern-generation-problems-homomorphic-strings), [Pattern Matching](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-pattern-generation-problems-pattern-matching), and [Cluster Displaced Strings](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-pattern-generation-problems-cluster-displaced-strings).
+Drill the family in **Practice** — [Row-Specific Words](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-pattern-generation/problems/row-specific-words), [Homomorphic Strings](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-pattern-generation/problems/homomorphic-strings), [Pattern Matching](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-pattern-generation/problems/pattern-matching), and [Cluster Displaced Strings](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-pattern-generation/problems/cluster-displaced-strings).
 
 ## Reflect & Connect
 
@@ -134,8 +134,8 @@ Key generation is "design a fingerprint, let the hash map do the rest":
 - **The key must match the equivalence exactly** — invariant within a class, distinguishing across classes. A too-coarse key merges things that differ; a too-fine key splits things that should match. That design choice *is* the problem.
 - **It composes with counting** — a frequency map can itself be the canonical key (the count signature for anagrams), so the previous pattern often *supplies* the key this one buckets on.
 
-**Prerequisites:** [What Is a Hash Table?](/cortex/data-structures-and-algorithms/linear-structures-hash-table-what-is-a-hash-table).
-**What's next:** carry a hash map as the state of a sliding window — [Fixed-Size Sliding Window](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-fixed-sized-sliding-window-pattern).
+**Prerequisites:** [What Is a Hash Table?](/cortex/data-structures-and-algorithms/linear-structures/hash-table/what-is-a-hash-table).
+**What's next:** carry a hash map as the state of a sliding window — [Fixed-Size Sliding Window](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-fixed-sized-sliding-window/pattern).
 
 ## Recall
 

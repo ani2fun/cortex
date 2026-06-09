@@ -45,7 +45,7 @@ This chapter is the catalogue. The previous four chapters built the vocabulary; 
 
 # Top-N per group
 
-The most-asked SQL interview question. From [Ranking](/cortex/languages/sql-window-functions-ranking#top-n-per-group):
+The most-asked SQL interview question. From [Ranking](/cortex/languages/sql/window-functions/ranking#top-n-per-group):
 
 ```sql run
 CREATE TABLE orders (order_id INT, customer_id INT, sales INT);
@@ -93,7 +93,7 @@ ORDER BY customer_id, order_date;
 
 For each row, the sum of all this customer's prior orders plus this one.
 
-For a **moving average** (fixed-width trailing window), use an explicit `ROWS BETWEEN N PRECEDING AND CURRENT ROW` frame ([Frames](/cortex/languages/sql-window-functions-frames#useful-frame-shapes)).
+For a **moving average** (fixed-width trailing window), use an explicit `ROWS BETWEEN N PRECEDING AND CURRENT ROW` frame ([Frames](/cortex/languages/sql/window-functions/frames#useful-frame-shapes)).
 
 ---
 
@@ -387,10 +387,10 @@ These two queries cover most of what an analytics dashboard around `hello_events
 
 # Cross-links
 
-- **Previous in this module:** [Value Functions](/cortex/languages/sql-window-functions-value-functions) — `LAG` is the workhorse for sessionisation and gap detection.
-- **Module complete.** Phase 3 (Row Functions + Window Functions) is now fully covered. Next phase: [CTEs and Recursion](/cortex/languages/sql-index), [Schema and Constraints](/cortex/languages/sql-index), [Indexes and Performance](/cortex/languages/sql-index), [Transactions and Concurrency](/cortex/languages/sql-index), [Advanced Patterns](/cortex/languages/sql-index).
-- **Forward reference:** [CTEs](/cortex/languages/sql-index) — many of these patterns benefit from naming intermediate windows in CTEs for clarity.
-- **Forward reference:** [Indexes and Performance](/cortex/languages/sql-index) — covering indexes on `(partition_col, order_col)` make window queries dramatically faster.
+- **Previous in this module:** [Value Functions](/cortex/languages/sql/window-functions/value-functions) — `LAG` is the workhorse for sessionisation and gap detection.
+- **Module complete.** Phase 3 (Row Functions + Window Functions) is now fully covered. Next phase: [CTEs and Recursion](/cortex/languages/sql/index), [Schema and Constraints](/cortex/languages/sql/index), [Indexes and Performance](/cortex/languages/sql/index), [Transactions and Concurrency](/cortex/languages/sql/index), [Advanced Patterns](/cortex/languages/sql/index).
+- **Forward reference:** [CTEs](/cortex/languages/sql/index) — many of these patterns benefit from naming intermediate windows in CTEs for clarity.
+- **Forward reference:** [Indexes and Performance](/cortex/languages/sql/index) — covering indexes on `(partition_col, order_col)` make window queries dramatically faster.
 
 ***
 
@@ -402,4 +402,4 @@ Window patterns are the production toolkit. Three patterns to internalise:
 2. **CTEs make windows readable.** A 5-line CTE that names the windowed columns is far easier to maintain than a 50-line query with windows nested in subqueries. Name your windows; chain CTEs.
 3. **Tiebreakers are mandatory for any rank-and-filter query.** Without one, the answer is non-deterministic. The PK is the safest choice.
 
-With this chapter, the [Window Functions](/cortex/languages/sql-window-functions-index) module — and Phase 3 of the curriculum — is complete. You can now write the analytical SQL that powers dashboards, reports, and recommender systems. The remaining phases (CTEs/recursion, schema, indexes, transactions, advanced patterns) round out the toolkit but are increasingly specialised; the patterns in this module are what you'll reach for daily.
+With this chapter, the [Window Functions](/cortex/languages/sql/window-functions/index) module — and Phase 3 of the curriculum — is complete. You can now write the analytical SQL that powers dashboards, reports, and recommender systems. The remaining phases (CTEs/recursion, schema, indexes, transactions, advanced patterns) round out the toolkit but are increasingly specialised; the patterns in this module are what you'll reach for daily.

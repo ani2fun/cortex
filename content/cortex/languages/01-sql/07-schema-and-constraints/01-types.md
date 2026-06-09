@@ -48,7 +48,7 @@ This chapter is the type-selection guide: which type for which kind of column, a
 
 # Numeric types
 
-Recap from [Data Definition](/cortex/languages/sql-foundations-data-definition#column-types):
+Recap from [Data Definition](/cortex/languages/sql/foundations/data-definition#column-types):
 
 | Type | Use case |
 |---|---|
@@ -62,7 +62,7 @@ Recap from [Data Definition](/cortex/languages/sql-foundations-data-definition#c
 The decisions:
 
 1. **`INT` vs `BIGINT` for IDs.** `INT` overflows at 2.1 billion. If you're certain your table will stay below that, `INT` saves 4 bytes per row (which compounds across indexes). For an "events" table that grows by millions per day, use `BIGINT`. For a "countries" table with 200 rows, `INT` is fine.
-2. **`NUMERIC` vs `DOUBLE PRECISION`.** Money goes in `NUMERIC`. Physics measurements in `DOUBLE PRECISION`. If you're not sure, `NUMERIC(p, s)` is the safer default — it's slower but exact. The chapter on [Numbers](/cortex/languages/sql-row-functions-numbers) has the full discussion.
+2. **`NUMERIC` vs `DOUBLE PRECISION`.** Money goes in `NUMERIC`. Physics measurements in `DOUBLE PRECISION`. If you're not sure, `NUMERIC(p, s)` is the safer default — it's slower but exact. The chapter on [Numbers](/cortex/languages/sql/row-functions/numbers) has the full discussion.
 3. **`NUMERIC(p, s)` choice.** `NUMERIC(12, 2)` is fine for application-scale money (12 total digits, 2 after decimal — up to ±$10 billion with cent precision). Crypto and scientific applications use higher precision.
 
 ---
@@ -87,7 +87,7 @@ The decisions:
 
 # Temporal types
 
-Recap from [Dates and Times](/cortex/languages/sql-row-functions-dates-and-times):
+Recap from [Dates and Times](/cortex/languages/sql/row-functions/dates-and-times):
 
 | Type | When |
 |---|---|
@@ -123,7 +123,7 @@ Postgres has two JSON types:
 - **`JSON`** — stored as text. Validated for syntax. Queries re-parse on every access.
 - **`JSONB`** — stored binary. Decomposed into a queryable form. Indexable. Slightly slower writes (decomposing), much faster reads.
 
-**Use `JSONB`** in production unless you have a specific reason not to. The full treatment is in [JSON in SQL](/cortex/languages/sql-index) (Advanced Patterns).
+**Use `JSONB`** in production unless you have a specific reason not to. The full treatment is in [JSON in SQL](/cortex/languages/sql/index) (Advanced Patterns).
 
 ```sql
 CREATE TABLE events (
@@ -250,9 +250,9 @@ Each choice reflects the type-selection rules above. The schema was designed bef
 
 # Cross-links
 
-- **Previous module:** [CTEs and Recursion](/cortex/languages/sql-ctes-and-recursion-index).
-- **Next in this module:** [Keys and References](/cortex/languages/sql-schema-and-constraints-keys-and-references).
-- **Cross-reference:** [Numbers](/cortex/languages/sql-row-functions-numbers) for the NUMERIC vs FLOAT decision; [Dates and Times](/cortex/languages/sql-row-functions-dates-and-times) for the TIMESTAMP vs TIMESTAMPTZ decision.
+- **Previous module:** [CTEs and Recursion](/cortex/languages/sql/ctes-and-recursion/index).
+- **Next in this module:** [Keys and References](/cortex/languages/sql/schema-and-constraints/keys-and-references).
+- **Cross-reference:** [Numbers](/cortex/languages/sql/row-functions/numbers) for the NUMERIC vs FLOAT decision; [Dates and Times](/cortex/languages/sql/row-functions/dates-and-times) for the TIMESTAMP vs TIMESTAMPTZ decision.
 
 ***
 

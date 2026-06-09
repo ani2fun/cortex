@@ -38,7 +38,7 @@ print(k_most_frequent([1, 1, 1, 2, 2, 3], 2))  # [1, 2]
 
 Two steps, the second being top-K with a twist:
 
-1. **Derive the key.** Compute whatever you rank by — here, a frequency map (the [counting](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-counting-pattern) pattern). For "K closest" it'd be a distance; for "K smallest sums," the sum.
+1. **Derive the key.** Compute whatever you rank by — here, a frequency map (the [counting](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-counting/pattern) pattern). For "K closest" it'd be a distance; for "K smallest sums," the sum.
 2. **Run a size-K heap ordered by the key.** Push `(key, element)` pairs; the heap compares by `key` first. Cap at `K` exactly as before. In Python a tuple `(key, element)` sorts by key automatically; in Java you pass a `Comparator` (e.g. `Comparator.comparingInt(freq::get)`).
 
 ```mermaid
@@ -117,17 +117,17 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [K Most Frequent Elements](/cortex/data-structures-and-algorithms/trees-heap-pattern-comparator-problems-k-most-frequent-elements), [K Smallest Sum Pairs](/cortex/data-structures-and-algorithms/trees-heap-pattern-comparator-problems-k-smallest-sum-pairs), [K Closest Values](/cortex/data-structures-and-algorithms/trees-heap-pattern-comparator-problems-k-closest-values), [K Arrays Smallest Range](/cortex/data-structures-and-algorithms/trees-heap-pattern-comparator-problems-k-arrays-smallest-range), and [K-Way List Merge](/cortex/data-structures-and-algorithms/trees-heap-pattern-comparator-problems-k-way-list-merge).
+Drill the family in **Practice** — [K Most Frequent Elements](/cortex/data-structures-and-algorithms/trees/heap/pattern-comparator/problems/k-most-frequent-elements), [K Smallest Sum Pairs](/cortex/data-structures-and-algorithms/trees/heap/pattern-comparator/problems/k-smallest-sum-pairs), [K Closest Values](/cortex/data-structures-and-algorithms/trees/heap/pattern-comparator/problems/k-closest-values), [K Arrays Smallest Range](/cortex/data-structures-and-algorithms/trees/heap/pattern-comparator/problems/k-arrays-smallest-range), and [K-Way List Merge](/cortex/data-structures-and-algorithms/trees/heap/pattern-comparator/problems/k-way-list-merge).
 
 ## Reflect & Connect
 
 The comparator turns the heap into a general "best-by-any-criterion" engine:
 
-- **The family** — K most frequent (key = count), K closest (key = distance), K smallest pair sums (key = sum), and **merge K sorted lists** (a heap of `(value, list-id)` always yields the global minimum — the scalable version of the two-list [merge](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-merge-pattern)).
+- **The family** — K most frequent (key = count), K closest (key = distance), K smallest pair sums (key = sum), and **merge K sorted lists** (a heap of `(value, list-id)` always yields the global minimum — the scalable version of the two-list [merge](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-merge/pattern)).
 - **Composite keys for tie-breaks** — rank by primary, then secondary: a tuple `(primary, secondary, element)` in Python, a chained `Comparator.comparing(...).thenComparing(...)` in Java. This is how you express "closest, and among ties the lexicographically smaller."
 - **It composes the earlier patterns** — derive the key with counting, then select with top-K, ordered by a comparator. Most "K-something-by-X" interview questions are exactly this stack.
 
-**Prerequisites:** [Top K Elements](/cortex/data-structures-and-algorithms/trees-heap-pattern-top-k-elements-pattern).
+**Prerequisites:** [Top K Elements](/cortex/data-structures-and-algorithms/trees/heap/pattern-top-k-elements/pattern).
 
 ## Recall
 

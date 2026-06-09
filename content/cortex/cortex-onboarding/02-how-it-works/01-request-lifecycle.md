@@ -72,13 +72,13 @@ sequenceDiagram
   participant Md as render.ts<br/>(unified pipeline)
   participant Cc as ChapterContent<br/>walker
 
-  U->>Br: paste/reload<br/>/system-design/foundations-cap-and-pacelc
+  U->>Br: paste/reload<br/>/system-design/foundations/cap-and-pacelc
   Br->>Sv: GET /system-design/...
   Sv-->>Br: index.html (SPA fallback)
   Br->>Ro: window.location parsed
   Ro->>Cp: render ChapterPage(book, chapter)
   Cp->>Ac: getCortexChapter(book, chapter)
-  Ac->>Sv: GET /api/cortex/system-design/foundations-cap-and-pacelc
+  Ac->>Sv: GET /api/cortex/system-design/foundations/cap-and-pacelc
   Sv->>Kh: tapir routes
   Kh->>Kh: lookup slug → relative path (cached tree walk),<br/>read chapter.md (path-traversal guard)
   Kh-->>Ac: ChapterPayload { raw, frontmatter, prev, next }

@@ -188,4 +188,4 @@ psql 'postgresql://postgres:<password>@127.0.0.1:5432/postgres'
 
 The next chapter is the first real consumer of Postgres: Keycloak.
 
-→ Next: [Keycloak as the identity plane](/cortex/homelab-from-scratch/stateful-services-keycloak-as-the-identity-plane)
+→ Next: [Keycloak as the identity plane](/cortex/homelab-from-scratch/stateful-services/keycloak-as-the-identity-plane)

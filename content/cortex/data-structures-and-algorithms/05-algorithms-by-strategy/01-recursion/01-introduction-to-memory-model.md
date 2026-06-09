@@ -158,7 +158,7 @@ Both print `1 2 3`. Each call gets a fresh stack frame, but `n` lives in the sta
 
 ## Reflect & Connect
 
-- **Recursion is just the stack, used self-similarly.** `factorial(4)` stacks four frames, each with its own `n`, that unwind in reverse — there is no other machinery. The next lessons ([nested functions](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-nested-functions), then recursion proper) walk this stack up to its overflow cliff and back.
+- **Recursion is just the stack, used self-similarly.** `factorial(4)` stacks four frames, each with its own `n`, that unwind in reverse — there is no other machinery. The next lessons ([nested functions](/cortex/data-structures-and-algorithms/algorithms-by-strategy/recursion/nested-functions), then recursion proper) walk this stack up to its overflow cliff and back.
 - **Why `setrecursionlimit` can still segfault.** Python's limit guards its *own* frame counter, but the real ceiling is the OS thread's C stack (1–8 MB). Raise the Python limit past what the C stack can hold and you crash below your language, in C — no `try/except` can catch it.
 - **Converting recursion to iteration moves the stack to the heap.** An explicit stack (a heap-allocated list) replaces the call stack, trading the small fixed stack region for the large growable heap — the standard fix for "deep recursion overflows."
 - **The heap's failure is the opposite of the stack's.** The stack overflows from *too many frames*; the heap leaks from *forgetting to free* (or a GC that never reclaims a cycle). Same building site, opposite failure modes.

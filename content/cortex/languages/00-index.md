@@ -16,7 +16,7 @@ Every section follows the same shape — a hook, the mental model, mechanics, ed
 
 ## What's here
 
-1. [**SQL**](/cortex/languages/sql-index) — the data-querying language every backend engineer ends up touching. Postgres-canonical, with callouts where SQLite, MySQL, or SQL Server diverge. Ten modules from foundations through window functions, CTEs, indexes, and transactions.
+1. [**SQL**](/cortex/languages/sql/index) — the data-querying language every backend engineer ends up touching. Postgres-canonical, with callouts where SQLite, MySQL, or SQL Server diverge. Ten modules from foundations through window functions, CTEs, indexes, and transactions.
 
 ## What's coming
 

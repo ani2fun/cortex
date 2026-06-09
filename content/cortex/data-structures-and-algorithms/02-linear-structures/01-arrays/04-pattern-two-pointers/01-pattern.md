@@ -119,20 +119,20 @@ public class Main {
 }
 ```
 
-Now make it your own with the problems in this section — start with [Flip Characters](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-problems-flip-characters) and [Palindrome Checker](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-problems-palindrome-checker), then work down the **Practice** list.
+Now make it your own with the problems in this section — start with [Flip Characters](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers/problems/flip-characters) and [Palindrome Checker](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers/problems/palindrome-checker), then work down the **Practice** list.
 
 ## Reflect & Connect
 
 Two pointers is your first pattern, and the rest of this chapter is variations on it. They come in three flavors, easiest first:
 
 - **Direct application** — the skeleton drops in as-is, the way it did for reverse and palindrome: the whole loop body is one `O(1)` step on `arr[left]` and `arr[right]`.
-- **Reduction** — you reshape the problem first (usually by *sorting*) so the two markers can take over; chasing a target sum in a sorted array becomes [Two Pointers Reduction](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-reduction-pattern).
+- **Reduction** — you reshape the problem first (usually by *sorting*) so the two markers can take over; chasing a target sum in a sorted array becomes [Two Pointers Reduction](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers-reduction/pattern).
 - **Subproblem** — two pointers is one tactical step inside a larger algorithm (the merge step of merge sort, for instance).
 
 And when the two markers march in the *same* direction instead of converging, you get the sliding window — the family right after this one.
 
-**Prerequisites:** [Arrays](/cortex/data-structures-and-algorithms/linear-structures-arrays-what-is-an-array) and [Measuring Cost](/cortex/data-structures-and-algorithms/foundations-measuring-cost).
-**What's next:** the **Practice** problems below, then [Two Pointers Reduction](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-reduction-pattern).
+**Prerequisites:** [Arrays](/cortex/data-structures-and-algorithms/linear-structures/arrays/what-is-an-array) and [Measuring Cost](/cortex/data-structures-and-algorithms/foundations/measuring-cost).
+**What's next:** the **Practice** problems below, then [Two Pointers Reduction](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers-reduction/pattern).
 
 ## Recall
 

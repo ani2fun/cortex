@@ -101,7 +101,7 @@ Workers (`wk-1`, `wk-2`) don't need this — the K3s API isn't on them. They kee
 
 ### Layer 1: nftables allowlist (covered later)
 
-The strict allowlist on `eth0` is `edge-guardrail.sh`, installed when we deploy Traefik in [Router and edge firewall](/cortex/homelab-from-scratch/the-edge-router-and-edge-firewall). It's the primary defence: only `:22, :80, :443, :51820/udp` are accepted on the public NIC. Everything else is dropped.
+The strict allowlist on `eth0` is `edge-guardrail.sh`, installed when we deploy Traefik in [Router and edge firewall](/cortex/homelab-from-scratch/the-edge/router-and-edge-firewall). It's the primary defence: only `:22, :80, :443, :51820/udp` are accepted on the public NIC. Everything else is dropped.
 
 ### Layer 2: belt-and-braces iptables drops
 
@@ -155,4 +155,4 @@ nc -zv 192.168.15.2 6443 -w 3
 
 The third test is the meaningful one. From the LAN, the API server should be unreachable. From inside the mesh (after we set it up), it'll be reachable on `172.27.15.12:6443`. That's the entire security model in two `nc` outputs.
 
-→ Next: [Why a private mesh?](/cortex/homelab-from-scratch/private-mesh-why-a-private-mesh)
+→ Next: [Why a private mesh?](/cortex/homelab-from-scratch/private-mesh/why-a-private-mesh)

@@ -46,7 +46,7 @@ This chapter is about `GROUP BY` and `HAVING` — how rows collapse into groups,
 
 # What `GROUP BY` does
 
-`GROUP BY` runs at **step 3** of the [logical execution order](/cortex/languages/sql-foundations-introduction-to-sql#the-logical-execution-order). It takes the rows that survived `WHERE` (step 2) and **collapses them into groups** based on the listed columns. Every distinct combination of values in those columns becomes one group; the original rows lose their individual identity.
+`GROUP BY` runs at **step 3** of the [logical execution order](/cortex/languages/sql/foundations/introduction-to-sql#the-logical-execution-order). It takes the rows that survived `WHERE` (step 2) and **collapses them into groups** based on the listed columns. Every distinct combination of values in those columns becomes one group; the original rows lose their individual identity.
 
 ```sql run
 CREATE TABLE customers (id INT, first_name TEXT, country TEXT, score INT);
@@ -152,7 +152,7 @@ GROUP BY country
 ORDER BY country;
 ```
 
-> **Dialect note:** `GROUP_CONCAT` is the SQLite/MySQL spelling. Postgres uses `STRING_AGG(col, ', ')`, with an explicit separator. SQL Server uses `STRING_AGG(col, ', ')` since 2017. Standard SQL is `LISTAGG`. We'll meet these in [Aggregate Functions](/cortex/languages/sql-aggregation-aggregate-functions).
+> **Dialect note:** `GROUP_CONCAT` is the SQLite/MySQL spelling. Postgres uses `STRING_AGG(col, ', ')`, with an explicit separator. SQL Server uses `STRING_AGG(col, ', ')` since 2017. Standard SQL is `LISTAGG`. We'll meet these in [Aggregate Functions](/cortex/languages/sql/aggregation/aggregate-functions).
 
 ## A quirk: MySQL's `ONLY_FULL_GROUP_BY` is off-by-default
 
@@ -383,7 +383,7 @@ GROUP BY c.id, c.first_name
 ORDER BY c.id;
 ```
 
-This is the canonical example of **`COUNT(*)` vs `COUNT(column)`**: count rows vs count non-NULL values. We'll go deeper in [Aggregate Functions](/cortex/languages/sql-aggregation-aggregate-functions).
+This is the canonical example of **`COUNT(*)` vs `COUNT(column)`**: count rows vs count non-NULL values. We'll go deeper in [Aggregate Functions](/cortex/languages/sql/aggregation/aggregate-functions).
 
 ## ORDER BY can reference aliases — and aggregates
 
@@ -431,7 +431,7 @@ ORDER BY hour;
 
 This is the kind of query that lives in a Grafana dashboard or a daily-summary email — a `GROUP BY` over a time column, a few aggregates, an `ORDER BY`. Once you can write this fluently, 80% of analytics SQL is in your toolkit.
 
-The deeper production move is to *materialise* such aggregations — precompute the hourly buckets into a separate table that's incrementally updated. That's a topic for the [Schema and Constraints](/cortex/languages/sql-index) module.
+The deeper production move is to *materialise* such aggregations — precompute the hourly buckets into a separate table that's incrementally updated. That's a topic for the [Schema and Constraints](/cortex/languages/sql/index) module.
 
 ---
 
@@ -457,10 +457,10 @@ The deeper production move is to *materialise* such aggregations — precompute 
 
 # Cross-links
 
-- **Previous module:** [Anti-joins and Existence](/cortex/languages/sql-multiple-tables-anti-joins-and-existence) — once you know `NOT EXISTS`, "customers without orders" becomes a `GROUP BY` candidate.
-- **Next in this module:** [Aggregate Functions](/cortex/languages/sql-aggregation-aggregate-functions) — the catalogue of `COUNT`, `SUM`, `AVG`, `MIN`, `MAX`, `STRING_AGG`, plus their `DISTINCT` and `FILTER` modifiers.
-- **Forward reference:** [Window Functions](/cortex/languages/sql-index) — when you want aggregates *without* collapsing rows. Same maths, different shape.
-- **Forward reference:** [EXPLAIN and Query Plans](/cortex/languages/sql-index) — `GROUP BY` is implemented as either *hash aggregate* or *sorted aggregate* depending on data and indexes; reading the plan tells you which.
+- **Previous module:** [Anti-joins and Existence](/cortex/languages/sql/multiple-tables/anti-joins-and-existence) — once you know `NOT EXISTS`, "customers without orders" becomes a `GROUP BY` candidate.
+- **Next in this module:** [Aggregate Functions](/cortex/languages/sql/aggregation/aggregate-functions) — the catalogue of `COUNT`, `SUM`, `AVG`, `MIN`, `MAX`, `STRING_AGG`, plus their `DISTINCT` and `FILTER` modifiers.
+- **Forward reference:** [Window Functions](/cortex/languages/sql/index) — when you want aggregates *without* collapsing rows. Same maths, different shape.
+- **Forward reference:** [EXPLAIN and Query Plans](/cortex/languages/sql/index) — `GROUP BY` is implemented as either *hash aggregate* or *sorted aggregate* depending on data and indexes; reading the plan tells you which.
 
 ***
 

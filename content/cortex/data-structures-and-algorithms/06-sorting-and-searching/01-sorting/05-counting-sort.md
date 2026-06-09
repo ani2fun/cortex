@@ -9,7 +9,7 @@ prereqs:
 
 ## Why It Exists
 
-Every comparison sort is stuck at `Ω(n log n)` — that's a *proven* floor (see the [intro](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-introduction-to-sorting)). But that floor only applies to sorts that learn the order by *comparing* elements. If your keys are integers in a small, known range, you can skip comparison entirely.
+Every comparison sort is stuck at `Ω(n log n)` — that's a *proven* floor (see the [intro](/cortex/data-structures-and-algorithms/sorting-and-searching/sorting/introduction-to-sorting)). But that floor only applies to sorts that learn the order by *comparing* elements. If your keys are integers in a small, known range, you can skip comparison entirely.
 
 Counting sort does. Instead of asking "is `a < b`?", it uses each value **as an index**: tally how many times every value appears, then walk the tallies from smallest to largest, emitting each value as many times as it occurred. No element is ever compared to another. The cost is `O(n + k)` for `n` elements spanning a range of `k` — and when `k` is `O(n)` (say, exam scores 0–100 for a million students), that's linear, comfortably beating `n log n`.
 
@@ -129,8 +129,8 @@ Counting sort is the gateway to the non-comparison sorts:
 - **Stability + prefix sums = radix sort** — apply *stable* counting sort to one digit at a time, least-significant first, and you sort arbitrarily large integers (or fixed-length strings) in `O(d·(n + b))` for `d` digits in base `b`. Radix sort is just counting sort run `d` times — and it *needs* the stable variant so earlier-digit order survives later passes.
 - **It escapes the comparison lower bound by construction** — by using values as indices rather than comparing them, it isn't a "comparison sort" at all, so `Ω(n log n)` simply doesn't apply. Its cousin **bucket sort** generalizes the idea to real-valued keys by distributing into ranges and sorting each bucket.
 
-**Prerequisites:** [What Is an Array?](/cortex/data-structures-and-algorithms/linear-structures-arrays-what-is-an-array).
-**What's next:** back to comparison sorts, but `O(n log n)` — partition around a pivot in [Quicksort](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-quicksort).
+**Prerequisites:** [What Is an Array?](/cortex/data-structures-and-algorithms/linear-structures/arrays/what-is-an-array).
+**What's next:** back to comparison sorts, but `O(n log n)` — partition around a pivot in [Quicksort](/cortex/data-structures-and-algorithms/sorting-and-searching/sorting/quicksort).
 
 ## Recall
 

@@ -9,7 +9,7 @@ prereqs:
 
 A huge family of problems is secretly one question: *can I pick a subset of these numbers that sums to exactly `T`* (or as close as possible, or in how many ways)? Splitting a list into two equal halves, balancing two teams, "last stone weight," target-sum with `±` signs — all of them. The moment you spot "choose a subset to hit/approach a number," you're in subset-sum territory.
 
-It's the boolean (or counting) specialization of [knapsack](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-knapsack): set each item's *value equal to its weight* and ask not "max value under capacity" but "is capacity `j` reachable?" That collapses the 2-D knapsack table to a **1-D** array `dp[j]` over the target, swept **descending** so each number is used at most once. This lesson is the recognition layer — see the shape, reach for the 1-D boolean sweep.
+It's the boolean (or counting) specialization of [knapsack](/cortex/data-structures-and-algorithms/algorithms-by-strategy/dynamic-programming/knapsack): set each item's *value equal to its weight* and ask not "max value under capacity" but "is capacity `j` reachable?" That collapses the 2-D knapsack table to a **1-D** array `dp[j]` over the target, swept **descending** so each number is used at most once. This lesson is the recognition layer — see the shape, reach for the 1-D boolean sweep.
 
 ## See It Work
 
@@ -68,7 +68,7 @@ Three things define the pattern:
 
 - **State is the target, not the item count.** `dp[j]` answers "is `j` reachable?" — a 1-D array of size `target + 1`. The items are consumed by the outer loop, not stored as a dimension. This is the knapsack table with the item axis rolled away.
 - **`dp[0] = True` is the seed, and the whole engine.** Reachability propagates from it: `dp[x] = dp[0] or …` is how the first number ever marks anything. Forget it and the array stays all-False forever ([Trace It](#trace-it)).
-- **The sweep direction is the 0/1-vs-unbounded switch.** Descending `j` means `dp[j-x]` still reflects subsets *without* the current `x`, so `x` is used at most once — 0/1. Ascending reuses `x` — that's the *unbounded* variant (coin change). Identical line, opposite meaning — the [knapsack loop-direction rule](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-knapsack) again.
+- **The sweep direction is the 0/1-vs-unbounded switch.** Descending `j` means `dp[j-x]` still reflects subsets *without* the current `x`, so `x` is used at most once — 0/1. Ascending reuses `x` — that's the *unbounded* variant (coin change). Identical line, opposite meaning — the [knapsack loop-direction rule](/cortex/data-structures-and-algorithms/algorithms-by-strategy/dynamic-programming/knapsack) again.
 
 > **Key takeaway.** Subset sum is knapsack with values = weights, reduced to a **1-D boolean** `dp[j]` over the target: seed `dp[0] = True`, then `dp[j] |= dp[j-x]` for each number, sweeping `j` **descending** (0/1). Swap `or` for `+=` to *count* subsets; sweep ascending for the *unbounded* variant. `O(n · target)`, pseudo-polynomial.
 
@@ -152,7 +152,7 @@ Both print `3` then `1`. The reachability array is the same subset-sum DP; the o
 
 - **Knapsack with values = weights.** Subset sum is the boolean/count specialization: capacity = target, "is `j` reachable?" instead of "max value." The 1-D array is the knapsack table with the item axis rolled away.
 - **`dp[0]` is the generator.** `dp[0] = True` (boolean) or `dp[0] = 1` (count) is the seed every other cell descends from. It is *the* base case; omit it and the table is inert.
-- **Descending = 0/1, ascending = unbounded.** Same loop, opposite semantics — straight from the [knapsack lesson](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-knapsack). Subset selection (each number once) needs descending.
+- **Descending = 0/1, ascending = unbounded.** Same loop, opposite semantics — straight from the [knapsack lesson](/cortex/data-structures-and-algorithms/algorithms-by-strategy/dynamic-programming/knapsack). Subset selection (each number once) needs descending.
 - **One pattern, three questions.** `or` answers *can we?*; `+=` *counts* subsets; building the full reachable set and scanning it answers *how close?* (minimum difference). The aggregator/read-out changes, the sweep doesn't.
 - **The family.** Partition equal subset ([416](https://leetcode.com/problems/partition-equal-subset-sum/)), target sum with ± ([494](https://leetcode.com/problems/target-sum/)), last stone weight II ([1049](https://leetcode.com/problems/last-stone-weight-ii/)), count of subsets with a given sum. The [problems here](02-problems) drill the recognition; it's pseudo-polynomial and NP-complete in general, so watch the target's magnitude.
 

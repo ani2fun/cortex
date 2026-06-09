@@ -7,7 +7,7 @@ prereqs:
 
 ## Why It Exists
 
-The [previous lesson](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-longest-common-subsequence) found the longest common *subsequence* — characters in order, gaps allowed. **Substring** is the contiguous version: the matched characters must be *adjacent* in both originals, no skipping. The problem statement changes by one word ("must touch"); the recurrence changes by one operator. But the consequences flip the algorithm's shape — where the answer lives, what a mismatch does, why the answer can be in any cell.
+The [previous lesson](/cortex/data-structures-and-algorithms/algorithms-by-strategy/dynamic-programming/longest-common-subsequence) found the longest common *subsequence* — characters in order, gaps allowed. **Substring** is the contiguous version: the matched characters must be *adjacent* in both originals, no skipping. The problem statement changes by one word ("must touch"); the recurrence changes by one operator. But the consequences flip the algorithm's shape — where the answer lives, what a mismatch does, why the answer can be in any cell.
 
 It's the workhorse behind plagiarism "longest verbatim quote," DNA "longest exact match," and `diff`'s anchor-block detection. And it's the cleanest demonstration in the DP section that *the recurrence's mismatch branch encodes the problem's definition.*
 

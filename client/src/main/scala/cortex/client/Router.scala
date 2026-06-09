@@ -51,6 +51,11 @@ object Router:
     val reservedSeg = AppRoutes.SpaRoutes.iterator.map(_.segment).mkString("|")
     val bookSeg     = string(s"(?!(?:$reservedSeg)(?:$$|/))[^/?#]+")
 
+    // Chapter slugs are hierarchical (`linear-structures/arrays/two-sum`), so the chapter matcher
+    // must span `/` — unlike `seg` it only stops at `?`/`#`. `bookSeg` still consumes a single
+    // segment, so `/{book}/{a/b/c}` parses as book=`{book}`, chapter=`a/b/c`, and rebuilds the same.
+    val chapterSeg = string("[^?#]+")
+
     // The | operator composes route rules. Each rule is "pattern ~> render".
     // `trimSlashes` normalises trailing/duplicate slashes before matching.
     val rules =

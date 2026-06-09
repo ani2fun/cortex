@@ -207,9 +207,9 @@ Both print `True` then `False`: four people with a chain of dislikes split fine;
 
 ## Reflect & Connect
 
-- **Bipartite is the gateway to matching.** Once you know a graph is bipartite, [maximum bipartite matching](/cortex/data-structures-and-algorithms/graphs-maximum-bipartite-matching) and assignment problems open up — 2-colouring is often the *first* check before running a matching or flow algorithm.
-- **2 vs. 3 is another complexity cliff.** Deciding 2-colourability is linear; deciding `k`-colourability for `k ≥ 3` is NP-complete. Same dramatic boundary you saw in [2-SAT](/cortex/data-structures-and-algorithms/graphs-2-sat) — and indeed 2-colouring reduces to 2-SAT (each "differ" edge becomes two clauses).
-- **It's cycle detection with a label.** The machinery is the same DFS/BFS used for [cycle detection](/cortex/data-structures-and-algorithms/graphs-cycle-detection); here the extra colour bit converts "is there a cycle?" into "is there an *odd* cycle?"
+- **Bipartite is the gateway to matching.** Once you know a graph is bipartite, [maximum bipartite matching](/cortex/data-structures-and-algorithms/graphs/maximum-bipartite-matching) and assignment problems open up — 2-colouring is often the *first* check before running a matching or flow algorithm.
+- **2 vs. 3 is another complexity cliff.** Deciding 2-colourability is linear; deciding `k`-colourability for `k ≥ 3` is NP-complete. Same dramatic boundary you saw in [2-SAT](/cortex/data-structures-and-algorithms/graphs/2-sat) — and indeed 2-colouring reduces to 2-SAT (each "differ" edge becomes two clauses).
+- **It's cycle detection with a label.** The machinery is the same DFS/BFS used for [cycle detection](/cortex/data-structures-and-algorithms/graphs/cycle-detection); here the extra colour bit converts "is there a cycle?" into "is there an *odd* cycle?"
 - **BFS or DFS — your call.** Both are `O(V + E)`. On very large or grid graphs, prefer BFS (an explicit queue) to dodge recursion-depth limits; the colour rule and conflict check are identical.
 
 ## Recall

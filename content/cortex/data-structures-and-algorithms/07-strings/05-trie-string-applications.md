@@ -7,7 +7,7 @@ prereqs:
 
 ## Why It Exists
 
-The [trie chapter](/cortex/data-structures-and-algorithms/trees-trie-introduction-to-tries) built the structure: a tree where the path from the root to a node spells a string, so shared prefixes share nodes. This lesson is the *applications* tour — *where* that structure beats a hash set or a balanced BST.
+The [trie chapter](/cortex/data-structures-and-algorithms/trees/trie/introduction-to-tries) built the structure: a tree where the path from the root to a node spells a string, so shared prefixes share nodes. This lesson is the *applications* tour — *where* that structure beats a hash set or a balanced BST.
 
 The unifying win is **prefix-shared work**. A hash set answers "is this exact word present?" in `O(L)`, but it cannot answer "which words start with `ca`?" without scanning *every* key — the hashing that makes lookup fast deliberately destroys any ordering or prefix structure. A trie keeps that structure: walk the `ca` path in `O(2)`, and the subtree hanging below it *is* the set of completions. That single property drives autocomplete, longest-common-prefix, dictionary word-break, and IP routing's longest-prefix match.
 
@@ -233,7 +233,7 @@ Both print `'fl'` then `''`. The branch at `fl` (where `flower`/`flow` diverge f
 - **`is_end` = word vs prefix.** A node on a path means "a word passes through"; `is_end` means "a word ends here." Conflating them over-accepts prefixes as words — the canonical trie bug.
 - **The structure is the answer.** Longest common prefix is "walk to the first branch or word-end"; autocomplete is "the subtree below the prefix." You read answers off the shape rather than computing them.
 - **IP routing is longest-*prefix* match.** Routers store network prefixes in a (bitwise) trie and route each packet to the *deepest* matching prefix — the same walk, returning the last `is_end` seen. Tries are production infrastructure, not just an interview toy.
-- **It generalises to multi-pattern matching.** Bolt *failure links* onto a trie (a KMP-style fallback between branches) and you get [Aho-Corasick](/cortex/data-structures-and-algorithms/strings-aho-corasick) — search a text for thousands of dictionary words in one pass. The trie is the skeleton; the failure links are the muscle.
+- **It generalises to multi-pattern matching.** Bolt *failure links* onto a trie (a KMP-style fallback between branches) and you get [Aho-Corasick](/cortex/data-structures-and-algorithms/strings/aho-corasick) — search a text for thousands of dictionary words in one pass. The trie is the skeleton; the failure links are the muscle.
 
 ## Recall
 

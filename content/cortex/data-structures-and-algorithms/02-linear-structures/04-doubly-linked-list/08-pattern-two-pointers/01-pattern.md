@@ -152,7 +152,7 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [Palindrome Number](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-pattern-two-pointers-problems-palindrome-number), [Two Sum](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-pattern-two-pointers-problems-two-sum), [Duplicate-Aware Two Sum](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-pattern-two-pointers-problems-duplicate-aware-two-sum), and [Approximate Three Sum](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-pattern-two-pointers-problems-approximate-three-sum).
+Drill the family in **Practice** — [Palindrome Number](/cortex/data-structures-and-algorithms/linear-structures/doubly-linked-list/pattern-two-pointers/problems/palindrome-number), [Two Sum](/cortex/data-structures-and-algorithms/linear-structures/doubly-linked-list/pattern-two-pointers/problems/two-sum), [Duplicate-Aware Two Sum](/cortex/data-structures-and-algorithms/linear-structures/doubly-linked-list/pattern-two-pointers/problems/duplicate-aware-two-sum), and [Approximate Three Sum](/cortex/data-structures-and-algorithms/linear-structures/doubly-linked-list/pattern-two-pointers/problems/approximate-three-sum).
 
 ## Reflect & Connect
 
@@ -160,10 +160,10 @@ The converging scan transfers directly once you have `O(1)` backward movement:
 
 - **The family** — sorted two-sum (above), **palindrome check** (compare `left.val` and `right.val`, step inward), **three-sum** (fix one node, converge the other two over the rest). All are "squeeze from both ends."
 - **The `prev` pointer is the enabler** — this is the canonical demonstration of *why* a doubly list exists: it makes backward traversal `O(1)`, which turns an `O(n²)`-on-a-singly-list scan into `O(n)`. When you see "two values from both ends of a sorted sequence," reach for converging pointers.
-- **Where each structure stands** — arrays give `O(1)` movement in *both* directions (indices), so they're the most natural home for this pattern; a doubly list matches them for traversal here; a singly list is the odd one out. Same idea from the [array two-pointers](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-pattern) pattern, now on links.
+- **Where each structure stands** — arrays give `O(1)` movement in *both* directions (indices), so they're the most natural home for this pattern; a doubly list matches them for traversal here; a singly list is the odd one out. Same idea from the [array two-pointers](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers/pattern) pattern, now on links.
 
-**Prerequisites:** [Doubly Linked Lists](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-doubly-linked-lists).
-**What's next:** restructure a doubly list by weaving from both ends — [Reorder](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-pattern-reorder-pattern).
+**Prerequisites:** [Doubly Linked Lists](/cortex/data-structures-and-algorithms/linear-structures/doubly-linked-list/doubly-linked-lists).
+**What's next:** restructure a doubly list by weaving from both ends — [Reorder](/cortex/data-structures-and-algorithms/linear-structures/doubly-linked-list/pattern-reorder/pattern).
 
 ## Recall
 

@@ -14,7 +14,7 @@ In **2004**, Google launched an experimental opt-in feature called **Google Sugg
 
 That latency budget is the entire design constraint, and it immediately kills the obvious approach. You cannot, on every keystroke, run `SELECT query FROM searches WHERE query LIKE 'fa%' ORDER BY popularity LIMIT 10` against a table of billions of historical queries — a prefix `LIKE` scan at that scale, on every keypress, for millions of concurrent users, is hopeless. So autocomplete is built around a data structure designed for exactly one thing: **finding everything that starts with a given prefix, fast** — the **trie**, supercharged by **precomputing the answer at every node**.
 
-This capstone is the counterpoint to the [full-text search lesson](/cortex/system-design/storage-and-search-search-systems): that built an *inverted index* to find documents *containing* terms; this builds a *prefix tree* to find queries *starting with* a prefix, and it trades a little freshness (the suggestions can be an hour stale) for the brutal speed the keystroke budget demands.
+This capstone is the counterpoint to the [full-text search lesson](/cortex/system-design/storage-and-search/search-systems): that built an *inverted index* to find documents *containing* terms; this builds a *prefix tree* to find queries *starting with* a prefix, and it trades a little freshness (the suggestions can be an hour stale) for the brutal speed the keystroke budget demands.
 
 ## 2. Requirements and scope
 
@@ -33,7 +33,7 @@ This capstone is the counterpoint to the [full-text search lesson](/cortex/syste
 
 ## 3. Back-of-envelope estimation
 
-Numbers ([estimation](/cortex/system-design/foundations-back-of-envelope-estimation)) — and the read rate is enormous because autocomplete fires *per keystroke*. Assume **5 billion searches/day**, each query ~20 characters but **debounced to ~6 suggest calls** per query, and a popular-query "head" of **~10 million** queries worth trie-ing.
+Numbers ([estimation](/cortex/system-design/foundations/back-of-envelope-estimation)) — and the read rate is enormous because autocomplete fires *per keystroke*. Assume **5 billion searches/day**, each query ~20 characters but **debounced to ~6 suggest calls** per query, and a popular-query "head" of **~10 million** queries worth trie-ing.
 
 | Quantity | Calculation | Result |
 |---|---|---|
@@ -52,7 +52,7 @@ GET /suggest?q=fa&limit=10
   200 OK   {"prefix": "fa", "suggestions": ["facebook", "fast food", "fastly", ...]}
 ```
 
-One endpoint, and the discipline is on the **client**: it **debounces** (waits ~50–100 ms after the last keystroke before firing, so typing "facebook" doesn't fire eight requests) and it must handle **out-of-order responses** — if the request for "fa" returns *after* the request for "fac", the client must show the latest, not whichever arrived last (a sequence number or "ignore stale prefix" check). The response is tiny and **cacheable** — the suggestions for "fa" are the same for most users, so a CDN/edge cache can serve hot prefixes without touching the trie at all (the [edge-cache](/cortex/system-design/capstones-url-shortener) trick again).
+One endpoint, and the discipline is on the **client**: it **debounces** (waits ~50–100 ms after the last keystroke before firing, so typing "facebook" doesn't fire eight requests) and it must handle **out-of-order responses** — if the request for "fa" returns *after* the request for "fac", the client must show the latest, not whichever arrived last (a sequence number or "ignore stale prefix" check). The response is tiny and **cacheable** — the suggestions for "fa" are the same for most users, so a CDN/edge cache can serve hot prefixes without touching the trie at all (the [edge-cache](/cortex/system-design/capstones/url-shortener) trick again).
 
 ## 5. Data model and the central decision
 
@@ -97,7 +97,7 @@ The same system as a C4 container view:
   title="Search autocomplete — container view (trie + offline build)"
 ></iframe>
 
-The architecture has a clean **read/build split**, like the [video pipeline](/cortex/system-design/capstones-video-streaming): the **build path** (logs → aggregate → trie) runs offline and at leisure (minutes to hours), while the **read path** (cache → in-memory trie) is laser-focused on latency. They meet only when the builder **publishes a fresh trie** to the suggest service — an atomic swap of the in-memory structure. The edge cache out front means most of those ~1M requests/s never even reach the trie.
+The architecture has a clean **read/build split**, like the [video pipeline](/cortex/system-design/capstones/video-streaming): the **build path** (logs → aggregate → trie) runs offline and at leisure (minutes to hours), while the **read path** (cache → in-memory trie) is laser-focused on latency. They meet only when the builder **publishes a fresh trie** to the suggest service — an atomic swap of the in-memory structure. The edge cache out front means most of those ~1M requests/s never even reach the trie.
 
 ## 7. The hot path
 
@@ -138,7 +138,7 @@ The magic is that the online side does almost nothing: a few pointer hops to the
 
 At 100× — **billions of suggest requests/second, a trending world that shifts by the minute** — here's what bends:
 
-- **Hot short prefixes dominate (cache them).** The suggestions for "a", "th", "fa" are requested astronomically more than "xyzzy" — a wildly skewed, Zipfian distribution. So a small **edge cache** of the most popular prefixes serves the overwhelming majority of traffic without touching the trie (the [URL-shortener](/cortex/system-design/capstones-url-shortener) edge-cache insight yet again). This is the single biggest scaling lever.
+- **Hot short prefixes dominate (cache them).** The suggestions for "a", "th", "fa" are requested astronomically more than "xyzzy" — a wildly skewed, Zipfian distribution. So a small **edge cache** of the most popular prefixes serves the overwhelming majority of traffic without touching the trie (the [URL-shortener](/cortex/system-design/capstones/url-shortener) edge-cache insight yet again). This is the single biggest scaling lever.
 - **Trie sharding is skewed.** Shard the trie by first character(s), but prefixes aren't uniform — far more queries start with "s" than "z", so naïve per-letter shards are lopsided. Shard by prefix *ranges* balanced on traffic, not by letter.
 - **Trending freshness vs. batch rebuild.** A breaking-news query won't appear until the next rebuild — too slow for "what just happened." Add a **real-time layer**: a fast-updating store of recently-surging queries, **merged** with the batch trie's results at request time, so trending terms surface in minutes without rebuilding the whole trie.
 - **Rebuild cost.** Rebuilding a trie of tens of millions of queries is expensive; do it incrementally where possible (update changed branches) and publish via atomic swap so reads never see a half-built trie.
@@ -238,4 +238,4 @@ The whole design is in the two functions: `build` runs **offline** and does the 
 
 ---
 
-> **Next:** [43. Distributed file storage](/cortex/system-design/capstones-distributed-file-storage) — autocomplete kept a small, hot structure in memory; distributed file storage goes the other way — storing *petabytes* of files reliably across thousands of unreliable machines. Next we design the system behind GFS/HDFS and the object stores you've been leaning on all chapter: how you split a giant file into **chunks**, **replicate** each chunk across machines so a disk dying loses nothing, and let a **master** track where every piece lives — the foundation [object storage](/cortex/system-design/storage-and-search-object-storage) itself is built on.
+> **Next:** [43. Distributed file storage](/cortex/system-design/capstones/distributed-file-storage) — autocomplete kept a small, hot structure in memory; distributed file storage goes the other way — storing *petabytes* of files reliably across thousands of unreliable machines. Next we design the system behind GFS/HDFS and the object stores you've been leaning on all chapter: how you split a giant file into **chunks**, **replicate** each chunk across machines so a disk dying loses nothing, and let a **master** track where every piece lives — the foundation [object storage](/cortex/system-design/storage-and-search/object-storage) itself is built on.

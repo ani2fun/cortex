@@ -167,4 +167,4 @@ kubectl delete pod notolerate
 
 When pinning is right, you can read `kubectl get pods -A -o wide` and predict which node every pod is on without looking. That's the goal.
 
-→ Next: [Pin Traefik to the edge](/cortex/homelab-from-scratch/the-edge-pin-traefik-to-the-edge)
+→ Next: [Pin Traefik to the edge](/cortex/homelab-from-scratch/the-edge/pin-traefik-to-the-edge)

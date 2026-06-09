@@ -8,7 +8,7 @@ prereqs:
 
 ## Why It Exists
 
-You taught yourself the [B-tree](/cortex/data-structures-and-algorithms/trees-b-tree-introduction-to-b-trees) in the abstract: high fanout, shallow height, `O(log n)` search. Postgres builds exactly that for every `CREATE INDEX ON users(email)` — but on a real disk, two problems the textbook ignored become load-bearing:
+You taught yourself the [B-tree](/cortex/data-structures-and-algorithms/trees/b-tree/introduction-to-b-trees) in the abstract: high fanout, shallow height, `O(log n)` search. Postgres builds exactly that for every `CREATE INDEX ON users(email)` — but on a real disk, two problems the textbook ignored become load-bearing:
 
 - **A crash can interrupt a write.** Updating a B-tree page is a *random* write to an 8 KB block. If the machine loses power halfway through, the page is left torn — half old, half new — and the index is corrupt. The structure being correct in memory means nothing if it can't survive `kill -9`.
 - **Many writers hit the tree at once.** A naive "lock the whole root-to-leaf path while I split" strategy would serialize every INSERT. A busy table needs thousands of concurrent inserts a second.
@@ -195,8 +195,8 @@ Both print `found 30 via B-link? true` then `found 99 (absent)? false`. The read
 - **Durability is an ordering property.** The WAL works because the log record is forced to disk *before* the page. Log-then-page survives any crash; page-only loses whatever was still in the buffer. Same idea powers redo logs in MySQL/InnoDB and journals in ext4/NTFS.
 - **Sequential beats random.** The WAL is an append-only sequential write (cheap to fsync); the page write is random (expensive to fsync per page). Logging first lets Postgres batch and defer the random writes — durability *and* throughput.
 - **B-link = concurrency without whole-path locks.** A right-sibling pointer turns a split into a local edit; readers who hit a stale page follow the link. This is why a textbook B-tree and `nbtree` differ — and why Postgres INSERTs scale.
-- **Fanout still rules the height.** 8 KB pages, ~hundreds of keys per node, height 4–5 for a billion rows — the [B-tree](/cortex/data-structures-and-algorithms/trees-b-tree-introduction-to-b-trees)'s core promise, unchanged by all the production machinery around it.
-- **The write-optimised cousin.** When writes dominate even more, databases reach for [LSM trees](/cortex/data-structures-and-algorithms/dsa-in-real-systems-lsm-trees-rocksdb-cassandra) (RocksDB, Cassandra) — buffer in memory, flush sequentially, merge later. Same "make random writes sequential" instinct as the WAL, taken all the way.
+- **Fanout still rules the height.** 8 KB pages, ~hundreds of keys per node, height 4–5 for a billion rows — the [B-tree](/cortex/data-structures-and-algorithms/trees/b-tree/introduction-to-b-trees)'s core promise, unchanged by all the production machinery around it.
+- **The write-optimised cousin.** When writes dominate even more, databases reach for [LSM trees](/cortex/data-structures-and-algorithms/dsa-in-real-systems/lsm-trees-rocksdb-cassandra) (RocksDB, Cassandra) — buffer in memory, flush sequentially, merge later. Same "make random writes sequential" instinct as the WAL, taken all the way.
 
 ## Recall
 

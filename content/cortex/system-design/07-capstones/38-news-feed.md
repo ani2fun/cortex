@@ -14,7 +14,7 @@ In **2013**, Twitter's VP of Engineering **Raffi Krikorian** gave a now-famous t
 
 Except for one thing, and it's the thing every news-feed design trips over: **the celebrity**. If reading is cheap because you precomputed, then *posting* costs one write per follower — fine for someone with 200 followers, catastrophic for someone with 50 *million*. One tweet from a megastar would fire **50 million Redis writes**, saturate the fan-out worker queues, and delay timeline updates *for everybody*, not just that celebrity's followers. So Twitter's real design isn't pure push — it's a **hybrid**: fan-out-on-write for normal accounts, and for celebrities, *don't* fan out at all — instead, **pull their recent posts at read time and merge** them into the timeline you already precomputed, hiding the seam.
 
-That single design — push for the many, pull for the few, merge at the edge — is the heart of this capstone, and it recurs everywhere there's a follow graph with wildly uneven degree (Instagram, TikTok, Mastodon, LinkedIn). The URL shortener ([Capstone 37](/cortex/system-design/capstones-url-shortener)) was read-heavy but *simple* — one immutable key→value. The news feed is read-heavy *and* personalized *and* constantly changing, and the tension between write cost and read cost is the whole game.
+That single design — push for the many, pull for the few, merge at the edge — is the heart of this capstone, and it recurs everywhere there's a follow graph with wildly uneven degree (Instagram, TikTok, Mastodon, LinkedIn). The URL shortener ([Capstone 37](/cortex/system-design/capstones/url-shortener)) was read-heavy but *simple* — one immutable key→value. The news feed is read-heavy *and* personalized *and* constantly changing, and the tension between write cost and read cost is the whole game.
 
 ## 2. Requirements and scope
 
@@ -33,7 +33,7 @@ That single design — push for the many, pull for the few, merge at the edge �
 
 ## 3. Back-of-envelope estimation
 
-Numbers ([estimation](/cortex/system-design/foundations-back-of-envelope-estimation)) decide whether push is even affordable. Assume **200 million daily active users**, an average of **~200 followers** each, each posting **~0.5 times/day** and opening their feed **~15 times/day**.
+Numbers ([estimation](/cortex/system-design/foundations/back-of-envelope-estimation)) decide whether push is even affordable. Assume **200 million daily active users**, an average of **~200 followers** each, each posting **~0.5 times/day** and opening their feed **~15 times/day**.
 
 | Quantity | Calculation | Result |
 |---|---|---|
@@ -58,7 +58,7 @@ GET  /feed?cursor=...   (the authenticated user's home timeline)
   200 OK               {"items": [ {post...}, ... ], "next_cursor": "..."}
 ```
 
-`GET /feed` uses **cursor (keyset) pagination** ([API design](/cortex/system-design/application-architecture-api-design)) so an infinite scroll stays stable as new posts arrive at the top — offset pagination would duplicate and skip items on a feed that's changing every second.
+`GET /feed` uses **cursor (keyset) pagination** ([API design](/cortex/system-design/application-architecture/api-design)) so an infinite scroll stays stable as new posts arrive at the top — offset pagination would duplicate and skip items on a feed that's changing every second.
 
 ## 5. Data model and the central decision
 
@@ -113,7 +113,7 @@ The same system as a C4 container view (responsibilities + who-talks-to-whom):
   title="News feed — container view (hybrid fan-out)"
 ></iframe>
 
-The fan-out workers drain a **queue** ([message queues](/cortex/system-design/distributed-patterns-message-queues-and-streams)) — fan-out is asynchronous, so posting returns immediately and the writes to millions of follower feeds happen in the background. This is exactly the [pub/sub fan-out](/cortex/system-design/distributed-patterns-pubsub-and-fanout) pattern applied to a social graph, and decoupling it behind a queue is what lets you *isolate* celebrity jobs (§8) so they can't starve everyone else's freshness.
+The fan-out workers drain a **queue** ([message queues](/cortex/system-design/distributed-patterns/message-queues-and-streams)) — fan-out is asynchronous, so posting returns immediately and the writes to millions of follower feeds happen in the background. This is exactly the [pub/sub fan-out](/cortex/system-design/distributed-patterns/pubsub-and-fanout) pattern applied to a social graph, and decoupling it behind a queue is what lets you *isolate* celebrity jobs (§8) so they can't starve everyone else's freshness.
 
 ## 7. The hot path
 
@@ -163,9 +163,9 @@ The read is the elegant part: most of your feed is *already sitting in your Redi
 At 100× — **20 million DAU posting billions of times, ~2 trillion fan-out writes/day at naïve push** — here's what bends and how:
 
 - **The celebrity problem is the headline (already solved by the hybrid).** Without it you simply cannot operate; with it, the write volume is bounded by *normal* users' follower counts, not the megastars'. This is the single most important design decision in the whole system.
-- **Fan-out worker queue isolation.** A viral post (even from a sub-threshold account that suddenly gets retweeted) can flood the fan-out queue and delay *everyone's* feed updates. Isolate fan-out into **separate queues/worker pools by priority** (and cap per-job size) so one firehose can't starve the rest — the [bulkhead](/cortex/system-design/distributed-patterns-circuit-breakers-and-bulkheads) idea applied to background work.
+- **Fan-out worker queue isolation.** A viral post (even from a sub-threshold account that suddenly gets retweeted) can flood the fan-out queue and delay *everyone's* feed updates. Isolate fan-out into **separate queues/worker pools by priority** (and cap per-job size) so one firehose can't starve the rest — the [bulkhead](/cortex/system-design/distributed-patterns/circuit-breakers-and-bulkheads) idea applied to background work.
 - **The cold-cache problem.** You can't keep a materialized timeline for 2 billion *registered* users when only a fraction are active — it's wasteful and most would be stale. So you maintain feeds **only for active users** and **rebuild lazily**: when a dormant user returns, their feed is cold, so you fall back to a **pull** (merge their followees' recent posts) and repopulate the cache. First load is slower; subsequent loads are fast.
-- **Feed-cache sharding.** ~1.3 TB → ~130 TB of materialized timelines; shard the Redis cluster by user id ([sharding](/cortex/system-design/building-blocks-sharding-and-partitioning)). Reads stay single-shard (your timeline lives on one node).
+- **Feed-cache sharding.** ~1.3 TB → ~130 TB of materialized timelines; shard the Redis cluster by user id ([sharding](/cortex/system-design/building-blocks/sharding-and-partitioning)). Reads stay single-shard (your timeline lives on one node).
 - **Recency → ranking.** At scale, chronological order gives way to an **ML-ranked** feed (engagement-predicting model). The architecture barely changes: ranking is a stage in the timeline service that re-orders the merged candidate set; the candidates still come from push + celebrity-pull.
 
 The throughline: the news feed scales not by making fan-out faster, but by **not fanning out the things that are too expensive to fan out**, and assembling those few at read time instead.
@@ -218,7 +218,7 @@ The whole design is in `publish`'s `if` and `home_timeline`'s two sources. `publ
 
 - **The celebrity (the defining one).** Pure push is impossible for high-follower accounts; the hybrid's threshold-based pull is non-negotiable, not an optimization. Get the threshold and the read-time merge right or the whole system melts on one viral post.
 - **Cold cache / dormant users.** A user who's been away has an empty or evicted timeline; serving them requires a pull-and-rebuild, so their *first* load is slow. Maintain feeds for active users only and rebuild lazily — don't try to keep 2 billion live timelines.
-- **Fan-out lag and queue saturation.** Fan-out is async, so a post isn't instantly in every follower's feed; a backlog (a celebrity-adjacent viral moment) can make feeds stale. Isolate and prioritize fan-out queues, cap job sizes, and monitor fan-out lag as a core SLO ([observability](/cortex/system-design/production-operations-observability)).
+- **Fan-out lag and queue saturation.** Fan-out is async, so a post isn't instantly in every follower's feed; a backlog (a celebrity-adjacent viral moment) can make feeds stale. Isolate and prioritize fan-out queues, cap job sizes, and monitor fan-out lag as a core SLO ([observability](/cortex/system-design/production-operations/observability)).
 - **Deletes and edits.** A deleted or edited post still has its id sitting in millions of materialized timelines. Don't try to scrub every feed — **filter/hydrate at read time** against the post store (a deleted post hydrates to nothing and is dropped), so the materialized id list can be slightly "dirty."
 - **Unfollow consistency.** After you unfollow someone, their already-pushed posts linger in your precomputed feed. Filter at read time against the *current* follow graph, or accept brief staleness — re-fanning-out on every unfollow is far too expensive.
 - **Ordering surprises with ranking.** An ML-ranked feed can bury brand-new posts or show old ones, confusing users who expect chronological order; offer a "latest" toggle and be deliberate about how recency factors into the score.
@@ -255,4 +255,4 @@ The whole design is in `publish`'s `if` and `home_timeline`'s two sources. `publ
 
 ---
 
-> **Next:** [39. Chat system](/cortex/system-design/capstones-chat-system) — the news feed was *eventually*-consistent and read-dominated; a chat system flips both. Messages must arrive **in order**, **exactly once**, and in **real time** (a long-lived connection, not a poll), with presence ("typing…", "online") and delivery receipts. Next we design WebSocket gateways, the message fan-out for group chats, and how you guarantee ordering and delivery when a phone drops off the network mid-conversation.
+> **Next:** [39. Chat system](/cortex/system-design/capstones/chat-system) — the news feed was *eventually*-consistent and read-dominated; a chat system flips both. Messages must arrive **in order**, **exactly once**, and in **real time** (a long-lived connection, not a poll), with presence ("typing…", "online") and delivery receipts. Next we design WebSocket gateways, the message fan-out for group chats, and how you guarantee ordering and delivery when a phone drops off the network mid-conversation.

@@ -9,9 +9,9 @@ prereqs:
 
 ## Why It Exists
 
-[Upper bound's mechanics](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-upper-bound) — the same half-open template as lower bound with `≤` instead of `<` — land you on the first index *strictly greater* than the target. This lesson is about **recognizing** when that's what a problem needs.
+[Upper bound's mechanics](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/upper-bound) — the same half-open template as lower bound with `≤` instead of `<` — land you on the first index *strictly greater* than the target. This lesson is about **recognizing** when that's what a problem needs.
 
-The triggers: "**first index `>` x**", "**just past the last** occurrence", "**how many** elements are in range `[a, b]`", "the **ceiling** (smallest element strictly greater)", or the **breaking index** of a `true → false` monotone condition. The headline use is **counting**: paired with [lower bound](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-lower-bound-pattern), `upper_bound − lower_bound` is the count of a value, and bounds of two endpoints count a range — all `O(log n)`.
+The triggers: "**first index `>` x**", "**just past the last** occurrence", "**how many** elements are in range `[a, b]`", "the **ceiling** (smallest element strictly greater)", or the **breaking index** of a `true → false` monotone condition. The headline use is **counting**: paired with [lower bound](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/pattern-lower-bound/pattern), `upper_bound − lower_bound` is the count of a value, and bounds of two endpoints count a range — all `O(log n)`.
 
 ## See It Work
 
@@ -127,17 +127,17 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [Limit Count](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-upper-bound-problems-limit-count), [Positive Index](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-upper-bound-problems-positive-index), [Ceiling Index](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-upper-bound-problems-ceiling-index), and [Breaking Index](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-upper-bound-problems-breaking-index).
+Drill the family in **Practice** — [Limit Count](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/pattern-upper-bound/problems/limit-count), [Positive Index](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/pattern-upper-bound/problems/positive-index), [Ceiling Index](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/pattern-upper-bound/problems/ceiling-index), and [Breaking Index](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/pattern-upper-bound/problems/breaking-index).
 
 ## Reflect & Connect
 
 Upper bound completes the boundary-search toolkit:
 
 - **The family** — first `> x`, the ceiling (`upper_bound(x)`), count of a value (`upper − lower`), count in a range (`upper_bound(b) − lower_bound(a)`), and the breaking point of a `true → false` condition.
-- **Pairing is the power** — almost no one needs upper bound *alone*; it earns its keep with [lower bound](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-lower-bound-pattern) to bracket and count. Memorize the left=lower, right=upper rule for closed ranges.
+- **Pairing is the power** — almost no one needs upper bound *alone*; it earns its keep with [lower bound](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/pattern-lower-bound/pattern) to bracket and count. Memorize the left=lower, right=upper rule for closed ranges.
 - **`< ` vs `≤` is the one decision** — lower bound (`<`) lands on the first match, upper bound (`≤`) lands just past the last. Picking the wrong one is the classic off-by-one in counts; tie the choice to "do I want the first equal element, or one past the last?"
 
-**Prerequisites:** [Upper Bound](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-upper-bound).
+**Prerequisites:** [Upper Bound](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/upper-bound).
 
 ## Recall
 

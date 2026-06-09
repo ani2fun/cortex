@@ -153,7 +153,7 @@ Both print `1` then `3`. By recursing into only one side, quickselect expects to
 - **Random pivots defeat adversaries.** Quicksort and quickselect move the worst case from "sorted input" to "unlucky coin flips," which an attacker who can't see your randomness cannot trigger. Expected `O(n log n)` / `O(n)` holds for *every* input.
 - **Repetition is exponential leverage.** Monte Carlo error `p` becomes `pᵏ` over `k` *independent* runs — linear cost, exponential reliability. Miller-Rabin primality is the canonical case (`p ≤ ¼` per round).
 - **Reservoir sampling** picks `k` items uniformly from a stream of *unknown* length in one pass: keep the `i`-th item with probability `k/i`, evicting a random current pick. Each element ends up chosen with probability `k/n` — no second pass, `O(1)` memory. The trick when you can't see the whole input at once.
-- **Random hashing is security, not speed.** A fixed hash function lets an attacker craft keys that all collide, degrading a hash table to `O(n)` per op (a HashDoS). A *random* per-process seed makes the collision pattern unpredictable — the same "move the worst case onto private coins" idea, applied to [hash tables](/cortex/data-structures-and-algorithms/linear-structures-hash-table-what-is-a-hash-table).
+- **Random hashing is security, not speed.** A fixed hash function lets an attacker craft keys that all collide, degrading a hash table to `O(n)` per op (a HashDoS). A *random* per-process seed makes the collision pattern unpredictable — the same "move the worst case onto private coins" idea, applied to [hash tables](/cortex/data-structures-and-algorithms/linear-structures/hash-table/what-is-a-hash-table).
 
 ## Recall
 

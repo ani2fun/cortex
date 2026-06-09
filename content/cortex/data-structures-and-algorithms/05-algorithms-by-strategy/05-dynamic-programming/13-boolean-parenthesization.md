@@ -9,7 +9,7 @@ prereqs:
 
 A boolean expression like `T ^ F & T` has no value until you decide which operator binds first: `(T ^ F) & T` versus `T ^ (F & T)`. For some inputs the two groupings *disagree*, so the real question is: **how many parenthesizations make the whole expression evaluate to `True`?** Compilers reasoning about ambiguous grammars and tools counting satisfying assignments hit exactly this.
 
-The shape is new. Every interval DP so far either matched two ends ([palindromes](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-longest-palindromic-subsequence)) or took an end ([game strategy](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-optimal-stratergy)). Here the choice is *which operator is applied last* — an internal **split point** `k` inside the range, the same structure as matrix-chain multiplication. And it needs **two** tables, not one: to know how many ways `left | right` is `True`, you need to know how many ways each side is `False`, not just `True`.
+The shape is new. Every interval DP so far either matched two ends ([palindromes](/cortex/data-structures-and-algorithms/algorithms-by-strategy/dynamic-programming/longest-palindromic-subsequence)) or took an end ([game strategy](/cortex/data-structures-and-algorithms/algorithms-by-strategy/dynamic-programming/optimal-stratergy)). Here the choice is *which operator is applied last* — an internal **split point** `k` inside the range, the same structure as matrix-chain multiplication. And it needs **two** tables, not one: to know how many ways `left | right` is `True`, you need to know how many ways each side is `False`, not just `True`.
 
 ## See It Work
 
@@ -101,7 +101,7 @@ need -> xorOp
 
 Two ideas define this lesson:
 
-- **The split point is an operator, not an end.** Where palindromes peel a character off each end, this picks the *last operator to evaluate* and recurses on the two sub-expressions it separates. That internal `for k` loop is the signature of split-point interval DP — shared with [matrix-chain multiplication](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-matrix-chain-multiplication) — and it's why the cost is `O(n³)`.
+- **The split point is an operator, not an end.** Where palindromes peel a character off each end, this picks the *last operator to evaluate* and recurses on the two sub-expressions it separates. That internal `for k` loop is the signature of split-point interval DP — shared with [matrix-chain multiplication](/cortex/data-structures-and-algorithms/algorithms-by-strategy/dynamic-programming/matrix-chain-multiplication) — and it's why the cost is `O(n³)`.
 - **You need both T *and* F tables.** This is the crux. `left | right` is True in three of four cases — the only False case is both-False — so counting its True-ways requires `Fl` and `Fr`. `left ^ right` is True exactly when the sides differ, mixing `Tl·Fr` and `Fl·Tr`. You cannot compute the True-counts from True-counts alone; the False-counts are load-bearing. ([Trace It](#trace-it) proves it.)
 
 > **Key takeaway.** Boolean parenthesization is a **split-point interval DP with two tables**: try each operator `k` as the last applied, and combine `T`/`F` counts by a sum of products (`&`: `Tl·Tr`; `|`: `total − Fl·Fr`; `^`: `Tl·Fr + Fl·Tr`). Fill by length; answer `T[0][n-1]`; cost `O(n³)`. The False-table is mandatory because `|` and `^` depend on it.
@@ -200,7 +200,7 @@ Both print `[0, 2]` then `[-34, -14, -10, -10, 10]`. `2-1-1` parenthesizes as `(
 - **Split-point interval DP.** The defining move is choosing the *last operator* — an internal split `k`, not an endpoint. That extra `for k` loop costs a factor of `n` (so `O(n³)`), and it's shared with matrix-chain multiplication and "different ways to add parentheses."
 - **Two tables because combining needs both polarities.** `|` is True unless both sides are False; `^` is True when sides differ. Both formulas read the False-counts, so tracking only True-counts is wrong for everything but AND.
 - **Sum of products.** Each operator's rule partitions the `total = (Tl+Fl)(Tr+Fr)` pairings into True and False buckets. Writing the truth table as counts is the mechanical heart of the recurrence.
-- **It's the counting cousin of [optimal game strategy](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-optimal-stratergy).** That lesson aggregated with `max`/`min` over choices; this one aggregates with `+`/`×` over choices. Same interval scaffold, different aggregator — the through-line of the whole DP section.
+- **It's the counting cousin of [optimal game strategy](/cortex/data-structures-and-algorithms/algorithms-by-strategy/dynamic-programming/optimal-stratergy).** That lesson aggregated with `max`/`min` over choices; this one aggregates with `+`/`×` over choices. Same interval scaffold, different aggregator — the through-line of the whole DP section.
 - **The number of parenthesizations is Catalan.** An `n`-operand expression has the `(n-1)`-th Catalan number of parenthesizations — exponential — which is why brute-force enumeration is hopeless and the `O(n³)` DP matters.
 
 ## Recall

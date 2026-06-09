@@ -9,7 +9,7 @@ prereqs:
 
 ## Why It Exists
 
-This is the array [fixed sliding window](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-fixed-sliding-window-pattern) with a richer state. There, the window's value was a single number (a sum) you patched with one add and one subtract. Here the questions are about *composition*: "find every window of length `m` that's an anagram of `p`," "every window of size `k` with all-distinct values," "is there a duplicate within `k` positions?" The window's state is no longer a number — it's a **frequency map**.
+This is the array [fixed sliding window](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-fixed-sliding-window/pattern) with a richer state. There, the window's value was a single number (a sum) you patched with one add and one subtract. Here the questions are about *composition*: "find every window of length `m` that's an anagram of `p`," "every window of size `k` with all-distinct values," "is there a duplicate within `k` positions?" The window's state is no longer a number — it's a **frequency map**.
 
 Recomputing that map from scratch for each of the ~`n` windows costs `O(n · m)`. But the map is *slidable* just like the sum was: when the window advances one step, exactly one element enters and one leaves. **Increment the entering element's count; decrement the leaving one's.** That's `O(1)` per step, and a query against the map (compare to a target, count distinct keys) answers each window. Same incremental-maintenance trick, with a hash map as the aggregate.
 
@@ -142,18 +142,18 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [Duplicate Detection](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-fixed-sized-sliding-window-problems-duplicate-detection), [Subarray Distinctness](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-fixed-sized-sliding-window-problems-subarray-distinctness), [Contains Variation](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-fixed-sized-sliding-window-problems-contains-variation), and [Anagram Finder](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-fixed-sized-sliding-window-problems-anagram-finder).
+Drill the family in **Practice** — [Duplicate Detection](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-fixed-sized-sliding-window/problems/duplicate-detection), [Subarray Distinctness](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-fixed-sized-sliding-window/problems/subarray-distinctness), [Contains Variation](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-fixed-sized-sliding-window/problems/contains-variation), and [Anagram Finder](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-fixed-sized-sliding-window/problems/anagram-finder).
 
 ## Reflect & Connect
 
 This pattern is the meeting point of two earlier ideas:
 
 - **The family** — anagram finder (window map equals target), "contains duplicate within `k`" (a key reappears in the window), "`k` distinct values in every length-`m` window" (map size). All are a fixed window plus a map query.
-- **It's [fixed sliding window](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-fixed-sliding-window-pattern) + [counting](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-counting-pattern)** — the array pattern supplies the slide-by-one mechanics; the counting pattern supplies the map as state. The "slidable aggregate" test from the array pattern still applies: incremental add/evict must be `O(1)`, which counts are.
+- **It's [fixed sliding window](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-fixed-sliding-window/pattern) + [counting](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-counting/pattern)** — the array pattern supplies the slide-by-one mechanics; the counting pattern supplies the map as state. The "slidable aggregate" test from the array pattern still applies: incremental add/evict must be `O(1)`, which counts are.
 - **Delete-at-zero is the recurring gotcha** — any time you compare maps for equality, prune zero entries first, or the structural comparison lies.
 
-**Prerequisites:** [What Is a Hash Table?](/cortex/data-structures-and-algorithms/linear-structures-hash-table-what-is-a-hash-table).
-**What's next:** let the window grow and shrink on a condition, still map-backed — [Variable-Size Sliding Window](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-variable-sized-sliding-window-pattern).
+**Prerequisites:** [What Is a Hash Table?](/cortex/data-structures-and-algorithms/linear-structures/hash-table/what-is-a-hash-table).
+**What's next:** let the window grow and shrink on a condition, still map-backed — [Variable-Size Sliding Window](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-variable-sized-sliding-window/pattern).
 
 ## Recall
 

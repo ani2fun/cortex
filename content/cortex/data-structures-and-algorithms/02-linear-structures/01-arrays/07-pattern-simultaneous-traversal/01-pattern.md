@@ -116,7 +116,7 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [Merge Sorted Arrays](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-simultaneous-traversal-problems-merge-sorted-arrays) and [Subsequence Checker](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-simultaneous-traversal-problems-subsequence-checker).
+Drill the family in **Practice** — [Merge Sorted Arrays](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-simultaneous-traversal/problems/merge-sorted-arrays) and [Subsequence Checker](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-simultaneous-traversal/problems/subsequence-checker).
 
 ## Reflect & Connect
 
@@ -128,8 +128,8 @@ This pattern is everywhere two ordered things meet:
 
 The one precondition to remember: the inputs must be **sorted** (or share a comparable order). That's what makes "advance the smaller front" safe — if they're unsorted, you're back to a nested scan or a hash set. When both *are* sorted, this `O(n+m)`, `O(1)`-space pass beats every alternative.
 
-**Prerequisites:** [Two Pointers](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-pattern).
-**What's next:** both pointers moving the *same* direction over *one* array, a fixed span apart — the [Fixed Sliding Window](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-fixed-sliding-window-pattern).
+**Prerequisites:** [Two Pointers](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers/pattern).
+**What's next:** both pointers moving the *same* direction over *one* array, a fixed span apart — the [Fixed Sliding Window](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-fixed-sliding-window/pattern).
 
 ## Recall
 

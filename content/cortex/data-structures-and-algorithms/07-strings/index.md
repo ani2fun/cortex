@@ -6,11 +6,11 @@ A string is *technically* an array of characters, but treating it that way for s
 
 ## Start Here — the learning path
 
-- [Naive String Matching](/cortex/data-structures-and-algorithms/strings-string-matching-naive)
-- [KMP (Knuth-Morris-Pratt)](/cortex/data-structures-and-algorithms/strings-kmp)
-- [Z-Algorithm](/cortex/data-structures-and-algorithms/strings-z-algorithm)
-- [Rabin-Karp and Rolling Hash](/cortex/data-structures-and-algorithms/strings-rabin-karp-and-rolling-hash)
-- [Trie String Applications](/cortex/data-structures-and-algorithms/strings-trie-string-applications)
-- [Suffix Array](/cortex/data-structures-and-algorithms/strings-suffix-array)
-- [Suffix Automaton](/cortex/data-structures-and-algorithms/strings-suffix-automaton)
-- [Aho-Corasick](/cortex/data-structures-and-algorithms/strings-aho-corasick)
+- [Naive String Matching](/cortex/data-structures-and-algorithms/strings/string-matching-naive)
+- [KMP (Knuth-Morris-Pratt)](/cortex/data-structures-and-algorithms/strings/kmp)
+- [Z-Algorithm](/cortex/data-structures-and-algorithms/strings/z-algorithm)
+- [Rabin-Karp and Rolling Hash](/cortex/data-structures-and-algorithms/strings/rabin-karp-and-rolling-hash)
+- [Trie String Applications](/cortex/data-structures-and-algorithms/strings/trie-string-applications)
+- [Suffix Array](/cortex/data-structures-and-algorithms/strings/suffix-array)
+- [Suffix Automaton](/cortex/data-structures-and-algorithms/strings/suffix-automaton)
+- [Aho-Corasick](/cortex/data-structures-and-algorithms/strings/aho-corasick)

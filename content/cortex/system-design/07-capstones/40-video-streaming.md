@@ -6,7 +6,7 @@ summary: Video streaming is the bytes-to-eyeballs problem at planetary scale —
 # 40. Video streaming (capstone)
 
 ## TL;DR
-> Streaming video is dominated by two costs — **storage** and **bandwidth** — and the architecture splits into two decoupled halves. **(1) The pipeline (once, offline, expensive):** ingest a raw upload into [object storage](/cortex/system-design/storage-and-search-object-storage), then **transcode** it into a **bitrate ladder** (240p, 360p, 480p, 720p, 1080p, 4K — multiple bitrates/codecs), **chop each rendition into 2–10s segments**, and write an **HLS/DASH manifest** (`.m3u8` / `.mpd`) listing every segment. Transcoding is heavy batch compute (a 1080p video takes minutes; 4K, tens of minutes), parallelized across a worker farm by segmenting the source. **(2) The serve (many, cached, cheap-per-byte):** a **CDN** caches segments at the edge and delivers ~all the bytes; the player does **adaptive bitrate (ABR)** — it measures its bandwidth and picks the highest sustainable rendition *per segment*, stepping down on congestion and up when there's headroom. The bytes-to-eyeballs problem is so enormous that Netflix built its **own CDN (Open Connect)** — ~19,000 appliances inside ISP networks serving ~95% of its traffic. And no, a 4K stream isn't 25× the bandwidth of 1080p — it's ~4× the pixels and roughly **3–5×** the bandwidth, with sharply diminishing perceived gains, which is *why* the ladder and ABR exist.
+> Streaming video is dominated by two costs — **storage** and **bandwidth** — and the architecture splits into two decoupled halves. **(1) The pipeline (once, offline, expensive):** ingest a raw upload into [object storage](/cortex/system-design/storage-and-search/object-storage), then **transcode** it into a **bitrate ladder** (240p, 360p, 480p, 720p, 1080p, 4K — multiple bitrates/codecs), **chop each rendition into 2–10s segments**, and write an **HLS/DASH manifest** (`.m3u8` / `.mpd`) listing every segment. Transcoding is heavy batch compute (a 1080p video takes minutes; 4K, tens of minutes), parallelized across a worker farm by segmenting the source. **(2) The serve (many, cached, cheap-per-byte):** a **CDN** caches segments at the edge and delivers ~all the bytes; the player does **adaptive bitrate (ABR)** — it measures its bandwidth and picks the highest sustainable rendition *per segment*, stepping down on congestion and up when there's headroom. The bytes-to-eyeballs problem is so enormous that Netflix built its **own CDN (Open Connect)** — ~19,000 appliances inside ISP networks serving ~95% of its traffic. And no, a 4K stream isn't 25× the bandwidth of 1080p — it's ~4× the pixels and roughly **3–5×** the bandwidth, with sharply diminishing perceived gains, which is *why* the ladder and ABR exist.
 
 ## 1. Motivation
 
@@ -14,7 +14,7 @@ By 2022, **Netflix alone accounted for roughly 15% (14.9%) of all global downstr
 
 That is the entire shape of this capstone in one decision: **video streaming is fundamentally a bytes-to-eyeballs (bandwidth + storage) problem, and the system is organized around serving those bytes as cheaply and close to the viewer as possible.** Everything else — the upload, the transcode, the metadata — is supporting cast for the CDN. And the design has a beautiful symmetry: the *expensive* work (transcoding a raw upload into many renditions) happens **once, offline**, while the *cheap, repeatable* work (serving a cached segment) happens **billions of times at the edge**. The hard, costly thing is done rarely; the common thing is made trivial.
 
-This capstone leans hard on lessons you've already built: the raw and encoded video lives in [object storage](/cortex/system-design/storage-and-search-object-storage) (Capstone 26's eleven-nines blobs); the transcode farm is a [queue-driven, autoscaled](/cortex/system-design/production-operations-capacity-planning-and-autoscaling) batch system; and the serve is the [CDN edge-caching](/cortex/system-design/capstones-url-shortener) idea from the URL shortener, scaled to petabytes. It also corrects a myth the stub repeats: 4K is *not* 25× the bandwidth of 1080p.
+This capstone leans hard on lessons you've already built: the raw and encoded video lives in [object storage](/cortex/system-design/storage-and-search/object-storage) (Capstone 26's eleven-nines blobs); the transcode farm is a [queue-driven, autoscaled](/cortex/system-design/production-operations/capacity-planning-and-autoscaling) batch system; and the serve is the [CDN edge-caching](/cortex/system-design/capstones/url-shortener) idea from the URL shortener, scaled to petabytes. It also corrects a myth the stub repeats: 4K is *not* 25× the bandwidth of 1080p.
 
 ## 2. Requirements and scope
 
@@ -25,15 +25,15 @@ This capstone leans hard on lessons you've already built: the raw and encoded vi
 
 **Non-functional (these drive the design):**
 - **Bandwidth is the dominant cost** — design to serve almost everything from a **CDN edge**, not the origin.
-- **Storage is huge** — every video becomes *several* renditions; petabytes accumulate → cheap, durable [object storage](/cortex/system-design/storage-and-search-object-storage).
+- **Storage is huge** — every video becomes *several* renditions; petabytes accumulate → cheap, durable [object storage](/cortex/system-design/storage-and-search/object-storage).
 - **Smooth playback over variable networks** — the same video must play on fibre and on a spotty phone, which forces the **ladder + ABR**.
 - **Upload/transcode can be slow** (minutes); **playback must be instant**. Asymmetric, like the URL shortener's write-vs-read.
 
-**Out of scope:** live/low-latency streaming (real-time transcode — we focus on **VOD**, video-on-demand), DRM/content protection, recommendations ([Capstone 46](/cortex/system-design/capstones-recommendation-serving)), and the social layer.
+**Out of scope:** live/low-latency streaming (real-time transcode — we focus on **VOD**, video-on-demand), DRM/content protection, recommendations ([Capstone 46](/cortex/system-design/capstones/recommendation-serving)), and the social layer.
 
 ## 3. Back-of-envelope estimation
 
-Numbers ([estimation](/cortex/system-design/foundations-back-of-envelope-estimation)) — and here the bandwidth line dwarfs everything. Assume **500 hours of video uploaded per minute**, a ~6-rung bitrate ladder, and a peak of **50 million concurrent streams** at ~5 Mbps average.
+Numbers ([estimation](/cortex/system-design/foundations/back-of-envelope-estimation)) — and here the bandwidth line dwarfs everything. Assume **500 hours of video uploaded per minute**, a ~6-rung bitrate ladder, and a peak of **50 million concurrent streams** at ~5 Mbps average.
 
 | Quantity | Calculation | Result |
 |---|---|---|
@@ -43,7 +43,7 @@ Numbers ([estimation](/cortex/system-design/foundations-back-of-envelope-estimat
 | Peak egress bandwidth | 50M streams × 5 Mbps | **~250 Tbps** |
 | Origin egress (with CDN) | ~5% of 250 Tbps | **~12 Tbps (CDN serves the rest)** |
 
-The story is in the last two rows. **~250 terabits per second** of peak egress is a number no single origin can serve — which is the whole reason the **CDN is the system**: it absorbs ~95% of that, leaving the origin a comparatively tiny ~12 Tbps (and even that is mostly cache fills). The **~7 PB/day** of encoded output is why durable, cheap [object storage](/cortex/system-design/storage-and-search-object-storage) is non-negotiable. And the **~4.3M rendition-hours/day** of transcoding is a massive but *embarrassingly parallel* batch job — you chop each video into segments and encode them across a huge worker farm, so wall-clock time stays in minutes even though total CPU is enormous.
+The story is in the last two rows. **~250 terabits per second** of peak egress is a number no single origin can serve — which is the whole reason the **CDN is the system**: it absorbs ~95% of that, leaving the origin a comparatively tiny ~12 Tbps (and even that is mostly cache fills). The **~7 PB/day** of encoded output is why durable, cheap [object storage](/cortex/system-design/storage-and-search/object-storage) is non-negotiable. And the **~4.3M rendition-hours/day** of transcoding is a massive but *embarrassingly parallel* batch job — you chop each video into segments and encode them across a huge worker farm, so wall-clock time stays in minutes even though total CPU is enormous.
 
 ## 4. API
 
@@ -59,7 +59,7 @@ GET  /videos/v_42/master.m3u8     200 (the manifest: lists every rendition + seg
 GET  <CDN>/v_42/720p/seg_017.ts   200 (a single 2-10s segment, served from the edge)
 ```
 
-Two API choices matter. The raw upload goes **directly to object storage via a presigned multipart URL** ([API design](/cortex/system-design/application-architecture-api-design)) — the bytes never pass through your app servers (you'd never want 8 GB flowing through an API tier), and **multipart** lets a giant file upload in parallel chunks with per-chunk retries. And playback is just **plain HTTP GETs of static segments** off the CDN — which is what makes streaming so cacheable: a segment is an immutable file, identical for every viewer, perfect for edge caching (the [URL-shortener edge-cache](/cortex/system-design/capstones-url-shortener) idea again).
+Two API choices matter. The raw upload goes **directly to object storage via a presigned multipart URL** ([API design](/cortex/system-design/application-architecture/api-design)) — the bytes never pass through your app servers (you'd never want 8 GB flowing through an API tier), and **multipart** lets a giant file upload in parallel chunks with per-chunk retries. And playback is just **plain HTTP GETs of static segments** off the CDN — which is what makes streaming so cacheable: a segment is an immutable file, identical for every viewer, perfect for edge caching (the [URL-shortener edge-cache](/cortex/system-design/capstones/url-shortener) idea again).
 
 ## 5. Data model and the central decision
 
@@ -111,7 +111,7 @@ The same system as a C4 container view:
   title="Video streaming — container view (transcode pipeline + CDN serve)"
 ></iframe>
 
-Notice that the **viewer never touches your application** — they talk only to the **CDN**, fetching static manifests and segments. Your origin (object storage) is just the CDN's backstop for cache misses. That's the architectural payoff of "everything is a static, immutable segment": serving video becomes serving files, and serving files is the one thing CDNs do best. The transcode workers drain a **queue** ([message queues](/cortex/system-design/distributed-patterns-message-queues-and-streams)) and [autoscale](/cortex/system-design/production-operations-capacity-planning-and-autoscaling) with the upload firehose, completely independent of the serve path.
+Notice that the **viewer never touches your application** — they talk only to the **CDN**, fetching static manifests and segments. Your origin (object storage) is just the CDN's backstop for cache misses. That's the architectural payoff of "everything is a static, immutable segment": serving video becomes serving files, and serving files is the one thing CDNs do best. The transcode workers drain a **queue** ([message queues](/cortex/system-design/distributed-patterns/message-queues-and-streams)) and [autoscale](/cortex/system-design/production-operations/capacity-planning-and-autoscaling) with the upload firehose, completely independent of the serve path.
 
 ## 7. The hot path
 
@@ -161,7 +161,7 @@ The loop is the magic of **adaptive bitrate**. The player fetches segments one a
 At 100× — **petabytes uploaded daily, tens of terabits to multiple petabits per second of egress** — here's what bends:
 
 - **Bandwidth/CDN is the whole ballgame.** You cannot serve petabits/s from central origins; you push bytes to the edge, and at the extreme you do what Netflix did — **build your own CDN inside ISPs** (Open Connect) so popular content sits a few ms from viewers and never crosses the backbone. The cache-hit ratio at the edge is the single most important number in the system; a 95% hit ratio means the origin handles 1/20th of the load.
-- **Popularity is wildly skewed (cache the head).** A tiny fraction of videos get the overwhelming majority of views (a new release, a viral clip), so a modest edge cache covers most requests — the same Zipfian win as the [URL shortener](/cortex/system-design/capstones-url-shortener). Pre-position (pre-warm) anticipated hits (a big premiere) at the edge before they're requested.
+- **Popularity is wildly skewed (cache the head).** A tiny fraction of videos get the overwhelming majority of views (a new release, a viral clip), so a modest edge cache covers most requests — the same Zipfian win as the [URL shortener](/cortex/system-design/capstones/url-shortener). Pre-position (pre-warm) anticipated hits (a big premiere) at the edge before they're requested.
 - **Transcode is huge but embarrassingly parallel.** ~4.3M rendition-hours/day is a giant compute bill; you cut wall-clock time by **chopping each source into chunks and transcoding them in parallel** across an autoscaling farm (GPUs/ASICs help), and you save cost with smarter encoding (per-title/per-scene encoding — spend bits only where the picture is complex).
 - **Storage growth is relentless.** Petabytes/day of renditions; tier aggressively — hot/new content on fast storage, the long tail to cheaper/cold object-storage classes, and **drop rarely-watched renditions** rather than store every rung forever.
 - **The "thundering herd" premiere.** A simultaneous global release (or a live event) spikes a single title to millions of concurrent viewers at once. Pre-warm the edge, and for true live, the transcode-and-package must run in real time with low-latency segments — a different, harder mode.
@@ -215,7 +215,7 @@ The design is visible in the structure: `process_upload` **fans the one source i
 
 - **Bandwidth, not compute, is the constraint (the defining one).** The temptation is to optimize the app tier; the reality is that ~95% of your cost and your failure modes live in the **CDN/egress**. Obsess over edge cache-hit ratio, pre-warming, and ISP placement — that's where the system lives or dies.
 - **The cold/unpopular long tail.** Most videos are watched rarely, so caching them at every edge is wasteful; serve the long tail from regional origins and reserve edge capacity for the popular head. Don't pay to pre-position content nobody will watch.
-- **Transcode failures and poison inputs.** A malformed or exotic upload can crash or hang a transcode worker; isolate jobs, time them out, retry with backoff ([Lesson 17](/cortex/system-design/distributed-patterns-idempotency-retries-backoff)), and quarantine repeat offenders so one bad file can't stall the farm.
+- **Transcode failures and poison inputs.** A malformed or exotic upload can crash or hang a transcode worker; isolate jobs, time them out, retry with backoff ([Lesson 17](/cortex/system-design/distributed-patterns/idempotency-retries-backoff)), and quarantine repeat offenders so one bad file can't stall the farm.
 - **ABR oscillation / startup latency.** A naïve ABR algorithm can flip-flop bitrates (annoying) or start too conservatively (slow to sharpen). Players use buffer-aware ABR (consider buffer health, not just last-segment speed) and a fast initial rung to start playback quickly, then ramp.
 - **The premiere thundering herd.** A global simultaneous release spikes one title to millions at once; without **pre-warming** the edge, the origin gets hammered on the cold cache. Anticipate big releases and push content to the edge ahead of time.
 - **Storage cost runaway.** Every video × every rendition × forever is unaffordable; tier to cold storage, drop low-demand renditions, and use efficient codecs — otherwise the petabytes/day compound into an existential bill.
@@ -228,7 +228,7 @@ The design is visible in the structure: `process_upload` **fans the one source i
 > <details>
 > <summary>Solution</summary>
 >
-> **(a)** Peak egress = `100M × 5 Mbps = 500 Tbps`. No central origin (or even a handful of data centers) can source half a petabit per second — the cross-backbone bandwidth alone is impossible and ruinously expensive, and the latency from a distant origin would stall players. So the bytes **must** be served from many edge locations close to viewers (a CDN; at the extreme, Netflix's Open Connect *inside* ISPs). **(b)** At a 95% hit ratio the origin serves only `5% × 500 Tbps = 25 Tbps` — a 20× reduction — and the rest comes from edge caches near users. The property that makes 95% achievable is **skewed (Zipfian) popularity**: a small set of titles (a new release, a viral clip) draws the overwhelming majority of views, so a modest edge cache of the *head* satisfies almost all requests. Streaming is viable *because* what people watch is concentrated, not uniform — the same insight that made the [URL shortener](/cortex/system-design/capstones-url-shortener) cacheable.
+> **(a)** Peak egress = `100M × 5 Mbps = 500 Tbps`. No central origin (or even a handful of data centers) can source half a petabit per second — the cross-backbone bandwidth alone is impossible and ruinously expensive, and the latency from a distant origin would stall players. So the bytes **must** be served from many edge locations close to viewers (a CDN; at the extreme, Netflix's Open Connect *inside* ISPs). **(b)** At a 95% hit ratio the origin serves only `5% × 500 Tbps = 25 Tbps` — a 20× reduction — and the rest comes from edge caches near users. The property that makes 95% achievable is **skewed (Zipfian) popularity**: a small set of titles (a new release, a viral clip) draws the overwhelming majority of views, so a modest edge cache of the *head* satisfies almost all requests. Streaming is viable *because* what people watch is concentrated, not uniform — the same insight that made the [URL shortener](/cortex/system-design/capstones/url-shortener) cacheable.
 >
 > </details>
 
@@ -252,4 +252,4 @@ The design is visible in the structure: `process_upload` **fans the one source i
 
 ---
 
-> **Next:** [41. Ride-sharing dispatch](/cortex/system-design/capstones-ride-sharing-dispatch) — video was about moving huge *immutable* bytes; ride-sharing is about *space and time* — matching a moving rider to the nearest of millions of moving drivers, in seconds, as everyone's location updates constantly. Next we design geospatial indexing (how do you query "drivers near me" over a live, moving fleet?), the matching/dispatch loop, and the surge-pricing feedback — a system where the data itself never stops moving.
+> **Next:** [41. Ride-sharing dispatch](/cortex/system-design/capstones/ride-sharing-dispatch) — video was about moving huge *immutable* bytes; ride-sharing is about *space and time* — matching a moving rider to the nearest of millions of moving drivers, in seconds, as everyone's location updates constantly. Next we design geospatial indexing (how do you query "drivers near me" over a live, moving fleet?), the matching/dispatch loop, and the surge-pricing feedback — a system where the data itself never stops moving.

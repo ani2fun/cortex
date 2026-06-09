@@ -119,7 +119,7 @@ public class Main {
 }
 ```
 
-Want to build the whole thing yourself — `get`, `size`, and a `popBack` that *shrinks* the block without thrashing at the boundary? That's the [Design a Dynamic Array](/cortex/data-structures-and-algorithms/linear-structures-arrays-design-a-dynamic-array-design-a-dynamic-array) challenge.
+Want to build the whole thing yourself — `get`, `size`, and a `popBack` that *shrinks* the block without thrashing at the boundary? That's the [Design a Dynamic Array](/cortex/data-structures-and-algorithms/linear-structures/arrays/design-a-dynamic-array/design-a-dynamic-array) challenge.
 
 ## Reflect & Connect
 
@@ -127,11 +127,11 @@ The dynamic array is the structure you reach for without naming it. Python's `li
 
 The tradeoff to remember: you buy `O(1)` amortized append *and* `O(1)` random access by paying up to `2×` slack memory — right after a resize, half the block is empty. Two consequences worth carrying forward:
 
-- **Pre-size when you know the count.** `[0] * n` or `new ArrayList<>(n)` reserves once and skips every resize — the fix for the "append in a hot loop occasionally stalls" surprise from the [arrays pitfalls](/cortex/data-structures-and-algorithms/linear-structures-arrays-what-is-an-array).
+- **Pre-size when you know the count.** `[0] * n` or `new ArrayList<>(n)` reserves once and skips every resize — the fix for the "append in a hot loop occasionally stalls" surprise from the [arrays pitfalls](/cortex/data-structures-and-algorithms/linear-structures/arrays/what-is-an-array).
 - **Shrinking is trickier than growing.** A `popBack` that halves the block as soon as it's half-empty will *oscillate* — one push past the boundary doubles, one pop halves, forever. The fix is to shrink only at a *quarter* full, leaving a buffer zone.
 
-**Prerequisites:** [Arrays](/cortex/data-structures-and-algorithms/linear-structures-arrays-what-is-an-array) and [Measuring Cost](/cortex/data-structures-and-algorithms/foundations-measuring-cost).
-**What's next:** the first *pattern* built on the array's layout — [Two Pointers](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-pattern).
+**Prerequisites:** [Arrays](/cortex/data-structures-and-algorithms/linear-structures/arrays/what-is-an-array) and [Measuring Cost](/cortex/data-structures-and-algorithms/foundations/measuring-cost).
+**What's next:** the first *pattern* built on the array's layout — [Two Pointers](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers/pattern).
 
 ## Recall
 

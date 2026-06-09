@@ -296,7 +296,7 @@ Both print `20` then `4`. When you're ready for more: **Connecting Cities With M
 
 ## Reflect & Connect
 
-- **MST is *not* a shortest-path tree.** The MST minimises *total* edge weight, not the distance between any specific pair. The path between two vertices inside the MST can be far longer than their true shortest path — different objective, different algorithm. (Contrast [Single-Source Shortest Path](/cortex/data-structures-and-algorithms/graphs-single-source-shortest-path).)
+- **MST is *not* a shortest-path tree.** The MST minimises *total* edge weight, not the distance between any specific pair. The path between two vertices inside the MST can be far longer than their true shortest path — different objective, different algorithm. (Contrast [Single-Source Shortest Path](/cortex/data-structures-and-algorithms/graphs/single-source-shortest-path).)
 - **Prim is Dijkstra's structural twin.** Both grow a frontier out of a min-heap. The only difference is the key: Prim orders by *edge weight* (cost to attach one more vertex), Dijkstra by *cumulative distance from the source*. Learn one and the other is a one-line edit.
 - **Negative weights are fine.** Unlike Dijkstra, both MST algorithms work unchanged with negative edges — the cut property never assumed non-negativity.
 - **Uniqueness.** The MST is unique iff all edge weights are distinct; ties allow several MSTs with the same total.

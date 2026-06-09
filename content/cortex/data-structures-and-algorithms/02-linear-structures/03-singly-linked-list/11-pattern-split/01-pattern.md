@@ -159,7 +159,7 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [Even-Odd Split](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-split-problems-even-odd-split), [Split Alternate Groups](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-split-problems-split-alternate-groups), [Split by Modulo](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-split-problems-split-by-modulo), and [K-Way List Split](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-split-problems-k-way-list-split).
+Drill the family in **Practice** — [Even-Odd Split](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-split/problems/even-odd-split), [Split Alternate Groups](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-split/problems/split-alternate-groups), [Split by Modulo](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-split/problems/split-by-modulo), and [K-Way List Split](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-split/problems/k-way-list-split).
 
 ## Reflect & Connect
 
@@ -169,8 +169,8 @@ Splitting is the "re-link, never copy" principle applied to *carving*:
 - **Decide the distribution up front** — computing `base` and `extra` before cutting is what makes the uneven case (and the more-parts-than-nodes case) fall out with no special handling.
 - **It's the inverse of merge, and a cousin of split-in-half** — cutting at the midpoint (the fast/slow pattern) is just `k = 2` with the boundary found by two-speed walk instead of counting. The next pattern, *merge*, reassembles pieces back into one ordered list.
 
-**Prerequisites:** [What Is a Linked List?](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-what-is-a-linked-list).
-**What's next:** the reverse operation — weave sorted lists back together in [Merge](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-merge-pattern).
+**Prerequisites:** [What Is a Linked List?](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/what-is-a-linked-list).
+**What's next:** the reverse operation — weave sorted lists back together in [Merge](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-merge/pattern).
 
 ## Recall
 

@@ -7,7 +7,7 @@ prereqs:
 
 ## Why It Exists
 
-[Naive matching](/cortex/data-structures-and-algorithms/strings-string-matching-naive) has amnesia: mismatch after a partial match, and it slides one step right and re-compares from scratch — `O(n·m)` on repetitive text. But a partial match is *information*. If the pattern is `ABCDABE` and you matched `ABCDAB` before failing on `E`, you already know the last two matched text characters were `AB` — which happen to be the pattern's first two characters. So you can resume the match at pattern index 2 *without re-reading the text*.
+[Naive matching](/cortex/data-structures-and-algorithms/strings/string-matching-naive) has amnesia: mismatch after a partial match, and it slides one step right and re-compares from scratch — `O(n·m)` on repetitive text. But a partial match is *information*. If the pattern is `ABCDABE` and you matched `ABCDAB` before failing on `E`, you already know the last two matched text characters were `AB` — which happen to be the pattern's first two characters. So you can resume the match at pattern index 2 *without re-reading the text*.
 
 KMP turns that observation into an algorithm. It precomputes, from the **pattern alone**, a *failure function* that says "on a mismatch after matching `k` characters, how far can I safely jump?" The result is `O(n + m)` with the text pointer **never moving backward** — exactly the amnesia cure naive was missing.
 
@@ -188,7 +188,7 @@ Both print `true`, `false`, `true`. `"abab"` has period `4 - 2 = 2` (`"ab"` repe
 - **The text pointer never rewinds.** That's the formal reason for `O(n)` matching — and why KMP streams: it can match against input it reads once and can't seek back through (a network socket, a huge file).
 - **Self-similarity is fuel, not friction.** The repetitive patterns that force naive's worst case are exactly the ones KMP exploits, because a high `lps` means a long safe jump. `lps("aaaa") = [0,1,2,3]` is the extreme.
 - **The period falls out for free.** `n - lps[n-1]` is the shortest period; this powers repeated-substring detection and string-rotation checks with zero extra work.
-- **It generalises.** The [Z-algorithm](/cortex/data-structures-and-algorithms/strings-z-algorithm) computes related prefix-match lengths for the whole string; [Aho-Corasick](/cortex/data-structures-and-algorithms/strings-aho-corasick) extends the failure-function idea to *many* patterns at once (a failure-link trie). KMP is the gateway to all of them.
+- **It generalises.** The [Z-algorithm](/cortex/data-structures-and-algorithms/strings/z-algorithm) computes related prefix-match lengths for the whole string; [Aho-Corasick](/cortex/data-structures-and-algorithms/strings/aho-corasick) extends the failure-function idea to *many* patterns at once (a failure-link trie). KMP is the gateway to all of them.
 
 ## Recall
 

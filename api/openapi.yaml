@@ -74,22 +74,28 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
-  /api/cortex/{book}/{chapter}:
+  /api/cortex/{book}/chapter:
     get:
       operationId: getCortexChapter
       summary: |
         Return the raw markdown body + frontmatter + prev/next slugs for one
         chapter. The client renders the markdown via the JS pipeline (so
         TOC, code highlighting, mermaid + d2 happen client-side).
+
+        The hierarchical chapter slug (e.g. `linear-structures/arrays/two-sum`)
+        is passed as the `path` QUERY parameter — not a URL path segment — so
+        its `/` separators don't need %2F-encoding (which proxies handle
+        inconsistently).
       parameters:
         - name: book
           in: path
           required: true
           schema:
             type: string
-        - name: chapter
-          in: path
+        - name: path
+          in: query
           required: true
+          description: The chapter's hierarchical slug, '/'-joined (e.g. arrays/two-sum).
           schema:
             type: string
       responses:

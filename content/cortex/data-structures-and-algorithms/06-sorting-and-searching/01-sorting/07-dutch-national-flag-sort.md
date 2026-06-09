@@ -136,11 +136,11 @@ This is a structural lesson — drill sorting in the pattern sets.
 The three-way partition is a small algorithm with outsized reach:
 
 - **The family** — "sort colors" / sort 0s-1s-2s, partition around a value into `<`/`==`/`>`, and segregating any three categories in one pass.
-- **It powers three-way quicksort** — replacing quicksort's two-way partition with this three-way one means all elements *equal* to the pivot are grouped and finalized in a single pass, so duplicate-heavy arrays sort in `O(n)` on the equal keys instead of re-partitioning them. That's the [next lesson](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-three-way-quicksort).
+- **It powers three-way quicksort** — replacing quicksort's two-way partition with this three-way one means all elements *equal* to the pivot are grouped and finalized in a single pass, so duplicate-heavy arrays sort in `O(n)` on the equal keys instead of re-partitioning them. That's the [next lesson](/cortex/data-structures-and-algorithms/sorting-and-searching/sorting/three-way-quicksort).
 - **The "don't advance on the high swap" rule generalizes** — any two-pointer sweep that pulls an unexamined element toward the cursor must re-examine it. The same care appears in in-place array compaction and partition-style problems.
 
-**Prerequisites:** [Quicksort](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-quicksort) (this generalizes its partition step).
-**What's next:** fold the three-way partition into recursion — [Three-Way Quicksort](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-three-way-quicksort).
+**Prerequisites:** [Quicksort](/cortex/data-structures-and-algorithms/sorting-and-searching/sorting/quicksort) (this generalizes its partition step).
+**What's next:** fold the three-way partition into recursion — [Three-Way Quicksort](/cortex/data-structures-and-algorithms/sorting-and-searching/sorting/three-way-quicksort).
 
 ## Recall
 

@@ -118,7 +118,7 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [Kth-Bit Check](/cortex/data-structures-and-algorithms/bit-tricks-pattern-kth-bit-problems-kth-bit-check), [Set Kth Bit](/cortex/data-structures-and-algorithms/bit-tricks-pattern-kth-bit-problems-set-kth-bit), [Unset Kth Bit](/cortex/data-structures-and-algorithms/bit-tricks-pattern-kth-bit-problems-unset-kth-bit), and [Toggle Kth Bit](/cortex/data-structures-and-algorithms/bit-tricks-pattern-kth-bit-problems-toggle-kth-bit).
+Drill the family in **Practice** — [Kth-Bit Check](/cortex/data-structures-and-algorithms/bit-tricks/pattern-kth-bit/problems/kth-bit-check), [Set Kth Bit](/cortex/data-structures-and-algorithms/bit-tricks/pattern-kth-bit/problems/set-kth-bit), [Unset Kth Bit](/cortex/data-structures-and-algorithms/bit-tricks/pattern-kth-bit/problems/unset-kth-bit), and [Toggle Kth Bit](/cortex/data-structures-and-algorithms/bit-tricks/pattern-kth-bit/problems/toggle-kth-bit).
 
 ## Reflect & Connect
 
@@ -128,8 +128,8 @@ These four primitives are the alphabet the rest of bit manipulation spells with:
 - **Mask-building generalizes** — the next patterns build *fancier* masks: `n & (n-1)` to strip the lowest set bit, `n & -n` to isolate it, a mask of several bits for a field. The operator-selection idea stays identical.
 - **It powers higher structures** — packed boolean flags, bitmask dynamic programming, fast subset enumeration, and permission bits all rest on "address one bit with a mask." Master the mask and those stop being mysterious.
 
-**Prerequisites:** [Bit Manipulation](/cortex/data-structures-and-algorithms/bit-tricks-bit-manipulation).
-**What's next:** build a mask that isolates the *lowest* set bit — [Set-Bit Finder](/cortex/data-structures-and-algorithms/bit-tricks-pattern-set-bit-finder-pattern).
+**Prerequisites:** [Bit Manipulation](/cortex/data-structures-and-algorithms/bit-tricks/bit-manipulation).
+**What's next:** build a mask that isolates the *lowest* set bit — [Set-Bit Finder](/cortex/data-structures-and-algorithms/bit-tricks/pattern-set-bit-finder/pattern).
 
 ## Recall
 

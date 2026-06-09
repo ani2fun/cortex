@@ -9,7 +9,7 @@ prereqs:
 
 ## The Hook
 
-Recursive CTEs ([Recursive CTEs](/cortex/languages/sql-ctes-and-recursion-recursive-ctes)) handle hierarchies elegantly — but they iterate, and for deep trees on large data they're expensive. "All descendants of node X" might walk millions of rows.
+Recursive CTEs ([Recursive CTEs](/cortex/languages/sql/ctes-and-recursion/recursive-ctes)) handle hierarchies elegantly — but they iterate, and for deep trees on large data they're expensive. "All descendants of node X" might walk millions of rows.
 
 For hot-path hierarchical queries, the schema-design choice matters. There are four canonical models for hierarchical/graph data: **adjacency list** (the default `parent_id` column), **closure table** (denormalised ancestor relationships), **materialised path** (a string like `'/1/4/12/'` per row), and **Postgres `ltree`** (a specialised type with operators).
 
@@ -207,7 +207,7 @@ For graph-shaped data (user friendships, knowledge graphs), SQL is workable for 
 
 # Practice ladder
 
-1. **Design an adjacency-list `categories` table. Write a recursive CTE to find all descendants of a given node.** *Hint: covered in [Recursive CTEs](/cortex/languages/sql-ctes-and-recursion-recursive-ctes).*
+1. **Design an adjacency-list `categories` table. Write a recursive CTE to find all descendants of a given node.** *Hint: covered in [Recursive CTEs](/cortex/languages/sql/ctes-and-recursion/recursive-ctes).*
 2. **Convert the same data to a closure table. Show the rows for a 3-level tree.** *Hint: every (ancestor, descendant, depth) triple.*
 3. **Query "all ancestors of node 12" against a closure table.** *Hint: `WHERE descendant_id = 12`.*
 4. **Query "all descendants of node 4" against a materialised path.** *Hint: `WHERE path LIKE '/1/4/%'`.*
@@ -217,8 +217,8 @@ For graph-shaped data (user friendships, knowledge graphs), SQL is workable for 
 
 # Cross-links
 
-- **Previous module:** [Transactions and Concurrency](/cortex/languages/sql-transactions-and-concurrency-index).
-- **Cited from:** [Recursive CTEs](/cortex/languages/sql-ctes-and-recursion-recursive-ctes) — when recursion is too slow.
+- **Previous module:** [Transactions and Concurrency](/cortex/languages/sql/transactions-and-concurrency/index).
+- **Cited from:** [Recursive CTEs](/cortex/languages/sql/ctes-and-recursion/recursive-ctes) — when recursion is too slow.
 
 ***
 

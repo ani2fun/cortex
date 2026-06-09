@@ -123,7 +123,7 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [Kth Largest Element](/cortex/data-structures-and-algorithms/trees-heap-pattern-top-k-elements-problems-kth-largest-element), [Kth Smallest Element](/cortex/data-structures-and-algorithms/trees-heap-pattern-top-k-elements-problems-kth-smallest-element), [K Range Sum](/cortex/data-structures-and-algorithms/trees-heap-pattern-top-k-elements-problems-k-range-sum), and [K Sorted Array Sorting](/cortex/data-structures-and-algorithms/trees-heap-pattern-top-k-elements-problems-k-sorted-array-sorting).
+Drill the family in **Practice** — [Kth Largest Element](/cortex/data-structures-and-algorithms/trees/heap/pattern-top-k-elements/problems/kth-largest-element), [Kth Smallest Element](/cortex/data-structures-and-algorithms/trees/heap/pattern-top-k-elements/problems/kth-smallest-element), [K Range Sum](/cortex/data-structures-and-algorithms/trees/heap/pattern-top-k-elements/problems/k-range-sum), and [K Sorted Array Sorting](/cortex/data-structures-and-algorithms/trees/heap/pattern-top-k-elements/problems/k-sorted-array-sorting).
 
 ## Reflect & Connect
 
@@ -133,8 +133,8 @@ The size-K heap is the go-to for "best few out of many":
 - **Match the heap to what you evict** — *largest* → min-heap (pop the smallest); *smallest* → max-heap (pop the largest). The root is always the element on the chopping block, not the one you're seeking.
 - **vs sorting and vs quickselect** — sorting is `O(n log n)`; the heap is `O(n log K)`, better for small `K` and the only option on a stream. Quickselect finds the Kth element in `O(n)` average but needs the whole array in memory and isn't online. Pick by whether `K` is small and whether data streams.
 
-**Prerequisites:** [What Is a Heap?](/cortex/data-structures-and-algorithms/trees-heap-what-is-a-heap).
-**What's next:** order a heap by a custom key — frequency, distance, or a composite — in [Comparator](/cortex/data-structures-and-algorithms/trees-heap-pattern-comparator-pattern).
+**Prerequisites:** [What Is a Heap?](/cortex/data-structures-and-algorithms/trees/heap/what-is-a-heap).
+**What's next:** order a heap by a custom key — frequency, distance, or a composite — in [Comparator](/cortex/data-structures-and-algorithms/trees/heap/pattern-comparator/pattern).
 
 ## Recall
 

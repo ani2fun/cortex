@@ -9,7 +9,7 @@ prereqs:
 
 ## Why It Exists
 
-[Stateless preorder](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateless-pattern) threaded *one value* down as an argument — perfect when each node's answer is self-contained. But some problems must **collect across branches**: "list *all* root-to-leaf paths," "the left/right view of the tree," "are there duplicates on the current path?" A single return value or argument can't accumulate that.
+[Stateless preorder](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-preorder-traversal-stateless/pattern) threaded *one value* down as an argument — perfect when each node's answer is self-contained. But some problems must **collect across branches**: "list *all* root-to-leaf paths," "the left/right view of the tree," "are there duplicates on the current path?" A single return value or argument can't accumulate that.
 
 So you keep a **shared mutable accumulator** — typically a `path` list you're building and a `result` collection you're appending to — and maintain the path by **backtracking**: append the node when you enter it, and **undo that append when you leave**. The append/undo discipline keeps the shared `path` showing exactly the current root-to-node prefix, so each branch sees the right context, while `result` accumulates findings across the whole traversal.
 
@@ -137,7 +137,7 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [Duplicates in Path](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateful-problems-duplicates-in-path), [Second Minimum](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateful-problems-second-minimum), [Left View](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateful-problems-left-view), and [Right View](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateful-problems-right-view).
+Drill the family in **Practice** — [Duplicates in Path](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-preorder-traversal-stateful/problems/duplicates-in-path), [Second Minimum](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-preorder-traversal-stateful/problems/second-minimum), [Left View](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-preorder-traversal-stateful/problems/left-view), and [Right View](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-preorder-traversal-stateful/problems/right-view).
 
 ## Reflect & Connect
 
@@ -147,8 +147,8 @@ Stateful preorder is for *gathering across branches*:
 - **Stateful vs stateless** — stateless passes one immutable value down (no cleanup, branch-independent); stateful shares a mutable accumulator and *must* backtrack. Prefer stateless when a single passed-down value answers the question; reach for stateful only to *collect* across branches.
 - **Backtracking is the transferable idea** — "append on enter, undo on exit, snapshot at the goal" is the exact skeleton of subset/permutation/combination generation and constraint search. A tree's root-to-leaf paths are the simplest backtracking instance; the same `append`/`pop` discipline scales to those harder problems.
 
-**Prerequisites:** [Preorder Traversal (Stateless)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateless-pattern).
-**What's next:** flip direction — combine *children's* results on the way up — [Postorder Traversal (Stateless)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless-pattern).
+**Prerequisites:** [Preorder Traversal (Stateless)](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-preorder-traversal-stateless/pattern).
+**What's next:** flip direction — combine *children's* results on the way up — [Postorder Traversal (Stateless)](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-postorder-traversal-stateless/pattern).
 
 ## Recall
 

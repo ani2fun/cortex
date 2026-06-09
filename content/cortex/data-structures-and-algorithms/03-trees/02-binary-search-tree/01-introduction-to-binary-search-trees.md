@@ -162,11 +162,11 @@ This is a structural lesson — the BST subsection's search, insert, delete, and
 The BST is the canonical *ordered, dynamic* container:
 
 - **Where it fits among containers** — sorted array (fast search, slow insert), hash table (`O(1)` but unordered), BST (`O(log n)` search *and* insert/delete *and* ordered operations: min/max, successor/predecessor, range queries, sorted iteration). When you need ordering *and* mutability, the BST is the answer.
-- **Everything costs `O(h)`** — so the whole game is keeping `h` near `log n`. Plain BSTs don't; [self-balancing trees](/cortex/data-structures-and-algorithms/trees-self-balancing-bst-overview-self-balancing-bst-overview) ([AVL](/cortex/data-structures-and-algorithms/trees-avl-tree-introduction-to-avl-trees), [red-black](/cortex/data-structures-and-algorithms/trees-red-black-tree-introduction-to-red-black-trees)) do, via rotations.
+- **Everything costs `O(h)`** — so the whole game is keeping `h` near `log n`. Plain BSTs don't; [self-balancing trees](/cortex/data-structures-and-algorithms/trees/self-balancing-bst-overview/self-balancing-bst-overview) ([AVL](/cortex/data-structures-and-algorithms/trees/avl-tree/introduction-to-avl-trees), [red-black](/cortex/data-structures-and-algorithms/trees/red-black-tree/introduction-to-red-black-trees)) do, via rotations.
 - **In-order = sorted is the signature property** — it's why BSTs back ordered maps/sets (`std::map`, Java `TreeMap`), range queries, and "k-th smallest" — none of which a hash table can do. The upcoming pattern lessons (sorted/reverse traversal, range, two-pointer-on-BST) all exploit this.
 
-**Prerequisites:** [Introduction to Binary Trees](/cortex/data-structures-and-algorithms/trees-binary-tree-introduction-to-binary-trees).
-**What's next:** why height is everything, and what "balanced" means — [Height and Balance in BSTs](/cortex/data-structures-and-algorithms/trees-binary-search-tree-height-and-balance-in-binary-search-trees).
+**Prerequisites:** [Introduction to Binary Trees](/cortex/data-structures-and-algorithms/trees/binary-tree/introduction-to-binary-trees).
+**What's next:** why height is everything, and what "balanced" means — [Height and Balance in BSTs](/cortex/data-structures-and-algorithms/trees/binary-search-tree/height-and-balance-in-binary-search-trees).
 
 ## Recall
 

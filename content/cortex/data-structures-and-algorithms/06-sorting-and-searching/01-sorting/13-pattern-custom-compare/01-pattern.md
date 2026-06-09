@@ -109,7 +109,7 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [Bitwise Sort](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-pattern-custom-compare-problems-bitwise-sort), [Sort Characters by Frequency](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-pattern-custom-compare-problems-sort-characters-by-frequency), [Largest Number](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-pattern-custom-compare-problems-largest-number), and [Sort People by Height](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-pattern-custom-compare-problems-sort-people-by-height).
+Drill the family in **Practice** — [Bitwise Sort](/cortex/data-structures-and-algorithms/sorting-and-searching/sorting/pattern-custom-compare/problems/bitwise-sort), [Sort Characters by Frequency](/cortex/data-structures-and-algorithms/sorting-and-searching/sorting/pattern-custom-compare/problems/sort-characters-by-frequency), [Largest Number](/cortex/data-structures-and-algorithms/sorting-and-searching/sorting/pattern-custom-compare/problems/largest-number), and [Sort People by Height](/cortex/data-structures-and-algorithms/sorting-and-searching/sorting/pattern-custom-compare/problems/sort-people-by-height).
 
 ## Reflect & Connect
 
@@ -119,7 +119,7 @@ Custom-compare is "the sort stays, the order changes":
 - **Key vs comparator** — prefer a **key** when each element has a self-contained sort value (`-p.height, p.name`); it's simpler and Python evaluates it once per element (decorate-sort-undecorate). Use a **comparator** when the order is a relationship *between* two elements with no per-element key — largest-number is the canonical case.
 - **Validity is non-negotiable** — the comparator must be a transitive, consistent total order. A broken one (e.g. `a - b` that overflows, or `return a.x > b.x ? 1 : -1` with no equal case) gives nondeterministic results and Java throws "comparison contract violated." This same comparator idea orders a [heap](/cortex/data-structures-and-algorithms/trees-heap-pattern-comparator) — the rule travels with the data structure.
 
-**Prerequisites:** [Introduction to Sorting](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-introduction-to-sorting).
+**Prerequisites:** [Introduction to Sorting](/cortex/data-structures-and-algorithms/sorting-and-searching/sorting/introduction-to-sorting).
 
 ## Recall
 

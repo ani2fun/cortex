@@ -131,7 +131,7 @@ public class Main {
 }
 ```
 
-Ready to make the pointers dance? Start with [Reverse a List](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-reversal-pattern) — the three-pointer walk that every linked-list interview leans on.
+Ready to make the pointers dance? Start with [Reverse a List](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-reversal/pattern) — the three-pointer walk that every linked-list interview leans on.
 
 ## Reflect & Connect
 
@@ -143,8 +143,8 @@ Linked lists rarely show up in everyday application code, yet they sit under som
 
 But know when *not* to reach for one. Here is the catch the costs above hide: memory arrives in fast contiguous chunks called **cache lines**, so scanning an array's packed cells streams along, while hopping a linked list's scattered nodes pays a fresh memory fetch at nearly every step. Bjarne Stroustrup's well-known benchmark shows a growable array beating a linked list on almost every workload for exactly this reason. The rule of thumb: a linked list wins when the work is mostly `O(1)` edits at the ends (queues, free lists, undo stacks); the array wins when you need indexed access, that cache-friendly scanning, or tight memory — which is most of the time.
 
-**Prerequisites:** [Arrays](/cortex/data-structures-and-algorithms/linear-structures-arrays-what-is-an-array) and [Measuring Cost](/cortex/data-structures-and-algorithms/foundations-measuring-cost).
-**What's next:** the patterns that make linked lists sing — [Reversal](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-reversal-pattern) and [Fast & Slow Pointers](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-fast-and-slow-pointers-pattern) (Floyd's cycle trick).
+**Prerequisites:** [Arrays](/cortex/data-structures-and-algorithms/linear-structures/arrays/what-is-an-array) and [Measuring Cost](/cortex/data-structures-and-algorithms/foundations/measuring-cost).
+**What's next:** the patterns that make linked lists sing — [Reversal](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-reversal/pattern) and [Fast & Slow Pointers](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-fast-and-slow-pointers/pattern) (Floyd's cycle trick).
 
 ## Recall
 

@@ -59,7 +59,7 @@ ex: "XOR cancels pairs across an array" {
 Two more moves ride on the same identities:
 
 - **Swap without a temp** — `a ^= b; b ^= a; a ^= b` exchanges two values using only XOR (each step substitutes via self-inversion).
-- **Two odd-occurring values** — XOR-all gives `x = a ^ b`; any set bit of `x` is a position where `a` and `b` *differ*, so `x & -x` (isolate that bit — the [set-bit-finder](/cortex/data-structures-and-algorithms/bit-tricks-pattern-set-bit-finder-pattern) trick) **partitions** the array into two groups, one containing `a` and one containing `b`. XOR each group separately to recover both.
+- **Two odd-occurring values** — XOR-all gives `x = a ^ b`; any set bit of `x` is a position where `a` and `b` *differ*, so `x & -x` (isolate that bit — the [set-bit-finder](/cortex/data-structures-and-algorithms/bit-tricks/pattern-set-bit-finder/pattern) trick) **partitions** the array into two groups, one containing `a` and one containing `b`. XOR each group separately to recover both.
 
 A single accumulator means **`O(n)` time, `O(1)` space**.
 
@@ -121,18 +121,18 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [Have Opposite Signs](/cortex/data-structures-and-algorithms/bit-tricks-pattern-xor-problems-have-opposite-signs), [Swap Without a Temporary](/cortex/data-structures-and-algorithms/bit-tricks-pattern-xor-problems-swap-numbers-without-a-temporary), [Odd-Occurring Element](/cortex/data-structures-and-algorithms/bit-tricks-pattern-xor-problems-odd-occurring-element), [Duplicate Element](/cortex/data-structures-and-algorithms/bit-tricks-pattern-xor-problems-duplicate-element), and [Missing and Duplicated Elements](/cortex/data-structures-and-algorithms/bit-tricks-pattern-xor-problems-missing-and-duplicated-elements).
+Drill the family in **Practice** — [Have Opposite Signs](/cortex/data-structures-and-algorithms/bit-tricks/pattern-xor/problems/have-opposite-signs), [Swap Without a Temporary](/cortex/data-structures-and-algorithms/bit-tricks/pattern-xor/problems/swap-numbers-without-a-temporary), [Odd-Occurring Element](/cortex/data-structures-and-algorithms/bit-tricks/pattern-xor/problems/odd-occurring-element), [Duplicate Element](/cortex/data-structures-and-algorithms/bit-tricks/pattern-xor/problems/duplicate-element), and [Missing and Duplicated Elements](/cortex/data-structures-and-algorithms/bit-tricks/pattern-xor/problems/missing-and-duplicated-elements).
 
 ## Reflect & Connect
 
 XOR's self-inverse property is a Swiss-army knife for "things that come in pairs":
 
 - **The family** — one odd-occurring element (XOR all), **two** odd-occurring (XOR all, then `x & -x` partition), the **missing number** in `0..n` (XOR all values with all indices — the present ones cancel), find a duplicate, swap-without-temp, and parity/toggle counting.
-- **`x & -x` is the partition primitive** — when two unknowns survive the XOR, isolating any bit where they differ splits the data into two single-unknown subproblems. That's the [set-bit-finder](/cortex/data-structures-and-algorithms/bit-tricks-pattern-set-bit-finder-pattern) identity doing real work.
+- **`x & -x` is the partition primitive** — when two unknowns survive the XOR, isolating any bit where they differ splits the data into two single-unknown subproblems. That's the [set-bit-finder](/cortex/data-structures-and-algorithms/bit-tricks/pattern-set-bit-finder/pattern) identity doing real work.
 - **XOR is addition without carry** — it's bitwise parity, which is why it cancels in pairs and shows up in error-detecting codes, Gray codes, and cryptographic mixing. "XOR everything together" belongs in your reflexes.
 
-**Prerequisites:** [Kth-Bit Operations](/cortex/data-structures-and-algorithms/bit-tricks-pattern-kth-bit-pattern).
-**What's next:** treat an integer as a *set* and enumerate subsets — [Bitmasking](/cortex/data-structures-and-algorithms/bit-tricks-pattern-bitmasking-pattern).
+**Prerequisites:** [Kth-Bit Operations](/cortex/data-structures-and-algorithms/bit-tricks/pattern-kth-bit/pattern).
+**What's next:** treat an integer as a *set* and enumerate subsets — [Bitmasking](/cortex/data-structures-and-algorithms/bit-tricks/pattern-bitmasking/pattern).
 
 ## Recall
 

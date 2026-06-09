@@ -139,7 +139,7 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [K Maximum Sum](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-sliding-window-traversal-problems-k-maximum-sum), [Trim Nth Node](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-sliding-window-traversal-problems-trim-nth-node), [Swap Nth Nodes](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-sliding-window-traversal-problems-swap-nth-nodes), and [K Rotations](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-sliding-window-traversal-problems-k-rotations).
+Drill the family in **Practice** — [K Maximum Sum](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-sliding-window-traversal/problems/k-maximum-sum), [Trim Nth Node](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-sliding-window-traversal/problems/trim-nth-node), [Swap Nth Nodes](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-sliding-window-traversal/problems/swap-nth-nodes), and [K Rotations](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-sliding-window-traversal/problems/k-rotations).
 
 ## Reflect & Connect
 
@@ -151,8 +151,8 @@ The fixed-gap window is the linked-list answer to "I need to know where I am *re
 
 This is one specialization of the two-pointer idea; the **next** pattern uses two pointers moving at *different speeds* (not a fixed gap) to find the middle or detect a cycle.
 
-**Prerequisites:** [What Is a Linked List?](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-what-is-a-linked-list).
-**What's next:** two pointers at different speeds — [Fast & Slow Pointers](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-fast-and-slow-pointers-pattern).
+**Prerequisites:** [What Is a Linked List?](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/what-is-a-linked-list).
+**What's next:** two pointers at different speeds — [Fast & Slow Pointers](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-fast-and-slow-pointers/pattern).
 
 ## Recall
 

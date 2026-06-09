@@ -135,7 +135,7 @@ ORDER BY score DESC;
 
 The order of `WHEN` clauses matters: a row with `score = 850` matches the first `WHEN` (≥800) and stops. If you reversed them — `WHEN score >= 400 THEN 'medium' WHEN score >= 800 THEN 'high'` — every row with score ≥800 would also be ≥400, so the first `WHEN` would always win, and "high" would never appear. **Order from most-specific to least-specific** (or, equivalently, from highest threshold to lowest for `>` comparisons).
 
-Bucketing with `CASE` is the *non-aggregate* sibling of `NTILE`/`PERCENT_RANK` (covered in [Window Functions: ranking](/cortex/languages/sql-window-functions-ranking)). Use `CASE` when the buckets are *defined* (gold/silver/bronze with hardcoded thresholds); use window functions when the buckets are *computed* from the data ("top quartile by score").
+Bucketing with `CASE` is the *non-aggregate* sibling of `NTILE`/`PERCENT_RANK` (covered in [Window Functions: ranking](/cortex/languages/sql/window-functions/ranking)). Use `CASE` when the buckets are *defined* (gold/silver/bronze with hardcoded thresholds); use window functions when the buckets are *computed* from the data ("top quartile by score").
 
 ---
 
@@ -157,7 +157,7 @@ SELECT
 FROM customers;
 ```
 
-This pattern — multiple aggregates with embedded `CASE` — is the *portable* equivalent of the `FILTER` clause from [Aggregate Functions](/cortex/languages/sql-aggregation-aggregate-functions#filter-clause):
+This pattern — multiple aggregates with embedded `CASE` — is the *portable* equivalent of the `FILTER` clause from [Aggregate Functions](/cortex/languages/sql/aggregation/aggregate-functions#filter-clause):
 
 ```sql
 -- Same query, FILTER form (Postgres / SQLite ≥3.30):
@@ -435,9 +435,9 @@ For **storing** the tier (e.g., as a denormalised column), the `CASE` would move
 
 # Cross-links
 
-- **Previous in this module:** [NULL and Three-Valued Logic](/cortex/languages/sql-row-functions-null-and-three-valued-logic) — `CASE` is the multi-branch tool that complements `COALESCE` and `NULLIF`.
-- **Module complete.** Next: [Window Functions](/cortex/languages/sql-window-functions-index) — aggregates without collapsing rows; `CASE` shows up there too in window-frame conditional logic.
-- **Forward reference:** [Aggregate Functions: FILTER clause](/cortex/languages/sql-aggregation-aggregate-functions#filter-clause) — the cleaner alternative to `COUNT(CASE WHEN ... THEN 1 END)` when your engine supports it.
+- **Previous in this module:** [NULL and Three-Valued Logic](/cortex/languages/sql/row-functions/null-and-three-valued-logic) — `CASE` is the multi-branch tool that complements `COALESCE` and `NULLIF`.
+- **Module complete.** Next: [Window Functions](/cortex/languages/sql/window-functions/index) — aggregates without collapsing rows; `CASE` shows up there too in window-frame conditional logic.
+- **Forward reference:** [Aggregate Functions: FILTER clause](/cortex/languages/sql/aggregation/aggregate-functions#filter-clause) — the cleaner alternative to `COUNT(CASE WHEN ... THEN 1 END)` when your engine supports it.
 
 ***
 
@@ -449,4 +449,4 @@ For **storing** the tier (e.g., as a denormalised column), the `CASE` would move
 2. **Conditional aggregation:** `COUNT(CASE WHEN cond THEN 1 END)` and `SUM(CASE WHEN cond THEN x ELSE 0 END)` are the portable forms of `FILTER`. Multiple aggregates over different sub-conditions in one pass.
 3. **Custom logic that's more than a substitution:** when `COALESCE`/`NULLIF` aren't enough — multiple NULL branches, derived values, custom orderings — reach for `CASE`. It's the universal fallback for "I need a per-row computed value with branching logic."
 
-With this chapter, the [Row Functions](/cortex/languages/sql-row-functions-index) module is complete. You can now compute on strings, numbers, dates, NULLs, and arbitrary conditions — the per-row layer of every SQL query. The next module, [Window Functions](/cortex/languages/sql-window-functions-index), generalises aggregation: per-row results that *also* incorporate context from other rows.
+With this chapter, the [Row Functions](/cortex/languages/sql/row-functions/index) module is complete. You can now compute on strings, numbers, dates, NULLs, and arbitrary conditions — the per-row layer of every SQL query. The next module, [Window Functions](/cortex/languages/sql/window-functions/index), generalises aggregation: per-row results that *also* incorporate context from other rows.

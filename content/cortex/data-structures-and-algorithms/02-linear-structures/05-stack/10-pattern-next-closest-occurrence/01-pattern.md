@@ -113,7 +113,7 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [Succeeding Superior Element](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-next-closest-occurrence-problems-succeeding-superior-element), [Succeeding Inferior Element](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-next-closest-occurrence-problems-succeeding-inferior-element), [Retained Rainwater](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-next-closest-occurrence-problems-retained-rainwater), and [Largest Rectangle Area](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-next-closest-occurrence-problems-largest-rectangle-area).
+Drill the family in **Practice** — [Succeeding Superior Element](/cortex/data-structures-and-algorithms/linear-structures/stack/pattern-next-closest-occurrence/problems/succeeding-superior-element), [Succeeding Inferior Element](/cortex/data-structures-and-algorithms/linear-structures/stack/pattern-next-closest-occurrence/problems/succeeding-inferior-element), [Retained Rainwater](/cortex/data-structures-and-algorithms/linear-structures/stack/pattern-next-closest-occurrence/problems/retained-rainwater), and [Largest Rectangle Area](/cortex/data-structures-and-algorithms/linear-structures/stack/pattern-next-closest-occurrence/problems/largest-rectangle-area).
 
 ## Reflect & Connect
 
@@ -121,10 +121,10 @@ This pattern completes the monotonic-stack matrix and unlocks its famous applica
 
 - **The full matrix** — *previous* (scan left→right) vs *next* (scan right→left), each with *greater* (decreasing stack) or *smaller* (increasing stack). Four queries, one technique, two knobs.
 - **Two ways to scan for "next"** — the right-to-left mirror (above), or left-to-right with **retroactive resolution**: as a new element pops smaller ones off the stack, it *is* their next-greater, so fill their answers at pop time. Pick whichever scan direction the surrounding problem forces.
-- **The marquee applications** — **largest rectangle in a histogram** (each bar's reach = distance to the next-smaller on each side), **trapping rain water** (water above a bar bounded by taller bars on both sides), **stock span**. All are monotonic-stack problems in disguise; the [practice set](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-next-closest-occurrence-problems-largest-rectangle-area) includes them.
+- **The marquee applications** — **largest rectangle in a histogram** (each bar's reach = distance to the next-smaller on each side), **trapping rain water** (water above a bar bounded by taller bars on both sides), **stock span**. All are monotonic-stack problems in disguise; the [practice set](/cortex/data-structures-and-algorithms/linear-structures/stack/pattern-next-closest-occurrence/problems/largest-rectangle-area) includes them.
 
-**Prerequisites:** [Previous Closest Occurrence](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-previous-closest-occurrence-pattern).
-**What's next:** use a stack to check well-formedness — [Sequence Validation](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-sequence-validation-pattern).
+**Prerequisites:** [Previous Closest Occurrence](/cortex/data-structures-and-algorithms/linear-structures/stack/pattern-previous-closest-occurrence/pattern).
+**What's next:** use a stack to check well-formedness — [Sequence Validation](/cortex/data-structures-and-algorithms/linear-structures/stack/pattern-sequence-validation/pattern).
 
 ## Recall
 

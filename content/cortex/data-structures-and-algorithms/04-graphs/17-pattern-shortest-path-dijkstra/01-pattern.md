@@ -9,7 +9,7 @@ prereqs:
 
 BFS gives the shortest path in *number of hops*. Dijkstra gives the shortest path in *cumulative weight*. The dividing line is simple: does each edge cost the same (1), or a varying real cost?
 
-A grid where every step costs 1? BFS. A grid where each cell charges a different toll? Dijkstra. The pattern appears whenever tolls, travel times, fuel, or stacked reliability scores differ across edges — anywhere you must **minimise an additive cost**, not just count steps. Its one hard requirement: **all edge weights ≥ 0** (negative weights break the greedy argument — that's Bellman-Ford's job, as the [single-source shortest path](/cortex/data-structures-and-algorithms/graphs-single-source-shortest-path) lesson shows).
+A grid where every step costs 1? BFS. A grid where each cell charges a different toll? Dijkstra. The pattern appears whenever tolls, travel times, fuel, or stacked reliability scores differ across edges — anywhere you must **minimise an additive cost**, not just count steps. Its one hard requirement: **all edge weights ≥ 0** (negative weights break the greedy argument — that's Bellman-Ford's job, as the [single-source shortest path](/cortex/data-structures-and-algorithms/graphs/single-source-shortest-path) lesson shows).
 
 ```d2
 direction: right
@@ -127,7 +127,7 @@ dijkstra(graph, source):
 3. **Lazy stale-entry skip** — instead of decreasing a heap key, push a fresh entry and discard outdated pops with `if d > dist[u]: continue`.
 4. **Weight-aware relaxation** — `d + w < dist[v]` is the line that does the real work.
 
-The greedy invariant: when a node is *popped*, its distance is final — no cheaper route can exist, because every other open node already costs at least as much and edges are non-negative. (That proof, and the negative-weight counterexample, live in the structural [SSSP lesson](/cortex/data-structures-and-algorithms/graphs-single-source-shortest-path).) Cost: `O((V + E) log V)`. Grids are implicit — neighbours come from a direction array.
+The greedy invariant: when a node is *popped*, its distance is final — no cheaper route can exist, because every other open node already costs at least as much and edges are non-negative. (That proof, and the negative-weight counterexample, live in the structural [SSSP lesson](/cortex/data-structures-and-algorithms/graphs/single-source-shortest-path).) Cost: `O((V + E) log V)`. Grids are implicit — neighbours come from a direction array.
 
 > **Key takeaway.** Dijkstra = BFS + a min-heap keyed on *cumulative cost* + weight-aware relaxation. Pop-by-cheapest makes a node's first pop its final distance — but only when every weight is `≥ 0`. Equal weights? It degenerates to BFS. Negative weights? Use Bellman-Ford.
 

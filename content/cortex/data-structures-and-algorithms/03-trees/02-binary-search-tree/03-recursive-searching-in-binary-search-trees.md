@@ -9,7 +9,7 @@ prereqs:
 
 ## Why It Exists
 
-A BST is a recursive structure — each child is itself a smaller BST — so the most natural way to search it is recursion that mirrors that shape. The [BST invariant](/cortex/data-structures-and-algorithms/trees-binary-search-tree-introduction-to-binary-search-trees) (left < node < right) means a comparison at the current node tells you *which single subtree* could hold the target, so you recurse into exactly one child and ignore the other.
+A BST is a recursive structure — each child is itself a smaller BST — so the most natural way to search it is recursion that mirrors that shape. The [BST invariant](/cortex/data-structures-and-algorithms/trees/binary-search-tree/introduction-to-binary-search-trees) (left < node < right) means a comparison at the current node tells you *which single subtree* could hold the target, so you recurse into exactly one child and ignore the other.
 
 That "recurse into one child, never both" is the whole reason search is `O(h)` and not `O(n)`: a full tree traversal visits every node, but search prunes half the structure at each step. The recursive formulation makes the base cases explicit (empty subtree = not found, matching node = found) and reads almost like the definition of the BST itself — and the same one-sided descent gives you the minimum (keep going left) and maximum (keep going right) for free.
 
@@ -157,10 +157,10 @@ Recursive search is the template every other BST operation extends:
 
 - **Search is the foundation** — insertion searches for the empty slot; deletion searches for the node (and its in-order successor); `floor`/`ceiling`/`successor`/`predecessor` are searches that remember the last turn. Master this descent and the rest are variations.
 - **Min/max are degenerate searches** — "always go left" / "always go right." They're needed by deletion (replace a two-child node with its successor = min of the right subtree) and by ordered iteration.
-- **Recursive vs iterative** — the recursion is clean and matches the structure but uses `O(h)` stack space; the [iterative version](/cortex/data-structures-and-algorithms/trees-binary-search-tree-iterative-searching-in-binary-search-trees) is a simple `while` loop with `O(1)` space, preferred when `h` could be large. Same `O(h)` time, different space.
+- **Recursive vs iterative** — the recursion is clean and matches the structure but uses `O(h)` stack space; the [iterative version](/cortex/data-structures-and-algorithms/trees/binary-search-tree/iterative-searching-in-binary-search-trees) is a simple `while` loop with `O(1)` space, preferred when `h` could be large. Same `O(h)` time, different space.
 
-**Prerequisites:** [Introduction to Binary Search Trees](/cortex/data-structures-and-algorithms/trees-binary-search-tree-introduction-to-binary-search-trees).
-**What's next:** the same search as a loop, with `O(1)` space — [Iterative Searching in BSTs](/cortex/data-structures-and-algorithms/trees-binary-search-tree-iterative-searching-in-binary-search-trees).
+**Prerequisites:** [Introduction to Binary Search Trees](/cortex/data-structures-and-algorithms/trees/binary-search-tree/introduction-to-binary-search-trees).
+**What's next:** the same search as a loop, with `O(1)` space — [Iterative Searching in BSTs](/cortex/data-structures-and-algorithms/trees/binary-search-tree/iterative-searching-in-binary-search-trees).
 
 ## Recall
 

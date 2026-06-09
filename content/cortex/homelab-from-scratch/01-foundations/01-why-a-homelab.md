@@ -50,7 +50,7 @@ Reading left to right:
 - **Internet** can only see one machine: a small cloud VM that runs nothing but Traefik and a hostile little firewall.
 - **Cloud edge** (`vm-1`) terminates TLS and forwards every legitimate request into the mesh.
 - **WireGuard mesh** is a private encrypted network connecting the cloud edge to your three home boxes. From inside the mesh, every node looks like it's on the same LAN. From outside the mesh, they don't exist at all.
-- **`ms-1`, `wk-1`, `wk-2`** are home computers running Ubuntu 24.04 — anything from a couple of old laptops and a desktop to three rack-mounted servers. `ms-1` runs the K3s control-plane; `wk-1` runs Postgres; `wk-2` runs Argo CD. You'll set the labels and taints that pin those placements in [Where things are allowed to run](/cortex/homelab-from-scratch/kubernetes-base-where-things-are-allowed-to-run).
+- **`ms-1`, `wk-1`, `wk-2`** are home computers running Ubuntu 24.04 — anything from a couple of old laptops and a desktop to three rack-mounted servers. `ms-1` runs the K3s control-plane; `wk-1` runs Postgres; `wk-2` runs Argo CD. You'll set the labels and taints that pin those placements in [Where things are allowed to run](/cortex/homelab-from-scratch/kubernetes-base/where-things-are-allowed-to-run).
 
 The rule that makes this whole thing safe to run from your living room: **only the edge is on the public internet.** The home boxes never accept a single packet from outside the mesh. If your cloud VM gets compromised, an attacker reaches Traefik, then the mesh, then a heavily-NetworkPolicy'd cluster — three layers and a steep ramp away from anything that matters.
 
@@ -84,6 +84,6 @@ A real cluster — `kakde.eu`, the one this book is written from — runs all of
 
 A long weekend, or a couple of weeks of evenings. Three machines you can dedicate to this — old laptops are fine, mini PCs are great, NUCs are the goldilocks zone. One small cloud VM (Contabo, Hetzner, OCI free tier — anything with a public IPv4 address). A domain name. Roughly **€10–€20/month** in ongoing costs once you're done.
 
-The full shopping list lives in [Prerequisites and shopping list](/cortex/homelab-from-scratch/foundations-prerequisites-and-shopping-list). The next chapter — [Architecture at a glance](/cortex/homelab-from-scratch/foundations-architecture-at-a-glance) — pins down the design before you type a single command.
+The full shopping list lives in [Prerequisites and shopping list](/cortex/homelab-from-scratch/foundations/prerequisites-and-shopping-list). The next chapter — [Architecture at a glance](/cortex/homelab-from-scratch/foundations/architecture-at-a-glance) — pins down the design before you type a single command.
 
-→ Next: [Architecture at a glance](/cortex/homelab-from-scratch/foundations-architecture-at-a-glance)
+→ Next: [Architecture at a glance](/cortex/homelab-from-scratch/foundations/architecture-at-a-glance)

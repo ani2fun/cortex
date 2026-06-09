@@ -6,7 +6,7 @@ summary: One event, many interested parties. Publish/subscribe decouples senders
 # 16. Pub/sub and fan-out
 
 ## TL;DR
-> **Publish/subscribe** turns "send this message to one worker" (point-to-point, [Lesson 15](/cortex/system-design/distributed-patterns-message-queues-and-streams)) into "broadcast this event to everyone who cares." A publisher writes to a **topic**; every **subscriber** of that topic gets its own copy. The hard part is **fan-out**: when one event must reach a million recipients, *when* do you do the copying? **Fan-out on write** (push a copy into every recipient's inbox the moment the event happens) makes reads instant but buries you when one publisher has millions of followers. **Fan-out on read** (assemble each recipient's view on demand) makes writes cheap but reads expensive. The senior answer is almost always a **hybrid** — push for the common case, pull for the few accounts that would blow it up. And mind the delivery guarantee of your bus: some "pub/sub" (Redis Pub/Sub) is fire-and-forget and silently drops anything a subscriber misses.
+> **Publish/subscribe** turns "send this message to one worker" (point-to-point, [Lesson 15](/cortex/system-design/distributed-patterns/message-queues-and-streams)) into "broadcast this event to everyone who cares." A publisher writes to a **topic**; every **subscriber** of that topic gets its own copy. The hard part is **fan-out**: when one event must reach a million recipients, *when* do you do the copying? **Fan-out on write** (push a copy into every recipient's inbox the moment the event happens) makes reads instant but buries you when one publisher has millions of followers. **Fan-out on read** (assemble each recipient's view on demand) makes writes cheap but reads expensive. The senior answer is almost always a **hybrid** — push for the common case, pull for the few accounts that would blow it up. And mind the delivery guarantee of your bus: some "pub/sub" (Redis Pub/Sub) is fire-and-forget and silently drops anything a subscriber misses.
 
 ## 1. Motivation
 
@@ -49,7 +49,7 @@ Real systems mix the two: mail copies to the ordinary subscribers (cheap fan-out
 | **Fan-out on read** (pull) | at read time, by querying sources and merging | O(1) per event | O(sources) per read | writes ≫ reads; or huge/unbounded fan-out |
 | **Hybrid** | push for most, pull for the few mega-publishers | O(normal followers) | O(1 + few celebrities) | the real world (skewed follower distributions) |
 
-The key realisation: fan-out-on-write and fan-out-on-read are the *same total work*, just paid at different times and amortised differently. Push pays once per follower per post; pull pays once per follower per *read*. Which is cheaper depends entirely on the read:write ratio — exactly the back-of-envelope reflex from [Lesson 3](/cortex/system-design/foundations-back-of-envelope-estimation).
+The key realisation: fan-out-on-write and fan-out-on-read are the *same total work*, just paid at different times and amortised differently. Push pays once per follower per post; pull pays once per follower per *read*. Which is cheaper depends entirely on the read:write ratio — exactly the back-of-envelope reflex from [Lesson 3](/cortex/system-design/foundations/back-of-envelope-estimation).
 
 ## 4. Worked Example — a timeline that survives a celebrity
 
@@ -120,7 +120,7 @@ Beyond write-vs-read, the second decision is *which bus* carries the pub/sub, an
 
 | Bus | Delivery | Persistence | Fan-out style | Use when |
 |---|---|---|---|---|
-| **Kafka topic** ([L15](/cortex/system-design/distributed-patterns-message-queues-and-streams)) | at-least-once | retained (replayable) | each consumer group reads all | durable event fan-out, replay, many systems |
+| **Kafka topic** ([L15](/cortex/system-design/distributed-patterns/message-queues-and-streams)) | at-least-once | retained (replayable) | each consumer group reads all | durable event fan-out, replay, many systems |
 | **Redis Pub/Sub** | **at-most-once (fire-and-forget)** | **none** | live subscribers only | low-latency ephemeral signals where loss is OK |
 | **Redis Streams** | at-least-once | retained | consumer groups | durable, lightweight, in one Redis you already run |
 | **AWS SNS (+SQS)** | at-least-once | via subscribed queues | push to many SQS/HTTP/Lambda | managed fan-out to multiple downstreams |
@@ -133,7 +133,7 @@ The trap worth burning into memory: **Redis Pub/Sub is at-most-once and stores n
 - **The celebrity hot fan-out.** The headline case above. A single high-follower publisher turns one write into tens of millions. Hybrid push/pull is the standard remedy; the threshold is a tuning knob, not a constant.
 - **Ephemeral pub/sub silently drops messages.** With Redis Pub/Sub (or any fire-and-forget bus), an offline or slow subscriber misses messages with no error and no replay. If "the subscriber must eventually get every event" is a requirement, you need a *durable* bus — using ephemeral pub/sub here is a data-loss bug that looks like nothing in testing.
 - **Fan-out amplification overwhelms downstreams.** One published event can trigger millions of downstream writes (timelines, push notifications, emails). Without back-pressure or rate-limiting, a viral post is a self-inflicted DDoS on your own infrastructure. Rate the fan-out; shed or queue under load.
-- **Thundering herd on a hot pull.** Fan-out-on-read for a viral item means every reader pulls the same source at once — a cache stampede on that source. Cache the hot pulls; coalesce them (the exact pattern from [Lesson 8 — caching](/cortex/system-design/building-blocks-caching)).
+- **Thundering herd on a hot pull.** Fan-out-on-read for a viral item means every reader pulls the same source at once — a cache stampede on that source. Cache the hot pulls; coalesce them (the exact pattern from [Lesson 8 — caching](/cortex/system-design/building-blocks/caching)).
 - **Ordering across the merge.** A merged timeline must sort push and pull results into one coherent order. Wall-clock timestamps drift between machines; production systems use a monotonic id (e.g. a Snowflake id that embeds time) so the merge is stable and gap-free.
 - **Read-your-own-writes.** If you post and fan-out lags, you might not see your own post in your timeline — which feels broken. Special-case the author's own view to include their just-posted item immediately, independent of fan-out progress.
 - **Nobody owns the event schema.** Pub/sub *decouples* publisher from subscribers — which means no one is forced to agree on the message format. A publisher adds, renames, or retypes a field; subscribers parsing the old shape break silently, often days later. This quietly kills long-lived pub/sub systems. The fix is to treat the event as a **versioned public contract** and enforce it with a **schema registry** (e.g. Confluent Schema Registry with Avro/Protobuf) that rejects incompatible changes — backward-compatible (old consumers still read new events) and forward-compatible (new consumers read old events).
@@ -167,7 +167,7 @@ The trap worth burning into memory: **Redis Pub/Sub is at-most-once and stores n
 > <details>
 > <summary>Solution</summary>
 >
-> Baseline: 10M posters × 2 posts × 200 followers = **4 billion timeline inserts/day** (~46K inserts/sec average, far higher at peak) — heavy but survivable with push. After the jump to 5,000 average followers: 10M × 2 × 5,000 = **100 billion inserts/day** (~1.16M/sec average) — a 25× increase that will overwhelm the writers and the cache. Lever: shift toward **fan-out on read / hybrid** as average fan-out grows — the economics that favoured push (small follower counts) just inverted. This is the same numbers-drive-the-architecture lesson as [Lesson 3](/cortex/system-design/foundations-back-of-envelope-estimation); the design that's right at 200 followers is wrong at 5,000.
+> Baseline: 10M posters × 2 posts × 200 followers = **4 billion timeline inserts/day** (~46K inserts/sec average, far higher at peak) — heavy but survivable with push. After the jump to 5,000 average followers: 10M × 2 × 5,000 = **100 billion inserts/day** (~1.16M/sec average) — a 25× increase that will overwhelm the writers and the cache. Lever: shift toward **fan-out on read / hybrid** as average fan-out grows — the economics that favoured push (small follower counts) just inverted. This is the same numbers-drive-the-architecture lesson as [Lesson 3](/cortex/system-design/foundations/back-of-envelope-estimation); the design that's right at 200 followers is wrong at 5,000.
 >
 > </details>
 
@@ -181,4 +181,4 @@ The trap worth burning into memory: **Redis Pub/Sub is at-most-once and stores n
 
 ---
 
-> **Next:** [17. Idempotency, retries, and backoff](/cortex/system-design/distributed-patterns-idempotency-retries-backoff) — fan-out, retries, and at-least-once delivery all create the same hazard: the same operation happening twice. Next we make "twice is harmless" a first-class design goal, and see why a naïve retry storm is how a small blip becomes a full outage.
+> **Next:** [17. Idempotency, retries, and backoff](/cortex/system-design/distributed-patterns/idempotency-retries-backoff) — fan-out, retries, and at-least-once delivery all create the same hazard: the same operation happening twice. Next we make "twice is harmless" a first-class design goal, and see why a naïve retry storm is how a small blip becomes a full outage.

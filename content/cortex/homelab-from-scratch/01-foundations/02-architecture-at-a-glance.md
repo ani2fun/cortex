@@ -64,7 +64,7 @@ The rules in plain English:
 4. **Argo CD pins to `wk-2`** via the label `workload=argocd`. There's no deep reason it has to be `wk-2` rather than `wk-1` — but separating the GitOps engine from the database means a worker reboot only takes one of them down at a time.
 5. **Other apps default to `wk-1` or `wk-2`.** The scheduler picks whichever has room. If a future app needs pinning, it gets its own label.
 
-You'll set those labels and taints in [Where things are allowed to run](/cortex/homelab-from-scratch/kubernetes-base-where-things-are-allowed-to-run). The placement story isn't an afterthought — it's the design.
+You'll set those labels and taints in [Where things are allowed to run](/cortex/homelab-from-scratch/kubernetes-base/where-things-are-allowed-to-run). The placement story isn't an afterthought — it's the design.
 
 ## The one constraint
 
@@ -81,11 +81,11 @@ Public traffic enters at `vm-1:443`, terminates TLS in Traefik, then leaves the 
 
 This rule decides:
 
-- The edge node's nftables ruleset (covered in [Router and edge firewall](/cortex/homelab-from-scratch/the-edge-router-and-edge-firewall)).
+- The edge node's nftables ruleset (covered in [Router and edge firewall](/cortex/homelab-from-scratch/the-edge/router-and-edge-firewall)).
 - Which CIDR cert-manager talks to Cloudflare from (it's the edge, of course — DNS-01 traffic exits via the WireGuard tunnel and out vm-1).
 - Why Argo CD is exposed *via Traefik* and not by, say, a NodePort or a `hostPort: 8443` shortcut.
 - Why the K3s API server is bound to the WireGuard IP and never the LAN IP — kubectl from outside the home reaches it via the mesh, not by punching a hole in the home firewall.
 
 If you ever find yourself thinking *"can I just open port X on the home router for this?"*, the answer is no. There is exactly one public surface, and it lives on a 5-euro VM you can rebuild in 20 minutes.
 
-→ Next: [Prerequisites & shopping list](/cortex/homelab-from-scratch/foundations-prerequisites-and-shopping-list)
+→ Next: [Prerequisites & shopping list](/cortex/homelab-from-scratch/foundations/prerequisites-and-shopping-list)

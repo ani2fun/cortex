@@ -227,9 +227,9 @@ The classic unpivot: **converting wide imports to long format** for storage. CSV
 
 # Cross-links
 
-- **Previous in this module:** [JSON in SQL](/cortex/languages/sql-advanced-patterns-json-in-sql).
-- **Next in this module:** [Time-Series Patterns](/cortex/languages/sql-advanced-patterns-time-series-patterns).
-- **Cited:** [CASE Expressions](/cortex/languages/sql-row-functions-case-expressions) — the core of conditional pivots.
+- **Previous in this module:** [JSON in SQL](/cortex/languages/sql/advanced-patterns/json-in-sql).
+- **Next in this module:** [Time-Series Patterns](/cortex/languages/sql/advanced-patterns/time-series-patterns).
+- **Cited:** [CASE Expressions](/cortex/languages/sql/row-functions/case-expressions) — the core of conditional pivots.
 
 ***
 

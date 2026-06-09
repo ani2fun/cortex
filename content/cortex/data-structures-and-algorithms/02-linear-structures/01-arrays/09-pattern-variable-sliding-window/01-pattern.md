@@ -117,7 +117,7 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [Consecutive Ones With K Flips](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-variable-sliding-window-problems-consecutive-ones-with-k-flips) and [Maximum Subarray Sum](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-variable-sliding-window-problems-maximum-subarray-sum).
+Drill the family in **Practice** — [Consecutive Ones With K Flips](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-variable-sliding-window/problems/consecutive-ones-with-k-flips) and [Maximum Subarray Sum](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-variable-sliding-window/problems/maximum-subarray-sum).
 
 ## Reflect & Connect
 
@@ -129,8 +129,8 @@ This is one of the highest-leverage interview patterns — once you see "longest
 
 This is also the skeleton that, if you mislabel it, gets confused with the converging two-pointer — but they're opposites: converging pointers start apart and meet; the variable window starts together and *both ends chase rightward*, one growing and one repairing.
 
-**Prerequisites:** [Fixed Sliding Window](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-fixed-sliding-window-pattern).
-**What's next:** stop sliding over one array and start combining overlapping ranges — [Interval Merging](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-interval-merging-pattern).
+**Prerequisites:** [Fixed Sliding Window](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-fixed-sliding-window/pattern).
+**What's next:** stop sliding over one array and start combining overlapping ranges — [Interval Merging](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-interval-merging/pattern).
 
 ## Recall
 

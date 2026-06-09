@@ -134,7 +134,7 @@ How the planner reads from a base table:
 
 **`Bitmap Index Scan`** is what the planner picks when an index would help but selectivity is moderate (1-50% of rows). It batches reads to be cache-friendly.
 
-**`Index Only Scan`** is the fastest — the index covers all the columns the query needs, so the heap is never visited. See [B-Tree Indexes: covering indexes](/cortex/languages/sql-indexes-and-performance-b-tree-indexes#covering-indexes).
+**`Index Only Scan`** is the fastest — the index covers all the columns the query needs, so the heap is never visited. See [B-Tree Indexes: covering indexes](/cortex/languages/sql/indexes-and-performance/b-tree-indexes#covering-indexes).
 
 ---
 
@@ -240,8 +240,8 @@ For codefolio, every query that hits the `/api/recent` or `/api/hello` endpoints
 
 # Cross-links
 
-- **Previous in this module:** [Other Index Types](/cortex/languages/sql-indexes-and-performance-other-index-types).
-- **Next in this module:** [Anti-Patterns](/cortex/languages/sql-indexes-and-performance-anti-patterns) — the predicates that block index use.
+- **Previous in this module:** [Other Index Types](/cortex/languages/sql/indexes-and-performance/other-index-types).
+- **Next in this module:** [Anti-Patterns](/cortex/languages/sql/indexes-and-performance/anti-patterns) — the predicates that block index use.
 
 ***
 

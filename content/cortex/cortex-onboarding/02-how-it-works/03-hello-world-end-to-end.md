@@ -285,5 +285,5 @@ The trade-off is build complexity — the cross-project, the codegen, the `sbt-r
 
 - **Code:** `server/src/main/scala/cortex/server/helloPipeline/HelloPipeline.scala`, `client/src/main/scala/cortex/client/api/ApiClient.scala`, `api/openapi.yaml`.
 - **ADRs:** `docs/adr/0003-hello-pipeline-internal-seams.md` (the seam pattern) and `docs/adr/0004-wire-adapters-and-unified-backends.md` (the pipeline-as-deep-module rule).
-- **Deep dives:** [Server Stack](/cortex/cortex-onboarding/deep-dive-server-stack) (ZIO, tapir, HikariCP, Lettuce, Mongo) and [Shared & Codegen](/cortex/cortex-onboarding/deep-dive-shared-and-codegen) (the codegen plugin's settings and what it emits in detail).
-- **The other end of the spectrum:** [Request Lifecycle](/cortex/cortex-onboarding/how-it-works-request-lifecycle), which traces the much heavier `/api/run` path and a chapter fetch.
+- **Deep dives:** [Server Stack](/cortex/cortex-onboarding/deep-dive/server-stack) (ZIO, tapir, HikariCP, Lettuce, Mongo) and [Shared & Codegen](/cortex/cortex-onboarding/deep-dive/shared-and-codegen) (the codegen plugin's settings and what it emits in detail).
+- **The other end of the spectrum:** [Request Lifecycle](/cortex/cortex-onboarding/how-it-works/request-lifecycle), which traces the much heavier `/api/run` path and a chapter fetch.

@@ -139,7 +139,7 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [Calculate Square Root](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-maximum-predicate-search-problems-calculate-square-root), [Build Staircase](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-maximum-predicate-search-problems-build-staircase), [K Ribbons](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-maximum-predicate-search-problems-k-ribbons), and [Equalise Water](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-maximum-predicate-search-problems-equalise-water).
+Drill the family in **Practice** — [Calculate Square Root](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/pattern-maximum-predicate-search/problems/calculate-square-root), [Build Staircase](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/pattern-maximum-predicate-search/problems/build-staircase), [K Ribbons](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/pattern-maximum-predicate-search/problems/k-ribbons), and [Equalise Water](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/pattern-maximum-predicate-search/problems/equalise-water).
 
 ## Reflect & Connect
 
@@ -149,7 +149,7 @@ Maximum-predicate completes the binary-search-on-the-answer pair:
 - **Min vs max predicate** — minimum finds the *first true* in `F…FT…T` (lower-bound flavor, return `lo`); maximum finds the *last true* in `T…TF…F` (upper-bound flavor, track `best`). Identify the monotonicity direction first — get it backwards and you search for the wrong boundary.
 - **The phrasing is the trigger** — "**maximize the minimum**" or "**minimize the maximum**" almost always means binary-search-on-the-answer with a feasibility check. Square root, capacity, and allocation problems hide the same monotone predicate. Together with the minimum version, this is one of the most leverage-per-line patterns there is.
 
-**Prerequisites:** [Upper Bound](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-upper-bound).
+**Prerequisites:** [Upper Bound](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/upper-bound).
 
 ## Recall
 

@@ -23,7 +23,7 @@ The deploy halts. Pages fire. The feature ships a day late.
 
 The bug is a single word: `NOT NULL`. Adding a `NOT NULL` column requires every existing row to have a value for it — and the existing 12 million rows can't possibly. The fix is one of: drop the `NOT NULL`, add a `DEFAULT` so old rows get a value, or do the change in two steps (add nullable, backfill, alter to NOT NULL). What kind of constraint a column has and how it interacts with existing data is the central concern of DDL — Data Definition Language.
 
-This chapter is the foundations-level introduction to DDL: the four kinds of statements (`CREATE`, `ALTER`, `DROP`, `TRUNCATE`), the column types you'll use most often, and the five constraints that turn a column from "any value" into a contract. Deep treatment of types, foreign keys, indexes, and migration patterns lives in [Schema and Constraints](/cortex/languages/sql-index) and [Indexes and Performance](/cortex/languages/sql-index). What this chapter teaches: enough DDL to design a table you can `INSERT` into, `SELECT` from, and `JOIN` against — with a few pitfalls flagged that will save you the migration-fails-in-prod story above.
+This chapter is the foundations-level introduction to DDL: the four kinds of statements (`CREATE`, `ALTER`, `DROP`, `TRUNCATE`), the column types you'll use most often, and the five constraints that turn a column from "any value" into a contract. Deep treatment of types, foreign keys, indexes, and migration patterns lives in [Schema and Constraints](/cortex/languages/sql/index) and [Indexes and Performance](/cortex/languages/sql/index). What this chapter teaches: enough DDL to design a table you can `INSERT` into, `SELECT` from, and `JOIN` against — with a few pitfalls flagged that will save you the migration-fails-in-prod story above.
 
 ---
 
@@ -78,7 +78,7 @@ stateDiagram-v2
 
 <p align="center"><strong>Table lifecycle. CREATE brings the table into existence; ALTER mutates its shape; TRUNCATE clears all rows; DROP removes the table entirely.</strong></p>
 
-There are also `CREATE INDEX`, `CREATE VIEW`, `CREATE FUNCTION`, `CREATE SCHEMA`, etc. — DDL covers the entire schema. This chapter is about tables; the rest get their own chapters in module 7 ([Schema and Constraints](/cortex/languages/sql-index)) and module 8 ([Indexes and Performance](/cortex/languages/sql-index)).
+There are also `CREATE INDEX`, `CREATE VIEW`, `CREATE FUNCTION`, `CREATE SCHEMA`, etc. — DDL covers the entire schema. This chapter is about tables; the rest get their own chapters in module 7 ([Schema and Constraints](/cortex/languages/sql/index)) and module 8 ([Indexes and Performance](/cortex/languages/sql/index)).
 
 DDL is *not* DML. `INSERT`/`UPDATE`/`DELETE` change the *rows* in a table; DDL changes the *table itself*. Most application code is DML. DDL is for *migrations* — files that change the schema as the application evolves. In codefolio those migrations live in [`server/src/main/resources/db/`](https://github.com/) and are applied by Liquibase at server startup.
 
@@ -201,13 +201,13 @@ Postgres's `BOOLEAN` accepts the literals `TRUE`, `FALSE`, and (if nullable) `NU
 metadata JSONB
 ```
 
-`JSONB` (binary JSON) is the indexable, queryable form — what you almost always want for production. `JSON` (text JSON) is just stored text. We'll cover JSON deeply in [JSON in SQL](/cortex/languages/sql-index).
+`JSONB` (binary JSON) is the indexable, queryable form — what you almost always want for production. `JSON` (text JSON) is just stored text. We'll cover JSON deeply in [JSON in SQL](/cortex/languages/sql/index).
 
 ## Other types worth knowing
 
 - **`UUID`** — globally unique 128-bit identifier; useful when you can't centralise ID generation.
 - **`BYTEA`** — binary data; useful for small blobs, generally bad for large files (use object storage).
-- **Arrays** (`INTEGER[]`, `TEXT[]`) — Postgres-specific; arrays as a column type. Useful for short tag lists; rapidly painful at scale (the [Schema and Constraints](/cortex/languages/sql-index) module discusses when arrays are good versus when you actually want a child table).
+- **Arrays** (`INTEGER[]`, `TEXT[]`) — Postgres-specific; arrays as a column type. Useful for short tag lists; rapidly painful at scale (the [Schema and Constraints](/cortex/languages/sql/index) module discusses when arrays are good versus when you actually want a child table).
 
 ---
 
@@ -287,9 +287,9 @@ CREATE TABLE orders (
 
 Now `INSERT INTO orders VALUES (1006, 9, ...)` *fails* if there's no customer with `id = 9`. The schema enforces the relationship; you can't put orphan rows in.
 
-Foreign keys also let you control what happens when the *referenced* row is deleted — `ON DELETE CASCADE` (delete dependent rows), `ON DELETE SET NULL` (null out the foreign-key column), `ON DELETE RESTRICT` (refuse to delete if dependents exist; this is the default). Full coverage in [Keys and References](/cortex/languages/sql-index).
+Foreign keys also let you control what happens when the *referenced* row is deleted — `ON DELETE CASCADE` (delete dependent rows), `ON DELETE SET NULL` (null out the foreign-key column), `ON DELETE RESTRICT` (refuse to delete if dependents exist; this is the default). Full coverage in [Keys and References](/cortex/languages/sql/index).
 
-For the [sample schema](/cortex/languages/sql-foundations-introduction-to-sql#the-sample-schema) used in this book, we *deliberately omit* the foreign key on `orders.customer_id` so we can demonstrate referential-integrity questions and anti-joins. Real schemas should include it.
+For the [sample schema](/cortex/languages/sql/foundations/introduction-to-sql#the-sample-schema) used in this book, we *deliberately omit* the foreign key on `orders.customer_id` so we can demonstrate referential-integrity questions and anti-joins. Real schemas should include it.
 
 ## `CHECK`
 
@@ -385,7 +385,7 @@ ALTER TABLE customers RENAME COLUMN first_name TO given_name;
 ALTER TABLE customers RENAME TO clients;
 ```
 
-Renames are *also* a deploy hazard — the application's queries reference the old name. The standard production pattern is a column-coexistence dance: add the new column, dual-write to both, dual-read and reconcile, switch reads to the new column, drop the old. Real-world rename migrations are surprisingly involved; we'll cover the patterns in [Schema and Constraints](/cortex/languages/sql-index).
+Renames are *also* a deploy hazard — the application's queries reference the old name. The standard production pattern is a column-coexistence dance: add the new column, dual-write to both, dual-read and reconcile, switch reads to the new column, drop the old. Real-world rename migrations are surprisingly involved; we'll cover the patterns in [Schema and Constraints](/cortex/languages/sql/index).
 
 ## Add or drop a constraint
 
@@ -526,7 +526,7 @@ id INT NOT NULL PRIMARY KEY
 CREATE INDEX idx_customers_country ON customers (country);
 ```
 
-Adding an index is a DDL operation and should generally be wrapped in transactions just like other DDL. The exception is **`CREATE INDEX CONCURRENTLY`**, which builds the index without blocking writes — and for that reason can't be inside a transaction. Production systems use `CREATE INDEX CONCURRENTLY` for any non-trivial index addition; we'll see why in [B-Tree Indexes](/cortex/languages/sql-index).
+Adding an index is a DDL operation and should generally be wrapped in transactions just like other DDL. The exception is **`CREATE INDEX CONCURRENTLY`**, which builds the index without blocking writes — and for that reason can't be inside a transaction. Production systems use `CREATE INDEX CONCURRENTLY` for any non-trivial index addition; we'll see why in [B-Tree Indexes](/cortex/languages/sql/index).
 
 ## Schema migrations are forward-only in production
 
@@ -534,7 +534,7 @@ Strict production discipline says: never modify a migration that's already been 
 
 ## DDL holds an exclusive lock
 
-Most `ALTER TABLE` operations in Postgres take an `ACCESS EXCLUSIVE` lock — no reads, no writes, no other queries — for the duration of the operation. On a small table this is microseconds. On a large table it can be minutes. For any non-trivial production migration, the question "how long does this hold the lock?" is the question that determines whether the deploy is safe at peak traffic. Postgres has clever ways to make many `ALTER`s near-instant (the `ADD COLUMN DEFAULT` improvement in PG11, the `ATTACH PARTITION` instant operation, etc.) — but you have to know which ones. We'll catalogue the lock implications in [Schema and Constraints](/cortex/languages/sql-index).
+Most `ALTER TABLE` operations in Postgres take an `ACCESS EXCLUSIVE` lock — no reads, no writes, no other queries — for the duration of the operation. On a small table this is microseconds. On a large table it can be minutes. For any non-trivial production migration, the question "how long does this hold the lock?" is the question that determines whether the deploy is safe at peak traffic. Postgres has clever ways to make many `ALTER`s near-instant (the `ADD COLUMN DEFAULT` improvement in PG11, the `ATTACH PARTITION` instant operation, etc.) — but you have to know which ones. We'll catalogue the lock implications in [Schema and Constraints](/cortex/languages/sql/index).
 
 ---
 
@@ -563,7 +563,7 @@ The `INSERT INTO visits (count) VALUES (0)` seed is part of the same migration. 
 UPDATE visits SET count = count + 1 RETURNING count;
 ```
 
-This is a very specific schema shape — a *singleton table*, where the entire table is one row. Not common in application schemas, but exactly right for "atomic counter." Other production patterns we'll meet in [Schema and Constraints](/cortex/languages/sql-index).
+This is a very specific schema shape — a *singleton table*, where the entire table is one row. Not common in application schemas, but exactly right for "atomic counter." Other production patterns we'll meet in [Schema and Constraints](/cortex/languages/sql/index).
 
 **Liquibase + Postgres + transactional DDL** is the codefolio migration story. Each Liquibase changeset is wrapped in a transaction; if any statement fails, the whole changeset rolls back; the migration tracker (`databasechangelog` table) records exactly which changesets have run, so re-running on startup re-applies only the new ones. This is the production shape — and learning DDL through this lens, instead of "type DDL into psql and hope," is what separates someone who *writes* SQL from someone who *operates* it.
 
@@ -597,11 +597,11 @@ Use a scratch database (or `docker compose exec db psql -U codefolio` and a temp
 
 # Cross-links
 
-- **Previous in this module:** [Ordering and Pagination](/cortex/languages/sql-foundations-ordering-and-pagination) — the read-side counterpart to DDL: how to sort and slice the rows you defined here.
-- **Next in this module:** [Data Manipulation](/cortex/languages/sql-foundations-data-manipulation) — `INSERT`, `UPDATE`, `DELETE`. The write-side cousin to DDL: once the table exists, how do rows get into it?
-- **Forward reference:** [Schema and Constraints](/cortex/languages/sql-index) — the deep treatment of every constraint mentioned here, plus normalisation, schema design heuristics, and how to evolve schemas without downtime.
-- **Forward reference:** [B-Tree Indexes](/cortex/languages/sql-index) — primary keys are indexed automatically; what about the *other* columns? When to add an index, when not to, and the migration patterns for adding indexes safely on busy tables.
-- **Forward reference:** [Transactions and Concurrency](/cortex/languages/sql-index) — DDL inside transactions in Postgres, and what locks each `ALTER` form takes.
+- **Previous in this module:** [Ordering and Pagination](/cortex/languages/sql/foundations/ordering-and-pagination) — the read-side counterpart to DDL: how to sort and slice the rows you defined here.
+- **Next in this module:** [Data Manipulation](/cortex/languages/sql/foundations/data-manipulation) — `INSERT`, `UPDATE`, `DELETE`. The write-side cousin to DDL: once the table exists, how do rows get into it?
+- **Forward reference:** [Schema and Constraints](/cortex/languages/sql/index) — the deep treatment of every constraint mentioned here, plus normalisation, schema design heuristics, and how to evolve schemas without downtime.
+- **Forward reference:** [B-Tree Indexes](/cortex/languages/sql/index) — primary keys are indexed automatically; what about the *other* columns? When to add an index, when not to, and the migration patterns for adding indexes safely on busy tables.
+- **Forward reference:** [Transactions and Concurrency](/cortex/languages/sql/index) — DDL inside transactions in Postgres, and what locks each `ALTER` form takes.
 
 ***
 

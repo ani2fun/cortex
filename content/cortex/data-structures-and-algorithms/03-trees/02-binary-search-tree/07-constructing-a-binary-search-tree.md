@@ -9,7 +9,7 @@ prereqs:
 
 ## Why It Exists
 
-[Insertion](/cortex/data-structures-and-algorithms/trees-binary-search-tree-insertion-in-binary-search-trees) builds a BST one key at a time, and we saw the trap: feeding it *sorted* data produces a height-`n` chain. But if you already hold the data **sorted**, you can build a **perfectly balanced** BST in a single `O(n)` pass — no rotations, no luck.
+[Insertion](/cortex/data-structures-and-algorithms/trees/binary-search-tree/insertion-in-binary-search-trees) builds a BST one key at a time, and we saw the trap: feeding it *sorted* data produces a height-`n` chain. But if you already hold the data **sorted**, you can build a **perfectly balanced** BST in a single `O(n)` pass — no rotations, no luck.
 
 The idea is divide-and-conquer. Pick the **middle** element as the root; then everything left of it (smaller) becomes the left subtree and everything right (larger) the right subtree — and they have nearly equal sizes, so the tree comes out balanced. Recurse the same way on each half. Choosing the midpoint as root is exactly what forces `height = ⌊log₂ n⌋`, the optimal shape. This is both how you *bulk-load* a BST from sorted input and how you *fix* a tree that's gone degenerate (flatten it to a sorted array, rebuild balanced).
 
@@ -146,10 +146,10 @@ Construction is "you have the data — lay it out optimally":
 
 - **Bulk-load and rebalance** — building from sorted input gives an optimal tree for free; and a degenerate BST can be globally rebalanced in `O(n)` by in-order-traversing to a sorted array and rebuilding (some structures, like scapegoat trees, do exactly this partial-rebuild on demand).
 - **Middle-as-root = balance** — the same midpoint instinct as binary search and merge sort. Picking the median root makes the two halves equal, which is the *definition* of a balanced split; do it recursively and you get optimal height.
-- **Online vs offline balancing** — [AVL](/cortex/data-structures-and-algorithms/trees-avl-tree-introduction-to-avl-trees) and [red-black](/cortex/data-structures-and-algorithms/trees-red-black-tree-introduction-to-red-black-trees) trees maintain balance *incrementally* (rotations per insert/delete) because data arrives over time; construction balances *all at once* because the data is already in hand. Use the offline build when you can; use the online trees when you can't.
+- **Online vs offline balancing** — [AVL](/cortex/data-structures-and-algorithms/trees/avl-tree/introduction-to-avl-trees) and [red-black](/cortex/data-structures-and-algorithms/trees/red-black-tree/introduction-to-red-black-trees) trees maintain balance *incrementally* (rotations per insert/delete) because data arrives over time; construction balances *all at once* because the data is already in hand. Use the offline build when you can; use the online trees when you can't.
 
-**Prerequisites:** [Height and Balance in BSTs](/cortex/data-structures-and-algorithms/trees-binary-search-tree-height-and-balance-in-binary-search-trees).
-**What's next:** find where two nodes' paths converge — [Lowest Common Ancestor in BSTs](/cortex/data-structures-and-algorithms/trees-binary-search-tree-lowest-common-ancestor-in-binary-search-trees).
+**Prerequisites:** [Height and Balance in BSTs](/cortex/data-structures-and-algorithms/trees/binary-search-tree/height-and-balance-in-binary-search-trees).
+**What's next:** find where two nodes' paths converge — [Lowest Common Ancestor in BSTs](/cortex/data-structures-and-algorithms/trees/binary-search-tree/lowest-common-ancestor-in-binary-search-trees).
 
 ## Recall
 

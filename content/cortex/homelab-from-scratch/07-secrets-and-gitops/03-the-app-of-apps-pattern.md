@@ -218,4 +218,4 @@ Total time, given a working backup of the master key and a documented runbook: ~
 
 The next chapter completes the picture: GitHub Actions builds your app images, pushes them to GHCR, and updates the manifest in `deploy/` so Argo CD picks up the new image.
 
-→ Next: [GitHub Actions builds the images](/cortex/homelab-from-scratch/secrets-and-gitops-github-actions-builds-the-images)
+→ Next: [GitHub Actions builds the images](/cortex/homelab-from-scratch/secrets-and-gitops/github-actions-builds-the-images)

@@ -135,8 +135,8 @@ Bubble sort is a teaching tool, but the properties it introduces are the vocabul
 - **Why it's slow** — it moves elements only *one position per swap*, so an element far from its home needs many swaps. Insertion and selection sort share the `O(n²)` ceiling for the same reason; the `O(n log n)` sorts (merge, quick, heap) move elements *across* the array in bigger jumps.
 - **The early-exit is the one practical idea** — on nearly-sorted data, adaptive bubble sort is `O(n)`. That "detect sorted-ness and stop" instinct carries into adaptive variants of better sorts (e.g. Timsort exploits existing runs).
 
-**Prerequisites:** [What Is an Array?](/cortex/data-structures-and-algorithms/linear-structures-arrays-what-is-an-array).
-**What's next:** select the minimum each pass instead of bubbling the max — [Selection Sort](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-selection-sort).
+**Prerequisites:** [What Is an Array?](/cortex/data-structures-and-algorithms/linear-structures/arrays/what-is-an-array).
+**What's next:** select the minimum each pass instead of bubbling the max — [Selection Sort](/cortex/data-structures-and-algorithms/sorting-and-searching/sorting/selection-sort).
 
 ## Recall
 

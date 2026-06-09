@@ -159,7 +159,7 @@ FROM customers;
 
 The difference between `COUNT(*)` and `COUNT(country)` is **how many rows have NULL in `country`** — useful for data-quality queries.
 
-The pattern from [GROUP BY and HAVING](/cortex/languages/sql-aggregation-group-by-and-having#empty-groups-dont-appear): after a `LEFT JOIN`, `COUNT(*)` always counts at least 1 per outer row (because the row exists), but `COUNT(right_side_column)` counts 0 when the join didn't match. **`COUNT(o.order_id)` is the right way to count "actual orders per customer" after a `LEFT JOIN`** — `COUNT(*)` would over-count.
+The pattern from [GROUP BY and HAVING](/cortex/languages/sql/aggregation/group-by-and-having#empty-groups-dont-appear): after a `LEFT JOIN`, `COUNT(*)` always counts at least 1 per outer row (because the row exists), but `COUNT(right_side_column)` counts 0 when the join didn't match. **`COUNT(o.order_id)` is the right way to count "actual orders per customer" after a `LEFT JOIN`** — `COUNT(*)` would over-count.
 
 ## `COUNT(DISTINCT column)`
 
@@ -410,7 +410,7 @@ Both legal, both useful, easy to confuse.
 
 ## Aggregates and indexes
 
-`MIN(col)` and `MAX(col)` on an indexed column are *O(1)* — the engine just reads the first or last leaf of the B-tree index. `SUM`, `AVG`, `COUNT` always require a full scan (with no index, you must visit every row). This matters when designing schemas for large tables: knowing which aggregates you'll run informs which indexes you need. Full treatment in [B-Tree Indexes](/cortex/languages/sql-index).
+`MIN(col)` and `MAX(col)` on an indexed column are *O(1)* — the engine just reads the first or last leaf of the B-tree index. `SUM`, `AVG`, `COUNT` always require a full scan (with no index, you must visit every row). This matters when designing schemas for large tables: knowing which aggregates you'll run informs which indexes you need. Full treatment in [B-Tree Indexes](/cortex/languages/sql/index).
 
 ---
 
@@ -488,10 +488,10 @@ Six columns of summary statistics per customer, ranked by total sales. Five rows
 
 # Cross-links
 
-- **Previous in this module:** [GROUP BY and HAVING](/cortex/languages/sql-aggregation-group-by-and-having) — the mechanics that produce groups for these aggregates to operate on.
-- **Next in this module:** [Grouping Sets, ROLLUP, CUBE](/cortex/languages/sql-aggregation-grouping-sets-rollup-cube) — multi-dimensional aggregation: subtotals at multiple grouping levels in a single query.
-- **Forward reference:** [Window Functions](/cortex/languages/sql-index) — the same aggregates (`SUM`, `AVG`, `COUNT`, etc.) used as windowed expressions, computing over a sliding window of rows without collapsing the result.
-- **Forward reference:** [B-Tree Indexes](/cortex/languages/sql-index) — `MIN`/`MAX` on indexed columns is O(1); `SUM`/`AVG`/`COUNT` always require a scan.
+- **Previous in this module:** [GROUP BY and HAVING](/cortex/languages/sql/aggregation/group-by-and-having) — the mechanics that produce groups for these aggregates to operate on.
+- **Next in this module:** [Grouping Sets, ROLLUP, CUBE](/cortex/languages/sql/aggregation/grouping-sets-rollup-cube) — multi-dimensional aggregation: subtotals at multiple grouping levels in a single query.
+- **Forward reference:** [Window Functions](/cortex/languages/sql/index) — the same aggregates (`SUM`, `AVG`, `COUNT`, etc.) used as windowed expressions, computing over a sliding window of rows without collapsing the result.
+- **Forward reference:** [B-Tree Indexes](/cortex/languages/sql/index) — `MIN`/`MAX` on indexed columns is O(1); `SUM`/`AVG`/`COUNT` always require a scan.
 
 ***
 

@@ -11,7 +11,7 @@ prereqs:
 
 Plain quicksort has a blind spot: **duplicates**. Its two-way partition sorts elements into `≤ pivot` and `> pivot`, so elements *equal* to the pivot get scattered across both sides and re-partitioned at every level of recursion. An array of a million items with only three distinct values still does `O(n log n)` work — re-examining the same equal keys over and over — when it could be nearly linear.
 
-Three-way quicksort fixes this by partitioning into **three** regions with the [Dutch national flag](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-dutch-national-flag-sort) scheme: `< pivot`, `== pivot`, `> pivot`. Every element equal to the pivot lands in the middle region and is **finalized in that one pass** — the recursion only descends into the `<` and `>` sides. When there are few distinct keys, whole swaths of the array are placed at once, and the sort runs in `O(n log k)` for `k` distinct values (linear when `k` is tiny).
+Three-way quicksort fixes this by partitioning into **three** regions with the [Dutch national flag](/cortex/data-structures-and-algorithms/sorting-and-searching/sorting/dutch-national-flag-sort) scheme: `< pivot`, `== pivot`, `> pivot`. Every element equal to the pivot lands in the middle region and is **finalized in that one pass** — the recursion only descends into the `<` and `>` sides. When there are few distinct keys, whole swaths of the array are placed at once, and the sort runs in `O(n log k)` for `k` distinct values (linear when `k` is tiny).
 
 ## See It Work
 
@@ -138,12 +138,12 @@ This is a structural lesson — drill sorting in the pattern sets.
 
 Three-way quicksort is quicksort made duplicate-aware:
 
-- **It's quicksort + Dutch flag** — the only change from [quicksort](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-quicksort) is the three-region partition and recursing on two ranges instead of one. That single change makes low-cardinality data fast.
+- **It's quicksort + Dutch flag** — the only change from [quicksort](/cortex/data-structures-and-algorithms/sorting-and-searching/sorting/quicksort) is the three-region partition and recursing on two ranges instead of one. That single change makes low-cardinality data fast.
 - **The win is `O(n log k)`** — for `k` distinct keys; the more repetition, the bigger the speedup, down to `O(n)` for a constant number of distinct values. This is *entropy-optimal* sorting: work proportional to the actual information content of the keys.
 - **It's production-relevant** — Sedgewick & Bentley's three-way quicksort and Java's dual-pivot quicksort both grew from the observation that real data is full of duplicate keys, where two-way partitioning wastes effort. When you know a column has few distinct values, three-way is the right partition.
 
-**Prerequisites:** [Dutch National Flag Sort](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-dutch-national-flag-sort).
-**What's next:** the other `O(n log n)` workhorse — stable, guaranteed, divide-and-merge — [Merge Sort](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-merge-sort).
+**Prerequisites:** [Dutch National Flag Sort](/cortex/data-structures-and-algorithms/sorting-and-searching/sorting/dutch-national-flag-sort).
+**What's next:** the other `O(n log n)` workhorse — stable, guaranteed, divide-and-merge — [Merge Sort](/cortex/data-structures-and-algorithms/sorting-and-searching/sorting/merge-sort).
 
 ## Recall
 

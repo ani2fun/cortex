@@ -42,7 +42,7 @@ Both print `4`. The call descends `find_position(4) → 3 → 2 → 1`, the base
 
 Every recursive solution is **two pieces**:
 
-- **Base case** — the smallest input whose answer is known outright. It stops the recursion. Omit it and the function calls itself forever — i.e. until the stack overflows (the [nested functions](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-nested-functions) failure mode). The base case is not decoration; it's the only reason the recursion ever ends.
+- **Base case** — the smallest input whose answer is known outright. It stops the recursion. Omit it and the function calls itself forever — i.e. until the stack overflows (the [nested functions](/cortex/data-structures-and-algorithms/algorithms-by-strategy/recursion/nested-functions) failure mode). The base case is not decoration; it's the only reason the recursion ever ends.
 - **Recursive relation** — a rule `F(n) = G(F(n−1))` that builds the answer for `n` from the answer to a strictly smaller input. Finding this relation is the entire battle; the code is just dictation.
 
 The calls form a **recursion tree** — each node a call, its children the calls it makes, its leaves the base cases. The tree is the lens: its **height** is the maximum stack depth (space), its **node count** is the time cost.

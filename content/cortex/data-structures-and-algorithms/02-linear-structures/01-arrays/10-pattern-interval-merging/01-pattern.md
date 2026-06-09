@@ -109,7 +109,7 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [Insert Interval](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-interval-merging-problems-insert-interval) and [Employee Free Time](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-interval-merging-problems-employee-free-time).
+Drill the family in **Practice** — [Insert Interval](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-interval-merging/problems/insert-interval) and [Employee Free Time](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-interval-merging/problems/employee-free-time).
 
 ## Reflect & Connect
 
@@ -119,8 +119,8 @@ Sort-then-sweep is the master move for almost every interval problem:
 - **The sort is the enabler.** Once sorted by start, "compare only with the last" is correct; the same idea extends to a full **sweep line**, where you process sorted *events* (starts and ends) to answer questions like "what's the maximum number of intervals overlapping at once?" — the next pattern.
 - **Watch the boundary convention** — decide whether touching endpoints (`[1,3]` and `[3,5]`) count as overlapping; `≤` merges them, `<` keeps them separate. Get this wrong and off-by-one bugs creep in.
 
-**Prerequisites:** [Arrays](/cortex/data-structures-and-algorithms/linear-structures-arrays-what-is-an-array).
-**What's next:** the sweep-line at full power — counting how many intervals stack up at once, in [Maximum Overlap](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-maximum-overlap-pattern).
+**Prerequisites:** [Arrays](/cortex/data-structures-and-algorithms/linear-structures/arrays/what-is-an-array).
+**What's next:** the sweep-line at full power — counting how many intervals stack up at once, in [Maximum Overlap](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-maximum-overlap/pattern).
 
 ## Recall
 

@@ -6,17 +6,17 @@ Before any data structure or algorithm makes sense, two things have to be in pla
 
 ## Start Here — the learning path
 
-- [How a Computer Stores Data](/cortex/data-structures-and-algorithms/foundations-how-a-computer-stores-data)
-- [Measuring Cost](/cortex/data-structures-and-algorithms/foundations-measuring-cost)
-- [How to Approach a Problem](/cortex/data-structures-and-algorithms/foundations-how-to-approach-a-problem)
-- [Asymptotic Analysis](/cortex/data-structures-and-algorithms/foundations-asymptotic-analysis)
-- [Recurrence Relations and the Master Theorem](/cortex/data-structures-and-algorithms/foundations-recurrence-relations-and-master-theorem)
-- [Amortized Analysis](/cortex/data-structures-and-algorithms/foundations-amortized-analysis)
-- [Proof Techniques](/cortex/data-structures-and-algorithms/foundations-proof-techniques)
-- [Memory Model and the Cache Hierarchy](/cortex/data-structures-and-algorithms/foundations-memory-model-and-cache)
+- [How a Computer Stores Data](/cortex/data-structures-and-algorithms/foundations/how-a-computer-stores-data)
+- [Measuring Cost](/cortex/data-structures-and-algorithms/foundations/measuring-cost)
+- [How to Approach a Problem](/cortex/data-structures-and-algorithms/foundations/how-to-approach-a-problem)
+- [Asymptotic Analysis](/cortex/data-structures-and-algorithms/foundations/asymptotic-analysis)
+- [Recurrence Relations and the Master Theorem](/cortex/data-structures-and-algorithms/foundations/recurrence-relations-and-master-theorem)
+- [Amortized Analysis](/cortex/data-structures-and-algorithms/foundations/amortized-analysis)
+- [Proof Techniques](/cortex/data-structures-and-algorithms/foundations/proof-techniques)
+- [Memory Model and the Cache Hierarchy](/cortex/data-structures-and-algorithms/foundations/memory-model-and-cache)
 
 ## Reference
 
 Quick-recall and design material. Skim, don't study top to bottom.
 
-- [Memorize: Foundations](/cortex/data-structures-and-algorithms/foundations-memorize)
+- [Memorize: Foundations](/cortex/data-structures-and-algorithms/foundations/memorize)

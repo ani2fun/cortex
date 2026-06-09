@@ -132,7 +132,7 @@ public class Main {
 }
 ```
 
-Make it your own with the section's problems, and see how a stack parses and evaluates arithmetic in [Evaluating Expressions](/cortex/data-structures-and-algorithms/linear-structures-stack-evaluating-expressions-using-stack).
+Make it your own with the section's problems, and see how a stack parses and evaluates arithmetic in [Evaluating Expressions](/cortex/data-structures-and-algorithms/linear-structures/stack/evaluating-expressions-using-stack).
 
 ## Reflect & Connect
 
@@ -144,8 +144,8 @@ The stack's reach is enormous precisely because LIFO is everywhere "most recent 
 
 The tradeoff to carry: a stack buys `O(1)` ends and a dead-simple contract by refusing all middle access — when you need to reach arbitrary positions, you've outgrown it. And the array-vs-linked-list backing is the same choice as always: the array packs tighter and scans faster, the linked list never pauses to resize.
 
-**Prerequisites:** [Arrays](/cortex/data-structures-and-algorithms/linear-structures-arrays-what-is-an-array), [Linked Lists](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-what-is-a-linked-list), and [Measuring Cost](/cortex/data-structures-and-algorithms/foundations-measuring-cost).
-**What's next:** flip the rule to *first in, first out* and you get a [Queue](/cortex/data-structures-and-algorithms/linear-structures-queue-what-is-a-queue).
+**Prerequisites:** [Arrays](/cortex/data-structures-and-algorithms/linear-structures/arrays/what-is-an-array), [Linked Lists](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/what-is-a-linked-list), and [Measuring Cost](/cortex/data-structures-and-algorithms/foundations/measuring-cost).
+**What's next:** flip the rule to *first in, first out* and you get a [Queue](/cortex/data-structures-and-algorithms/linear-structures/queue/what-is-a-queue).
 
 ## Recall
 

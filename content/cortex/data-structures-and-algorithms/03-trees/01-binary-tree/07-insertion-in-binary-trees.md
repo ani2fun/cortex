@@ -9,9 +9,9 @@ prereqs:
 
 ## Why It Exists
 
-A [binary search tree](/cortex/data-structures-and-algorithms/trees-binary-search-tree-introduction-to-binary-search-trees) tells you exactly where a new value goes — smaller left, larger right. A *plain* binary tree has no such rule, so "where does the new node go?" becomes a **choice**, not a constraint. That freedom is the whole subject of this lesson, and it has one recurring shape: **find, then relink**. Locate an attachment point, then assign a constant number of pointers. The relink is always `O(1)`; the only thing that varies between insertion styles is *where you search*.
+A [binary search tree](/cortex/data-structures-and-algorithms/trees/binary-search-tree/introduction-to-binary-search-trees) tells you exactly where a new value goes — smaller left, larger right. A *plain* binary tree has no such rule, so "where does the new node go?" becomes a **choice**, not a constraint. That freedom is the whole subject of this lesson, and it has one recurring shape: **find, then relink**. Locate an attachment point, then assign a constant number of pointers. The relink is always `O(1)`; the only thing that varies between insertion styles is *where you search*.
 
-The canonical choice — the one worth burning into muscle memory — is **insert at the first empty child slot, found by breadth-first (level-order) search**. Walk the tree level by level, left to right, with a queue; the first node missing a child gets the new one. This rule has a lovely property: it keeps the tree **complete** (every level full except possibly the last, filled left to right), which is exactly the shape that packs into a [flat array](/cortex/data-structures-and-algorithms/trees-binary-tree-array-implementation-of-binary-trees) and underlies heaps. Repeated BFS-insertion *grows* a complete tree one node at a time. (The other variants — insert at the root in `O(1)`, attach as a named node's child, or splice a new parent above a node — are the same find-then-relink with a different search; we'll name them, but BFS-to-the-first-gap is the one to know.)
+The canonical choice — the one worth burning into muscle memory — is **insert at the first empty child slot, found by breadth-first (level-order) search**. Walk the tree level by level, left to right, with a queue; the first node missing a child gets the new one. This rule has a lovely property: it keeps the tree **complete** (every level full except possibly the last, filled left to right), which is exactly the shape that packs into a [flat array](/cortex/data-structures-and-algorithms/trees/binary-tree/array-implementation-of-binary-trees) and underlies heaps. Repeated BFS-insertion *grows* a complete tree one node at a time. (The other variants — insert at the root in `O(1)`, attach as a named node's child, or splice a new parent above a node — are the same find-then-relink with a different search; we'll name them, but BFS-to-the-first-gap is the one to know.)
 
 ## See It Work
 
@@ -113,7 +113,7 @@ a -> b -> c
 <p align="center"><strong>BFS-to-the-first-gap. The queue yields nodes level by level (1, then 2, 3, …); the search stops at the first node missing a child and attaches there. Filling gaps left-to-right per level is what keeps the tree complete.</strong></p>
 
 - **Find, then relink.** Every insertion is these two steps. The relink is one pointer assignment — `O(1)`. The cost lives entirely in the *find*.
-- **BFS keeps the tree complete.** Scanning level-order left-to-right means the first empty slot is always the leftmost gap in the shallowest unfinished level — so the tree never develops holes above the last row. That completeness is exactly what lets a tree live in a [flat array](/cortex/data-structures-and-algorithms/trees-binary-tree-array-implementation-of-binary-trees) and what heaps rely on.
+- **BFS keeps the tree complete.** Scanning level-order left-to-right means the first empty slot is always the leftmost gap in the shallowest unfinished level — so the tree never develops holes above the last row. That completeness is exactly what lets a tree live in a [flat array](/cortex/data-structures-and-algorithms/trees/binary-tree/array-implementation-of-binary-trees) and what heaps rely on.
 - **Cost: `O(n)` time, `O(w)` space.** In the worst case the search scans the whole bottom level before finding the gap, so time is `O(n)`; the queue holds at most one level, so space is `O(w)` for the maximum width `w`.
 - **The variants are the same shape.** Insert *at the root* is `O(1)` (new node becomes root, the old tree hangs beneath it). Insert *as a named node's child* finds that node and sets its pointer. Insert *a parent above* a node splices a new node between it and its parent. All find-then-relink — only the search changes.
 
@@ -240,16 +240,16 @@ public class Main {
 }
 ```
 
-Both print `level-order: [1, 2, 3, 4, 5, 6, 7]` — a perfect complete tree. Each value landed in the next gap, filling the tree row by row. This is the same complete tree that packs into the array `[1,2,3,4,5,6,7]` from the [array-representation lesson](/cortex/data-structures-and-algorithms/trees-binary-tree-array-implementation-of-binary-trees) — BFS-insertion and the array layout are two views of the same growth order.
+Both print `level-order: [1, 2, 3, 4, 5, 6, 7]` — a perfect complete tree. Each value landed in the next gap, filling the tree row by row. This is the same complete tree that packs into the array `[1,2,3,4,5,6,7]` from the [array-representation lesson](/cortex/data-structures-and-algorithms/trees/binary-tree/array-implementation-of-binary-trees) — BFS-insertion and the array layout are two views of the same growth order.
 
 ## Reflect & Connect
 
 - **Every insertion is find-then-relink.** The relink is one `O(1)` pointer write; the search is the only variable part. Get that shape and all five textbook variants collapse into one idea.
-- **BFS-to-the-first-gap keeps the tree complete.** Level-order, left-to-right, fill the leftmost vacancy — no holes above the last row. This is *the* way to grow a complete tree, and the reason heaps and [array-backed trees](/cortex/data-structures-and-algorithms/trees-binary-tree-array-implementation-of-binary-trees) use it.
-- **It reuses the BFS machinery.** The queue here is the same breadth-first walk as [level-order traversal](/cortex/data-structures-and-algorithms/trees-binary-tree-iterative-traversals-in-binary-trees) — insertion is just a traversal that stops at the first empty slot.
-- **This is *not* BST insertion.** A plain tree has no ordering, so you *choose* the slot (the first gap). In a BST the *value* decides left or right — covered in the [BST lessons](/cortex/data-structures-and-algorithms/trees-binary-search-tree-introduction-to-binary-search-trees). Don't mix the two rules.
+- **BFS-to-the-first-gap keeps the tree complete.** Level-order, left-to-right, fill the leftmost vacancy — no holes above the last row. This is *the* way to grow a complete tree, and the reason heaps and [array-backed trees](/cortex/data-structures-and-algorithms/trees/binary-tree/array-implementation-of-binary-trees) use it.
+- **It reuses the BFS machinery.** The queue here is the same breadth-first walk as [level-order traversal](/cortex/data-structures-and-algorithms/trees/binary-tree/iterative-traversals-in-binary-trees) — insertion is just a traversal that stops at the first empty slot.
+- **This is *not* BST insertion.** A plain tree has no ordering, so you *choose* the slot (the first gap). In a BST the *value* decides left or right — covered in the [BST lessons](/cortex/data-structures-and-algorithms/trees/binary-search-tree/introduction-to-binary-search-trees). Don't mix the two rules.
 - **Deletion is the mirror.** To delete from a complete tree while keeping it complete, overwrite the target's value with the deepest-rightmost node's value, then remove that node — the same "preserve completeness" discipline, run backward.
-- **Next: putting it together.** [Practice mixing traversals](/cortex/data-structures-and-algorithms/trees-binary-tree-practice-mix-traversals) drills the traversal + build + insert toolkit on combined problems.
+- **Next: putting it together.** [Practice mixing traversals](/cortex/data-structures-and-algorithms/trees/binary-tree/practice-mix-traversals) drills the traversal + build + insert toolkit on combined problems.
 
 ## Recall
 
@@ -287,5 +287,5 @@ Both print `level-order: [1, 2, 3, 4, 5, 6, 7]` — a perfect complete tree. Eac
 ## Sources & Verify
 
 - **CLRS**, *Introduction to Algorithms*, §10.4 (pointer-based trees) for the `O(1)` relink primitive; the BFS-to-first-gap insertion is the standard "insert into a complete binary tree" used to build **binary heaps** (CLRS ch. 6).
-- The [array-representation lesson](/cortex/data-structures-and-algorithms/trees-binary-tree-array-implementation-of-binary-trees) for why complete trees matter, and the [iterative-traversals lesson](/cortex/data-structures-and-algorithms/trees-binary-tree-iterative-traversals-in-binary-trees) for the BFS/queue this reuses.
+- The [array-representation lesson](/cortex/data-structures-and-algorithms/trees/binary-tree/array-implementation-of-binary-trees) for why complete trees matter, and the [iterative-traversals lesson](/cortex/data-structures-and-algorithms/trees/binary-tree/iterative-traversals-in-binary-trees) for the BFS/queue this reuses.
 - `before [1,2,3,4]` → `after [1,2,3,4,5]`, the Trace-It result (`9` attaches under node `2`), and the repeated-insertion `level-order [1,2,3,4,5,6,7]` all come from the runnable blocks above (deterministic) — re-run to verify.

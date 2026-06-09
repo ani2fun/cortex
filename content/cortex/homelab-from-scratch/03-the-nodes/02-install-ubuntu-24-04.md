@@ -163,4 +163,4 @@ If all three succeed on all four nodes, you're done with installation.
 
 Don't run `prepare-host.sh` yet — it'll run in the next chapter, where we explain what each piece of it does.
 
-→ Next: [Baseline host prep](/cortex/homelab-from-scratch/the-nodes-baseline-host-prep)
+→ Next: [Baseline host prep](/cortex/homelab-from-scratch/the-nodes/baseline-host-prep)

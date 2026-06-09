@@ -12,7 +12,7 @@ summary: >-
 
 > **TL;DR.** You cannot beat the speed of light, so a real-time game can never let every player see the *same* world at the *same* instant. The trick is to pick one machine — the **authoritative server** — to be the single source of truth, run it as a fixed-rate **tick loop**, and then hide the unavoidable lag with four moves: the client **predicts** its own actions immediately, **reconciles** when the server's truth arrives, **interpolates** other players between snapshots so they glide instead of teleport, and the server applies **lag compensation** so you hit what you aimed at. Each match is independent, so the backend scales by running *one server per match* — embarrassingly parallel.
 
-This is our most timing-obsessed capstone. The [URL shortener](/cortex/system-design/capstones-url-shortener) cared about read throughput; the [payment system](/cortex/system-design/capstones-payment-system) cared about never losing a cent. A shooter cares about **30 milliseconds**. When two players round a corner and fire, the winner is often decided by a difference smaller than the time it takes light to cross a continent. Everything below is in service of making that 30 ms feel fair.
+This is our most timing-obsessed capstone. The [URL shortener](/cortex/system-design/capstones/url-shortener) cared about read throughput; the [payment system](/cortex/system-design/capstones/payment-system) cared about never losing a cent. A shooter cares about **30 milliseconds**. When two players round a corner and fire, the winner is often decided by a difference smaller than the time it takes light to cross a continent. Everything below is in service of making that 30 ms feel fair.
 
 ## 1. Motivation
 
@@ -43,11 +43,11 @@ The reason all of this exists is one stubborn fact: **information cannot travel 
 - **Scale:** millions of concurrent players across thousands of independent matches.
 - **Cheat resistance:** a modified client must not be able to see through walls or teleport.
 
-**Out of scope:** rendering and game-feel; the matchmaking *rating* algorithm's internals; voice chat (a separate real-time path, conceptually close to [the chat capstone](/cortex/system-design/capstones-chat-system)); monetisation (see [the payment system](/cortex/system-design/capstones-payment-system)).
+**Out of scope:** rendering and game-feel; the matchmaking *rating* algorithm's internals; voice chat (a separate real-time path, conceptually close to [the chat capstone](/cortex/system-design/capstones/chat-system)); monetisation (see [the payment system](/cortex/system-design/capstones/payment-system)).
 
 ## 3. Back-of-envelope estimation
 
-Let's size one match server and then the fleet. (The method is from [back-of-envelope estimation](/cortex/system-design/foundations-back-of-envelope-estimation); the latency intuitions from [latency, throughput, and the USL](/cortex/system-design/foundations-latency-throughput-usl) and [the numbers every engineer should know](/cortex/system-design/foundations-numbers-every-engineer-should-know).)
+Let's size one match server and then the fleet. (The method is from [back-of-envelope estimation](/cortex/system-design/foundations/back-of-envelope-estimation); the latency intuitions from [latency, throughput, and the USL](/cortex/system-design/foundations/latency-throughput-usl) and [the numbers every engineer should know](/cortex/system-design/foundations/numbers-every-engineer-should-know).)
 
 | Quantity | Estimate | Reasoning |
 |---|---|---|
@@ -67,7 +67,7 @@ Two numbers do the teaching. First, **egress dwarfs ingress by an order of magni
 
 A game backend has **two protocols**, and conflating them is a classic mistake.
 
-**Matchmaking — ordinary request/response** (HTTP or gRPC, like any service in [API design](/cortex/system-design/application-architecture-api-design)):
+**Matchmaking — ordinary request/response** (HTTP or gRPC, like any service in [API design](/cortex/system-design/application-architecture/api-design)):
 
 ```
 POST /matchmaking/find        { mode, region, partyId }      -> 202 Accepted, ticketId
@@ -82,7 +82,7 @@ client -> server   Input  { seq, dtMs, buttons, aimYaw, aimPitch }
 server -> client   Snapshot { tick, lastProcessedInput, entities: [...] }
 ```
 
-The `seq` on each input and the `lastProcessedInput` echoed in each snapshot are the linchpin of reconciliation — they let the client ask "which of my inputs has the server already accounted for?" and replay only the rest. We use **UDP**, not TCP: a game would rather send the *next* fresh snapshot than wait for a retransmission of a stale one. TCP's in-order, reliable delivery introduces head-of-line blocking — one lost packet stalls everything behind it — which is exactly wrong when old data is worthless. (Contrast [the networking primer](/cortex/system-design/building-blocks-networking-primer): TCP is the right default for almost everything *except* this.)
+The `seq` on each input and the `lastProcessedInput` echoed in each snapshot are the linchpin of reconciliation — they let the client ask "which of my inputs has the server already accounted for?" and replay only the rest. We use **UDP**, not TCP: a game would rather send the *next* fresh snapshot than wait for a retransmission of a stale one. TCP's in-order, reliable delivery introduces head-of-line blocking — one lost packet stalls everything behind it — which is exactly wrong when old data is worthless. (Contrast [the networking primer](/cortex/system-design/building-blocks/networking-primer): TCP is the right default for almost everything *except* this.)
 
 ## 5. Data model
 
@@ -131,7 +131,7 @@ The same structure as a formal C4 container view — note how the profile store 
 
 <iframe src="/c4/view/capstones_multiplayergamebackend_architecture" width="100%" height="420" style="border: 1px solid var(--border, #2b2b2b); border-radius: 8px;" loading="lazy" title="Online multiplayer game backend — C4 container view"></iframe>
 
-The shape echoes [the ride-sharing dispatcher](/cortex/system-design/capstones-ride-sharing-dispatch): both shard a real-time workload into independent units (a geographic cell there, a match here) so that each unit fits comfortably on one machine and the units scale out sideways.
+The shape echoes [the ride-sharing dispatcher](/cortex/system-design/capstones/ride-sharing-dispatch): both shard a real-time workload into independent units (a geographic cell there, a match here) so that each unit fits comfortably on one machine and the units scale out sideways.
 
 ## 7. The hot path
 
@@ -160,10 +160,10 @@ The subtle, beautiful part is **lag compensation** in the server's tick. When yo
 
 - **Per-server simulation cost.** The tick loop must finish *all* physics, hit-resolution, and snapshot-building inside 16.7 ms. Double the players and you roughly quadruple interaction checks. You cannot put 10,000 players in one authoritative simulation. **Fix:** keep matches small and independent; for a massive world (an MMO), **shard the world into zones** and use **area-of-interest** so each server simulates only its region.
 - **Egress bandwidth.** As §3 showed, sending everyone the whole world is the dominant cost. **Fix:** **delta compression** (send only what changed since the client's last acknowledged snapshot) and **area-of-interest culling** (send only entities a player can plausibly see). Both shrink the 1.5 KB snapshot dramatically in a large map.
-- **Fleet elasticity.** Player counts swing wildly between a quiet morning and a Friday-evening peak. Running peak capacity 24/7 is wasteful. **Fix:** the fleet manager **autoscales** match servers with demand — exactly [capacity planning and autoscaling](/cortex/system-design/production-operations-capacity-planning-and-autoscaling), with the twist that you must scale *up* a little ahead of demand because spinning a fresh server and warming a match takes seconds.
+- **Fleet elasticity.** Player counts swing wildly between a quiet morning and a Friday-evening peak. Running peak capacity 24/7 is wasteful. **Fix:** the fleet manager **autoscales** match servers with demand — exactly [capacity planning and autoscaling](/cortex/system-design/production-operations/capacity-planning-and-autoscaling), with the twist that you must scale *up* a little ahead of demand because spinning a fresh server and warming a match takes seconds.
 - **Regional latency.** A single global region guarantees that half the planet plays at 150 ms. **Fix:** **regional fleets** — match players to the nearest data centre, and accept that cross-region parties trade some fairness for togetherness.
 
-**The 100× stretch.** Going from one popular title to a planet-scale platform is mostly *more of the same shards*: matches are embarrassingly parallel, so the match tier scales almost linearly with hosts. The genuinely hard parts are at the edges — **matchmaking** becomes a global, low-latency search over a churning pool of waiting players (skill, region, party size, and queue time all in tension), and the **MMO case** forces world-sharding with seamless hand-off as a player walks from one zone-server's territory into another's. Sharding by match or by zone is the same move we have made in every capstone: find the axis along which work is independent and cut along it (see [sharding and partitioning](/cortex/system-design/building-blocks-sharding-and-partitioning)).
+**The 100× stretch.** Going from one popular title to a planet-scale platform is mostly *more of the same shards*: matches are embarrassingly parallel, so the match tier scales almost linearly with hosts. The genuinely hard parts are at the edges — **matchmaking** becomes a global, low-latency search over a churning pool of waiting players (skill, region, party size, and queue time all in tension), and the **MMO case** forces world-sharding with seamless hand-off as a player walks from one zone-server's territory into another's. Sharding by match or by zone is the same move we have made in every capstone: find the axis along which work is independent and cut along it (see [sharding and partitioning](/cortex/system-design/building-blocks/sharding-and-partitioning)).
 
 ## 9. Trade-offs
 
@@ -276,4 +276,4 @@ Egress ≈ players × ticks/s × snapshot size = 100 × 128 × 1.5 KB ≈ **19.2
 
 ---
 
-**Next:** one capstone remains — [recommendation serving](/cortex/system-design/capstones-recommendation-serving), where we leave the world of exact state machines behind for the probabilistic, two-stage world of candidate generation and ranking. It is a fitting close: every system before it computed a *correct* answer; the last one computes a *good* one.
+**Next:** one capstone remains — [recommendation serving](/cortex/system-design/capstones/recommendation-serving), where we leave the world of exact state machines behind for the probabilistic, two-stage world of candidate generation and ranking. It is a fitting close: every system before it computed a *correct* answer; the last one computes a *good* one.

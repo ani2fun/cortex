@@ -108,4 +108,4 @@ That value is your edge VM's public IP. The rest of the book trusts it.
 
 The next chapter mints the API token cert-manager needs to satisfy DNS-01 challenges against this zone. It's three minutes of clicks and a 64-character secret you'll save somewhere safe.
 
-→ Next: [The Cloudflare API token](/cortex/homelab-from-scratch/domain-and-dns-the-cloudflare-api-token)
+→ Next: [The Cloudflare API token](/cortex/homelab-from-scratch/domain-and-dns/the-cloudflare-api-token)

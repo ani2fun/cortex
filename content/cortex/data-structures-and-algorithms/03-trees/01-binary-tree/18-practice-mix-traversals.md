@@ -114,7 +114,7 @@ d -> e
 
 - **Each piece is a traversal you already know.** The left and right edges are preorder-style descents (follow one child, fall back to the other); the leaves pass is a stateless preorder that emits only leaves. Nothing new — it's *composition*.
 - **The skip-leaves rule prevents duplicates.** The leftmost and rightmost leaves sit on an edge *and* are leaves. If the edge walks included leaves, those corners would appear twice. Excluding leaves from the two edge walks puts every node in exactly one piece ([Trace It](#trace-it)).
-- **The right boundary is collected top-down, then reversed.** Anticlockwise means the right edge is walked *bottom-up*, but it's easier to descend top-down and reverse the list — the same trick the two-stack [iterative postorder](/cortex/data-structures-and-algorithms/trees-binary-tree-iterative-traversals-in-binary-trees) uses.
+- **The right boundary is collected top-down, then reversed.** Anticlockwise means the right edge is walked *bottom-up*, but it's easier to descend top-down and reverse the list — the same trick the two-stack [iterative postorder](/cortex/data-structures-and-algorithms/trees/binary-tree/iterative-traversals-in-binary-trees) uses.
 - **Cost is `O(N)`.** The leaves pass visits every node once; the two edge walks each touch `O(H)` nodes. Total `O(N)` time, `O(N)` space for the output (plus `O(H)` recursion for the leaves).
 
 > **Key takeaway.** Hard tree problems are *compositions* of simple traversals. Boundary traversal stitches four pieces — root, left-boundary descent, leaves left-to-right, and a reversed right-boundary descent — into one anticlockwise loop. The one rule that makes it correct: **exclude leaves from the two edge walks**, so the corner leaves (which are both edge nodes and leaves) are counted exactly once. `O(N)` time. The meta-skill is decomposition: see which traversals combine and in what order.
@@ -237,9 +237,9 @@ Both print `spine boundary: [1, 2, 3]` — the whole tree. Root `1` and `2` are 
 
 - **The real skill is decomposition.** Hard tree problems are compositions of the simple traversals. Spot the pieces, order them, and stitch — boundary traversal is the archetype (left edge + leaves + reversed right edge).
 - **Every node belongs to exactly one piece.** The skip-leaves rule is a special case of a general discipline: when sub-walks overlap, assign each shared node to one owner. Here, corner leaves belong to the leaves pass, not the edges.
-- **Reuse the tricks you have.** The right-edge "descend then reverse" is the same move as two-stack [iterative postorder](/cortex/data-structures-and-algorithms/trees-binary-tree-iterative-traversals-in-binary-trees); the edge descents are [preorder](/cortex/data-structures-and-algorithms/trees-binary-tree-recursive-traversals-in-binary-trees)-style. Nothing here is new — it's recombination.
+- **Reuse the tricks you have.** The right-edge "descend then reverse" is the same move as two-stack [iterative postorder](/cortex/data-structures-and-algorithms/trees/binary-tree/iterative-traversals-in-binary-trees); the edge descents are [preorder](/cortex/data-structures-and-algorithms/trees/binary-tree/recursive-traversals-in-binary-trees)-style. Nothing here is new — it's recombination.
 - **Test the seams on degenerate shapes.** Left-only spines, right-only spines, a single-node tree, an all-leaves tree — these are where double-counting and off-by-one stitch bugs surface. A composition that survives them is correct.
-- **This closes the binary-tree chapter.** With representations, traversals (recursive and iterative), construction, insertion, and now composition, you have the full toolkit — the [binary search tree](/cortex/data-structures-and-algorithms/trees-binary-search-tree-introduction-to-binary-search-trees) adds the ordering rule that turns these traversals into `O(log N)` search.
+- **This closes the binary-tree chapter.** With representations, traversals (recursive and iterative), construction, insertion, and now composition, you have the full toolkit — the [binary search tree](/cortex/data-structures-and-algorithms/trees/binary-search-tree/introduction-to-binary-search-trees) adds the ordering rule that turns these traversals into `O(log N)` search.
 
 ## Recall
 
@@ -277,5 +277,5 @@ Both print `spine boundary: [1, 2, 3]` — the whole tree. Root `1` and `2` are 
 ## Sources & Verify
 
 - **Boundary of Binary Tree** — LeetCode 545 and the GeeksforGeeks "boundary traversal" problem are the canonical statements; the decomposition (left boundary + leaves + reversed right boundary) is the standard solution.
-- The [recursive-traversals lesson](/cortex/data-structures-and-algorithms/trees-binary-tree-recursive-traversals-in-binary-trees) for the preorder pieces and the [iterative-traversals lesson](/cortex/data-structures-and-algorithms/trees-binary-tree-iterative-traversals-in-binary-trees) for the descend-then-reverse trick this reuses.
+- The [recursive-traversals lesson](/cortex/data-structures-and-algorithms/trees/binary-tree/recursive-traversals-in-binary-trees) for the preorder pieces and the [iterative-traversals lesson](/cortex/data-structures-and-algorithms/trees/binary-tree/iterative-traversals-in-binary-trees) for the descend-then-reverse trick this reuses.
 - The boundary `[20, 8, 4, 10, 14, 25, 22]`, the skip-leaves contrast (`[8]` vs `[8, 4]`), and the left-spine `[1, 2, 3]` all come from the runnable blocks above (deterministic) — re-run to verify.

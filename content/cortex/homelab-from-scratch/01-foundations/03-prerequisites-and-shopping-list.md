@@ -104,4 +104,4 @@ A short list of things people buy and regret.
 
 If any of that's wobbly, work through the [codefolio onboarding book](/cortex/codefolio-onboarding) for `git` + Vite/SBT mechanics, and then [Kubernetes basics on kubernetes.io](https://kubernetes.io/docs/tutorials/kubernetes-basics/) for the YAML side. Come back. The book will still be here.
 
-→ Next: [Homelab vs cloud — the honest case](/cortex/homelab-from-scratch/foundations-homelab-vs-cloud)
+→ Next: [Homelab vs cloud — the honest case](/cortex/homelab-from-scratch/foundations/homelab-vs-cloud)

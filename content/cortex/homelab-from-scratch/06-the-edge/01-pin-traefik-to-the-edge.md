@@ -172,4 +172,4 @@ A 404 with `server: traefik` means HTTPS terminated at Traefik (using its self-s
 
 The next chapter locks down the edge so Traefik is *only* what's reachable from the public internet.
 
-→ Next: [Router and edge firewall](/cortex/homelab-from-scratch/the-edge-router-and-edge-firewall)
+→ Next: [Router and edge firewall](/cortex/homelab-from-scratch/the-edge/router-and-edge-firewall)

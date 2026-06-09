@@ -114,8 +114,8 @@ That last row is the leverage: swap the queue in a breadth-first search for a st
 
 You'll meet queues all over real systems, always where work must be handled in arrival order: **OS schedulers** hand the CPU to a ready-queue of threads; **printer and I/O spoolers** serve jobs FIFO; **message brokers** (Kafka, RabbitMQ, SQS) sit between producers and consumers so a burst never overwhelms a slow reader; **event-loop runtimes** drain a task queue each tick. The backing choice mirrors the array-vs-list tradeoff from before: a circular array packs tight and stays cache-friendly; a linked list gives worst-case `O(1)` enqueue with no resize pause.
 
-**Prerequisites:** [Arrays](/cortex/data-structures-and-algorithms/linear-structures-arrays-what-is-an-array), [Linked Lists](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-what-is-a-linked-list), and [Measuring Cost](/cortex/data-structures-and-algorithms/foundations-measuring-cost).
-**What's next:** drop ordering entirely and index by *content* instead of position — the [Hash Table](/cortex/data-structures-and-algorithms/linear-structures-hash-table-what-is-a-hash-table).
+**Prerequisites:** [Arrays](/cortex/data-structures-and-algorithms/linear-structures/arrays/what-is-an-array), [Linked Lists](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/what-is-a-linked-list), and [Measuring Cost](/cortex/data-structures-and-algorithms/foundations/measuring-cost).
+**What's next:** drop ordering entirely and index by *content* instead of position — the [Hash Table](/cortex/data-structures-and-algorithms/linear-structures/hash-table/what-is-a-hash-table).
 
 ## Recall
 

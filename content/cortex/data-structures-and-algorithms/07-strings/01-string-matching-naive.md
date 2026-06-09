@@ -9,7 +9,7 @@ prereqs:
 
 Find every place a pattern `P` (length `m`) appears inside a text `T` (length `n`). It's Ctrl-F, it's `grep`, it's searching a genome for a gene. The most direct idea works: line `P` up at position 0, compare character by character; if it doesn't match, slide one step right and try again — through all `n − m + 1` alignments.
 
-This naive scan is the **floor** every string algorithm is measured against. It's `O(n·m)` in the worst case, and worth implementing once for two reasons: it's genuinely the right tool for short patterns or one-off searches, and feeling *where it wastes work* is exactly what motivates the cleverness of [KMP](/cortex/data-structures-and-algorithms/strings-kmp), Z, and rolling-hash methods. Those algorithms all exist to fix one flaw you'll see here: naive matching has **amnesia** — on a mismatch it forgets everything it just learned and restarts.
+This naive scan is the **floor** every string algorithm is measured against. It's `O(n·m)` in the worst case, and worth implementing once for two reasons: it's genuinely the right tool for short patterns or one-off searches, and feeling *where it wastes work* is exactly what motivates the cleverness of [KMP](/cortex/data-structures-and-algorithms/strings/kmp), Z, and rolling-hash methods. Those algorithms all exist to fix one flaw you'll see here: naive matching has **amnesia** — on a mismatch it forgets everything it just learned and restarts.
 
 ## See It Work
 
@@ -75,7 +75,7 @@ Two things to hold onto:
 - **Best case `O(n)`, worst case `O(n·m)`.** If the first character usually mismatches (common in natural-language text over a large alphabet), each alignment costs one comparison and the whole search is roughly `O(n)`. But when the pattern keeps *almost* matching — many shared characters before the mismatch — each of the `~n` alignments does up to `m` comparisons. The next section makes that quadratic blow-up concrete.
 - **The waste is re-comparison.** Suppose `P = "abcaby"` mismatches at the `y` after matching `"abcab"`. Naive shifts by one and re-checks from `P[0]` — even though it *already knows* the next five text characters were `"bcab…"`. KMP's insight is that the matched prefix tells you how far you can safely jump without re-reading; naive ignores it entirely.
 
-> **Key takeaway.** Naive string matching slides the pattern over all `n − m + 1` alignments and compares char by char: best `O(n)`, worst `O(n·m)`. Its flaw is amnesia — a mismatch discards the partial-match information and restarts at the next position. Reclaiming that information is the whole point of [KMP](/cortex/data-structures-and-algorithms/strings-kmp), Z-algorithm, and rolling-hash matching.
+> **Key takeaway.** Naive string matching slides the pattern over all `n − m + 1` alignments and compares char by char: best `O(n)`, worst `O(n·m)`. Its flaw is amnesia — a mismatch discards the partial-match information and restarts at the next position. Reclaiming that information is the whole point of [KMP](/cortex/data-structures-and-algorithms/strings/kmp), Z-algorithm, and rolling-hash matching.
 
 ## Trace It
 
@@ -104,7 +104,7 @@ print("worst-case bound (n-m+1)*m     :", (N - 5 + 1) * 5)
 <details>
 <summary><strong>Reveal</strong></summary>
 
-The adversarial case does **80** comparisons — exactly the `(n − m + 1)·m = 16·5 = 80` worst-case bound — while the friendly text does only **24**. Here's why: at *every* alignment in `"aaaa…a"`, the pattern `"aaaab"` matches its first four `a`s against four text `a`s, then fails on the `b` — five comparisons wasted per position, `~n` positions, so `~n·m` total. The friendly text `"ab abab…"` mismatches `"aaaab"` at the *second* character of most alignments (`b ≠ a`), so it bails after one or two comparisons — roughly linear. This is the gap that motivates the rest of Part 7: naive's `O(n·m)` is real and reachable, and it happens precisely when the text and pattern share long runs. [KMP](/cortex/data-structures-and-algorithms/strings-kmp) drives this to `O(n + m)` by never re-comparing a character it has already matched — turning those 80 comparisons back into roughly 20.
+The adversarial case does **80** comparisons — exactly the `(n − m + 1)·m = 16·5 = 80` worst-case bound — while the friendly text does only **24**. Here's why: at *every* alignment in `"aaaa…a"`, the pattern `"aaaab"` matches its first four `a`s against four text `a`s, then fails on the `b` — five comparisons wasted per position, `~n` positions, so `~n·m` total. The friendly text `"ab abab…"` mismatches `"aaaab"` at the *second* character of most alignments (`b ≠ a`), so it bails after one or two comparisons — roughly linear. This is the gap that motivates the rest of Part 7: naive's `O(n·m)` is real and reachable, and it happens precisely when the text and pattern share long runs. [KMP](/cortex/data-structures-and-algorithms/strings/kmp) drives this to `O(n + m)` by never re-comparing a character it has already matched — turning those 80 comparisons back into roughly 20.
 
 </details>
 
@@ -151,7 +151,7 @@ Both print `0` then `-1`. `"sad"` appears first at index 0; `"leeto"` never appe
 
 - **The floor, and an honest one.** `O(n·m)` worst case, `O(n)` best. For short patterns, small texts, or one-off searches, naive is genuinely the right call — no preprocessing, no extra memory, trivial to get right.
 - **Amnesia is the flaw.** A mismatch after a partial match throws away everything learned and restarts one position over. Every faster algorithm is a different answer to "what should we *remember* across a mismatch?"
-- **What the successors remember.** [KMP](/cortex/data-structures-and-algorithms/strings-kmp) precomputes, from the *pattern alone*, how far to jump on a mismatch (the failure function) — `O(n + m)`. The Z-algorithm computes match-length information for the whole string. Rabin-Karp hashes windows so a comparison is usually one integer check, not `m` character checks.
+- **What the successors remember.** [KMP](/cortex/data-structures-and-algorithms/strings/kmp) precomputes, from the *pattern alone*, how far to jump on a mismatch (the failure function) — `O(n + m)`. The Z-algorithm computes match-length information for the whole string. Rabin-Karp hashes windows so a comparison is usually one integer check, not `m` character checks.
 - **The worst case is reachable, not theoretical.** Repetitive text (DNA `AAAA…`, `"aaaa"` runs, binary data) plus a near-matching pattern hits the full `O(n·m)`. That's exactly where you reach for a smarter algorithm.
 - **Same scan, different verbs.** Find-all (collect every index), find-first (`strStr`, early return), contains (boolean) — all the one naive loop with a different terminal action.
 

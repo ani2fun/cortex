@@ -181,7 +181,7 @@ If your service is *stateless* and the bottleneck was thread availability, you m
 
 Not more app threads. Either:
 - **Reduce service time `W`** — most senior thing to do. Every 1× drop in service time is a 1× drop in `L`, which is a 1× drop in load on the *next* tier.
-- **Add capacity at the bottleneck** — typically the database. Cache reads, partition writes, add a read replica. You can read [Lesson 8](/cortex/system-design/building-blocks-caching) and [Lesson 11](/cortex/system-design/building-blocks-replication) for these patterns.
+- **Add capacity at the bottleneck** — typically the database. Cache reads, partition writes, add a read replica. You can read [Lesson 8](/cortex/system-design/building-blocks/caching) and [Lesson 11](/cortex/system-design/building-blocks/replication) for these patterns.
 - **Decouple synchronously-blocked work** — push slow operations behind a queue (Lesson 15) so the response time (`W` for the user) can drop even if the *work* still takes the same time.
 
 The *measurement* drove the diagnosis. Without Little's Law and the M/M/1 formula in your back pocket, the conversation is "why is it slow?". With them, the conversation is "the bottleneck is component X at ρ=0.95; add Y to the budget".
@@ -317,10 +317,10 @@ The *exception* is throughput-only batch systems where latency does not matter (
 
 **You finished Part 1.** You now have:
 
-- A senior engineer's mental model of "what system design actually is" ([Lesson 1](/cortex/system-design/foundations-what-system-design-means)).
-- The numbers — to within a factor of 10 — for every operation in a computer ([Lesson 2](/cortex/system-design/foundations-numbers-every-engineer-should-know)).
-- The estimation skill that turns a back-of-envelope into an architectural decision ([Lesson 3](/cortex/system-design/foundations-back-of-envelope-estimation)).
-- The CAP / PACELC trade-off, *felt* through the simulator ([Lesson 4](/cortex/system-design/foundations-cap-and-pacelc)).
+- A senior engineer's mental model of "what system design actually is" ([Lesson 1](/cortex/system-design/foundations/what-system-design-means)).
+- The numbers — to within a factor of 10 — for every operation in a computer ([Lesson 2](/cortex/system-design/foundations/numbers-every-engineer-should-know)).
+- The estimation skill that turns a back-of-envelope into an architectural decision ([Lesson 3](/cortex/system-design/foundations/back-of-envelope-estimation)).
+- The CAP / PACELC trade-off, *felt* through the simulator ([Lesson 4](/cortex/system-design/foundations/cap-and-pacelc)).
 - Little's Law, the M/M/1 cliff, and the USL — the queueing instinct that drives every capacity decision (this lesson).
 
 Next up: the actual building blocks — networking, load balancers, caches, databases, replication, sharding, consistency, consensus. Each lesson follows the same 8-beat shape. → [Part 2 — Building blocks](/cortex/system-design)

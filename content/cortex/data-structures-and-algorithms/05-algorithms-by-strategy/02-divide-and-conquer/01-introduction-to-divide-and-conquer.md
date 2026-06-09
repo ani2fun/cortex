@@ -10,7 +10,7 @@ prereqs:
 
 Multiply two 1024-digit numbers and the schoolbook algorithm does `n²` digit multiplications — about a million. In 1960 Anatoly Karatsuba noticed you can do it with **three** half-size multiplications instead of four, recursively: the recurrence `T(n) = 3T(n/2) + n` gives `Θ(n^1.585)` instead of `Θ(n²)`. For 10,000-digit numbers that's ~50× faster.
 
-That one move — **split the input, recurse on the pieces, recombine** — is **divide and conquer**, and it powers merge sort, quicksort, binary search, the FFT, Strassen's matrix multiply, and most algorithms that turn an `O(n²)` problem into `O(n log n)`. Learn the three-step shape once and you can both *recognise* D&C and *derive* its complexity (via the [master theorem](/cortex/data-structures-and-algorithms/foundations-recurrence-relations-and-master-theorem)) on sight.
+That one move — **split the input, recurse on the pieces, recombine** — is **divide and conquer**, and it powers merge sort, quicksort, binary search, the FFT, Strassen's matrix multiply, and most algorithms that turn an `O(n²)` problem into `O(n log n)`. Learn the three-step shape once and you can both *recognise* D&C and *derive* its complexity (via the [master theorem](/cortex/data-structures-and-algorithms/foundations/recurrence-relations-and-master-theorem)) on sight.
 
 ## See It Work
 

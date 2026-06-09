@@ -9,7 +9,7 @@ prereqs:
 
 A row of coins sits between you and an opponent. Each turn, the player to move takes a coin — but only from *either end* of the row. Both of you play optimally. The question isn't "what's the most I could grab if my opponent blunders?" — it's "what can I **guarantee**, no matter how cleverly they play?"
 
-That word *guarantee* is what makes this a new kind of DP. Every problem so far optimised against a fixed input; here the "input" fights back. The recurrence has to bake in a worst-case assumption about the opponent's reply — a **min** nested inside your **max**. That alternating max/min is the seed of minimax, game-tree search, and every turn-based strategy AI. And because the subproblem is a contiguous slice `[i..j]`, it's an [interval DP](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-longest-palindromic-subsequence) — filled by length, just like LPS.
+That word *guarantee* is what makes this a new kind of DP. Every problem so far optimised against a fixed input; here the "input" fights back. The recurrence has to bake in a worst-case assumption about the opponent's reply — a **min** nested inside your **max**. That alternating max/min is the seed of minimax, game-tree search, and every turn-based strategy AI. And because the subproblem is a contiguous slice `[i..j]`, it's an [interval DP](/cortex/data-structures-and-algorithms/algorithms-by-strategy/dynamic-programming/longest-palindromic-subsequence) — filled by length, just like LPS.
 
 ## See It Work
 
@@ -164,7 +164,7 @@ Both print `false` then `true`. In `[1,5,2]` the second player can always answer
 
 - **Adversarial DP = max over min.** Your move maximises; the opponent's move minimises *your* outcome. That alternation is minimax — the backbone of game-tree search and (with pruning) alpha-beta. Most two-player perfect-information games are this shape.
 - **The margin trick erases the min.** Tracking *(my score − opponent's)* turns max-min into a single `max(a[i] − dp[…], a[j] − dp[…])`. Subtraction encodes the adversary because the opponent's gain is definitionally your loss. Win iff the margin is `≥ 0`.
-- **It's interval DP.** State is a slice `[i..j]`, filled by increasing length — same engine as [LPS](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-longest-palindromic-subsequence) and [matrix-chain multiplication](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-matrix-chain-multiplication). The adversarial twist is *what* you aggregate, not *how* you fill.
+- **It's interval DP.** State is a slice `[i..j]`, filled by increasing length — same engine as [LPS](/cortex/data-structures-and-algorithms/algorithms-by-strategy/dynamic-programming/longest-palindromic-subsequence) and [matrix-chain multiplication](/cortex/data-structures-and-algorithms/algorithms-by-strategy/dynamic-programming/matrix-chain-multiplication). The adversarial twist is *what* you aggregate, not *how* you fill.
 - **Greedy fails here too — and worse.** Grabbing the larger end can *expose* an even larger coin to the opponent (take `8` from `[8,15,3,7]` and they pounce on the `15`). In adversarial settings a locally greedy move doesn't just cost you value, it actively *arms* your opponent.
 - **The `min`/minus is non-negotiable.** Replace it with `max`/plus and you've modelled a cooperative opponent — an upper bound no real adversary permits. The single most common bug in game DP is forgetting whose turn minimises.
 

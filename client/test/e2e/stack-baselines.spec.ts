@@ -13,26 +13,26 @@
 //
 // Slugs (cross-checked against content/cortex/data-structures-and-algorithms/):
 //   stack-inversion              — Group A canonical sweep target
-//                                  pattern-reversal/02-problems/01-stack-inversion
+//                                  pattern-reversal/problems/stack-inversion
 //   parentheses-checker          — Group A different stack pattern
-//                                  pattern-sequence-validation/02-problems/01-parentheses-checker
+//                                  pattern-sequence-validation/problems/parentheses-checker
 //   succeeding-inferior-element  — Group C, root-switched from next_smaller to stack
-//                                  pattern-next-closest-occurrence/02-problems/02-succeeding-inferior-element
+//                                  pattern-next-closest-occurrence/problems/succeeding-inferior-element
 
 import { test, expect, type Page } from "@playwright/test";
 
-const SECTION = "02-linear-structures/05-stack";
+const SECTION = "linear-structures/stack";
 const CHAPTERS = [
   {
-    slug: `${SECTION}/08-pattern-reversal/02-problems/01-stack-inversion`,
+    slug: `${SECTION}/pattern-reversal/problems/stack-inversion`,
     name: "stack-inversion",
   },
   {
-    slug: `${SECTION}/11-pattern-sequence-validation/02-problems/01-parentheses-checker`,
+    slug: `${SECTION}/pattern-sequence-validation/problems/parentheses-checker`,
     name: "parentheses-checker",
   },
   {
-    slug: `${SECTION}/10-pattern-next-closest-occurrence/02-problems/02-succeeding-inferior-element`,
+    slug: `${SECTION}/pattern-next-closest-occurrence/problems/succeeding-inferior-element`,
     name: "succeeding-inferior-element",
   },
 ] as const;

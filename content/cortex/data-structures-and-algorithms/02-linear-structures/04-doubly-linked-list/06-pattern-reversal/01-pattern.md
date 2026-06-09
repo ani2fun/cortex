@@ -141,7 +141,7 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [Reverse a List](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-pattern-reversal-problems-reverse-a-list), [Reverse First K Nodes](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-pattern-reversal-problems-reverse-first-k-nodes), [Reverse Last K Nodes](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-pattern-reversal-problems-reverse-last-k-nodes), and [Reverse the Given Segment](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-pattern-reversal-problems-reverse-the-given-segment).
+Drill the family in **Practice** — [Reverse a List](/cortex/data-structures-and-algorithms/linear-structures/doubly-linked-list/pattern-reversal/problems/reverse-a-list), [Reverse First K Nodes](/cortex/data-structures-and-algorithms/linear-structures/doubly-linked-list/pattern-reversal/problems/reverse-first-k-nodes), [Reverse Last K Nodes](/cortex/data-structures-and-algorithms/linear-structures/doubly-linked-list/pattern-reversal/problems/reverse-last-k-nodes), and [Reverse the Given Segment](/cortex/data-structures-and-algorithms/linear-structures/doubly-linked-list/pattern-reversal/problems/reverse-the-given-segment).
 
 ## Reflect & Connect
 
@@ -151,8 +151,8 @@ The doubly-list reversal is a clean lesson in how a richer structure simplifies 
 - **Segment reversal is the common variant** — reverse first-`k`, last-`k`, or `[i, j]`: swap within the bounds, then reconnect *both* seams (every link is doubled, so there are twice as many to re-stitch). Getting all four boundary pointers right is the real exercise.
 - **Sometimes you don't reverse at all** — because a doubly list can already be walked *backward* from the tail via `prev`, "process the list in reverse" often needs no reversal — just iterate from the tail. Reach for an actual reversal only when you must hand off a list whose forward order is flipped.
 
-**Prerequisites:** [Doubly Linked Lists](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-doubly-linked-lists).
-**What's next:** reversal applied to bounded chunks — [Reversal as a Subproblem](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-pattern-reversal-subproblem-pattern).
+**Prerequisites:** [Doubly Linked Lists](/cortex/data-structures-and-algorithms/linear-structures/doubly-linked-list/doubly-linked-lists).
+**What's next:** reversal applied to bounded chunks — [Reversal as a Subproblem](/cortex/data-structures-and-algorithms/linear-structures/doubly-linked-list/pattern-reversal-subproblem/pattern).
 
 ## Recall
 

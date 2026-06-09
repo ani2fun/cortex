@@ -222,4 +222,4 @@ Argo CD picks up the new `SealedSecret` on its next sync, the controller decrypt
 
 The next chapter installs Argo CD, which is what'll start *applying* sealed secrets from Git automatically.
 
-→ Next: [Install Argo CD on wk-2](/cortex/homelab-from-scratch/secrets-and-gitops-install-argocd-on-wk-2)
+→ Next: [Install Argo CD on wk-2](/cortex/homelab-from-scratch/secrets-and-gitops/install-argocd-on-wk-2)

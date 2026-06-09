@@ -127,12 +127,12 @@ This is a structural lesson — drill searching in the pattern sets.
 
 Binary search is one idea — *halve a monotonic search space* — with a huge reach:
 
-- **The family** — exact match (above), the *first* index `≥` a target ([lower bound](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-lower-bound)) and *first* `>` ([upper bound](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-upper-bound)), first/last occurrence of a duplicate, and search in a [rotated sorted array](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-sorted-rotated-array).
+- **The family** — exact match (above), the *first* index `≥` a target ([lower bound](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/lower-bound)) and *first* `>` ([upper bound](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/upper-bound)), first/last occurrence of a duplicate, and search in a [rotated sorted array](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/sorted-rotated-array).
 - **It generalizes beyond arrays** — "binary search on the answer": if a yes/no predicate is monotonic over a numeric range (false… false, true… true), binary-search the boundary. That solves "minimum capacity to ship in D days," "smallest feasible X" — without any array at all. That's the [predicate-search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-minimum-predicate-search) patterns, the senior-level payoff.
 - **The prerequisite is monotonicity** — binary search needs the data (or the predicate) to be ordered so that one comparison rules out a whole half. No sorted/monotonic structure, no binary search. And mind the invariant: be explicit about whether your range is `[lo, hi]` inclusive or `[lo, hi)` half-open, and keep `mid`, the loop test, and the updates consistent with that choice.
 
-**Prerequisites:** [Introduction to Sorting](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-introduction-to-sorting).
-**What's next:** find the *first* element not less than a target — [Lower Bound](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-lower-bound).
+**Prerequisites:** [Introduction to Sorting](/cortex/data-structures-and-algorithms/sorting-and-searching/sorting/introduction-to-sorting).
+**What's next:** find the *first* element not less than a target — [Lower Bound](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/lower-bound).
 
 ## Recall
 

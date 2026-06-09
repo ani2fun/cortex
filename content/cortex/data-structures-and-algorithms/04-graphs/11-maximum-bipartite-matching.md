@@ -11,7 +11,7 @@ prereqs:
 
 The **assignment problem** is everywhere: match applicants to jobs they're qualified for, students to schools, taxis to riders, interview slots to candidates — pairing across **two groups** (a *bipartite* graph: left set `L`, right set `R`, edges only crossing between them). A **matching** is a set of edges with **no shared endpoint** — nobody gets two jobs, no job gets two people — and you want the **maximum** number of such pairs.
 
-Greedy fails: grab the first available pairing for each left node and you can paint yourself into a corner (match `A1→J1`, then `A2` — who only wants `J1` — is stuck, even though a different assignment pairs everyone). The fix is a beautiful **reduction**: turn the bipartite graph into a flow network — a super-source feeding every left node, every right node feeding a super-sink, all capacities 1 — and run [max-flow](/cortex/data-structures-and-algorithms/graphs-max-flow-min-cut-theorem). The maximum flow *equals* the maximum matching, and Ford-Fulkerson's reverse edges become the "unmatch and rematch" move that escapes the greedy trap.
+Greedy fails: grab the first available pairing for each left node and you can paint yourself into a corner (match `A1→J1`, then `A2` — who only wants `J1` — is stuck, even though a different assignment pairs everyone). The fix is a beautiful **reduction**: turn the bipartite graph into a flow network — a super-source feeding every left node, every right node feeding a super-sink, all capacities 1 — and run [max-flow](/cortex/data-structures-and-algorithms/graphs/max-flow-min-cut-theorem). The maximum flow *equals* the maximum matching, and Ford-Fulkerson's reverse edges become the "unmatch and rematch" move that escapes the greedy trap.
 
 ## See It Work
 
@@ -183,13 +183,13 @@ Then: report *which* pairs were matched (read the saturated `L→R` edges from t
 
 Bipartite matching is the textbook "reduce your problem to a solved one" lesson:
 
-- **The reduction is the skill** — you didn't write a new algorithm; you *modelled* matching as max-flow and reused [Ford-Fulkerson](/cortex/data-structures-and-algorithms/graphs-max-flow-min-cut-theorem) verbatim. Recognising "this is max-flow in disguise" (assignment, scheduling, edge-disjoint paths, project selection) is worth more than memorising any single algorithm.
+- **The reduction is the skill** — you didn't write a new algorithm; you *modelled* matching as max-flow and reused [Ford-Fulkerson](/cortex/data-structures-and-algorithms/graphs/max-flow-min-cut-theorem) verbatim. Recognising "this is max-flow in disguise" (assignment, scheduling, edge-disjoint paths, project selection) is worth more than memorising any single algorithm.
 - **Augmenting path = alternating path** — flow's augmenting path *is* matching's alternating path, and **Berge's theorem** ("maximum iff no augmenting path") is the max-flow stopping condition. The reverse edge is the "unmatch" move; greedy lacks it and gets stuck.
 - **Two famous companions** — **König's theorem** (bipartite max matching = min vertex cover) and **Hall's theorem** (a perfect matching of `L` exists iff every subset `S ⊆ L` has `|N(S)| ≥ |S|`) characterise *when* matchings exist and connect matching to covering — duality again, echoing max-flow/min-cut.
 - **Faster in practice** — plain Ford-Fulkerson gives `O(V·E)`; **Hopcroft-Karp** finds many shortest augmenting paths per phase for `O(E√V)`, the standard for large bipartite matching.
 
-**Prerequisites:** [Max-Flow / Min-Cut](/cortex/data-structures-and-algorithms/graphs-max-flow-min-cut-theorem).
-**What's next:** the optimisation classics that close out the graphs part — [Minimum Spanning Trees](/cortex/data-structures-and-algorithms/graphs-minimum-spanning-trees).
+**Prerequisites:** [Max-Flow / Min-Cut](/cortex/data-structures-and-algorithms/graphs/max-flow-min-cut-theorem).
+**What's next:** the optimisation classics that close out the graphs part — [Minimum Spanning Trees](/cortex/data-structures-and-algorithms/graphs/minimum-spanning-trees).
 
 ## Recall
 

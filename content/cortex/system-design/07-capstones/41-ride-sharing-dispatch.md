@@ -14,7 +14,7 @@ In **2018**, Uber open-sourced a curious little library called **H3** — a "hex
 
 That's the whole capstone in one design choice. A ride-sharing dispatch system *looks* like it should be a database query — "find drivers within 2 km" — but the data is **alive**: millions of drivers, each emitting a new GPS position every few seconds (Uber's DISCO dispatch system historically processed around **167,000 location updates per second**), and a rider who needs an answer in seconds. You cannot run a geo range-scan against a relational table at that write rate and read latency. So the heart of the system is a **geospatial index** — a cell grid held in memory, updated by the location firehose, queried with a **k-ring** to find nearby drivers in O(1).
 
-This capstone is about **space and time**: matching a moving point to the nearest of millions of moving points, continuously. It reuses the real-time/connection ideas from the [chat system](/cortex/system-design/capstones-chat-system) (drivers streaming location are like clients holding connections), but adds the geospatial dimension — and a delightful property the others lacked: **rides are local**, so the system shards naturally by geography.
+This capstone is about **space and time**: matching a moving point to the nearest of millions of moving points, continuously. It reuses the real-time/connection ideas from the [chat system](/cortex/system-design/capstones/chat-system) (drivers streaming location are like clients holding connections), but adds the geospatial dimension — and a delightful property the others lacked: **rides are local**, so the system shards naturally by geography.
 
 ## 2. Requirements and scope
 
@@ -30,11 +30,11 @@ This capstone is about **space and time**: matching a moving point to the neares
 - **Correctness under concurrency:** a driver must be matched to **exactly one** rider (no double-dispatch).
 - **Geographically shardable:** a ride request only ever concerns drivers in the same city/region.
 
-**Out of scope:** the routing/ETA engine's internals (we treat it as a service), payments ([Capstone 44](/cortex/system-design/capstones-payment-system)), fraud, and pooled/shared rides (a harder matching problem).
+**Out of scope:** the routing/ETA engine's internals (we treat it as a service), payments ([Capstone 44](/cortex/system-design/capstones/payment-system)), fraud, and pooled/shared rides (a harder matching problem).
 
 ## 3. Back-of-envelope estimation
 
-Numbers ([estimation](/cortex/system-design/foundations-back-of-envelope-estimation)) — and the location-update rate is the firehose that shapes everything. Assume **5 million** drivers online, each updating location every **4 seconds**, with peak **50,000** ride requests/second.
+Numbers ([estimation](/cortex/system-design/foundations/back-of-envelope-estimation)) — and the location-update rate is the firehose that shapes everything. Assume **5 million** drivers online, each updating location every **4 seconds**, with peak **50,000** ride requests/second.
 
 | Quantity | Calculation | Result |
 |---|---|---|
@@ -59,7 +59,7 @@ POST /trips/{id}/accept        (driver accepts the offer — atomic claim)
   200 OK | 409 Conflict        (409 if already claimed by another match)
 ```
 
-The location endpoint is fire-and-forget and **batched** — you don't write 1.25M individual rows/second; you aggregate updates over a short window and bulk-apply them to the index ([message-queue](/cortex/system-design/distributed-patterns-message-queues-and-streams) style). The `409 Conflict` on `accept` is the **single-assignment guard**: if two riders' matches both offered the same driver and one already claimed them, the second accept loses — no double-dispatch.
+The location endpoint is fire-and-forget and **batched** — you don't write 1.25M individual rows/second; you aggregate updates over a short window and bulk-apply them to the index ([message-queue](/cortex/system-design/distributed-patterns/message-queues-and-streams) style). The `409 Conflict` on `accept` is the **single-assignment guard**: if two riders' matches both offered the same driver and one already claimed them, the second accept loses — no double-dispatch.
 
 ## 5. Data model and the central decision
 
@@ -163,10 +163,10 @@ The elegant part is the **k-ring + ETA ranking + atomic claim** trio. The k-ring
 
 At 100× — **hundreds of millions of drivers, ~100M+ location updates/second** — here's what bends:
 
-- **Geography is the gift (shard by region).** A ride request in one city never needs a driver in another, so you **partition the entire system by geographic region** ([sharding](/cortex/system-design/building-blocks-sharding-and-partitioning)) — each region runs its own geo index and matcher, independent and horizontally scalable. This is *the* reason ride-sharing scales gracefully where a global social graph (the feed) does not.
+- **Geography is the gift (shard by region).** A ride request in one city never needs a driver in another, so you **partition the entire system by geographic region** ([sharding](/cortex/system-design/building-blocks/sharding-and-partitioning)) — each region runs its own geo index and matcher, independent and horizontally scalable. This is *the* reason ride-sharing scales gracefully where a global social graph (the feed) does not.
 - **Hot cells in dense areas.** A stadium letting out, an airport, downtown at rush hour — one cell can hold a huge fraction of a city's drivers and absorb a request storm. Use H3's **finer resolution** in dense areas (smaller hexagons), and shard hot cells across nodes.
 - **The location write firehose.** ~100M updates/s would crush per-update writes; **batch and aggregate** aggressively, keep the index in memory, and accept slightly stale positions (a driver 2 seconds out of date is fine). Most of the engineering is in making the *write* path cheap.
-- **Single-assignment under contention.** When demand spikes, many riders chase the same few nearby drivers; the atomic claim ([idempotency / compare-and-set](/cortex/system-design/distributed-patterns-idempotency-retries-backoff)) must be fast and correct, or you double-dispatch. This is the consistency-critical core amid an otherwise eventually-consistent system.
+- **Single-assignment under contention.** When demand spikes, many riders chase the same few nearby drivers; the atomic claim ([idempotency / compare-and-set](/cortex/system-design/distributed-patterns/idempotency-retries-backoff)) must be fast and correct, or you double-dispatch. This is the consistency-critical core amid an otherwise eventually-consistent system.
 - **ETA at scale.** Ranking by real road ETA means the routing engine is queried per match against a live road graph + traffic — a heavy service that's often pre-computed/cached per region and approximated for the candidate set, then refined for the winner.
 - **The surge feedback loop.** Surge is computed per cell over rolling windows; it must damp oscillation (price spikes that overshoot, then collapse) and resist gaming — a control-systems problem layered on the geo index.
 
@@ -224,7 +224,7 @@ Every line is a decision: `on_location` keeps the **cell→drivers** index curre
 - **Double-dispatch (the defining correctness bug).** Two riders' matches offer the same driver simultaneously; without an **atomic claim**, both think they got them. Claim the driver with a compare-and-set / lock and `409` the loser — this is the one place the system must be strongly consistent.
 - **Hot cells.** A stadium or airport concentrates thousands of drivers and a request storm into one cell. Use finer H3 resolution there and shard the cell; otherwise one cell becomes a bottleneck and a single point of contention.
 - **Nearest-by-line ≠ nearest-by-road.** The geometrically closest driver may be across a river or facing a one-way maze. Always rank candidates by **routing-engine ETA**, not k-ring distance — the k-ring only *narrows* candidates; ETA *chooses*.
-- **Stale locations.** A driver whose last update is 30 seconds old may have moved blocks; exclude drivers past a freshness threshold from matching, and treat "missing heartbeat" as offline (the [chat presence](/cortex/system-design/capstones-chat-system) problem again).
+- **Stale locations.** A driver whose last update is 30 seconds old may have moved blocks; exclude drivers past a freshness threshold from matching, and treat "missing heartbeat" as offline (the [chat presence](/cortex/system-design/capstones/chat-system) problem again).
 - **Decline cascades / no drivers.** The best driver declines or times out; the matcher must promptly offer the next candidate and widen the ring — and if the whole area is empty, that's a **supply** signal that should feed surge, not just an error to the rider.
 - **Surge oscillation and gaming.** A naïve surge loop can spike, suppress demand, crash, and spike again; damp it over rolling windows, and guard against drivers gaming it (e.g. coordinated mass logoff to trigger surge).
 
@@ -260,4 +260,4 @@ Every line is a decision: `on_location` keeps the **cell→drivers** index curre
 
 ---
 
-> **Next:** [42. Search autocomplete](/cortex/system-design/capstones-search-autocomplete) — ride-sharing matched points in *space*; autocomplete matches a growing *prefix* against billions of possible completions, and it has to respond *between your keystrokes* (tens of milliseconds). Next we design the **trie** (prefix tree) that makes "type-ahead" instant, how you rank the top suggestions for a prefix, and how you keep the suggestions fresh as the world's queries shift under you.
+> **Next:** [42. Search autocomplete](/cortex/system-design/capstones/search-autocomplete) — ride-sharing matched points in *space*; autocomplete matches a growing *prefix* against billions of possible completions, and it has to respond *between your keystrokes* (tens of milliseconds). Next we design the **trie** (prefix tree) that makes "type-ahead" instant, how you rank the top suggestions for a prefix, and how you keep the suggestions fresh as the world's queries shift under you.

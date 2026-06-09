@@ -273,7 +273,7 @@ Now each row sees only itself plus prior rows (with ties broken arbitrarily by r
 
 ## Frame doesn't apply to ranking functions
 
-`ROW_NUMBER`, `RANK`, `DENSE_RANK`, `NTILE` — covered in [Ranking](/cortex/languages/sql-window-functions-ranking) — operate on the whole partition regardless of frame. `LAG` and `LEAD` (covered in [Value Functions](/cortex/languages/sql-window-functions-value-functions)) also ignore the frame. Frames only matter for aggregate window functions and `FIRST_VALUE`/`LAST_VALUE`/`NTH_VALUE`.
+`ROW_NUMBER`, `RANK`, `DENSE_RANK`, `NTILE` — covered in [Ranking](/cortex/languages/sql/window-functions/ranking) — operate on the whole partition regardless of frame. `LAG` and `LEAD` (covered in [Value Functions](/cortex/languages/sql/window-functions/value-functions)) also ignore the frame. Frames only matter for aggregate window functions and `FIRST_VALUE`/`LAST_VALUE`/`NTH_VALUE`.
 
 ## `LAST_VALUE` has a frame surprise
 
@@ -288,7 +288,7 @@ Because the default frame ends at `CURRENT ROW`, `LAST_VALUE` sees a frame endin
 LAST_VALUE(x) OVER (ORDER BY t ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
 ```
 
-Covered in [Value Functions](/cortex/languages/sql-window-functions-value-functions); flagged here because it's a frame-related bug.
+Covered in [Value Functions](/cortex/languages/sql/window-functions/value-functions); flagged here because it's a frame-related bug.
 
 ---
 
@@ -341,10 +341,10 @@ For Postgres with native timestamps, `RANGE BETWEEN INTERVAL '5 minutes' PRECEDI
 
 # Cross-links
 
-- **Previous in this module:** [Window Basics](/cortex/languages/sql-window-functions-window-basics) — `OVER`, `PARTITION BY`, `ORDER BY`. Frames build on these.
-- **Next in this module:** [Ranking](/cortex/languages/sql-window-functions-ranking) — ranking functions don't use frames; they always see the whole partition.
-- **Forward reference:** [Value Functions](/cortex/languages/sql-window-functions-value-functions) — `LAST_VALUE`'s frame surprise is the canonical "this is why frames matter" story.
-- **Forward reference:** [Window Patterns](/cortex/languages/sql-window-functions-window-patterns) — moving averages, sessionisation, gap-filling all rely on explicit frame control.
+- **Previous in this module:** [Window Basics](/cortex/languages/sql/window-functions/window-basics) — `OVER`, `PARTITION BY`, `ORDER BY`. Frames build on these.
+- **Next in this module:** [Ranking](/cortex/languages/sql/window-functions/ranking) — ranking functions don't use frames; they always see the whole partition.
+- **Forward reference:** [Value Functions](/cortex/languages/sql/window-functions/value-functions) — `LAST_VALUE`'s frame surprise is the canonical "this is why frames matter" story.
+- **Forward reference:** [Window Patterns](/cortex/languages/sql/window-functions/window-patterns) — moving averages, sessionisation, gap-filling all rely on explicit frame control.
 
 ***
 
@@ -356,4 +356,4 @@ Frames are how you control which rows a window function sees. Three patterns to 
 2. **`ROWS` for fixed row counts; `RANGE` for value-relative offsets (calendar days, score brackets).** Pick the mode that matches the question. `ROWS` is more predictable; `RANGE` is what you want when gaps in the data shouldn't shrink the window.
 3. **Specify frames explicitly in production code.** Defaults are convenient but easy to misread. `ROWS BETWEEN N PRECEDING AND CURRENT ROW` is the most common explicit form — moving windows of fixed size are the bread and butter of analytics SQL.
 
-Master these three and the moving-window patterns in the [Window Patterns](/cortex/languages/sql-window-functions-window-patterns) chapter become straightforward applications of frame control.
+Master these three and the moving-window patterns in the [Window Patterns](/cortex/languages/sql/window-functions/window-patterns) chapter become straightforward applications of frame control.

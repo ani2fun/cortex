@@ -259,8 +259,8 @@ A common production pattern: **structured columns for what you know, JSONB for w
 
 # Cross-links
 
-- **Previous in this module:** [Hierarchies and Graphs](/cortex/languages/sql-advanced-patterns-hierarchies-and-graphs).
-- **Next in this module:** [Pivoting and Unpivoting](/cortex/languages/sql-advanced-patterns-pivoting-and-unpivoting).
+- **Previous in this module:** [Hierarchies and Graphs](/cortex/languages/sql/advanced-patterns/hierarchies-and-graphs).
+- **Next in this module:** [Pivoting and Unpivoting](/cortex/languages/sql/advanced-patterns/pivoting-and-unpivoting).
 
 ***
 

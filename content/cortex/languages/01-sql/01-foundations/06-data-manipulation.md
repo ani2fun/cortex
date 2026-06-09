@@ -23,7 +23,7 @@ The query updates **every customer in the table to score 100**. There is no `WHE
 
 Restore from backup, page the on-call DBA, write the post-mortem, learn the lesson. Every senior engineer has done this once, or has worked with someone who did. The rule that comes out of it is permanent: **never write a `DELETE` or `UPDATE` without a `WHERE` clause unless you genuinely mean every row** — and even then, type it twice.
 
-This chapter is about DML — Data Manipulation Language. The four statements (`INSERT`, `UPDATE`, `DELETE`, plus `MERGE` and Postgres's `INSERT … ON CONFLICT`) that change the rows in a table. The `RETURNING` clause that lets a write also read. The brief introduction to transactions — the safety net under every DML statement, covered properly in the [Transactions and Concurrency](/cortex/languages/sql-index) module. And the pitfalls that put DML, not DDL, at the top of the list of "ways to take down production."
+This chapter is about DML — Data Manipulation Language. The four statements (`INSERT`, `UPDATE`, `DELETE`, plus `MERGE` and Postgres's `INSERT … ON CONFLICT`) that change the rows in a table. The `RETURNING` clause that lets a write also read. The brief introduction to transactions — the safety net under every DML statement, covered properly in the [Transactions and Concurrency](/cortex/languages/sql/index) module. And the pitfalls that put DML, not DDL, at the top of the list of "ways to take down production."
 
 By the end you'll know how to insert, update, delete, and upsert correctly; how to use `RETURNING` to fold two queries into one; and how transactions protect you when you forget the `WHERE`.
 
@@ -48,7 +48,7 @@ By the end you'll know how to insert, update, delete, and upsert correctly; how 
 
 # The four DML statements
 
-The Data Manipulation Language family changes the *rows* in a table. Compare to DDL ([previous chapter](/cortex/languages/sql-foundations-data-definition)), which changes the *table itself*.
+The Data Manipulation Language family changes the *rows* in a table. Compare to DDL ([previous chapter](/cortex/languages/sql/foundations/data-definition)), which changes the *table itself*.
 
 | Statement | What it does |
 |---|---|
@@ -57,7 +57,7 @@ The Data Manipulation Language family changes the *rows* in a table. Compare to 
 | `DELETE` | Remove rows |
 | `MERGE` | Insert / update / delete in one statement based on a match condition |
 
-`MERGE` is standard SQL but historically poorly supported across dialects. PostgreSQL got it in 15 (2022); SQL Server has had it since 2008; Oracle has it; MySQL doesn't. Most production code uses Postgres's older but battle-tested **`INSERT … ON CONFLICT`** (covered in [§3](#on-conflict)) instead of `MERGE` — both express "insert, or update if there's a conflict" but `ON CONFLICT` is more concise and well-understood. We'll meet `MERGE` properly in the deeper [Schema and Constraints](/cortex/languages/sql-index) module.
+`MERGE` is standard SQL but historically poorly supported across dialects. PostgreSQL got it in 15 (2022); SQL Server has had it since 2008; Oracle has it; MySQL doesn't. Most production code uses Postgres's older but battle-tested **`INSERT … ON CONFLICT`** (covered in [§3](#on-conflict)) instead of `MERGE` — both express "insert, or update if there's a conflict" but `ON CONFLICT` is more concise and well-understood. We'll meet `MERGE` properly in the deeper [Schema and Constraints](/cortex/languages/sql/index) module.
 
 DML statements **always run inside a transaction** — even when you don't see one. If you don't `BEGIN` explicitly, every statement gets its own implicit transaction and auto-commits. The implications are covered in [§7](#transactions-in-fifty-lines).
 
@@ -355,7 +355,7 @@ DELETE FROM customers;
 
 Every row is gone. The schema (table definition, indexes, constraints) is intact, but no rows remain. Same discipline as `UPDATE` without `WHERE`: never in shipped code without explicit intent; always inside a transaction in interactive use; always reviewed.
 
-For "empty the table," the right tool is usually `TRUNCATE` (covered in the [previous chapter](/cortex/languages/sql-foundations-data-definition#drop-and-truncate)) — faster, doesn't fire row-level triggers, can reset identity sequences. `DELETE FROM` is the right tool when you want a row-by-row delete (with triggers, with cascade), even if it deletes every row.
+For "empty the table," the right tool is usually `TRUNCATE` (covered in the [previous chapter](/cortex/languages/sql/foundations/data-definition#drop-and-truncate)) — faster, doesn't fire row-level triggers, can reset identity sequences. `DELETE FROM` is the right tool when you want a row-by-row delete (with triggers, with cascade), even if it deletes every row.
 
 ## DELETE with USING (Postgres extension)
 
@@ -380,7 +380,7 @@ Both work; the `USING` form is more efficient when the join is large.
 
 ## CASCADE deletes
 
-If `orders.customer_id` had a foreign key with `ON DELETE CASCADE`, deleting a customer would automatically delete their orders. This is convenient for cleanup but dangerous if you didn't intend it; full discussion in [Keys and References](/cortex/languages/sql-index).
+If `orders.customer_id` had a foreign key with `ON DELETE CASCADE`, deleting a customer would automatically delete their orders. This is convenient for cleanup but dangerous if you didn't intend it; full discussion in [Keys and References](/cortex/languages/sql/index).
 
 ---
 
@@ -419,7 +419,7 @@ The `UPDATE … RETURNING count` is the **exact production query** behind codefo
 
 # Transactions in fifty lines
 
-A transaction is a group of statements that either all succeed or all fail — atomically. The full treatment is in [Transactions and Concurrency](/cortex/languages/sql-index); the foundations-level summary:
+A transaction is a group of statements that either all succeed or all fail — atomically. The full treatment is in [Transactions and Concurrency](/cortex/languages/sql/index); the foundations-level summary:
 
 ```sql
 BEGIN;                          -- start a transaction
@@ -443,7 +443,7 @@ This is the safety net for interactive DML. If you're typing into `psql` against
 
 Outside an explicit `BEGIN`, every statement runs in its own implicit transaction and auto-commits. This is fine for `SELECT`s and intentional point-in-time DML; it's a footgun the moment you make a mistake.
 
-The full chapters in [Transactions and Concurrency](/cortex/languages/sql-index) cover ACID guarantees, isolation levels, MVCC, locks, and savepoints. For now: **`BEGIN`/`COMMIT`/`ROLLBACK` is your friend whenever you're touching DML interactively.**
+The full chapters in [Transactions and Concurrency](/cortex/languages/sql/index) cover ACID guarantees, isolation levels, MVCC, locks, and savepoints. For now: **`BEGIN`/`COMMIT`/`ROLLBACK` is your friend whenever you're touching DML interactively.**
 
 ---
 
@@ -467,7 +467,7 @@ If you `INSERT` and roll back, the auto-assigned `id` value is *consumed* — th
 
 ## NULL behaviour in DML
 
-Same NULL rules as in `SELECT` (see [Filtering](/cortex/languages/sql-foundations-filtering#the-null-trap)). `WHERE country = NULL` matches nothing in `UPDATE` and `DELETE` too; use `WHERE country IS NULL` for the rows you want.
+Same NULL rules as in `SELECT` (see [Filtering](/cortex/languages/sql/foundations/filtering#the-null-trap)). `WHERE country = NULL` matches nothing in `UPDATE` and `DELETE` too; use `WHERE country IS NULL` for the rows you want.
 
 ## RETURNING vs SELECT after-the-fact
 
@@ -501,7 +501,7 @@ One statement. Three SQL features:
 
 **(1) `UPDATE`** — modifying the single row of the `visits` table. `count = count + 1` is an in-place atomic increment; the database reads the current value, adds one, writes it back. (This is atomic at the row level: two concurrent requests will produce two distinct increments, never a lost update.)
 
-**(2) No `WHERE`** — but it's safe in this case because the table is by-design a *singleton*. Only one row exists. Updating "every row" is updating exactly one row. The DDL that creates the table seeds it with `INSERT INTO visits (count) VALUES (0)` so the row always exists before the first `UPDATE`. (See the [DDL chapter](/cortex/languages/sql-foundations-data-definition#production-reality) for the full schema.)
+**(2) No `WHERE`** — but it's safe in this case because the table is by-design a *singleton*. Only one row exists. Updating "every row" is updating exactly one row. The DDL that creates the table seeds it with `INSERT INTO visits (count) VALUES (0)` so the row always exists before the first `UPDATE`. (See the [DDL chapter](/cortex/languages/sql/foundations/data-definition#production-reality) for the full schema.)
 
 **(3) `RETURNING count`** — fold the read into the write. Without `RETURNING`, the handler would `UPDATE` then `SELECT count FROM visits` — two round-trips, racy under concurrency. With `RETURNING`, one round-trip, the value the increment landed on is the value returned.
 
@@ -522,7 +522,7 @@ Production SQL in real codebases is heavily DML by volume — every write is som
 
 # Practice ladder
 
-Use the [sample schema](/cortex/languages/sql-foundations-introduction-to-sql#the-sample-schema) in a scratch database. **Do every DML inside a `BEGIN; … ROLLBACK;` block** so your sample data isn't lost.
+Use the [sample schema](/cortex/languages/sql/foundations/introduction-to-sql#the-sample-schema) in a scratch database. **Do every DML inside a `BEGIN; … ROLLBACK;` block** so your sample data isn't lost.
 
 1. **Insert a new customer with `id = 6`, first_name `'Lisa'`, country `'France'`, score `200`. Return the new row using `RETURNING *`.** *Hint: column-listed `INSERT … RETURNING …`.*
 2. **Insert two customers in one statement.** *Hint: multi-row `VALUES`.*
@@ -546,10 +546,10 @@ Use the [sample schema](/cortex/languages/sql-foundations-introduction-to-sql#th
 
 # Cross-links
 
-- **Previous in this module:** [Data Definition](/cortex/languages/sql-foundations-data-definition) — the table-creation cousin to DML. DDL builds the bottle; DML pours the wine.
-- **Next module:** [Working with Multiple Tables](/cortex/languages/sql-index) — joins, set operators, subqueries. Once you have data in multiple tables, the question becomes how to combine them — which is also where `UPDATE … FROM` and `DELETE … USING` (mentioned briefly here) get their full treatment.
-- **Forward reference:** [Transactions and Concurrency](/cortex/languages/sql-index) — ACID, isolation levels, MVCC, locking, deadlocks. The full story behind the fifty-line summary in [§7](#transactions-in-fifty-lines).
-- **Forward reference:** [Schema and Constraints](/cortex/languages/sql-index) — `MERGE`, advanced foreign-key cascades, partition-aware DML. The deeper concerns that touch DML once your schemas grow up.
+- **Previous in this module:** [Data Definition](/cortex/languages/sql/foundations/data-definition) — the table-creation cousin to DML. DDL builds the bottle; DML pours the wine.
+- **Next module:** [Working with Multiple Tables](/cortex/languages/sql/index) — joins, set operators, subqueries. Once you have data in multiple tables, the question becomes how to combine them — which is also where `UPDATE … FROM` and `DELETE … USING` (mentioned briefly here) get their full treatment.
+- **Forward reference:** [Transactions and Concurrency](/cortex/languages/sql/index) — ACID, isolation levels, MVCC, locking, deadlocks. The full story behind the fifty-line summary in [§7](#transactions-in-fifty-lines).
+- **Forward reference:** [Schema and Constraints](/cortex/languages/sql/index) — `MERGE`, advanced foreign-key cascades, partition-aware DML. The deeper concerns that touch DML once your schemas grow up.
 - **DSA cross-reference:** [Hash Table](/cortex/data-structures-and-algorithms/linear-structures-hash-table-introduction-to-hash-tables) — `INSERT … ON CONFLICT (key) DO UPDATE` is the SQL form of "if the key is there, update; else, insert," which is the exact semantics of a hash-table `set` operation. Same idea, different scale.
 
 ***

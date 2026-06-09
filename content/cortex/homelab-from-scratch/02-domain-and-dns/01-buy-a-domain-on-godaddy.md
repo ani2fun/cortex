@@ -8,7 +8,7 @@ summary: A pragmatic walkthrough of buying your first domain on GoDaddy — what
 You technically don't need one. Kubernetes will route to your services on `whoami.<random>.nip.io` or any other free DNS-as-a-host trick. But a real domain buys you three things you can't shim around:
 
 1. **A wildcard cert.** A `*.homelab.example` Let's Encrypt certificate covers every subdomain you ever spin up. Without a real domain, you're issuing one cert per host, and you're going to make ~50 hosts before you stop counting.
-2. **DNS-01 validation.** Some of your services will live behind networks that can't be reached from the public internet over HTTP — DNS-01 doesn't care, because it validates ownership through DNS records, not HTTP servers. You'll see the full flow in [The Cloudflare API token](/cortex/homelab-from-scratch/domain-and-dns-the-cloudflare-api-token).
+2. **DNS-01 validation.** Some of your services will live behind networks that can't be reached from the public internet over HTTP — DNS-01 doesn't care, because it validates ownership through DNS records, not HTTP servers. You'll see the full flow in [The Cloudflare API token](/cortex/homelab-from-scratch/domain-and-dns/the-cloudflare-api-token).
 3. **Memorability.** `kakde.eu` is shorter than the most generous nip.io subdomain you'll get. Six months in, "ssh argocd.homelab.example" is dramatically less typing than "ssh some-25-character-thing".
 
 Total cost: **~€10/year** for a `.com`, `.eu`, `.dev`, or similar. Less than one Friday night dinner.
@@ -55,7 +55,7 @@ Specific clicks for `homelab.example`:
    - **Domain privacy** — accept it if free, decline it if it costs extra. Your registration data leaks to WHOIS regardless of which paid plan you pick; what privacy upsells do is hide your home address, which Cloudflare and most modern registrars handle for free.
    - **Premium DNS** — decline. We're moving DNS to Cloudflare. GoDaddy's DNS will only briefly hold the zone before we cut over.
    - **Email hosting** — decline unless you actually want a `you@homelab.example` mailbox today. You can always add this later.
-   - **SSL certificate** — decline, decline, decline. We are getting Let's Encrypt for free in [TLS on autopilot](/cortex/homelab-from-scratch/the-edge-tls-on-autopilot).
+   - **SSL certificate** — decline, decline, decline. We are getting Let's Encrypt for free in [TLS on autopilot](/cortex/homelab-from-scratch/the-edge/tls-on-autopilot).
    - **Website builder** — decline.
 3. Pay for the **shortest renewal period you'll commit to** (usually 1 year). Multi-year discounts at GoDaddy are real but small; they also lock in any price hike GoDaddy decides to apply later.
 4. Confirm the domain shows up in your account dashboard. You're done at GoDaddy. Everything else happens at the DNS provider.
@@ -79,4 +79,4 @@ If you're starting from scratch in 2026, **Cloudflare Registrar** is probably th
 
 That's all you need. Next we'll point those nameservers at Cloudflare and turn this domain from a piece of paper into something a `dig` query can answer.
 
-→ Next: [Move DNS to Cloudflare](/cortex/homelab-from-scratch/domain-and-dns-move-dns-to-cloudflare)
+→ Next: [Move DNS to Cloudflare](/cortex/homelab-from-scratch/domain-and-dns/move-dns-to-cloudflare)

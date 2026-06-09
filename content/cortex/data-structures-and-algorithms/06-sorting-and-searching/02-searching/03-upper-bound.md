@@ -9,7 +9,7 @@ prereqs:
 
 ## Why It Exists
 
-[Lower bound](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-lower-bound) found the first index `≥ target` — the *leftmost* occurrence. Upper bound is its mirror: the first index whose value is **strictly greater** than the target — i.e. *one past the last* occurrence.
+[Lower bound](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/lower-bound) found the first index `≥ target` — the *leftmost* occurrence. Upper bound is its mirror: the first index whose value is **strictly greater** than the target — i.e. *one past the last* occurrence.
 
 On its own that's the answer to "first element `> x`." But the real power is the **pair**: `[lower_bound(x), upper_bound(x))` is exactly the range of elements *equal* to `x`. So `upper_bound(x) − lower_bound(x)` is the count of `x`, and lower/upper bounds of two values give the count in any range — all in `O(log n)`. Remarkably, upper bound is the *same* binary search as lower bound with **one operator changed**.
 
@@ -138,8 +138,8 @@ Upper bound completes the boundary pair:
 - **One operator, two functions** — internalize that lower bound uses `<` and upper bound uses `≤`; everything else is identical. Many bugs come from picking the wrong one (off-by-one in counts), so tie the choice to "do I want the first equal element, or just past the last?"
 - **Both are the half-open template** — and that template generalizes to the [predicate-search patterns](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-minimum-predicate-search): lower/upper bound are just predicate searches where the predicate is `value ≥ target` / `value > target`. Master the template here and "binary search on the answer" is the same code with a different predicate.
 
-**Prerequisites:** [Lower Bound](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-lower-bound).
-**What's next:** binary search lifted into two dimensions — [2D Binary Search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-2d-binary-search).
+**Prerequisites:** [Lower Bound](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/lower-bound).
+**What's next:** binary search lifted into two dimensions — [2D Binary Search](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/2d-binary-search).
 
 ## Recall
 

@@ -7,7 +7,7 @@ prereqs:
 
 ## Why It Exists
 
-The [knapsack lesson](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-knapsack) gave you one recurrence: decide what to take from a list under a budget. The payoff is how *many* unrelated-looking problems are that recurrence wearing a costume. A vending machine making change with the fewest coins? Unbounded knapsack, **min** aggregator. Cutting a steel rod into pieces for maximum revenue? Unbounded knapsack where the "items" are cut lengths, **max** aggregator. Counting the distinct ways to make change? **Sum** aggregator. Does a multiset contain a subset hitting a target? 0/1 knapsack, **boolean** aggregator.
+The [knapsack lesson](/cortex/data-structures-and-algorithms/algorithms-by-strategy/dynamic-programming/knapsack) gave you one recurrence: decide what to take from a list under a budget. The payoff is how *many* unrelated-looking problems are that recurrence wearing a costume. A vending machine making change with the fewest coins? Unbounded knapsack, **min** aggregator. Cutting a steel rod into pieces for maximum revenue? Unbounded knapsack where the "items" are cut lengths, **max** aggregator. Counting the distinct ways to make change? **Sum** aggregator. Does a multiset contain a subset hitting a target? 0/1 knapsack, **boolean** aggregator.
 
 The transferable skill isn't four algorithms — it's *recognising the shape* and *picking the aggregator*. Once you see "choose pieces under a budget, optimise/count some quantity," you already have the table; you only choose how to combine subproblems.
 
@@ -73,7 +73,7 @@ skeleton -> boolA
 Two ideas carry the whole lesson:
 
 - **The aggregator is the problem.** Swap `min` for `max` and "fewest coins" becomes "most rod revenue." Swap it for `+=` and you *count* solutions instead of optimising one. Swap it for `or` and you ask "is it even possible?" The table-filling loop never changes — recognising that is the entire knowledge transfer.
-- **0/1 vs unbounded is still the loop direction.** Coin change, coin change II, and rod cutting allow unlimited copies → ascending capacity (an item's update can read a cell already updated with that item). Subset sum is 0/1 → descending. This is exactly the [knapsack](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-knapsack) loop-direction rule, reused.
+- **0/1 vs unbounded is still the loop direction.** Coin change, coin change II, and rod cutting allow unlimited copies → ascending capacity (an item's update can read a cell already updated with that item). Subset sum is 0/1 → descending. This is exactly the [knapsack](/cortex/data-structures-and-algorithms/algorithms-by-strategy/dynamic-programming/knapsack) loop-direction rule, reused.
 
 > **Key takeaway.** Coin change (min), rod cutting (max), coin change II (count), subset sum (boolean) are *one* DP — knapsack — distinguished only by the **aggregator** (`min` / `max` / `+=` / `or`) and the 0/1-vs-unbounded **loop direction**. The hard part is seeing the disguise; the code is a one-line change.
 
@@ -151,10 +151,10 @@ Both print `22` then `10`. The length-8 rod earns most as a 2 + 6 split (`5 + 17
 ## Reflect & Connect
 
 - **The aggregator picks the problem.** `min` (coin change), `max` (rod cutting), `+=` (count ways), `or` (subset sum) — one knapsack table, four questions. Internalising this turns a dozen "new" problems into one you already know.
-- **Loop direction = 0/1 vs unbounded.** Reusable items (coins, rod cuts) sweep capacity ascending; one-shot items (subset sum, [partition](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-knapsack)) sweep descending. Straight from the knapsack lesson.
+- **Loop direction = 0/1 vs unbounded.** Reusable items (coins, rod cuts) sweep capacity ascending; one-shot items (subset sum, [partition](/cortex/data-structures-and-algorithms/algorithms-by-strategy/dynamic-programming/knapsack)) sweep descending. Straight from the knapsack lesson.
 - **Loop *nesting* = combinations vs permutations.** In counting DPs, coins-outer counts unordered combinations; amount-outer counts ordered sequences. Orthogonal to direction, and a notorious interview trap.
 - **`-1` / `INF` sentinels matter.** Coin change must distinguish "0 coins" (amount 0) from "impossible" (no combination) — seed unreachable cells to infinity and translate to `-1` at the end. Off-by-a-sentinel is a classic bug.
-- **Recognising the disguise is the meta-skill.** "Choose reusable/one-shot pieces under a budget, optimise or count a quantity" → knapsack. [Subset sum](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-subset-sum-pattern) gets its own pattern lesson; combination/permutation counting recurs throughout DP.
+- **Recognising the disguise is the meta-skill.** "Choose reusable/one-shot pieces under a budget, optimise or count a quantity" → knapsack. [Subset sum](/cortex/data-structures-and-algorithms/algorithms-by-strategy/dynamic-programming/pattern-subset-sum/pattern) gets its own pattern lesson; combination/permutation counting recurs throughout DP.
 
 ## Recall
 

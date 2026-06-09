@@ -195,7 +195,7 @@ Both print `15` then `3`. `"banana"` has `21` substrings with duplicates but onl
 - **Sorting makes search binary search.** Occurrences of `P` are prefixes of suffixes; sorted, they're contiguous, so `O(m log n)` bisection finds them. No tree, no pointers.
 - **The LCP array is the multiplier.** Adjacent-suffix overlaps encode all shared-substring information: longest repeated substring (max LCP), distinct-substring count (`n(n+1)/2 − Σ lcp`), and longest common substring of two texts (concatenate with a separator, scan LCP across the boundary).
 - **Compact vs the suffix tree.** A suffix tree answers many queries in `O(m)` but costs heavy node/pointer memory; a suffix array is `n` integers + LCP, far lighter and cache-friendly. Production string indexes (BWT, FM-index, bioinformatics) favour the array.
-- **Construction has tiers.** Naive sort `O(n² log n)` (this lesson), prefix-doubling `O(n log n)`, and SA-IS / DC3 `O(n)`. Learn the idea on the naive build; reach for a library `O(n)` builder at scale. The [suffix automaton](/cortex/data-structures-and-algorithms/strings-suffix-automaton) (next) is the *online* alternative that ingests the string incrementally.
+- **Construction has tiers.** Naive sort `O(n² log n)` (this lesson), prefix-doubling `O(n log n)`, and SA-IS / DC3 `O(n)`. Learn the idea on the naive build; reach for a library `O(n)` builder at scale. The [suffix automaton](/cortex/data-structures-and-algorithms/strings/suffix-automaton) (next) is the *online* alternative that ingests the string incrementally.
 
 ## Recall
 

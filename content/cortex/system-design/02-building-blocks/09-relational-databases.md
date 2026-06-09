@@ -191,7 +191,7 @@ The pattern: **read the plan from the inside out** (leaves first; results bubble
 | Choice | What you give up | What you get |
 |---|---|---|
 | Single relational DB | horizontal write scaling | full SQL, ACID, mature tooling, decades of operator knowledge |
-| Adding a read replica ([Lesson 11](/cortex/system-design/building-blocks-replication)) | a tiny bit of replication lag | linear read scaling; a hot standby for failover |
+| Adding a read replica ([Lesson 11](/cortex/system-design/building-blocks/replication)) | a tiny bit of replication lag | linear read scaling; a hot standby for failover |
 | Adding an index | a few % write overhead per index | constant 3–4 page reads for the indexed lookup |
 | 3NF schema | join cost on reads | every fact lives in one place; updates are simple |
 | Denormalising | manual update propagation | flat reads for one specific query |
@@ -201,7 +201,7 @@ The pattern: **read the plan from the inside out** (leaves first; results bubble
 | WAL fsync on every commit | per-commit fsync latency (~ms on SSD) | durability — commit means committed even if the box dies |
 | Tuning autovacuum | the operational attention | a database that doesn't bloat |
 
-The default modern stack in 2026: **Postgres + pgbouncer + 1–2 read replicas + a CDN edge cache + an L1+L2 application cache** (the four-tier setup from [Lesson 8](/cortex/system-design/building-blocks-caching)). 80% of services that think they need [sharding](/cortex/system-design/building-blocks-sharding-and-partitioning) or [NoSQL](/cortex/system-design/building-blocks-nosql-families) actually need this stack done correctly.
+The default modern stack in 2026: **Postgres + pgbouncer + 1–2 read replicas + a CDN edge cache + an L1+L2 application cache** (the four-tier setup from [Lesson 8](/cortex/system-design/building-blocks/caching)). 80% of services that think they need [sharding](/cortex/system-design/building-blocks/sharding-and-partitioning) or [NoSQL](/cortex/system-design/building-blocks/nosql-families) actually need this stack done correctly.
 
 ## 6. Edge cases and failure modes
 
@@ -368,4 +368,4 @@ Otherwise an order's historical total changes whenever you re-price the item —
 
 ---
 
-> **Next:** [10. NoSQL families](/cortex/system-design/building-blocks-nosql-families) — once you know what a well-tuned relational database can do, the question becomes: when does the workload genuinely *not fit* this shape, and what alternatives have been built around the gaps? KV stores, document stores, wide-column stores, graph databases — and the surprisingly narrow set of cases where they win against a properly-indexed Postgres.
+> **Next:** [10. NoSQL families](/cortex/system-design/building-blocks/nosql-families) — once you know what a well-tuned relational database can do, the question becomes: when does the workload genuinely *not fit* this shape, and what alternatives have been built around the gaps? KV stores, document stores, wide-column stores, graph databases — and the surprisingly narrow set of cases where they win against a properly-indexed Postgres.

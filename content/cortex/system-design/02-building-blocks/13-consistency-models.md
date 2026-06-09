@@ -51,7 +51,7 @@ The strict-to-loose ordering matters: if your database offers linearisable, you 
 
 ### 3.2 The anomalies, by example
 
-These are what each consistency level lets through. The widget from [Lesson 11](/cortex/system-design/building-blocks-replication) makes some of them visible directly.
+These are what each consistency level lets through. The widget from [Lesson 11](/cortex/system-design/building-blocks/replication) makes some of them visible directly.
 
 **Stale read** — a read returns a value that's already been overwritten by a more recent write. *Allowed* by every model below linearisable. The `ReplicationLagSimulator` shows this directly.
 
@@ -65,7 +65,7 @@ These are what each consistency level lets through. The widget from [Lesson 11](
 
 **Phantom read** — a query reading "all rows matching X" sees a different set across two reads because another transaction inserted a new row matching X. Prevented by serialisable / Postgres's REPEATABLE READ (snapshot).
 
-**Lost update** — two transactions read the same value, both increment in memory, both write back; one's update silently overwrites the other. *Allowed by* READ COMMITTED (the Postgres default; covered in [Lesson 9](/cortex/system-design/building-blocks-relational-databases)). Prevented by SERIALIZABLE, REPEATABLE READ in Postgres, or `SELECT FOR UPDATE`.
+**Lost update** — two transactions read the same value, both increment in memory, both write back; one's update silently overwrites the other. *Allowed by* READ COMMITTED (the Postgres default; covered in [Lesson 9](/cortex/system-design/building-blocks/relational-databases)). Prevented by SERIALIZABLE, REPEATABLE READ in Postgres, or `SELECT FOR UPDATE`.
 
 ### 3.3 What different storage shapes offer by default
 
@@ -82,9 +82,9 @@ The pattern: **most systems default to the weakest practical model**, and offer 
 
 ### 3.4 Connecting back to CAP / PACELC
 
-[Lesson 4 (CAP and PACELC, honestly)](/cortex/system-design/foundations-cap-and-pacelc) introduced the *partition* dimension. Consistency models live on the *non-partition* axis — the "L" (latency) or "C" (consistency) trade-off in PACELC, *during normal operation*. The `PartitionSimulator` widget from Foundations 4 still applies here: under a partition, a CP system stays strongly consistent (refuses some writes); an AP system serves stale data (continues writes). What lesson 13 adds is: **even during normal operation** (no partition), you choose a consistency level per query; even an "AP system" can give you strong reads if you ask for the right primitive (Cassandra's `CONSISTENCY ALL` or LWT).
+[Lesson 4 (CAP and PACELC, honestly)](/cortex/system-design/foundations/cap-and-pacelc) introduced the *partition* dimension. Consistency models live on the *non-partition* axis — the "L" (latency) or "C" (consistency) trade-off in PACELC, *during normal operation*. The `PartitionSimulator` widget from Foundations 4 still applies here: under a partition, a CP system stays strongly consistent (refuses some writes); an AP system serves stale data (continues writes). What lesson 13 adds is: **even during normal operation** (no partition), you choose a consistency level per query; even an "AP system" can give you strong reads if you ask for the right primitive (Cassandra's `CONSISTENCY ALL` or LWT).
 
-The hardest level — **linearisability** — is the strongest single-key guarantee any practical system offers, and it is what **consensus algorithms** ([Lesson 14](/cortex/system-design/building-blocks-consensus-paxos-and-raft)) actually provide. Linearisable reads on etcd cost ~1 RTT to the Raft leader; everything weaker is the database choosing to short-circuit that path. When a system claims "strongly consistent reads", what it usually means under the hood is "we route this query to a node that ran consensus on its local state".
+The hardest level — **linearisability** — is the strongest single-key guarantee any practical system offers, and it is what **consensus algorithms** ([Lesson 14](/cortex/system-design/building-blocks/consensus-paxos-and-raft)) actually provide. Linearisable reads on etcd cost ~1 RTT to the Raft leader; everything weaker is the database choosing to short-circuit that path. When a system claims "strongly consistent reads", what it usually means under the hood is "we route this query to a node that ran consensus on its local state".
 
 ## 4. Worked example — three queries, three different consistency levels
 
@@ -104,7 +104,7 @@ What consistency level does each need?
 
 The lesson is **three different consistency levels on three queries in the same screen**. Picking the strongest for everything wastes latency; picking the weakest for everything is incident-bait. Picking right per query is the senior move.
 
-This is the same axis the `ReplicationLagSimulator` from [Lesson 11](/cortex/system-design/building-blocks-replication) illustrates: drag the read-delay slider against the replication lag, and observe the threshold at which the read sees the latest write. *Linearisable reads pay the latency to always be above the threshold; eventually-consistent reads accept being below it.*
+This is the same axis the `ReplicationLagSimulator` from [Lesson 11](/cortex/system-design/building-blocks/replication) illustrates: drag the read-delay slider against the replication lag, and observe the threshold at which the read sees the latest write. *Linearisable reads pay the latency to always be above the threshold; eventually-consistent reads accept being below it.*
 
 ## 5. Trade-offs
 
@@ -128,7 +128,7 @@ The default modern stack: **READ COMMITTED on Postgres, per-query `SELECT FOR UP
 
 ### 6.2 Read-your-writes ≠ session affinity
 
-"Stick the user to one replica" only fixes read-your-writes if their write also went to that replica. In a single-leader system, writes go to the primary; reads are served from replicas; so session-pinning the *user* to a replica doesn't help — the replica still trails the primary. The correct fix: after a write, route the same user's reads to the primary for a TTL (or use causal session tokens). [Lesson 11 §6.3](/cortex/system-design/building-blocks-replication) covers this.
+"Stick the user to one replica" only fixes read-your-writes if their write also went to that replica. In a single-leader system, writes go to the primary; reads are served from replicas; so session-pinning the *user* to a replica doesn't help — the replica still trails the primary. The correct fix: after a write, route the same user's reads to the primary for a TTL (or use causal session tokens). [Lesson 11 §6.3](/cortex/system-design/building-blocks/replication) covers this.
 
 ### 6.3 "Strong reads" in DynamoDB are stronger than people think — but also weaker
 
@@ -214,10 +214,10 @@ Senior heuristic: **the latency budget of a UI screen is the budget for the slow
 
 - **[Kyle Kingsbury, *Strong consistency models*](https://aphyr.com/posts/313-strong-consistency-models)** (2014). The post that puts every common model on one lattice diagram. Required reading if you're going to design with consistency in mind.
 - **[Werner Vogels, *Eventually Consistent*, CACM 2009](https://queue.acm.org/detail.cfm?id=1466448)** — Amazon CTO's classic on the spectrum of consistency, written for the practitioner.
-- **[Daniel Abadi, *Consistency Tradeoffs in Modern Distributed Database Systems*](https://cs.umd.edu/~abadi/papers/abadi-pacelc.pdf)** (2012) — the paper that introduced PACELC. Pairs naturally with [Lesson 4](/cortex/system-design/foundations-cap-and-pacelc).
+- **[Daniel Abadi, *Consistency Tradeoffs in Modern Distributed Database Systems*](https://cs.umd.edu/~abadi/papers/abadi-pacelc.pdf)** (2012) — the paper that introduced PACELC. Pairs naturally with [Lesson 4](/cortex/system-design/foundations/cap-and-pacelc).
 - **[The Jepsen analysis archives](https://jepsen.io/analyses)** — every popular database has been Jepsen-tested. Each report is a deep look at what a system *actually* delivers vs what it claims.
 - **[Doug Terry, *Replicated Data Consistency Explained Through Baseball*](https://www.microsoft.com/en-us/research/wp-content/uploads/2011/10/ConsistencyAndBaseballReport.pdf)** (Microsoft Research, 2011). The canonical worked example — different roles in a baseball game need different consistency levels.
 
 ---
 
-> **Next:** [14. Consensus — Paxos and Raft, from scratch](/cortex/system-design/building-blocks-consensus-paxos-and-raft) — the algorithms that *let* you build a linearisable system on top of unreliable nodes. The widget there is the most ambitious in the catalog: a Raft-cluster animator that walks leader election + log replication + leader failover step by step.
+> **Next:** [14. Consensus — Paxos and Raft, from scratch](/cortex/system-design/building-blocks/consensus-paxos-and-raft) — the algorithms that *let* you build a linearisable system on top of unreliable nodes. The widget there is the most ambitious in the catalog: a Raft-cluster animator that walks leader election + log replication + leader failover step by step.

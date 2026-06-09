@@ -115,7 +115,7 @@ The plugin supports circe and jsoniter. We picked circe because:
 - The codegen-emitted codecs are `Encoder`/`Decoder` instances, which compose with the rest of the tapir-circe ecosystem.
 - jsoniter is faster but its macros are heavier and the error messages are worse during development.
 
-The trade-off vs zio-json: zio-json isn't supported by the codegen plugin at all. We could hand-write zio-json codecs, but then we'd lose the auto-generated ones, which is the whole point of the plugin. (Discussed in [Server Stack](/cortex/cortex-onboarding/deep-dive-server-stack#why-circe-and-not-zio-json).)
+The trade-off vs zio-json: zio-json isn't supported by the codegen plugin at all. We could hand-write zio-json codecs, but then we'd lose the auto-generated ones, which is the whole point of the plugin. (Discussed in [Server Stack](/cortex/cortex-onboarding/deep-dive/server-stack#why-circe-and-not-zio-json).)
 
 **If you change to `"jsoniter"`:** swap `tapir-json-circe` for `tapir-json-jsoniter` in `build.sbt`, run `sbt clean compile`, and verify the OpenAPI doc round-trips. Most callers won't notice.
 
@@ -211,7 +211,7 @@ That last bullet is the magic. The build is your migration script. You can't shi
 | Server pattern-matches `lang` against an empty value. | No artefact gets built. |
 | Eventually somebody tests in a browser and sees "Bad input — language required". | Issue surfaces in the IDE, no commit possible. |
 
-This is also why the [Extending the Project](/cortex/cortex-onboarding/working-on-it-extending) recipe for "add an API endpoint" insists on starting at `api/openapi.yaml` and chasing compile errors — that's the codegen safety net at work.
+This is also why the [Extending the Project](/cortex/cortex-onboarding/working-on-it/extending) recipe for "add an API endpoint" insists on starting at `api/openapi.yaml` and chasing compile errors — that's the codegen safety net at work.
 
 ## Where to look first when codegen breaks
 

@@ -9,9 +9,9 @@ prereqs:
 
 ## Why It Exists
 
-"Is there a pair of keys summing to `k`?" On a sorted *array* this is the classic [converging two-pointer](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-pattern): a left pointer at the smallest, a right at the largest, move inward by comparing the sum to the target. A BST's in-order is sorted, so the *same* logic applies — but a BST isn't an array; you can't index "left" and "right" ends directly.
+"Is there a pair of keys summing to `k`?" On a sorted *array* this is the classic [converging two-pointer](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers/pattern): a left pointer at the smallest, a right at the largest, move inward by comparing the sum to the target. A BST's in-order is sorted, so the *same* logic applies — but a BST isn't an array; you can't index "left" and "right" ends directly.
 
-The trick is to run **two [BST iterators](/cortex/data-structures-and-algorithms/trees-binary-search-tree-iterators-in-binary-search-trees) at once**: an **ascending** one (smallest key first, walking the left spine) and a **descending** one (largest key first, walking the right spine). They play the roles of the array's `lo` and `hi` pointers. Converge them — too small a sum, advance the ascending iterator; too big, advance the descending one. `O(n)` time, `O(h)` space — and crucially, you never flatten the tree into an `O(n)` array.
+The trick is to run **two [BST iterators](/cortex/data-structures-and-algorithms/trees/binary-search-tree/iterators-in-binary-search-trees) at once**: an **ascending** one (smallest key first, walking the left spine) and a **descending** one (largest key first, walking the right spine). They play the roles of the array's `lo` and `hi` pointers. Converge them — too small a sum, advance the ascending iterator; too big, advance the descending one. `O(n)` time, `O(h)` space — and crucially, you never flatten the tree into an `O(n)` array.
 
 ## See It Work
 
@@ -61,7 +61,7 @@ print(find_target(root, 28))   # False
 
 ## How It Works
 
-Two iterators, each an explicit-stack BST walk (from the [iterators lesson](/cortex/data-structures-and-algorithms/trees-binary-search-tree-iterators-in-binary-search-trees)):
+Two iterators, each an explicit-stack BST walk (from the [iterators lesson](/cortex/data-structures-and-algorithms/trees/binary-search-tree/iterators-in-binary-search-trees)):
 
 - **Ascending** — stack seeded with the left spine; `next_asc()` pops the smallest and pushes the left spine of its right child.
 - **Descending** — the mirror: stack seeded with the right spine; `next_desc()` pops the largest and pushes the right spine of its left child.
@@ -188,18 +188,18 @@ public class Main {
 }
 ```
 
-Drill the family in **Practice** — [Two Sum on BST](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-two-pointer-problems-two-sum-on-bst), [Multiple Tree](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-two-pointer-problems-multiple-tree), [Median in BST](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-two-pointer-problems-median-in-bst), and [BST Pair Sum](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-two-pointer-problems-bst-pair-sum).
+Drill the family in **Practice** — [Two Sum on BST](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-two-pointer/problems/two-sum-on-bst), [Multiple Tree](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-two-pointer/problems/multiple-tree), [Median in BST](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-two-pointer/problems/median-in-bst), and [BST Pair Sum](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-two-pointer/problems/bst-pair-sum).
 
 ## Reflect & Connect
 
 Two-pointer-on-a-BST is a clean example of composing patterns:
 
-- **It's array two-pointer + BST iterators** — the [converging two-pointer](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-pattern) supplies the logic; two [iterators](/cortex/data-structures-and-algorithms/trees-binary-search-tree-iterators-in-binary-search-trees) (ascending + descending) supply the "next from each end." Two patterns you already know combine into a new one.
+- **It's array two-pointer + BST iterators** — the [converging two-pointer](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers/pattern) supplies the logic; two [iterators](/cortex/data-structures-and-algorithms/trees/binary-search-tree/iterators-in-binary-search-trees) (ascending + descending) supply the "next from each end." Two patterns you already know combine into a new one.
 - **`O(h)` space is the payoff** — flattening to a sorted array and two-pointering it is `O(n)` space; generating keys on demand from both ends keeps it to the iterator stacks' `O(h)`. Choose this when the tree is large and you can't afford the array.
 - **The family extends** — three-sum on a BST (fix one key, two-pointer the rest), pair-with-given-difference, and "closest pair to a target." All are the array two-pointer ported to a BST via iterators. This **completes the BST pattern layer** — sorted/reversed traversal, range pruning, and now dual-iterator queries.
 
-**Prerequisites:** [Iterators in BSTs](/cortex/data-structures-and-algorithms/trees-binary-search-tree-iterators-in-binary-search-trees).
-**What's next:** the binary-tree pattern layer — traversal templates that carry no state — starting with [Preorder Traversal (Stateless)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateless-pattern).
+**Prerequisites:** [Iterators in BSTs](/cortex/data-structures-and-algorithms/trees/binary-search-tree/iterators-in-binary-search-trees).
+**What's next:** the binary-tree pattern layer — traversal templates that carry no state — starting with [Preorder Traversal (Stateless)](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-preorder-traversal-stateless/pattern).
 
 ## Recall
 
