@@ -19,11 +19,13 @@ That's the **dynamic array**, and the trick that makes it work is one of the mos
 
 ## See It Work
 
-Here's a `DynamicArray` built from a fixed block plus two counters. Run it — then click **Visualise** and watch the backing block *jump* to a bigger size each time it fills.
+Here's a `DynamicArray` built from a fixed block plus two counters. Pick a test case below and **Run** it — then click **Visualise** and watch the backing block *jump* to a bigger size each time it fills. Try your own `values` too: edit the field or add a case.
 
-> ▶ Run it, then click **Visualise** — watch the backing array jump to a bigger block each time it fills; the trailing `0`s are reserved-but-unused slots.
+> ▶ Run it against a case, then click **Visualise** — watch the backing array jump to a bigger block each time it fills; the trailing `0`s are reserved-but-unused slots.
 
 ```python run viz=array viz-root=arr
+import ast
+
 class DynamicArray:
     def __init__(self):
         self.arr = []          # the fixed backing block
@@ -40,10 +42,25 @@ class DynamicArray:
         self.arr[self.size] = val
         self.size += 1
 
+values = ast.literal_eval(input())   # the test case's values
 da = DynamicArray()
-for v in [1, 2, 3, 4, 5]:
+for v in values:
     da.push_back(v)
-print(da.arr, "size =", da.size)   # [1, 2, 3, 4, 5, 0, 0, 0] size = 5
+print(da.arr, "size =", da.size)
+```
+
+```testcases
+{
+  "args": [
+    { "id": "values", "label": "values", "type": "int[]", "placeholder": "[1, 2, 3, 4, 5]" }
+  ],
+  "cases": [
+    { "args": { "values": "[1, 2, 3, 4, 5]" }, "expected": "[1, 2, 3, 4, 5, 0, 0, 0] size = 5" },
+    { "args": { "values": "[1, 2, 3]" }, "expected": "[1, 2, 3, 0] size = 3" },
+    { "args": { "values": "[7]" }, "expected": "[7] size = 1" },
+    { "args": { "values": "[]" }, "expected": "[] size = 0" }
+  ]
+}
 ```
 
 ## How It Works
@@ -97,31 +114,206 @@ Only push 5. The jump to capacity `8` at push 5 buys room for pushes 6, 7, and 8
 
 ## Your Turn
 
-You just watched the machinery. In real code it's invisible — `list.append` *is* this dynamic array, resizing itself only a couple dozen times for a thousand items, never once telling you:
+You just watched `push_back` grow the block. Now build its mirror: a `pop_back` that *shrinks* it. The naive version halves the block as soon as it's half-empty — but that oscillates at the boundary (one push doubles, one pop halves, forever). The fix: **shrink only when the array drops to a quarter full**, halving the capacity to leave a buffer zone.
 
-```python run viz=array
-nums = []
-for i in range(1000):
-    nums.append(i)          # amortized O(1) — a couple dozen hidden resizes, not 1000
-print(len(nums), "items; first", nums[0], "last", nums[-1])
+Implement `pop_back`: drop the last element, and when `size` falls to `capacity // 4` (and the block is bigger than one slot), halve the backing block.
+
+```python run viz=array viz-root=arr
+import ast
+
+class DynamicArray:
+    def __init__(self):
+        self.arr = []
+        self.size = 0
+        self.capacity = 0
+
+    def push_back(self, val):
+        if self.size == self.capacity:
+            self.capacity = 1 if self.capacity == 0 else self.capacity * 2
+            bigger = [0] * self.capacity
+            for i in range(self.size):
+                bigger[i] = self.arr[i]
+            self.arr = bigger
+        self.arr[self.size] = val
+        self.size += 1
+
+    def pop_back(self):
+        # Your code goes here — drop the last element (size -= 1), and when
+        # size <= capacity // 4 (and capacity > 1), halve the block: allocate
+        # capacity // 2 slots and copy the live elements across.
+        pass
+
+values = ast.literal_eval(input())   # the test case's values
+pops = int(input())                  # how many pop_back calls
+da = DynamicArray()
+for v in values:
+    da.push_back(v)
+for _ in range(pops):
+    da.pop_back()
+print(da.arr[:da.size], "capacity =", da.capacity)
 ```
 
-```java run viz=array
-import java.util.ArrayList;
+```java run viz=array viz-root=arr
+import java.util.*;
 
 public class Main {
+  static class DynamicArray {
+    int[] arr = new int[0];
+    int size = 0;
+    int capacity = 0;
+
+    void pushBack(int val) {
+      if (size == capacity) {
+        capacity = capacity == 0 ? 1 : capacity * 2;
+        arr = Arrays.copyOf(arr, capacity);
+      }
+      arr[size++] = val;
+    }
+
+    void popBack() {
+      // Your code goes here — drop the last element (size -= 1), and when
+      // size <= capacity / 4 (and capacity > 1), halve the block:
+      // copy the live elements into a capacity / 2 array.
+    }
+  }
+
   public static void main(String[] args) {
-    // ArrayList is Java's dynamic array — the same doubling underneath (it grows 1.5×).
-    ArrayList<Integer> nums = new ArrayList<>();
-    for (int i = 0; i < 1000; i++) nums.add(i);
-    System.out.println(nums.size() + " items; first " + nums.get(0) + " last " + nums.get(999));
+    Scanner sc = new Scanner(System.in);
+    int[] values = parseIntArray(sc.nextLine());
+    int pops = Integer.parseInt(sc.nextLine().trim());
+    DynamicArray da = new DynamicArray();
+    for (int v : values) da.pushBack(v);
+    for (int i = 0; i < pops; i++) da.popBack();
+    System.out.println(Arrays.toString(Arrays.copyOf(da.arr, da.size)) + " capacity = " + da.capacity);
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's values
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
   }
 }
 ```
 
-Want to build the whole thing yourself — `get`, `size`, and a `popBack` that *shrinks* the block without thrashing at the boundary? That's the [Design a Dynamic Array](/cortex/data-structures-and-algorithms/linear-structures/arrays/design-a-dynamic-array/design-a-dynamic-array) challenge.
+```testcases
+{
+  "args": [
+    { "id": "values", "label": "values", "type": "int[]", "placeholder": "[1, 2, 3, 4, 5]" },
+    { "id": "pops", "label": "pops", "type": "int", "placeholder": "3" }
+  ],
+  "cases": [
+    { "args": { "values": "[1, 2, 3, 4, 5]", "pops": "3" }, "expected": "[1, 2] capacity = 4" },
+    { "args": { "values": "[1, 2, 3, 4, 5]", "pops": "0" }, "expected": "[1, 2, 3, 4, 5] capacity = 8" },
+    { "args": { "values": "[1, 2, 3, 4]", "pops": "3" }, "expected": "[1] capacity = 2" },
+    { "args": { "values": "[7]", "pops": "2" }, "expected": "[] capacity = 1" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Shrink at a **quarter** full, not half. If you halve the moment `size` drops below `capacity / 2`, an array sitting exactly at the boundary thrashes: one push doubles it, one pop halves it, each move copying everything. Waiting until `size <= capacity / 4` leaves a half-empty buffer after every shrink, so the next resize — in *either* direction — is at least `size` operations away. That keeps `pop_back` amortized `O(1)` by the same geometric-series argument as `push_back`.
+
+The empty-pop guard matters too: `pop_back` on an empty array is a no-op here (a real library would raise), and a 1-slot block never shrinks.
+
+```python solution time=O(1)-amortized space=O(1)
+import ast
+
+class DynamicArray:
+    def __init__(self):
+        self.arr = []
+        self.size = 0
+        self.capacity = 0
+
+    def push_back(self, val):
+        if self.size == self.capacity:
+            self.capacity = 1 if self.capacity == 0 else self.capacity * 2
+            bigger = [0] * self.capacity
+            for i in range(self.size):
+                bigger[i] = self.arr[i]
+            self.arr = bigger
+        self.arr[self.size] = val
+        self.size += 1
+
+    def pop_back(self):
+        if self.size == 0:                                   # popping empty → no-op
+            return
+        self.size -= 1
+        if self.capacity > 1 and self.size <= self.capacity // 4:
+            self.capacity = self.capacity // 2               # quarter-full → halve
+            smaller = [0] * self.capacity
+            for i in range(self.size):                       # copy the live elements
+                smaller[i] = self.arr[i]
+            self.arr = smaller
+
+values = ast.literal_eval(input())
+pops = int(input())
+da = DynamicArray()
+for v in values:
+    da.push_back(v)
+for _ in range(pops):
+    da.pop_back()
+print(da.arr[:da.size], "capacity =", da.capacity)
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+  static class DynamicArray {
+    int[] arr = new int[0];
+    int size = 0;
+    int capacity = 0;
+
+    void pushBack(int val) {
+      if (size == capacity) {
+        capacity = capacity == 0 ? 1 : capacity * 2;
+        arr = Arrays.copyOf(arr, capacity);
+      }
+      arr[size++] = val;
+    }
+
+    void popBack() {
+      if (size == 0) return;                                 // popping empty → no-op
+      size--;
+      if (capacity > 1 && size <= capacity / 4) {
+        capacity = capacity / 2;                             // quarter-full → halve
+        arr = Arrays.copyOf(arr, capacity);                  // copies the live elements
+      }
+    }
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] values = parseIntArray(sc.nextLine());
+    int pops = Integer.parseInt(sc.nextLine().trim());
+    DynamicArray da = new DynamicArray();
+    for (int v : values) da.pushBack(v);
+    for (int i = 0; i < pops; i++) da.popBack();
+    System.out.println(Arrays.toString(Arrays.copyOf(da.arr, da.size)) + " capacity = " + da.capacity);
+  }
+
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+</details>
 
 ## Reflect & Connect
+
+Want to build the whole thing — `get`, `size`, and the full resize policy with the design tradeoffs spelled out? That's the [Design a Dynamic Array](/cortex/data-structures-and-algorithms/linear-structures/arrays/design-a-dynamic-array/design-a-dynamic-array) challenge.
 
 The dynamic array is the structure you reach for without naming it. Python's `list`, Java's `ArrayList`, C++'s `std::vector`, Go's slices, Rust's `Vec` — every one runs this exact resize-and-copy state machine on every append.
 

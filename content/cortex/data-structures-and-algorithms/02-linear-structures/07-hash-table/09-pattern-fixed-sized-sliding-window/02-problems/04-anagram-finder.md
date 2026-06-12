@@ -4,6 +4,8 @@ summary: "Given strings s and p, return all the start indices in s of substrings
 prereqs:
   - 09-pattern-fixed-sized-sliding-window/01-pattern
 difficulty: medium
+kind: problem
+topics: [fixed-sized-sliding-window, hash-table]
 ---
 
 # Anagram finder
@@ -53,6 +55,55 @@ Output: [0, 6]
 Explanation: "cba" at index 0 and "bac" at index 6 are anagrams of "abc".
 ```
 
+## Constraints
+
+- `1 <= len(p) <= len(s)`
+- Both strings contain only lowercase letters
+
+```python run
+def anagram_finder(s, p):
+    # Your code goes here
+    pass
+
+s = input()
+p = input()
+print(anagram_finder(s, p))
+```
+
+```java run
+import java.util.*;
+
+public class Main {
+  static List<Integer> anagramFinder(String s, String p) {
+    // Your code goes here
+    return new ArrayList<>();
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    String s = sc.nextLine();
+    String p = sc.nextLine();
+    System.out.println(anagramFinder(s, p));
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "s", "type": "string", "placeholder": "bacdefecab" },
+    { "id": "p", "label": "p", "type": "string", "placeholder": "abc" }
+  ],
+  "cases": [
+    { "args": { "s": "bacdefecab", "p": "abc" }, "expected": "[0, 7]" },
+    { "args": { "s": "fdef",       "p": "def" }, "expected": "[0, 1]" },
+    { "args": { "s": "abcdef",     "p": "gh"  }, "expected": "[]" },
+    { "args": { "s": "cbaebabacd", "p": "abc" }, "expected": "[0, 6]" },
+    { "args": { "s": "aaa",        "p": "aa"  }, "expected": "[0, 1]" },
+    { "args": { "s": "abc",        "p": "abc" }, "expected": "[0]" }
+  ]
+}
+```
 
 <details>
 <summary><h2>Intuition</h2></summary>
@@ -128,172 +179,80 @@ flowchart LR
 
 </details>
 <details>
-<summary><h2>Solution</h2></summary>
+<summary>Editorial</summary>
 
+Pre-count `p`'s characters into a frequency map and set `count = len(p)`. Slide a window of exactly `len(p)` characters over `s`. When the entering character is in `p`'s map and its remaining demand is still positive, decrement `count` (one more demand met). Append `start` to the result whenever `count == 0`. When the window reaches full size, restore the leaving character: if its entry is `>= 0` after restoring, increment `count` (a demanded character just left). The `count` trick replaces the `O(K)` map-equality check with a single `O(1)` comparison. Result indices are in input order — already deterministic. `O(n)` time, `O(A)` space.
 
-
-```python run viz=array viz-root=result
+```python solution time=O(n) space=O(A)
 from collections import defaultdict
-from typing import List, Dict
 
-class Solution:
-    def count_frequency(self, s: str) -> Dict[str, int]:
-        frequency = defaultdict(int)
-        for ch in s:
-            frequency[ch] += 1
-        return frequency
+def anagram_finder(s, p):
+    if not s or not p or len(s) < len(p):
+        return []
+    frequency = defaultdict(int)
+    for ch in p:
+        frequency[ch] += 1
+    start, end, count = 0, 0, len(p)
+    result = []
+    while end < len(s):
+        char_end = s[end]
+        if char_end in frequency:
+            if frequency[char_end] > 0:
+                count -= 1
+            frequency[char_end] -= 1
+        if count == 0:
+            result.append(start)
+        if end - start + 1 == len(p):
+            char_start = s[start]
+            if char_start in frequency:
+                if frequency[char_start] >= 0:
+                    count += 1
+                frequency[char_start] += 1
+            start += 1
+        end += 1
+    return result
 
-    def find_anagrams_in_window(
-        self, s: str, frequency: Dict[str, int], k: int
-    ) -> List[int]:
-        start = 0
-        end = 0
-        count = k
-        result = []
-
-        # Traverse the string using two pointers
-        while end < len(s):
-            char_end = s[end]
-
-            # If the character is in the pattern, update the frequency
-            # map
-            if char_end in frequency:
-                if frequency[char_end] > 0:
-                    count -= 1
-                frequency[char_end] -= 1
-
-            # If all characters in the pattern are found, add start index
-            # to result
-            if count == 0:
-                result.append(start)
-
-            # Shrink the window from the left if the window size is equal
-            # to p's size
-            if end - start + 1 == k:
-                char_start = s[start]
-                if char_start in frequency:
-                    if frequency[char_start] >= 0:
-                        count += 1
-                    frequency[char_start] += 1
-                start += 1
-
-            end += 1
-
-        return result
-
-    def anagram_finder(self, s: str, p: str) -> List[int]:
-        if not s or not p or len(s) < len(p):
-            return []
-
-        # Create a frequency map for characters in the pattern
-        p_frequency = self.count_frequency(p)
-
-        # Use sliding window approach to find anagrams of p in s
-        return self.find_anagrams_in_window(s, p_frequency, len(p))
-
-
-# Examples from the problem statement
-print(Solution().anagram_finder("bacdefecab", "abc"))  # [0, 7]
-print(Solution().anagram_finder("fdef", "def"))        # [0, 1]
-print(Solution().anagram_finder("abcdef", "gh"))       # []
-
-# Edge cases
-print(Solution().anagram_finder("", "a"))              # []
-print(Solution().anagram_finder("a", ""))              # []
-print(Solution().anagram_finder("aaa", "aa"))          # [0, 1]
-print(Solution().anagram_finder("abc", "abc"))         # [0]
-print(Solution().anagram_finder("cbaebabacd", "abc"))  # [0, 6]
+s = input()
+p = input()
+print(anagram_finder(s, p))
 ```
 
-```java run viz=array viz-root=result
+```java solution
 import java.util.*;
 
 public class Main {
-    static class Solution {
-        private Map<Character, Integer> countFrequency(String s) {
-            Map<Character, Integer> frequency = new HashMap<>();
-            for (char ch : s.toCharArray()) {
-                frequency.put(ch, frequency.getOrDefault(ch, 0) + 1);
-            }
-            return frequency;
+  static List<Integer> anagramFinder(String s, String p) {
+    List<Integer> result = new ArrayList<>();
+    if (s.isEmpty() || p.isEmpty() || s.length() < p.length()) return result;
+    Map<Character, Integer> frequency = new HashMap<>();
+    for (char ch : p.toCharArray()) frequency.put(ch, frequency.getOrDefault(ch, 0) + 1);
+    int start = 0, end = 0, count = p.length();
+    while (end < s.length()) {
+      char endChar = s.charAt(end);
+      if (frequency.containsKey(endChar)) {
+        if (frequency.get(endChar) > 0) count--;
+        frequency.put(endChar, frequency.get(endChar) - 1);
+      }
+      if (count == 0) result.add(start);
+      if (end - start + 1 == p.length()) {
+        char startChar = s.charAt(start);
+        if (frequency.containsKey(startChar)) {
+          if (frequency.get(startChar) >= 0) count++;
+          frequency.put(startChar, frequency.get(startChar) + 1);
         }
-
-        private List<Integer> findAnagramsInWindow(
-            String s,
-            Map<Character, Integer> frequency,
-            int K
-        ) {
-            int start = 0;
-            int end = 0;
-            int count = K;
-            List<Integer> result = new ArrayList<>();
-
-            // Traverse the string using two pointers
-            while (end < s.length()) {
-                char endChar = s.charAt(end);
-
-                // If the character is in the pattern, update the frequency
-                // map
-                if (frequency.containsKey(endChar)) {
-                    if (frequency.get(endChar) > 0) {
-                        count--;
-                    }
-                    frequency.put(endChar, frequency.get(endChar) - 1);
-                }
-
-                // If all characters in the pattern are found, add start
-                // index to result
-                if (count == 0) {
-                    result.add(start);
-                }
-
-                // Shrink the window from the left if the window size is
-                // equal to p's size
-                if (end - start + 1 == K) {
-                    char startChar = s.charAt(start);
-                    if (frequency.containsKey(startChar)) {
-                        if (frequency.get(startChar) >= 0) {
-                            count++;
-                        }
-                        frequency.put(
-                            startChar,
-                            frequency.get(startChar) + 1
-                        );
-                    }
-                    start++;
-                }
-                end++;
-            }
-
-            return result;
-        }
-
-        public List<Integer> anagramFinder(String s, String p) {
-            if (s.isEmpty() || p.isEmpty() || s.length() < p.length()) {
-                return new ArrayList<>();
-            }
-
-            // Create a frequency map for characters in the pattern
-            Map<Character, Integer> pFrequency = countFrequency(p);
-
-            // Use sliding window approach to find anagrams of p in s
-            return findAnagramsInWindow(s, pFrequency, p.length());
-        }
+        start++;
+      }
+      end++;
     }
+    return result;
+  }
 
-    public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().anagramFinder("bacdefecab", "abc")); // [0, 7]
-        System.out.println(new Solution().anagramFinder("fdef", "def"));       // [0, 1]
-        System.out.println(new Solution().anagramFinder("abcdef", "gh"));      // []
-
-        // Edge cases
-        System.out.println(new Solution().anagramFinder("", "a"));             // []
-        System.out.println(new Solution().anagramFinder("a", ""));             // []
-        System.out.println(new Solution().anagramFinder("aaa", "aa"));         // [0, 1]
-        System.out.println(new Solution().anagramFinder("abc", "abc"));        // [0]
-        System.out.println(new Solution().anagramFinder("cbaebabacd", "abc")); // [0, 6]
-    }
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    String s = sc.nextLine();
+    String p = sc.nextLine();
+    System.out.println(anagramFinder(s, p));
+  }
 }
 ```
 
@@ -365,12 +324,5 @@ The fixed-sized sliding window is the **moving** version of the counting pattern
 3. **Window-size = len(pattern).** When a problem says "find any anagram of p in s" or "any permutation of p", the window size is *given to you* by the second string. The hardest part is recognising it.
 
 > *Coming up — what if the window can grow and shrink based on a *condition* rather than a fixed size? That's the **variable-sized sliding window**, and it solves a different family of problems: "longest substring with at most K distinct chars", "smallest subarray with sum ≥ S", "longest substring without repeating characters". Same hash-map summary, but the window flexes — and that flexibility unlocks a much wider class of problems.*
-
-</details>
-<details>
-<summary><h2>Key Takeaway</h2></summary>
-
-
-This is the all-matches shape of the pattern-match window: append every start index where the window is an anagram of `p`, instead of returning on the first. Tracking a single `count` of unmet demands replaces the map-equality check, keeping each window's test at `O(1)`.
 
 </details>

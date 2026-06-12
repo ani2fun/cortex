@@ -4,6 +4,8 @@ summary: "Given a string s containing multiple space-separated words, reverse th
 prereqs:
   - 08-pattern-reversal/01-pattern
 difficulty: medium
+kind: problem
+topics: [reversal, stack]
 ---
 
 # Reverse word order
@@ -32,8 +34,65 @@ Input:  s = "hello world"
 Output: "world hello"
 ```
 
+```quiz
+{
+  "prompt": "For s = \"a b c\", what does reverse_word_order return?",
+  "input": "s = \"a b c\"",
+  "options": ["a b c", "c b a", "c a b", "b a c"],
+  "answer": "c b a"
+}
+```
 
----
+## Constraints
+
+- `1 ≤ s.length ≤ 10⁴`
+- `s` contains at least one word; words are separated by single spaces
+
+```python run viz=array viz-root=stack viz-kind=stack
+class Solution:
+    def reverse_word_order(self, s: str) -> str:
+        # Your code goes here — tokenise s into words, push each word
+        # onto a stack, then pop and join with single spaces.
+        return s
+
+s = input()                          # the test case's s
+print(Solution().reverse_word_order(s))
+```
+
+```java run viz=array viz-root=stack viz-kind=stack
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public String reverseWordOrder(String s) {
+            // Your code goes here — tokenise s into words, push each word
+            // onto a stack, then pop and join with single spaces.
+            return s;
+        }
+    }
+
+    public static void main(String[] args) {
+        String s = new Scanner(System.in).nextLine();
+        System.out.println(new Solution().reverseWordOrder(s));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "s", "type": "string", "placeholder": "This is a string" }
+  ],
+  "cases": [
+    { "args": { "s": "This is a string" }, "expected": "string a is This" },
+    { "args": { "s": "abc" }, "expected": "abc" },
+    { "args": { "s": "hello world" }, "expected": "world hello" },
+    { "args": { "s": "a b c" }, "expected": "c b a" },
+    { "args": { "s": "one" }, "expected": "one" },
+    { "args": { "s": "x y" }, "expected": "y x" }
+  ]
+}
+```
 
 <details>
 <summary><h2>Intuition</h2></summary>
@@ -92,144 +151,71 @@ flowchart LR
 
 </details>
 <details>
-<summary><h2>Solution</h2></summary>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-
-```python run viz=array viz-root=stack viz-kind=stack
-from typing import List
-
+```python solution time=O(n) space=O(n)
 class Solution:
-    def build_stack_of_words(self, s: str) -> List[str]:
-
-        # Create a stack to store words
-        stack: List[str] = []
-
-        # Variable to store each word
+    def build_stack_of_words(self, s: str):
+        stack = []
         word = ""
-
-        # Iterate through each character in the input string
         for ch in s:
-
-            # If the character is not a space, add it to the word
             if ch != " ":
                 word += ch
-
-            # If a space is encountered and the word is not empty
-            # Push the word onto the stack
             elif word:
                 stack.append(word)
-
-                # Reset the word
                 word = ""
-
-        # Push the last word onto the stack if it's not empty
         if word:
             stack.append(word)
-
         return stack
 
     def reverse_word_order(self, s: str) -> str:
         stack_of_words = self.build_stack_of_words(s)
-
-        # Variable to store the reversed string
         reversed_string = ""
-
-        # Pop words from the stack and append them to the reversed_string
         while stack_of_words:
             reversed_string += stack_of_words.pop() + " "
-
-        # Remove the trailing space at the end
         if reversed_string:
             reversed_string = reversed_string.rstrip()
-
-        # Return the reversed string without reversing the words
         return reversed_string
 
-
-# Examples from the problem statement
-print(Solution().reverse_word_order("This is a string"))   # string a is This
-print(Solution().reverse_word_order("abc"))                # abc
-
-# Edge cases
-print(Solution().reverse_word_order(""))                   # "" — empty string
-print(Solution().reverse_word_order("hello world"))        # world hello
-print(Solution().reverse_word_order("a b c"))              # c b a
-print(Solution().reverse_word_order("one"))                # one — single word
-print(Solution().reverse_word_order("x y"))                # y x — two words
+s = input()
+print(Solution().reverse_word_order(s))
 ```
 
-```java run viz=array viz-root=stack viz-kind=stack
+```java solution
 import java.util.*;
 
 public class Main {
     static class Solution {
-        private Stack<String> buildStackOfWords(String s) {
-
-            // Create a stack to store words
-            Stack<String> stack = new Stack<>();
-
-            // Variable to store each word
+        private List<String> buildStackOfWords(String s) {
+            List<String> stack = new ArrayList<>();
             StringBuilder word = new StringBuilder();
-
-            // Iterate through each character in the input string
             for (char ch : s.toCharArray()) {
-
-                // If the character is not a space, add it to the word
                 if (ch != ' ') {
                     word.append(ch);
-                }
-
-                // If a space is encountered and the word is not empty
-                // Push the word onto the stack
-                else if (word.length() > 0) {
-                    stack.push(word.toString());
-
-                    // Reset the word
+                } else if (word.length() > 0) {
+                    stack.add(word.toString());
                     word.setLength(0);
                 }
             }
-
-            // Push the last word onto the stack if it's not empty
-            if (word.length() > 0) {
-                stack.push(word.toString());
-            }
-
+            if (word.length() > 0) stack.add(word.toString());
             return stack;
         }
 
         public String reverseWordOrder(String s) {
-            Stack<String> stackOfWords = buildStackOfWords(s);
-
-            // Variable to store the reversed string
+            List<String> stackOfWords = buildStackOfWords(s);
             StringBuilder reversedString = new StringBuilder();
-
-            // Pop words from the stack and append them to the reversedString
             while (!stackOfWords.isEmpty()) {
-                reversedString.append(stackOfWords.pop()).append(" ");
+                reversedString.append(stackOfWords.remove(stackOfWords.size() - 1)).append(" ");
             }
-
-            // Remove the trailing space at the end
-            if (reversedString.length() > 0) {
+            if (reversedString.length() > 0)
                 reversedString.setLength(reversedString.length() - 1);
-            }
-
-            // Return the reversed string without reversing the words
             return reversedString.toString();
         }
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().reverseWordOrder("This is a string"));  // string a is This
-        System.out.println(new Solution().reverseWordOrder("abc"));               // abc
-
-        // Edge cases
-        System.out.println(new Solution().reverseWordOrder(""));                  // ""
-        System.out.println(new Solution().reverseWordOrder("hello world"));       // world hello
-        System.out.println(new Solution().reverseWordOrder("a b c"));             // c b a
-        System.out.println(new Solution().reverseWordOrder("one"));               // one
-        System.out.println(new Solution().reverseWordOrder("x y"));               // y x
+        String s = new Scanner(System.in).nextLine();
+        System.out.println(new Solution().reverseWordOrder(s));
     }
 }
 ```
@@ -239,13 +225,13 @@ public class Main {
 Trace Example 1 with `s = "This is a string"`.
 
 ```
-Build the stack of words (scan into a buffer, push on each space):
-  read "This" → space → push "This"        stack: This
-  read "is"   → space → push "is"           stack: This is
-  read "a"    → space → push "a"            stack: This is a
-  read "string" → end → push "string"       stack: This is a string   (top is "string")
+Build the stack of words:
+  read "This" → space → push "This"        stack: [This]
+  read "is"   → space → push "is"           stack: [This, is]
+  read "a"    → space → push "a"            stack: [This, is, a]
+  read "string" → end → push "string"       stack: [This, is, a, string]  (top is "string")
 
-Unload pass (pop + append + single space):
+Unload pass:
   pop "string" → result = "string "
   pop "a"      → result = "string a "
   pop "is"     → result = "string a is "
@@ -254,24 +240,19 @@ Unload pass (pop + append + single space):
 Trim trailing space → "string a is This" ✓
 ```
 
-Each word is pushed whole, so the stack reverses word order while every word's letters stay in place. The unload loop appends a space after each word, leaving one trailing space that the final trim removes.
-
 ### Complexity Analysis
 
 | | Complexity | Reason |
 |---|---|---|
-| **Time** | `O(N)` | The build scan reads each of the `N` characters once; the unload pass touches each word once. Both are linear in the input length. |
-| **Space** | `O(N)` | The word stack and the result string each hold up to `N` characters' worth of data. |
+| **Time** | `O(N)` | The build scan reads each of the `N` characters once; the unload pass touches each word once. |
+| **Space** | `O(N)` | The word stack and the result string each hold up to `N` characters. |
 
 ### Edge Cases
 
 | Case | What happens |
 |---|---|
-| Empty string (`""`) | No word is ever buffered; nothing is pushed; the trim guard sees an empty result and returns `""`. |
-| Single word (`"abc"`) | One word is pushed and popped; the result is `"abc"` (its own reverse at the word level). |
+| Single word (`"abc"`) | One word is pushed and popped; the result is `"abc"`. |
 | Two words (`"x y"`) | Push `x, y`; pop `y, x`; result `"y x"`. |
-| Spaces between words only | The build step pushes a word only when the buffer is non-empty, so single internal spaces tokenise cleanly into words. |
-| Trailing/leading space handling | A space with an empty buffer pushes nothing; the final `rstrip` removes the one trailing separator the join adds. |
 | Letters never reversed | The letters enter the buffer in order and the whole word is pushed as one unit, so internal letter order is preserved. |
 
 </details>
@@ -284,14 +265,5 @@ Three lessons:
 1. **A stack is a free reverser.** Push N items in, pop N items out, and the order is inverted with no extra logic — it's the LIFO contract doing the work.
 2. **The unit of reversal is whatever you push.** Push characters → reverses characters. Push words → reverses word order without disturbing letters. Push entire sub-arrays → reverses chunk order. The same algorithm reshapes itself by changing what counts as one item.
 3. **Reversal alone is rarely the *whole* problem.** It's almost always a sub-step inside something bigger: reverse the operator part of a string, reverse a path in a tree, reverse the order in which items get processed. Recognise reversal as a *building block*, not an answer.
-
-> *Coming up — the reversal pattern was the gentlest stack pattern. The next four progressively get harder by combining "remember the most recent thing not yet resolved" with one or two extra constraints. Lesson 8 — **previous closest occurrence** — uses a stack to find, for each element, the nearest earlier element that satisfies some condition (e.g. the previous greater element). It's the canonical "monotonic stack" problem and powers stock-span calculations, histogram problems, and a hundred interview questions.*
-
-</details>
-<details>
-<summary><h2>Key Takeaway</h2></summary>
-
-
-This is the word-unit instance of the pattern: tokenise first, then reverse the *words* with the same load-then-unload loop. The two new ideas versus the earlier problems are that the reversal unit is coarser than a character and the join needs a trailing-space trim.
 
 </details>

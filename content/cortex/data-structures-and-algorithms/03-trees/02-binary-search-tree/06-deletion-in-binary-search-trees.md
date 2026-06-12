@@ -21,22 +21,51 @@ The successor is the unique value that can sit in the hole without disturbing or
 
 ## See It Work
 
-Delete the root `5` (which has two children) from a BST — it gets replaced by its in-order successor `7`, and the in-order traversal stays sorted (minus `5`). Run it, then **Visualise** the restructured tree.
+Delete a key from a BST — watch the three cases in action. The first input is the tree (level-order-with-nulls); the second is the key to delete. Run it, then **Visualise** the restructured tree.
 
-> ▶ Run it, then click **Visualise** — `5`'s value is overwritten by `7` (min of its right subtree), and the old `7` node is removed from below.
+> ▶ Run it, then click **Visualise** — for the default input, `5`'s value is overwritten by `7` (min of its right subtree), and the old `7` node is removed from below.
 
 ```python run viz=binary-tree viz-root=root
-class TreeNode:
-    def __init__(self, val):
-        self.val = val
-        self.left = None
-        self.right = None
+import json
+from collections import deque
 
-def insert(root, val):
-    if root is None: return TreeNode(val)
-    if val < root.val: root.left = insert(root.left, val)
-    elif val > root.val: root.right = insert(root.right, val)
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+def build_tree(values):
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
     return root
+
+def print_tree(root):
+    out, queue = [], deque([root])
+    while queue:
+        node = queue.popleft()
+        if node is None:
+            out.append(None)
+        else:
+            out.append(node.val)
+            queue.append(node.left)
+            queue.append(node.right)
+    while out and out[-1] is None:
+        out.pop()
+    print(json.dumps(out))
 
 def find_min(node):
     while node.left:
@@ -60,15 +89,114 @@ def delete(root, val):
         root.right = delete(root.right, succ.val)   # delete the successor (≤1 child)
     return root
 
-def inorder(n):
-    return inorder(n.left) + [n.val] + inorder(n.right) if n else []
-
-root = None
-for v in [5, 3, 8, 1, 4, 7, 9]:
-    root = insert(root, v)
-root = delete(root, 5)
-print(inorder(root))                          # [1, 3, 4, 7, 8, 9]  (5 gone, still sorted)
+root = build_tree(json.loads(input()))
+key  = int(input())
+root = delete(root, key)
+print_tree(root)
 ```
+
+```java run viz=binary-tree viz-root=root
+import java.util.*;
+
+public class Main {
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
+  }
+
+  static TreeNode buildTree(Integer[] values) {
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
+    }
+    return root;
+  }
+
+  static void printTree(TreeNode root) {
+    List<String> out = new ArrayList<>();
+    Deque<TreeNode> queue = new LinkedList<>();
+    queue.add(root);
+    while (!queue.isEmpty()) {
+      TreeNode node = queue.poll();
+      if (node == null) {
+        out.add("null");
+      } else {
+        out.add(String.valueOf(node.val));
+        queue.add(node.left);
+        queue.add(node.right);
+      }
+    }
+    while (!out.isEmpty() && out.get(out.size() - 1).equals("null"))
+      out.remove(out.size() - 1);
+    System.out.println("[" + String.join(", ", out) + "]");
+  }
+
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
+  }
+
+  static TreeNode findMin(TreeNode n) { while (n.left != null) n = n.left; return n; }
+
+  static TreeNode delete(TreeNode root, int val) {
+    if (root == null) return null;
+    if (val < root.val) root.left = delete(root.left, val);
+    else if (val > root.val) root.right = delete(root.right, val);
+    else {
+      if (root.left == null) return root.right;
+      if (root.right == null) return root.left;
+      TreeNode succ = findMin(root.right);
+      root.val = succ.val;
+      root.right = delete(root.right, succ.val);
+    }
+    return root;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+    int key = Integer.parseInt(sc.nextLine().trim());
+    root = delete(root, key);
+    printTree(root);
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "tree", "label": "tree (level-order)", "type": "tree", "placeholder": "[5, 3, 8, 1, 4, 7, 9]" },
+    { "id": "key",  "label": "key to delete",      "type": "int",  "placeholder": "5" }
+  ],
+  "cases": [
+    { "args": { "tree": "[5, 3, 8, 1, 4, 7, 9]", "key": "5" }, "expected": "[7, 3, 8, 1, 4, null, 9]" },
+    { "args": { "tree": "[5, 3, 8, 1, 4, 7, 9]", "key": "1" }, "expected": "[5, 3, 8, null, 4, 7, 9]" },
+    { "args": { "tree": "[5, 3, 8, 1, 4, 7, 9]", "key": "8" }, "expected": "[5, 3, 9, 1, 4, 7]" },
+    { "args": { "tree": "[5, 3, 8, 1, 4, 7, 9]", "key": "3" }, "expected": "[5, 4, 8, 1, null, 7, 9]" },
+    { "args": { "tree": "[1]", "key": "1" }, "expected": "[]" },
+    { "args": { "tree": "[]",  "key": "5" }, "expected": "[]" }
+  ]
+}
+```
+
+Both print the restructured tree in level-order-with-nulls — the in-order traversal of the result is still sorted (minus the deleted key).
 
 ## How It Works
 
@@ -112,23 +240,207 @@ No — the successor (or symmetrically, the predecessor) is the *only* value tha
 
 ## Your Turn
 
-The reusable BST delete (all three cases):
+Implement the reusable BST delete (all three cases). The input is a tree in level-order-with-nulls followed by the key to delete; print the resulting tree with `print_tree`.
 
 ```python run viz=binary-tree viz-root=root
-class TreeNode:
-    def __init__(self, val):
-        self.val = val
-        self.left = None
-        self.right = None
+import json
+from collections import deque
 
-def insert(root, val):
-    if root is None: return TreeNode(val)
-    if val < root.val: root.left = insert(root.left, val)
-    elif val > root.val: root.right = insert(root.right, val)
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+def build_tree(values):
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
     return root
 
+def print_tree(root):
+    out, queue = [], deque([root])
+    while queue:
+        node = queue.popleft()
+        if node is None:
+            out.append(None)
+        else:
+            out.append(node.val)
+            queue.append(node.left)
+            queue.append(node.right)
+    while out and out[-1] is None:
+        out.pop()
+    print(json.dumps(out))
+
 def find_min(node):
-    while node.left: node = node.left
+    # Your code goes here
+    pass
+
+def delete(root, val):
+    # Your code goes here
+    pass
+
+root = build_tree(json.loads(input()))
+key  = int(input())
+root = delete(root, key)
+print_tree(root)
+```
+
+```java run viz=binary-tree viz-root=root
+import java.util.*;
+
+public class Main {
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
+  }
+
+  static TreeNode buildTree(Integer[] values) {
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
+    }
+    return root;
+  }
+
+  static void printTree(TreeNode root) {
+    List<String> out = new ArrayList<>();
+    Deque<TreeNode> queue = new LinkedList<>();
+    queue.add(root);
+    while (!queue.isEmpty()) {
+      TreeNode node = queue.poll();
+      if (node == null) {
+        out.add("null");
+      } else {
+        out.add(String.valueOf(node.val));
+        queue.add(node.left);
+        queue.add(node.right);
+      }
+    }
+    while (!out.isEmpty() && out.get(out.size() - 1).equals("null"))
+      out.remove(out.size() - 1);
+    System.out.println("[" + String.join(", ", out) + "]");
+  }
+
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
+  }
+
+  static TreeNode findMin(TreeNode n) {
+    // Your code goes here
+    return null;
+  }
+
+  static TreeNode delete(TreeNode root, int val) {
+    // Your code goes here
+    return null;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+    int key = Integer.parseInt(sc.nextLine().trim());
+    root = delete(root, key);
+    printTree(root);
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "tree", "label": "tree (level-order)", "type": "tree", "placeholder": "[5, 3, 8, 1, 4, 7, 9]" },
+    { "id": "key",  "label": "key to delete",      "type": "int",  "placeholder": "5" }
+  ],
+  "cases": [
+    { "args": { "tree": "[5, 3, 8, 1, 4, 7, 9]", "key": "5" }, "expected": "[7, 3, 8, 1, 4, null, 9]" },
+    { "args": { "tree": "[5, 3, 8, 1, 4, 7, 9]", "key": "1" }, "expected": "[5, 3, 8, null, 4, 7, 9]" },
+    { "args": { "tree": "[5, 3, 8, 1, 4, 7, 9]", "key": "8" }, "expected": "[5, 3, 9, 1, 4, 7]" },
+    { "args": { "tree": "[5, 3, 8, 1, 4, 7, 9]", "key": "3" }, "expected": "[5, 4, 8, 1, null, 7, 9]" },
+    { "args": { "tree": "[1]", "key": "1" }, "expected": "[]" },
+    { "args": { "tree": "[]",  "key": "5" }, "expected": "[]" }
+  ]
+}
+```
+
+<details>
+<summary><strong>Editorial</strong></summary>
+
+```python solution viz=binary-tree viz-root=root
+import json
+from collections import deque
+
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+def build_tree(values):
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
+
+def print_tree(root):
+    out, queue = [], deque([root])
+    while queue:
+        node = queue.popleft()
+        if node is None:
+            out.append(None)
+        else:
+            out.append(node.val)
+            queue.append(node.left)
+            queue.append(node.right)
+    while out and out[-1] is None:
+        out.pop()
+    print(json.dumps(out))
+
+def find_min(node):
+    while node.left:
+        node = node.left
     return node
 
 def delete(root, val):
@@ -143,28 +455,72 @@ def delete(root, val):
         root.right = delete(root.right, succ.val)
     return root
 
-def inorder(n): return inorder(n.left) + [n.val] + inorder(n.right) if n else []
-
-def build():
-    r = None
-    for v in [5, 3, 8, 1, 4, 7, 9]: r = insert(r, v)
-    return r
-
-print(inorder(delete(build(), 1)))   # [3, 4, 5, 7, 8, 9]  (leaf)
-print(inorder(delete(build(), 3)))   # [1, 4, 5, 7, 8, 9]  (two children)
-print(inorder(delete(build(), 8)))   # [1, 3, 4, 5, 7, 9]  (two children)
+root = build_tree(json.loads(input()))
+key  = int(input())
+root = delete(root, key)
+print_tree(root)
 ```
 
-```java run viz=binary-tree viz-root=root
+```java solution viz=binary-tree viz-root=root
+import java.util.*;
+
 public class Main {
-  static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } }
-  static TreeNode insert(TreeNode r, int v) {
-    if (r == null) return new TreeNode(v);
-    if (v < r.val) r.left = insert(r.left, v);
-    else if (v > r.val) r.right = insert(r.right, v);
-    return r;
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
   }
+
+  static TreeNode buildTree(Integer[] values) {
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
+    }
+    return root;
+  }
+
+  static void printTree(TreeNode root) {
+    List<String> out = new ArrayList<>();
+    Deque<TreeNode> queue = new LinkedList<>();
+    queue.add(root);
+    while (!queue.isEmpty()) {
+      TreeNode node = queue.poll();
+      if (node == null) {
+        out.add("null");
+      } else {
+        out.add(String.valueOf(node.val));
+        queue.add(node.left);
+        queue.add(node.right);
+      }
+    }
+    while (!out.isEmpty() && out.get(out.size() - 1).equals("null"))
+      out.remove(out.size() - 1);
+    System.out.println("[" + String.join(", ", out) + "]");
+  }
+
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
+  }
+
   static TreeNode findMin(TreeNode n) { while (n.left != null) n = n.left; return n; }
+
   static TreeNode delete(TreeNode root, int val) {
     if (root == null) return null;
     if (val < root.val) root.left = delete(root.left, val);
@@ -178,18 +534,18 @@ public class Main {
     }
     return root;
   }
-  static void inorder(TreeNode n, java.util.List<Integer> o){ if(n==null) return; inorder(n.left,o); o.add(n.val); inorder(n.right,o); }
+
   public static void main(String[] args) {
-    TreeNode r = null;
-    for (int v : new int[]{5, 3, 8, 1, 4, 7, 9}) r = insert(r, v);
-    r = delete(r, 5);
-    java.util.List<Integer> o = new java.util.ArrayList<>(); inorder(r, o);
-    System.out.println(o);   // [1, 3, 4, 7, 8, 9]
+    Scanner sc = new Scanner(System.in);
+    TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+    int key = Integer.parseInt(sc.nextLine().trim());
+    root = delete(root, key);
+    printTree(root);
   }
 }
 ```
 
-This is a structural lesson — deletion completes the BST's mutating operations.
+</details>
 
 ## Reflect & Connect
 

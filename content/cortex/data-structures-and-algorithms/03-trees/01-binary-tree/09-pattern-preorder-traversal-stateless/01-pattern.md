@@ -15,9 +15,12 @@ The **stateless** hallmark is *how* that context travels: you pass it **down as 
 
 ## See It Work
 
-Does a root-to-leaf path sum to `7`? Carry the **remaining target** down the tree as an argument. Run it.
+Does a root-to-leaf path sum to `target`? Carry the **remaining target** down the tree as an argument. Pick a case and **Run** it.
 
 ```python run viz=binary-tree viz-root=root
+import json
+from collections import deque
+
 class TreeNode:
     def __init__(self, val, left=None, right=None):
         self.val = val
@@ -32,9 +35,100 @@ def has_path_sum(node, target):
     rem = target - node.val                        # push the REMAINING target DOWN
     return has_path_sum(node.left, rem) or has_path_sum(node.right, rem)
 
-root = TreeNode(1, TreeNode(2, TreeNode(4), TreeNode(5)), TreeNode(3, None, TreeNode(6)))
-print(has_path_sum(root, 7))     # True  (1 → 2 → 4)
-print(has_path_sum(root, 100))   # False
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
+
+root = build_tree(json.loads(input()))   # the test case's level-order values
+target = int(input())                    # the path sum to test
+print("true" if has_path_sum(root, target) else "false")
+```
+
+```java run viz=binary-tree viz-root=root
+import java.util.*;
+
+public class Main {
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
+  }
+
+  static boolean hasPathSum(TreeNode node, int target) {
+    if (node == null) return false;
+    if (node.left == null && node.right == null) return node.val == target;   // leaf finishes target?
+    int rem = target - node.val;                         // push the REMAINING target down
+    return hasPathSum(node.left, rem) || hasPathSum(node.right, rem);
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+    int target = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(hasPathSum(root, target));
+  }
+
+  static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
+    }
+    return root;
+  }
+
+  // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[1, 2, 3, 4, 5, null, 6]" },
+    { "id": "target", "label": "target", "type": "int", "placeholder": "7" }
+  ],
+  "cases": [
+    { "args": { "root": "[1, 2, 3, 4, 5, null, 6]", "target": "7" }, "expected": "true" },
+    { "args": { "root": "[1, 2, 3, 4, 5, null, 6]", "target": "8" }, "expected": "true" },
+    { "args": { "root": "[1, 2, 3, 4, 5, null, 6]", "target": "10" }, "expected": "true" },
+    { "args": { "root": "[1, 2, 3, 4, 5, null, 6]", "target": "100" }, "expected": "false" },
+    { "args": { "root": "[5]", "target": "5" }, "expected": "true" },
+    { "args": { "root": "[]", "target": "0" }, "expected": "false" }
+  ]
+}
 ```
 
 ## How It Works
@@ -78,54 +172,225 @@ Because with a shared mutable accumulator you must **manually undo** your change
 
 ## Your Turn
 
-The top-down template — path-sum and depth, both threading context down:
+Write the top-down template yourself — `has_path_sum(node, target)` threads the remaining target down and returns whether any root-to-leaf path finishes it. (Depth follows the same shape: `f(node, depth + 1)`; only the combine step changes.)
 
 ```python run viz=binary-tree viz-root=root
+import json
+from collections import deque
+
 class TreeNode:
     def __init__(self, val, left=None, right=None):
-        self.val = val; self.left = left; self.right = right
+        self.val = val
+        self.left = left
+        self.right = right
 
 def has_path_sum(node, target):
-    if node is None: return False
-    if node.left is None and node.right is None:
-        return node.val == target
-    rem = target - node.val
-    return has_path_sum(node.left, rem) or has_path_sum(node.right, rem)
+    # Your code goes here — base case None → False; at a leaf, does node.val
+    # finish the target? Otherwise push `target - node.val` down to both children.
+    pass
 
-def max_depth(node, depth=0):
-    if node is None: return depth
-    return max(max_depth(node.left, depth + 1), max_depth(node.right, depth + 1))
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
 
-root = TreeNode(1, TreeNode(2, TreeNode(4), TreeNode(5)), TreeNode(3, None, TreeNode(6)))
-print(has_path_sum(root, 8), has_path_sum(root, 10), has_path_sum(root, 100))   # True True False
-print(max_depth(root))   # 3
+root = build_tree(json.loads(input()))   # the test case's level-order values
+target = int(input())                    # the path sum to test
+print("true" if has_path_sum(root, target) else "false")
 ```
 
 ```java run viz=binary-tree viz-root=root
+import java.util.*;
+
 public class Main {
-  static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } TreeNode(int v, TreeNode l, TreeNode r){ val=v; left=l; right=r; } }
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
+  }
 
   static boolean hasPathSum(TreeNode node, int target) {
-    if (node == null) return false;
-    if (node.left == null && node.right == null) return node.val == target;
-    int rem = target - node.val;                         // push remaining target down
-    return hasPathSum(node.left, rem) || hasPathSum(node.right, rem);
+    // Your code goes here — base case null → false; at a leaf, does node.val
+    // finish the target? Otherwise push (target - node.val) down to both children.
+    return false;
   }
-  static int maxDepth(TreeNode node, int depth) {
-    if (node == null) return depth;
-    return Math.max(maxDepth(node.left, depth + 1), maxDepth(node.right, depth + 1));
-  }
+
   public static void main(String[] args) {
-    TreeNode root = new TreeNode(1, new TreeNode(2, new TreeNode(4), new TreeNode(5)),
-                                    new TreeNode(3, null, new TreeNode(6)));
-    System.out.println(hasPathSum(root, 7) + " " + maxDepth(root, 0));   // true 3
+    Scanner sc = new Scanner(System.in);
+    TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+    int target = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(hasPathSum(root, target));
+  }
+
+  static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
+    }
+    return root;
+  }
+
+  // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
   }
 }
 ```
 
-Drill the family in **Practice** — [Sum of Path](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-preorder-traversal-stateless/problems/sum-of-path), [Depth Assignment](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-preorder-traversal-stateless/problems/depth-assignment), [Concatenated Path](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-preorder-traversal-stateless/problems/concatenated-path), and [Increasing Path](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-preorder-traversal-stateless/problems/increasing-path).
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[1, 2, 3, 4, 5, null, 6]" },
+    { "id": "target", "label": "target", "type": "int", "placeholder": "8" }
+  ],
+  "cases": [
+    { "args": { "root": "[1, 2, 3, 4, 5, null, 6]", "target": "8" }, "expected": "true" },
+    { "args": { "root": "[1, 2, 3, 4, 5, null, 6]", "target": "10" }, "expected": "true" },
+    { "args": { "root": "[1, 2, 3, 4, 5, null, 6]", "target": "100" }, "expected": "false" },
+    { "args": { "root": "[5]", "target": "5" }, "expected": "true" },
+    { "args": { "root": "[5]", "target": "1" }, "expected": "false" },
+    { "args": { "root": "[]", "target": "0" }, "expected": "false" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+The template is exactly the See-It-Work walk, packaged to return a result. The base case `None → False` handles both an empty tree and the "fell off a missing child" case. At a leaf (no children) the path is complete, so the only question is whether this node's value equals the remaining target. At an internal node, *spend* this node's value — pass `target - node.val` down — and the `or` succeeds if **either** subtree can finish what's left. The remaining target travels purely as the argument; nothing is shared across the two recursive calls, so the left subtree can't corrupt the right.
+
+```python solution time=O(n) space=O(h)
+import json
+from collections import deque
+
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+def has_path_sum(node, target):
+    if node is None:
+        return False
+    if node.left is None and node.right is None:   # leaf: does it finish the target?
+        return node.val == target
+    rem = target - node.val                        # push the REMAINING target DOWN
+    return has_path_sum(node.left, rem) or has_path_sum(node.right, rem)
+
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
+
+root = build_tree(json.loads(input()))   # the test case's level-order values
+target = int(input())                    # the path sum to test
+print("true" if has_path_sum(root, target) else "false")
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
+  }
+
+  static boolean hasPathSum(TreeNode node, int target) {
+    if (node == null) return false;
+    if (node.left == null && node.right == null) return node.val == target;   // leaf finishes target?
+    int rem = target - node.val;                         // push the REMAINING target down
+    return hasPathSum(node.left, rem) || hasPathSum(node.right, rem);
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+    int target = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(hasPathSum(root, target));
+  }
+
+  static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
+    }
+    return root;
+  }
+
+  // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+</details>
 
 ## Reflect & Connect
+
+Drill the family in **Practice** — [Sum of Path](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-preorder-traversal-stateless/problems/sum-of-path), [Depth Assignment](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-preorder-traversal-stateless/problems/depth-assignment), [Concatenated Path](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-preorder-traversal-stateless/problems/concatenated-path), and [Increasing Path](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-preorder-traversal-stateless/problems/increasing-path).
 
 Preorder-stateless is the "what do my ancestors tell me?" template:
 

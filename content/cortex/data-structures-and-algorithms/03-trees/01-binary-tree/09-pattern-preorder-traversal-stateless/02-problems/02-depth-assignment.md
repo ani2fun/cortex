@@ -1,77 +1,203 @@
 ---
 title: "Depth Assignment"
-summary: "See problem statement below."
+summary: "Given the root of a binary tree, update each node's value to its depth (root = 0)."
 prereqs:
   - 09-pattern-preorder-traversal-stateless/01-pattern
 difficulty: medium
+kind: problem
+topics: [preorder-traversal, binary-tree]
 ---
 
-# Problem 2 — Depth assignment
+# Depth assignment
 
-> Given the root of a binary tree, update each node's value to its depth.
->
-> **Example:** Input `[1, 2, 3, 4, null, null, 7]` → output `[0, 1, 1, 2, null, null, 2]`.
+## Problem Statement
 
-The accumulator is just the **current depth**. The root starts at 0; every recursive call passes `depth + 1` to the children.
+Given the **root** of a binary tree, update each node's value to its **depth** — the number of edges from the root to that node. The root has depth `0`; its children have depth `1`, and so on. Return the modified tree.
 
-<details>
-<summary><h2>Solution</h2></summary>
+The accumulator here is the **current depth**. The root starts at `0`; every recursive call passes `depth + 1` to the children.
 
+## Examples
 
+**Example 1:**
+```
+Input:  root = [1, 2, 3, 4, null, null, 7]
+Output: [0, 1, 1, 2, null, null, 2]
+```
+
+**Example 2:**
+```
+Input:  root = [1, 8, 4, null, null, 2, 7]
+Output: [0, 1, 1, null, null, 2, 2]
+```
+
+## Constraints
+
+- `0 ≤ number of nodes ≤ 10⁴`
+- `-10⁴ ≤ node.val ≤ 10⁴`
+- Update values in place via a single top-down pass — `O(n)` time, `O(h)` recursion stack
 
 ```python run viz=binary-tree viz-root=root
-from typing import Optional
+import json
 from collections import deque
 
 class TreeNode:
-    def __init__(self, val=0, left=None, right=None):
+    def __init__(self, val, left=None, right=None):
         self.val = val
         self.left = left
         self.right = right
 
+class Solution:
+    def depth_assignment(self, root):
+        # Your code goes here — carry the current depth DOWN as an argument:
+        # write depth into node.val, then recurse into both children
+        # with depth + 1. Return the (mutated) root.
+        return root
 
-def from_level_order(values):
-    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
     if not values:
         return None
     root = TreeNode(values[0])
-    queue = [root]
+    queue = deque([root])
     i = 1
     while queue and i < len(values):
-        node = queue.pop(0)
-        if i < len(values) and values[i] is not None:
-            node.left = TreeNode(values[i])
-            queue.append(node.left)
-        i += 1
-        if i < len(values) and values[i] is not None:
-            node.right = TreeNode(values[i])
-            queue.append(node.right)
-        i += 1
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
     return root
 
-
-def to_level_order(root):
-    if not root:
-        return []
-    result, queue = [], deque([root])
+def print_tree(root):                # root → [1, 2, 3, null, 4], trailing nulls trimmed
+    out, queue = [], deque([root])
     while queue:
         node = queue.popleft()
-        if node:
-            result.append(node.val)
+        if node is None:
+            out.append(None)
+        else:
+            out.append(node.val)
             queue.append(node.left)
             queue.append(node.right)
-        else:
-            result.append(None)
-    while result and result[-1] is None:
-        result.pop()
-    return result
+    while out and out[-1] is None:
+        out.pop()
+    print(json.dumps(out))
 
+root = build_tree(json.loads(input()))   # the test case's level-order values
+print_tree(Solution().depth_assignment(root))
+```
+
+```java run viz=binary-tree viz-root=root
+import java.util.*;
+
+public class Main {
+    static class TreeNode {
+        int val; TreeNode left, right;
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static class Solution {
+        TreeNode depthAssignment(TreeNode root) {
+            // Your code goes here — carry the current depth DOWN as an argument:
+            // write depth into node.val, then recurse into both children
+            // with depth + 1. Return the (mutated) root.
+            return root;
+        }
+    }
+
+    public static void main(String[] args) {
+        TreeNode root = buildTree(parseIntegerArray(new Scanner(System.in).nextLine()));
+        printTree(new Solution().depthAssignment(root));
+    }
+
+    static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+            }
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+            }
+        }
+        return root;
+    }
+
+    static void printTree(TreeNode root) {          // root → [1, 2, 3, null, 4], trailing nulls trimmed
+        List<String> out = new ArrayList<>();
+        Deque<TreeNode> queue = new LinkedList<>();
+        queue.add(root);
+        while (!queue.isEmpty()) {
+            TreeNode node = queue.poll();
+            if (node == null) {
+                out.add("null");
+            } else {
+                out.add(String.valueOf(node.val));
+                queue.add(node.left);
+                queue.add(node.right);
+            }
+        }
+        while (!out.isEmpty() && out.get(out.size() - 1).equals("null"))
+            out.remove(out.size() - 1);
+        System.out.println("[" + String.join(", ", out) + "]");
+    }
+
+    // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+    static Integer[] parseIntegerArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new Integer[0];
+        String[] parts = inner.split(",");
+        Integer[] out = new Integer[parts.length];
+        for (int i = 0; i < parts.length; i++)
+            out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[1, 2, 3, 4, null, null, 7]" }
+  ],
+  "cases": [
+    { "args": { "root": "[1, 2, 3, 4, null, null, 7]" }, "expected": "[0, 1, 1, 2, null, null, 2]" },
+    { "args": { "root": "[1, 8, 4, null, null, 2, 7]" }, "expected": "[0, 1, 1, null, null, 2, 2]" },
+    { "args": { "root": "[]" }, "expected": "[]" },
+    { "args": { "root": "[42]" }, "expected": "[0]" },
+    { "args": { "root": "[5, 3, null, 1]" }, "expected": "[0, 1, null, 2]" },
+    { "args": { "root": "[5, null, 3, null, 1]" }, "expected": "[0, null, 1, null, 2]" },
+    { "args": { "root": "[1, 2, 3, 4, 5, 6, 7]" }, "expected": "[0, 1, 1, 2, 2, 2, 2]" }
+  ]
+}
+```
+
+<details>
+<summary><h2>Solution</h2></summary>
+
+A single top-down recursion carries the current depth down as an argument. At each node: write `depth` into `node.val`, then recurse into both children with `depth + 1`. The base case (`None`) does nothing. Because the depth travels purely as a function argument, the two subtrees are completely independent.
+
+```python solution time=O(n) space=O(h)
+import json
+from collections import deque
+
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
 
 class Solution:
-    def depth_assignment_helper(
-        self, root: Optional[TreeNode], depth: int
-    ) -> None:
-
+    def depth_assignment_helper(self, root, depth):
         # Base case: if the current node is null, do nothing
         if root is None:
             return
@@ -84,96 +210,59 @@ class Solution:
         self.depth_assignment_helper(root.left, depth + 1)
         self.depth_assignment_helper(root.right, depth + 1)
 
-    def depth_assignment(self, root: Optional[TreeNode]) -> None:
+    def depth_assignment(self, root):
         self.depth_assignment_helper(root, 0)
+        return root
 
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
 
-# Examples from the problem statement
-t1 = from_level_order([1, 2, 3, 4, None, None, 7])
-Solution().depth_assignment(t1); print(to_level_order(t1))   # [0, 1, 1, 2, 2]
+def print_tree(root):                # root → [1, 2, 3, null, 4], trailing nulls trimmed
+    out, queue = [], deque([root])
+    while queue:
+        node = queue.popleft()
+        if node is None:
+            out.append(None)
+        else:
+            out.append(node.val)
+            queue.append(node.left)
+            queue.append(node.right)
+    while out and out[-1] is None:
+        out.pop()
+    print(json.dumps(out))
 
-t2 = from_level_order([1, 8, 4, None, None, 2, 7])
-Solution().depth_assignment(t2); print(to_level_order(t2))   # [0, 1, 1, 2, 2]
-
-# Edge cases
-t3 = from_level_order([])
-Solution().depth_assignment(t3); print(to_level_order(t3))   # []
-
-t4 = from_level_order([42])
-Solution().depth_assignment(t4); print(to_level_order(t4))   # [0]
-
-t5 = from_level_order([5, 3, None, 1])                       # left-skew
-Solution().depth_assignment(t5); print(to_level_order(t5))   # [0, 1, 2]
-
-t6 = from_level_order([5, None, 3, None, 1])                 # right-skew
-Solution().depth_assignment(t6); print(to_level_order(t6))   # [0, 1, 2]
-
-t7 = from_level_order([1, 2, 3, 4, 5, 6, 7])
-Solution().depth_assignment(t7); print(to_level_order(t7))   # [0, 1, 1, 2, 2, 2, 2]
+root = build_tree(json.loads(input()))   # the test case's level-order values
+print_tree(Solution().depth_assignment(root))
 ```
 
-```java run viz=binary-tree viz-root=root
+```java solution
 import java.util.*;
 
 public class Main {
     static class TreeNode {
-        int val;
-        TreeNode left;
-        TreeNode right;
-        TreeNode() {}
+        int val; TreeNode left, right;
         TreeNode(int val) { this.val = val; }
     }
 
-    static TreeNode fromLevelOrder(Integer... values) {
-        if (values.length == 0 || values[0] == null) return null;
-        TreeNode root = new TreeNode(values[0]);
-        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
-        queue.add(root);
-        int i = 1;
-        while (!queue.isEmpty() && i < values.length) {
-            TreeNode node = queue.poll();
-            if (i < values.length && values[i] != null) {
-                node.left = new TreeNode(values[i]);
-                queue.add(node.left);
-            }
-            i++;
-            if (i < values.length && values[i] != null) {
-                node.right = new TreeNode(values[i]);
-                queue.add(node.right);
-            }
-            i++;
-        }
-        return root;
-    }
-
-    static List<Integer> toLevelOrder(TreeNode root) {
-        if (root == null) return new ArrayList<>();
-        List<Integer> result = new ArrayList<>();
-        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
-        queue.add(root);
-        while (!queue.isEmpty()) {
-            TreeNode node = queue.poll();
-            if (node != null) {
-                result.add(node.val);
-                queue.add(node.left);
-                queue.add(node.right);
-            } else {
-                result.add(null);
-            }
-        }
-        while (!result.isEmpty() && result.get(result.size() - 1) == null)
-            result.remove(result.size() - 1);
-        return result;
-    }
-
     static class Solution {
-
         private void depthAssignmentHelper(TreeNode root, int depth) {
-
             // Base case: if the current node is null, do nothing
-            if (root == null) {
-                return;
-            }
+            if (root == null) return;
 
             // Update current node's value with its depth
             root.val = depth;
@@ -184,41 +273,65 @@ public class Main {
             depthAssignmentHelper(root.right, depth + 1);
         }
 
-        public void depthAssignment(TreeNode root) {
+        TreeNode depthAssignment(TreeNode root) {
             depthAssignmentHelper(root, 0);
+            return root;
         }
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        TreeNode t1 = fromLevelOrder(1, 2, 3, 4, null, null, 7);
-        new Solution().depthAssignment(t1);
-        System.out.println(toLevelOrder(t1));   // [0, 1, 1, 2, 2]
+        TreeNode root = buildTree(parseIntegerArray(new Scanner(System.in).nextLine()));
+        printTree(new Solution().depthAssignment(root));
+    }
 
-        TreeNode t2 = fromLevelOrder(1, 8, 4, null, null, 2, 7);
-        new Solution().depthAssignment(t2);
-        System.out.println(toLevelOrder(t2));   // [0, 1, 1, 2, 2]
+    static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+            }
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+            }
+        }
+        return root;
+    }
 
-        // Edge cases
-        TreeNode t3 = fromLevelOrder();
-        new Solution().depthAssignment(t3);
-        System.out.println(toLevelOrder(t3));   // []
+    static void printTree(TreeNode root) {          // root → [1, 2, 3, null, 4], trailing nulls trimmed
+        List<String> out = new ArrayList<>();
+        Deque<TreeNode> queue = new LinkedList<>();
+        queue.add(root);
+        while (!queue.isEmpty()) {
+            TreeNode node = queue.poll();
+            if (node == null) {
+                out.add("null");
+            } else {
+                out.add(String.valueOf(node.val));
+                queue.add(node.left);
+                queue.add(node.right);
+            }
+        }
+        while (!out.isEmpty() && out.get(out.size() - 1).equals("null"))
+            out.remove(out.size() - 1);
+        System.out.println("[" + String.join(", ", out) + "]");
+    }
 
-        TreeNode t4 = fromLevelOrder(42);
-        new Solution().depthAssignment(t4);
-        System.out.println(toLevelOrder(t4));   // [0]
-
-        TreeNode t5 = fromLevelOrder(5, 3, null, 1);   // left-skew
-        new Solution().depthAssignment(t5);
-        System.out.println(toLevelOrder(t5));   // [0, 1, 2]
-
-        TreeNode t6 = fromLevelOrder(5, null, 3, null, 1);   // right-skew
-        new Solution().depthAssignment(t6);
-        System.out.println(toLevelOrder(t6));   // [0, 1, 2]
-
-        TreeNode t7 = fromLevelOrder(1, 2, 3, 4, 5, 6, 7);
-        new Solution().depthAssignment(t7);
-        System.out.println(toLevelOrder(t7));   // [0, 1, 1, 2, 2, 2, 2]
+    // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+    static Integer[] parseIntegerArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new Integer[0];
+        String[] parts = inner.split(",");
+        Integer[] out = new Integer[parts.length];
+        for (int i = 0; i < parts.length; i++)
+            out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

@@ -4,6 +4,8 @@ summary: "Given two strings s1 and s2, return true if s2 contains a permutation 
 prereqs:
   - 09-pattern-fixed-sized-sliding-window/01-pattern
 difficulty: medium
+kind: problem
+topics: [fixed-sized-sliding-window, hash-table]
 ---
 
 # Contains variation
@@ -51,6 +53,56 @@ Output: true
 Explanation: the window "aa" matches s1's map {a:2} → match found.
 ```
 
+## Constraints
+
+- `1 <= len(s1) <= len(s2)`
+- Both strings contain only lowercase letters
+
+```python run
+def contains_variation(s1, s2):
+    # Your code goes here
+    pass
+
+s1 = input()
+s2 = input()
+r = contains_variation(s1, s2)
+print("true" if r else "false")
+```
+
+```java run
+import java.util.*;
+
+public class Main {
+  static boolean containsVariation(String s1, String s2) {
+    // Your code goes here
+    return false;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    String s1 = sc.nextLine();
+    String s2 = sc.nextLine();
+    System.out.println(containsVariation(s1, s2));
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "s1", "label": "s1", "type": "string", "placeholder": "abc" },
+    { "id": "s2", "label": "s2", "type": "string", "placeholder": "edbaclm" }
+  ],
+  "cases": [
+    { "args": { "s1": "abc", "s2": "edbaclm"  }, "expected": "true"  },
+    { "args": { "s1": "cod", "s2": "intdoce"  }, "expected": "true"  },
+    { "args": { "s1": "abc", "s2": "defghiab" }, "expected": "false" },
+    { "args": { "s1": "aa",  "s2": "aab"      }, "expected": "true"  },
+    { "args": { "s1": "ab",  "s2": "ba"       }, "expected": "true"  },
+    { "args": { "s1": "abc", "s2": "ab"       }, "expected": "false" }
+  ]
+}
+```
 
 <details>
 <summary><h2>Intuition</h2></summary>
@@ -91,141 +143,78 @@ Pre-count `s1`, then slide a window of size `len(s1)` over `s2`, comparing maps 
 
 </details>
 <details>
-<summary><h2>Solution</h2></summary>
+<summary>Editorial</summary>
 
+Build `s1`'s frequency map. Slide a window of exactly `len(s1)` characters over `s2`: increment the entering character, compare maps when the window is full, then evict the leaving character (decrement, delete at zero). Return `true` on the first match; `false` if no window matches. Delete-at-zero keeps the window map's key set honest for the equality check. `O(n)` time, `O(A)` space for alphabet size `A`.
 
-
-```python run viz=array viz-root=s
+```python solution time=O(n) space=O(A)
 from collections import defaultdict
-from typing import Dict
 
-class Solution:
-    def count_frequency(self, s: str) -> Dict[str, int]:
-        frequency = defaultdict(int)
+def contains_variation(s1, s2):
+    def count_frequency(s):
+        d = defaultdict(int)
         for ch in s:
-            frequency[ch] += 1
+            d[ch] += 1
+        return d
 
-        return frequency
+    s1_frequency = count_frequency(s1)
+    frequency = defaultdict(int)
+    start, end = 0, 0
+    while end < len(s2):
+        char_end = s2[end]
+        frequency[char_end] += 1
+        if end - start + 1 == len(s1):
+            if frequency == s1_frequency:
+                return True
+            char_start = s2[start]
+            frequency[char_start] -= 1
+            if frequency[char_start] == 0:
+                del frequency[char_start]
+            start += 1
+        end += 1
+    return False
 
-    def contains_variation(self, s1: str, s2: str) -> bool:
-
-        # Frequency map for s1
-        s1_frequency = self.count_frequency(s1)
-
-        # Frequency maps for characters in sliding window in s2
-        frequency = defaultdict(int)
-
-        # The start and end pointers for the window
-        start, end = 0, 0
-
-        while end < len(s2):
-
-            # Add the current character to the window
-            char_end = s2[end]
-            frequency[char_end] += 1
-
-            # If the window size matches s1's length, check for a match
-            if end - start + 1 == len(s1):
-                if frequency == s1_frequency:
-                    return True
-
-                # Shrink the window from the left
-                char_start = s2[start]
-                frequency[char_start] -= 1
-                if frequency[char_start] == 0:
-                    del frequency[char_start]
-                start += 1
-
-            # Expand the window to the right
-            end += 1
-
-        return False
-
-
-# Examples from the problem statement
-print(Solution().contains_variation("abc", "edbaclm"))   # True
-print(Solution().contains_variation("cod", "intdoce"))   # True
-print(Solution().contains_variation("abc", "defghiab"))  # False
-
-# Edge cases
-print(Solution().contains_variation("a", "a"))           # True
-print(Solution().contains_variation("ab", "ba"))         # True
-print(Solution().contains_variation("abc", "abc"))       # True
-print(Solution().contains_variation("abc", "ab"))        # False
-print(Solution().contains_variation("aa", "aab"))        # True
+s1 = input()
+s2 = input()
+r = contains_variation(s1, s2)
+print("true" if r else "false")
 ```
 
-```java run viz=array viz-root=s
+```java solution
 import java.util.*;
 
 public class Main {
-    static class Solution {
-        private Map<Character, Integer> countFrequency(String s) {
-            Map<Character, Integer> frequency = new HashMap<>();
-            for (char ch : s.toCharArray()) {
-                frequency.put(ch, frequency.getOrDefault(ch, 0) + 1);
-            }
+  static Map<Character, Integer> countFrequency(String s) {
+    Map<Character, Integer> d = new HashMap<>();
+    for (char ch : s.toCharArray()) d.put(ch, d.getOrDefault(ch, 0) + 1);
+    return d;
+  }
 
-            return frequency;
-        }
-
-        public boolean containsVariation(String s1, String s2) {
-
-            // Frequency map for s1
-            Map<Character, Integer> s1Frequency = countFrequency(s1);
-
-            // Frequency maps for characters in sliding window in s2
-            Map<Character, Integer> frequency = new HashMap<>();
-
-            // The start and end pointers for the window
-            int start = 0;
-            int end = 0;
-
-            while (end < s2.length()) {
-
-                // Add the current character to the window
-                char endChar = s2.charAt(end);
-                frequency.put(
-                    endChar,
-                    frequency.getOrDefault(endChar, 0) + 1
-                );
-
-                // If the window size matches s1's length, check for a match
-                if (end - start + 1 == s1.length()) {
-                    if (frequency.equals(s1Frequency)) {
-                        return true;
-                    }
-
-                    // Shrink the window from the left
-                    char startChar = s2.charAt(start);
-                    frequency.put(startChar, frequency.get(startChar) - 1);
-                    if (frequency.get(startChar) == 0) {
-                        frequency.remove(startChar);
-                    }
-                    start++;
-                }
-
-                // Expand the window to the right
-                end++;
-            }
-
-            return false;
-        }
+  static boolean containsVariation(String s1, String s2) {
+    Map<Character, Integer> s1Frequency = countFrequency(s1);
+    Map<Character, Integer> frequency = new HashMap<>();
+    int start = 0, end = 0;
+    while (end < s2.length()) {
+      char endChar = s2.charAt(end);
+      frequency.put(endChar, frequency.getOrDefault(endChar, 0) + 1);
+      if (end - start + 1 == s1.length()) {
+        if (frequency.equals(s1Frequency)) return true;
+        char startChar = s2.charAt(start);
+        frequency.put(startChar, frequency.get(startChar) - 1);
+        if (frequency.get(startChar) == 0) frequency.remove(startChar);
+        start++;
+      }
+      end++;
     }
+    return false;
+  }
 
-    public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().containsVariation("abc", "edbaclm"));   // true
-        System.out.println(new Solution().containsVariation("cod", "intdoce"));   // true
-        System.out.println(new Solution().containsVariation("abc", "defghiab"));  // false
-
-        // Edge cases
-        System.out.println(new Solution().containsVariation("a", "a"));           // true
-        System.out.println(new Solution().containsVariation("ab", "ba"));         // true
-        System.out.println(new Solution().containsVariation("abc", "abc"));       // true
-        System.out.println(new Solution().containsVariation("abc", "ab"));        // false
-        System.out.println(new Solution().containsVariation("aa", "aab"));        // true
-    }
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    String s1 = sc.nextLine();
+    String s2 = sc.nextLine();
+    System.out.println(containsVariation(s1, s2));
+  }
 }
 ```
 

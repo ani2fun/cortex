@@ -4,6 +4,8 @@ summary: "Given a string s, return a new string with the words in reverse order,
 prereqs:
   - 04-pattern-two-pointers/01-pattern
 difficulty: medium
+kind: problem
+topics: [two-pointers, arrays]
 ---
 
 # Reverse Word Order
@@ -49,6 +51,67 @@ Explanation: Only one word; the result is the input.
 ```
 Input:  s = "a good example"
 Output:     "example good a"
+```
+
+```quiz
+{
+  "prompt": "Now your turn!",
+  "input": "s = \"learn two pointers\"",
+  "options": ["pointers two learn", "sredniop owt nrael", "learn two pointers", "two learn pointers"],
+  "answer": "pointers two learn"
+}
+```
+
+## Constraints
+
+- `0 ≤ s.length ≤ 1000`
+- `s` consists of printable ASCII characters; words are separated by one or more spaces
+
+```python run viz=array viz-root=arr
+class Solution:
+    def reverse_word_order(self, s: str) -> str:
+        # Your code goes here — reverse the whole string, then reverse each
+        # word back in place; finally collapse runs of spaces to one and trim.
+        return s
+
+s = input()                          # the test case's s
+print(Solution().reverse_word_order(s))
+```
+
+```java run viz=array viz-root=arr
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public String reverseWordOrder(String s) {
+            // Your code goes here — reverse the whole string, then reverse each
+            // word back in place; finally collapse runs of spaces to one and trim.
+            return s;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String s = sc.hasNextLine() ? sc.nextLine() : "";
+        System.out.println(new Solution().reverseWordOrder(s));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "s", "type": "string", "placeholder": "This is a    string" }
+  ],
+  "cases": [
+    { "args": { "s": "This is a    string" }, "expected": "string a is This" },
+    { "args": { "s": "   fizz buzz  " }, "expected": "buzz fizz" },
+    { "args": { "s": "learn two pointers" }, "expected": "pointers two learn" },
+    { "args": { "s": "one two three" }, "expected": "three two one" },
+    { "args": { "s": "  a  b  " }, "expected": "b a" },
+    { "args": { "s": "random" }, "expected": "random" }
+  ]
+}
 ```
 
 <details>
@@ -578,7 +641,7 @@ This reuses `reverse_segment(arr, left, right)` from the previous lesson twice.
 
 ### Solution
 
-```python run viz=array viz-root=arr
+```python solution time=O(n) space=O(n)
 class Solution:
     def remove_extra_spaces(self, s: str) -> str:
         return " ".join(s.split()).strip()
@@ -634,20 +697,13 @@ class Solution:
         return self.remove_extra_spaces("".join(arr))
 
 
-# Examples from the problem statement
-print(Solution().reverse_word_order("This is a    string"))  # string a is This
-print(Solution().reverse_word_order("   fizz buzz  "))       # buzz fizz
-print(Solution().reverse_word_order("random"))               # random
-
-# Edge cases
-print(Solution().reverse_word_order(""))                     # ""
-print(Solution().reverse_word_order("a"))                    # a — single word
-print(Solution().reverse_word_order("  a  b  "))             # b a — extra spaces stripped
-print(Solution().reverse_word_order("one two three"))        # three two one
-print(Solution().reverse_word_order("hello world"))          # world hello
+s = input()                          # the test case's s
+print(Solution().reverse_word_order(s))
 ```
 
-```java run viz=array viz-root=arr
+```java solution
+import java.util.*;
+
 public class Main {
     static class Solution {
         private String removeExtraSpaces(String s) {
@@ -731,17 +787,9 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().reverseWordOrder("This is a    string")); // string a is This
-        System.out.println(new Solution().reverseWordOrder("   fizz buzz  "));      // buzz fizz
-        System.out.println(new Solution().reverseWordOrder("random"));              // random
-
-        // Edge cases
-        System.out.println(new Solution().reverseWordOrder(""));                    // ""
-        System.out.println(new Solution().reverseWordOrder("a"));                   // a — single word
-        System.out.println(new Solution().reverseWordOrder("  a  b  "));            // b a — extra spaces stripped
-        System.out.println(new Solution().reverseWordOrder("one two three"));       // three two one
-        System.out.println(new Solution().reverseWordOrder("hello world"));         // world hello
+        Scanner sc = new Scanner(System.in);
+        String s = sc.hasNextLine() ? sc.nextLine() : "";
+        System.out.println(new Solution().reverseWordOrder(s));
     }
 }
 ```

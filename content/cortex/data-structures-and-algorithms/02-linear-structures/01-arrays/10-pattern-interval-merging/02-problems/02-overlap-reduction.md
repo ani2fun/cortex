@@ -4,6 +4,8 @@ summary: "Given an array of intervals where intervals[i] = [si, ei], merge all o
 prereqs:
   - 10-pattern-interval-merging/01-pattern
 difficulty: medium
+kind: problem
+topics: [intervals, arrays]
 ---
 
 # Overlap Reduction
@@ -44,6 +46,89 @@ Explanation: All three are the same interval — they collapse into one.
 Input:  intervals = [[1, 5], [6, 7], [8, 9]]
 Output: [[1, 5], [6, 7], [8, 9]]
 Explanation: The intervals are already pairwise non-overlapping; nothing merges.
+```
+
+```quiz
+{
+  "prompt": "Now your turn!",
+  "input": "intervals = [[1, 3], [2, 4]]",
+  "options": ["[[1, 4]]", "[[1, 3], [2, 4]]", "[[2, 4], [1, 3]]", "[[1, 3]]"],
+  "answer": "[[1, 4]]"
+}
+```
+
+## Constraints
+
+- `1 ≤ intervals.length ≤ 10^4`
+- `intervals[i] = [si, ei]` with `0 ≤ si ≤ ei ≤ 10^6`
+
+```python run viz=grid viz-root=intervals
+import ast
+from typing import List
+
+class Solution:
+    def overlap_reduction(self, intervals: List[List[int]]) -> List[List[int]]:
+        # Your code goes here — sort by start, then sweep, extending the last
+        # merged interval on overlap (start ≤ last.end) and appending otherwise.
+        return []
+
+intervals = ast.literal_eval(input())    # the test case's intervals
+print(Solution().overlap_reduction(intervals))
+```
+
+```java run viz=grid viz-root=intervals
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int[][] overlapReduction(int[][] intervals) {
+            // Your code goes here — sort by start, then sweep, extending the last
+            // merged interval on overlap (start <= last.end) and appending otherwise.
+            return new int[0][];
+        }
+    }
+
+    public static void main(String[] args) {
+        int[][] intervals = parseIntMatrix(new Scanner(System.in).nextLine());
+        System.out.println(Arrays.deepToString(new Solution().overlapReduction(intervals)));
+    }
+
+    // "[[1, 3], [2, 6]]" → {{1, 3}, {2, 6}} — reads the test case's intervals
+    static int[][] parseIntMatrix(String line) {
+        String s = line.trim();
+        if (s.startsWith("[")) s = s.substring(1);
+        if (s.endsWith("]")) s = s.substring(0, s.length() - 1);
+        s = s.trim();
+        if (s.isEmpty()) return new int[0][];
+        String[] rows = s.split("\\]\\s*,\\s*\\[");
+        int[][] out = new int[rows.length][];
+        for (int i = 0; i < rows.length; i++) {
+            String inner = rows[i].replaceAll("[\\[\\]\\s]", "");
+            if (inner.isEmpty()) { out[i] = new int[0]; continue; }
+            String[] parts = inner.split(",");
+            int[] pair = new int[parts.length];
+            for (int j = 0; j < parts.length; j++) pair[j] = Integer.parseInt(parts[j]);
+            out[i] = pair;
+        }
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "intervals", "label": "intervals", "type": "int[][]", "placeholder": "[[1, 4], [2, 3], [3, 4], [4, 6]]" }
+  ],
+  "cases": [
+    { "args": { "intervals": "[[1, 4], [2, 3], [3, 4], [4, 6]]" }, "expected": "[[1, 6]]" },
+    { "args": { "intervals": "[[1, 5], [1, 5], [1, 5]]" }, "expected": "[[1, 5]]" },
+    { "args": { "intervals": "[[1, 5], [6, 7], [8, 9]]" }, "expected": "[[1, 5], [6, 7], [8, 9]]" },
+    { "args": { "intervals": "[[1, 3], [2, 4]]" }, "expected": "[[1, 4]]" },
+    { "args": { "intervals": "[[1, 10], [2, 3], [4, 5]]" }, "expected": "[[1, 10]]" },
+    { "args": { "intervals": "[[5, 6], [1, 2], [3, 4]]" }, "expected": "[[1, 2], [3, 4], [5, 6]]" }
+  ]
+}
 ```
 
 <details>
@@ -88,7 +173,8 @@ The `<=` is what makes touching intervals like `[1, 4]` and `[4, 6]` merge under
 
 ### The Solution
 
-```python run viz=grid viz-root=intervals
+```python solution time=O(N log N) space=O(N)
+import ast
 from typing import List
 
 class Solution:
@@ -117,20 +203,11 @@ class Solution:
         return merged
 
 
-# Examples from the problem statement
-print(Solution().overlap_reduction([[1, 4], [2, 3], [3, 4], [4, 6]]))   # [[1, 6]]
-print(Solution().overlap_reduction([[1, 5], [1, 5], [1, 5]]))           # [[1, 5]]
-print(Solution().overlap_reduction([[1, 5], [6, 7], [8, 9]]))           # [[1, 5], [6, 7], [8, 9]]
-
-# Edge cases
-print(Solution().overlap_reduction([[1, 2]]))                            # [[1, 2]]  — single interval
-print(Solution().overlap_reduction([[1, 3], [2, 4]]))                    # [[1, 4]]  — two overlapping
-print(Solution().overlap_reduction([[1, 2], [3, 4]]))                    # [[1, 2], [3, 4]]  — two non-overlapping
-print(Solution().overlap_reduction([[1, 10], [2, 3], [4, 5]]))          # [[1, 10]]  — one contains all others
-print(Solution().overlap_reduction([[5, 6], [1, 2], [3, 4]]))           # [[1, 2], [3, 4], [5, 6]]  — unsorted input
+intervals = ast.literal_eval(input())    # the test case's intervals
+print(Solution().overlap_reduction(intervals))
 ```
 
-```java run viz=grid viz-root=intervals
+```java solution
 import java.util.*;
 
 public class Main {
@@ -169,17 +246,28 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(Arrays.deepToString(new Solution().overlapReduction(new int[][]{{1, 4}, {2, 3}, {3, 4}, {4, 6}})));   // [[1, 6]]
-        System.out.println(Arrays.deepToString(new Solution().overlapReduction(new int[][]{{1, 5}, {1, 5}, {1, 5}})));           // [[1, 5]]
-        System.out.println(Arrays.deepToString(new Solution().overlapReduction(new int[][]{{1, 5}, {6, 7}, {8, 9}})));           // [[1, 5], [6, 7], [8, 9]]
+        int[][] intervals = parseIntMatrix(new Scanner(System.in).nextLine());
+        System.out.println(Arrays.deepToString(new Solution().overlapReduction(intervals)));
+    }
 
-        // Edge cases
-        System.out.println(Arrays.deepToString(new Solution().overlapReduction(new int[][]{{1, 2}})));                            // [[1, 2]]  — single interval
-        System.out.println(Arrays.deepToString(new Solution().overlapReduction(new int[][]{{1, 3}, {2, 4}})));                    // [[1, 4]]  — two overlapping
-        System.out.println(Arrays.deepToString(new Solution().overlapReduction(new int[][]{{1, 2}, {3, 4}})));                    // [[1, 2], [3, 4]]  — two non-overlapping
-        System.out.println(Arrays.deepToString(new Solution().overlapReduction(new int[][]{{1, 10}, {2, 3}, {4, 5}})));          // [[1, 10]]  — one contains all others
-        System.out.println(Arrays.deepToString(new Solution().overlapReduction(new int[][]{{5, 6}, {1, 2}, {3, 4}})));           // [[1, 2], [3, 4], [5, 6]]  — unsorted input
+    // "[[1, 3], [2, 6]]" → {{1, 3}, {2, 6}} — reads the test case's intervals
+    static int[][] parseIntMatrix(String line) {
+        String s = line.trim();
+        if (s.startsWith("[")) s = s.substring(1);
+        if (s.endsWith("]")) s = s.substring(0, s.length() - 1);
+        s = s.trim();
+        if (s.isEmpty()) return new int[0][];
+        String[] rows = s.split("\\]\\s*,\\s*\\[");
+        int[][] out = new int[rows.length][];
+        for (int i = 0; i < rows.length; i++) {
+            String inner = rows[i].replaceAll("[\\[\\]\\s]", "");
+            if (inner.isEmpty()) { out[i] = new int[0]; continue; }
+            String[] parts = inner.split(",");
+            int[] pair = new int[parts.length];
+            for (int j = 0; j < parts.length; j++) pair[j] = Integer.parseInt(parts[j]);
+            out[i] = pair;
+        }
+        return out;
     }
 }
 ```

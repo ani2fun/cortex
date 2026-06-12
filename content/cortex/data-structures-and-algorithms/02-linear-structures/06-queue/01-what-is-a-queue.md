@@ -20,17 +20,60 @@ That's a **queue**: a line you join at the back and leave from the front. It's t
 
 ## See It Work
 
-A queue adds at the **rear** and removes from the **front**. Run this — enqueue three values, then dequeue twice — and click **Visualise** to watch the front advance as the oldest items leave first.
+A queue adds at the **rear** and removes from the **front**. Pick a case and **Run** it — enqueue the values, then dequeue twice — and click **Visualise** to watch the front advance as the oldest items leave first.
 
 > ▶ Run it, then click **Visualise** — items join at the rear; each dequeue takes the *oldest* one from the front.
 
 ```python run viz=array viz-root=queue viz-kind=queue
+import ast
+
+values = ast.literal_eval(input())   # the test case's values, enqueued at the rear
+
 queue = []
-for x in [3, 5, 7]:
+for x in values:
     queue.append(x)        # enqueue at the rear
-print(queue.pop(0))        # dequeue the front → 3 (the oldest, out first)
-print(queue.pop(0))        # → 5
-print(queue)               # [7]
+print(queue.pop(0))        # dequeue the front (the oldest, out first)
+print(queue.pop(0))        # dequeue again
+print(queue)               # what's left, front on the left
+```
+
+```java run viz=array viz-root=queue viz-kind=queue
+import java.util.*;
+
+public class Main {
+  public static void main(String[] args) {
+    int[] values = parseIntArray(new Scanner(System.in).nextLine());  // enqueued at the rear
+
+    List<Integer> queue = new ArrayList<>();   // a list used as a queue: the front is index 0
+    for (int x : values) queue.add(x);                 // enqueue at the rear
+    System.out.println(queue.remove(0));               // dequeue the front (the oldest, out first)
+    System.out.println(queue.remove(0));               // dequeue again
+    System.out.println(queue);                         // what's left, front on the left
+  }
+
+  // "[3, 5, 7]" → {3, 5, 7} — reads the test case's values
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "values", "label": "values", "type": "int[]", "placeholder": "[3, 5, 7]" }
+  ],
+  "cases": [
+    { "args": { "values": "[3, 5, 7]" }, "expected": "3\n5\n[7]" },
+    { "args": { "values": "[1, 2]" }, "expected": "1\n2\n[]" },
+    { "args": { "values": "[10, 20, 30, 40]" }, "expected": "10\n20\n[30, 40]" }
+  ]
+}
 ```
 
 ## How It Works
@@ -72,31 +115,58 @@ Before you read on: `3` went in first — so it comes out first. That's the exac
 
 ## Your Turn
 
-In real code you reach for a ready-made deque — `O(1)` at both ends, no manual ring-buffer bookkeeping:
+The See-It-Work demo used `list.pop(0)` to dequeue — clear, but secretly `O(n)`, because every survivor shifts down one slot. In real code you reach for a ready-made deque — `O(1)` at *both* ends, no manual ring-buffer bookkeeping. Same FIFO behaviour, honest costs:
 
 ```python run viz=array viz-kind=queue
+import ast
 from collections import deque
 
+values = ast.literal_eval(input())   # the test case's values
+
 q = deque()
-for x in [3, 5, 7]:
+for x in values:
     q.append(x)          # enqueue at the rear — O(1)
-print(q.popleft())       # dequeue the front → 3 (O(1), unlike list.pop(0))
-print(q.popleft())       # → 5
-print(list(q))           # [7]
+print(q.popleft())       # dequeue the front — O(1), unlike list.pop(0)
+print(q.popleft())       # dequeue again
+print(list(q))           # what's left, front on the left
 ```
 
 ```java run viz=array viz-kind=queue
-import java.util.ArrayDeque;
-import java.util.Queue;
+import java.util.*;
 
 public class Main {
   public static void main(String[] args) {
-    Queue<Integer> q = new ArrayDeque<>();        // Java's go-to queue
-    for (int x : new int[]{3, 5, 7}) q.add(x);    // enqueue at the rear
-    System.out.println(q.poll());                  // dequeue front → 3
-    System.out.println(q.poll());                  // → 5
-    System.out.println(q);                         // [7]
+    int[] values = parseIntArray(new Scanner(System.in).nextLine());
+
+    Deque<Integer> q = new ArrayDeque<>();       // Java's go-to queue
+    for (int x : values) q.add(x);               // enqueue at the rear
+    System.out.println(q.poll());                 // dequeue front — O(1)
+    System.out.println(q.poll());                 // dequeue again
+    System.out.println(q);                        // what's left, front on the left
   }
+
+  // "[3, 5, 7]" → {3, 5, 7} — reads the test case's values
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "values", "label": "values", "type": "int[]", "placeholder": "[3, 5, 7]" }
+  ],
+  "cases": [
+    { "args": { "values": "[3, 5, 7]" }, "expected": "3\n5\n[7]" },
+    { "args": { "values": "[1, 2]" }, "expected": "1\n2\n[]" },
+    { "args": { "values": "[10, 20, 30, 40]" }, "expected": "10\n20\n[30, 40]" }
+  ]
 }
 ```
 

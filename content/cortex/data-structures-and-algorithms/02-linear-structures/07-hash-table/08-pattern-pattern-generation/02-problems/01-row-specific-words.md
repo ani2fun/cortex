@@ -4,6 +4,8 @@ summary: "Given an array of words, return all the words that can be typed using 
 prereqs:
   - 08-pattern-pattern-generation/01-pattern
 difficulty: easy
+kind: problem
+topics: [pattern-generation, hash-table]
 ---
 
 # Row specific words
@@ -17,10 +19,10 @@ Given an array of words, return all the words that can be typed using **only one
 > -   **Row 3:** `zxcvbnm`
 
 ### Example 1
-> -   **Input:** `["you", "were", "some"]` → **Output:** `["you", "were"]`
+> -   **Input:** `["you", "were", "some"]` → **Output:** `[you, were]`
 
 ### Example 2
-> -   **Input:** `["sdk", "nvm", "hut"]` → **Output:** `["sdk", "nvm"]`
+> -   **Input:** `["sdk", "nvm", "hut"]` → **Output:** `[sdk, nvm]`
 
 ### Example 3
 > -   **Input:** `["him", "else", "bat"]` → **Output:** `[]`
@@ -30,7 +32,7 @@ Given an array of words, return all the words that can be typed using **only one
 **Example 1**
 ```
 Input:  ["you", "were", "some"]
-Output: ["you", "were"]
+Output: [you, were]
 Explanation: "you" → y,o,u all on row 1 (qwertyuiop). "were" → w,e,r,e all on row 1.
 "some" → s is row 2 but o is row 1, so it spans two rows and is dropped.
 ```
@@ -38,7 +40,7 @@ Explanation: "you" → y,o,u all on row 1 (qwertyuiop). "were" → w,e,r,e all o
 **Example 2**
 ```
 Input:  ["sdk", "nvm", "hut"]
-Output: ["sdk", "nvm"]
+Output: [sdk, nvm]
 Explanation: "sdk" → s,d,k all on row 2 (asdfghjkl). "nvm" → n,v,m all on row 3 (zxcvbnm).
 "hut" → h is row 2 but u is row 1, so it is dropped.
 ```
@@ -54,11 +56,159 @@ Explanation: "him" → h is row 2, i is row 1. "else" → e is row 1, l is row 2
 **Example 4**
 ```
 Input:  ["Alaska", "Dad"]
-Output: ["Alaska", "Dad"]
+Output: [Alaska, Dad]
 Explanation: Case is ignored. "Alaska" → a,l,a,s,k,a all on row 2. "Dad" → d,a,d all on row 2.
 ```
 
+## Constraints
 
+- `1 ≤ words.length ≤ 20`
+- `1 ≤ words[i].length ≤ 100`
+- `words[i]` consists of English letters only.
+
+```python run
+import ast
+from typing import List
+
+class Solution:
+    def row_specific_words(self, words: List[str]) -> List[str]:
+        # Your code goes here
+        pass
+
+words = ast.literal_eval(input())
+result = Solution().row_specific_words(words)
+print("[" + ", ".join(result) + "]")
+```
+
+```java run
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public List<String> rowSpecificWords(String[] words) {
+            // Your code goes here
+            return new ArrayList<>();
+        }
+    }
+
+    static String[] parseStringArray(String line) {
+        line = line.trim();
+        if (line.equals("[]")) return new String[0];
+        line = line.substring(1, line.length() - 1);
+        String[] parts = line.split(",\\s*");
+        for (int i = 0; i < parts.length; i++) {
+            parts[i] = parts[i].trim();
+            if ((parts[i].startsWith("\"") && parts[i].endsWith("\"")) ||
+                (parts[i].startsWith("'") && parts[i].endsWith("'")))
+                parts[i] = parts[i].substring(1, parts[i].length() - 1);
+        }
+        return parts;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String[] words = parseStringArray(sc.nextLine());
+        List<String> result = new Solution().rowSpecificWords(words);
+        System.out.println("[" + String.join(", ", result) + "]");
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "words", "label": "words", "type": "string", "placeholder": "[\"you\", \"were\", \"some\"]" }
+  ],
+  "cases": [
+    { "args": { "words": "[\"you\", \"were\", \"some\"]" }, "expected": "[you, were]" },
+    { "args": { "words": "[\"sdk\", \"nvm\", \"hut\"]" }, "expected": "[sdk, nvm]" },
+    { "args": { "words": "[\"him\", \"else\", \"bat\"]" }, "expected": "[]" },
+    { "args": { "words": "[\"Alaska\", \"Dad\"]" }, "expected": "[Alaska, Dad]" },
+    { "args": { "words": "[\"type\", \"row\"]" }, "expected": "[type, row]" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Each character's keyboard row is its **categorical key** (1, 2, or 3). A word passes iff every character shares the same key as the first character. Lowercase before lookup to handle mixed-case input. Walk each word once — `O(|word|)` per word, `O(S)` total where `S` is the combined length of all words. Fixed-size row sets cost `O(1)` space. Output preserves input order; no sorting needed because the filter is positional, not hash-based.
+
+```python solution time=O(S) space=O(1)
+import ast
+from typing import List
+
+class Solution:
+    def get_row(self, c: str) -> int:
+        if c in {"q","w","e","r","t","y","u","i","o","p"}: return 1
+        if c in {"a","s","d","f","g","h","j","k","l"}: return 2
+        return 3
+
+    def can_be_typed_with_one_row(self, word: str) -> bool:
+        row = self.get_row(word[0].lower())
+        for c in word:
+            if self.get_row(c.lower()) != row: return False
+        return True
+
+    def row_specific_words(self, words: List[str]) -> List[str]:
+        return [word for word in words if self.can_be_typed_with_one_row(word)]
+
+words = ast.literal_eval(input())
+result = Solution().row_specific_words(words)
+print("[" + ", ".join(result) + "]")
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        private int getRow(char c) {
+            String row1 = "qwertyuiop", row2 = "asdfghjkl";
+            if (row1.indexOf(c) >= 0) return 1;
+            if (row2.indexOf(c) >= 0) return 2;
+            return 3;
+        }
+
+        private boolean canBeTypedWithOneRow(String word) {
+            int row = getRow(Character.toLowerCase(word.charAt(0)));
+            for (char c : word.toCharArray())
+                if (getRow(Character.toLowerCase(c)) != row) return false;
+            return true;
+        }
+
+        public List<String> rowSpecificWords(String[] words) {
+            List<String> result = new ArrayList<>();
+            for (String word : words)
+                if (canBeTypedWithOneRow(word)) result.add(word);
+            return result;
+        }
+    }
+
+    static String[] parseStringArray(String line) {
+        line = line.trim();
+        if (line.equals("[]")) return new String[0];
+        line = line.substring(1, line.length() - 1);
+        String[] parts = line.split(",\\s*");
+        for (int i = 0; i < parts.length; i++) {
+            parts[i] = parts[i].trim();
+            if ((parts[i].startsWith("\"") && parts[i].endsWith("\"")) ||
+                (parts[i].startsWith("'") && parts[i].endsWith("'")))
+                parts[i] = parts[i].substring(1, parts[i].length() - 1);
+        }
+        return parts;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String[] words = parseStringArray(sc.nextLine());
+        List<String> result = new Solution().rowSpecificWords(words);
+        System.out.println("[" + String.join(", ", result) + "]");
+    }
+}
+```
+
+</details>
 <details>
 <summary><h2>Intuition</h2></summary>
 
@@ -66,20 +216,6 @@ Explanation: Case is ignored. "Alaska" → a,l,a,s,k,a all on row 2. "Dad" → d
 The structural property that makes this a **key-generation** problem is that each character carries a single categorical label — its **keyboard row** — and a word is acceptable exactly when every character shares one label. The "row" is the key, and the question collapses to "does this word map to a single key?"
 
 The key per character is its row id (`1`, `2`, or `3`), looked up from three fixed character sets. For a whole word the test is uniformity: compute the first character's row, then confirm every other character resolves to that same row. The word survives the filter only when all its per-character keys agree, so a single mismatched character disqualifies it.
-
-The naive idea — special-casing every word shape or hand-checking pairs of letters — does more work and is fragiler than the lookup. Direct membership testing against three sets gives each character's row in `O(1)`, and one pass over the word decides it. Comparing characters against each other instead of against a fixed label gives no advantage and obscures the real signal: each character's row is an independent fact, not a relationship.
-
-</details>
-<details>
-<summary><h2>Applying the Diagnostic Questions</h2></summary>
-
-
-| Check | Answer for Row Specific Words |
-|---|---|
-| **Q1.** Does the answer depend on a *canonical form* of each input? | **Yes** — each character's row id is its key; a word's acceptance depends only on those keys agreeing. |
-| **Q2.** Can you define equivalence as a function from input to bytes? | **Yes** — `row(c)` maps each character to one of `{1, 2, 3}`; "same row" is byte-equality of that id. |
-| **Q3.** Is each input keyed independently in a single pass? | **Yes** — each word is scanned once on its own; no word is compared against another. |
-| **Q4.** Is the per-item work `O(1)`? | **Yes** — each character is a single set-membership lookup, which is `O(1)` average. |
 
 </details>
 <details>
@@ -111,175 +247,6 @@ flowchart LR
 
 </details>
 <details>
-<summary><h2>Approach in Words</h2></summary>
-
-
-Filter the list, keeping each word whose characters all map to one row.
-
-1. **Define the three rows.** Hold `qwertyuiop`, `asdfghjkl`, and `zxcvbnm` as three character sets, returning row id `1`, `2`, or `3`.
-2. **Resolve a character's row.** For a lowercased character, return the id of the set that contains it.
-3. **Test one word.** Take the row of the word's first character as the target, then scan the rest; if any character's row differs from the target, the word fails.
-4. **Lowercase before lookup.** Normalise each character to lowercase so uppercase input resolves to the same row.
-5. **Collect the survivors.** Walk the input list, keep each word that passes the single-row test, and append it to the result.
-6. **Return the result.** It holds the words typeable on one row, in input order.
-
-</details>
-<details>
-<summary><h2>Solution</h2></summary>
-
-
-
-```python run viz=graph viz-root=words
-from typing import List
-
-class Solution:
-    def get_row_1(self) -> set:
-        return {"q", "w", "e", "r", "t", "y", "u", "i", "o", "p"}
-
-    def get_row_2(self) -> set:
-        return {"a", "s", "d", "f", "g", "h", "j", "k", "l"}
-
-    def get_row_3(self) -> set:
-        return {"z", "x", "c", "v", "b", "n", "m"}
-
-    def get_row(self, c: str) -> int:
-        row_1 = self.get_row_1()
-        row_2 = self.get_row_2()
-        row_3 = self.get_row_3()
-
-        if c in row_1:
-            return 1
-        if c in row_2:
-            return 2
-        if c in row_3:
-            return 3
-
-        # This case won't occur as all characters are from valid rows
-        return 0
-
-    def can_be_typed_with_one_row(self, word: str) -> bool:
-
-        # Get the row for the first character
-        row = self.get_row(word[0].lower())
-
-        # Check if all characters belong to the same row
-        for c in word:
-            if self.get_row(c.lower()) != row:
-                return False
-
-        return True
-
-    def row_specific_words(self, words: List[str]) -> List[str]:
-        result = []
-
-        # Iterate over each word
-        for word in words:
-            if self.can_be_typed_with_one_row(word):
-                result.append(word)
-
-        return result
-
-
-# Examples from the problem statement
-print(Solution().row_specific_words(["you", "were", "some"]))   # ['you', 'were']
-print(Solution().row_specific_words(["sdk", "nvm", "hut"]))     # ['sdk', 'nvm']
-print(Solution().row_specific_words(["him", "else", "bat"]))    # []
-
-# Edge cases
-print(Solution().row_specific_words([]))                         # []
-print(Solution().row_specific_words(["a"]))                      # ['a']
-print(Solution().row_specific_words(["type", "row"]))            # ['type']
-print(Solution().row_specific_words(["Alaska", "Dad"]))          # ['Alaska', 'Dad']
-```
-
-```java run viz=graph viz-root=words
-import java.util.*;
-
-public class Main {
-    static class Solution {
-        private Set<Character> getRow1() {
-            return new HashSet<>(
-                List.of('q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p')
-            );
-        }
-
-        private Set<Character> getRow2() {
-            return new HashSet<>(
-                List.of('a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l')
-            );
-        }
-
-        private Set<Character> getRow3() {
-            return new HashSet<>(List.of('z', 'x', 'c', 'v', 'b', 'n', 'm'));
-        }
-
-        private int getRow(char c) {
-            Set<Character> row1 = getRow1();
-            Set<Character> row2 = getRow2();
-            Set<Character> row3 = getRow3();
-
-            if (row1.contains(c)) {
-                return 1;
-            }
-
-            if (row2.contains(c)) {
-                return 2;
-            }
-
-            if (row3.contains(c)) {
-                return 3;
-            }
-
-            // This case won't occur as all characters are from valid rows
-            return 0;
-        }
-
-        private boolean canBeTypedWithOneRow(String word) {
-
-            // Get the row for the first character
-            int row = getRow(Character.toLowerCase(word.charAt(0)));
-
-            // Check if all characters belong to the same row
-            for (char c : word.toCharArray()) {
-                if (getRow(Character.toLowerCase(c)) != row) {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        public List<String> rowSpecificWords(String[] words) {
-            List<String> result = new ArrayList<>();
-
-            // Iterate over each word
-            for (String word : words) {
-                if (canBeTypedWithOneRow(word)) {
-                    result.add(word);
-                }
-            }
-
-            return result;
-        }
-    }
-
-    public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().rowSpecificWords(new String[]{"you", "were", "some"}));  // [you, were]
-        System.out.println(new Solution().rowSpecificWords(new String[]{"sdk", "nvm", "hut"}));    // [sdk, nvm]
-        System.out.println(new Solution().rowSpecificWords(new String[]{"him", "else", "bat"}));   // []
-
-        // Edge cases
-        System.out.println(new Solution().rowSpecificWords(new String[]{}));                       // []
-        System.out.println(new Solution().rowSpecificWords(new String[]{"a"}));                    // [a]
-        System.out.println(new Solution().rowSpecificWords(new String[]{"type", "row"}));          // [type]
-        System.out.println(new Solution().rowSpecificWords(new String[]{"Alaska", "Dad"}));        // [Alaska, Dad]
-    }
-}
-```
-
-</details>
-<details>
 <summary><h2>Dry Run</h2></summary>
 
 
@@ -295,10 +262,8 @@ word "were"
 word "some"
   s → row 2 (target)   o → row 1 ✗                  mismatch → DROP
 
-result = ["you", "were"]
+result = [you, were]
 ```
-
-The result `["you", "were"]` matches the expected output.
 
 </details>
 <details>
@@ -309,22 +274,6 @@ The result `["you", "were"]` matches the expected output.
 |---|---|---|
 | Time  | **O(S)** | `S` is the total length of all words; each character is one `O(1)` set lookup. |
 | Space | **O(1)** | The three row sets are fixed-size (26 letters total); the result is output, not auxiliary. |
-
-The per-character row lookup is `O(1)` on average because membership in a hash set is constant-time, so the whole filter costs one pass over every character.
-
-</details>
-<details>
-<summary><h2>Edge Cases</h2></summary>
-
-
-| Case | Example | Expected | Reasoning |
-|---|---|---|---|
-| Empty list | `[]` | `[]` | No words to test, so nothing is kept. |
-| Single character | `["a"]` | `["a"]` | One character trivially shares its own row. |
-| Mixed case | `["Alaska", "Dad"]` | `["Alaska", "Dad"]` | Lowercasing maps every character to row 2 before the row test. |
-| All words single-row | `["type", "row"]` | `["type", "row"]` | `type` → t,y,p,e all row 1; `row` → r,o,w all row 1 — both kept. <!-- VERIFY: frozen code's inline comment reads `# [type]`, but r,o,w are all row 1 so `row` is kept; running the frozen code returns `['type', 'row']`. --> |
-| No words qualify | `["him", "else", "bat"]` | `[]` | Every word spans more than one row. |
-| Repeated characters | `["aaa"]` | `["aaa"]` | Repeats resolve to the same row, so the word is kept. |
 
 </details>
 <details>

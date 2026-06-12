@@ -4,6 +4,8 @@ summary: "Given an array strs of lowercase strings, group strings that belong to
 prereqs:
   - 08-pattern-pattern-generation/01-pattern
 difficulty: medium
+kind: problem
+topics: [pattern-generation, hash-table]
 ---
 
 # Cluster displaced strings
@@ -14,22 +16,22 @@ Given an array `strs` of lowercase strings, group strings that belong to the sam
 
 ### Example 1
 > -   **Input:** `["abc","ghi","xyz","b","c","ab","cd"]`
-> -   **Output:** `[["abc","ghi","xyz"], ["b","c"], ["ab","cd"]]`
+> -   **Output:** `[[ab, cd], [abc, ghi, xyz], [b, c]]`
 
 ### Example 2
 > -   **Input:** `["ad","k","cf"]`
-> -   **Output:** `[["ad","cf"], ["k"]]`
+> -   **Output:** `[[ad, cf], [k]]`
 
 ### Example 3
 > -   **Input:** `["abcd","efg","hi","j"]`
-> -   **Output:** `[["abcd"],["efg"],["hi"],["j"]]`
+> -   **Output:** `[[abcd], [efg], [hi], [j]]`
 
 ## Examples
 
 **Example 1**
 ```
 Input:  ["abc", "ghi", "xyz", "b", "c", "ab", "cd"]
-Output: [["abc", "ghi", "xyz"], ["b", "c"], ["ab", "cd"]]
+Output: [[ab, cd], [abc, ghi, xyz], [b, c]]
 Explanation: abc, ghi, xyz all have gap sequence "1,1,". b and c are single chars (empty
 gaps). ab and cd both have gap "1,". Three displacement classes.
 ```
@@ -37,25 +39,212 @@ gaps). ab and cd both have gap "1,". Three displacement classes.
 **Example 2**
 ```
 Input:  ["ad", "k", "cf"]
-Output: [["ad", "cf"], ["k"]]
+Output: [[ad, cf], [k]]
 Explanation: ad → gap (d−a)=3 → "3,"; cf → gap (f−c)=3 → "3,". k is a single char → "".
 ```
 
 **Example 3**
 ```
 Input:  ["abcd", "efg", "hi", "j"]
-Output: [["abcd"], ["efg"], ["hi"], ["j"]]
+Output: [[abcd], [efg], [hi], [j]]
 Explanation: lengths differ, so the gap-sequence lengths differ — every string is alone.
 ```
 
 **Example 4**
 ```
 Input:  ["az", "ba"]
-Output: [["az", "ba"]]
+Output: [[az, ba]]
 Explanation: az → (z−a)=25 → "25,". ba → (a−b)=−1, wrapped +26 → "25,". Same class.
 ```
 
+## Constraints
 
+- `1 ≤ strs.length ≤ 200`
+- `1 ≤ strs[i].length ≤ 50`
+- `strs[i]` consists of only lowercase English letters.
+
+```python run
+import ast
+from typing import List
+
+class Solution:
+    def cluster_displaced_strings(self, strs: List[str]) -> List[List[str]]:
+        # Your code goes here
+        pass
+
+strs = ast.literal_eval(input())
+groups = Solution().cluster_displaced_strings(strs)
+result = sorted([sorted(g) for g in groups])
+inner = [", ".join(g) for g in result]
+print("[" + ", ".join("[" + s + "]" for s in inner) + "]")
+```
+
+```java run
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public List<List<String>> clusterDisplacedStrings(String[] strs) {
+            // Your code goes here
+            return new ArrayList<>();
+        }
+    }
+
+    static String[] parseStringArray(String line) {
+        line = line.trim();
+        if (line.equals("[]")) return new String[0];
+        line = line.substring(1, line.length() - 1);
+        String[] parts = line.split(",\\s*");
+        for (int i = 0; i < parts.length; i++) {
+            parts[i] = parts[i].trim();
+            if ((parts[i].startsWith("\"") && parts[i].endsWith("\"")) ||
+                (parts[i].startsWith("'") && parts[i].endsWith("'")))
+                parts[i] = parts[i].substring(1, parts[i].length() - 1);
+        }
+        return parts;
+    }
+
+    static String formatGroups(List<List<String>> groups) {
+        List<List<String>> sorted = new ArrayList<>();
+        for (List<String> g : groups) {
+            List<String> sg = new ArrayList<>(g);
+            Collections.sort(sg);
+            sorted.add(sg);
+        }
+        sorted.sort(Comparator.comparing(g -> g.get(0)));
+        StringBuilder sb = new StringBuilder("[");
+        for (int i = 0; i < sorted.size(); i++) {
+            sb.append("[").append(String.join(", ", sorted.get(i))).append("]");
+            if (i < sorted.size() - 1) sb.append(", ");
+        }
+        sb.append("]");
+        return sb.toString();
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String[] strs = parseStringArray(sc.nextLine());
+        System.out.println(formatGroups(new Solution().clusterDisplacedStrings(strs)));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "strs", "label": "strs", "type": "string", "placeholder": "[\"abc\",\"ghi\",\"xyz\",\"b\",\"c\",\"ab\",\"cd\"]" }
+  ],
+  "cases": [
+    { "args": { "strs": "[\"abc\",\"ghi\",\"xyz\",\"b\",\"c\",\"ab\",\"cd\"]" }, "expected": "[[ab, cd], [abc, ghi, xyz], [b, c]]" },
+    { "args": { "strs": "[\"ad\",\"k\",\"cf\"]" }, "expected": "[[ad, cf], [k]]" },
+    { "args": { "strs": "[\"abcd\",\"efg\",\"hi\",\"j\"]" }, "expected": "[[abcd], [efg], [hi], [j]]" },
+    { "args": { "strs": "[\"az\",\"ba\"]" }, "expected": "[[az, ba]]" },
+    { "args": { "strs": "[\"a\"]" }, "expected": "[[a]]" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+The key per string is the sequence of **mod-26 gaps** between consecutive characters: `abc → "1,1,"`, `ghi → "1,1,"`, so they cluster. A single-character string has no gaps → key `""` → all single-character strings cluster together. Bucket by key in a hash map, collect the values. Canonicalize both levels for determinism: sort within each group, then sort groups by their first element. `O(S)` time and space where `S` is total character length.
+
+```python solution time=O(S) space=O(S)
+import ast
+from typing import List
+
+class Solution:
+    def generate_pattern(self, s: str) -> str:
+        pattern = ""
+        for i in range(1, len(s)):
+            difference = ord(s[i]) - ord(s[i - 1])
+            if difference < 0: difference += 26
+            pattern += str(difference) + ","
+        return pattern
+
+    def cluster_displaced_strings(self, strs: List[str]) -> List[List[str]]:
+        clusters = {}
+        for s in strs:
+            pattern = self.generate_pattern(s)
+            if pattern not in clusters: clusters[pattern] = []
+            clusters[pattern].append(s)
+        return list(clusters.values())
+
+strs = ast.literal_eval(input())
+groups = Solution().cluster_displaced_strings(strs)
+result = sorted([sorted(g) for g in groups])
+inner = [", ".join(g) for g in result]
+print("[" + ", ".join("[" + s + "]" for s in inner) + "]")
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        private String generatePattern(String s) {
+            StringBuilder pattern = new StringBuilder();
+            for (int i = 1; i < s.length(); i++) {
+                int difference = s.charAt(i) - s.charAt(i - 1);
+                if (difference < 0) difference += 26;
+                pattern.append(difference).append(",");
+            }
+            return pattern.toString();
+        }
+
+        public List<List<String>> clusterDisplacedStrings(String[] strs) {
+            Map<String, List<String>> clusters = new HashMap<>();
+            for (String str : strs) {
+                String pattern = generatePattern(str);
+                clusters.putIfAbsent(pattern, new ArrayList<>());
+                clusters.get(pattern).add(str);
+            }
+            List<List<String>> result = new ArrayList<>();
+            for (List<String> group : clusters.values()) result.add(group);
+            return result;
+        }
+    }
+
+    static String[] parseStringArray(String line) {
+        line = line.trim();
+        if (line.equals("[]")) return new String[0];
+        line = line.substring(1, line.length() - 1);
+        String[] parts = line.split(",\\s*");
+        for (int i = 0; i < parts.length; i++) {
+            parts[i] = parts[i].trim();
+            if ((parts[i].startsWith("\"") && parts[i].endsWith("\"")) ||
+                (parts[i].startsWith("'") && parts[i].endsWith("'")))
+                parts[i] = parts[i].substring(1, parts[i].length() - 1);
+        }
+        return parts;
+    }
+
+    static String formatGroups(List<List<String>> groups) {
+        List<List<String>> sorted = new ArrayList<>();
+        for (List<String> g : groups) {
+            List<String> sg = new ArrayList<>(g);
+            Collections.sort(sg);
+            sorted.add(sg);
+        }
+        sorted.sort(Comparator.comparing(g -> g.get(0)));
+        StringBuilder sb = new StringBuilder("[");
+        for (int i = 0; i < sorted.size(); i++) {
+            sb.append("[").append(String.join(", ", sorted.get(i))).append("]");
+            if (i < sorted.size() - 1) sb.append(", ");
+        }
+        sb.append("]");
+        return sb.toString();
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String[] strs = parseStringArray(sc.nextLine());
+        System.out.println(formatGroups(new Solution().clusterDisplacedStrings(strs)));
+    }
+}
+```
+
+</details>
 <details>
 <summary><h2>Intuition</h2></summary>
 
@@ -63,20 +252,6 @@ Explanation: az → (z−a)=25 → "25,". ba → (a−b)=−1, wrapped +26 → "
 The structural property that makes this a **key-generation** problem is that "belongs to the same displacing sequence" is a property of each string's *internal shape*, not of any pair. Shifting every character by the same amount leaves the gaps between consecutive characters unchanged, so two strings displace into each other exactly when their gap sequences match. That gap sequence is the key.
 
 The key per string is the sequence of **consecutive-character gaps**, taken modulo 26 so wrap-around survives the encoding. `abc` has gaps `(b−a, c−b) = (1, 1)` → `"1,1,"`. `xyz` has gaps `(y−x, z−y) = (1, 1)` → `"1,1,"`, and `yza` keeps `"1,1,"` because `a − z = −25` wraps to `+1`. A single-character string has no gaps at all, so its key is the empty string, and all single-character strings cluster together.
-
-The naive approach compares every pair of strings to test displacement, which re-derives the same gap facts `O(M²)` times over `M` strings. Keying each string once and bucketing by key collapses the grouping to `O(1)` per string after the scan. The mod-26 step is the one subtlety — without it, a wrapped gap like `a − z` would be negative and the encoding would split strings that actually displace into each other.
-
-</details>
-<details>
-<summary><h2>Applying the Diagnostic Questions</h2></summary>
-
-
-| Check | Answer for Cluster Displaced Strings |
-|---|---|
-| **Q1.** Does the answer depend on a *canonical form* of each input? | **Yes** — each string's mod-26 gap sequence is its key; same key means same displacement class. |
-| **Q2.** Can you define equivalence as a function from input to bytes? | **Yes** — `generate_pattern` maps each string to a gap-sequence byte string. |
-| **Q3.** Is each input keyed independently in a single pass? | **Yes** — each string is scanned once on its own, then dropped into a bucket. |
-| **Q4.** Is the per-item work `O(1)`? | **Yes** — each character pair is one subtraction, one wrap check, and one append, all `O(1)`. |
 
 </details>
 <details>
@@ -87,7 +262,7 @@ Two strings are in the same displacing class iff the **gaps between consecutive 
 
 The key per string is the **gap-sequence**, with negative gaps wrapped to `+ 26` so `xyz → yza` doesn't break the encoding (`a − z = -25` becomes `+1` after wrap).
 
-Single-character strings have an empty gap sequence `""`, so they all share one key and cluster together — in Example 1, `b` and `c` form the single bucket `[b, c]`. Two-character strings cluster by their one gap, three-character strings by their two-gap sequence, and so on. So the key idea is: strings cluster by *gap-sequence length and contents*, which is why same-length displaced strings group while different-length strings never can.
+Single-character strings have an empty gap sequence `""`, so they all share one key and cluster together — in Example 1, `b` and `c` form the single bucket `[b, c]`. Two-character strings cluster by their one gap, three-character strings by their two-gap sequence, and so on.
 
 ```d2
 direction: right
@@ -136,153 +311,6 @@ Key each string by its gap sequence, then bucket by key.
 
 </details>
 <details>
-<summary><h2>Solution</h2></summary>
-
-
-
-```python run viz=graph viz-root=strs
-from typing import List
-
-class Solution:
-    def generate_pattern(self, s: str) -> str:
-        pattern = ""
-
-        for i in range(1, len(s)):
-
-            # Find the difference between consecutive characters
-            difference = ord(s[i]) - ord(s[i - 1])
-            if difference < 0:
-
-                # Handle wrap-around case (e.g., from 'z' to 'a')
-                difference += 26
-
-            # Add the displacement to the pattern
-            pattern += str(difference) + ","
-
-        return pattern
-
-    def cluster_displaced_strings(
-        self, strs: List[str]
-    ) -> List[List[str]]:
-        clusters = {}
-
-        # Process each string and group them by their displacement
-        # pattern
-        for str in strs:
-
-            # Generate the pattern for each string
-            pattern = self.generate_pattern(str)
-
-            # Group the strings with the same pattern
-            if pattern not in clusters:
-                clusters[pattern] = []
-            clusters[pattern].append(str)
-
-        # Prepare the result with all grouped strings
-        result = []
-        for group in clusters.values():
-
-            # Add each group to the result
-            result.append(group)
-
-        return result
-
-
-# Examples from the problem statement
-r1 = Solution().cluster_displaced_strings(["abc", "ghi", "xyz", "b", "c", "ab", "cd"])
-print(sorted([sorted(g) for g in r1]))  # [['abc', 'ghi', 'xyz'], ['ab', 'cd'], ['b', 'c']]
-
-r2 = Solution().cluster_displaced_strings(["ad", "k", "cf"])
-print(sorted([sorted(g) for g in r2]))  # [['ad', 'cf'], ['k']]
-
-r3 = Solution().cluster_displaced_strings(["abcd", "efg", "hi", "j"])
-print(sorted([sorted(g) for g in r3]))  # [['abcd'], ['efg'], ['hi'], ['j']]
-
-# Edge cases
-print(Solution().cluster_displaced_strings([]))              # []
-print(Solution().cluster_displaced_strings(["a"]))           # [['a']]
-r6 = Solution().cluster_displaced_strings(["az", "ba"])
-print(sorted([sorted(g) for g in r6]))  # [['az', 'ba']]
-```
-
-```java run viz=graph viz-root=strs
-import java.util.*;
-
-public class Main {
-    static class Solution {
-        private String generatePattern(String s) {
-            StringBuilder pattern = new StringBuilder();
-
-            for (int i = 1; i < s.length(); i++) {
-
-                // Find the difference between consecutive characters
-                int difference = s.charAt(i) - s.charAt(i - 1);
-                if (difference < 0) {
-
-                    // Handle wrap-around case (e.g., from 'z' to 'a')
-                    difference += 26;
-                }
-
-                // Add the displacement to the pattern
-                pattern.append(difference).append(",");
-            }
-
-            return pattern.toString();
-        }
-
-        public List<List<String>> clusterDisplacedStrings(String[] strs) {
-            Map<String, List<String>> clusters = new HashMap<>();
-
-            // Process each string and group them by their displacement
-            // pattern
-            for (String str : strs) {
-
-                // Generate the pattern for each string
-                String pattern = generatePattern(str);
-
-                // Group the strings with the same pattern
-                clusters.putIfAbsent(pattern, new ArrayList<>());
-                clusters.get(pattern).add(str);
-            }
-
-            // Prepare the result with all grouped strings
-            List<List<String>> result = new ArrayList<>();
-            for (List<String> group : clusters.values()) {
-
-                // Add each group to the result
-                result.add(group);
-            }
-
-            return result;
-        }
-    }
-
-    public static void main(String[] args) {
-        // Examples from the problem statement
-        var r1 = new Solution().clusterDisplacedStrings(new String[]{"abc", "ghi", "xyz", "b", "c", "ab", "cd"});
-        r1.forEach(g -> { Collections.sort(g); System.out.print(g + " "); }); System.out.println();
-        // [abc, ghi, xyz] [b, c] [ab, cd] (group order may vary)
-
-        var r2 = new Solution().clusterDisplacedStrings(new String[]{"ad", "k", "cf"});
-        r2.forEach(g -> { Collections.sort(g); System.out.print(g + " "); }); System.out.println();
-        // [ad, cf] [k] (group order may vary)
-
-        var r3 = new Solution().clusterDisplacedStrings(new String[]{"abcd", "efg", "hi", "j"});
-        r3.forEach(g -> System.out.print(g + " ")); System.out.println();
-        // [abcd] [efg] [hi] [j]
-
-        // Edge cases
-        System.out.println(new Solution().clusterDisplacedStrings(new String[]{}));     // []
-        System.out.println(new Solution().clusterDisplacedStrings(new String[]{"a"}));  // [[a]]
-        var r6 = new Solution().clusterDisplacedStrings(new String[]{"az", "ba"});
-        r6.forEach(g -> { Collections.sort(g); System.out.print(g + " "); }); System.out.println();
-        // [az, ba]
-    }
-}
-```
-
-</details>
-<details>
 <summary><h2>Dry Run</h2></summary>
 
 
@@ -297,10 +325,8 @@ Walk Example 1 — `["abc", "ghi", "xyz", "b", "c", "ab", "cd"]`. Each string is
 "ab"   gap (b−a) = 1                       key "1,"       clusters["1,"]=[ab]
 "cd"   gap (d−c) = 1                       key "1,"       append → [ab, cd]
 
-result = [["abc", "ghi", "xyz"], ["b", "c"], ["ab", "cd"]]
+result = [[ab, cd], [abc, ghi, xyz], [b, c]]  (sorted by group first element)
 ```
-
-The three buckets match the expected output (group order may vary).
 
 </details>
 <details>
@@ -312,8 +338,6 @@ The three buckets match the expected output (group order may vary).
 | Time  | **O(S)** | `S` is the total length of all strings; each character pair is one `O(1)` gap computation. |
 | Space | **O(S)** | The clusters map stores every input string once, plus one key string per input. |
 
-Keying a string is linear in its length, and bucketing is one `O(1)` map operation per string, so the whole grouping is one pass over all characters.
-
 </details>
 <details>
 <summary><h2>Edge Cases</h2></summary>
@@ -321,41 +345,17 @@ Keying a string is linear in its length, and bucketing is one `O(1)` map operati
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
-| Empty list | `[]` | `[]` | No strings to key, so no buckets. |
-| Single string | `["a"]` | `[["a"]]` | One string forms its own (only) cluster. |
-| All single chars | `["b", "c"]` | `[["b", "c"]]` | Every single character keys to `""`, so all land in one bucket. |
-| Wrap-around | `["az", "ba"]` | `[["az", "ba"]]` | `az` → `25,`; `ba` → `(a−b)=−1` wrapped to `25,`. Same class. |
-| Different lengths | `["abcd", "efg", "hi", "j"]` | `[["abcd"], ["efg"], ["hi"], ["j"]]` | Gap-sequence lengths differ, so no two strings can share a key. |
-| Same gaps, different start | `["abc", "ghi"]` | `[["abc", "ghi"]]` | Both have gaps `(1, 1)`; the starting letter is irrelevant to the key. |
+| Single string | `["a"]` | `[[a]]` | One string forms its own (only) cluster. |
+| All single chars | `["b", "c"]` | `[[b, c]]` | Every single character keys to `""`, so all land in one bucket. |
+| Wrap-around | `["az", "ba"]` | `[[az, ba]]` | `az` → `25,`; `ba` → `(a−b)=−1` wrapped to `25,`. Same class. |
+| Different lengths | `["abcd", "efg", "hi", "j"]` | `[[abcd], [efg], [hi], [j]]` | Gap-sequence lengths differ, so no two strings can share a key. |
+| Same gaps, different start | `["abc", "ghi"]` | `[[abc, ghi]]` | Both have gaps `(1, 1)`; the starting letter is irrelevant to the key. |
 
 </details>
 <details>
 <summary><h2>Key Takeaway</h2></summary>
 
 
-The new idea here is a **relational key** — the mod-26 sequence of gaps between consecutive characters — which is invariant under shifting every character by a constant, so displaced strings collapse to one bucket.
-
-</details>
-<details>
-<summary><h2>Key Takeaway</h2></summary>
-
-
-The key-generation pattern is the rosetta stone of hash-table problem solving. *Anywhere you can define what makes two inputs "the same"*, you can encode that sameness as a key, throw the keys at a hash map, and let the structure do the grouping for you.
-
-The skill is **inventing the key**. A few common shapes:
-
-- **Sorted form** — for anagrams (`"cab" → "abc"`).
-- **First-occurrence index** — for shape/homomorphism (`"add" → "0,1,1"`).
-- **Gap sequence (mod cyclic group)** — for displaced/shifted strings.
-- **Frequency tuple** — for multiset equality.
-- **Categorical id** — for keyboard rows, parity classes, modular buckets.
-
-Once the key is right, the rest is one line:
-
-```python
-groups[key(x)].append(x)
-```
-
-> *Coming up — the **fixed-size sliding window** pattern. So far we've used hash maps to summarise *static* sequences. Next we'll learn to slide a fixed-size window across a long sequence while the hash map tracks the multiset *inside* the window in O(1) per shift. Fixed-window anagrams, frequency-bounded substrings, repeating-character runs — the same hash map you've been building for two lessons becomes the engine of a moving picture.*
+The new idea here is a **relational key** — the mod-26 sequence of gaps between consecutive characters — which is invariant under shifting every character by a constant, so displaced strings collapse to one bucket. The key-generation pattern is the rosetta stone of hash-table problem solving: *anywhere you can define what makes two inputs "the same"*, encode that sameness as a key and let the hash map group them.
 
 </details>

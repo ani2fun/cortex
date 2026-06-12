@@ -4,24 +4,154 @@ summary: "Given the head of a doubly linked list represented as L₀ → L₁ �
 prereqs:
   - 09-pattern-reorder/01-pattern
 difficulty: medium
+kind: problem
+topics: [reorder, doubly-linked-list]
 ---
 
 # Shuffle list
 
-## The Problem
+## Problem Statement
 
-> Given the **head** of a doubly linked list represented as **L₀ → L₁ → … → Lₙ₋₁ → Lₙ**, reorder the list **in place** to match: **L₀ → Lₙ → L₁ → Lₙ₋₁ → L₂ → Lₙ₋₂ → …**
+Given the **head** of a doubly linked list represented as **L₀ → L₁ → … → Lₙ₋₁ → Lₙ**, reorder the list **in place** to match: **L₀ → Lₙ → L₁ → Lₙ₋₁ → L₂ → Lₙ₋₂ → …**
 
+## Examples
+
+**Example 1:**
 ```
-Example 1
-  Input:  head = [1, 2, 3, 4]
-  Output: [1, 4, 2, 3]
-  Reason: Pair the front with the back, walking inward.
+Input:  head = [1, 2, 3, 4]
+Output: [1, 4, 2, 3]
+```
 
-Example 2
-  Input:  head = [1, 2, 3, 4, 5]
-  Output: [1, 5, 2, 4, 3]
-  Reason: Same pattern; the middle (3) lands alone at the end.
+**Example 2:**
+```
+Input:  head = [1, 2, 3, 4, 5]
+Output: [1, 5, 2, 4, 3]
+```
+
+```quiz
+{
+  "prompt": "What is the output for head = [1, 2, 3]?",
+  "input": "head = [1, 2, 3]",
+  "options": ["[1, 2, 3]", "[1, 3, 2]", "[3, 1, 2]", "[1, 2, 3]"],
+  "answer": "[1, 3, 2]"
+}
+```
+
+## Constraints
+
+- `0 ≤ list length ≤ 10⁵`
+- `-10⁴ ≤ node.val ≤ 10⁴`
+- Reorder **in place** — `O(1)` extra space; node values must not be copied or rewritten
+
+```python run viz=linked-list viz-root=head
+import ast
+
+class ListNode:
+    def __init__(self, val, prev=None, next=None):
+        self.val = val
+        self.prev = prev
+        self.next = next
+
+class Solution:
+    def shuffle_list(self, head):
+        # Your code goes here — find the middle (fast/slow), split into
+        # two halves, reverse the second half (swap prev↔next per node),
+        # then alternate-merge with both directions wired on every attach.
+        # Return the new head.
+        pass
+
+def build_list(values):              # [1, 2, 3] → 1 ⇄ 2 ⇄ 3
+    head = tail = None
+    for v in values:
+        node = ListNode(v, prev=tail)
+        if tail is not None:
+            tail.next = node
+        else:
+            head = node
+        tail = node
+    return head
+
+def print_list(head):                # 1 ⇄ 2 ⇄ 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
+
+head = build_list(ast.literal_eval(input()))   # the test case's head
+print_list(Solution().shuffle_list(head))
+```
+
+```java run viz=linked-list viz-root=head
+import java.util.*;
+
+public class Main {
+    static class ListNode {
+        int val; ListNode prev, next;
+        ListNode(int val) { this.val = val; }
+    }
+
+    static class Solution {
+        ListNode shuffleList(ListNode head) {
+            // Your code goes here — find the middle (fast/slow), split into
+            // two halves, reverse the second half (swap prev↔next per node),
+            // then alternate-merge with both directions wired on every attach.
+            // Return the new head.
+            return null;
+        }
+    }
+
+    public static void main(String[] args) {
+        ListNode head = buildList(parseIntArray(new Scanner(System.in).nextLine()));
+        printList(new Solution().shuffleList(head));
+    }
+
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 ⇄ 2 ⇄ 3
+        ListNode head = null, tail = null;
+        for (int v : values) {
+            ListNode node = new ListNode(v);
+            node.prev = tail;
+            if (tail != null) tail.next = node;
+            else head = node;
+            tail = node;
+        }
+        return head;
+    }
+
+    static void printList(ListNode head) {         // 1 ⇄ 2 ⇄ 3 → [1, 2, 3]
+        List<Integer> out = new ArrayList<>();
+        for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+        System.out.println(out);
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's head
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "head", "label": "head", "type": "int[]", "placeholder": "[1, 2, 3, 4]" }
+  ],
+  "cases": [
+    { "args": { "head": "[1, 2, 3, 4]" }, "expected": "[1, 4, 2, 3]" },
+    { "args": { "head": "[1, 2, 3, 4, 5]" }, "expected": "[1, 5, 2, 4, 3]" },
+    { "args": { "head": "[1]" }, "expected": "[1]" },
+    { "args": { "head": "[1, 2]" }, "expected": "[1, 2]" },
+    { "args": { "head": "[1, 2, 3]" }, "expected": "[1, 3, 2]" },
+    { "args": { "head": "[1, 2, 3, 4, 5, 6]" }, "expected": "[1, 6, 2, 5, 3, 4]" },
+    { "args": { "head": "[1, 2, 3, 4, 5, 6, 7]" }, "expected": "[1, 7, 2, 6, 3, 5, 4]" },
+    { "args": { "head": "[]" }, "expected": "[]" }
+  ]
+}
 ```
 
 <details>
@@ -74,40 +204,21 @@ This is the *boss fight* of the lesson. The reorder skeleton handles split (via 
 <details>
 <summary><h2>Solution &amp; Analysis</h2></summary>
 
-### The Solution
+### Solution
 
-```python run viz=linked-list viz-root=head
-from typing import Optional, List
+
+```python solution time=O(n) space=O(1)
+import ast
 
 class ListNode:
-    def __init__(self, val=0, prev=None, nxt=None):
+    def __init__(self, val, prev=None, next=None):
         self.val = val
         self.prev = prev
-        self.next = nxt
-
-
-def from_list(values):
-    if not values:
-        return None
-    head = ListNode(values[0])
-    cur = head
-    for v in values[1:]:
-        node = ListNode(v, prev=cur)
-        cur.next = node
-        cur = node
-    return head
-
-
-def to_list(head):
-    out = []
-    while head is not None:
-        out.append(head.val)
-        head = head.next
-    return out
+        self.next = next
 
 
 class Solution:
-    def reverse(self, head: Optional[ListNode]) -> Optional[ListNode]:
+    def reverse(self, head):
         current = head
         previous = None
 
@@ -118,9 +229,7 @@ class Solution:
             current = next_node
         return previous
 
-    def split_list_in_half(
-        self, head: Optional[ListNode]
-    ) -> List[Optional[ListNode]]:
+    def split_list_in_half(self, head):
 
         # Initialize slow and fast pointers to find the middle of the
         # list
@@ -133,7 +242,7 @@ class Solution:
             slow = slow.next
             fast = fast.next.next
 
-        second_half: Optional[ListNode] = None
+        second_half = None
 
         # Split for even length list
         if fast is None:
@@ -149,11 +258,7 @@ class Solution:
 
         return [head, second_half]
 
-    def merge_alternate_nodes(
-        self,
-        first_half: Optional[ListNode],
-        second_half: Optional[ListNode],
-    ) -> Optional[ListNode]:
+    def merge_alternate_nodes(self, first_half, second_half):
 
         # Create a dummy node to form the merged list
         dummy = ListNode(0)
@@ -189,11 +294,11 @@ class Solution:
         dummy.next.prev = None
         return dummy.next
 
-    def shuffle_list(self, head: Optional[ListNode]) -> None:
+    def shuffle_list(self, head):
 
         # No need to reorder if the list is empty or has only one element
         if head is None or head.next is None:
-            return
+            return head
 
         # Split the list in two halves
         heads = self.split_list_in_half(head)
@@ -204,84 +309,40 @@ class Solution:
         reversed_second_half = self.reverse(second_half)
 
         # Alternatively merge the first list and the reversed second list
-        self.merge_alternate_nodes(first_half, reversed_second_half)
+        return self.merge_alternate_nodes(first_half, reversed_second_half)
 
 
-# Examples from the problem statement
-head = from_list([1, 2, 3, 4])
-sol = Solution()
-sol.shuffle_list(head)
-print(to_list(sol.merge_alternate_nodes(
-    sol.split_list_in_half(from_list([1, 2, 3, 4]))[0],
-    sol.reverse(sol.split_list_in_half(from_list([1, 2, 3, 4]))[1])
-)))                                                              # [1, 4, 2, 3]
+def build_list(values):              # [1, 2, 3] → 1 ⇄ 2 ⇄ 3
+    head = tail = None
+    for v in values:
+        node = ListNode(v, prev=tail)
+        if tail is not None:
+            tail.next = node
+        else:
+            head = node
+        tail = node
+    return head
 
-head = from_list([1, 2, 3, 4, 5])
-sol = Solution()
-halves = sol.split_list_in_half(head)
-rev2 = sol.reverse(halves[1])
-print(to_list(sol.merge_alternate_nodes(halves[0], rev2)))      # [1, 5, 2, 4, 3]
 
-# Edge cases
-head = from_list([1])
-sol = Solution()
-sol.shuffle_list(head)
-print(to_list(head))                                             # [1]
+def print_list(head):                # 1 ⇄ 2 ⇄ 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
 
-head = from_list([1, 2])
-sol = Solution()
-halves = sol.split_list_in_half(head)
-rev2 = sol.reverse(halves[1])
-print(to_list(sol.merge_alternate_nodes(halves[0], rev2)))      # [1, 2]
 
-head = from_list([1, 2, 3])
-sol = Solution()
-halves = sol.split_list_in_half(head)
-rev2 = sol.reverse(halves[1])
-print(to_list(sol.merge_alternate_nodes(halves[0], rev2)))      # [1, 3, 2]
-
-head = from_list([1, 2, 3, 4, 5, 6])
-sol = Solution()
-halves = sol.split_list_in_half(head)
-rev2 = sol.reverse(halves[1])
-print(to_list(sol.merge_alternate_nodes(halves[0], rev2)))      # [1, 6, 2, 5, 3, 4]
-
-head = from_list([1, 2, 3, 4, 5, 6, 7])
-sol = Solution()
-halves = sol.split_list_in_half(head)
-rev2 = sol.reverse(halves[1])
-print(to_list(sol.merge_alternate_nodes(halves[0], rev2)))      # [1, 7, 2, 6, 3, 5, 4]
+head = build_list(ast.literal_eval(input()))   # the test case's head
+print_list(Solution().shuffle_list(head))
 ```
 
-```java run viz=linked-list viz-root=head
+```java solution
 import java.util.*;
 
 public class Main {
     static class ListNode {
-        int val;
-        ListNode prev;
-        ListNode next;
-        ListNode() {}
+        int val; ListNode prev, next;
         ListNode(int val) { this.val = val; }
-    }
-
-    static ListNode fromList(int... values) {
-        if (values.length == 0) return null;
-        ListNode head = new ListNode(values[0]);
-        ListNode cur = head;
-        for (int i = 1; i < values.length; i++) {
-            ListNode node = new ListNode(values[i]);
-            node.prev = cur;
-            cur.next = node;
-            cur = node;
-        }
-        return head;
-    }
-
-    static java.util.List<Integer> toList(ListNode head) {
-        java.util.List<Integer> out = new java.util.ArrayList<>();
-        while (head != null) { out.add(head.val); head = head.next; }
-        return out;
     }
 
     static class Solution {
@@ -338,10 +399,7 @@ public class Main {
             return result;
         }
 
-        private ListNode mergeAlternateNodes(
-            ListNode firstHalf,
-            ListNode secondHalf
-        ) {
+        private ListNode mergeAlternateNodes(ListNode firstHalf, ListNode secondHalf) {
 
             // Create a dummy node to form the merged list
             ListNode dummy = new ListNode(0);
@@ -379,12 +437,12 @@ public class Main {
             return dummy.next;
         }
 
-        public void shuffleList(ListNode head) {
+        public ListNode shuffleList(ListNode head) {
 
             // No need to reorder if the list is empty or has only one
             // element
             if (head == null || head.next == null) {
-                return;
+                return head;
             }
 
             // Split the list in two halves
@@ -397,29 +455,41 @@ public class Main {
 
             // Alternatively merge the first list and the reversed second
             // list
-            mergeAlternateNodes(firstHalf, reversedSecondHalf);
-        }
-
-        // Convenience wrapper that returns the reordered head
-        public ListNode shuffleAndReturn(ListNode head) {
-            if (head == null || head.next == null) return head;
-            List<ListNode> halves = splitListInHalf(head);
-            ListNode rev2 = reverse(halves.get(1));
-            return mergeAlternateNodes(halves.get(0), rev2);
+            return mergeAlternateNodes(firstHalf, reversedSecondHalf);
         }
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(toList(new Solution().shuffleAndReturn(fromList(1, 2, 3, 4))));      // [1, 4, 2, 3]
-        System.out.println(toList(new Solution().shuffleAndReturn(fromList(1, 2, 3, 4, 5))));   // [1, 5, 2, 4, 3]
+        ListNode head = buildList(parseIntArray(new Scanner(System.in).nextLine()));
+        printList(new Solution().shuffleList(head));
+    }
 
-        // Edge cases
-        System.out.println(toList(new Solution().shuffleAndReturn(fromList(1))));               // [1]
-        System.out.println(toList(new Solution().shuffleAndReturn(fromList(1, 2))));            // [1, 2]
-        System.out.println(toList(new Solution().shuffleAndReturn(fromList(1, 2, 3))));         // [1, 3, 2]
-        System.out.println(toList(new Solution().shuffleAndReturn(fromList(1, 2, 3, 4, 5, 6)))); // [1, 6, 2, 5, 3, 4]
-        System.out.println(toList(new Solution().shuffleAndReturn(fromList(1, 2, 3, 4, 5, 6, 7)))); // [1, 7, 2, 6, 3, 5, 4]
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 ⇄ 2 ⇄ 3
+        ListNode head = null, tail = null;
+        for (int v : values) {
+            ListNode node = new ListNode(v);
+            node.prev = tail;
+            if (tail != null) tail.next = node;
+            else head = node;
+            tail = node;
+        }
+        return head;
+    }
+
+    static void printList(ListNode head) {         // 1 ⇄ 2 ⇄ 3 → [1, 2, 3]
+        List<Integer> out = new ArrayList<>();
+        for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+        System.out.println(out);
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's head
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```
@@ -491,10 +561,6 @@ Result: [1, 4, 2, 3] ✓
 
 </details>
 
-> *Friction prompt — predict before reading on: in `merge_alternate_nodes`, what would happen if you dropped the two `if first_half / elif second_half` lines that drain the leftover tail? Trace `[1, 2, 3, 4, 5]`.*
-
-(Answer: the alternating `while` loop exits as soon as *either* half runs out. For an odd-length input the first half is one node longer, so node `3` would never be linked in — the result would be the truncated `[1, 5, 2, 4]`. The drain step is what reattaches whichever half still has nodes left.)
-
 ### Complexity Analysis
 
 | Metric | Cost | Why |
@@ -512,36 +578,6 @@ Result: [1, 4, 2, 3] ✓
 | Three | `[1,2,3]` | `[1,3,2]` | Odd split: first=[1,2], second=[3]. Reverse=[3]. Alt-merge → [1,3,2]. |
 
 </details>
-## Examples
-
-**Example 1**
-```
-Input:  head = [1, 2, 3, 4]
-Output: [1, 4, 2, 3]
-Explanation: Even-length split: first half = 1 ⇄ 2; second half = 3 ⇄ 4. Reverse the second half (DLL swap(prev, next) per node): 4 ⇄ 3. Alternate-merge A, B, A, B with both directions wired on every attach: 1 ⇄ 4 ⇄ 2 ⇄ 3.
-```
-
-**Example 2**
-```
-Input:  head = [1, 2, 3, 4, 5]
-Output: [1, 5, 2, 4, 3]
-Explanation: Odd-length split keeps the middle in the first half: first = 1 ⇄ 2 ⇄ 3; second = 4 ⇄ 5. Reverse the second half: 5 ⇄ 4. Alternate-merge then drain the first half's leftover 3.
-```
-
-**Example 3**
-```
-Input:  head = [1]
-Output: [1]
-Explanation: A single-node list is already in the target shape — the reorder is a no-op.
-```
-
-**Example 4**
-```
-Input:  head = [1, 2, 3, 4, 5, 6]
-Output: [1, 6, 2, 5, 3, 4]
-Explanation: Even-length split: first = 1 ⇄ 2 ⇄ 3; second = 4 ⇄ 5 ⇄ 6. Reverse second: 6 ⇄ 5 ⇄ 4. Alternate-merge → 1 ⇄ 6 ⇄ 2 ⇄ 5 ⇄ 3 ⇄ 4.
-```
-
 <details>
 <summary><h2>Intuition</h2></summary>
 

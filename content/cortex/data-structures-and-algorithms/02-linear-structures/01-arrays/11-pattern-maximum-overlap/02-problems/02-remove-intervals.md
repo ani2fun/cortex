@@ -4,6 +4,8 @@ summary: "Given an array of intervals where intervals[i] = [si, ei], find and re
 prereqs:
   - 11-pattern-maximum-overlap/01-pattern
 difficulty: medium
+kind: problem
+topics: [intervals, arrays]
 ---
 
 # Remove Intervals
@@ -46,6 +48,90 @@ Input:  intervals = [[1, 5], [5, 7], [7, 8]]
 Output: 0
 Explanation: We don't need to remove any of the intervals since they are
              already non-overlapping (touching counts as non-overlapping).
+```
+
+```quiz
+{
+  "prompt": "Now your turn!",
+  "input": "intervals = [[1, 4], [1, 2], [2, 3], [3, 4]]",
+  "options": ["0", "1", "2", "3"],
+  "answer": "1"
+}
+```
+
+## Constraints
+
+- `0 ≤ intervals.length ≤ 10^4`
+- `intervals[i] = [start, end]` with `0 ≤ start < end ≤ 10^9`
+- Touching intervals (`e1 == s2`) do not count as overlapping
+
+```python run viz=grid viz-root=intervals
+import ast
+from typing import List
+
+class Solution:
+    def remove_intervals(self, intervals: List[List[int]]) -> int:
+        # Your code goes here — sort by end time, greedily keep every
+        # interval whose start is at or after the last kept end, and
+        # return total minus kept.
+        return 0
+
+
+intervals = ast.literal_eval(input())    # the test case's intervals
+print(Solution().remove_intervals(intervals))
+```
+
+```java run viz=grid viz-root=intervals
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int removeIntervals(int[][] intervals) {
+            // Your code goes here — sort by end time, greedily keep every
+            // interval whose start is at or after the last kept end, and
+            // return total minus kept.
+            return 0;
+        }
+    }
+
+    public static void main(String[] args) {
+        int[][] intervals = parseIntMatrix(new Scanner(System.in).nextLine());
+        System.out.println(new Solution().removeIntervals(intervals));
+    }
+
+    // "[[1, 4], [2, 5]]" → {{1, 4}, {2, 5}} — reads the test case's intervals
+    static int[][] parseIntMatrix(String line) {
+        String inner = line.trim().replaceAll("^\\[|\\]$", "").trim();
+        if (inner.isEmpty()) return new int[0][];
+        String[] rows = inner.split("\\]\\s*,\\s*\\[");
+        int[][] out = new int[rows.length][];
+        for (int i = 0; i < rows.length; i++) {
+            String r = rows[i].replaceAll("[\\[\\]\\s]", "");
+            if (r.isEmpty()) { out[i] = new int[0]; continue; }
+            String[] parts = r.split(",");
+            int[] pair = new int[parts.length];
+            for (int j = 0; j < parts.length; j++) pair[j] = Integer.parseInt(parts[j]);
+            out[i] = pair;
+        }
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "intervals", "label": "intervals", "type": "int[][]", "placeholder": "[[1, 2], [2, 3], [3, 4], [1, 3]]" }
+  ],
+  "cases": [
+    { "args": { "intervals": "[[1, 2], [2, 3], [3, 4], [1, 3]]" }, "expected": "1" },
+    { "args": { "intervals": "[[1, 5], [1, 5], [1, 5]]" }, "expected": "2" },
+    { "args": { "intervals": "[[1, 5], [5, 7], [7, 8]]" }, "expected": "0" },
+    { "args": { "intervals": "[[1, 4], [1, 2], [2, 3], [3, 4]]" }, "expected": "1" },
+    { "args": { "intervals": "[[1, 20], [2, 3], [4, 5]]" }, "expected": "1" },
+    { "args": { "intervals": "[]" }, "expected": "0" }
+  ]
+}
 ```
 
 <details>
@@ -224,7 +310,8 @@ flowchart TB
 The greedy is one short pass after a sort: keep the first interval (by end time), then walk the rest accepting any whose start is at or after the last kept end. The answer is `n − count(kept)`.
 
 
-```python run viz=grid viz-root=intervals
+```python solution time=O(N log N) space=O(1)
+import ast
 from typing import List
 
 class Solution:
@@ -260,20 +347,11 @@ class Solution:
         return n - count
 
 
-# Examples from the problem statement
-print(Solution().remove_intervals([[1, 2], [2, 3], [3, 4], [1, 3]]))   # 1
-print(Solution().remove_intervals([[1, 5], [1, 5], [1, 5]]))           # 2
-print(Solution().remove_intervals([[1, 5], [5, 7], [7, 8]]))           # 0
-
-# Edge cases
-print(Solution().remove_intervals([]))                                   # 0  — empty list
-print(Solution().remove_intervals([[1, 2]]))                             # 0  — single interval
-print(Solution().remove_intervals([[1, 3], [2, 4]]))                    # 1  — two overlapping
-print(Solution().remove_intervals([[1, 2], [3, 4]]))                    # 0  — two non-overlapping
-print(Solution().remove_intervals([[1, 4], [1, 2], [2, 3], [3, 4]]))   # 1  — one containing others
+intervals = ast.literal_eval(input())    # the test case's intervals
+print(Solution().remove_intervals(intervals))
 ```
 
-```java run viz=grid viz-root=intervals
+```java solution
 import java.util.*;
 
 public class Main {
@@ -316,17 +394,25 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().removeIntervals(new int[][]{{1, 2}, {2, 3}, {3, 4}, {1, 3}}));   // 1
-        System.out.println(new Solution().removeIntervals(new int[][]{{1, 5}, {1, 5}, {1, 5}}));           // 2
-        System.out.println(new Solution().removeIntervals(new int[][]{{1, 5}, {5, 7}, {7, 8}}));           // 0
+        int[][] intervals = parseIntMatrix(new Scanner(System.in).nextLine());
+        System.out.println(new Solution().removeIntervals(intervals));
+    }
 
-        // Edge cases
-        System.out.println(new Solution().removeIntervals(new int[][]{}));                                   // 0  — empty list
-        System.out.println(new Solution().removeIntervals(new int[][]{{1, 2}}));                             // 0  — single interval
-        System.out.println(new Solution().removeIntervals(new int[][]{{1, 3}, {2, 4}}));                    // 1  — two overlapping
-        System.out.println(new Solution().removeIntervals(new int[][]{{1, 2}, {3, 4}}));                    // 0  — two non-overlapping
-        System.out.println(new Solution().removeIntervals(new int[][]{{1, 4}, {1, 2}, {2, 3}, {3, 4}}));   // 1  — one containing others
+    // "[[1, 4], [2, 5]]" → {{1, 4}, {2, 5}} — reads the test case's intervals
+    static int[][] parseIntMatrix(String line) {
+        String inner = line.trim().replaceAll("^\\[|\\]$", "").trim();
+        if (inner.isEmpty()) return new int[0][];
+        String[] rows = inner.split("\\]\\s*,\\s*\\[");
+        int[][] out = new int[rows.length][];
+        for (int i = 0; i < rows.length; i++) {
+            String r = rows[i].replaceAll("[\\[\\]\\s]", "");
+            if (r.isEmpty()) { out[i] = new int[0]; continue; }
+            String[] parts = r.split(",");
+            int[] pair = new int[parts.length];
+            for (int j = 0; j < parts.length; j++) pair[j] = Integer.parseInt(parts[j]);
+            out[i] = pair;
+        }
+        return out;
     }
 }
 ```

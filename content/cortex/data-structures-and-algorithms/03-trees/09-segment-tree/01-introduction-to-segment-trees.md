@@ -189,9 +189,11 @@ Because any range `[l, r]` decomposes into at most `O(log n)` **canonical segmen
 
 ## Your Turn
 
-Build, range-query, and lazy range-update in both languages:
+Build, range-query, and lazy range-update in both languages. Input: the array, then two pre-update queries `ql qr`, then an update `ul ur uv` (+uv to all of [ul..ur]), then two post-update queries `ql qr`. Output: the four query results.
 
-```python run viz=binary-tree viz-root=root viz-kind=segment-tree
+```python run
+import ast
+
 class SegTree:
     def __init__(self, arr):
         self.n = len(arr); self.tree = [0]*(4*self.n); self.lazy = [0]*(4*self.n)
@@ -219,13 +221,23 @@ class SegTree:
         if ql<=l and r<=qr: return self.tree[nd]
         m=(l+r)//2; return self.query(ql,qr,2*nd,l,m)+self.query(ql,qr,2*nd+1,m+1,r)
 
-st = SegTree([1,3,5,7])
-print(st.query(0,3), st.query(1,3))     # 16 15
-st.update(0,1,10)                        # +10 to A[0],A[1]
-print(st.query(0,3), st.query(0,1))      # 36 24
+arr = ast.literal_eval(input())
+ql1, qr1 = map(int, input().split())
+ql2, qr2 = map(int, input().split())
+ul, ur, uv = map(int, input().split())
+ql3, qr3 = map(int, input().split())
+ql4, qr4 = map(int, input().split())
+
+st = SegTree(arr)
+print(st.query(ql1, qr1))
+print(st.query(ql2, qr2))
+st.update(ul, ur, uv)
+print(st.query(ql3, qr3))
+print(st.query(ql4, qr4))
 ```
 
-```java run viz=binary-tree viz-root=root viz-kind=segment-tree
+```java run
+import java.util.*;
 public class Main {
   static int n; static long[] tree, lazy;
   static void build(int[] a, int nd, int l, int r) {
@@ -253,13 +265,61 @@ public class Main {
     if (ql<=l&&r<=qr) return tree[nd];
     int m=(l+r)/2; return query(2*nd,l,m,ql,qr)+query(2*nd+1,m+1,r,ql,qr);
   }
-  public static void main(String[] a){
-    int[] arr={1,3,5,7}; n=arr.length; tree=new long[4*n]; lazy=new long[4*n];
-    build(arr,1,0,n-1);
-    System.out.println(query(1,0,n-1,0,3) + " " + query(1,0,n-1,1,3));  // 16 15
-    update(1,0,n-1,0,1,10);
-    System.out.println(query(1,0,n-1,0,3) + " " + query(1,0,n-1,0,1));  // 36 24
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
   }
+  public static void main(String[] a){
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());
+    int ql1 = sc.nextInt(), qr1 = sc.nextInt();
+    int ql2 = sc.nextInt(), qr2 = sc.nextInt();
+    int ul = sc.nextInt(), ur = sc.nextInt(), uv = sc.nextInt();
+    int ql3 = sc.nextInt(), qr3 = sc.nextInt();
+    int ql4 = sc.nextInt(), qr4 = sc.nextInt();
+    n = arr.length; tree = new long[4*n]; lazy = new long[4*n];
+    build(arr,1,0,n-1);
+    System.out.println(query(1,0,n-1,ql1,qr1));
+    System.out.println(query(1,0,n-1,ql2,qr2));
+    update(1,0,n-1,ul,ur,uv);
+    System.out.println(query(1,0,n-1,ql3,qr3));
+    System.out.println(query(1,0,n-1,ql4,qr4));
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr",   "label": "array",              "type": "array",  "placeholder": "[1, 3, 5, 7]" },
+    { "id": "q1",    "label": "query1 ql qr",        "type": "string", "placeholder": "0 3" },
+    { "id": "q2",    "label": "query2 ql qr",        "type": "string", "placeholder": "1 3" },
+    { "id": "upd",   "label": "update ul ur uv",     "type": "string", "placeholder": "0 1 10" },
+    { "id": "q3",    "label": "query3 ql qr",        "type": "string", "placeholder": "0 3" },
+    { "id": "q4",    "label": "query4 ql qr",        "type": "string", "placeholder": "0 1" }
+  ],
+  "cases": [
+    {
+      "args": { "arr": "[1, 3, 5, 7]", "q1": "0 3", "q2": "1 3", "upd": "0 1 10", "q3": "0 3", "q4": "0 1" },
+      "expected": "16\n15\n36\n24"
+    },
+    {
+      "args": { "arr": "[1, 2, 3, 4, 5, 6, 7, 8]", "q1": "0 7", "q2": "2 5", "upd": "3 5 10", "q3": "0 7", "q4": "3 5" },
+      "expected": "36\n18\n66\n45"
+    },
+    {
+      "args": { "arr": "[2, 4, 6, 8, 10]", "q1": "0 4", "q2": "1 3", "upd": "2 4 1", "q3": "0 4", "q4": "2 4" },
+      "expected": "30\n18\n33\n27"
+    },
+    {
+      "args": { "arr": "[5]", "q1": "0 0", "q2": "0 0", "upd": "0 0 3", "q3": "0 0", "q4": "0 0" },
+      "expected": "5\n5\n8\n8"
+    }
+  ]
 }
 ```
 

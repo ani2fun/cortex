@@ -22,9 +22,9 @@ That structure is the **B-tree** (Bayer & McCreight, 1971) — the most-deployed
 A B-tree of minimum degree `T=3` (so 2–5 keys per node). Insert keys and watch the height stay tiny and *logarithmic* as `n` grows — that's the whole point. Run it.
 
 ```python run
-import math, random
+import ast
 
-T = 3   # minimum degree: a node holds T-1 .. 2T-1 keys (root may hold fewer)
+T = 3   # minimum degree: a node holds T-1 .. 2T-1 keys
 
 class BNode:
     __slots__ = ("keys", "children", "leaf")
@@ -37,26 +37,26 @@ class BTree:
     def search(self, key, node=None):
         node = node or self.root
         i = 0
-        while i < len(node.keys) and key > node.keys[i]: i += 1      # find the slot / child
+        while i < len(node.keys) and key > node.keys[i]: i += 1
         if i < len(node.keys) and key == node.keys[i]: return True
         return False if node.leaf else self.search(key, node.children[i])
 
     def insert(self, key):
         root = self.root
-        if len(root.keys) == 2 * T - 1:                              # root full → grow UP
+        if len(root.keys) == 2 * T - 1:
             nr = BNode(leaf=False); nr.children.append(root)
-            self.root = nr; self._split_child(nr, 0)
-        self._insert_nonfull(self.root, key)
+            self.root = nr; self._split(nr, 0)
+        self._ins(self.root, key)
 
-    def _split_child(self, parent, i):
+    def _split(self, parent, i):
         full = parent.children[i]; sib = BNode(leaf=full.leaf)
-        sib.keys = full.keys[T:]                                     # upper half → new sibling
-        full.keys, mid = full.keys[:T-1], full.keys[T-1]            # middle key promoted
+        sib.keys = full.keys[T:]
+        full.keys, mid = full.keys[:T-1], full.keys[T-1]
         if not full.leaf:
             sib.children = full.children[T:]; full.children = full.children[:T]
         parent.keys.insert(i, mid); parent.children.insert(i + 1, sib)
 
-    def _insert_nonfull(self, node, key):
+    def _ins(self, node, key):
         i = len(node.keys) - 1
         if node.leaf:
             while i >= 0 and key < node.keys[i]: i -= 1
@@ -64,22 +64,100 @@ class BTree:
         else:
             while i >= 0 and key < node.keys[i]: i -= 1
             i += 1
-            if len(node.children[i].keys) == 2 * T - 1:             # split a full child before descending
-                self._split_child(node, i)
+            if len(node.children[i].keys) == 2 * T - 1:
+                self._split(node, i)
                 if key > node.keys[i]: i += 1
-            self._insert_nonfull(node.children[i], key)
+            self._ins(node.children[i], key)
 
     def height(self):
         n = self.root; h = 1
         while not n.leaf: n = n.children[0]; h += 1
         return h
 
-random.seed(7)
-for n in [100, 1_000, 10_000]:
-    t = BTree(); ks = list(range(1, n + 1)); random.shuffle(ks)
-    for k in ks: t.insert(k)
-    print(f"n={n:>6}  height={t.height()}  (vs binary log2(n) ≈ {math.log2(n):.0f})")
-print("search 42:", t.search(42), " search 99999:", t.search(99999))
+keys = ast.literal_eval(input())
+t = BTree()
+for k in keys: t.insert(k)
+print("height:", t.height(), " root:", t.root.keys)
+```
+
+```java run
+import java.util.*;
+public class Main {
+    static final int T = 3;
+    static class BNode {
+        List<Integer> keys = new ArrayList<>();
+        List<BNode> children = new ArrayList<>();
+        boolean leaf = true;
+    }
+    BNode root = new BNode();
+    boolean search(int key, BNode node) {
+        int i = 0;
+        while (i < node.keys.size() && key > node.keys.get(i)) i++;
+        if (i < node.keys.size() && key == node.keys.get(i)) return true;
+        return node.leaf ? false : search(key, node.children.get(i));
+    }
+    void split(BNode parent, int i) {
+        BNode full = parent.children.get(i), sib = new BNode();
+        sib.leaf = full.leaf;
+        sib.keys = new ArrayList<>(full.keys.subList(T, full.keys.size()));
+        int mid = full.keys.get(T - 1);
+        full.keys = new ArrayList<>(full.keys.subList(0, T - 1));
+        if (!full.leaf) {
+            sib.children = new ArrayList<>(full.children.subList(T, full.children.size()));
+            full.children = new ArrayList<>(full.children.subList(0, T));
+        }
+        parent.keys.add(i, mid); parent.children.add(i + 1, sib);
+    }
+    void insNonfull(BNode node, int key) {
+        int i = node.keys.size() - 1;
+        if (node.leaf) {
+            while (i >= 0 && key < node.keys.get(i)) i--;
+            node.keys.add(i + 1, key);
+        } else {
+            while (i >= 0 && key < node.keys.get(i)) i--;
+            i++;
+            if (node.children.get(i).keys.size() == 2 * T - 1) {
+                split(node, i); if (key > node.keys.get(i)) i++;
+            }
+            insNonfull(node.children.get(i), key);
+        }
+    }
+    void insert(int key) {
+        if (root.keys.size() == 2 * T - 1) {
+            BNode r = new BNode(); r.leaf = false; r.children.add(root); root = r; split(r, 0);
+        }
+        insNonfull(root, key);
+    }
+    int height() { BNode n = root; int h = 1; while (!n.leaf) { n = n.children.get(0); h++; } return h; }
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(","); int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+    public static void main(String[] a) {
+        Scanner sc = new Scanner(System.in);
+        int[] keys = parseIntArray(sc.nextLine());
+        Main t = new Main();
+        for (int k : keys) t.insert(k);
+        System.out.println("height: " + t.height() + "  root: " + t.root.keys);
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "keys", "label": "keys to insert", "type": "array", "placeholder": "[1, 2, 3, 4, 5, 6, 7, 8, 9]" }
+  ],
+  "cases": [
+    { "args": { "keys": "[1, 2, 3, 4, 5, 6, 7, 8, 9]" }, "expected": "height: 2  root: [3, 6]" },
+    { "args": { "keys": "[10, 20, 30, 40, 50, 60, 70, 80, 90, 100]" }, "expected": "height: 2  root: [30, 60]" },
+    { "args": { "keys": "[1, 2, 3, 4, 5]" }, "expected": "height: 1  root: [1, 2, 3, 4, 5]" },
+    { "args": { "keys": "[5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60]" }, "expected": "height: 2  root: [15, 30, 45]" }
+  ]
+}
 ```
 
 Now *watch* one grow. This inserts nine keys into a `T=3` tree (2–5 keys per node) and visualises every step — click **Visualise** and scrub through it: keys fill the root, it **splits** (the middle key jumps *up*), and the tree gains a level. Each node is a **row** of keys, not a single value, and a parent with `k` keys has `k+1` children hanging from the gaps between them — that's the whole idea.
@@ -172,9 +250,11 @@ The trick is the **direction of growth**. A BST leaf-insert lengthens *one* root
 
 ## Your Turn
 
-B-tree insert, search, and height in both languages — the height stays at 4 for 100 keys:
+B-tree insert, search, and height in both languages — the height stays logarithmic as keys grow:
 
 ```python run
+import ast
+
 T = 3
 class BNode:
     __slots__ = ("keys", "children", "leaf")
@@ -213,55 +293,96 @@ class BTree:
         while not n.leaf: n = n.children[0]; h += 1
         return h
 
+keys = ast.literal_eval(input())
 t = BTree()
-for k in range(1, 101): t.insert(k)
-print("height:", t.height(), " search 42:", t.search(42), " search 999:", t.search(999))  # 4 True False
+for k in keys: t.insert(k)
+present, absent = keys[0], max(keys) + 1
+print(f"height: {t.height()}")
+print(f"search {present}: {'true' if t.search(present) else 'false'}")
+print(f"search {absent}: {'true' if t.search(absent) else 'false'}")
 ```
 
 ```java run
+import java.util.*;
 public class Main {
-  static final int T = 3;
-  static class BNode { int[] keys = new int[2*T-1]; BNode[] children = new BNode[2*T]; int n = 0; boolean leaf = true; }
-  BNode root = new BNode();
-  boolean search(int key, BNode node) {
-    int i = 0;
-    while (i < node.n && key > node.keys[i]) i++;
-    if (i < node.n && key == node.keys[i]) return true;
-    return node.leaf ? false : search(key, node.children[i]);
-  }
-  void split(BNode parent, int i) {
-    BNode full = parent.children[i], sib = new BNode();
-    sib.leaf = full.leaf; sib.n = T - 1;
-    for (int j = 0; j < T - 1; j++) sib.keys[j] = full.keys[j + T];
-    if (!full.leaf) for (int j = 0; j < T; j++) sib.children[j] = full.children[j + T];
-    full.n = T - 1;
-    for (int j = parent.n; j > i; j--) parent.children[j + 1] = parent.children[j];
-    parent.children[i + 1] = sib;
-    for (int j = parent.n - 1; j >= i; j--) parent.keys[j + 1] = parent.keys[j];
-    parent.keys[i] = full.keys[T - 1]; parent.n++;
-  }
-  void insNonfull(BNode node, int key) {
-    int i = node.n - 1;
-    if (node.leaf) {
-      while (i >= 0 && key < node.keys[i]) { node.keys[i + 1] = node.keys[i]; i--; }
-      node.keys[i + 1] = key; node.n++;
-    } else {
-      while (i >= 0 && key < node.keys[i]) i--;
-      i++;
-      if (node.children[i].n == 2 * T - 1) { split(node, i); if (key > node.keys[i]) i++; }
-      insNonfull(node.children[i], key);
+    static final int T = 3;
+    static class BNode {
+        List<Integer> keys = new ArrayList<>();
+        List<BNode> children = new ArrayList<>();
+        boolean leaf = true;
     }
-  }
-  void insert(int key) {
-    if (root.n == 2 * T - 1) { BNode r = new BNode(); r.leaf = false; r.children[0] = root; root = r; split(r, 0); }
-    insNonfull(root, key);
-  }
-  int height() { BNode n = root; int h = 1; while (!n.leaf) { n = n.children[0]; h++; } return h; }
-  public static void main(String[] args) {
-    Main t = new Main();
-    for (int i = 1; i <= 100; i++) t.insert(i);
-    System.out.println("height: " + t.height() + " search 42: " + t.search(42, t.root));  // 4 true
-  }
+    BNode root = new BNode();
+    boolean search(int key, BNode node) {
+        int i = 0;
+        while (i < node.keys.size() && key > node.keys.get(i)) i++;
+        if (i < node.keys.size() && key == node.keys.get(i)) return true;
+        return node.leaf ? false : search(key, node.children.get(i));
+    }
+    void split(BNode parent, int i) {
+        BNode full = parent.children.get(i), sib = new BNode();
+        sib.leaf = full.leaf;
+        sib.keys = new ArrayList<>(full.keys.subList(T, full.keys.size()));
+        int mid = full.keys.get(T - 1);
+        full.keys = new ArrayList<>(full.keys.subList(0, T - 1));
+        if (!full.leaf) {
+            sib.children = new ArrayList<>(full.children.subList(T, full.children.size()));
+            full.children = new ArrayList<>(full.children.subList(0, T));
+        }
+        parent.keys.add(i, mid); parent.children.add(i + 1, sib);
+    }
+    void insNonfull(BNode node, int key) {
+        int i = node.keys.size() - 1;
+        if (node.leaf) {
+            while (i >= 0 && key < node.keys.get(i)) i--;
+            node.keys.add(i + 1, key);
+        } else {
+            while (i >= 0 && key < node.keys.get(i)) i--;
+            i++;
+            if (node.children.get(i).keys.size() == 2 * T - 1) {
+                split(node, i); if (key > node.keys.get(i)) i++;
+            }
+            insNonfull(node.children.get(i), key);
+        }
+    }
+    void insert(int key) {
+        if (root.keys.size() == 2 * T - 1) {
+            BNode r = new BNode(); r.leaf = false; r.children.add(root); root = r; split(r, 0);
+        }
+        insNonfull(root, key);
+    }
+    int height() { BNode n = root; int h = 1; while (!n.leaf) { n = n.children.get(0); h++; } return h; }
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(","); int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+    public static void main(String[] a) {
+        Scanner sc = new Scanner(System.in);
+        int[] keys = parseIntArray(sc.nextLine());
+        Main t = new Main();
+        int max = keys[0];
+        for (int k : keys) { t.insert(k); if (k > max) max = k; }
+        int present = keys[0], absent = max + 1;
+        System.out.println("height: " + t.height());
+        System.out.println("search " + present + ": " + t.search(present, t.root));
+        System.out.println("search " + absent + ": " + t.search(absent, t.root));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "keys", "label": "keys to insert", "type": "array", "placeholder": "[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]" }
+  ],
+  "cases": [
+    { "args": { "keys": "[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]" }, "expected": "height: 3\nsearch 1: true\nsearch 21: false" },
+    { "args": { "keys": "[10, 20, 30, 40, 50, 60, 70, 80, 90, 100]" }, "expected": "height: 2\nsearch 10: true\nsearch 101: false" },
+    { "args": { "keys": "[1, 2, 3, 4, 5]" }, "expected": "height: 1\nsearch 1: true\nsearch 6: false" },
+    { "args": { "keys": "[5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100]" }, "expected": "height: 3\nsearch 5: true\nsearch 101: false" }
+  ]
 }
 ```
 
@@ -334,7 +455,7 @@ flowchart TB
 <details>
 <summary><strong>Q:</strong> How does this connect to red-black trees?</summary>
 
-**A:** A red-black tree is an order-4 (2-3-4) B-tree encoded with one colour bit per binary node.
+**A:** A red-black tree is an order-4 (2-3-4) B-tree encoded with one colour bit per binary binary node.
 
 </details>
 
@@ -342,4 +463,4 @@ flowchart TB
 
 - **CLRS**, *Introduction to Algorithms*, 4th ed., ch. 18 — B-trees: the invariants, `B-Tree-Search`, `B-Tree-Split-Child`, and `B-Tree-Insert` (this implementation follows it directly).
 - **Bayer & McCreight (1972)**, *Organization and Maintenance of Large Ordered Indexes* — the original paper. **Comer (1979)**, *The Ubiquitous B-Tree* (ACM Computing Surveys) — the classic survey.
-- Both runnable blocks are verified by running (`T=3`: 100 keys ⇒ height 4, `search 42` True / `search 999` False; height stays logarithmic as `n` grows: n=1000 ⇒ 5, n=10000 ⇒ 7).
+- Both runnable blocks are verified by running (`T=3`: `[1..9]` ⇒ height 2, root `[3, 6]`; `[1..20]` ⇒ height 3; `[1..5]` ⇒ height 1, root `[1, 2, 3, 4, 5]`).

@@ -17,10 +17,13 @@ The move: generate a **canonical key** — a normalized fingerprint that comes o
 
 Group strings by their **pattern** — `"egg"`, `"add"`, `"foo"` all have shape "A B B", so they belong together; `"bar"` ("A B C") stands apart. The key is each character's *first-occurrence index*. Run it.
 
+> ▶ Run it, then click **Visualise** — each word is reduced to its first-occurrence-index key; strings with equal keys land in the same bucket.
+
 ```python run viz=array
+import ast
+
 def pattern_key(s):
-    seen = {}
-    key = []
+    seen, key = {}, []
     for ch in s:
         if ch not in seen:
             seen[ch] = len(seen)     # first time we see a char → give it the next index
@@ -33,7 +36,84 @@ def group_isomorphic(words):
         groups.setdefault(pattern_key(w), []).append(w)   # bucket by canonical key
     return list(groups.values())
 
-print(group_isomorphic(["egg", "add", "foo", "bar"]))     # [['egg', 'add', 'foo'], ['bar']]
+words = ast.literal_eval(input())                  # the test case's word list
+groups = group_isomorphic(words)
+result = sorted([sorted(g) for g in groups])       # canonicalize both levels for determinism
+inner = [", ".join(g) for g in result]
+print("[" + ", ".join("[" + s + "]" for s in inner) + "]")
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+  static String patternKey(String s) {
+    Map<Character, Integer> seen = new HashMap<>();
+    StringBuilder key = new StringBuilder();
+    for (char ch : s.toCharArray()) {
+      seen.putIfAbsent(ch, seen.size());     // first-occurrence index
+      key.append(seen.get(ch)).append(",");
+    }
+    return key.toString();
+  }
+
+  static List<List<String>> groupIsomorphic(String[] words) {
+    Map<String, List<String>> groups = new LinkedHashMap<>();
+    for (String w : words) groups.computeIfAbsent(patternKey(w), k -> new ArrayList<>()).add(w);
+    return new ArrayList<>(groups.values());
+  }
+
+  static String[] parseStringArray(String line) {
+    line = line.trim();
+    if (line.equals("[]")) return new String[0];
+    line = line.substring(1, line.length() - 1);   // strip [ ]
+    String[] parts = line.split(",\\s*");
+    for (int i = 0; i < parts.length; i++) {
+      parts[i] = parts[i].trim();
+      if ((parts[i].startsWith("\"") && parts[i].endsWith("\"")) ||
+          (parts[i].startsWith("'") && parts[i].endsWith("'")))
+        parts[i] = parts[i].substring(1, parts[i].length() - 1);
+    }
+    return parts;
+  }
+
+  static String formatGroups(List<List<String>> groups) {
+    List<List<String>> sorted = new ArrayList<>();
+    for (List<String> g : groups) {
+      List<String> sg = new ArrayList<>(g);
+      Collections.sort(sg);
+      sorted.add(sg);
+    }
+    sorted.sort(Comparator.comparing(g -> g.get(0)));
+    StringBuilder sb = new StringBuilder("[");
+    for (int i = 0; i < sorted.size(); i++) {
+      sb.append("[").append(String.join(", ", sorted.get(i))).append("]");
+      if (i < sorted.size() - 1) sb.append(", ");
+    }
+    sb.append("]");
+    return sb.toString();
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    String[] words = parseStringArray(sc.nextLine());   // the test case's word list
+    System.out.println(formatGroups(groupIsomorphic(words)));
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "words", "label": "words", "type": "string", "placeholder": "[\"egg\", \"add\", \"foo\", \"bar\"]" }
+  ],
+  "cases": [
+    { "args": { "words": "[\"egg\", \"add\", \"foo\", \"bar\"]" }, "expected": "[[add, egg, foo], [bar]]" },
+    { "args": { "words": "[\"paper\", \"title\", \"abc\", \"xyz\", \"aab\"]" }, "expected": "[[aab], [abc, xyz], [paper, title]]" },
+    { "args": { "words": "[\"a\", \"b\"]" }, "expected": "[[a, b]]" },
+    { "args": { "words": "[\"abc\"]" }, "expected": "[[abc]]" }
+  ]
+}
 ```
 
 ## How It Works
@@ -79,6 +159,8 @@ Because the equivalence is **isomorphism of structure**, not identity of letters
 The reusable key-generation grouping:
 
 ```python run viz=array
+import ast
+
 def pattern_key(s):
     seen, key = {}, []
     for ch in s:
@@ -93,8 +175,11 @@ def group_isomorphic(words):
         groups.setdefault(pattern_key(w), []).append(w)
     return list(groups.values())
 
-print(group_isomorphic(["paper", "title", "abc", "xyz", "aab"]))
-# [['paper', 'title'], ['abc', 'xyz'], ['aab']]
+words = ast.literal_eval(input())
+groups = group_isomorphic(words)
+result = sorted([sorted(g) for g in groups])
+inner = [", ".join(g) for g in result]
+print("[" + ", ".join("[" + s + "]" for s in inner) + "]")
 ```
 
 ```java run viz=array
@@ -105,8 +190,8 @@ public class Main {
     Map<Character, Integer> seen = new HashMap<>();
     StringBuilder key = new StringBuilder();
     for (char ch : s.toCharArray()) {
-      seen.putIfAbsent(ch, seen.size());     // first-occurrence index
-      key.append(seen.get(ch)).append(',');
+      seen.putIfAbsent(ch, seen.size());
+      key.append(seen.get(ch)).append(",");
     }
     return key.toString();
   }
@@ -117,12 +202,148 @@ public class Main {
     return new ArrayList<>(groups.values());
   }
 
+  static String[] parseStringArray(String line) {
+    line = line.trim();
+    if (line.equals("[]")) return new String[0];
+    line = line.substring(1, line.length() - 1);
+    String[] parts = line.split(",\\s*");
+    for (int i = 0; i < parts.length; i++) {
+      parts[i] = parts[i].trim();
+      if ((parts[i].startsWith("\"") && parts[i].endsWith("\"")) ||
+          (parts[i].startsWith("'") && parts[i].endsWith("'")))
+        parts[i] = parts[i].substring(1, parts[i].length() - 1);
+    }
+    return parts;
+  }
+
+  static String formatGroups(List<List<String>> groups) {
+    List<List<String>> sorted = new ArrayList<>();
+    for (List<String> g : groups) {
+      List<String> sg = new ArrayList<>(g);
+      Collections.sort(sg);
+      sorted.add(sg);
+    }
+    sorted.sort(Comparator.comparing(g -> g.get(0)));
+    StringBuilder sb = new StringBuilder("[");
+    for (int i = 0; i < sorted.size(); i++) {
+      sb.append("[").append(String.join(", ", sorted.get(i))).append("]");
+      if (i < sorted.size() - 1) sb.append(", ");
+    }
+    sb.append("]");
+    return sb.toString();
+  }
+
   public static void main(String[] args) {
-    System.out.println(groupIsomorphic(new String[]{"paper", "title", "abc", "xyz", "aab"}));
-    // [[paper, title], [abc, xyz], [aab]]
+    Scanner sc = new Scanner(System.in);
+    String[] words = parseStringArray(sc.nextLine());
+    System.out.println(formatGroups(groupIsomorphic(words)));
   }
 }
 ```
+
+```testcases
+{
+  "args": [
+    { "id": "words", "label": "words", "type": "string", "placeholder": "[\"paper\", \"title\", \"abc\", \"xyz\", \"aab\"]" }
+  ],
+  "cases": [
+    { "args": { "words": "[\"paper\", \"title\", \"abc\", \"xyz\", \"aab\"]" }, "expected": "[[aab], [abc, xyz], [paper, title]]" },
+    { "args": { "words": "[\"egg\", \"add\", \"foo\", \"bar\"]" }, "expected": "[[add, egg, foo], [bar]]" },
+    { "args": { "words": "[\"aab\", \"xyz\"]" }, "expected": "[[aab], [xyz]]" },
+    { "args": { "words": "[\"a\", \"b\"]" }, "expected": "[[a, b]]" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Two-pass key-generation: for each word, walk its characters and assign each new one the next integer index (the first-occurrence-index encoding); equal tuples mean isomorphic strings. Bucket by key in a hash map; collect all buckets as the result. Sort within each group and sort the groups by their first element before printing — this canonicalizes the output across Python (insertion-order dict) and Java (HashMap with unpredictable iteration order). `O(n · len)` time and space.
+
+```python solution time=O(n·len) space=O(n·len)
+import ast
+
+def pattern_key(s):
+    seen, key = {}, []
+    for ch in s:
+        if ch not in seen:
+            seen[ch] = len(seen)
+        key.append(seen[ch])
+    return tuple(key)
+
+def group_isomorphic(words):
+    groups = {}
+    for w in words:
+        groups.setdefault(pattern_key(w), []).append(w)
+    return list(groups.values())
+
+words = ast.literal_eval(input())
+groups = group_isomorphic(words)
+result = sorted([sorted(g) for g in groups])
+inner = [", ".join(g) for g in result]
+print("[" + ", ".join("[" + s + "]" for s in inner) + "]")
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+  static String patternKey(String s) {
+    Map<Character, Integer> seen = new HashMap<>();
+    StringBuilder key = new StringBuilder();
+    for (char ch : s.toCharArray()) {
+      seen.putIfAbsent(ch, seen.size());
+      key.append(seen.get(ch)).append(",");
+    }
+    return key.toString();
+  }
+
+  static List<List<String>> groupIsomorphic(String[] words) {
+    Map<String, List<String>> groups = new LinkedHashMap<>();
+    for (String w : words) groups.computeIfAbsent(patternKey(w), k -> new ArrayList<>()).add(w);
+    return new ArrayList<>(groups.values());
+  }
+
+  static String[] parseStringArray(String line) {
+    line = line.trim();
+    if (line.equals("[]")) return new String[0];
+    line = line.substring(1, line.length() - 1);
+    String[] parts = line.split(",\\s*");
+    for (int i = 0; i < parts.length; i++) {
+      parts[i] = parts[i].trim();
+      if ((parts[i].startsWith("\"") && parts[i].endsWith("\"")) ||
+          (parts[i].startsWith("'") && parts[i].endsWith("'")))
+        parts[i] = parts[i].substring(1, parts[i].length() - 1);
+    }
+    return parts;
+  }
+
+  static String formatGroups(List<List<String>> groups) {
+    List<List<String>> sorted = new ArrayList<>();
+    for (List<String> g : groups) {
+      List<String> sg = new ArrayList<>(g);
+      Collections.sort(sg);
+      sorted.add(sg);
+    }
+    sorted.sort(Comparator.comparing(g -> g.get(0)));
+    StringBuilder sb = new StringBuilder("[");
+    for (int i = 0; i < sorted.size(); i++) {
+      sb.append("[").append(String.join(", ", sorted.get(i))).append("]");
+      if (i < sorted.size() - 1) sb.append(", ");
+    }
+    sb.append("]");
+    return sb.toString();
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    String[] words = parseStringArray(sc.nextLine());
+    System.out.println(formatGroups(groupIsomorphic(words)));
+  }
+}
+```
+
+</details>
 
 Drill the family in **Practice** — [Row-Specific Words](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-pattern-generation/problems/row-specific-words), [Homomorphic Strings](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-pattern-generation/problems/homomorphic-strings), [Pattern Matching](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-pattern-generation/problems/pattern-matching), and [Cluster Displaced Strings](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-pattern-generation/problems/cluster-displaced-strings).
 

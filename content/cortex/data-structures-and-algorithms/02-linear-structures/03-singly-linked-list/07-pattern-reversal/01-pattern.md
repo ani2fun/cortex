@@ -15,17 +15,25 @@ The obvious fix is to copy every value into an array, reverse that, and rebuild 
 
 ## See It Work
 
-Reverse `5 → 7 → 3 → 10` by flipping pointers, never touching values. Run it, then **Visualise** the arrows turning around one by one.
+Reverse `5 → 7 → 3 → 10` by flipping pointers, never touching values. Pick a case and **Run** it, then **Visualise** the arrows turning around one by one.
 
 > ▶ Run it, then click **Visualise** — watch each node's arrow flip to point backward as `current` sweeps through the list.
 
 ```python run viz=linked-list viz-root=head viz-kind=list-single
+import ast
+
 class ListNode:
     def __init__(self, val, next=None):
         self.val = val
         self.next = next
 
-head = ListNode(5, ListNode(7, ListNode(3, ListNode(10))))   # 5 → 7 → 3 → 10
+def build_list(values):              # [5, 7, 3, 10] → 5 → 7 → 3 → 10 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
+
+head = build_list(ast.literal_eval(input()))   # the test case's values
 
 previous = None
 current = head
@@ -41,7 +49,67 @@ node = head
 while node:
     vals.append(node.val)
     node = node.next
-print(vals)                         # [10, 3, 7, 5]
+print(vals)
+```
+
+```java run viz=linked-list viz-root=head viz-kind=list-single
+import java.util.*;
+
+public class Main {
+  static class ListNode {
+    int val; ListNode next;
+    ListNode(int val) { this.val = val; }
+    ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+  }
+
+  public static void main(String[] args) {
+    ListNode head = buildList(parseIntArray(new Scanner(System.in).nextLine()));
+
+    ListNode previous = null;
+    ListNode current = head;
+    while (current != null) {         // walk the list once
+      ListNode next = current.next;   // save the forward link before we overwrite it
+      current.next = previous;        // flip this node's pointer backward
+      previous = current;             // previous trails forward
+      current = next;                 // advance into the rest of the list
+    }
+    head = previous;                  // previous is the old tail = the new head
+
+    List<Integer> vals = new ArrayList<>();
+    for (ListNode node = head; node != null; node = node.next) vals.add(node.val);
+    System.out.println(vals);
+  }
+
+  static ListNode buildList(int[] values) {      // {5, 7, 3, 10} → 5 → 7 → 3 → 10 → null
+    ListNode head = null;
+    for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+    return head;
+  }
+
+  // "[5, 7, 3, 10]" → {5, 7, 3, 10} — reads the test case's values
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "values", "label": "values", "type": "int[]", "placeholder": "[5, 7, 3, 10]" }
+  ],
+  "cases": [
+    { "args": { "values": "[5, 7, 3, 10]" }, "expected": "[10, 3, 7, 5]" },
+    { "args": { "values": "[1, 2, 3]" }, "expected": "[3, 2, 1]" },
+    { "args": { "values": "[42]" }, "expected": "[42]" },
+    { "args": { "values": "[]" }, "expected": "[]" }
+  ]
+}
 ```
 
 ## How It Works
@@ -87,9 +155,106 @@ Before you read on: the loop stops when `current` is `null` — so what is `prev
 
 ## Your Turn
 
-The reusable in-place reversal — returns the new head:
+Write the reusable in-place reversal — `reverse(head)` returns the new head. Three pointers, one pass:
 
 ```python run viz=linked-list viz-root=head viz-kind=list-single
+import ast
+
+class ListNode:
+    def __init__(self, val, next=None):
+        self.val = val
+        self.next = next
+
+def reverse(head):
+    # Your code goes here — three pointers: save the lookahead, flip
+    # current.next backward, advance both. Return `previous` as the new head.
+    pass
+
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
+
+def print_list(head):                # 1 → 2 → 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
+
+head = build_list(ast.literal_eval(input()))   # the test case's values
+print_list(reverse(head))
+```
+
+```java run viz=linked-list viz-root=head viz-kind=list-single
+import java.util.*;
+
+public class Main {
+  static class ListNode {
+    int val; ListNode next;
+    ListNode(int val) { this.val = val; }
+    ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+  }
+
+  static ListNode reverse(ListNode head) {
+    // Your code goes here — three pointers: save the lookahead, flip
+    // current.next backward, advance both. Return `previous` as the new head.
+    return null;
+  }
+
+  public static void main(String[] args) {
+    ListNode head = buildList(parseIntArray(new Scanner(System.in).nextLine()));
+    printList(reverse(head));
+  }
+
+  static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+    ListNode head = null;
+    for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+    return head;
+  }
+
+  static void printList(ListNode head) {         // 1 → 2 → 3 → [1, 2, 3]
+    List<Integer> out = new ArrayList<>();
+    for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+    System.out.println(out);
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's values
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "values", "label": "values", "type": "int[]", "placeholder": "[1, 2, 3]" }
+  ],
+  "cases": [
+    { "args": { "values": "[1, 2, 3]" }, "expected": "[3, 2, 1]" },
+    { "args": { "values": "[5, 7, 3, 10]" }, "expected": "[10, 3, 7, 5]" },
+    { "args": { "values": "[42]" }, "expected": "[42]" },
+    { "args": { "values": "[]" }, "expected": "[]" },
+    { "args": { "values": "[1, 1, 2, 2]" }, "expected": "[2, 2, 1, 1]" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+The loop is exactly the See-It-Work walk, packaged to return its result: `previous` starts as `null` (the reversed part is empty), and each tick saves the lookahead, flips `current.next` backward, then slides `previous` and `current` one step forward. When `current` falls off the end, `previous` sits on the old tail — the new head. An empty list never enters the loop and correctly returns `null`.
+
+```python solution time=O(n) space=O(1)
+import ast
+
 class ListNode:
     def __init__(self, val, next=None):
         self.val = val
@@ -105,17 +270,32 @@ def reverse(head):
         current = next_node
     return previous                  # new head
 
-# build 1 → 2 → 3, reverse, read it back
-head = ListNode(1, ListNode(2, ListNode(3)))
-out, node = [], reverse(head)
-while node:
-    out.append(node.val); node = node.next
-print(out)                           # [3, 2, 1]
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
+
+def print_list(head):                # 1 → 2 → 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
+
+head = build_list(ast.literal_eval(input()))   # the test case's values
+print_list(reverse(head))
 ```
 
-```java run viz=linked-list viz-root=head viz-kind=list-single
+```java solution
+import java.util.*;
+
 public class Main {
-  static class ListNode { int val; ListNode next; ListNode(int v){ val = v; } }
+  static class ListNode {
+    int val; ListNode next;
+    ListNode(int val) { this.val = val; }
+    ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+  }
 
   static ListNode reverse(ListNode head) {
     ListNode previous = null, current = head;
@@ -129,17 +309,39 @@ public class Main {
   }
 
   public static void main(String[] args) {
-    ListNode head = new ListNode(1); head.next = new ListNode(2); head.next.next = new ListNode(3);
-    StringBuilder sb = new StringBuilder("[");
-    for (ListNode c = reverse(head); c != null; c = c.next) sb.append(c.val).append(c.next != null ? ", " : "");
-    System.out.println(sb.append("]"));   // [3, 2, 1]
+    ListNode head = buildList(parseIntArray(new Scanner(System.in).nextLine()));
+    printList(reverse(head));
+  }
+
+  static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+    ListNode head = null;
+    for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+    return head;
+  }
+
+  static void printList(ListNode head) {         // 1 → 2 → 3 → [1, 2, 3]
+    List<Integer> out = new ArrayList<>();
+    for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+    System.out.println(out);
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's values
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
   }
 }
 ```
 
-Drill the family in **Practice** — [Reverse a List](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-reversal/problems/reverse-a-list), [Reverse First K Nodes](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-reversal/problems/reverse-first-k-nodes), [Reverse Last K Nodes](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-reversal/problems/reverse-last-k-nodes), and [Reverse the Given Segment](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-reversal/problems/reverse-the-given-segment).
+</details>
 
 ## Reflect & Connect
+
+Drill the family in **Practice** — [Reverse a List](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-reversal/problems/reverse-a-list), [Reverse First K Nodes](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-reversal/problems/reverse-first-k-nodes), [Reverse Last K Nodes](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-reversal/problems/reverse-last-k-nodes), and [Reverse the Given Segment](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-reversal/problems/reverse-the-given-segment).
 
 The three-pointer flip is one of the highest-leverage list moves — it shows up wherever something must go backward:
 
@@ -190,4 +392,4 @@ The three-pointer flip is one of the highest-leverage list moves — it shows up
 
 - **CLRS**, *Introduction to Algorithms*, 4th ed., §10.2 — singly linked lists and pointer manipulation.
 - **Sedgewick & Wayne**, *Algorithms*, 4th ed., §1.3 — linked structures; reversing a list as the canonical in-place pointer exercise.
-- The three-pointer loop and its `O(n)`/`O(1)` bounds are the standard result; both runnable blocks are verified by running (outputs `[10, 3, 7, 5]` and `[3, 2, 1]`).
+- The three-pointer loop and its `O(n)`/`O(1)` bounds are the standard result; both runnable blocks are verified by running against their test cases.

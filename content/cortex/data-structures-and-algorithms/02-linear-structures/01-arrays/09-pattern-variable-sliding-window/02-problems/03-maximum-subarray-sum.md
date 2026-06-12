@@ -4,6 +4,8 @@ summary: "Given an integer array arr, find the non-empty subarray with the maxim
 prereqs:
   - 09-pattern-variable-sliding-window/01-pattern
 difficulty: medium
+kind: problem
+topics: [sliding-window, arrays]
 ---
 
 # Maximum Subarray Sum
@@ -41,6 +43,80 @@ Explanation: The subarray [5, 4, -1, 7, 8] has the largest sum of 23.
 Input:  arr = [1]
 Output: 1
 Explanation: The subarray [1] has the largest sum of 1.
+```
+
+```quiz
+{
+  "prompt": "Now your turn!",
+  "input": "arr = [-1, 3, -2, 5, -4]",
+  "options": ["3", "5", "6", "8"],
+  "answer": "6"
+}
+```
+
+## Constraints
+
+- `1 ≤ arr.length ≤ 10^5`
+- `-10^4 ≤ arr[i] ≤ 10^4`
+
+```python run viz=array viz-root=arr
+import ast
+from typing import List
+
+class Solution:
+    def max_subarray_sum(self, arr: List[int]) -> int:
+        # Your code goes here — accumulate a running sum, reset (leap) when it
+        # turns negative, and track the best sum seen (seed from arr[0]).
+        return 0
+
+arr = ast.literal_eval(input())      # the test case's arr
+print(Solution().max_subarray_sum(arr))
+```
+
+```java run viz=array viz-root=arr
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int maxSubarraySum(int[] arr) {
+            // Your code goes here — accumulate a running sum, reset (leap) when it
+            // turns negative, and track the best sum seen (seed from arr[0]).
+            return 0;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        System.out.println(new Solution().maxSubarraySum(arr));
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's arr
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[-2, 1, -3, 4, -1, 2, 1, -5, 4]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[-2, 1, -3, 4, -1, 2, 1, -5, 4]" }, "expected": "6" },
+    { "args": { "arr": "[5, 4, -1, 7, 8]" }, "expected": "23" },
+    { "args": { "arr": "[1]" }, "expected": "1" },
+    { "args": { "arr": "[-1, 3, -2, 5, -4]" }, "expected": "6" },
+    { "args": { "arr": "[-3, -1, -2]" }, "expected": "-1" },
+    { "args": { "arr": "[1, 2, 3, 4, 5]" }, "expected": "15" }
+  ]
+}
 ```
 
 <details>
@@ -85,7 +161,8 @@ The naive approach evaluates every subarray and tracks the largest sum — O(N²
 
 ### The Solution
 
-```python run viz=array viz-root=arr
+```python solution time=O(N) space=O(1)
+import ast
 from typing import List
 
 class Solution:
@@ -130,20 +207,13 @@ class Solution:
         return max_sum
 
 
-# Examples from the problem statement
-print(Solution().max_subarray_sum([-2, 1, -3, 4, -1, 2, 1, -5, 4]))   # 6
-print(Solution().max_subarray_sum([5, 4, -1, 7, 8]))                   # 23
-print(Solution().max_subarray_sum([1]))                                 # 1
-
-# Edge cases
-print(Solution().max_subarray_sum([-1]))                                # -1  — single negative
-print(Solution().max_subarray_sum([2, -1]))                             # 2   — two elements
-print(Solution().max_subarray_sum([-3, -1, -2]))                        # -1  — all negative
-print(Solution().max_subarray_sum([0, 0, 0]))                           # 0   — all zeros
-print(Solution().max_subarray_sum([1, 2, 3, 4, 5]))                     # 15  — all positive
+arr = ast.literal_eval(input())      # the test case's arr
+print(Solution().max_subarray_sum(arr))
 ```
 
-```java run viz=array viz-root=arr
+```java solution
+import java.util.*;
+
 public class Main {
     static class Solution {
         public int maxSubarraySum(int[] arr) {
@@ -193,17 +263,19 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().maxSubarraySum(new int[]{-2, 1, -3, 4, -1, 2, 1, -5, 4}));   // 6
-        System.out.println(new Solution().maxSubarraySum(new int[]{5, 4, -1, 7, 8}));                   // 23
-        System.out.println(new Solution().maxSubarraySum(new int[]{1}));                                 // 1
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        System.out.println(new Solution().maxSubarraySum(arr));
+    }
 
-        // Edge cases
-        System.out.println(new Solution().maxSubarraySum(new int[]{-1}));                                // -1  — single negative
-        System.out.println(new Solution().maxSubarraySum(new int[]{2, -1}));                             // 2   — two elements
-        System.out.println(new Solution().maxSubarraySum(new int[]{-3, -1, -2}));                        // -1  — all negative
-        System.out.println(new Solution().maxSubarraySum(new int[]{0, 0, 0}));                           // 0   — all zeros
-        System.out.println(new Solution().maxSubarraySum(new int[]{1, 2, 3, 4, 5}));                     // 15  — all positive
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's arr
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

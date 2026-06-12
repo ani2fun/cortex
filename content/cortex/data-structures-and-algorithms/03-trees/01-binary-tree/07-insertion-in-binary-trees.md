@@ -18,24 +18,44 @@ The canonical choice — the one worth burning into muscle memory — is **inser
 Insert a value at the first empty slot the BFS finds, and watch the level-order grow by one:
 
 ```python run viz=binary-tree viz-root=root
+import json
 from collections import deque
+
 class TreeNode:
     def __init__(self, val=0, left=None, right=None):
         self.val, self.left, self.right = val, left, right
-#        1
-#       / \
-#      2   3       <- 2 has a left child but an EMPTY right slot
-#     /
-#    4
-root = TreeNode(1, TreeNode(2, TreeNode(4), None), TreeNode(3))
 
-def level_order(root):
-    out, q = [], deque([root] if root else [])
-    while q:
-        n = q.popleft(); out.append(n.val)
-        if n.left:  q.append(n.left)
-        if n.right: q.append(n.right)
-    return out
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
+
+def print_tree(root):                # root → [1, 2, 3, null, 4], trailing nulls trimmed
+    out, queue = [], deque([root])
+    while queue:
+        node = queue.popleft()
+        if node is None:
+            out.append(None)
+        else:
+            out.append(node.val)
+            queue.append(node.left)
+            queue.append(node.right)
+    while out and out[-1] is None:
+        out.pop()
+    print(json.dumps(out))           # json.dumps → null, not None
 
 def insert(root, val):
     node = TreeNode(val)
@@ -49,54 +69,113 @@ def insert(root, val):
         q.append(cur.right)
     return root
 
-print("before:", level_order(root))   # [1, 2, 3, 4]
-insert(root, 5)
-print("after :", level_order(root))   # [1, 2, 3, 4, 5]  -> 5 filled 2's empty right slot
+root = build_tree(json.loads(input()))   # the test case's level-order values
+val = int(input())                       # value to insert
+root = insert(root, val)
+print_tree(root)
 ```
 
 ```java run viz=binary-tree viz-root=root
 import java.util.*;
+
 public class Main {
-    static class TreeNode {
-        int val; TreeNode left, right;
-        TreeNode(int val) { this.val = val; }
-        TreeNode(int val, TreeNode left, TreeNode right) { this.val = val; this.left = left; this.right = right; }
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
+  }
+
+  static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();    // build queue: only real nodes, ArrayDeque ok
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
     }
-    static List<Integer> levelOrder(TreeNode root) {
-        List<Integer> out = new ArrayList<>();
-        Deque<TreeNode> q = new ArrayDeque<>();
-        if (root != null) q.add(root);
-        while (!q.isEmpty()) {
-            TreeNode n = q.poll(); out.add(n.val);
-            if (n.left  != null) q.add(n.left);
-            if (n.right != null) q.add(n.right);
-        }
-        return out;
+    return root;
+  }
+
+  static void printTree(TreeNode root) {          // root → [1, 2, 3, null, 4], trailing nulls trimmed
+    List<String> out = new ArrayList<>();
+    Deque<TreeNode> queue = new LinkedList<>();    // LinkedList: print BFS enqueues null children
+    queue.add(root);
+    while (!queue.isEmpty()) {
+      TreeNode node = queue.poll();
+      if (node == null) {
+        out.add("null");
+      } else {
+        out.add(String.valueOf(node.val));
+        queue.add(node.left);
+        queue.add(node.right);
+      }
     }
-    static TreeNode insert(TreeNode root, int val) {
-        TreeNode node = new TreeNode(val);
-        if (root == null) return node;                 // empty tree -> new root
-        Deque<TreeNode> q = new ArrayDeque<>();
-        q.add(root);
-        while (!q.isEmpty()) {                          // BFS: level by level, left to right
-            TreeNode cur = q.poll();
-            if (cur.left  == null) { cur.left  = node; return root; }   // first empty slot wins
-            q.add(cur.left);
-            if (cur.right == null) { cur.right = node; return root; }
-            q.add(cur.right);
-        }
-        return root;
+    while (!out.isEmpty() && out.get(out.size() - 1).equals("null"))
+      out.remove(out.size() - 1);
+    System.out.println("[" + String.join(", ", out) + "]");
+  }
+
+  static TreeNode insert(TreeNode root, int val) {
+    TreeNode node = new TreeNode(val);
+    if (root == null) return node;                 // empty tree -> new root
+    Deque<TreeNode> q = new ArrayDeque<>();
+    q.add(root);
+    while (!q.isEmpty()) {                          // BFS: level by level, left to right
+      TreeNode cur = q.poll();
+      if (cur.left  == null) { cur.left  = node; return root; }   // first empty slot wins
+      q.add(cur.left);
+      if (cur.right == null) { cur.right = node; return root; }
+      q.add(cur.right);
     }
-    public static void main(String[] a) {
-        TreeNode root = new TreeNode(1, new TreeNode(2, new TreeNode(4), null), new TreeNode(3));
-        System.out.println("before: " + levelOrder(root));
-        insert(root, 5);
-        System.out.println("after : " + levelOrder(root));
-    }
+    return root;
+  }
+
+  // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+    int val = Integer.parseInt(sc.nextLine().trim());
+    root = insert(root, val);
+    printTree(root);
+  }
 }
 ```
 
-Both print `before: [1, 2, 3, 4]` and `after : [1, 2, 3, 4, 5]`. The BFS visited `1` (both slots full), then `2` (left full, right empty) and stopped — `5` slotted into `2`'s empty right child, and the tree stays complete.
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[1, 2, 3, null, 4]" },
+    { "id": "val", "label": "val", "type": "int", "placeholder": "5" }
+  ],
+  "cases": [
+    { "args": { "root": "[1, 2, 3, null, 4]", "val": "5" }, "expected": "[1, 2, 3, 5, 4]" },
+    { "args": { "root": "[1, 2, 3]", "val": "4" }, "expected": "[1, 2, 3, 4]" },
+    { "args": { "root": "[1]", "val": "2" }, "expected": "[1, 2]" },
+    { "args": { "root": "[]", "val": "1" }, "expected": "[1]" },
+    { "args": { "root": "[1, 2, 3, 4, 5, 6]", "val": "7" }, "expected": "[1, 2, 3, 4, 5, 6, 7]" }
+  ]
+}
+```
+
+Both print the updated tree in level-order (trailing nulls trimmed). The BFS visited `1` (both slots full: 2 and 3), then `2` (left is null → the first empty slot) and stopped — `5` slotted into `2`'s empty left child, and the tree stays complete.
 
 ## How It Works
 
@@ -105,8 +184,8 @@ The queue is doing the work: it produces nodes in level-order, and the first one
 ```d2
 direction: down
 a: "queue = [1]    pop 1: left=2 full, right=3 full  ->  enqueue 2, 3"
-b: "queue = [2, 3] pop 2: left=4 full, RIGHT empty   ->  attach 5 here, stop"
-c: "result: 5 becomes 2.right; tree stays complete; level-order = [1, 2, 3, 4, 5]"
+b: "queue = [2, 3] pop 2: LEFT empty (null slot)     ->  attach 5 here, stop"
+c: "result: 5 becomes 2.left; tree stays complete; level-order = [1, 2, 3, 5, 4]"
 a -> b -> c
 ```
 
@@ -166,13 +245,47 @@ print("node 2's left child is now   :", root.left.left.val)  # 9
 
 The payoff of BFS-insertion: do it repeatedly into an empty tree and you *build* a complete tree, node by node, in level order.
 
-**Predict:** insert `1, 2, 3, 4, 5, 6, 7` one at a time into an empty tree with BFS-insertion. What is the final level-order?
+**Predict:** insert a list of values one at a time into an empty tree with BFS-insertion. What is the final level-order?
 
 ```python run viz=binary-tree viz-root=root
+import json
 from collections import deque
+
 class TreeNode:
     def __init__(self, val=0, left=None, right=None):
         self.val, self.left, self.right = val, left, right
+
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
+
+def print_tree(root):                # root → [1, 2, 3, null, 4], trailing nulls trimmed
+    out, queue = [], deque([root])
+    while queue:
+        node = queue.popleft()
+        if node is None:
+            out.append(None)
+        else:
+            out.append(node.val)
+            queue.append(node.left)
+            queue.append(node.right)
+    while out and out[-1] is None:
+        out.pop()
+    print(json.dumps(out))           # json.dumps → null, not None
 
 def insert(root, val):
     node = TreeNode(val)
@@ -186,61 +299,111 @@ def insert(root, val):
         q.append(cur.right)
     return root
 
-def level_order(root):
-    out, q = [], deque([root] if root else [])
-    while q:
-        n = q.popleft(); out.append(n.val)
-        if n.left:  q.append(n.left)
-        if n.right: q.append(n.right)
-    return out
-
+vals = json.loads(input())           # list of values to insert in order
 root = None
-for v in [1, 2, 3, 4, 5, 6, 7]:
-    root = insert(root, v)        # reassign: the first insert returns the new root
-print("level-order:", level_order(root))   # [1, 2, 3, 4, 5, 6, 7]
+for v in vals:
+    root = insert(root, v)           # reassign: the first insert returns the new root
+print_tree(root)
 ```
 
 ```java run viz=binary-tree viz-root=root
 import java.util.*;
+
 public class Main {
-    static class TreeNode {
-        int val; TreeNode left, right;
-        TreeNode(int val) { this.val = val; }
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
+  }
+
+  static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();    // build queue: only real nodes, ArrayDeque ok
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
     }
-    static TreeNode insert(TreeNode root, int val) {
-        TreeNode node = new TreeNode(val);
-        if (root == null) return node;
-        Deque<TreeNode> q = new ArrayDeque<>();
-        q.add(root);
-        while (!q.isEmpty()) {
-            TreeNode cur = q.poll();
-            if (cur.left  == null) { cur.left  = node; return root; }
-            q.add(cur.left);
-            if (cur.right == null) { cur.right = node; return root; }
-            q.add(cur.right);
-        }
-        return root;
+    return root;
+  }
+
+  static void printTree(TreeNode root) {          // root → [1, 2, 3, null, 4], trailing nulls trimmed
+    List<String> out = new ArrayList<>();
+    Deque<TreeNode> queue = new LinkedList<>();    // LinkedList: print BFS enqueues null children
+    queue.add(root);
+    while (!queue.isEmpty()) {
+      TreeNode node = queue.poll();
+      if (node == null) {
+        out.add("null");
+      } else {
+        out.add(String.valueOf(node.val));
+        queue.add(node.left);
+        queue.add(node.right);
+      }
     }
-    static List<Integer> levelOrder(TreeNode root) {
-        List<Integer> out = new ArrayList<>();
-        Deque<TreeNode> q = new ArrayDeque<>();
-        if (root != null) q.add(root);
-        while (!q.isEmpty()) {
-            TreeNode n = q.poll(); out.add(n.val);
-            if (n.left  != null) q.add(n.left);
-            if (n.right != null) q.add(n.right);
-        }
-        return out;
+    while (!out.isEmpty() && out.get(out.size() - 1).equals("null"))
+      out.remove(out.size() - 1);
+    System.out.println("[" + String.join(", ", out) + "]");
+  }
+
+  static TreeNode insert(TreeNode root, int val) {
+    TreeNode node = new TreeNode(val);
+    if (root == null) return node;
+    Deque<TreeNode> q = new ArrayDeque<>();
+    q.add(root);
+    while (!q.isEmpty()) {
+      TreeNode cur = q.poll();
+      if (cur.left  == null) { cur.left  = node; return root; }
+      q.add(cur.left);
+      if (cur.right == null) { cur.right = node; return root; }
+      q.add(cur.right);
     }
-    public static void main(String[] a) {
-        TreeNode root = null;
-        for (int v : new int[]{1, 2, 3, 4, 5, 6, 7}) root = insert(root, v);
-        System.out.println("level-order: " + levelOrder(root));
-    }
+    return root;
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — plain int array (no nulls needed here)
+  static int[] parseIntArrayPlain(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i].trim());
+    return out;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] vals = parseIntArrayPlain(sc.nextLine());
+    TreeNode root = null;
+    for (int v : vals) root = insert(root, v);   // reassign: first insert returns the new root
+    printTree(root);
+  }
 }
 ```
 
-Both print `level-order: [1, 2, 3, 4, 5, 6, 7]` — a perfect complete tree. Each value landed in the next gap, filling the tree row by row. This is the same complete tree that packs into the array `[1,2,3,4,5,6,7]` from the [array-representation lesson](/cortex/data-structures-and-algorithms/trees/binary-tree/array-implementation-of-binary-trees) — BFS-insertion and the array layout are two views of the same growth order.
+```testcases
+{
+  "args": [
+    { "id": "vals", "label": "values to insert", "type": "int[]", "placeholder": "[1, 2, 3, 4, 5, 6, 7]" }
+  ],
+  "cases": [
+    { "args": { "vals": "[1, 2, 3, 4, 5, 6, 7]" }, "expected": "[1, 2, 3, 4, 5, 6, 7]" },
+    { "args": { "vals": "[5, 3, 8, 1, 4]" }, "expected": "[5, 3, 8, 1, 4]" },
+    { "args": { "vals": "[10]" }, "expected": "[10]" },
+    { "args": { "vals": "[1, 2, 3]" }, "expected": "[1, 2, 3]" }
+  ]
+}
+```
+
+Each value landed in the next gap, filling the tree row by row. Inserting `[1,2,3,4,5,6,7]` builds a perfect complete tree — the same shape that packs into the array `[1,2,3,4,5,6,7]` from the [array-representation lesson](/cortex/data-structures-and-algorithms/trees/binary-tree/array-implementation-of-binary-trees). BFS-insertion and the array layout are two views of the same growth order.
 
 ## Reflect & Connect
 
@@ -288,4 +451,4 @@ Both print `level-order: [1, 2, 3, 4, 5, 6, 7]` — a perfect complete tree. Eac
 
 - **CLRS**, *Introduction to Algorithms*, §10.4 (pointer-based trees) for the `O(1)` relink primitive; the BFS-to-first-gap insertion is the standard "insert into a complete binary tree" used to build **binary heaps** (CLRS ch. 6).
 - The [array-representation lesson](/cortex/data-structures-and-algorithms/trees/binary-tree/array-implementation-of-binary-trees) for why complete trees matter, and the [iterative-traversals lesson](/cortex/data-structures-and-algorithms/trees/binary-tree/iterative-traversals-in-binary-trees) for the BFS/queue this reuses.
-- `before [1,2,3,4]` → `after [1,2,3,4,5]`, the Trace-It result (`9` attaches under node `2`), and the repeated-insertion `level-order [1,2,3,4,5,6,7]` all come from the runnable blocks above (deterministic) — re-run to verify.
+- The inserted result and the repeated-insertion output all come from the runnable blocks above (deterministic) — re-run to verify.

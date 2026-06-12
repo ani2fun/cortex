@@ -637,6 +637,211 @@ const remarkGroupTrace: Plugin<[], Root> = () => (tree) => {
   walk(tree as { children?: unknown[] });
 };
 
+// ---- Test-case absorption -------------------------------------------------
+//
+// A ```testcases fence (JSON) immediately after a runnable fence — or after a
+// group already merged by remarkGroupRunnable — upgrades that block to the
+// stacked "workbench" editor (Code over a schema-driven Test-cases console).
+// The spec is stashed on the runnable node's data and the fence is spliced
+// out; the code handler then emits a `workbench-inline` placeholder instead
+// of `runnable-code` / `runnable-group`.
+//
+// Failure stays local (ADR-0001): a malformed spec leaves the runnable block
+// rendering exactly as today and turns the fence into a visible error card.
+
+interface TestSpecArg {
+  id: string;
+  label: string;
+  type: string;
+  placeholder?: string;
+}
+
+interface TestSpecCase {
+  args: Record<string, string>;
+  expected?: string;
+}
+
+interface TestSpecNode {
+  args: TestSpecArg[];
+  cases: TestSpecCase[];
+}
+
+const isTestcasesFence = (node: unknown): node is Code =>
+  !!node &&
+  typeof node === "object" &&
+  (node as Code).type === "code" &&
+  (node as Code).lang === "testcases";
+
+/** Parse + validate a testcases fence body. Returns the spec or a reason string. */
+const parseTestSpec = (raw: string): TestSpecNode | string => {
+  let json: unknown;
+  try {
+    json = JSON.parse(raw);
+  } catch (err) {
+    return `not valid JSON: ${err instanceof Error ? err.message : String(err)}`;
+  }
+  const obj = json as { args?: unknown; cases?: unknown };
+  if (!Array.isArray(obj.args) || obj.args.length === 0)
+    return "`args` must be a non-empty array";
+  const args: TestSpecArg[] = [];
+  for (const a of obj.args as Array<Record<string, unknown>>) {
+    if (!a || typeof a.id !== "string" || a.id === "")
+      return "every arg needs a string `id`";
+    args.push({
+      id: a.id,
+      label: typeof a.label === "string" && a.label !== "" ? a.label : a.id,
+      type: typeof a.type === "string" ? a.type : "",
+      placeholder:
+        typeof a.placeholder === "string" ? a.placeholder : undefined,
+    });
+  }
+  const ids = new Set(args.map((a) => a.id));
+  if (ids.size !== args.length) return "duplicate arg ids";
+  if (!Array.isArray(obj.cases) || obj.cases.length === 0)
+    return "`cases` must be a non-empty array";
+  const cases: TestSpecCase[] = [];
+  for (const c of obj.cases as Array<Record<string, unknown>>) {
+    const argsIn = (c?.args ?? {}) as Record<string, unknown>;
+    if (typeof argsIn !== "object" || Array.isArray(argsIn))
+      return "every case needs an `args` object";
+    const vals: Record<string, string> = {};
+    for (const [k, v] of Object.entries(argsIn)) {
+      if (!ids.has(k)) return `case arg \`${k}\` is not a declared arg id`;
+      vals[k] =
+        typeof v === "string"
+          ? v
+          : typeof v === "number" || typeof v === "boolean"
+            ? String(v)
+            : "";
+    }
+    cases.push({
+      args: vals,
+      expected: typeof c?.expected === "string" ? c.expected : undefined,
+    });
+  }
+  return { args, cases };
+};
+
+const remarkAbsorbTestcases: Plugin<[], Root> = () => (tree) => {
+  const walk = (parent: { children?: unknown[] } | null) => {
+    if (!parent || !Array.isArray(parent.children)) return;
+    const kids = parent.children;
+    let i = 0;
+    while (i < kids.length) {
+      const node = kids[i] as Code & { data?: Record<string, unknown> };
+      const next = kids[i + 1];
+      if (isTestcasesFence(next)) {
+        const tabs = node?.data?.runnableTabs as
+          | RunnableTabNode[]
+          | undefined;
+        const anchorRunnable =
+          (tabs?.some((t) => t.runnable) ?? false) ||
+          (isRunnableCode(node) &&
+            (resolveLanguage(node.lang ?? null)?.runnable ?? false));
+        if (anchorRunnable) {
+          const spec = parseTestSpec((next as Code).value);
+          if (typeof spec === "string") {
+            const errNode = next as Code & { data?: Record<string, unknown> };
+            errNode.data = { ...(errNode.data ?? {}), testcasesError: spec };
+            i += 2;
+            continue;
+          }
+          node.data = { ...(node.data ?? {}), testcasesSpec: spec };
+          kids.splice(i + 1, 1);
+          i++;
+          continue;
+        }
+      }
+      i++;
+    }
+    for (const child of kids) {
+      if (
+        child &&
+        typeof child === "object" &&
+        "children" in (child as object)
+      ) {
+        walk(child as { children?: unknown[] });
+      }
+    }
+  };
+  walk(tree as { children?: unknown[] });
+};
+
+// ---- Solution-viewer merge ------------------------------------------------
+//
+// ```python solution time=O(n) space=O(1)``` fences (and adjacent siblings in
+// other languages) become a read-only solution viewer — language tabs + lock
+// badge + complexity chips — used inside problem editorials. Even a lone
+// fence is routed to the viewer; `solution` in the info string IS the opt-in.
+
+interface SolutionTabNode {
+  language: string;
+  languageLabel: string;
+  source: string;
+}
+
+const isSolutionFence = (node: unknown): node is Code => {
+  if (!node || typeof node !== "object") return false;
+  const c = node as Code;
+  if (c.type !== "code" || !resolveLanguage(c.lang ?? null)) return false;
+  return /\bsolution\b/.test(typeof c.meta === "string" ? c.meta : "");
+};
+
+const remarkGroupSolution: Plugin<[], Root> = () => (tree) => {
+  const walk = (parent: { children?: unknown[] } | null) => {
+    if (!parent || !Array.isArray(parent.children)) return;
+    const out: unknown[] = [];
+    let i = 0;
+    while (i < parent.children.length) {
+      const node = parent.children[i] as Code & {
+        data?: Record<string, unknown>;
+      };
+      if (isSolutionFence(node)) {
+        const tabs: SolutionTabNode[] = [];
+        let time: string | null = null;
+        let space: string | null = null;
+        let j = i;
+        while (j < parent.children.length) {
+          const sibling = parent.children[j] as Code;
+          if (!isSolutionFence(sibling)) break;
+          const lang = resolveLanguage(sibling.lang ?? null)!;
+          const sMeta = typeof sibling.meta === "string" ? sibling.meta : "";
+          tabs.push({
+            language: sibling.lang ?? "",
+            languageLabel: lang.label,
+            source: sibling.value,
+          });
+          time = time ?? parseMetaKv(sMeta, "time");
+          space = space ?? parseMetaKv(sMeta, "space");
+          j++;
+        }
+        node.data = {
+          ...(node.data ?? {}),
+          solutionTabs: tabs,
+          solutionTime: time ?? undefined,
+          solutionSpace: space ?? undefined,
+        };
+        out.push(node);
+        i = j;
+        continue;
+      }
+      out.push(parent.children[i]);
+      i++;
+    }
+    parent.children = out;
+    for (const child of parent.children) {
+      if (
+        child &&
+        typeof child === "object" &&
+        "children" in (child as object)
+      ) {
+        walk(child as { children?: unknown[] });
+      }
+    }
+  };
+  walk(tree as { children?: unknown[] });
+};
+
 // ---- Unwrap images ------------------------------------------------------
 //
 // `![alt](url)` is parsed as a paragraph wrapping an image node. Unwrap it
@@ -717,14 +922,147 @@ const remarkRewriteLikeC4Iframes: Plugin<[], Root> = () => (tree) => {
 // The placeholders are React-portal-mounted by Scala.js after innerHTML
 // injection.
 
+/** Visible authoring-error card (mirrors `.d2-error`) for workbench fences. */
+const workbenchErrorElement = (message: string): Element => ({
+  type: "element",
+  tagName: "div",
+  properties: { className: ["workbench-error", "not-prose"] },
+  children: [
+    {
+      type: "element",
+      tagName: "p",
+      properties: { className: ["workbench-error__title"] },
+      children: [{ type: "text", value: "Workbench authoring error" }],
+    },
+    {
+      type: "element",
+      tagName: "pre",
+      properties: {},
+      children: [{ type: "text", value: message }],
+    },
+  ],
+});
+
+/** Build the RunnableTabNode for a lone runnable fence (viz attrs included). */
+const tabFromCode = (node: Code): RunnableTabNode => {
+  const lang = resolveLanguage(node.lang ?? null)!;
+  const sLang = node.lang ?? "";
+  const meta = typeof node.meta === "string" ? node.meta : "";
+  const canViz = /^(python|java)/i.test(sLang);
+  return {
+    language: sLang,
+    languageLabel: lang.label,
+    source: node.value,
+    runnable: lang.runnable,
+    viz: canViz ? (parseMetaKv(meta, "viz") ?? undefined) : undefined,
+    vizRoot: canViz ? (parseMetaKv(meta, "viz-root") ?? undefined) : undefined,
+    vizCase: canViz ? (parseMetaKv(meta, "viz-case") ?? undefined) : undefined,
+    vizKind: canViz ? (parseMetaKv(meta, "viz-kind") ?? undefined) : undefined,
+  };
+};
+
 const codeHandler = (state: State, node: Code): Element | undefined => {
   const data = node.data as
     | {
         d2Svg?: string;
         d2Error?: string;
         runnableTabs?: RunnableTabNode[];
+        testcasesSpec?: TestSpecNode;
+        testcasesError?: string;
+        solutionTabs?: SolutionTabNode[];
+        solutionTime?: string;
+        solutionSpace?: string;
       }
     | undefined;
+
+  // ```testcases that survived remarkAbsorbTestcases is an authoring error —
+  // either its JSON failed validation (reason on data) or it doesn't follow a
+  // runnable fence at all.
+  if (node.lang === "testcases") {
+    return workbenchErrorElement(
+      data?.testcasesError
+        ? `\`\`\`testcases fence ignored — ${data.testcasesError}.`
+        : "A ```testcases fence must immediately follow a runnable ```<lang> run block.",
+    );
+  }
+
+  // ```quiz — answer-pick quiz card (JSON body) in a problem Description.
+  if (node.lang === "quiz") {
+    let parsed: {
+      prompt?: unknown;
+      input?: unknown;
+      options?: unknown;
+      answer?: unknown;
+    };
+    try {
+      parsed = JSON.parse(node.value);
+    } catch (err) {
+      return workbenchErrorElement(
+        `\`\`\`quiz fence is not valid JSON: ${err instanceof Error ? err.message : String(err)}.`,
+      );
+    }
+    const options = Array.isArray(parsed.options)
+      ? parsed.options.map((o) => String(o))
+      : [];
+    const answer = typeof parsed.answer === "string" ? parsed.answer : "";
+    if (
+      typeof parsed.input !== "string" ||
+      options.length < 2 ||
+      answer === "" ||
+      !options.includes(answer)
+    ) {
+      return workbenchErrorElement(
+        "```quiz needs {input: string, options: [2+ strings], answer: one of options}.",
+      );
+    }
+    return {
+      type: "element",
+      tagName: "div",
+      properties: {
+        className: ["quiz-block", "not-prose"],
+        "data-quiz": encodeURIComponent(
+          JSON.stringify({
+            prompt: typeof parsed.prompt === "string" ? parsed.prompt : undefined,
+            input: parsed.input,
+            options,
+            answer,
+          }),
+        ),
+      },
+      children: [],
+    };
+  }
+
+  // Read-only solution viewer (merged by remarkGroupSolution).
+  if (data?.solutionTabs) {
+    const properties: Record<string, string | string[]> = {
+      className: ["workbench-solution"],
+      "data-tabs": encodeURIComponent(JSON.stringify(data.solutionTabs)),
+    };
+    if (data.solutionTime) properties["data-time"] = data.solutionTime;
+    if (data.solutionSpace) properties["data-space"] = data.solutionSpace;
+    return {
+      type: "element",
+      tagName: "div",
+      properties,
+      children: [],
+    };
+  }
+
+  // Runnable fence(s) + absorbed ```testcases → stacked workbench editor.
+  if (data?.testcasesSpec) {
+    const tabs = data.runnableTabs ?? [tabFromCode(node)];
+    return {
+      type: "element",
+      tagName: "div",
+      properties: {
+        className: ["workbench-inline"],
+        "data-tabs": encodeURIComponent(JSON.stringify(tabs)),
+        "data-spec": encodeURIComponent(JSON.stringify(data.testcasesSpec)),
+      },
+      children: [],
+    };
+  }
 
   if (node.lang === "d2" && data?.d2Svg) {
     const fragment = fromHtml(data.d2Svg, { fragment: true });
@@ -875,6 +1213,288 @@ const codeHandler = (state: State, node: Code): Element | undefined => {
   return defaultHandlers.code(state, node) as Element;
 };
 
+// ---- Workbench packaging --------------------------------------------------
+//
+// Two late hast plugins (registered AFTER rehype-pretty-code so every moved
+// sub-tree keeps its shiki highlighting) lift authored sections into single
+// placeholder divs whose children are inert `<template data-wb="…">` elements:
+//
+//   rehypePackageYourTurn — the `## Your Turn` section (statement + starter
+//     workbench + an Editorial <details>) becomes one `.your-turn` launch-card
+//     placeholder; the Scala component opens the packaged workbench in a modal.
+//   rehypePackageProblem — in problem mode the WHOLE document becomes one
+//     `.problem-workbench` placeholder (description template + one ed-section
+//     template per top-level <details>).
+//
+// Templates matter: browsers parse template children into a detached
+// DocumentFragment, so BlockDiscovery's querySelectorAll over the article
+// cannot see nested placeholders (no double-mounting) and nothing renders
+// before the workbench mounts the panel content itself.
+
+interface LooseNode {
+  type: string;
+  value?: string;
+  tagName?: string;
+  properties?: Record<string, unknown>;
+  children?: LooseNode[];
+}
+
+const hasClass = (n: LooseNode, cls: string): boolean => {
+  const c = n.properties?.className;
+  if (Array.isArray(c)) return c.includes(cls);
+  if (typeof c === "string") return c.split(" ").includes(cls);
+  return false;
+};
+
+const stripHtmlTags = (s: string): string =>
+  s
+    .replace(/<[^>]*>/g, "")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .trim();
+
+interface DetailsGroup {
+  /** Index (in the scanned node list) where the depth-0 `<details>` opens. */
+  start: number;
+  /** Index where depth returns to 0 — may equal the next group's `start`
+   *  when one raw node holds `</details>\n<details>` back to back. */
+  end: number;
+  /** Plain-text `<summary>` title ("" when none was found). */
+  title: string;
+  /** Body nodes — between the summary close and the final `</details>`. */
+  body: LooseNode[];
+}
+
+// `<details>` arrives as opaque hast `raw` nodes (the pipeline has no
+// rehype-raw), with parsed markdown elements interleaved between the opening
+// and closing tags. This scanner walks raw-node token streams with a depth
+// counter, so a single raw node carrying close + open of two adjacent groups
+// is split correctly.
+const detailsTokenRe = /<details\b[^>]*>|<\/details\s*>/gi;
+
+const scanDetailsGroups = (nodes: LooseNode[]): DetailsGroup[] => {
+  const groups: DetailsGroup[] = [];
+  let depth = 0;
+  let current: {
+    start: number;
+    title: string;
+    body: LooseNode[];
+    pending: string;
+    awaitingSummary: boolean;
+  } | null = null;
+
+  const flushPending = () => {
+    if (current && current.pending.trim() !== "")
+      current.body.push({ type: "raw", value: current.pending });
+    if (current) current.pending = "";
+  };
+
+  for (let i = 0; i < nodes.length; i++) {
+    const n = nodes[i];
+    if (
+      n.type === "raw" &&
+      typeof n.value === "string" &&
+      /<\/?details/i.test(n.value)
+    ) {
+      const feedText = (text: string) => {
+        if (!current) return; // depth-0 filler between groups (whitespace)
+        if (current.awaitingSummary) {
+          const sm = /<summary\b[^>]*>([\s\S]*?)<\/summary\s*>/i.exec(text);
+          if (sm) {
+            current.title = stripHtmlTags(sm[1]);
+            current.awaitingSummary = false;
+            current.pending += text.slice(sm.index + sm[0].length);
+            return;
+          }
+        }
+        current.pending += text;
+      };
+      detailsTokenRe.lastIndex = 0;
+      let last = 0;
+      let m: RegExpExecArray | null;
+      while ((m = detailsTokenRe.exec(n.value))) {
+        if (m.index > last) feedText(n.value.slice(last, m.index));
+        const isClose = m[0][1] === "/";
+        if (isClose) {
+          if (depth > 0) depth--;
+          if (depth === 0 && current) {
+            flushPending();
+            groups.push({
+              start: current.start,
+              end: i,
+              title: current.title,
+              body: current.body,
+            });
+            current = null;
+          } else if (current) {
+            current.pending += m[0];
+          }
+        } else {
+          if (depth === 0) {
+            current = {
+              start: i,
+              title: "",
+              body: [],
+              pending: "",
+              awaitingSummary: true,
+            };
+          } else if (current) {
+            current.pending += m[0];
+          }
+          depth++;
+        }
+        last = detailsTokenRe.lastIndex;
+      }
+      if (last < n.value.length) feedText(n.value.slice(last));
+      flushPending(); // keep fragment order relative to following elements
+    } else if (current) {
+      flushPending();
+      current.body.push(n);
+    }
+  }
+  return groups;
+};
+
+// hast models `<template>` content as a detached `content` Root — children of
+// the element itself are ignored by hast-util-to-html. Mirrors the browser's
+// template.content DocumentFragment.
+const wbTemplate = (
+  kind: string,
+  children: LooseNode[],
+  extra?: Record<string, string>,
+): LooseNode & { content: { type: "root"; children: LooseNode[] } } => ({
+  type: "element",
+  tagName: "template",
+  properties: { "data-wb": kind, ...(extra ?? {}) },
+  children: [],
+  content: { type: "root", children },
+});
+
+interface RenderCtx {
+  /** Text of the document's leading h1, captured by the h1-strip plugin. */
+  docTitle: string;
+  /** Set by rehypePackageProblem when the whole doc was packaged. */
+  problemPackaged: boolean;
+}
+
+const rehypePackageYourTurn =
+  (ctx: RenderCtx): Plugin<[], HastRoot> =>
+  () =>
+  (tree) => {
+    const kids = tree.children as unknown as LooseNode[];
+    const h2Idx = kids.findIndex(
+      (c) =>
+        c.type === "element" &&
+        c.tagName === "h2" &&
+        collectText(c as unknown as Element)
+          .trim()
+          .toLowerCase() === "your turn",
+    );
+    if (h2Idx === -1) return;
+    let end = h2Idx + 1;
+    while (
+      end < kids.length &&
+      !(kids[end].type === "element" && kids[end].tagName === "h2")
+    ) {
+      end++;
+    }
+    const slice = kids.slice(h2Idx + 1, end);
+    const wbIdx = slice.findIndex(
+      (c) => c.type === "element" && hasClass(c, "workbench-inline"),
+    );
+    // No starter-with-testcases block → an ordinary prose section. Leave it
+    // exactly as authored (back-compat for every non-pilot chapter).
+    if (wbIdx === -1) return;
+    const wb = slice[wbIdx];
+
+    const groups = scanDetailsGroups(slice);
+    const editorial = groups.find((g) =>
+      g.title.toLowerCase().includes("editorial"),
+    );
+    const statement = slice.filter((n, i) => {
+      if (i === wbIdx) return false;
+      if (editorial && i >= editorial.start && i <= editorial.end) return false;
+      return true;
+    });
+    const blurbNode = statement.find(
+      (n) => n.type === "element" && n.tagName === "p",
+    );
+    const heading = kids[h2Idx];
+    const headingId =
+      typeof heading.properties?.id === "string"
+        ? (heading.properties.id as string)
+        : undefined;
+
+    const card: LooseNode = {
+      type: "element",
+      tagName: "div",
+      properties: {
+        className: ["your-turn", "not-prose"],
+        ...(headingId ? { id: headingId } : {}),
+        "data-title": ctx.docTitle || "Your Turn",
+        "data-blurb": blurbNode
+          ? collectText(blurbNode as unknown as Element).trim()
+          : "",
+        "data-tabs": String(wb.properties?.["data-tabs"] ?? ""),
+        "data-spec": String(wb.properties?.["data-spec"] ?? ""),
+      },
+      children: [
+        wbTemplate("statement", statement),
+        wbTemplate("editorial", editorial ? editorial.body : []),
+      ],
+    };
+    kids.splice(h2Idx, end - h2Idx, card as never);
+  };
+
+const rehypePackageProblem =
+  (ctx: RenderCtx, enabled: boolean): Plugin<[], HastRoot> =>
+  () =>
+  (tree) => {
+    if (!enabled) return;
+    const kids = tree.children as unknown as LooseNode[];
+    const wbIdx = kids.findIndex(
+      (c) => c.type === "element" && hasClass(c, "workbench-inline"),
+    );
+    if (wbIdx === -1) {
+      // ADR-0001 leniency: structure didn't parse — render as a normal
+      // prose chapter rather than a broken workbench.
+      console.warn(
+        "[markdown] problem mode: no runnable block with a ```testcases fence — falling back to the prose layout",
+      );
+      return;
+    }
+    const wb = kids[wbIdx];
+    const groups = scanDetailsGroups(kids);
+    const firstGroupStart =
+      groups.length > 0 ? groups[0].start : kids.length;
+    const description = kids.filter(
+      (_, i) => i < firstGroupStart && i !== wbIdx,
+    );
+
+    const packaged: LooseNode = {
+      type: "element",
+      tagName: "div",
+      properties: {
+        className: ["problem-workbench", "not-prose"],
+        "data-tabs": String(wb.properties?.["data-tabs"] ?? ""),
+        "data-spec": String(wb.properties?.["data-spec"] ?? ""),
+      },
+      children: [
+        wbTemplate("description", description),
+        ...groups.map((g) =>
+          wbTemplate("ed-section", g.body, {
+            "data-wb-title": g.title || "Notes",
+          }),
+        ),
+      ],
+    };
+    tree.children = [packaged as never];
+    ctx.problemPackaged = true;
+  };
+
 // ---- TOC extraction -----------------------------------------------------
 //
 // Runs after rehype-slug so each <h*> has an id. Collects {depth, slug,
@@ -939,9 +1559,20 @@ const cssVarsTheme = createCssVariablesTheme({
   fontStyle: true,
 });
 
+export interface RenderOptions {
+  /** `problem` packages the whole document into a `.problem-workbench`
+   *  placeholder (two-pane workbench layout); default is the prose chapter. */
+  mode?: "chapter" | "problem";
+}
+
 /** Render a chapter's raw markdown source. */
-export async function renderChapter(source: string): Promise<RenderResult> {
+export async function renderChapter(
+  source: string,
+  opts?: RenderOptions,
+): Promise<RenderResult> {
   const toc: TocEntry[] = [];
+  const mode = opts?.mode ?? "chapter";
+  const renderCtx: RenderCtx = { docTitle: "", problemPackaged: false };
 
   const processor = unified()
     .use(remarkParse)
@@ -951,6 +1582,8 @@ export async function renderChapter(source: string): Promise<RenderResult> {
     .use(remarkRenderD2)
     .use(remarkGroupD2Slides)
     .use(remarkGroupRunnable)
+    .use(remarkAbsorbTestcases)
+    .use(remarkGroupSolution)
     .use(remarkGroupTrace)
     .use(remarkUnwrapImages)
     .use(remarkRewriteLikeC4Iframes)
@@ -962,12 +1595,17 @@ export async function renderChapter(source: string): Promise<RenderResult> {
     })
     .use(rehypeSlug)
     // Strip the leading h1 — ChapterPage already renders the title as a
-    // page-level <h1>. Chapters that have no h1 are unaffected.
+    // page-level <h1>. Chapters that have no h1 are unaffected. The text is
+    // kept on renderCtx: the Your-Turn launch card reuses it as the modal
+    // workbench's title.
     .use((() => (tree: HastRoot) => {
       const idx = tree.children.findIndex(
         (c) => c.type === "element" && (c as Element).tagName === "h1",
       );
-      if (idx !== -1) tree.children.splice(idx, 1);
+      if (idx !== -1) {
+        renderCtx.docTitle = collectText(tree.children[idx] as Element).trim();
+        tree.children.splice(idx, 1);
+      }
     }) as Plugin<[], HastRoot>)
     .use(rehypeAutolinkHeadings, {
       behavior: "append",
@@ -1028,6 +1666,10 @@ export async function renderChapter(source: string): Promise<RenderResult> {
       defaultLang: "plaintext",
       bypassInlineCode: true,
     })
+    // Workbench packagers run AFTER rehype-pretty-code so the sub-trees they
+    // move into <template> children are already shiki-highlighted.
+    .use(rehypePackageYourTurn(renderCtx))
+    .use(rehypePackageProblem(renderCtx, mode === "problem"))
     .use(rehypeStringify, { allowDangerousHtml: true });
 
   const file = await processor.process(source);
@@ -1048,5 +1690,7 @@ export async function renderChapter(source: string): Promise<RenderResult> {
       ) +
       close,
   );
-  return { html, toc };
+  // A packaged problem page has no prose headings — the workbench renders its
+  // own chrome — so the TOC collected mid-pipeline is meaningless there.
+  return { html, toc: renderCtx.problemPackaged ? [] : toc };
 }

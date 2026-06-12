@@ -15,9 +15,13 @@ Here's the thing the `[r][c]` syntax hides: a 2D array is **not** stored as a gr
 
 ## See It Work
 
-A 2D matrix, built by hand on top of a flat buffer — so you can see the `[r][c]` sugar dissolve into `r * cols + c`:
+A 2D matrix, built by hand on top of a flat buffer — so you can see the `[r][c]` sugar dissolve into `r * cols + c`. Pick a case (a grid shape `rows × cols`, plus a cell `(r, c)` to look up) and **Run** it; the program fills each cell with the recognizable value `r·10 + c`, then prints that cell's flat index and the whole buffer.
+
+> ▶ Run it against a case, then click **Visualise** — watch the logical grid collapse into one contiguous strip, row after row.
 
 ```python run viz=array
+import ast
+
 class Matrix:
     def __init__(self, rows, cols):
         self.rows, self.cols = rows, cols
@@ -27,12 +31,16 @@ class Matrix:
     def set(self, r, c, v): self.buf[self._idx(r, c)] = v
     def get(self, r, c):    return self.buf[self._idx(r, c)]
 
-m = Matrix(2, 3)                                  # 2 rows, 3 cols
-for r in range(2):
-    for c in range(3):
-        m.set(r, c, r * 10 + c)                   # a recognizable value per cell
-print("element (1,2):", m.get(1, 2), "at flat index", m._idx(1, 2))
-print("flat buffer:", m.buf)                      # row-major: row 0 then row 1
+rows = int(input())                               # the test case's grid shape
+cols = int(input())
+r = int(input())                                  # the cell to look up
+c = int(input())
+m = Matrix(rows, cols)
+for i in range(rows):
+    for j in range(cols):
+        m.set(i, j, i * 10 + j)                   # a recognizable value per cell
+print(f"element ({r},{c}):", m.get(r, c), "at flat index", m._idx(r, c))
+print("flat buffer:", m.buf)                      # row-major: row 0, then row 1, …
 ```
 
 ```java run viz=array
@@ -46,15 +54,37 @@ public class Main {
         int get(int r, int c) { return buf[idx(r, c)]; }
     }
     public static void main(String[] x) {
-        Matrix m = new Matrix(2, 3);
-        for (int r = 0; r < 2; r++) for (int c = 0; c < 3; c++) m.set(r, c, r * 10 + c);
-        System.out.println("element (1,2): " + m.get(1, 2) + " at flat index " + m.idx(1, 2));
+        Scanner sc = new Scanner(System.in);
+        int rows = Integer.parseInt(sc.nextLine().trim());  // the test case's grid shape
+        int cols = Integer.parseInt(sc.nextLine().trim());
+        int r = Integer.parseInt(sc.nextLine().trim());     // the cell to look up
+        int c = Integer.parseInt(sc.nextLine().trim());
+        Matrix m = new Matrix(rows, cols);
+        for (int i = 0; i < rows; i++) for (int j = 0; j < cols; j++) m.set(i, j, i * 10 + j);
+        System.out.println("element (" + r + "," + c + "): " + m.get(r, c) + " at flat index " + m.idx(r, c));
         System.out.println("flat buffer: " + Arrays.toString(m.buf));
     }
 }
 ```
 
-Both print `element (1,2): 12 at flat index 5` and `flat buffer: [0, 1, 2, 10, 11, 12]`. The logical cell `(1, 2)` lives at flat slot `1 * 3 + 2 = 5`, and the buffer is just the two rows laid end to end: `[0, 1, 2]` then `[10, 11, 12]`. There's no grid in memory — only this strip, and an index function that maps `(r, c)` onto it. `get`/`set` are `O(1)`: one multiply, one add, one access.
+```testcases
+{
+  "args": [
+    { "id": "rows", "label": "rows", "type": "int", "placeholder": "2" },
+    { "id": "cols", "label": "cols", "type": "int", "placeholder": "3" },
+    { "id": "r", "label": "r", "type": "int", "placeholder": "1" },
+    { "id": "c", "label": "c", "type": "int", "placeholder": "2" }
+  ],
+  "cases": [
+    { "args": { "rows": "2", "cols": "3", "r": "1", "c": "2" }, "expected": "element (1,2): 12 at flat index 5\nflat buffer: [0, 1, 2, 10, 11, 12]" },
+    { "args": { "rows": "3", "cols": "2", "r": "2", "c": "1" }, "expected": "element (2,1): 21 at flat index 5\nflat buffer: [0, 1, 10, 11, 20, 21]" },
+    { "args": { "rows": "2", "cols": "2", "r": "0", "c": "1" }, "expected": "element (0,1): 1 at flat index 1\nflat buffer: [0, 1, 10, 11]" },
+    { "args": { "rows": "1", "cols": "1", "r": "0", "c": "0" }, "expected": "element (0,0): 0 at flat index 0\nflat buffer: [0]" }
+  ]
+}
+```
+
+Run the first case (a 2×3 grid) and both print `element (1,2): 12 at flat index 5` and `flat buffer: [0, 1, 2, 10, 11, 12]`. The logical cell `(1, 2)` lives at flat slot `1 * 3 + 2 = 5`, and the buffer is just the two rows laid end to end: `[0, 1, 2]` then `[10, 11, 12]`. There's no grid in memory — only this strip, and an index function that maps `(r, c)` onto it. `get`/`set` are `O(1)`: one multiply, one add, one access.
 
 ## How It Works
 
@@ -107,42 +137,103 @@ Element `(1, 0)` lives at flat index **3** under row-major (`1·3 + 0`) but **1*
 
 **Predict:** in a 3×3 grid, using 4-directional moves (up/down/left/right), how many valid neighbours does a **corner** cell have? An **edge** cell? An **interior** cell?
 
-```python run viz=array
-def neighbours(R, C, r, c):                       # 4-directional, bounds-checked (grid edges are implicit)
-    out = []
-    for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
-        nr, nc = r + dr, c + dc
-        if 0 <= nr < R and 0 <= nc < C:
-            out.append((nr, nc))
-    return out
+Implement `count_neighbours(R, C, r, c)`: return how many of cell `(r, c)`'s four orthogonal moves — up, down, left, right — land *inside* an `R × C` grid. The edges are implicit, so a move to `(-1, 0)` or `(R, 0)` is off the board and doesn't count.
 
-R, C = 3, 3
-print("corner   (0,0):", len(neighbours(R, C, 0, 0)), "neighbours")
-print("edge     (0,1):", len(neighbours(R, C, 0, 1)), "neighbours")
-print("interior (1,1):", len(neighbours(R, C, 1, 1)), "neighbours")
+```python run viz=array
+def count_neighbours(R, C, r, c):                 # 4-directional, bounds-checked
+    # Your code goes here — try each of the four (dr, dc) moves and count the
+    # ones whose (r+dr, c+dc) lands inside the R x C grid.
+    return 0
+
+R = int(input())                                  # grid rows
+C = int(input())                                  # grid cols
+r = int(input())                                  # cell row
+c = int(input())                                  # cell col
+print(count_neighbours(R, C, r, c))
 ```
 
 ```java run viz=array
+import java.util.*;
 public class Main {
-    static int neighbours(int R, int C, int r, int c) {     // 4-directional, bounds-checked
-        int[][] dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
-        int count = 0;
-        for (int[] d : dirs) {
-            int nr = r + d[0], nc = c + d[1];
-            if (nr >= 0 && nr < R && nc >= 0 && nc < C) count++;
-        }
-        return count;
+    static int countNeighbours(int R, int C, int r, int c) {   // 4-directional, bounds-checked
+        // Your code goes here — try each of the four (dr, dc) moves and count
+        // the ones whose (r+dr, c+dc) lands inside the R x C grid.
+        return 0;
     }
     public static void main(String[] x) {
-        int R = 3, C = 3;
-        System.out.println("corner   (0,0): " + neighbours(R, C, 0, 0) + " neighbours");
-        System.out.println("edge     (0,1): " + neighbours(R, C, 0, 1) + " neighbours");
-        System.out.println("interior (1,1): " + neighbours(R, C, 1, 1) + " neighbours");
+        Scanner sc = new Scanner(System.in);
+        int R = Integer.parseInt(sc.nextLine().trim());
+        int C = Integer.parseInt(sc.nextLine().trim());
+        int r = Integer.parseInt(sc.nextLine().trim());
+        int c = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(countNeighbours(R, C, r, c));
     }
 }
 ```
 
-Both print `corner: 2`, `edge: 3`, `interior: 4`. A corner has two of its four moves fall off the grid, an edge cell loses one, an interior cell keeps all four. The bounds check `0 <= nr < R and 0 <= nc < C` is doing the load-bearing work: a 2D array has no sentinel border, so a move to `(-1, 0)` would either crash (Java: `ArrayIndexOutOfBounds`) or silently wrap to the wrong row (Python: negative indices read from the end). Generating neighbours from `(r, c)` plus a list of `(dr, dc)` deltas, then filtering by bounds, is the exact pattern behind every grid BFS/DFS, flood fill, and dynamic-programming-on-a-grid you'll write — the [grid traversal](/cortex/data-structures-and-algorithms/graphs/traversing-a-grid) lessons build directly on it.
+```testcases
+{
+  "args": [
+    { "id": "R", "label": "R", "type": "int", "placeholder": "3" },
+    { "id": "C", "label": "C", "type": "int", "placeholder": "3" },
+    { "id": "r", "label": "r", "type": "int", "placeholder": "1" },
+    { "id": "c", "label": "c", "type": "int", "placeholder": "1" }
+  ],
+  "cases": [
+    { "args": { "R": "3", "C": "3", "r": "0", "c": "0" }, "expected": "2" },
+    { "args": { "R": "3", "C": "3", "r": "0", "c": "1" }, "expected": "3" },
+    { "args": { "R": "3", "C": "3", "r": "1", "c": "1" }, "expected": "4" },
+    { "args": { "R": "1", "C": "1", "r": "0", "c": "0" }, "expected": "0" },
+    { "args": { "R": "5", "C": "5", "r": "2", "c": "2" }, "expected": "4" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+A cell has four candidate neighbours — `(r-1, c)`, `(r+1, c)`, `(r, c-1)`, `(r, c+1)`. Generate each from a list of `(dr, dc)` deltas, then keep only the ones whose row and column both fall in range: `0 <= nr < R and 0 <= nc < C`. That single bounds check is the whole exercise — a 2D array has no sentinel border, so a corner cell loses two of its four moves off the grid, an edge cell one, an interior cell none. A move to `(-1, 0)` would otherwise crash (Java: `ArrayIndexOutOfBounds`) or silently wrap to the wrong row (Python negative indices). This "deltas + bounds filter" is the exact pattern behind every grid BFS/DFS, flood fill, and dynamic-programming-on-a-grid — the [grid traversal](/cortex/data-structures-and-algorithms/graphs/traversing-a-grid) lessons build directly on it.
+
+```python solution time=O(1) space=O(1)
+def count_neighbours(R, C, r, c):
+    count = 0
+    for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+        nr, nc = r + dr, c + dc
+        if 0 <= nr < R and 0 <= nc < C:           # inside the grid?
+            count += 1
+    return count
+
+R = int(input())
+C = int(input())
+r = int(input())
+c = int(input())
+print(count_neighbours(R, C, r, c))
+```
+
+```java solution
+import java.util.*;
+public class Main {
+    static int countNeighbours(int R, int C, int r, int c) {
+        int[][] dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+        int count = 0;
+        for (int[] d : dirs) {
+            int nr = r + d[0], nc = c + d[1];
+            if (nr >= 0 && nr < R && nc >= 0 && nc < C) count++;   // inside the grid?
+        }
+        return count;
+    }
+    public static void main(String[] x) {
+        Scanner sc = new Scanner(System.in);
+        int R = Integer.parseInt(sc.nextLine().trim());
+        int C = Integer.parseInt(sc.nextLine().trim());
+        int r = Integer.parseInt(sc.nextLine().trim());
+        int c = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(countNeighbours(R, C, r, c));
+    }
+}
+```
+
+</details>
 
 ## Reflect & Connect
 

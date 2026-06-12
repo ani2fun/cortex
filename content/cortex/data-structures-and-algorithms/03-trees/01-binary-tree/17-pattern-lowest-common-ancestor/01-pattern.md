@@ -15,47 +15,143 @@ On a [BST you could exploit ordering](/cortex/data-structures-and-algorithms/tre
 
 ## See It Work
 
-`LCA(5, 1)` in the classic tree is the root `3` — `5` is in the left subtree, `1` in the right, so they split at `3`. Run it.
+`LCA(5, 1)` in the classic tree is the root `3` — `5` is in the left subtree, `1` in the right, so they split at `3`. Pick a case and **Run** it.
 
 ```python run viz=binary-tree viz-root=root
+import json
+from collections import deque
+
 class TreeNode:
     def __init__(self, val, left=None, right=None):
         self.val = val
         self.left = left
         self.right = right
 
-def lca(node, p, q):
-    if node is None or node is p or node is q:
-        return node                      # hit a target (or dead end) → bubble it up
-    left  = lca(node.left,  p, q)
-    right = lca(node.right, p, q)
+def lca(node, p_val, q_val):
+    if node is None:
+        return None
+    if node.val == p_val or node.val == q_val:
+        return node                      # hit a target → bubble it up
+    left  = lca(node.left,  p_val, q_val)
+    right = lca(node.right, p_val, q_val)
     if left and right:
         return node                      # targets came from BOTH sides → this is the LCA
     return left or right                 # both on one side (or neither) → pass it up
 
-#            3
-#          /   \
-#         5     1
-#        / \   / \
-#       6   2 0   8
-n5 = TreeNode(5, TreeNode(6), TreeNode(2))
-n1 = TreeNode(1, TreeNode(0), TreeNode(8))
-root = TreeNode(3, n5, n1)
-print(lca(root, n5, n1).val)     # 3
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
+
+root = build_tree(json.loads(input()))   # the test case's level-order values
+p_val = int(input())                     # first target node value
+q_val = int(input())                     # second target node value
+result = lca(root, p_val, q_val)
+print(result.val if result is not None else "null")
+```
+
+```java run viz=binary-tree viz-root=root
+import java.util.*;
+
+public class Main {
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
+  }
+
+  static TreeNode lca(TreeNode node, int pVal, int qVal) {
+    if (node == null) return null;
+    if (node.val == pVal || node.val == qVal) return node;   // bubble a target up
+    TreeNode left = lca(node.left, pVal, qVal), right = lca(node.right, pVal, qVal);
+    if (left != null && right != null) return node;            // split → LCA
+    return left != null ? left : right;                        // pass up the one side
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+    int pVal = Integer.parseInt(sc.nextLine().trim());
+    int qVal = Integer.parseInt(sc.nextLine().trim());
+    TreeNode result = lca(root, pVal, qVal);
+    System.out.println(result != null ? result.val : "null");
+  }
+
+  static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();    // build queue: only real nodes, ArrayDeque ok
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
+    }
+    return root;
+  }
+
+  // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[3, 5, 1, 6, 2, 0, 8, null, null, 7, 4]" },
+    { "id": "p_val", "label": "p", "type": "int", "placeholder": "5" },
+    { "id": "q_val", "label": "q", "type": "int", "placeholder": "1" }
+  ],
+  "cases": [
+    { "args": { "root": "[3, 5, 1, 6, 2, 0, 8, null, null, 7, 4]", "p_val": "5", "q_val": "1" }, "expected": "3" },
+    { "args": { "root": "[3, 5, 1, 6, 2, 0, 8, null, null, 7, 4]", "p_val": "5", "q_val": "4" }, "expected": "5" },
+    { "args": { "root": "[3, 5, 1, 6, 2, 0, 8, null, null, 7, 4]", "p_val": "6", "q_val": "4" }, "expected": "5" },
+    { "args": { "root": "[3, 5, 1, 6, 2, 0, 8, null, null, 7, 4]", "p_val": "0", "q_val": "8" }, "expected": "1" },
+    { "args": { "root": "[1, 2, 3, 4, null, null, 7]", "p_val": "4", "q_val": "7" }, "expected": "1" },
+    { "args": { "root": "[5]", "p_val": "5", "q_val": "5" }, "expected": "5" }
+  ]
+}
 ```
 
 ## How It Works
 
 A postorder recursion returning "a target found below me, or `None`":
 
-1. **Base case** — `node is None` → `None`; `node is p or node is q` → return `node`. (You found a target; stop and report it.)
+1. **Base case** — `node is None` → `None`; `node.val == p_val or node.val == q_val` → return `node`. (You found a target; stop and report it.)
 2. **Recurse** both children → `left`, `right`.
 3. **Both non-`None`** → `p` and `q` were found in *different* subtrees, so they converge here → **return `node`**: this is the LCA.
 4. **Otherwise** — return whichever side is non-`None` (the target bubbling up), or `None` if neither.
 
 ```mermaid
 flowchart TB
-  A["node == p or q? → return node"] --> B["left = lca(left), right = lca(right)"]
+  A["node.val == p or q? → return node"] --> B["left = lca(left), right = lca(right)"]
   B --> C{"left AND right non-null?"}
   C -->|yes| D["both sides → return node (LCA)"]
   C -->|no| E["return left or right (bubble up)"]
@@ -76,74 +172,249 @@ LCA on a general binary tree is one postorder pass: return a target the instant 
 | node | `left` | `right` | returns | meaning |
 |---|---|---|---|---|
 | `6, 2, 0, 8` | — | — | `None` | no target below |
-| `5` | — | — | `5` | base case: `node is p` |
-| `1` | — | — | `1` | base case: `node is q` |
+| `5` | — | — | `5` | base case: `node.val == p_val` |
+| `1` | — | — | `1` | base case: `node.val == q_val` |
 | `3` (root) | `5` | `1` | **`3`** | both sides → LCA |
 
-Before you read on: consider `LCA(5, 4)` where `4` lives *inside* `5`'s subtree (so `5` is an *ancestor* of `4`). The recursion hits node `5`, matches the base case `node is p`, and **returns `5` immediately — without ever descending to look for `4`**. Yet the correct answer *is* `5`. How can returning early, before confirming `4` is even down there, be correct?
+Before you read on: consider `LCA(5, 4)` where `4` lives *inside* `5`'s subtree (so `5` is an *ancestor* of `4`). The recursion hits node `5`, matches the base case `node.val == p_val`, and **returns `5` immediately — without ever descending to look for `4`**. Yet the correct answer *is* `5`. How can returning early, before confirming `4` is even down there, be correct?
 
 It's correct because of an **assumed precondition: both `p` and `q` exist in the tree.** Grant that, and the logic is airtight. When the recursion reaches `5` and stops, it doesn't *need* to find `4` below — it only needs to guarantee that **no other node** will mistakenly claim to be the LCA. And none can: since `4` is guaranteed to exist and `5` is its ancestor, `4` lives entirely *within* `5`'s subtree, so `4` can never surface in any *other* subtree. Therefore no node outside `5`'s subtree ever receives targets from both sides; the only non-`None` value bubbling up past `5` is `5` itself, and the root returns `5`. The early return is an *optimization* that's safe **only** under the existence guarantee — it trades "confirm both targets" for "trust they're there." Drop the guarantee (a target might be missing), and this exact code can return a node that isn't a true common ancestor; then you need the **existence-check variant** that recurses fully and verifies *both* targets were actually seen before trusting the split. Knowing which assumption you're standing on is the difference between the 5-line interview answer and a subtle bug.
 
 ## Your Turn
 
-LCA on a general tree, plus **distance between two nodes** built on top of it (depth of `p` + depth of `q` − 2·depth of their LCA):
+Write the LCA function yourself — `lca(node, p_val, q_val)` returns the LCA node (or `None` if not found). Both node values are guaranteed to exist in the tree.
 
 ```python run viz=binary-tree viz-root=root
+import json
+from collections import deque
+
 class TreeNode:
     def __init__(self, val, left=None, right=None):
-        self.val = val; self.left = left; self.right = right
+        self.val = val
+        self.left = left
+        self.right = right
 
-def lca(node, p, q):
-    if node is None or node is p or node is q:
-        return node
-    left, right = lca(node.left, p, q), lca(node.right, p, q)
-    if left and right:
-        return node
-    return left or right
+def lca(node, p_val, q_val):
+    # Your code goes here — base case: None → None; hit a target val → return node.
+    # Recurse both sides; if both return non-None, this node IS the LCA.
+    # Otherwise pass the non-None side up.
+    pass
 
-def depth(node, target, d=0):
-    if node is None: return -1
-    if node is target: return d
-    left = depth(node.left, target, d + 1)
-    return left if left != -1 else depth(node.right, target, d + 1)
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
 
-def distance(root, p, q):
-    a = lca(root, p, q)
-    return depth(a, p) + depth(a, q)        # path p→LCA + LCA→q
-
-n7, n4 = TreeNode(7), TreeNode(4)
-n5 = TreeNode(5, TreeNode(6), TreeNode(2, n7, n4))
-n1 = TreeNode(1, TreeNode(0), TreeNode(8))
-root = TreeNode(3, n5, n1)
-print(lca(root, n5, n1).val)     # 3
-print(lca(root, n5, n4).val)     # 5   (5 is an ancestor of 4)
-print(distance(root, n7, n4))    # 2   (7 → 2 → 4)
+root = build_tree(json.loads(input()))   # the test case's level-order values
+p_val = int(input())                     # first target node value
+q_val = int(input())                     # second target node value
+result = lca(root, p_val, q_val)
+print(result.val if result is not None else "null")
 ```
 
 ```java run viz=binary-tree viz-root=root
-public class Main {
-  static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } TreeNode(int v, TreeNode l, TreeNode r){ val=v; left=l; right=r; } }
+import java.util.*;
 
-  static TreeNode lca(TreeNode node, TreeNode p, TreeNode q) {
-    if (node == null || node == p || node == q) return node;   // bubble a target up
-    TreeNode left = lca(node.left, p, q), right = lca(node.right, p, q);
-    if (left != null && right != null) return node;            // split → LCA
-    return left != null ? left : right;                        // pass up the one side
+public class Main {
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
   }
+
+  static TreeNode lca(TreeNode node, int pVal, int qVal) {
+    // Your code goes here — base case: null → null; hit a target val → return node.
+    // Recurse both sides; if both return non-null, this node IS the LCA.
+    // Otherwise pass the non-null side up.
+    return null;
+  }
+
   public static void main(String[] args) {
-    TreeNode n7 = new TreeNode(7), n4 = new TreeNode(4);
-    TreeNode n5 = new TreeNode(5, new TreeNode(6), new TreeNode(2, n7, n4));
-    TreeNode n1 = new TreeNode(1, new TreeNode(0), new TreeNode(8));
-    TreeNode root = new TreeNode(3, n5, n1);
-    System.out.println(lca(root, n5, n1).val);   // 3
-    System.out.println(lca(root, n5, n4).val);   // 5
+    Scanner sc = new Scanner(System.in);
+    TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+    int pVal = Integer.parseInt(sc.nextLine().trim());
+    int qVal = Integer.parseInt(sc.nextLine().trim());
+    TreeNode result = lca(root, pVal, qVal);
+    System.out.println(result != null ? result.val : "null");
+  }
+
+  static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
+    }
+    return root;
+  }
+
+  // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
   }
 }
 ```
 
-Drill the family in **Practice** — [Lowest Common Ancestor](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-lowest-common-ancestor/problems/lowest-common-ancestor), [LCA with Existence Check](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-lowest-common-ancestor/problems/lca-with-existence-check), [LCA of N Random Nodes](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-lowest-common-ancestor/problems/lca-of-n-random-nodes), [LCA of the Deepest Leaves](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-lowest-common-ancestor/problems/lca-of-the-deepest-leaves), and [Distance Between Two Nodes](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-lowest-common-ancestor/problems/distance-between-two-nodes).
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[3, 5, 1, 6, 2, 0, 8, null, null, 7, 4]" },
+    { "id": "p_val", "label": "p", "type": "int", "placeholder": "5" },
+    { "id": "q_val", "label": "q", "type": "int", "placeholder": "1" }
+  ],
+  "cases": [
+    { "args": { "root": "[3, 5, 1, 6, 2, 0, 8, null, null, 7, 4]", "p_val": "5", "q_val": "1" }, "expected": "3" },
+    { "args": { "root": "[3, 5, 1, 6, 2, 0, 8, null, null, 7, 4]", "p_val": "5", "q_val": "4" }, "expected": "5" },
+    { "args": { "root": "[3, 5, 1, 6, 2, 0, 8, null, null, 7, 4]", "p_val": "6", "q_val": "4" }, "expected": "5" },
+    { "args": { "root": "[1, 2, 3, 4, null, null, 7]", "p_val": "4", "q_val": "7" }, "expected": "1" },
+    { "args": { "root": "[5]", "p_val": "5", "q_val": "5" }, "expected": "5" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+The template is exactly the See-It-Work walk: match by value, recurse both sides, combine at the split. The base case `None → None` handles a dead end. At a node whose value equals one of the targets, return it immediately — the early return is safe because both targets are guaranteed to exist. At an internal node, if both children report a target, this node is at the split — it's the LCA. Otherwise propagate the non-`None` side up.
+
+```python solution time=O(n) space=O(h)
+import json
+from collections import deque
+
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+def lca(node, p_val, q_val):
+    if node is None:
+        return None
+    if node.val == p_val or node.val == q_val:
+        return node                      # hit a target → bubble it up
+    left  = lca(node.left,  p_val, q_val)
+    right = lca(node.right, p_val, q_val)
+    if left and right:
+        return node                      # targets came from BOTH sides → this is the LCA
+    return left or right                 # both on one side (or neither) → pass it up
+
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
+
+root = build_tree(json.loads(input()))   # the test case's level-order values
+p_val = int(input())                     # first target node value
+q_val = int(input())                     # second target node value
+result = lca(root, p_val, q_val)
+print(result.val if result is not None else "null")
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
+  }
+
+  static TreeNode lca(TreeNode node, int pVal, int qVal) {
+    if (node == null) return null;
+    if (node.val == pVal || node.val == qVal) return node;   // bubble a target up
+    TreeNode left = lca(node.left, pVal, qVal), right = lca(node.right, pVal, qVal);
+    if (left != null && right != null) return node;            // split → LCA
+    return left != null ? left : right;                        // pass up the one side
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+    int pVal = Integer.parseInt(sc.nextLine().trim());
+    int qVal = Integer.parseInt(sc.nextLine().trim());
+    TreeNode result = lca(root, pVal, qVal);
+    System.out.println(result != null ? result.val : "null");
+  }
+
+  static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
+    }
+    return root;
+  }
+
+  // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+</details>
 
 ## Reflect & Connect
+
+Drill the family in **Practice** — [Lowest Common Ancestor](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-lowest-common-ancestor/problems/lowest-common-ancestor), [LCA with Existence Check](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-lowest-common-ancestor/problems/lca-with-existence-check), [LCA of N Random Nodes](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-lowest-common-ancestor/problems/lca-of-n-random-nodes), [LCA of the Deepest Leaves](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-lowest-common-ancestor/problems/lca-of-the-deepest-leaves), and [Distance Between Two Nodes](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-lowest-common-ancestor/problems/distance-between-two-nodes).
 
 LCA is the canonical "answer lives at the split point" postorder:
 
@@ -160,7 +431,7 @@ LCA is the canonical "answer lives at the split point" postorder:
 
 | | |
 |---|---|
-| Base case | `node is None` → `None`; `node is p or q` → `node` |
+| Base case | `node is None` → `None`; `node.val == p or q` → `node` |
 | Combine | `left and right` → return `node` (split = LCA) |
 | Else | return `left or right` (a target bubbling up) |
 | Cost | `O(n)` time, `O(h)` stack — searches, doesn't navigate |
@@ -179,7 +450,7 @@ LCA is the canonical "answer lives at the split point" postorder:
 
 </details>
 <details>
-<summary><strong>Q:</strong> Why is the early return at `node is p` correct even if `q` is below it?</summary>
+<summary><strong>Q:</strong> Why is the early return at `node.val == p_val` correct even if `q` is below it?</summary>
 
 **A:** Both targets are assumed to exist; if `p` is an ancestor of `q`, then `q` is inside `p`'s subtree and no other subtree can claim them, so `p` is the answer.
 
@@ -195,4 +466,4 @@ LCA is the canonical "answer lives at the split point" postorder:
 
 - **CLRS**, *Introduction to Algorithms*, 4th ed., §10.4 — tree traversal / recursive node queries.
 - **Sedgewick & Wayne**, *Algorithms*, 4th ed., §3.2–§3.3 — tree recursion; BST vs general structure.
-- Lowest Common Ancestor of a Binary Tree (LeetCode 236) is the standard statement; both runnable blocks are verified by running (`LCA(5,1) ⇒ 3`; `LCA(5,4) ⇒ 5`, the ancestor case; `distance(7,4) ⇒ 2`).
+- Lowest Common Ancestor of a Binary Tree (LeetCode 236) is the standard statement; both runnable blocks are verified by running (`LCA(5,1) ⇒ 3`; `LCA(5,4) ⇒ 5`, the ancestor case).

@@ -4,6 +4,8 @@ summary: "Given a stack s, return a new stack containing the same elements in *r
 prereqs:
   - 08-pattern-reversal/01-pattern
 difficulty: easy
+kind: problem
+topics: [reversal, stack]
 ---
 
 # Stack inversion
@@ -32,8 +34,77 @@ Input:  s = []
 Output: []
 ```
 
+```quiz
+{
+  "prompt": "For s = [3, 1, 4] (top is 4), what does stack inversion return?",
+  "input": "s = [3, 1, 4]",
+  "options": ["[3, 1, 4]", "[4, 1, 3]", "[1, 3, 4]", "[4, 3, 1]"],
+  "answer": "[4, 1, 3]"
+}
+```
 
----
+## Constraints
+
+- `0 ≤ s.length ≤ 10⁴`
+- `-10⁵ ≤ s[i] ≤ 10⁵`
+
+```python run viz=array viz-root=reversed_stack viz-kind=stack
+import ast
+
+class Solution:
+    def stack_inversion(self, s):
+        # Your code goes here — pop from s, push onto a new stack
+        return []
+
+s = ast.literal_eval(input())           # the test case's s (bottom-to-top)
+print(Solution().stack_inversion(s))
+```
+
+```java run viz=array viz-root=reversed_stack viz-kind=stack
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public List<Integer> stackInversion(List<Integer> s) {
+            // Your code goes here — pop from s, push onto a new stack
+            return new ArrayList<>();
+        }
+    }
+
+    public static void main(String[] args) {
+        int[] raw = parseIntArray(new Scanner(System.in).nextLine());
+        List<Integer> s = new ArrayList<>();
+        for (int v : raw) s.add(v);
+        System.out.println(new Solution().stackInversion(s));
+    }
+
+    // "[9, 5, 1, 2]" → {9, 5, 1, 2} — reads the test case's s
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "s", "type": "int[]", "placeholder": "[9, 5, 1, 2]" }
+  ],
+  "cases": [
+    { "args": { "s": "[9, 5, 1, 2]" }, "expected": "[2, 1, 5, 9]" },
+    { "args": { "s": "[7]" }, "expected": "[7]" },
+    { "args": { "s": "[]" }, "expected": "[]" },
+    { "args": { "s": "[1, 2]" }, "expected": "[2, 1]" },
+    { "args": { "s": "[1, 2, 3, 4, 5]" }, "expected": "[5, 4, 3, 2, 1]" },
+    { "args": { "s": "[-1, 0, 1]" }, "expected": "[1, 0, -1]" }
+  ]
+}
+```
 
 <details>
 <summary><h2>Intuition</h2></summary>
@@ -68,130 +139,59 @@ Two stacks, one transfer loop. Pop everything from the input and push onto the o
 2. **While the input stack is not empty,** read its top element, pop it off the input, and push it onto the output stack.
 3. **Return the output stack.** The input's old top is now at the output's bottom and the input's old bottom is on the output's top — the stack is reversed.
 
-```d2
-direction: right
-
-inp: "input stack" {
-  grid-rows: 4
-  grid-gap: 0
-  i1: "2 ← top"
-  i2: "1"
-  i3: "5"
-  i4: "9 ← bot"
-}
-
-out: "output stack" {
-  grid-rows: 4
-  grid-gap: 0
-  o1: "9 ← top"
-  o2: "5"
-  o3: "1"
-  o4: "2 ← bot"
-}
-
-inp -> out: "pop, push"
-```
-
-<p align="center"><strong>Stack inversion — pop the input top, push to output. The first popped item lands at the bottom of the output, which is exactly where it started in the input. The whole stack flips.</strong></p>
-
 </details>
 <details>
-<summary><h2>Solution</h2></summary>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-
-```python run viz=array viz-root=reversed_stack viz-kind=stack
-from typing import List
+```python solution time=O(n) space=O(n)
+import ast
 
 class Solution:
-    def stack_inversion(self, s: List[int]) -> List[int]:
-        reversed_stack: List[int] = []
-
-        # Transfer elements from original stack to reversed stack
+    def stack_inversion(self, s):
+        reversed_stack = []
         while s:
-
-            # Get the top element from the original stack
             top = s[-1]
-
-            # Remove the top element from the original stack
             s.pop()
-
-            # Push the element onto the reversed stack
             reversed_stack.append(top)
-
-        # Return the reversed stack
         return reversed_stack
 
-
-# Example from the problem statement
-print(Solution().stack_inversion([9, 5, 1, 2]))     # [2, 1, 5, 9]
-
-# Edge cases
-print(Solution().stack_inversion([]))               # [] — empty stack
-print(Solution().stack_inversion([7]))              # [7] — single element
-print(Solution().stack_inversion([1, 2]))           # [2, 1] — two elements
-print(Solution().stack_inversion([3, 3, 3]))        # [3, 3, 3] — all same
-print(Solution().stack_inversion([1, 2, 3, 4, 5])) # [5, 4, 3, 2, 1]
-print(Solution().stack_inversion([-1, 0, 1]))       # [1, 0, -1] — negatives
+s = ast.literal_eval(input())           # the test case's s
+print(Solution().stack_inversion(s))
 ```
 
-```java run viz=array viz-root=reversed_stack viz-kind=stack
+```java solution
 import java.util.*;
 
 public class Main {
     static class Solution {
-        public Stack<Integer> stackInversion(Stack<Integer> s) {
-            Stack<Integer> reversedStack = new Stack<>();
-
-            // Transfer elements from original stack to reversed stack
-            while (!s.empty()) {
-
-                // Get the top element from the original stack
-                int top = s.peek();
-
-                // Remove the top element from the original stack
-                s.pop();
-
-                // Push the element onto the reversed stack
-                reversedStack.push(top);
+        public List<Integer> stackInversion(List<Integer> s) {
+            List<Integer> reversedStack = new ArrayList<>();
+            while (!s.isEmpty()) {
+                int top = s.get(s.size() - 1);
+                s.remove(s.size() - 1);
+                reversedStack.add(top);
             }
-
-            // Return the reversed stack
             return reversedStack;
         }
     }
 
     public static void main(String[] args) {
-        // Example from the problem statement
-        Stack<Integer> s1 = new Stack<>();
-        for (int v : new int[]{9, 5, 1, 2}) s1.push(v);
-        System.out.println(new Solution().stackInversion(s1));     // [2, 1, 5, 9]
+        int[] raw = parseIntArray(new Scanner(System.in).nextLine());
+        List<Integer> s = new ArrayList<>();
+        for (int v : raw) s.add(v);
+        System.out.println(new Solution().stackInversion(s));
+    }
 
-        // Edge cases
-        Stack<Integer> s2 = new Stack<>();
-        System.out.println(new Solution().stackInversion(s2));     // [] — empty
-
-        Stack<Integer> s3 = new Stack<>();
-        s3.push(7);
-        System.out.println(new Solution().stackInversion(s3));     // [7]
-
-        Stack<Integer> s4 = new Stack<>();
-        s4.push(1); s4.push(2);
-        System.out.println(new Solution().stackInversion(s4));     // [1, 2] — top was 2
-
-        Stack<Integer> s5 = new Stack<>();
-        for (int v : new int[]{1, 2, 3, 4, 5}) s5.push(v);
-        System.out.println(new Solution().stackInversion(s5));     // [1, 2, 3, 4, 5]
-
-        Stack<Integer> s6 = new Stack<>();
-        for (int v : new int[]{-1, 0, 1}) s6.push(v);
-        System.out.println(new Solution().stackInversion(s6));     // [-1, 0, 1]
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```
-
-
-> **Complexity** — Time: **O(N)** | Space: **O(N)**.
 
 ### Dry Run
 
@@ -200,22 +200,20 @@ Trace Example 1 with `s = [9, 5, 1, 2]`, written bottom-to-top so `2` is on top.
 ```
 Init: s = [9, 5, 1, 2] (top 2), reversed_stack = []
 
-Iter 1: top = s[-1] = 2 → pop s → s = [9, 5, 1]    → push 2 → reversed_stack = [2]
-Iter 2: top = s[-1] = 1 → pop s → s = [9, 5]       → push 1 → reversed_stack = [2, 1]
-Iter 3: top = s[-1] = 5 → pop s → s = [9]          → push 5 → reversed_stack = [2, 1, 5]
-Iter 4: top = s[-1] = 9 → pop s → s = []           → push 9 → reversed_stack = [2, 1, 5, 9]
+Iter 1: top = 2 → pop s → s = [9, 5, 1]    → push 2 → reversed_stack = [2]
+Iter 2: top = 1 → pop s → s = [9, 5]       → push 1 → reversed_stack = [2, 1]
+Iter 3: top = 5 → pop s → s = [9]          → push 5 → reversed_stack = [2, 1, 5]
+Iter 4: top = 9 → pop s → s = []           → push 9 → reversed_stack = [2, 1, 5, 9]
 
-s is empty → return reversed_stack = [2, 1, 5, 9]  (top is 9) ✓
+s is empty → return [2, 1, 5, 9]  (top is 9) ✓
 ```
-
-The input's old top (`2`) was pushed first, so it sits at the bottom of the result; the old bottom (`9`) was pushed last and is now on top.
 
 ### Complexity Analysis
 
 | | Complexity | Reason |
 |---|---|---|
 | **Time** | `O(N)` | Each of the `N` elements is popped from the input once and pushed onto the output once; both are `O(1)`. |
-| **Space** | `O(N)` | The output stack holds a full copy of the `N` elements. The input is drained as the output fills, but the two never overlap by more than the whole set. |
+| **Space** | `O(N)` | The output stack holds a full copy of the `N` elements. |
 
 ### Edge Cases
 
@@ -224,9 +222,8 @@ The input's old top (`2`) was pushed first, so it sits at the bottom of the resu
 | Empty stack (`[]`) | The `while` guard is false immediately; an empty output stack is returned. |
 | Single element (`[7]`) | One iteration moves `7` across; the result `[7]` is its own reverse. |
 | Two elements (`[1, 2]`, top `2`) | Pop `2` then `1`; output becomes `[2, 1]` (top `1`). |
-| All equal (`[3, 3, 3]`) | Values are never compared; three transfers produce `[3, 3, 3]`, indistinguishable by value but reversed by identity. |
+| All equal (`[3, 3, 3]`) | Values are never compared; three transfers produce `[3, 3, 3]`. |
 | Negatives (`[-1, 0, 1]`, top `1`) | Sign is irrelevant to a transfer; output is `[1, 0, -1]`. |
-| Mutates the input | The loop pops `s` to empty — the caller's input stack is consumed. Copy `s` first if it must survive. |
 
 </details>
 <details>

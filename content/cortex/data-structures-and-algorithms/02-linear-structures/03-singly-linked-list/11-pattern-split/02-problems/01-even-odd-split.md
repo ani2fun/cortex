@@ -4,6 +4,8 @@ summary: "Given the head of a singly linked list, write a function to split the 
 prereqs:
   - 11-pattern-split/01-pattern
 difficulty: easy
+kind: problem
+topics: [split, singly-linked-list]
 ---
 
 # Even odd split
@@ -37,8 +39,117 @@ Output: [[], [1]]
 Explanation: A single odd node — even bucket stays empty, odd bucket holds [1].
 ```
 
+```quiz
+{
+  "prompt": "What is the output for head = [3, 4, 5, 6]?",
+  "input": "head = [3, 4, 5, 6]",
+  "options": ["[4, 6] then [3, 5]", "[3, 5] then [4, 6]", "[4, 5] then [3, 6]", "[3, 4] then [5, 6]"],
+  "answer": "[4, 6] then [3, 5]"
+}
+```
 
----
+## Constraints
+
+- `0 ≤ list length ≤ 10⁵`
+- `-10⁴ ≤ node.val ≤ 10⁴`
+- Re-link nodes — `O(1)` extra space; do not allocate new nodes
+
+```python run viz=linked-list viz-root=head
+import ast
+
+class ListNode:
+    def __init__(self, val, next=None):
+        self.val = val
+        self.next = next
+
+class Solution:
+    def even_odd_split(self, head):
+        # Your code goes here
+        pass
+
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
+
+def print_list(head):                # 1 → 2 → 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
+
+head = build_list(ast.literal_eval(input()))   # the test case's head
+e, o = Solution().even_odd_split(head)
+print_list(e)
+print_list(o)
+```
+
+```java run viz=linked-list viz-root=head
+import java.util.*;
+
+public class Main {
+    static class ListNode {
+        int val; ListNode next;
+        ListNode(int val) { this.val = val; }
+        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+    }
+
+    static class Solution {
+        List<ListNode> evenOddSplit(ListNode head) {
+            // Your code goes here
+            return Arrays.asList(null, null);
+        }
+    }
+
+    public static void main(String[] args) {
+        ListNode head = buildList(parseIntArray(new Scanner(System.in).nextLine()));
+        List<ListNode> r = new Solution().evenOddSplit(head);
+        printList(r.get(0));
+        printList(r.get(1));
+    }
+
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+        ListNode head = null;
+        for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+        return head;
+    }
+
+    static void printList(ListNode head) {         // 1 → 2 → 3 → [1, 2, 3]
+        List<Integer> out = new ArrayList<>();
+        for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+        System.out.println(out);
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's head
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "head", "label": "head", "type": "int[]", "placeholder": "[5, 2, 3, 10, 6, 8]" }
+  ],
+  "cases": [
+    { "args": { "head": "[5, 2, 3, 10, 6, 8]" }, "expected": "[2, 10, 6, 8]\n[5, 3]" },
+    { "args": { "head": "[4, 2, 6, 10]" }, "expected": "[4, 2, 6, 10]\n[]" },
+    { "args": { "head": "[1]" }, "expected": "[]\n[1]" },
+    { "args": { "head": "[]" }, "expected": "[]\n[]" },
+    { "args": { "head": "[2]" }, "expected": "[2]\n[]" },
+    { "args": { "head": "[1, 3, 5, 7]" }, "expected": "[]\n[1, 3, 5, 7]" },
+    { "args": { "head": "[0, 1, 0]" }, "expected": "[0, 0]\n[1]" }
+  ]
+}
+```
 
 <details>
 <summary><h2>Intuition</h2></summary>
@@ -83,39 +194,17 @@ Walk the original list once. Route each node to one of two pre-anchored output c
 
 ### Solution
 
-```python run viz=linked-list viz-root=head
-from typing import List, Optional
 
+```python solution time=O(n) space=O(1)
+import ast
 
 class ListNode:
-    def __init__(self, val=0, nxt=None):
+    def __init__(self, val, next=None):
         self.val = val
-        self.next = nxt
-
-
-def from_list(values):
-    if not values:
-        return None
-    head = ListNode(values[0])
-    cur = head
-    for v in values[1:]:
-        cur.next = ListNode(v)
-        cur = cur.next
-    return head
-
-
-def to_list(head):
-    out = []
-    while head is not None:
-        out.append(head.val)
-        head = head.next
-    return out
-
+        self.next = next
 
 class Solution:
-    def even_odd_split(
-        self, head: Optional[ListNode]
-    ) -> List[Optional[ListNode]]:
+    def even_odd_split(self, head):
 
         # Initialize head and tail references for the two split lists
         even_dummy = ListNode(0)
@@ -160,57 +249,33 @@ class Solution:
 
         return [even_dummy.next, odd_dummy.next]
 
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
 
-e, o = Solution().even_odd_split(from_list([5, 2, 3, 10, 6, 8]))
-print(to_list(e), to_list(o))   # [2, 10, 6, 8] [5, 3]
+def print_list(head):                # 1 → 2 → 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
 
-e, o = Solution().even_odd_split(from_list([4, 2, 6, 10]))
-print(to_list(e), to_list(o))   # [4, 2, 6, 10] []
-
-# Edge cases
-e, o = Solution().even_odd_split(None)
-print(to_list(e), to_list(o))   # [] []
-
-e, o = Solution().even_odd_split(from_list([1]))
-print(to_list(e), to_list(o))   # [] [1]
-
-e, o = Solution().even_odd_split(from_list([2]))
-print(to_list(e), to_list(o))   # [2] []
-
-e, o = Solution().even_odd_split(from_list([1, 3, 5, 7]))
-print(to_list(e), to_list(o))   # [] [1, 3, 5, 7]
-
-e, o = Solution().even_odd_split(from_list([2, 4]))
-print(to_list(e), to_list(o))   # [2, 4] []
+head = build_list(ast.literal_eval(input()))   # the test case's head
+e, o = Solution().even_odd_split(head)
+print_list(e)
+print_list(o)
 ```
 
-```java run viz=linked-list viz-root=head
+```java solution
 import java.util.*;
 
 public class Main {
     static class ListNode {
-        int val;
-        ListNode next;
-        ListNode() {}
+        int val; ListNode next;
         ListNode(int val) { this.val = val; }
         ListNode(int val, ListNode next) { this.val = val; this.next = next; }
-    }
-
-    static ListNode fromList(int... values) {
-        if (values.length == 0) return null;
-        ListNode head = new ListNode(values[0]);
-        ListNode cur = head;
-        for (int i = 1; i < values.length; i++) {
-            cur.next = new ListNode(values[i]);
-            cur = cur.next;
-        }
-        return head;
-    }
-
-    static java.util.List<Integer> toList(ListNode head) {
-        java.util.List<Integer> out = new java.util.ArrayList<>();
-        while (head != null) { out.add(head.val); head = head.next; }
-        return out;
     }
 
     static class Solution {
@@ -265,27 +330,32 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        List<ListNode> r1 = new Solution().evenOddSplit(fromList(5, 2, 3, 10, 6, 8));
-        System.out.println(toList(r1.get(0)) + " " + toList(r1.get(1)));  // [2, 10, 6, 8] [5, 3]
+        ListNode head = buildList(parseIntArray(new Scanner(System.in).nextLine()));
+        List<ListNode> r = new Solution().evenOddSplit(head);
+        printList(r.get(0));
+        printList(r.get(1));
+    }
 
-        List<ListNode> r2 = new Solution().evenOddSplit(fromList(4, 2, 6, 10));
-        System.out.println(toList(r2.get(0)) + " " + toList(r2.get(1)));  // [4, 2, 6, 10] []
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+        ListNode head = null;
+        for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+        return head;
+    }
 
-        // Edge cases
-        List<ListNode> r3 = new Solution().evenOddSplit(null);
-        System.out.println(toList(r3.get(0)) + " " + toList(r3.get(1)));  // [] []
+    static void printList(ListNode head) {         // 1 → 2 → 3 → [1, 2, 3]
+        List<Integer> out = new ArrayList<>();
+        for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+        System.out.println(out);
+    }
 
-        List<ListNode> r4 = new Solution().evenOddSplit(fromList(1));
-        System.out.println(toList(r4.get(0)) + " " + toList(r4.get(1)));  // [] [1]
-
-        List<ListNode> r5 = new Solution().evenOddSplit(fromList(2));
-        System.out.println(toList(r5.get(0)) + " " + toList(r5.get(1)));  // [2] []
-
-        List<ListNode> r6 = new Solution().evenOddSplit(fromList(1, 3, 5, 7));
-        System.out.println(toList(r6.get(0)) + " " + toList(r6.get(1)));  // [] [1, 3, 5, 7]
-
-        List<ListNode> r7 = new Solution().evenOddSplit(fromList(2, 4));
-        System.out.println(toList(r7.get(0)) + " " + toList(r7.get(1)));  // [2, 4] []
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's head
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

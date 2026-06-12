@@ -25,8 +25,8 @@ object AuthFailure:
   case object TokenExpired extends AuthFailure
 
   /**
-   * The server has `cortex.auth.enabled = false`. Returned by [[Auth.verify]] (not
-   * [[Auth.verifyOptional]], which short-circuits to `None` instead). Endpoints that *require* auth turn this
-   * into a 503 in `ApiErrors.toHttp`; endpoints that don't require it never see this case.
+   * The server has `cortex.auth.enabled = false`. Returned by [[Auth.verify]] (not [[Auth.verifyOptional]],
+   * which short-circuits to `None` instead). Endpoints that *require* auth turn this into a 503 in
+   * `ApiErrors.toHttp`; endpoints that don't require it never see this case.
    */
   case object AuthDisabled extends AuthFailure

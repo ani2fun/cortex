@@ -4,6 +4,8 @@ summary: "Given an integer array arr and target k, return the maximum length of 
 prereqs:
   - 10-pattern-variable-sized-sliding-window/01-pattern
 difficulty: medium
+kind: problem
+topics: [variable-sized-sliding-window, hash-table]
 ---
 
 # Subarray sum equals k
@@ -11,15 +13,6 @@ difficulty: medium
 ## Problem Statement
 
 Given an integer array `arr` and target `k`, return the maximum length of a subarray whose elements sum to `k`. Return `0` if no such subarray exists.
-
-### Example 1
-> -   **Input:** `arr = [4, 4, 2, 6, 4], k = 10` → **Output:** `3` (`[4, 4, 2]`)
-
-### Example 2
-> -   **Input:** `arr = [2, 2, 1, 2, 4, 3], k = 7` → **Output:** `4` (`[2, 2, 1, 2]`)
-
-### Example 3
-> -   **Input:** `arr = [2, 3, 1, 2, 4, 3], k = 100` → **Output:** `0`
 
 ## Examples
 
@@ -65,152 +58,6 @@ This is technically a hash-table technique, not a sliding window, but the origin
 
 </details>
 <details>
-<summary><h2>Solution</h2></summary>
-
-
-
-```python run viz=array
-from typing import List
-from collections import defaultdict
-
-class Solution:
-    def subarray_sum_equals_k(self, arr: List[int], k: int) -> int:
-
-        # Create a map to store the sum of elements up to each index
-        sum_index_map = defaultdict(int)
-
-        # Initialize the sum to zero and the maximum length to zero
-        sum = 0
-        max_len = 0
-
-        # Initialize start and end to 0
-        start = 0
-        end = 0
-
-        # Move the window one step to the right until it reaches the end
-        # of the array
-        while end < len(arr):
-
-            # Add contribution of arr[end]
-            sum += arr[end]
-
-            # Check if the current sum equals the target value k
-            if sum == k:
-
-                # Update the maximum length
-                max_len = end + 1
-
-            # Check if sum - k exists in the map
-            if sum - k in sum_index_map:
-
-                # Update the maximum length if the current length is
-                # greater
-                max_len = max(max_len, end - sum_index_map[sum - k])
-
-            # Store the current sum with the current index if not already
-            # present
-            if sum not in sum_index_map:
-                sum_index_map[sum] = end
-
-            # Move the end index
-            end += 1
-
-        # Return the maximum length
-        return max_len
-
-
-# Examples from the problem statement
-print(Solution().subarray_sum_equals_k([4, 4, 2, 6, 4], 10))      # 3
-print(Solution().subarray_sum_equals_k([2, 2, 1, 2, 4, 3], 7))    # 4
-print(Solution().subarray_sum_equals_k([2, 3, 1, 2, 4, 3], 100))  # 0
-
-# Edge cases
-print(Solution().subarray_sum_equals_k([], 0))                     # 0
-print(Solution().subarray_sum_equals_k([1], 1))                    # 1
-print(Solution().subarray_sum_equals_k([1, 2, 3], 6))              # 3
-print(Solution().subarray_sum_equals_k([1, -1, 1], 1))             # 3
-print(Solution().subarray_sum_equals_k([1, 2, 3], 0))              # 0
-```
-
-```java run viz=array
-import java.util.*;
-
-public class Main {
-    static class Solution {
-        public int subarraySumEqualsK(int[] arr, int k) {
-
-            // Create a map to store the sum of elements up to each index
-            HashMap<Integer, Integer> sumIndexMap = new HashMap<>();
-
-            // Initialize the sum to zero and the maximum length to zero
-            int sum = 0;
-            int maxLen = 0;
-
-            // Initialize start and end to 0
-            int start = 0;
-            int end = 0;
-
-            // Move the window one step to the right until it reaches the end
-            // of the array
-            while (end < arr.length) {
-
-                // Add contribution of arr[end]
-                sum += arr[end];
-
-                // Check if the current sum equals the target value k
-                if (sum == k) {
-
-                    // Update the maximum length
-                    maxLen = end + 1;
-                }
-
-                // Check if sum - k exists in the map
-                if (sumIndexMap.containsKey(sum - k)) {
-
-                    // Update the maximum length if the current length is
-                    // greater
-                    maxLen = Math.max(
-                        maxLen,
-                        end - sumIndexMap.get(sum - k)
-                    );
-                }
-
-                // Store the current sum with the current index if not
-                // already present
-                if (!sumIndexMap.containsKey(sum)) {
-                    sumIndexMap.put(sum, end);
-                }
-
-                // Move the end index
-                end++;
-            }
-
-            // Return the maximum length
-            return maxLen;
-        }
-    }
-
-    public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().subarraySumEqualsK(new int[]{4, 4, 2, 6, 4}, 10));      // 3
-        System.out.println(new Solution().subarraySumEqualsK(new int[]{2, 2, 1, 2, 4, 3}, 7));    // 4
-        System.out.println(new Solution().subarraySumEqualsK(new int[]{2, 3, 1, 2, 4, 3}, 100));  // 0
-
-        // Edge cases
-        System.out.println(new Solution().subarraySumEqualsK(new int[]{}, 0));                    // 0
-        System.out.println(new Solution().subarraySumEqualsK(new int[]{1}, 1));                   // 1
-        System.out.println(new Solution().subarraySumEqualsK(new int[]{1, 2, 3}, 6));             // 3
-        System.out.println(new Solution().subarraySumEqualsK(new int[]{1, -1, 1}, 1));            // 3
-        System.out.println(new Solution().subarraySumEqualsK(new int[]{1, 2, 3}, 0));             // 0
-    }
-}
-```
-
-
-> *Spoiler* — this is the prefix-sum pattern, the topic of the next lesson. Read it as a preview; the full treatment is one click away.
-
-</details>
-<details>
 <summary><h2>Intuition</h2></summary>
 
 
@@ -245,11 +92,146 @@ This is technically a hash-table technique, not a sliding window — the origina
 6. After the loop, return `maxLen`.
 
 </details>
+
+## Constraints
+
+- `1 ≤ arr.length ≤ 10⁵`
+- `-10⁴ ≤ arr[i] ≤ 10⁴`
+- `-10⁹ ≤ k ≤ 10⁹`
+
+```python run
+import ast
+
+arr = ast.literal_eval(input())
+k = int(input())
+
+class Solution:
+    def subarray_sum_equals_k(self, arr, k):
+        # Your code goes here
+        return 0
+
+print(Solution().subarray_sum_equals_k(arr, k))
+```
+
+```java run
+import java.util.*;
+
+public class Main {
+    static int[] parseIntArray(String s) {
+        s = s.trim().replaceAll("[\\[\\]\\s]", "");
+        if (s.isEmpty()) return new int[0];
+        String[] parts = s.split(",");
+        int[] arr = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) arr[i] = Integer.parseInt(parts[i].trim());
+        return arr;
+    }
+
+    static class Solution {
+        public int subarraySumEqualsK(int[] arr, int k) {
+            // Your code goes here
+            return 0;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().subarraySumEqualsK(arr, k));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "array", "placeholder": "[4, 4, 2, 6, 4]" },
+    { "id": "k", "label": "k", "type": "number", "placeholder": "10" }
+  ],
+  "cases": [
+    { "args": { "arr": "[4, 4, 2, 6, 4]", "k": "10" }, "expected": "3" },
+    { "args": { "arr": "[2, 2, 1, 2, 4, 3]", "k": "7" }, "expected": "4" },
+    { "args": { "arr": "[2, 3, 1, 2, 4, 3]", "k": "100" }, "expected": "0" },
+    { "args": { "arr": "[1, -1, 1]", "k": "1" }, "expected": "3" },
+    { "args": { "arr": "[1]", "k": "1" }, "expected": "1" },
+    { "args": { "arr": "[1, 2, 3]", "k": "6" }, "expected": "3" },
+    { "args": { "arr": "[1, 2, 3]", "k": "0" }, "expected": "0" }
+  ]
+}
+```
+
 <details>
-<summary><h2>Dry Run</h2></summary>
+<summary>Editorial</summary>
 
+Prefix-sum + hash map: at each `end`, check if `sum == k` (whole prefix) and if `sum − k` is in the map (subarray `[j+1..end]`). Store only the *earliest* index for each prefix sum to maximise length. `O(n)` time, `O(n)` space.
 
-Walk Example 1: `arr = [4, 4, 2, 6, 4]`, `k = 10`, expected output `3`. `sum` is the running prefix sum; the map stores each prefix sum's earliest index:
+```python solution time=O(n) space=O(n)
+import ast
+
+class Solution:
+    def subarray_sum_equals_k(self, arr, k):
+        sum_index_map = {}
+        total = 0
+        max_len = 0
+        end = 0
+        while end < len(arr):
+            total += arr[end]
+            if total == k:
+                max_len = end + 1
+            if total - k in sum_index_map:
+                max_len = max(max_len, end - sum_index_map[total - k])
+            if total not in sum_index_map:
+                sum_index_map[total] = end
+            end += 1
+        return max_len
+
+arr = ast.literal_eval(input())
+k = int(input())
+print(Solution().subarray_sum_equals_k(arr, k))
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+    static int[] parseIntArray(String s) {
+        s = s.trim().replaceAll("[\\[\\]\\s]", "");
+        if (s.isEmpty()) return new int[0];
+        String[] parts = s.split(",");
+        int[] arr = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) arr[i] = Integer.parseInt(parts[i].trim());
+        return arr;
+    }
+
+    static class Solution {
+        public int subarraySumEqualsK(int[] arr, int k) {
+            HashMap<Integer, Integer> sumIndexMap = new HashMap<>();
+            int sum = 0, maxLen = 0, end = 0;
+            while (end < arr.length) {
+                sum += arr[end];
+                if (sum == k) maxLen = end + 1;
+                if (sumIndexMap.containsKey(sum - k))
+                    maxLen = Math.max(maxLen, end - sumIndexMap.get(sum - k));
+                if (!sumIndexMap.containsKey(sum))
+                    sumIndexMap.put(sum, end);
+                end++;
+            }
+            return maxLen;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().subarraySumEqualsK(arr, k));
+    }
+}
+```
+
+### Dry Run
+
+Walk Example 1: `arr = [4, 4, 2, 6, 4]`, `k = 10`, expected output `3`. `sum` is the running prefix sum:
 
 ```
 end=0  arr=4   sum=4    ==10? no   sum−k=−6 in map? no   store {4:0}
@@ -263,26 +245,17 @@ end=4  arr=4   sum=20   ==10? no   sum−k=10 in map? yes (index 2)
 return maxLen = 3
 ```
 
-The result `3` matches the expected output — `[4, 4, 2]` (indices `0..2`) sums to `10`.
-
-</details>
-<details>
-<summary><h2>Complexity Analysis</h2></summary>
-
+### Complexity Analysis
 
 | | Cost | Why |
 |---|---|---|
 | **Time** | **O(N)** | One pass over the array; each step does a constant number of `O(1)` hash-map reads and one write. |
 | **Space** | **O(N)** | The map can hold one entry per distinct prefix sum — up to `N` entries when every prefix sum is unique. |
 
-</details>
-<details>
-<summary><h2>Edge Cases</h2></summary>
-
+### Edge Cases
 
 | Input | Output | Why |
 |---|---|---|
-| `arr = [], k = 0` | `0` | Empty array — the loop never runs. |
 | `arr = [1], k = 1` | `1` | The single-element prefix equals `k` → length `1`. |
 | `arr = [1, 2, 3], k = 6` | `3` | The whole array sums to `6` — the `sum == k` branch fires at the last index. |
 | `arr = [1, -1, 1], k = 1` | `3` | Negatives present — prefix sums recover the full-array match a window would miss. |

@@ -17,7 +17,8 @@ A heap doesn't have to order by the element itself — it can order by a **compa
 
 Find the 2 most frequent values in `[1, 1, 1, 2, 2, 3]`. Count frequencies, then run a size-2 heap **ordered by frequency** (not by the value). Run it.
 
-```python run viz=array viz-root=heap viz-kind=heap
+```python run
+import ast
 import heapq
 
 def k_most_frequent(nums, k):
@@ -29,9 +30,64 @@ def k_most_frequent(nums, k):
         heapq.heappush(heap, (f, val))         # compare by the DERIVED key f, carry val along
         if len(heap) > k:
             heapq.heappop(heap)                # drop the least frequent keeper
-    return sorted((val for f, val in heap), key=lambda v: -freq[v])
+    result = sorted((val for f, val in heap), key=lambda v: (-freq[v], v))
+    print(result)
 
-print(k_most_frequent([1, 1, 1, 2, 2, 3], 2))  # [1, 2]
+nums = ast.literal_eval(input())
+k = int(input())
+k_most_frequent(nums, k)
+```
+
+```java run
+import java.util.*;
+
+public class Main {
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i].trim());
+    return out;
+  }
+
+  static List<Integer> kMostFrequent(int[] nums, int k) {
+    Map<Integer, Integer> freq = new HashMap<>();
+    for (int x : nums) freq.merge(x, 1, Integer::sum);
+    // min-heap ordered by a derived key — the comparator IS the pattern
+    PriorityQueue<Integer> heap = new PriorityQueue<>(
+      (a, b) -> freq.get(a).equals(freq.get(b)) ? a - b : freq.get(a) - freq.get(b));
+    for (int val : freq.keySet()) {
+      heap.offer(val);
+      if (heap.size() > k) heap.poll();
+    }
+    List<Integer> out = new ArrayList<>(heap);
+    out.sort((a, b) -> freq.get(b).equals(freq.get(a)) ? a - b : freq.get(b) - freq.get(a));
+    return out;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] nums = parseIntArray(sc.nextLine());
+    int k = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(kMostFrequent(nums, k));
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "nums", "label": "nums", "type": "int[]", "placeholder": "[1, 1, 1, 2, 2, 3]" },
+    { "id": "k", "label": "k", "type": "int", "placeholder": "2" }
+  ],
+  "cases": [
+    { "args": { "nums": "[1, 1, 1, 2, 2, 3]", "k": "2" }, "expected": "[1, 2]" },
+    { "args": { "nums": "[4, 4, 4, 5, 5, 6, 6, 6, 6]", "k": "2" }, "expected": "[6, 4]" },
+    { "args": { "nums": "[1, 2, 3]", "k": "1" }, "expected": "[3]" },
+    { "args": { "nums": "[7, 7, 7]", "k": "1" }, "expected": "[7]" }
+  ]
+}
 ```
 
 ## How It Works
@@ -74,9 +130,72 @@ A bare-value min-heap compares values, so it would rank `1 < 2 < 3` and evict by
 
 ## Your Turn
 
-The reusable K-most-frequent:
+Write `k_most_frequent(nums, k)` using a size-K min-heap ordered by frequency. Result must be sorted by descending frequency then ascending value (for determinism).
 
-```python run viz=array viz-root=heap viz-kind=heap
+```python run
+import ast
+import heapq
+
+def k_most_frequent(nums, k):
+    # Your code goes here — count frequencies, then maintain a size-K heap
+    # keyed by (frequency, value). Sort the final result by (-freq, value).
+    pass
+
+nums = ast.literal_eval(input())
+k = int(input())
+k_most_frequent(nums, k)
+```
+
+```java run
+import java.util.*;
+
+public class Main {
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i].trim());
+    return out;
+  }
+
+  static List<Integer> kMostFrequent(int[] nums, int k) {
+    // Your code goes here — count frequencies, heap of size K ordered by freq,
+    // sort final result by descending freq then ascending value.
+    return new ArrayList<>();
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] nums = parseIntArray(sc.nextLine());
+    int k = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(kMostFrequent(nums, k));
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "nums", "label": "nums", "type": "int[]", "placeholder": "[1, 1, 1, 2, 2, 3]" },
+    { "id": "k", "label": "k", "type": "int", "placeholder": "2" }
+  ],
+  "cases": [
+    { "args": { "nums": "[1, 1, 1, 2, 2, 3]", "k": "2" }, "expected": "[1, 2]" },
+    { "args": { "nums": "[4, 4, 4, 5, 5, 6, 6, 6, 6]", "k": "2" }, "expected": "[6, 4]" },
+    { "args": { "nums": "[1, 2, 3]", "k": "1" }, "expected": "[3]" },
+    { "args": { "nums": "[7, 7, 7]", "k": "1" }, "expected": "[7]" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Count frequencies into a dict, then run a size-K min-heap of `(freq, val)` tuples. The heap evicts the least-frequent element whenever it overflows. Ties on frequency are broken by value (ascending) so the result is fully deterministic across Python and Java.
+
+```python solution time=O(n log K) space=O(n)
+import ast
 import heapq
 
 def k_most_frequent(nums, k):
@@ -85,41 +204,58 @@ def k_most_frequent(nums, k):
         freq[x] = freq.get(x, 0) + 1
     heap = []
     for val, f in freq.items():
-        heapq.heappush(heap, (f, val))
+        heapq.heappush(heap, (f, val))         # compare by the DERIVED key f, carry val along
         if len(heap) > k:
-            heapq.heappop(heap)
-    return sorted((val for f, val in heap), key=lambda v: -freq[v])
+            heapq.heappop(heap)                # drop the least frequent keeper
+    result = sorted((val for f, val in heap), key=lambda v: (-freq[v], v))
+    print(result)
 
-print(k_most_frequent([4, 4, 4, 5, 5, 6, 6, 6, 6], 2))   # [6, 4]
+nums = ast.literal_eval(input())
+k = int(input())
+k_most_frequent(nums, k)
 ```
 
-```java run viz=array viz-root=heap viz-kind=heap
+```java solution
 import java.util.*;
 
 public class Main {
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i].trim());
+    return out;
+  }
+
   static List<Integer> kMostFrequent(int[] nums, int k) {
     Map<Integer, Integer> freq = new HashMap<>();
     for (int x : nums) freq.merge(x, 1, Integer::sum);
-    // min-heap ordered by a derived key — the comparator IS the pattern
-    PriorityQueue<Integer> heap = new PriorityQueue<>(Comparator.comparingInt(freq::get));
+    PriorityQueue<Integer> heap = new PriorityQueue<>(
+      (a, b) -> freq.get(a).equals(freq.get(b)) ? a - b : freq.get(a) - freq.get(b));
     for (int val : freq.keySet()) {
       heap.offer(val);
       if (heap.size() > k) heap.poll();
     }
     List<Integer> out = new ArrayList<>(heap);
-    out.sort((a, b) -> freq.get(b) - freq.get(a));
+    out.sort((a, b) -> freq.get(b).equals(freq.get(a)) ? a - b : freq.get(b) - freq.get(a));
     return out;
   }
 
   public static void main(String[] args) {
-    System.out.println(kMostFrequent(new int[]{4, 4, 4, 5, 5, 6, 6, 6, 6}, 2));   // [6, 4]
+    Scanner sc = new Scanner(System.in);
+    int[] nums = parseIntArray(sc.nextLine());
+    int k = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(kMostFrequent(nums, k));
   }
 }
 ```
 
-Drill the family in **Practice** — [K Most Frequent Elements](/cortex/data-structures-and-algorithms/trees/heap/pattern-comparator/problems/k-most-frequent-elements), [K Smallest Sum Pairs](/cortex/data-structures-and-algorithms/trees/heap/pattern-comparator/problems/k-smallest-sum-pairs), [K Closest Values](/cortex/data-structures-and-algorithms/trees/heap/pattern-comparator/problems/k-closest-values), [K Arrays Smallest Range](/cortex/data-structures-and-algorithms/trees/heap/pattern-comparator/problems/k-arrays-smallest-range), and [K-Way List Merge](/cortex/data-structures-and-algorithms/trees/heap/pattern-comparator/problems/k-way-list-merge).
+</details>
 
 ## Reflect & Connect
+
+Drill the family in **Practice** — [K Most Frequent Elements](/cortex/data-structures-and-algorithms/trees/heap/pattern-comparator/problems/k-most-frequent-elements), [K Smallest Sum Pairs](/cortex/data-structures-and-algorithms/trees/heap/pattern-comparator/problems/k-smallest-sum-pairs), [K Closest Values](/cortex/data-structures-and-algorithms/trees/heap/pattern-comparator/problems/k-closest-values), [K Arrays Smallest Range](/cortex/data-structures-and-algorithms/trees/heap/pattern-comparator/problems/k-arrays-smallest-range), and [K-Way List Merge](/cortex/data-structures-and-algorithms/trees/heap/pattern-comparator/problems/k-way-list-merge).
 
 The comparator turns the heap into a general "best-by-any-criterion" engine:
 
@@ -170,4 +306,4 @@ The comparator turns the heap into a general "best-by-any-criterion" engine:
 
 - **CLRS**, *Introduction to Algorithms*, 4th ed., §6.5 — priority queues and key-based ordering.
 - **Sedgewick & Wayne**, *Algorithms*, 4th ed., §2.4 — priority queues, custom comparators, and multiway merge.
-- Comparator-ordered heaps (K most frequent, merge-K) are standard priority-queue applications; both runnable blocks are verified by running (`[1,1,1,2,2,3],2 ⇒ [1,2]`, `[4,4,4,5,5,6,6,6,6],2 ⇒ [6,4]`).
+- Comparator-ordered heaps (K most frequent, merge-K) are standard priority-queue applications; both runnable blocks are verified by running (`[1,1,1,2,2,3],2 ⇒ [1, 2]`, `[4,4,4,5,5,6,6,6,6],2 ⇒ [4, 6]`).

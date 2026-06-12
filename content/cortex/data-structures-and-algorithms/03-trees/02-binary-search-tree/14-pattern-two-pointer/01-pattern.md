@@ -15,22 +15,20 @@ The trick is to run **two [BST iterators](/cortex/data-structures-and-algorithms
 
 ## See It Work
 
-Is there a pair in the BST summing to `9`? (`1 + 8` or `4 + 5`.) Two iterators converge from both ends. Run it.
+Is there a pair in the BST summing to `target`? Two iterators converge from both ends. Pick a case and **Run** it.
 
 ```python run viz=binary-tree viz-root=root
-class TreeNode:
-    def __init__(self, val):
-        self.val = val
-        self.left = None
-        self.right = None
+import json
+from collections import deque
 
-def insert(root, val):
-    if root is None: return TreeNode(val)
-    if val < root.val: root.left = insert(root.left, val)
-    elif val > root.val: root.right = insert(root.right, val)
-    return root
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
 
 def find_target(root, k):
+    if not root: return False
     asc, desc = [], []
     n = root
     while n: asc.append(n); n = n.left        # ascending iterator: seed left spine
@@ -52,11 +50,112 @@ def find_target(root, k):
         else: hi = next_desc()                 # too big → smaller high end
     return False
 
-root = None
-for v in [5, 3, 8, 1, 4, 7, 9]:
-    root = insert(root, v)
-print(find_target(root, 9))    # True  (4 + 5, or 1 + 8)
-print(find_target(root, 28))   # False
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
+
+root = build_tree(json.loads(input()))   # the test case's level-order values
+target = int(input())                    # the pair sum to test
+print("true" if find_target(root, target) else "false")
+```
+
+```java run viz=binary-tree viz-root=root
+import java.util.*;
+
+public class Main {
+  static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } }
+
+  static void seed(Deque<TreeNode> s, TreeNode n, boolean left) {
+    while (n != null) { s.push(n); n = left ? n.left : n.right; }
+  }
+  static int next(Deque<TreeNode> s, boolean left) {
+    TreeNode node = s.pop();
+    seed(s, left ? node.right : node.left, left);
+    return node.val;
+  }
+  static boolean findTarget(TreeNode root, int k) {
+    if (root == null) return false;
+    Deque<TreeNode> asc = new ArrayDeque<>(), desc = new ArrayDeque<>();
+    seed(asc, root, true); seed(desc, root, false);
+    int lo = next(asc, true), hi = next(desc, false);
+    while (lo < hi) {
+      int s = lo + hi;
+      if (s == k) return true;
+      else if (s < k) lo = next(asc, true);
+      else hi = next(desc, false);
+    }
+    return false;
+  }
+
+  static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
+    }
+    return root;
+  }
+
+  // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+    int target = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(findTarget(root, target));
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[5, 3, 8, 1, 4, 7, 9]" },
+    { "id": "target", "label": "target", "type": "int", "placeholder": "9" }
+  ],
+  "cases": [
+    { "args": { "root": "[5, 3, 8, 1, 4, 7, 9]", "target": "9" }, "expected": "true" },
+    { "args": { "root": "[5, 3, 8, 1, 4, 7, 9]", "target": "12" }, "expected": "true" },
+    { "args": { "root": "[5, 3, 8, 1, 4, 7, 9]", "target": "28" }, "expected": "false" },
+    { "args": { "root": "[4, 2, 6, 1, null, null, 7]", "target": "3" }, "expected": "true" },
+    { "args": { "root": "[4, 2, 6, 1, null, null, 7]", "target": "14" }, "expected": "false" },
+    { "args": { "root": "[5]", "target": "10" }, "expected": "false" }
+  ]
+}
 ```
 
 ## How It Works
@@ -109,44 +208,44 @@ The iterators **abstract away the structure**: an ascending BST iterator deliver
 
 ## Your Turn
 
-The reusable BST two-sum:
+Write the BST two-sum yourself — seed both stacks, call `next_asc()` and `next_desc()`, and converge them toward the target.
 
 ```python run viz=binary-tree viz-root=root
-class TreeNode:
-    def __init__(self, val):
-        self.val = val; self.left = None; self.right = None
+import json
+from collections import deque
 
-def insert(root, val):
-    if root is None: return TreeNode(val)
-    if val < root.val: root.left = insert(root.left, val)
-    elif val > root.val: root.right = insert(root.right, val)
-    return root
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
 
 def find_target(root, k):
-    asc, desc = [], []
-    n = root
-    while n: asc.append(n); n = n.left
-    n = root
-    while n: desc.append(n); n = n.right
-    def nxt(stack, left):
-        node = stack.pop()
-        x = node.right if left else node.left
-        while x:
-            stack.append(x)
-            x = x.left if left else x.right
-        return node.val
-    lo, hi = nxt(asc, True), nxt(desc, False)
-    while lo < hi:
-        s = lo + hi
-        if s == k: return True
-        elif s < k: lo = nxt(asc, True)
-        else: hi = nxt(desc, False)
-    return False
+    # Your code goes here — seed asc and desc stacks with the left/right spines;
+    # define next_asc() / next_desc() helpers; converge lo and hi toward k.
+    pass
 
-root = None
-for v in [5, 3, 8, 1, 4, 7, 9]:
-    root = insert(root, v)
-print(find_target(root, 12), find_target(root, 100))   # True False
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
+
+root = build_tree(json.loads(input()))   # the test case's level-order values
+target = int(input())                    # the pair sum to test
+print("true" if find_target(root, target) else "false")
 ```
 
 ```java run viz=binary-tree viz-root=root
@@ -154,12 +253,142 @@ import java.util.*;
 
 public class Main {
   static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } }
-  static TreeNode insert(TreeNode r, int v) {
-    if (r == null) return new TreeNode(v);
-    if (v < r.val) r.left = insert(r.left, v);
-    else if (v > r.val) r.right = insert(r.right, v);
-    return r;
+
+  static void seed(Deque<TreeNode> s, TreeNode n, boolean left) {
+    // Your code goes here — push nodes along the left or right spine
   }
+  static int next(Deque<TreeNode> s, boolean left) {
+    // Your code goes here — pop the top node and push its opposite-side spine
+    return 0;
+  }
+  static boolean findTarget(TreeNode root, int k) {
+    // Your code goes here — seed both stacks, get lo/hi, converge toward k
+    return false;
+  }
+
+  static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
+    }
+    return root;
+  }
+
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+    int target = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(findTarget(root, target));
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[5, 3, 8, 1, 4, 7, 9]" },
+    { "id": "target", "label": "target", "type": "int", "placeholder": "12" }
+  ],
+  "cases": [
+    { "args": { "root": "[5, 3, 8, 1, 4, 7, 9]", "target": "12" }, "expected": "true" },
+    { "args": { "root": "[5, 3, 8, 1, 4, 7, 9]", "target": "100" }, "expected": "false" },
+    { "args": { "root": "[4, 2, 6, 1, null, null, 7]", "target": "9" }, "expected": "true" },
+    { "args": { "root": "[4, 2, 6, 1, null, null, 7]", "target": "14" }, "expected": "false" },
+    { "args": { "root": "[5]", "target": "10" }, "expected": "false" },
+    { "args": { "root": "[2, 1, 3]", "target": "10" }, "expected": "false" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Seed `asc` with the left spine (smallest first) and `desc` with the right spine (largest first). Each `next_asc()` call pops the stack top and pushes the left spine of its right child; `next_desc()` mirrors it for the right child's left spine. Set `lo = next_asc()`, `hi = next_desc()`, then loop: if `lo + hi == k` return `True`; if the sum is too small advance `lo`; if too big advance `hi`; stop when `lo ≥ hi`.
+
+```python solution time=O(n) space=O(h)
+import json
+from collections import deque
+
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+def find_target(root, k):
+    if not root: return False
+    asc, desc = [], []
+    n = root
+    while n: asc.append(n); n = n.left        # ascending iterator: seed left spine
+    n = root
+    while n: desc.append(n); n = n.right       # descending iterator: seed right spine
+    def next_asc():                            # smallest unvisited
+        node = asc.pop(); x = node.right
+        while x: asc.append(x); x = x.left
+        return node.val
+    def next_desc():                           # largest unvisited
+        node = desc.pop(); x = node.left
+        while x: desc.append(x); x = x.right
+        return node.val
+    lo, hi = next_asc(), next_desc()
+    while lo < hi:                             # converge from both ends
+        s = lo + hi
+        if s == k: return True
+        elif s < k: lo = next_asc()            # too small → bigger low end
+        else: hi = next_desc()                 # too big → smaller high end
+    return False
+
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
+
+root = build_tree(json.loads(input()))   # the test case's level-order values
+target = int(input())                    # the pair sum to test
+print("true" if find_target(root, target) else "false")
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+  static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } }
+
   static void seed(Deque<TreeNode> s, TreeNode n, boolean left) {
     while (n != null) { s.push(n); n = left ? n.left : n.right; }
   }
@@ -169,6 +398,7 @@ public class Main {
     return node.val;
   }
   static boolean findTarget(TreeNode root, int k) {
+    if (root == null) return false;
     Deque<TreeNode> asc = new ArrayDeque<>(), desc = new ArrayDeque<>();
     seed(asc, root, true); seed(desc, root, false);
     int lo = next(asc, true), hi = next(desc, false);
@@ -180,17 +410,51 @@ public class Main {
     }
     return false;
   }
+
+  static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
+    }
+    return root;
+  }
+
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
+  }
+
   public static void main(String[] args) {
-    TreeNode root = null;
-    for (int v : new int[]{5, 3, 8, 1, 4, 7, 9}) root = insert(root, v);
-    System.out.println(findTarget(root, 9) + " " + findTarget(root, 28));   // true false
+    Scanner sc = new Scanner(System.in);
+    TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+    int target = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(findTarget(root, target));
   }
 }
 ```
 
-Drill the family in **Practice** — [Two Sum on BST](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-two-pointer/problems/two-sum-on-bst), [Multiple Tree](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-two-pointer/problems/multiple-tree), [Median in BST](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-two-pointer/problems/median-in-bst), and [BST Pair Sum](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-two-pointer/problems/bst-pair-sum).
+</details>
 
 ## Reflect & Connect
+
+Drill the family in **Practice** — [Two Sum on BST](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-two-pointer/problems/two-sum-on-bst), [Multiple Tree](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-two-pointer/problems/multiple-tree), [Median in BST](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-two-pointer/problems/median-in-bst), and [BST Pair Sum](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-two-pointer/problems/bst-pair-sum).
 
 Two-pointer-on-a-BST is a clean example of composing patterns:
 

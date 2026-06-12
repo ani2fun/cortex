@@ -22,8 +22,8 @@ import java.util.concurrent.TimeUnit
  * **Fail-open:** a Redis error is logged and treated as "window empty" — per ADR-0002, rate limiting is a
  * non-critical store concern and a cache outage must never block code execution.
  *
- * When auth is disabled (`cortex.auth.enabled = false`, the `bin/dev` default) the limiter is a no-op:
- * every `consume*` call succeeds and no Redis connection is opened.
+ * When auth is disabled (`cortex.auth.enabled = false`, the `bin/dev` default) the limiter is a no-op: every
+ * `consume*` call succeeds and no Redis connection is opened.
  */
 trait RateLimiter:
   /** Consume one anonymous slot for `ipKey`. Fails [[RateLimitFailure.Throttled]] when the window is full. */

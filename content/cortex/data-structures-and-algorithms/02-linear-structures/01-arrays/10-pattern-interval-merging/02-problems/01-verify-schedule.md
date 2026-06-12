@@ -4,6 +4,8 @@ summary: "> Given an array of meeting time intervals arr where arr[i] = [start_i
 prereqs:
   - 10-pattern-interval-merging/01-pattern
 difficulty: easy
+kind: problem
+topics: [intervals, arrays]
 ---
 
 # Verify Schedule
@@ -59,6 +61,89 @@ Input:  arr = [[1, 3], [3, 6]]
 Output: true
 Explanation: The two meetings touch at minute 3 but do not overlap —
              back-to-back is allowed under the strict `<` test.
+```
+
+```quiz
+{
+  "prompt": "Now your turn!",
+  "input": "arr = [[1, 5], [4, 6]]",
+  "options": ["true", "false"],
+  "answer": "false"
+}
+```
+
+## Constraints
+
+- `0 ≤ arr.length ≤ 10^4`
+- `arr[i] = [start_i, end_i]` with `0 ≤ start_i < end_i ≤ 10^6`
+
+```python run viz=grid viz-root=meetings
+import ast
+from typing import List
+
+class Solution:
+    def verify_schedule(self, meetings: List[List[int]]) -> bool:
+        # Your code goes here — sort by start, then check each meeting against
+        # the previous one's end; return False on the first overlap.
+        return False
+
+meetings = ast.literal_eval(input())     # the test case's meetings
+print("true" if Solution().verify_schedule(meetings) else "false")
+```
+
+```java run viz=grid viz-root=meetings
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public boolean verifySchedule(int[][] meetings) {
+            // Your code goes here — sort by start, then check each meeting against
+            // the previous one's end; return false on the first overlap.
+            return false;
+        }
+    }
+
+    public static void main(String[] args) {
+        int[][] meetings = parseIntMatrix(new Scanner(System.in).nextLine());
+        System.out.println(new Solution().verifySchedule(meetings));
+    }
+
+    // "[[1, 3], [2, 6]]" → {{1, 3}, {2, 6}} — reads the test case's meetings
+    static int[][] parseIntMatrix(String line) {
+        String s = line.trim();
+        if (s.startsWith("[")) s = s.substring(1);
+        if (s.endsWith("]")) s = s.substring(0, s.length() - 1);
+        s = s.trim();
+        if (s.isEmpty()) return new int[0][];
+        String[] rows = s.split("\\]\\s*,\\s*\\[");
+        int[][] out = new int[rows.length][];
+        for (int i = 0; i < rows.length; i++) {
+            String inner = rows[i].replaceAll("[\\[\\]\\s]", "");
+            if (inner.isEmpty()) { out[i] = new int[0]; continue; }
+            String[] parts = inner.split(",");
+            int[] pair = new int[parts.length];
+            for (int j = 0; j < parts.length; j++) pair[j] = Integer.parseInt(parts[j]);
+            out[i] = pair;
+        }
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "meetings", "label": "meetings", "type": "int[][]", "placeholder": "[[0, 30], [5, 10], [15, 20]]" }
+  ],
+  "cases": [
+    { "args": { "meetings": "[[0, 30], [5, 10], [15, 20]]" }, "expected": "false" },
+    { "args": { "meetings": "[[7, 10], [2, 4]]" }, "expected": "true" },
+    { "args": { "meetings": "[[1, 3], [3, 6]]" }, "expected": "true" },
+    { "args": { "meetings": "[[1, 5], [4, 6]]" }, "expected": "false" },
+    { "args": { "meetings": "[[1, 2]]" }, "expected": "true" },
+    { "args": { "meetings": "[[5, 10], [1, 4], [11, 15]]" }, "expected": "true" }
+  ]
+}
 ```
 
 <details>
@@ -138,7 +223,8 @@ It happens to work for this example, but consider `[[1, 10], [2, 3]]`. Sorted by
 After sorting, sweep left-to-right and check that **each meeting starts no earlier than the previous one ends**. The first time the check fails, return `false`. If the loop completes, no conflicts — return `true`.
 
 
-```python run viz=grid viz-root=meetings
+```python solution time=O(N log N) space=O(1)
+import ast
 from typing import List
 
 class Solution:
@@ -155,20 +241,11 @@ class Solution:
         return True
 
 
-# Examples from the problem statement
-print(Solution().verify_schedule([[1, 20], [10, 30], [30, 40], [1, 5]]))   # False
-print(Solution().verify_schedule([[1, 10], [1, 10], [1, 10]]))             # False
-print(Solution().verify_schedule([[1, 15], [15, 17], [17, 18]]))           # True
-
-# Edge cases
-print(Solution().verify_schedule([[1, 2]]))                                 # True  — single meeting
-print(Solution().verify_schedule([[1, 5], [6, 10]]))                        # True  — two non-overlapping
-print(Solution().verify_schedule([[1, 5], [4, 6]]))                         # False — two overlapping
-print(Solution().verify_schedule([[5, 10], [1, 4], [11, 15]]))             # True  — unsorted non-overlapping
-print(Solution().verify_schedule([[1, 3], [3, 5], [5, 7]]))                # True  — touching endpoints only
+meetings = ast.literal_eval(input())     # the test case's meetings
+print("true" if Solution().verify_schedule(meetings) else "false")
 ```
 
-```java run viz=grid viz-root=meetings
+```java solution
 import java.util.*;
 
 public class Main {
@@ -190,17 +267,28 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().verifySchedule(new int[][]{{1, 20}, {10, 30}, {30, 40}, {1, 5}}));   // false
-        System.out.println(new Solution().verifySchedule(new int[][]{{1, 10}, {1, 10}, {1, 10}}));             // false
-        System.out.println(new Solution().verifySchedule(new int[][]{{1, 15}, {15, 17}, {17, 18}}));           // true
+        int[][] meetings = parseIntMatrix(new Scanner(System.in).nextLine());
+        System.out.println(new Solution().verifySchedule(meetings));
+    }
 
-        // Edge cases
-        System.out.println(new Solution().verifySchedule(new int[][]{{1, 2}}));                                 // true  — single meeting
-        System.out.println(new Solution().verifySchedule(new int[][]{{1, 5}, {6, 10}}));                        // true  — two non-overlapping
-        System.out.println(new Solution().verifySchedule(new int[][]{{1, 5}, {4, 6}}));                         // false — two overlapping
-        System.out.println(new Solution().verifySchedule(new int[][]{{5, 10}, {1, 4}, {11, 15}}));             // true  — unsorted non-overlapping
-        System.out.println(new Solution().verifySchedule(new int[][]{{1, 3}, {3, 5}, {5, 7}}));                // true  — touching endpoints only
+    // "[[1, 3], [2, 6]]" → {{1, 3}, {2, 6}} — reads the test case's meetings
+    static int[][] parseIntMatrix(String line) {
+        String s = line.trim();
+        if (s.startsWith("[")) s = s.substring(1);
+        if (s.endsWith("]")) s = s.substring(0, s.length() - 1);
+        s = s.trim();
+        if (s.isEmpty()) return new int[0][];
+        String[] rows = s.split("\\]\\s*,\\s*\\[");
+        int[][] out = new int[rows.length][];
+        for (int i = 0; i < rows.length; i++) {
+            String inner = rows[i].replaceAll("[\\[\\]\\s]", "");
+            if (inner.isEmpty()) { out[i] = new int[0]; continue; }
+            String[] parts = inner.split(",");
+            int[] pair = new int[parts.length];
+            for (int j = 0; j < parts.length; j++) pair[j] = Integer.parseInt(parts[j]);
+            out[i] = pair;
+        }
+        return out;
     }
 }
 ```

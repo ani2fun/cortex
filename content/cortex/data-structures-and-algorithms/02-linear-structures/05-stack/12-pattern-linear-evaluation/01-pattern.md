@@ -36,6 +36,40 @@ def eval_rpn(tokens):
 print(eval_rpn(["2", "1", "+", "3", "*"]))   # 9
 ```
 
+```java run viz=array viz-root=stack viz-kind=stack
+import java.util.*;
+
+public class Main {
+    static int evalRpn(String[] tokens) {
+        Deque<Integer> stack = new ArrayDeque<>();
+        for (String t : tokens) {
+            switch (t) {
+                case "+": case "-": case "*": case "/": {
+                    int b = stack.pop(), a = stack.pop();   // first popped = right operand
+                    stack.push(t.equals("+") ? a + b : t.equals("-") ? a - b : t.equals("*") ? a * b : a / b);
+                    break;
+                }
+                default: stack.push(Integer.parseInt(t));
+            }
+        }
+        return stack.peek();
+    }
+
+    public static void main(String[] args) {
+        System.out.println(evalRpn(new String[]{"2", "1", "+", "3", "*"}));   // 9
+    }
+}
+```
+
+```testcases
+{
+  "args": [],
+  "cases": [
+    { "args": {}, "expected": "9" }
+  ]
+}
+```
+
 ## How It Works
 
 Scan the tokens once, keeping a stack of operands and intermediate results:
@@ -85,6 +119,51 @@ The reusable postfix evaluator:
 
 ```python run viz=array viz-kind=stack
 def eval_rpn(tokens):
+    # Your code goes here — push operands; on an operator pop two (first pop =
+    # right operand), compute, push the result; return the lone survivor.
+    pass
+
+tokens = input().split()
+print(eval_rpn(tokens))
+```
+
+```java run viz=array viz-kind=stack
+import java.util.*;
+public class Main {
+    static int evalRpn(String[] tokens) {
+        // Your code goes here — push operands; on an operator pop two (first pop =
+        // right operand), compute, push the result; return the lone survivor.
+        return 0;
+    }
+    public static void main(String[] args) {
+        String[] tokens = new Scanner(System.in).nextLine().split(" ");
+        System.out.println(evalRpn(tokens));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "expr", "label": "postfix expression", "type": "string", "placeholder": "4 13 5 / +" }
+  ],
+  "cases": [
+    { "args": { "expr": "4 13 5 / +" }, "expected": "6" },
+    { "args": { "expr": "5 1 2 + 4 * + 3 -" }, "expected": "14" },
+    { "args": { "expr": "2 1 + 3 *" }, "expected": "9" },
+    { "args": { "expr": "8 2 /" }, "expected": "4" },
+    { "args": { "expr": "10 3 -" }, "expected": "7" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Tokenize on whitespace so multi-digit operands arrive as a whole token. Push operands; on an operator, the first pop is the **right** operand (pushed most recently), the second pop is the **left** — compute `a OP b` and push the result. Integer division truncates toward zero. After the last token exactly one value remains.
+
+```python solution time=O(n) space=O(n)
+def eval_rpn(tokens):
     ops = {'+': lambda a, b: a + b, '-': lambda a, b: a - b,
            '*': lambda a, b: a * b, '/': lambda a, b: int(a / b)}
     stack = []
@@ -96,35 +175,31 @@ def eval_rpn(tokens):
             stack.append(int(t))
     return stack[-1]
 
-print(eval_rpn(["4", "13", "5", "/", "+"]))                  # 4 + (13/5=2) = 6
-print(eval_rpn(["5", "1", "2", "+", "4", "*", "+", "3", "-"]))   # 14
+tokens = input().split()
+print(eval_rpn(tokens))
 ```
 
-```java run viz=array viz-kind=stack
+```java solution
 import java.util.*;
-
 public class Main {
-  static int evalRpn(String[] tokens) {
-    Deque<Integer> stack = new ArrayDeque<>();
-    for (String t : tokens) {
-      switch (t) {
-        case "+": case "-": case "*": case "/": {
-          int b = stack.pop(), a = stack.pop();   // first popped = right operand
-          stack.push(t.equals("+") ? a + b : t.equals("-") ? a - b : t.equals("*") ? a * b : a / b);
-          break;
+    static int evalRpn(String[] tokens) {
+        Deque<Integer> stack = new ArrayDeque<>();
+        for (String t : tokens) {
+            if (t.length() == 1 && "+-*/".contains(t)) {
+                int b = stack.pop(), a = stack.pop();
+                stack.push(t.equals("+") ? a + b : t.equals("-") ? a - b : t.equals("*") ? a * b : (int)((double)a/b));
+            } else stack.push(Integer.parseInt(t));
         }
-        default: stack.push(Integer.parseInt(t));
-      }
+        return stack.peek();
     }
-    return stack.peek();
-  }
-
-  public static void main(String[] args) {
-    System.out.println(evalRpn(new String[]{"4", "13", "5", "/", "+"}));   // 6
-    System.out.println(evalRpn(new String[]{"5", "1", "2", "+", "4", "*", "+", "3", "-"}));   // 14
-  }
+    public static void main(String[] args) {
+        String[] tokens = new Scanner(System.in).nextLine().split(" ");
+        System.out.println(evalRpn(tokens));
+    }
 }
 ```
+
+</details>
 
 Drill the family in **Practice** — [Canonicalise Path](/cortex/data-structures-and-algorithms/linear-structures/stack/pattern-linear-evaluation/problems/canonicalise-path), [Bracketed Reversal](/cortex/data-structures-and-algorithms/linear-structures/stack/pattern-linear-evaluation/problems/bracketed-reversal), [String Expansion](/cortex/data-structures-and-algorithms/linear-structures/stack/pattern-linear-evaluation/problems/string-expansion), and [Formula Parsing](/cortex/data-structures-and-algorithms/linear-structures/stack/pattern-linear-evaluation/problems/formula-parsing).
 

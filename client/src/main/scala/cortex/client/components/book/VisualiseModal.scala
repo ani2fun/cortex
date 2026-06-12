@@ -109,7 +109,11 @@ object VisualiseModal:
       vizRoot: Option[String],
       vizCase: Option[Int],
       vizKind: Option[String],
-      title: String
+      title: String,
+      // Stdin fed to the traced program when the in-modal stdin box is absent or empty. The workbench
+      // passes the active test case's serialized args here — its drivers read arguments via `input()` /
+      // Scanner, which would otherwise hit EOF under the tracer. Participates in the trace cache key.
+      initialStdin: Option[String] = None
   )
 
   private var hostSeq: Int = 0
@@ -227,7 +231,7 @@ object VisualiseModal:
       .filter(_.nonEmpty)
 
   private def runTrace(props: Props, setPhase: Phase => Unit, force: Boolean = false): Unit =
-    val stdin = readStdin()
+    val stdin = readStdin().orElse(props.initialStdin)
     val key = (
       props.language,
       props.source,

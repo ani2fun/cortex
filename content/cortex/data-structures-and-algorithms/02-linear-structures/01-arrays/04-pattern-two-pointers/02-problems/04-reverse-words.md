@@ -4,6 +4,8 @@ summary: "Given a string s, reverse the characters of every word while preservin
 prereqs:
   - 04-pattern-two-pointers/01-pattern
 difficulty: easy
+kind: problem
+topics: [two-pointers, arrays]
 ---
 
 # Reverse Words
@@ -50,6 +52,67 @@ Explanation: The string contains one word; it is reversed.
 Input:  s = "a b c"
 Output:     "a b c"
 Explanation: Reversing a single character is a no-op.
+```
+
+```quiz
+{
+  "prompt": "Now your turn!",
+  "input": "s = \"keep coding\"",
+  "options": ["peek gnidoc", "gnidoc peek", "keep coding", "peekgnidoc"],
+  "answer": "peek gnidoc"
+}
+```
+
+## Constraints
+
+- `0 ≤ s.length ≤ 1000`
+- `s` consists of printable ASCII characters; words are separated by spaces
+
+```python run viz=array viz-root=arr
+class Solution:
+    def reverse_words(self, s: str) -> str:
+        # Your code goes here — scan for each word's [start, end] range,
+        # then reverse the characters inside that range with two pointers.
+        return s
+
+s = input()                          # the test case's s
+print(Solution().reverse_words(s))
+```
+
+```java run viz=array viz-root=arr
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public String reverseWords(String s) {
+            // Your code goes here — scan for each word's [start, end] range,
+            // then reverse the characters inside that range with two pointers.
+            return s;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String s = sc.hasNextLine() ? sc.nextLine() : "";
+        System.out.println(new Solution().reverseWords(s));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "s", "type": "string", "placeholder": "This is a string" }
+  ],
+  "cases": [
+    { "args": { "s": "This is a string" }, "expected": "sihT si a gnirts" },
+    { "args": { "s": "I love coding" }, "expected": "I evol gnidoc" },
+    { "args": { "s": "random" }, "expected": "modnar" },
+    { "args": { "s": "  hello  world  " }, "expected": "  olleh  dlrow  " },
+    { "args": { "s": "aa bb cc" }, "expected": "aa bb cc" },
+    { "args": { "s": "a b c" }, "expected": "a b c" }
+  ]
+}
 ```
 
 <details>
@@ -473,7 +536,7 @@ The outer scan that finds word boundaries is bookkeeping — once a `[word_start
 
 ### Solution
 
-```python run viz=array viz-root=arr
+```python solution time=O(n) space=O(n)
 class Solution:
     def find_word_end(self, arr, start):
 
@@ -524,20 +587,13 @@ class Solution:
         return "".join(arr)
 
 
-# Examples from the problem statement
-print(Solution().reverse_words("This is a string"))  # sihT si a gnirts
-print(Solution().reverse_words("I love coding"))     # I evol gnidoc
-print(Solution().reverse_words("random"))            # modnar
-
-# Edge cases
-print(Solution().reverse_words(""))                  # ""
-print(Solution().reverse_words("a"))                 # a — single char word
-print(Solution().reverse_words("ab"))                # ba — two char word
-print(Solution().reverse_words("  hello  world  ")) # "  olleh  dlrow  " — spaces preserved
-print(Solution().reverse_words("aa bb cc"))          # aa bb cc — palindrome words unchanged
+s = input()                          # the test case's s
+print(Solution().reverse_words(s))
 ```
 
-```java run viz=array viz-root=arr
+```java solution
+import java.util.*;
+
 public class Main {
     static class Solution {
         private int findWordEnd(char[] arr, int start) {
@@ -599,17 +655,9 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().reverseWords("This is a string")); // sihT si a gnirts
-        System.out.println(new Solution().reverseWords("I love coding"));    // I evol gnidoc
-        System.out.println(new Solution().reverseWords("random"));           // modnar
-
-        // Edge cases
-        System.out.println(new Solution().reverseWords(""));                 // ""
-        System.out.println(new Solution().reverseWords("a"));                // a — single char word
-        System.out.println(new Solution().reverseWords("ab"));               // ba — two char word
-        System.out.println(new Solution().reverseWords("  hello  world  ")); // "  olleh  dlrow  " — spaces preserved
-        System.out.println(new Solution().reverseWords("aa bb cc"));         // aa bb cc — palindrome words unchanged
+        Scanner sc = new Scanner(System.in);
+        String s = sc.hasNextLine() ? sc.nextLine() : "";
+        System.out.println(new Solution().reverseWords(s));
     }
 }
 ```

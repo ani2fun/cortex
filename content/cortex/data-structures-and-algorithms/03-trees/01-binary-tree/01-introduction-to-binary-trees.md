@@ -14,45 +14,108 @@ A **binary tree** is the simplest branching structure that's still powerful: eac
 
 ## See It Work
 
-A binary tree is just nodes with `left`/`right` links, and its core measurements — size and height — fall straight out of the recursive definition:
+A binary tree is just nodes with `left`/`right` links, and its core measurements — size and height — fall straight out of the recursive definition. Pick a tree shape and **Run** it:
 
 ```python run viz=binary-tree viz-root=root
+import json
+from collections import deque
+
 class Node:
     def __init__(self, val, left=None, right=None):
         self.val = val; self.left = left; self.right = right
 
-#       1
-#      / \
-#     2   3
-#    / \
-#   4   5
-tree = Node(1, Node(2, Node(4), Node(5)), Node(3))
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = Node(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = Node(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = Node(v); queue.append(node.right)
+    return root
 
 def height(n): return -1 if n is None else 1 + max(height(n.left), height(n.right))  # edges on longest path
 def count(n):  return 0 if n is None else 1 + count(n.left) + count(n.right)
 
-print("node count:", count(tree))
-print("height:", height(tree))
+root = build_tree(json.loads(input()))
+print("node count:", count(root))
+print("height:", height(root))
 ```
 
 ```java run viz=binary-tree viz-root=root
+import java.util.*;
+
 public class Main {
     static class Node {
         int val; Node left, right;
         Node(int v) { val = v; }
-        Node(int v, Node l, Node r) { val = v; left = l; right = r; }
     }
-    static int height(Node n) { return n == null ? -1 : 1 + Math.max(height(n.left), height(n.right)); }  // edges
+    static int height(Node n) { return n == null ? -1 : 1 + Math.max(height(n.left), height(n.right)); }
     static int count(Node n)  { return n == null ?  0 : 1 + count(n.left) + count(n.right); }
+
     public static void main(String[] x) {
-        Node tree = new Node(1, new Node(2, new Node(4), new Node(5)), new Node(3));
-        System.out.println("node count: " + count(tree));
-        System.out.println("height: " + height(tree));
+        Scanner sc = new Scanner(System.in);
+        Node root = buildTree(parseIntegerArray(sc.nextLine()));
+        System.out.println("node count: " + count(root));
+        System.out.println("height: " + height(root));
+    }
+
+    static Node buildTree(Integer[] values) {
+        if (values.length == 0 || values[0] == null) return null;
+        Node root = new Node(values[0]);
+        Deque<Node> queue = new ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            Node node = queue.poll();
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.left = new Node(v); queue.add(node.left); }
+            }
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.right = new Node(v); queue.add(node.right); }
+            }
+        }
+        return root;
+    }
+
+    static Integer[] parseIntegerArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new Integer[0];
+        String[] parts = inner.split(",");
+        Integer[] out = new Integer[parts.length];
+        for (int i = 0; i < parts.length; i++)
+            out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```
 
-Both print `node count: 5` and `height: 2`. Look at the two functions: each is the recursive definition made literal — "the count of a tree is 1 (this node) plus the count of the left subtree plus the count of the right subtree," with the empty tree as the base case. `height` is the same shape, taking the *max* of the two sides plus one. The tree has 5 nodes and a longest root-to-leaf path of 2 edges (`1 → 2 → 4`). This "recurse left, recurse right, combine" skeleton is the template for nearly every algorithm in the trees module.
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[1, 2, 3, 4, 5]" }
+  ],
+  "cases": [
+    { "args": { "root": "[1, 2, 3, 4, 5]" }, "expected": "node count: 5\nheight: 2" },
+    { "args": { "root": "[1, 2, 3, 4, 5, 6, 7]" }, "expected": "node count: 7\nheight: 2" },
+    { "args": { "root": "[1]" }, "expected": "node count: 1\nheight: 0" },
+    { "args": { "root": "[]" }, "expected": "node count: 0\nheight: -1" },
+    { "args": { "root": "[1, 2, null, 3]" }, "expected": "node count: 3\nheight: 2" }
+  ]
+}
+```
+
+Look at the two functions: each is the recursive definition made literal — "the count of a tree is 1 (this node) plus the count of the left subtree plus the count of the right subtree," with the empty tree as the base case. `height` is the same shape, taking the *max* of the two sides plus one. The tree `[1, 2, 3, 4, 5]` has 5 nodes and a longest root-to-leaf path of 2 edges (`1 → 2 → 4`). This "recurse left, recurse right, combine" skeleton is the template for nearly every algorithm in the trees module.
 
 ## How It Works
 
@@ -112,27 +175,163 @@ The recursive "node, left, right" template answers most structural questions abo
 **Predict:** in the *perfect* binary tree of 7 nodes (root 1; internal 2, 3; leaves 4, 5, 6, 7), how many nodes are **leaves** (no children) and how many are **internal** (at least one child)?
 
 ```python run viz=binary-tree viz-root=root
+import json
+from collections import deque
+
 class Node:
     def __init__(self, val, left=None, right=None):
         self.val = val; self.left = left; self.right = right
-def leaves(n):
-    if n is None: return 0
-    if n.left is None and n.right is None: return 1   # a leaf has no children
-    return leaves(n.left) + leaves(n.right)
-def internal(n):
-    if n is None or (n.left is None and n.right is None): return 0
-    return 1 + internal(n.left) + internal(n.right)
 
-tree = Node(1, Node(2, Node(4), Node(5)), Node(3, Node(6), Node(7)))   # perfect, 7 nodes
-print("leaves:", leaves(tree), "| internal:", internal(tree))
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = Node(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = Node(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = Node(v); queue.append(node.right)
+    return root
+
+def leaves(n):
+    # Your code goes here — return 0 for None; 1 if it's a leaf; else recurse both sides.
+    pass
+
+def internal(n):
+    # Your code goes here — return 0 for None or a leaf; else 1 + recurse both sides.
+    pass
+
+root = build_tree(json.loads(input()))
+print("leaves:", leaves(root), "| internal:", internal(root))
 ```
 
 ```java run viz=binary-tree viz-root=root
+import java.util.*;
+
 public class Main {
     static class Node {
         int val; Node left, right;
         Node(int v) { val = v; }
-        Node(int v, Node l, Node r) { val = v; left = l; right = r; }
+    }
+    static int leaves(Node n) {
+        // Your code goes here — base: null→0, leaf→1; else recurse both sides.
+        return 0;
+    }
+    static int internal(Node n) {
+        // Your code goes here — base: null or leaf→0; else 1 + recurse both sides.
+        return 0;
+    }
+    public static void main(String[] x) {
+        Scanner sc = new Scanner(System.in);
+        Node root = buildTree(parseIntegerArray(sc.nextLine()));
+        System.out.println("leaves: " + leaves(root) + " | internal: " + internal(root));
+    }
+
+    static Node buildTree(Integer[] values) {
+        if (values.length == 0 || values[0] == null) return null;
+        Node root = new Node(values[0]);
+        Deque<Node> queue = new ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            Node node = queue.poll();
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.left = new Node(v); queue.add(node.left); }
+            }
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.right = new Node(v); queue.add(node.right); }
+            }
+        }
+        return root;
+    }
+
+    static Integer[] parseIntegerArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new Integer[0];
+        String[] parts = inner.split(",");
+        Integer[] out = new Integer[parts.length];
+        for (int i = 0; i < parts.length; i++)
+            out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[1, 2, 3, 4, 5, 6, 7]" }
+  ],
+  "cases": [
+    { "args": { "root": "[1, 2, 3, 4, 5, 6, 7]" }, "expected": "leaves: 4 | internal: 3" },
+    { "args": { "root": "[1, 2, 3, 4, 5]" }, "expected": "leaves: 3 | internal: 2" },
+    { "args": { "root": "[1]" }, "expected": "leaves: 1 | internal: 0" },
+    { "args": { "root": "[]" }, "expected": "leaves: 0 | internal: 0" },
+    { "args": { "root": "[1, 2, null, 3]" }, "expected": "leaves: 1 | internal: 2" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Both functions are the same "node, left, right" skeleton from See It Work; only the per-node decision changed. For `leaves`: a `None` child contributes 0; a node with both children `None` is a leaf and contributes 1; otherwise recurse both sides and add. For `internal`: `None` and leaf nodes both contribute 0; any node with at least one child contributes 1 plus the sum of both sides. Notice `leaves = internal + 1` — that's a general law of *full* binary trees (every node has 0 or 2 children), and it falls right out of the recursion.
+
+```python solution time=O(n) space=O(h)
+import json
+from collections import deque
+
+class Node:
+    def __init__(self, val, left=None, right=None):
+        self.val = val; self.left = left; self.right = right
+
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = Node(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = Node(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = Node(v); queue.append(node.right)
+    return root
+
+def leaves(n):
+    if n is None: return 0
+    if n.left is None and n.right is None: return 1   # a leaf has no children
+    return leaves(n.left) + leaves(n.right)
+
+def internal(n):
+    if n is None or (n.left is None and n.right is None): return 0
+    return 1 + internal(n.left) + internal(n.right)
+
+root = build_tree(json.loads(input()))
+print("leaves:", leaves(root), "| internal:", internal(root))
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+    static class Node {
+        int val; Node left, right;
+        Node(int v) { val = v; }
     }
     static int leaves(Node n) {
         if (n == null) return 0;
@@ -144,13 +343,44 @@ public class Main {
         return 1 + internal(n.left) + internal(n.right);
     }
     public static void main(String[] x) {
-        Node tree = new Node(1, new Node(2, new Node(4), new Node(5)), new Node(3, new Node(6), new Node(7)));
-        System.out.println("leaves: " + leaves(tree) + " | internal: " + internal(tree));
+        Scanner sc = new Scanner(System.in);
+        Node root = buildTree(parseIntegerArray(sc.nextLine()));
+        System.out.println("leaves: " + leaves(root) + " | internal: " + internal(root));
+    }
+
+    static Node buildTree(Integer[] values) {
+        if (values.length == 0 || values[0] == null) return null;
+        Node root = new Node(values[0]);
+        Deque<Node> queue = new ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            Node node = queue.poll();
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.left = new Node(v); queue.add(node.left); }
+            }
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.right = new Node(v); queue.add(node.right); }
+            }
+        }
+        return root;
+    }
+
+    static Integer[] parseIntegerArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new Integer[0];
+        String[] parts = inner.split(",");
+        Integer[] out = new Integer[parts.length];
+        for (int i = 0; i < parts.length; i++)
+            out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```
 
-Both print `leaves: 4 | internal: 3`. The four bottom-row nodes (4, 5, 6, 7) are leaves; the three upper nodes (1, 2, 3) are internal. Notice `leaves = internal + 1` — that's a general law of *full* binary trees (every node has 0 or 2 children), and it falls right out of the recursion. Both functions are the same "node, left, right" skeleton from See It; only the per-node decision changed (count if it's a leaf vs count if it's internal). That's the leverage of the recursive definition: once you can express "combine the answer from my two subtrees," you can compute almost any structural property — size, height, leaf count, sum, mirror, diameter — by swapping the combine step.
+</details>
 
 ## Reflect & Connect
 

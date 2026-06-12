@@ -4,6 +4,8 @@ summary: "Given the head of a singly linked list and a non-negative integer N, w
 prereqs:
   - 09-pattern-sliding-window-traversal/01-pattern
 difficulty: easy
+kind: problem
+topics: [sliding-window-traversal, singly-linked-list]
 ---
 
 # Trim Nth node
@@ -35,8 +37,115 @@ Output: [2, 3, 4, 5]
 ```
 `N` equals the length, so the victim is the head itself — return `head.next`.
 
+## Constraints
 
----
+- `1 ≤ list length ≤ 10⁵`
+- `-10⁴ ≤ node.val ≤ 10⁴`
+- `1 ≤ N ≤ list length`
+
+```python run viz=linked-list viz-root=head
+import ast
+
+class ListNode:
+    def __init__(self, val, next=None):
+        self.val = val
+        self.next = next
+
+class Solution:
+    def trim_nth_node(self, head, n):
+        # Your code goes here — prime a gap of n-1 with a leading cursor,
+        # then slide together until the lead reaches the tail; the trailing
+        # pointer is on the victim, with a predecessor shadow for the splice.
+        pass
+
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
+
+def print_list(head):                # 1 → 2 → 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
+
+head_vals = ast.literal_eval(input())   # the test case's head
+n = int(input())                         # the test case's N
+head = build_list(head_vals) if head_vals else None
+print_list(Solution().trim_nth_node(head, n))
+```
+
+```java run viz=linked-list viz-root=head
+import java.util.*;
+
+public class Main {
+    static class ListNode {
+        int val; ListNode next;
+        ListNode(int val) { this.val = val; }
+        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+    }
+
+    static class Solution {
+        ListNode trimNthNode(ListNode head, int n) {
+            // Your code goes here — prime a gap of n-1 with a leading cursor,
+            // then slide together until the lead reaches the tail; the trailing
+            // pointer is on the victim, with a predecessor shadow for the splice.
+            return null;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] headVals = parseIntArray(sc.nextLine());
+        int n = Integer.parseInt(sc.nextLine().trim());
+        ListNode head = buildList(headVals);
+        printList(new Solution().trimNthNode(head, n));
+    }
+
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+        ListNode head = null;
+        for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+        return head;
+    }
+
+    static void printList(ListNode head) {         // 1 → 2 → 3 → [1, 2, 3]
+        List<Integer> out = new ArrayList<>();
+        for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+        System.out.println(out);
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's head
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "head", "label": "head", "type": "int[]", "placeholder": "[1, 2, 3, 4, 5]" },
+    { "id": "n", "label": "N", "type": "int", "placeholder": "2" }
+  ],
+  "cases": [
+    { "args": { "head": "[1, 2, 3, 4, 5]", "n": "2" }, "expected": "[1, 2, 3, 5]" },
+    { "args": { "head": "[1]", "n": "1" }, "expected": "[]" },
+    { "args": { "head": "[1, 2, 3, 4, 5]", "n": "5" }, "expected": "[2, 3, 4, 5]" },
+    { "args": { "head": "[1, 2]", "n": "1" }, "expected": "[1]" },
+    { "args": { "head": "[1, 2]", "n": "2" }, "expected": "[2]" },
+    { "args": { "head": "[1, 2, 3]", "n": "3" }, "expected": "[2, 3]" },
+    { "args": { "head": "[1, 2, 3]", "n": "1" }, "expected": "[1, 2]" },
+    { "args": { "head": "[1, 2, 3, 4, 5]", "n": "1" }, "expected": "[1, 2, 3, 4]" }
+  ]
+}
+```
 
 <details>
 <summary><h2>Intuition</h2></summary>
@@ -93,40 +202,16 @@ Maintain three pointers (`start`, `prev_to_start`, `end`). Walk the list once.
 
 ### Solution
 
-
-```python run viz=linked-list viz-root=head
-from typing import Optional
-
+```python solution time=O(n) space=O(1)
+import ast
 
 class ListNode:
-    def __init__(self, val=0, nxt=None):
+    def __init__(self, val, next=None):
         self.val = val
-        self.next = nxt
-
-
-def from_list(values):
-    if not values:
-        return None
-    head = ListNode(values[0])
-    cur = head
-    for v in values[1:]:
-        cur.next = ListNode(v)
-        cur = cur.next
-    return head
-
-
-def to_list(head):
-    out = []
-    while head is not None:
-        out.append(head.val)
-        head = head.next
-    return out
-
+        self.next = next
 
 class Solution:
-    def trim_nth_node(
-        self, head: Optional[ListNode], n: int
-    ) -> Optional[ListNode]:
+    def trim_nth_node(self, head, n):
 
         # Handle edge case for an empty list
         if head is None:
@@ -165,46 +250,33 @@ class Solution:
         # Return the modified list
         return head
 
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
 
-print(to_list(Solution().trim_nth_node(from_list([1, 2, 3, 4, 5]), 2)))  # [1, 2, 3, 5]
-print(to_list(Solution().trim_nth_node(from_list([1]), 1)))               # []
+def print_list(head):                # 1 → 2 → 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
 
-# Edge cases
-print(to_list(Solution().trim_nth_node(from_list([1, 2]), 1)))            # [1]
-print(to_list(Solution().trim_nth_node(from_list([1, 2]), 2)))            # [2]
-print(to_list(Solution().trim_nth_node(from_list([1, 2, 3]), 3)))         # [2, 3]
-print(to_list(Solution().trim_nth_node(from_list([1, 2, 3]), 1)))         # [1, 2]
-print(to_list(Solution().trim_nth_node(from_list([1, 2, 3, 4, 5]), 5)))  # [2, 3, 4, 5]
-print(to_list(Solution().trim_nth_node(from_list([1, 2, 3, 4, 5]), 1)))  # [1, 2, 3, 4]
+head_vals = ast.literal_eval(input())   # the test case's head
+n = int(input())                         # the test case's N
+head = build_list(head_vals) if head_vals else None
+print_list(Solution().trim_nth_node(head, n))
 ```
 
-```java run viz=linked-list viz-root=head
+```java solution
 import java.util.*;
 
 public class Main {
     static class ListNode {
-        int val;
-        ListNode next;
-        ListNode() {}
+        int val; ListNode next;
         ListNode(int val) { this.val = val; }
         ListNode(int val, ListNode next) { this.val = val; this.next = next; }
-    }
-
-    static ListNode fromList(int... values) {
-        if (values.length == 0) return null;
-        ListNode head = new ListNode(values[0]);
-        ListNode cur = head;
-        for (int i = 1; i < values.length; i++) {
-            cur.next = new ListNode(values[i]);
-            cur = cur.next;
-        }
-        return head;
-    }
-
-    static java.util.List<Integer> toList(ListNode head) {
-        java.util.List<Integer> out = new java.util.ArrayList<>();
-        while (head != null) { out.add(head.val); head = head.next; }
-        return out;
     }
 
     static class Solution {
@@ -255,16 +327,33 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        System.out.println(toList(new Solution().trimNthNode(fromList(1, 2, 3, 4, 5), 2)));  // [1, 2, 3, 5]
-        System.out.println(toList(new Solution().trimNthNode(fromList(1), 1)));               // []
+        Scanner sc = new Scanner(System.in);
+        int[] headVals = parseIntArray(sc.nextLine());
+        int n = Integer.parseInt(sc.nextLine().trim());
+        ListNode head = buildList(headVals);
+        printList(new Solution().trimNthNode(head, n));
+    }
 
-        // Edge cases
-        System.out.println(toList(new Solution().trimNthNode(fromList(1, 2), 1)));            // [1]
-        System.out.println(toList(new Solution().trimNthNode(fromList(1, 2), 2)));            // [2]
-        System.out.println(toList(new Solution().trimNthNode(fromList(1, 2, 3), 3)));         // [2, 3]
-        System.out.println(toList(new Solution().trimNthNode(fromList(1, 2, 3), 1)));         // [1, 2]
-        System.out.println(toList(new Solution().trimNthNode(fromList(1, 2, 3, 4, 5), 5)));  // [2, 3, 4, 5]
-        System.out.println(toList(new Solution().trimNthNode(fromList(1, 2, 3, 4, 5), 1)));  // [1, 2, 3, 4]
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+        ListNode head = null;
+        for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+        return head;
+    }
+
+    static void printList(ListNode head) {         // 1 → 2 → 3 → [1, 2, 3]
+        List<Integer> out = new ArrayList<>();
+        for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+        System.out.println(out);
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's head
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

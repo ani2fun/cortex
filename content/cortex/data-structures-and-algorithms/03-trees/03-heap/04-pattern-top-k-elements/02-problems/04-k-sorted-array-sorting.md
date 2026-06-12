@@ -1,9 +1,11 @@
 ---
 title: "K Sorted Array Sorting"
-summary: "Given an array arr where every element is at most k positions away from its sorted position, sort the array in place in O(n log k) or better."
+summary: "Given an array where every element is at most k positions from its sorted position, sort it in O(n log k) using a sliding size-(k+1) min-heap."
 prereqs:
   - 04-pattern-top-k-elements/01-pattern
 difficulty: medium
+kind: problem
+topics: [top-k-elements, heap]
 ---
 
 # K sorted array sorting
@@ -13,6 +15,8 @@ difficulty: medium
 Given an array `arr` where every element is at most `k` positions away from its sorted position, sort the array in place in **`O(n log k)`** or better.
 
 > A "K-sorted" array is *almost* sorted — every element is at most K positions out of place. Real-world example: data merged from `K` sorted streams; sensor readings with bounded jitter.
+
+## Examples
 
 ### Example 1
 
@@ -29,9 +33,76 @@ Given an array `arr` where every element is at most `k` positions away from its 
 > - **Input:** `arr = [1, 2, 3]`, `k = 0`
 > - **Output:** `[1, 2, 3]`
 
+## Constraints
+
+- `1 ≤ arr.length ≤ 10^4`
+- `0 ≤ k < arr.length`
+- `-10^4 ≤ arr[i] ≤ 10^4`
+
+```python run
+import ast
+import heapq
+
+class Solution:
+    def k_sorted_array_sorting(self, arr, k):
+        # Your code goes here
+        pass
+
+arr = ast.literal_eval(input())
+k = int(input())
+Solution().k_sorted_array_sorting(arr, k)
+print(arr)
+```
+
+```java run
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public void kSortedArraySorting(int[] arr, int k) {
+            // Your code goes here
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        new Solution().kSortedArraySorting(arr, k);
+        System.out.println(Arrays.toString(arr));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[6, 5, 3, 2, 8, 10, 9]" },
+    { "id": "k", "label": "k", "type": "int", "placeholder": "3" }
+  ],
+  "cases": [
+    { "args": { "arr": "[6, 5, 3, 2, 8, 10, 9]", "k": "3" }, "expected": "[2, 3, 5, 6, 8, 9, 10]" },
+    { "args": { "arr": "[10, 9, 8, 7, 4, 70, 60, 50]", "k": "4" }, "expected": "[4, 7, 8, 9, 10, 50, 60, 70]" },
+    { "args": { "arr": "[1, 2, 3]", "k": "0" }, "expected": "[1, 2, 3]" },
+    { "args": { "arr": "[1]", "k": "0" }, "expected": "[1]" },
+    { "args": { "arr": "[2, 1]", "k": "1" }, "expected": "[1, 2]" },
+    { "args": { "arr": "[4, 4, 4]", "k": "1" }, "expected": "[4, 4, 4]" },
+    { "args": { "arr": "[3, 2, 1, 5, 4]", "k": "2" }, "expected": "[1, 2, 3, 4, 5]" }
+  ]
+}
+```
+
 <details>
 <summary><h2>The Strategy</h2></summary>
-
 
 A general sort is `O(n log n)`. The K-sortedness *constraint* — every element is at most K positions misplaced — lets us do better.
 
@@ -74,14 +145,12 @@ Total work: `n + 1` pushes, `n` pops, all on a heap of size at most `K+1` → **
 <details>
 <summary><h2>The Solution</h2></summary>
 
-
-
-```python run viz=array viz-root=min_heap viz-kind=heap
-from typing import List
+```python solution time=O(n log k) space=O(k)
+import ast
 import heapq
 
 class Solution:
-    def k_sorted_array_sorting(self, arr: List[int], k: int) -> None:
+    def k_sorted_array_sorting(self, arr, k):
         n = len(arr)
 
         # Create a min heap
@@ -107,32 +176,13 @@ class Solution:
         for i in range(n - k - 1, n):
             arr[i] = heapq.heappop(min_heap)
 
-
-# Examples from the problem statement
-a1 = [6, 5, 3, 2, 8, 10, 9]
-Solution().k_sorted_array_sorting(a1, 3); print(a1)   # [2, 3, 5, 6, 8, 9, 10]
-
-a2 = [10, 9, 8, 7, 4, 70, 60, 50]
-Solution().k_sorted_array_sorting(a2, 4); print(a2)   # [4, 7, 8, 9, 10, 50, 60, 70]
-
-a3 = [1, 2, 3]
-Solution().k_sorted_array_sorting(a3, 0); print(a3)   # [1, 2, 3]
-
-# Edge cases
-a4 = [1]
-Solution().k_sorted_array_sorting(a4, 0); print(a4)   # [1] — single element
-
-a5 = [2, 1]
-Solution().k_sorted_array_sorting(a5, 1); print(a5)   # [1, 2] — two elements, k=1
-
-a6 = [4, 4, 4]
-Solution().k_sorted_array_sorting(a6, 1); print(a6)   # [4, 4, 4] — all same
-
-a7 = [5, 3, 4, 1, 2]
-Solution().k_sorted_array_sorting(a7, 2); print(a7)   # [1, 2, 3, 4, 5]
+arr = ast.literal_eval(input())
+k = int(input())
+Solution().k_sorted_array_sorting(arr, k)
+print(arr)
 ```
 
-```java run viz=array viz-root=minHeap viz-kind=heap
+```java solution
 import java.util.*;
 
 public class Main {
@@ -170,39 +220,23 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        int[] a1 = {6, 5, 3, 2, 8, 10, 9};
-        new Solution().kSortedArraySorting(a1, 3);
-        System.out.println(Arrays.toString(a1));   // [2, 3, 5, 6, 8, 9, 10]
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        new Solution().kSortedArraySorting(arr, k);
+        System.out.println(Arrays.toString(arr));
+    }
 
-        int[] a2 = {10, 9, 8, 7, 4, 70, 60, 50};
-        new Solution().kSortedArraySorting(a2, 4);
-        System.out.println(Arrays.toString(a2));   // [4, 7, 8, 9, 10, 50, 60, 70]
-
-        int[] a3 = {1, 2, 3};
-        new Solution().kSortedArraySorting(a3, 0);
-        System.out.println(Arrays.toString(a3));   // [1, 2, 3]
-
-        // Edge cases
-        int[] a4 = {1};
-        new Solution().kSortedArraySorting(a4, 0);
-        System.out.println(Arrays.toString(a4));   // [1] — single element
-
-        int[] a5 = {2, 1};
-        new Solution().kSortedArraySorting(a5, 1);
-        System.out.println(Arrays.toString(a5));   // [1, 2] — two elements, k=1
-
-        int[] a6 = {4, 4, 4};
-        new Solution().kSortedArraySorting(a6, 1);
-        System.out.println(Arrays.toString(a6));   // [4, 4, 4] — all same
-
-        int[] a7 = {5, 3, 4, 1, 2};
-        new Solution().kSortedArraySorting(a7, 2);
-        System.out.println(Arrays.toString(a7));   // [1, 2, 3, 4, 5]
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```
-
 
 <details>
 <summary><strong>Trace — arr = [6, 5, 3, 2, 8, 10, 9], k = 3</strong></summary>
@@ -225,7 +259,6 @@ Result: [2, 3, 5, 6, 8, 9, 10] ✓
 </details>
 <details>
 <summary><h2>Key Takeaway</h2></summary>
-
 
 The Top-K pattern is one of the highest-leverage idioms in algorithms. **Maintain a fixed-size heap of size K**, stream the data through, and you've reduced an `O(n log n)` sort to **`O(n log K)`** — a strict improvement when `K << n`, and the foundation of every "leaderboard / closest-K / top-rated" feature in production.
 

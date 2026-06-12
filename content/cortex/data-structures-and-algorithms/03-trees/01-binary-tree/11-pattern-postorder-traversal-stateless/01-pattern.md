@@ -15,9 +15,12 @@ prereqs:
 
 ## See It Work
 
-Compute a tree's **height** bottom-up: a leaf is height 1, and every node is `1 + max(child heights)`. Run it.
+Compute a tree's **height** bottom-up: a leaf is height 1, and every node is `1 + max(child heights)`. Pick a case and **Run** it.
 
 ```python run viz=binary-tree viz-root=root
+import json
+from collections import deque
+
 class TreeNode:
     def __init__(self, val, left=None, right=None):
         self.val = val
@@ -27,12 +30,101 @@ class TreeNode:
 def height(node):
     if node is None:
         return 0                                   # empty subtree contributes height 0
-    left = height(node.left)                        # solve children FIRST
+    left = height(node.left)                       # solve children FIRST
     right = height(node.right)
-    return 1 + max(left, right)                     # then synthesize this node's answer
+    return 1 + max(left, right)                    # then synthesize this node's answer
 
-root = TreeNode(1, TreeNode(2, TreeNode(4), TreeNode(5)), TreeNode(3, None, TreeNode(6)))
-print(height(root))     # 3
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
+
+root = build_tree(json.loads(input()))   # the test case's level-order values
+print(height(root))
+```
+
+```java run viz=binary-tree viz-root=root
+import java.util.*;
+
+public class Main {
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
+  }
+
+  static int height(TreeNode node) {
+    if (node == null) return 0;                    // empty subtree contributes height 0
+    int left = height(node.left);                  // solve children FIRST
+    int right = height(node.right);
+    return 1 + Math.max(left, right);              // then synthesize this node's answer
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+    System.out.println(height(root));
+  }
+
+  static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
+    }
+    return root;
+  }
+
+  // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[1, 2, 3, 4, 5, null, 6]" }
+  ],
+  "cases": [
+    { "args": { "root": "[1, 2, 3, 4, 5, null, 6]" }, "expected": "3" },
+    { "args": { "root": "[1, 2, 3, 4, null, null, 7]" }, "expected": "3" },
+    { "args": { "root": "[5]" }, "expected": "1" },
+    { "args": { "root": "[]" }, "expected": "0" },
+    { "args": { "root": "[1, 2]" }, "expected": "2" },
+    { "args": { "root": "[1, 2, 3, 4, 5, 6, 7]" }, "expected": "3" }
+  ]
+}
 ```
 
 ## How It Works
@@ -79,56 +171,210 @@ Because the naive version **recomputes heights redundantly**. `is_balanced(node)
 Height plus the single-pass balanced check (tuple/sentinel return):
 
 ```python run viz=binary-tree viz-root=root
+import json
+from collections import deque
+
 class TreeNode:
     def __init__(self, val, left=None, right=None):
         self.val = val; self.left = left; self.right = right
 
 def height(node):
-    if node is None: return 0
-    return 1 + max(height(node.left), height(node.right))
+    # Your code goes here — base case None → 0; otherwise 1 + max(height(left), height(right))
+    pass
 
-def is_balanced(root):
-    def h(n):                              # returns height, or -1 if any subtree unbalanced
-        if n is None: return 0
-        lh = h(n.left)
-        if lh == -1: return -1
-        rh = h(n.right)
-        if rh == -1 or abs(lh - rh) > 1: return -1
-        return 1 + max(lh, rh)
-    return h(root) != -1
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
 
-root = TreeNode(1, TreeNode(2, TreeNode(4), TreeNode(5)), TreeNode(3, None, TreeNode(6)))
-skew = TreeNode(1, TreeNode(2, TreeNode(3)))
-print(height(root), is_balanced(root), is_balanced(skew))   # 3 True False
+root = build_tree(json.loads(input()))   # the test case's level-order values
+print(height(root))
 ```
 
 ```java run viz=binary-tree viz-root=root
-public class Main {
-  static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } TreeNode(int v, TreeNode l, TreeNode r){ val=v; left=l; right=r; } }
+import java.util.*;
 
-  static int height(TreeNode n) {
-    if (n == null) return 0;
-    return 1 + Math.max(height(n.left), height(n.right));
+public class Main {
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
   }
-  static int balancedHeight(TreeNode n) {       // height, or -1 if unbalanced
-    if (n == null) return 0;
-    int lh = balancedHeight(n.left);
-    if (lh == -1) return -1;
-    int rh = balancedHeight(n.right);
-    if (rh == -1 || Math.abs(lh - rh) > 1) return -1;
-    return 1 + Math.max(lh, rh);
+
+  static int height(TreeNode node) {
+    // Your code goes here — base case null → 0; otherwise 1 + max(height(left), height(right))
+    return 0;
   }
+
   public static void main(String[] args) {
-    TreeNode root = new TreeNode(1, new TreeNode(2, new TreeNode(4), new TreeNode(5)),
-                                    new TreeNode(3, null, new TreeNode(6)));
-    System.out.println(height(root) + " " + (balancedHeight(root) != -1));   // 3 true
+    Scanner sc = new Scanner(System.in);
+    TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+    System.out.println(height(root));
+  }
+
+  static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
+    }
+    return root;
+  }
+
+  // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
   }
 }
 ```
 
-Drill the family in **Practice** — [Sum of Leaves](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-postorder-traversal-stateless/problems/sum-of-leaves), [Height of a Binary Tree](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-postorder-traversal-stateless/problems/height-of-a-binary-tree), [Maximum Root-to-Leaf Path Sum](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-postorder-traversal-stateless/problems/maximum-root-to-leaf-path-sum), and [Is It a Full Binary Tree](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-postorder-traversal-stateless/problems/is-it-a-full-binary-tree).
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[1, 2, 3, 4, 5, null, 6]" }
+  ],
+  "cases": [
+    { "args": { "root": "[1, 2, 3, 4, 5, null, 6]" }, "expected": "3" },
+    { "args": { "root": "[1, 2, 3, 4, null, null, 7]" }, "expected": "3" },
+    { "args": { "root": "[5]" }, "expected": "1" },
+    { "args": { "root": "[]" }, "expected": "0" },
+    { "args": { "root": "[1, 2]" }, "expected": "2" },
+    { "args": { "root": "[1, 2, 3, 4, 5, 6, 7]" }, "expected": "3" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+The base case `None → 0` handles both an empty tree and the "fell off a missing child" case. At each node, recurse into both children first to get their heights, then return `1 + max(left, right)`. The children's results travel purely as return values — nothing shared, so the left subtree can't affect the right.
+
+```python solution time=O(n) space=O(h)
+import json
+from collections import deque
+
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val; self.left = left; self.right = right
+
+def height(node):
+    if node is None:
+        return 0                                   # empty subtree contributes height 0
+    left = height(node.left)                       # solve children FIRST
+    right = height(node.right)
+    return 1 + max(left, right)                    # then synthesize this node's answer
+
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
+
+root = build_tree(json.loads(input()))   # the test case's level-order values
+print(height(root))
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
+  }
+
+  static int height(TreeNode node) {
+    if (node == null) return 0;                    // empty subtree contributes height 0
+    int left = height(node.left);                  // solve children FIRST
+    int right = height(node.right);
+    return 1 + Math.max(left, right);              // then synthesize this node's answer
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+    System.out.println(height(root));
+  }
+
+  static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
+    }
+    return root;
+  }
+
+  // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+</details>
 
 ## Reflect & Connect
+
+Drill the family in **Practice** — [Sum of Leaves](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-postorder-traversal-stateless/problems/sum-of-leaves), [Height of a Binary Tree](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-postorder-traversal-stateless/problems/height-of-a-binary-tree), [Maximum Root-to-Leaf Path Sum](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-postorder-traversal-stateless/problems/maximum-root-to-leaf-path-sum), and [Is It a Full Binary Tree](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-postorder-traversal-stateless/problems/is-it-a-full-binary-tree).
 
 Postorder-stateless is the "my answer depends on my children" template:
 
@@ -180,4 +426,4 @@ Postorder-stateless is the "my answer depends on my children" template:
 
 - **CLRS**, *Introduction to Algorithms*, 4th ed., §10.4 — postorder traversal; recursive subtree computations.
 - **Sedgewick & Wayne**, *Algorithms*, 4th ed., §3.2 — recursive tree aggregates (size, height).
-- Bottom-up height/balance (and the single-pass tuple-return optimization) is the standard postorder template; both runnable blocks are verified by running (`height ⇒ 3`, `is_balanced ⇒ True`, skewed `⇒ False`).
+- Bottom-up height/balance (and the single-pass tuple-return optimization) is the standard postorder template; both runnable blocks are verified by running (`height ⇒ 3`; `[] ⇒ 0`; `[5] ⇒ 1`).

@@ -22,18 +22,82 @@ Find the middle of `1→2→3→4→5`. `fast` leaps two at a time, `slow` strol
 > ▶ Run it, then click **Visualise** — `fast` advances two nodes per step, `slow` one; when `fast` reaches the end, `slow` marks the midpoint.
 
 ```python run viz=linked-list viz-root=head viz-kind=list-single
+import ast
+
 class ListNode:
     def __init__(self, val, next=None):
         self.val = val
         self.next = next
 
-head = ListNode(1, ListNode(2, ListNode(3, ListNode(4, ListNode(5)))))   # 1 → 2 → 3 → 4 → 5
+def build_list(values):              # [1, 2, 3, 4, 5] → 1 → 2 → 3 → 4 → 5 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
+
+head = build_list(ast.literal_eval(input()))   # the test case's values
 
 slow = fast = head
 while fast is not None and fast.next is not None:   # fast moves 2, slow moves 1
     slow = slow.next
     fast = fast.next.next
-print(slow.val)                                      # 3 — the middle
+print(slow.val)                                      # the middle (second middle if even)
+```
+
+```java run viz=linked-list viz-root=head viz-kind=list-single
+import java.util.*;
+
+public class Main {
+  static class ListNode {
+    int val; ListNode next;
+    ListNode(int val) { this.val = val; }
+    ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    ListNode head = buildList(parseIntArray(sc.nextLine()));
+
+    ListNode slow = head, fast = head;
+    while (fast != null && fast.next != null) {   // fast moves 2, slow moves 1
+      slow = slow.next;
+      fast = fast.next.next;
+    }
+    System.out.println(slow.val);                 // the middle (second middle if even)
+  }
+
+  static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+    ListNode head = null;
+    for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+    return head;
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's values
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "values", "label": "values", "type": "int[]", "placeholder": "[1, 2, 3, 4, 5]" }
+  ],
+  "cases": [
+    { "args": { "values": "[1, 2, 3, 4, 5]" }, "expected": "3" },
+    { "args": { "values": "[1, 2, 3, 4, 5, 6]" }, "expected": "4" },
+    { "args": { "values": "[1]" }, "expected": "1" },
+    { "args": { "values": "[1, 2]" }, "expected": "2" },
+    { "args": { "values": "[1, 2, 3]" }, "expected": "2" },
+    { "args": { "values": "[1, 2, 3, 4]" }, "expected": "3" }
+  ]
+}
 ```
 
 ## How It Works
@@ -80,6 +144,98 @@ Before you read on: for an **even** list `1→2→3→4→5→6`, where does `sl
 The reusable midpoint finder:
 
 ```python run viz=linked-list viz-root=head viz-kind=list-single
+import ast
+
+class ListNode:
+    def __init__(self, val, next=None):
+        self.val = val
+        self.next = next
+
+def middle(head):
+    # Your code goes here — slow = fast = head, while fast and fast.next,
+    # advance slow by 1 and fast by 2. Return slow.
+    pass
+
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
+
+head = build_list(ast.literal_eval(input()))
+print(middle(head).val)
+```
+
+```java run viz=linked-list viz-root=head viz-kind=list-single
+import java.util.*;
+
+public class Main {
+  static class ListNode {
+    int val; ListNode next;
+    ListNode(int val) { this.val = val; }
+    ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+  }
+
+  static ListNode middle(ListNode head) {
+    // Your code goes here — slow = fast = head, while fast and fast.next,
+    // advance slow by 1 and fast by 2. Return slow.
+    return null;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    ListNode head = buildList(parseIntArray(sc.nextLine()));
+    System.out.println(middle(head).val);
+  }
+
+  static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+    ListNode head = null;
+    for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+    return head;
+  }
+
+  static void printList(ListNode head) {         // 1 → 2 → 3 → [1, 2, 3]
+    List<Integer> out = new ArrayList<>();
+    for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+    System.out.println(out);
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's values
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "values", "label": "values", "type": "int[]", "placeholder": "[1, 2, 3, 4, 5]" }
+  ],
+  "cases": [
+    { "args": { "values": "[1, 2, 3, 4, 5]" }, "expected": "3" },
+    { "args": { "values": "[1, 2, 3, 4, 5, 6]" }, "expected": "4" },
+    { "args": { "values": "[1]" }, "expected": "1" },
+    { "args": { "values": "[1, 2]" }, "expected": "2" },
+    { "args": { "values": "[1, 2, 3]" }, "expected": "2" },
+    { "args": { "values": "[1, 2, 3, 4]" }, "expected": "3" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+The midpoint finder is the See-It-Work walk packaged as a reusable function: `slow = fast = head`, advance until the two-part guard fails, return `slow`. For odd length `fast` stops *on* the tail (guard fails on `fast.next == null`); for even length it steps one past (guard fails on `fast == null`). In both cases `slow` sits on the middle — the second middle for even-length lists, which is the head of the second half, the natural split point.
+
+```python solution time=O(n) space=O(1)
+import ast
+
 class ListNode:
     def __init__(self, val, next=None):
         self.val = val
@@ -92,13 +248,25 @@ def middle(head):
         fast = fast.next.next       # 2 steps
     return slow                     # the middle (second middle if even)
 
-head = ListNode(1, ListNode(2, ListNode(3, ListNode(4, ListNode(5)))))
-print(middle(head).val)             # 3
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
+
+head = build_list(ast.literal_eval(input()))
+print(middle(head).val)
 ```
 
-```java run viz=linked-list viz-root=head viz-kind=list-single
+```java solution
+import java.util.*;
+
 public class Main {
-  static class ListNode { int val; ListNode next; ListNode(int v){ val = v; } ListNode(int v, ListNode n){ val = v; next = n; } }
+  static class ListNode {
+    int val; ListNode next;
+    ListNode(int val) { this.val = val; }
+    ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+  }
 
   static ListNode middle(ListNode head) {
     ListNode slow = head, fast = head;
@@ -110,15 +278,40 @@ public class Main {
   }
 
   public static void main(String[] args) {
-    ListNode head = new ListNode(1, new ListNode(2, new ListNode(3, new ListNode(4, new ListNode(5)))));
-    System.out.println(middle(head).val);   // 3
+    Scanner sc = new Scanner(System.in);
+    ListNode head = buildList(parseIntArray(sc.nextLine()));
+    System.out.println(middle(head).val);
+  }
+
+  static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+    ListNode head = null;
+    for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+    return head;
+  }
+
+  static void printList(ListNode head) {         // 1 → 2 → 3 → [1, 2, 3]
+    List<Integer> out = new ArrayList<>();
+    for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+    System.out.println(out);
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's values
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
   }
 }
 ```
 
-Drill the family in **Practice** — [Middle Node Search](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-fast-and-slow-pointers/problems/middle-node-search), [Split List in Half](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-fast-and-slow-pointers/problems/split-list-in-half), [Equal Halves](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-fast-and-slow-pointers/problems/equal-halves), and [Palindrome Checker](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-fast-and-slow-pointers/problems/palindrome-checker).
+</details>
 
 ## Reflect & Connect
+
+Drill the family in **Practice** — [Middle Node Search](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-fast-and-slow-pointers/problems/middle-node-search), [Split List in Half](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-fast-and-slow-pointers/problems/split-list-in-half), [Equal Halves](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-fast-and-slow-pointers/problems/equal-halves), and [Palindrome Checker](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-fast-and-slow-pointers/problems/palindrome-checker).
 
 The two-speed walk is one of the most reused list tricks because the speed ratio is really a *measuring tape*:
 

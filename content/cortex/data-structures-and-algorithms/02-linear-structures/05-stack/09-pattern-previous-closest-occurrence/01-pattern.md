@@ -15,20 +15,64 @@ Brute force scans left from each position until it finds a bigger value — `O(n
 
 ## See It Work
 
-For each element of `[2, 5, 3, 7, 1]`, find the nearest larger value to its left (`None` if there isn't one). Run it, then **Visualise** the stack stay decreasing.
+For each element of an array, find the nearest larger value to its left (`-1` if there isn't one). Run it, then **Visualise** the stack stay decreasing.
 
 > ▶ Run it, then click **Visualise** — each element pops the smaller values off the stack; the top that remains is its previous-greater.
 
 ```python run viz=array viz-root=stack viz-kind=stack
-arr = [2, 5, 3, 7, 1]
-stack = []                              # holds candidates, kept strictly decreasing
+import ast
+
+arr = ast.literal_eval(input())      # the test case's arr
+stack = []                           # holds candidates, kept strictly decreasing
 result = []
 for x in arr:
-    while stack and stack[-1] <= x:     # pop everything this element dominates
+    while stack and stack[-1] <= x:  # pop everything this element dominates
         stack.pop()
-    result.append(stack[-1] if stack else None)   # nearest taller to the left
+    result.append(stack[-1] if stack else -1)   # nearest taller to the left
     stack.append(x)
-print(result)                           # [None, None, 5, None, 7]
+print(result)
+```
+
+```java run viz=array viz-root=stack viz-kind=stack
+import java.util.*;
+
+public class Main {
+  public static void main(String[] args) {
+    int[] arr = parseIntArray(new Scanner(System.in).nextLine());
+    List<Integer> stack = new ArrayList<>();     // kept strictly decreasing
+    List<Integer> result = new ArrayList<>();
+    for (int x : arr) {
+      while (!stack.isEmpty() && stack.get(stack.size() - 1) <= x)
+        stack.remove(stack.size() - 1);          // pop everything dominated
+      result.add(stack.isEmpty() ? -1 : stack.get(stack.size() - 1));
+      stack.add(x);
+    }
+    System.out.println(result);
+  }
+
+  // "[3, 5, 7]" → {3, 5, 7} — reads the test case's arr
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[2, 5, 3, 7, 1]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[2, 5, 3, 7, 1]" }, "expected": "[-1, -1, 5, -1, 7]" },
+    { "args": { "arr": "[1, 2, 3, 4]" },    "expected": "[-1, -1, -1, -1]" },
+    { "args": { "arr": "[4, 3, 2, 1]" },    "expected": "[-1, 4, 3, 2]" }
+  ]
+}
 ```
 
 ## How It Works
@@ -36,13 +80,13 @@ print(result)                           # [None, None, 5, None, 7]
 Scan left to right, keeping a stack of values that is always strictly decreasing from bottom to top. For each element `x`:
 
 1. **Pop** while the top is `≤ x`. Those popped values are smaller than `x` and sit to its left, so they can never be the "previous greater" for `x` *or for anything after it* — `x` shadows them.
-2. **Read** the answer: whatever is now on top is the nearest value to the left greater than `x` (or `None` if the stack emptied).
+2. **Read** the answer: whatever is now on top is the nearest value to the left greater than `x` (or `-1` if the stack emptied).
 3. **Push** `x`, so it becomes a candidate for elements further right.
 
 ```mermaid
 flowchart TB
   N["next element x"] --> P["pop while top ≤ x"]
-  P --> R["answer = top (or None)"]
+  P --> R["answer = top (or -1)"]
   R --> PU["push x"]
   PU --> N
 ```
@@ -61,10 +105,10 @@ Previous-greater over `[2, 5, 3, 7, 1]`:
 
 | `x` | pops (`≤ x`) | stack after | answer |
 |---|---|---|---|
-| `2` | — | `[2]` | `None` |
-| `5` | `2` | `[5]` | `None` |
+| `2` | — | `[2]` | `-1` |
+| `5` | `2` | `[5]` | `-1` |
 | `3` | — | `[5, 3]` | `5` |
-| `7` | `3, 5` | `[7]` | `None` |
+| `7` | `3, 5` | `[7]` | `-1` |
 | `1` | — | `[7, 1]` | `7` |
 
 Before you read on: when `7` arrived it popped both `3` and `5`. Could either of those ever be the "previous greater" for the `1` that comes next — and why does popping them early not lose information?
@@ -76,6 +120,8 @@ No. `1` needs the nearest *larger* value to its left, and `7` (which now sits on
 The reusable previous-greater (flip the comparison for previous-smaller):
 
 ```python run viz=array viz-kind=stack
+import ast
+
 def previous_greater(arr):
     stack, result = [], []
     for x in arr:
@@ -85,11 +131,78 @@ def previous_greater(arr):
         stack.append(x)
     return result
 
-print(previous_greater([2, 5, 3, 7, 1]))     # [None, None, 5, None, 7]
-print(previous_greater([4, 3, 2, 1]))        # [None, 4, 3, 2]
+# Your code goes here — implement previous_greater above, then test:
+arr = ast.literal_eval(input())
+res = previous_greater(arr)
+print([-1 if v is None else v for v in res])
 ```
 
 ```java run viz=array viz-kind=stack
+import java.util.*;
+
+public class Main {
+  static Integer[] previousGreater(int[] arr) {
+    // Your code goes here — fill result[i] with the previous-greater of arr[i],
+    // or null if none exists; flip >= to <= for previous-smaller.
+    return new Integer[arr.length];
+  }
+
+  public static void main(String[] args) {
+    int[] arr = parseIntArray(new Scanner(System.in).nextLine());
+    Integer[] res = previousGreater(arr);
+    List<Integer> out = new ArrayList<>();
+    for (Integer v : res) out.add(v == null ? -1 : v);
+    System.out.println(out);
+  }
+
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[2, 5, 3, 7, 1]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[2, 5, 3, 7, 1]" }, "expected": "[-1, -1, 5, -1, 7]" },
+    { "args": { "arr": "[4, 3, 2, 1]" },    "expected": "[-1, 4, 3, 2]" },
+    { "args": { "arr": "[1, 2, 3, 4]" },    "expected": "[-1, -1, -1, -1]" },
+    { "args": { "arr": "[5, 5, 5]" },        "expected": "[-1, -1, -1]" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Scan left to right with a strictly decreasing stack. For each element, pop everything it dominates (top ≤ x), record the surviving top as the previous-greater (or -1 if empty), then push x. Each element is pushed once and popped at most once — amortized O(1) per element, O(n) total. Flip the comparison (`>=`) for the previous-smaller variant with an increasing stack.
+
+```python solution time=O(n) space=O(n)
+import ast
+
+def previous_greater(arr):
+    stack, result = [], []
+    for x in arr:
+        while stack and stack[-1] <= x:      # >= x  →  previous-smaller instead
+            stack.pop()
+        result.append(stack[-1] if stack else None)
+        stack.append(x)
+    return result
+
+arr = ast.literal_eval(input())
+res = previous_greater(arr)
+print([-1 if v is None else v for v in res])
+```
+
+```java solution
 import java.util.*;
 
 public class Main {
@@ -106,10 +219,25 @@ public class Main {
   }
 
   public static void main(String[] args) {
-    System.out.println(Arrays.toString(previousGreater(new int[]{2, 5, 3, 7, 1})));   // [null, null, 5, null, 7]
+    int[] arr = parseIntArray(new Scanner(System.in).nextLine());
+    Integer[] res = previousGreater(arr);
+    List<Integer> out = new ArrayList<>();
+    for (Integer v : res) out.add(v == null ? -1 : v);
+    System.out.println(out);
+  }
+
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
   }
 }
 ```
+
+</details>
 
 Drill the family in **Practice** — [Preceding Superior Element](/cortex/data-structures-and-algorithms/linear-structures/stack/pattern-previous-closest-occurrence/problems/preceding-superior-element), [Preceding Inferior Element](/cortex/data-structures-and-algorithms/linear-structures/stack/pattern-previous-closest-occurrence/problems/preceding-inferior-element), [Preceding Superior Element II](/cortex/data-structures-and-algorithms/linear-structures/stack/pattern-previous-closest-occurrence/problems/preceding-superior-element-ii), and [Preceding Inferior Element II](/cortex/data-structures-and-algorithms/linear-structures/stack/pattern-previous-closest-occurrence/problems/preceding-inferior-element-ii).
 
@@ -165,4 +293,4 @@ The monotonic stack is one of the highest-value stack patterns — recognizing i
 
 - **CLRS**, *Introduction to Algorithms*, 4th ed., §10.1 — stacks; amortized analysis (§17) underlies the `O(n)` argument.
 - **Sedgewick & Wayne**, *Algorithms*, 4th ed., §1.3–1.4 — stacks and amortized cost.
-- The monotonic-stack "previous/next greater element" technique is standard; both runnable blocks are verified by running (`[None, None, 5, None, 7]` and `[None, 4, 3, 2]`).
+- The monotonic-stack "previous/next greater element" technique is standard; both runnable blocks are verified by running.

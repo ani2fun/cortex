@@ -4,6 +4,8 @@ summary: "Given a binary array arr (containing only 0s and 1s) and a positive in
 prereqs:
   - 08-pattern-fixed-sliding-window/01-pattern
 difficulty: easy
+kind: problem
+topics: [sliding-window, arrays]
 ---
 
 # Maximum Ones
@@ -45,6 +47,83 @@ Output: 0
 Explanation: There are no 1s anywhere, so every size-2 window has zero.
 ```
 
+```quiz
+{
+  "prompt": "Now your turn!",
+  "input": "arr = [1, 0, 1, 1, 0, 1, 1, 1], k = 3",
+  "options": ["3", "2", "4", "1"],
+  "answer": "3"
+}
+```
+
+## Constraints
+
+- `0 ≤ arr.length ≤ 10^5`
+- `1 ≤ k ≤ 10^5`
+- `arr[i]` is either `0` or `1`
+
+```python run viz=array viz-root=arr
+import ast
+from typing import List
+
+class Solution:
+    def maximum_ones(self, arr: List[int], k: int) -> int:
+        # Your code goes here — slide a fixed window of size k, tracking the
+        # maximum count of 1s in any window.
+        return 0
+
+arr = ast.literal_eval(input())      # the test case's arr
+k = int(input())                     # the test case's k
+print(Solution().maximum_ones(arr, k))
+```
+
+```java run viz=array viz-root=arr
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int maximumOnes(int[] arr, int k) {
+            // Your code goes here — slide a fixed window of size k, tracking the
+            // maximum count of 1s in any window.
+            return 0;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().maximumOnes(arr, k));
+    }
+
+    // "[1, 0, 1]" → {1, 0, 1} — reads the test case's arr
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0]" },
+    { "id": "k", "label": "k", "type": "int", "placeholder": "5" }
+  ],
+  "cases": [
+    { "args": { "arr": "[1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0]", "k": "5" }, "expected": "4" },
+    { "args": { "arr": "[1, 0, 1, 1, 0, 1, 1, 1]", "k": "3" }, "expected": "3" },
+    { "args": { "arr": "[0, 0, 0]", "k": "2" }, "expected": "0" },
+    { "args": { "arr": "[1, 1, 1]", "k": "3" }, "expected": "3" },
+    { "args": { "arr": "[1, 0, 1, 0, 1]", "k": "2" }, "expected": "1" },
+    { "args": { "arr": "[0, 1]", "k": "5" }, "expected": "0" }
+  ]
+}
+```
 
 <details>
 <summary><h2>Applying the Diagnostic Questions</h2></summary>
@@ -160,7 +239,8 @@ public class Main {
 
 ### Solution
 
-```python run viz=array
+```python solution time=O(N) space=O(1)
+import ast
 from typing import List
 
 class Solution:
@@ -207,20 +287,14 @@ class Solution:
         return max_ones
 
 
-# Examples from the problem statement
-print(Solution().maximum_ones([1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0], 5))   # 4
-print(Solution().maximum_ones([1, 1, 0, 1, 0, 1, 1, 0, 1, 0], 4))       # 3
-print(Solution().maximum_ones([0, 0, 0], 2))                              # 0
-
-# Edge cases
-print(Solution().maximum_ones([1], 1))                                    # 1  — single element
-print(Solution().maximum_ones([0, 1], 2))                                 # 1  — two elements
-print(Solution().maximum_ones([1, 1, 1], 3))                              # 3  — all ones
-print(Solution().maximum_ones([0, 0, 0, 0], 3))                          # 0  — all zeros
-print(Solution().maximum_ones([1, 0, 1, 0, 1], 2))                       # 1  — alternating
+arr = ast.literal_eval(input())      # the test case's arr
+k = int(input())                     # the test case's k
+print(Solution().maximum_ones(arr, k))
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
     static class Solution {
         public int maximumOnes(int[] arr, int k) {
@@ -273,17 +347,20 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().maximumOnes(new int[]{1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0}, 5));   // 4
-        System.out.println(new Solution().maximumOnes(new int[]{1, 1, 0, 1, 0, 1, 1, 0, 1, 0}, 4));       // 3
-        System.out.println(new Solution().maximumOnes(new int[]{0, 0, 0}, 2));                              // 0
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().maximumOnes(arr, k));
+    }
 
-        // Edge cases
-        System.out.println(new Solution().maximumOnes(new int[]{1}, 1));                                    // 1  — single element
-        System.out.println(new Solution().maximumOnes(new int[]{0, 1}, 2));                                 // 1  — two elements
-        System.out.println(new Solution().maximumOnes(new int[]{1, 1, 1}, 3));                              // 3  — all ones
-        System.out.println(new Solution().maximumOnes(new int[]{0, 0, 0, 0}, 3));                          // 0  — all zeros
-        System.out.println(new Solution().maximumOnes(new int[]{1, 0, 1, 0, 1}, 2));                       // 1  — alternating
+    // "[1, 0, 1]" → {1, 0, 1} — reads the test case's arr
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

@@ -20,7 +20,7 @@ That function is a **hash function**, and the array it indexes into is a **hash 
 
 ## See It Work
 
-A hash function maps each key to a bucket index. Run this — four keys, four buckets — and click **Visualise** to watch two keys land in the *same* bucket and share it.
+A hash function maps each key to a bucket index. Pick a case and **Run** it — each key hashes to a bucket — and click **Visualise** to watch two keys land in the *same* bucket and share it.
 
 > ▶ Run it, then click **Visualise** — each key hashes to a bucket; when two collide, they chain together in that bucket.
 
@@ -29,15 +29,71 @@ class Entry:
     def __init__(self, key, value):
         self.key, self.value = key, value
 
-table = {}                          # bucket index -> chain of entries
+inner = input().strip()[1:-1]               # the test case's keys, e.g. [cat, dog, fish]
+keys = [k.strip() for k in inner.split(",")]
+
+table = {}                                  # bucket index -> chain of entries
 
 def put(key, value):
-    i = len(key) % 4                # toy hash: key length, mod 4 buckets
+    i = len(key) % 4                        # toy hash: key length, mod 4 buckets
     table.setdefault(i, []).append(Entry(key, value))
 
-for k, v in [("cat", 1), ("dog", 2), ("fish", 3), ("bird", 4)]:
-    put(k, v)                       # "cat"/"dog" → bucket 3; "fish"/"bird" → bucket 0
+for order, key in enumerate(keys):
+    put(key, order)                         # colliding keys chain in the same bucket
+# sort by bucket index so the output is identical across languages
 print({i: [e.key for e in ch] for i, ch in sorted(table.items())})
+```
+
+```java run viz=hashmap viz-root=table viz-kind=hashmap
+import java.util.*;
+
+public class Main {
+  static class Entry {
+    String key; int value;
+    Entry(String key, int value) { this.key = key; this.value = value; }
+  }
+
+  public static void main(String[] args) {
+    String inner = new Scanner(System.in).nextLine().replaceAll("[\\[\\]]", "");
+    String[] keys = inner.split(",");                       // the test case's keys
+
+    // a TreeMap keeps buckets in index order — so the printout matches Python's
+    TreeMap<Integer, List<Entry>> table = new TreeMap<>();  // bucket index -> chain
+    for (int order = 0; order < keys.length; order++) {
+      String key = keys[order].trim();
+      int i = key.length() % 4;                             // toy hash: key length, mod 4
+      table.computeIfAbsent(i, b -> new ArrayList<>()).add(new Entry(key, order));
+    }
+
+    StringBuilder sb = new StringBuilder("{");
+    boolean firstBucket = true;
+    for (Map.Entry<Integer, List<Entry>> e : table.entrySet()) {
+      if (!firstBucket) sb.append(", ");
+      firstBucket = false;
+      sb.append(e.getKey()).append(": [");
+      for (int j = 0; j < e.getValue().size(); j++) {
+        if (j > 0) sb.append(", ");
+        sb.append("'").append(e.getValue().get(j).key).append("'");
+      }
+      sb.append("]");
+    }
+    sb.append("}");
+    System.out.println(sb);                                 // {0: ['fish', 'bird'], 3: ['cat', 'dog']}
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "keys", "label": "keys", "type": "string[]", "placeholder": "[cat, dog, fish, bird]" }
+  ],
+  "cases": [
+    { "args": { "keys": "[cat, dog, fish, bird]" }, "expected": "{0: ['fish', 'bird'], 3: ['cat', 'dog']}" },
+    { "args": { "keys": "[a, bb, ccc]" }, "expected": "{1: ['a'], 2: ['bb'], 3: ['ccc']}" },
+    { "args": { "keys": "[ant, bee, cow, duck, eel]" }, "expected": "{0: ['duck'], 3: ['ant', 'bee', 'cow', 'eel']}" }
+  ]
+}
 ```
 
 ## How It Works
@@ -87,30 +143,94 @@ Just bucket 3 — hash `"dog"` to `3`, then walk that one short chain. It never 
 
 ## Your Turn
 
-You'll almost never hand-roll one — every language ships a hash table as its dictionary. Here it is doing `O(1)` work:
+The hash table's signature trick is the **`O(1)` counter**: to tally how often each character appears in a string, look up its running count and add one — no scanning, no sorting, one jump per character. Implement `char_counts(s)`, returning a map from each character to its count.
 
 ```python run viz=array
-phone = {}                      # Python's dict IS a hash table
-phone["Neha"] = 23
-phone["Hari"] = 7
-print(phone["Neha"])            # O(1) average lookup → 23
-print("Karan" in phone)         # O(1) membership test → False
+def char_counts(s):
+    # Your code goes here — for each character, look up its current count
+    # in the dict and add one. Return the dict of character -> count.
+    pass
+
+s = input()
+counts = char_counts(s)
+for ch in sorted(counts):           # sort keys: hash order isn't portable across languages
+    print(ch, counts[ch])
 ```
 
 ```java run viz=array
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class Main {
+  static Map<Character, Integer> charCounts(String s) {
+    // Your code goes here — for each character, look up its current count
+    // in the map and add one. Return the map of character -> count.
+    return new HashMap<>();
+  }
   public static void main(String[] args) {
-    Map<String, Integer> phone = new HashMap<>();   // Java's hash table
-    phone.put("Neha", 23);
-    phone.put("Hari", 7);
-    System.out.println(phone.get("Neha"));            // O(1) avg → 23
-    System.out.println(phone.containsKey("Karan"));   // O(1) → false
+    String s = new Scanner(System.in).nextLine();
+    Map<Character, Integer> counts = charCounts(s);
+    List<Character> keys = new ArrayList<>(counts.keySet());
+    Collections.sort(keys);           // sort keys: hash order isn't portable across languages
+    for (char ch : keys) System.out.println(ch + " " + counts.get(ch));
   }
 }
 ```
+
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "s", "type": "string", "placeholder": "banana" }
+  ],
+  "cases": [
+    { "args": { "s": "banana" }, "expected": "a 3\nb 1\nn 2" },
+    { "args": { "s": "aabbcc" }, "expected": "a 2\nb 2\nc 2" },
+    { "args": { "s": "mississippi" }, "expected": "i 4\nm 1\np 2\ns 4" },
+    { "args": { "s": "hello" }, "expected": "e 1\nh 1\nl 2\no 1" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+This is the dictionary-as-counter idiom. Walk the string once; for each character, look up its current tally (defaulting to `0` the first time) and store one more. Every lookup-and-update is `O(1)` average, so counting the whole string is `O(n)` — versus the `O(n²)` you'd pay re-scanning for each distinct character without a hash table.
+
+One subtlety the driver handles for you, and it's the headline gotcha of every hash structure: **a hash table has no reliable order.** Python's `dict` happens to keep insertion order; Java's `HashMap` scatters keys by hash. So if you print the entries in their native iteration order, Python and Java disagree — and so do two runs that inserted in different orders. The fix is to **sort the keys before printing** (here, alphabetically). Carry this rule through every problem in this section: any time your answer enumerates a `dict`/`set`/`Map`, canonicalize the order first.
+
+```python solution time=O(n) space=O(n)
+def char_counts(s):
+    counts = {}
+    for ch in s:
+        counts[ch] = counts.get(ch, 0) + 1   # O(1) look-up-and-bump
+    return counts
+
+s = input()
+counts = char_counts(s)
+for ch in sorted(counts):                     # sort keys: hash order isn't portable
+    print(ch, counts[ch])
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+  static Map<Character, Integer> charCounts(String s) {
+    Map<Character, Integer> counts = new HashMap<>();
+    for (char ch : s.toCharArray())
+      counts.merge(ch, 1, Integer::sum);       // O(1) look-up-and-bump
+    return counts;
+  }
+  public static void main(String[] args) {
+    String s = new Scanner(System.in).nextLine();
+    Map<Character, Integer> counts = charCounts(s);
+    List<Character> keys = new ArrayList<>(counts.keySet());
+    Collections.sort(keys);                    // sort keys: hash order isn't portable
+    for (char ch : keys) System.out.println(ch + " " + counts.get(ch));
+  }
+}
+```
+
+</details>
 
 Want the two collision strategies in full? [Separate Chaining](/cortex/data-structures-and-algorithms/linear-structures/hash-table/separate-chaining) builds the linked-list-per-bucket version from scratch; the probing lessons cover open addressing.
 

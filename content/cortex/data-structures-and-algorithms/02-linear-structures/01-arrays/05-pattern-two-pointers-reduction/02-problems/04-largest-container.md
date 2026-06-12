@@ -4,6 +4,8 @@ summary: "You are given an array heights where heights[i] represents the height 
 prereqs:
   - 05-pattern-two-pointers-reduction/01-pattern
 difficulty: medium
+kind: problem
+topics: [two-pointers, arrays]
 ---
 
 # Largest Container
@@ -48,6 +50,80 @@ Explanation: walls at index 1 (height 8) and index 8 (height 7)
 Input:  heights = [1, 1]
 Output: 1
 Explanation: Only two walls — area = min(1,1) × 1 = 1
+```
+
+```quiz
+{
+  "prompt": "Now your turn!",
+  "input": "heights = [1, 3, 2, 5, 4]",
+  "options": ["9", "12", "6", "4"],
+  "answer": "9"
+}
+```
+
+## Constraints
+
+- `2 ≤ heights.length ≤ 10^5`
+- `0 ≤ heights[i] ≤ 10^4`
+
+```python run viz=array viz-root=heights
+import ast
+from typing import List
+
+class Solution:
+    def largest_container(self, heights: List[int]) -> int:
+        # Your code goes here — two pointers from both ends; track the best
+        # area, and always move the pointer at the shorter wall inward.
+        return 0
+
+heights = ast.literal_eval(input())  # the test case's heights
+print(Solution().largest_container(heights))
+```
+
+```java run viz=array viz-root=heights
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int largestContainer(int[] heights) {
+            // Your code goes here — two pointers from both ends; track the best
+            // area, and always move the pointer at the shorter wall inward.
+            return 0;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] heights = parseIntArray(sc.nextLine());
+        System.out.println(new Solution().largestContainer(heights));
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's heights
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "heights", "label": "heights", "type": "int[]", "placeholder": "[2, 4, 3, 3, 5, 2, 4, 3, 2]" }
+  ],
+  "cases": [
+    { "args": { "heights": "[2, 4, 3, 3, 5, 2, 4, 3, 2]" }, "expected": "20" },
+    { "args": { "heights": "[1, 8, 6, 2, 5, 4, 8, 3, 7]" }, "expected": "49" },
+    { "args": { "heights": "[1, 3, 2, 5, 4]" }, "expected": "9" },
+    { "args": { "heights": "[1, 1]" }, "expected": "1" },
+    { "args": { "heights": "[5, 4, 3, 2, 1]" }, "expected": "6" },
+    { "args": { "heights": "[1, 2, 3, 4, 5]" }, "expected": "6" }
+  ]
+}
 ```
 
 <details>
@@ -289,7 +365,8 @@ flowchart TB
 
 ### Solution
 
-```python run viz=array viz-root=heights
+```python solution time=O(n) space=O(1)
+import ast
 from typing import List
 
 class Solution:
@@ -319,20 +396,13 @@ class Solution:
         return max_area
 
 
-# Example from the problem statement
-print(Solution().largest_container([2, 4, 3, 3, 5, 2, 4, 3, 2]))  # 20
-
-# Edge cases
-print(Solution().largest_container([1, 1]))                         # 1 — two elements, minimum case
-print(Solution().largest_container([1, 2]))                         # 1 — two elements, asymmetric
-print(Solution().largest_container([4, 3, 2, 1, 4]))               # 16 — same height endpoints
-print(Solution().largest_container([1, 8, 6, 2, 5, 4, 8, 3, 7]))  # 49 — classic test
-print(Solution().largest_container([1, 1, 1, 1, 1]))               # 4 — all equal heights
-print(Solution().largest_container([5, 4, 3, 2, 1]))               # 6 — descending
-print(Solution().largest_container([1, 2, 3, 4, 5]))               # 6 — ascending
+heights = ast.literal_eval(input())  # the test case's heights
+print(Solution().largest_container(heights))
 ```
 
-```java run viz=array viz-root=heights
+```java solution
+import java.util.*;
+
 public class Main {
     static class Solution {
         public int largestContainer(int[] heights) {
@@ -367,17 +437,18 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Example from the problem statement
-        System.out.println(new Solution().largestContainer(new int[]{2,4,3,3,5,2,4,3,2})); // 20
+        Scanner sc = new Scanner(System.in);
+        int[] heights = parseIntArray(sc.nextLine());
+        System.out.println(new Solution().largestContainer(heights));
+    }
 
-        // Edge cases
-        System.out.println(new Solution().largestContainer(new int[]{1,1}));                // 1 — two elements, minimum case
-        System.out.println(new Solution().largestContainer(new int[]{1,2}));                // 1 — two elements, asymmetric
-        System.out.println(new Solution().largestContainer(new int[]{4,3,2,1,4}));          // 16 — same height endpoints
-        System.out.println(new Solution().largestContainer(new int[]{1,8,6,2,5,4,8,3,7})); // 49 — classic test
-        System.out.println(new Solution().largestContainer(new int[]{1,1,1,1,1}));          // 4 — all equal heights
-        System.out.println(new Solution().largestContainer(new int[]{5,4,3,2,1}));          // 6 — descending
-        System.out.println(new Solution().largestContainer(new int[]{1,2,3,4,5}));          // 6 — ascending
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

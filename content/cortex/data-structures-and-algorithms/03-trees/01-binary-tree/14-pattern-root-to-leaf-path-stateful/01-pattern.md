@@ -15,9 +15,12 @@ The trick is to maintain **one** shared list that always holds the path from the
 
 ## See It Work
 
-Collect **every** root-to-leaf path. For `1(2, 3)` that's `[[1, 2], [1, 3]]`. Watch the shared path grow on the way down and shrink as we back out. Run it.
+Collect **every** root-to-leaf path. For `[1, 2, 3]` that's `[[1, 2], [1, 3]]`. Watch the shared path grow on the way down and shrink as we back out. Pick a case and **Run** it.
 
 ```python run viz=binary-tree viz-root=root
+import json
+from collections import deque
+
 class TreeNode:
     def __init__(self, val, left=None, right=None):
         self.val = val
@@ -39,8 +42,103 @@ def all_paths(root):
     dfs(root)
     return paths
 
-root = TreeNode(1, TreeNode(2), TreeNode(3))
-print(all_paths(root))     # [[1, 2], [1, 3]]
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
+
+root = build_tree(json.loads(input()))   # the test case's level-order values
+print(all_paths(root))
+```
+
+```java run viz=binary-tree viz-root=root
+import java.util.*;
+
+public class Main {
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
+  }
+
+  static List<List<Integer>> allPaths(TreeNode root) {
+    List<List<Integer>> paths = new ArrayList<>();
+    dfs(root, new ArrayList<>(), paths);
+    return paths;
+  }
+
+  static void dfs(TreeNode node, List<Integer> path, List<List<Integer>> paths) {
+    if (node == null) return;
+    path.add(node.val);                                      // ENTER: extend the shared path
+    if (node.left == null && node.right == null)
+      paths.add(new ArrayList<>(path));                      // LEAF: snapshot a COPY
+    else { dfs(node.left, path, paths); dfs(node.right, path, paths); }
+    path.remove(path.size() - 1);                            // EXIT: backtrack
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+    System.out.println(allPaths(root));
+  }
+
+  static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();    // build queue: only real nodes, ArrayDeque ok
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
+    }
+    return root;
+  }
+
+  // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[1, 2, 3]" }
+  ],
+  "cases": [
+    { "args": { "root": "[1, 2, 3]" }, "expected": "[[1, 2], [1, 3]]" },
+    { "args": { "root": "[5, 4, 8, 11, null, 13, 4, 7, 2, null, null, null, 1]" }, "expected": "[[5, 4, 11, 7], [5, 4, 11, 2], [5, 8, 13], [5, 8, 4, 1]]" },
+    { "args": { "root": "[1]" }, "expected": "[[1]]" },
+    { "args": { "root": "[]" }, "expected": "[]" }
+  ]
+}
 ```
 
 ## How It Works
@@ -70,7 +168,7 @@ When you need the *actual* root-to-leaf paths, keep **one** shared path list: ap
 
 ## Trace It
 
-`all_paths` on `1(2, 3)` — watch `path` and `paths`:
+`all_paths` on `[1, 2, 3]` — watch `path` and `paths`:
 
 | step | action | `path` | `paths` |
 |---|---|---|---|
@@ -81,7 +179,7 @@ When you need the *actual* root-to-leaf paths, keep **one** shared path list: ap
 | exit `3` | pop | `[1]` | `[[1, 2], [1, 3]]` |
 | exit `1` | pop | `[]` | `[[1, 2], [1, 3]]` |
 
-Before you read on: two lines look almost optional — the `list(path)` *copy* at the leaf, and the `path.pop()` on exit. Suppose you "simplify" by storing `path` directly (no copy) **and** drop the pop. What does `all_paths(1(2, 3))` return then, and why?
+Before you read on: two lines look almost optional — the `list(path)` *copy* at the leaf, and the `path.pop()` on exit. Suppose you "simplify" by storing `path` directly (no copy) **and** drop the pop. What does `all_paths([1, 2, 3])` return then, and why?
 
 You'd get **`[[1, 2, 3], [1, 2, 3]]`** — two references to the *same* never-unwound list. Here's the chain of failures. First, `paths.append(path)` without a copy stores a *reference* to the one shared list, not its current contents — so `paths` ends up holding the same object twice, and whatever `path` looks like at the very end is what you "see" through both entries. Second, dropping `path.pop()` means the buffer is never unwound: after visiting `2` the list is `[1, 2]`, and you descend into `3` *without* removing `2`, so the list becomes `[1, 2, 3]` — already wrong (`3` is not a child of `2`), and it stays that way to the end. The copy fixes the aliasing (each snapshot is frozen at its leaf); the pop fixes the buffer (each branch starts from the correct prefix). Both are load-bearing: omit the copy and all results alias to one list; omit the pop and the prefixes bleed across siblings. This is *the* backtracking bug, and it's why the enter/record/exit triple is always written together.
 
@@ -90,6 +188,128 @@ You'd get **`[[1, 2, 3], [1, 2, 3]]`** — two references to the *same* never-un
 All paths plus **path-sum II** (every root-to-leaf path summing to a target) — same skeleton, a predicate at the leaf:
 
 ```python run viz=binary-tree viz-root=root
+import json
+from collections import deque
+
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val; self.left = left; self.right = right
+
+def all_paths(root):
+    # Your code goes here — shared path list, append on enter, snapshot at leaf, pop on exit
+    pass
+
+def path_sum_ii(root, target):
+    # Your code goes here — same skeleton but only snapshot when rem == 0 at a leaf
+    pass
+
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
+
+root = build_tree(json.loads(input()))   # the test case's level-order values
+target = int(input())
+print(all_paths(root))
+print(path_sum_ii(root, target))
+```
+
+```java run viz=binary-tree viz-root=root
+import java.util.*;
+
+public class Main {
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
+  }
+
+  static List<List<Integer>> allPaths(TreeNode root) {
+    // Your code goes here — shared path list, add on enter, snapshot at leaf, remove on exit
+    return new ArrayList<>();
+  }
+
+  static List<List<Integer>> pathSumII(TreeNode root, int target) {
+    // Your code goes here — same skeleton but only snapshot when rem == 0 at a leaf
+    return new ArrayList<>();
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+    int target = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(allPaths(root));
+    System.out.println(pathSumII(root, target));
+  }
+
+  static TreeNode buildTree(Integer[] values) {
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
+    }
+    return root;
+  }
+
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[5, 4, 8, 11, null, 13, 4, 7, 2, null, null, null, 1]" },
+    { "id": "target", "label": "target", "type": "int", "placeholder": "22" }
+  ],
+  "cases": [
+    { "args": { "root": "[5, 4, 8, 11, null, 13, 4, 7, 2, null, null, null, 1]", "target": "22" }, "expected": "[[5, 4, 11, 7], [5, 4, 11, 2], [5, 8, 13], [5, 8, 4, 1]]\n[[5, 4, 11, 2]]" },
+    { "args": { "root": "[1, 2, 3]", "target": "3" }, "expected": "[[1, 2], [1, 3]]\n[[1, 2]]" },
+    { "args": { "root": "[1]", "target": "1" }, "expected": "[[1]]\n[[1]]" },
+    { "args": { "root": "[]", "target": "0" }, "expected": "[]\n[]" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+`all_paths`: shared `path` list, append on enter, copy at leaf, pop on exit. `path_sum_ii`: same skeleton with a running `rem = target - node.val`; at a leaf, snapshot only when `rem == node.val` (i.e. `rem - node.val == 0`). The path travels purely as the shared buffer; the remaining target travels as the argument, so left/right subtrees can't cross-contaminate.
+
+```python solution time=O(n) space=O(h)
+import json
+from collections import deque
+
 class TreeNode:
     def __init__(self, val, left=None, right=None):
         self.val = val; self.left = left; self.right = right
@@ -97,12 +317,14 @@ class TreeNode:
 def all_paths(root):
     paths, path = [], []
     def dfs(node):
-        if node is None: return
+        if node is None:
+            return
         path.append(node.val)
         if node.left is None and node.right is None:
             paths.append(list(path))
         else:
-            dfs(node.left); dfs(node.right)
+            dfs(node.left)
+            dfs(node.right)
         path.pop()
     dfs(root)
     return paths
@@ -120,41 +342,114 @@ def path_sum_ii(root, target):
     dfs(root, target)
     return paths
 
-root = TreeNode(5,
-    TreeNode(4, TreeNode(11, TreeNode(7), TreeNode(2))),
-    TreeNode(8, TreeNode(13), TreeNode(4, TreeNode(5), TreeNode(1))))
-print(all_paths(root))          # [[5, 4, 11, 7], [5, 4, 11, 2], [5, 8, 13], [5, 8, 4, 5], [5, 8, 4, 1]]
-print(path_sum_ii(root, 22))    # [[5, 4, 11, 2], [5, 8, 4, 5]]
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
+
+root = build_tree(json.loads(input()))   # the test case's level-order values
+target = int(input())
+print(all_paths(root))
+print(path_sum_ii(root, target))
 ```
 
-```java run viz=binary-tree viz-root=root
+```java solution
 import java.util.*;
-public class Main {
-  static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } TreeNode(int v, TreeNode l, TreeNode r){ val=v; left=l; right=r; } }
 
-  static void dfs(TreeNode node, List<Integer> path, List<List<Integer>> out) {
-    if (node == null) return;
-    path.add(node.val);                                          // enter
-    if (node.left == null && node.right == null)
-      out.add(new ArrayList<>(path));                            // leaf: snapshot a copy
-    else { dfs(node.left, path, out); dfs(node.right, path, out); }
-    path.remove(path.size() - 1);                                // exit: backtrack
+public class Main {
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
   }
+
   static List<List<Integer>> allPaths(TreeNode root) {
-    List<List<Integer>> out = new ArrayList<>();
-    dfs(root, new ArrayList<>(), out);
-    return out;
+    List<List<Integer>> paths = new ArrayList<>();
+    dfsAll(root, new ArrayList<>(), paths);
+    return paths;
   }
+
+  static void dfsAll(TreeNode node, List<Integer> path, List<List<Integer>> paths) {
+    if (node == null) return;
+    path.add(node.val);
+    if (node.left == null && node.right == null)
+      paths.add(new ArrayList<>(path));
+    else { dfsAll(node.left, path, paths); dfsAll(node.right, path, paths); }
+    path.remove(path.size() - 1);
+  }
+
+  static List<List<Integer>> pathSumII(TreeNode root, int target) {
+    List<List<Integer>> paths = new ArrayList<>();
+    dfsSum(root, target, new ArrayList<>(), paths);
+    return paths;
+  }
+
+  static void dfsSum(TreeNode node, int rem, List<Integer> path, List<List<Integer>> paths) {
+    if (node == null) return;
+    path.add(node.val);
+    if (node.left == null && node.right == null && rem == node.val)
+      paths.add(new ArrayList<>(path));
+    else { dfsSum(node.left, rem - node.val, path, paths); dfsSum(node.right, rem - node.val, path, paths); }
+    path.remove(path.size() - 1);
+  }
+
   public static void main(String[] args) {
-    TreeNode root = new TreeNode(1, new TreeNode(2), new TreeNode(3));
-    System.out.println(allPaths(root));   // [[1, 2], [1, 3]]
+    Scanner sc = new Scanner(System.in);
+    TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+    int target = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(allPaths(root));
+    System.out.println(pathSumII(root, target));
+  }
+
+  static TreeNode buildTree(Integer[] values) {
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
+    }
+    return root;
+  }
+
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
   }
 }
 ```
 
-Drill the family in **Practice** — [Root-to-Leaf Paths Summing to Target](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-root-to-leaf-path-stateful/problems/root-to-leaf-paths-summing-to-target), [Equal Evens and Odds Paths](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-root-to-leaf-path-stateful/problems/equal-evens-and-odds-paths), [Duplicate Paths](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-root-to-leaf-path-stateful/problems/duplicate-paths), and [Prefix Paths](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-root-to-leaf-path-stateful/problems/prefix-paths).
+</details>
 
 ## Reflect & Connect
+
+Drill the family in **Practice** — [Root-to-Leaf Paths Summing to Target](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-root-to-leaf-path-stateful/problems/root-to-leaf-paths-summing-to-target), [Equal Evens and Odds Paths](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-root-to-leaf-path-stateful/problems/equal-evens-and-odds-paths), [Duplicate Paths](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-root-to-leaf-path-stateful/problems/duplicate-paths), and [Prefix Paths](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-root-to-leaf-path-stateful/problems/prefix-paths).
 
 Stateful root-to-leaf is the materialize-the-paths sibling of the stateless summary:
 

@@ -15,11 +15,13 @@ The [BST intro](/cortex/data-structures-and-algorithms/trees/binary-search-tree/
 
 ## See It Work
 
-Compute the height and balance of a bushy tree, then a sorted-insertion chain — and check whether each is height-balanced. Run it, then **Visualise** the difference in shape.
+Compute the height and balance of a BST built from an insertion sequence. Run it, then **Visualise** the difference in shape between bushy and sorted inputs.
 
-> ▶ Run it, then click **Visualise** — the first tree is short and balanced; the second is a degenerate chain whose height equals its node count.
+> ▶ Run it, then click **Visualise** — a random insertion order gives a short, balanced tree; sorted input produces a degenerate chain whose height equals its node count.
 
-```python run viz=binary-tree viz-root=balanced
+```python run viz=binary-tree viz-root=root
+import ast
+
 class TreeNode:
     def __init__(self, val):
         self.val = val
@@ -47,16 +49,70 @@ def is_balanced(node):
         return False
     return is_balanced(node.left) and is_balanced(node.right)
 
-balanced = None
-for v in [5, 3, 8, 1, 4, 7, 9]:
-    balanced = insert(balanced, v)
-degenerate = None
-for v in [1, 2, 3, 4]:                    # sorted insertion → right-leaning chain
-    degenerate = insert(degenerate, v)
-
-print(height(balanced), is_balanced(balanced))       # 2 True
-print(height(degenerate), is_balanced(degenerate))   # 3 False
+values = ast.literal_eval(input())
+root = None
+for v in values:
+    root = insert(root, v)
+print(height(root), "true" if is_balanced(root) else "false")
 ```
+
+```java run viz=binary-tree viz-root=root
+import java.util.*;
+public class Main {
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } }
+
+    static TreeNode insert(TreeNode root, int val) {
+        if (root == null) return new TreeNode(val);
+        if (val < root.val) root.left = insert(root.left, val);
+        else if (val > root.val) root.right = insert(root.right, val);
+        return root;
+    }
+
+    static int height(TreeNode n) {
+        if (n == null) return -1;
+        return 1 + Math.max(height(n.left), height(n.right));
+    }
+
+    static boolean isBalanced(TreeNode n) {
+        if (n == null) return true;
+        return Math.abs(height(n.left) - height(n.right)) <= 1
+            && isBalanced(n.left) && isBalanced(n.right);
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+
+    public static void main(String[] a) {
+        Scanner sc = new Scanner(System.in);
+        int[] values = parseIntArray(sc.nextLine());
+        TreeNode root = null;
+        for (int v : values) root = insert(root, v);
+        System.out.println(height(root) + " " + isBalanced(root));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "values", "label": "insert sequence", "type": "array", "placeholder": "[5, 3, 8, 1, 4, 7, 9]" }
+  ],
+  "cases": [
+    { "args": { "values": "[5, 3, 8, 1, 4, 7, 9]" }, "expected": "2 true" },
+    { "args": { "values": "[1, 2, 3, 4]" }, "expected": "3 false" },
+    { "args": { "values": "[4, 2, 6, 1, 3, 5, 7]" }, "expected": "2 true" },
+    { "args": { "values": "[1]" }, "expected": "0 true" }
+  ]
+}
+```
+
+Both print `2 true` for the balanced input and `3 false` for the degenerate chain. The height is the longest root-to-leaf path; "true" means every node's subtrees differ by at most 1.
 
 ## How It Works
 
@@ -109,6 +165,8 @@ At a million nodes, a balanced BST answers each query in ~20 comparisons; the de
 The reusable height and balance checks:
 
 ```python run viz=binary-tree viz-root=root
+import ast
+
 class TreeNode:
     def __init__(self, val):
         self.val = val
@@ -133,39 +191,67 @@ def is_balanced(node):
     return (abs(height(node.left) - height(node.right)) <= 1
             and is_balanced(node.left) and is_balanced(node.right))
 
-t = None
-for v in [5, 3, 8, 1, 4, 7, 9]:
-    t = insert(t, v)
-print(height(t), is_balanced(t))     # 2 True
-chain = None
-for v in [1, 2, 3, 4, 5]:
-    chain = insert(chain, v)
-print(height(chain), is_balanced(chain))   # 4 False
+values = ast.literal_eval(input())
+root = None
+for v in values:
+    root = insert(root, v)
+print(height(root), "true" if is_balanced(root) else "false")
 ```
 
 ```java run viz=binary-tree viz-root=root
+import java.util.*;
 public class Main {
-  static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } }
-  static TreeNode insert(TreeNode r, int v) {
-    if (r == null) return new TreeNode(v);
-    if (v < r.val) r.left = insert(r.left, v);
-    else if (v > r.val) r.right = insert(r.right, v);
-    return r;
-  }
-  static int height(TreeNode n) {
-    if (n == null) return -1;
-    return 1 + Math.max(height(n.left), height(n.right));
-  }
-  static boolean isBalanced(TreeNode n) {
-    if (n == null) return true;
-    return Math.abs(height(n.left) - height(n.right)) <= 1
-        && isBalanced(n.left) && isBalanced(n.right);
-  }
-  public static void main(String[] args) {
-    TreeNode t = null;
-    for (int v : new int[]{5, 3, 8, 1, 4, 7, 9}) t = insert(t, v);
-    System.out.println(height(t) + " " + isBalanced(t));   // 2 true
-  }
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } }
+
+    static TreeNode insert(TreeNode r, int v) {
+        if (r == null) return new TreeNode(v);
+        if (v < r.val) r.left = insert(r.left, v);
+        else if (v > r.val) r.right = insert(r.right, v);
+        return r;
+    }
+
+    static int height(TreeNode n) {
+        if (n == null) return -1;
+        return 1 + Math.max(height(n.left), height(n.right));
+    }
+
+    static boolean isBalanced(TreeNode n) {
+        if (n == null) return true;
+        return Math.abs(height(n.left) - height(n.right)) <= 1
+            && isBalanced(n.left) && isBalanced(n.right);
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] values = parseIntArray(sc.nextLine());
+        TreeNode t = null;
+        for (int v : values) t = insert(t, v);
+        System.out.println(height(t) + " " + isBalanced(t));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "values", "label": "insert sequence", "type": "array", "placeholder": "[5, 3, 8, 1, 4, 7, 9]" }
+  ],
+  "cases": [
+    { "args": { "values": "[5, 3, 8, 1, 4, 7, 9]" }, "expected": "2 true" },
+    { "args": { "values": "[1, 2, 3, 4, 5]" }, "expected": "4 false" },
+    { "args": { "values": "[3, 1, 5]" }, "expected": "1 true" },
+    { "args": { "values": "[2, 1, 4, 3, 5, 6]" }, "expected": "3 false" },
+    { "args": { "values": "[5]" }, "expected": "0 true" }
+  ]
 }
 ```
 
@@ -223,4 +309,4 @@ Height and balance are the lens for everything tree-shaped:
 
 - **CLRS**, *Introduction to Algorithms*, 4th ed., §12–13 — tree height, balance, and the height bound for balanced trees.
 - **Sedgewick & Wayne**, *Algorithms*, 4th ed., §3.3 — balanced search trees and height guarantees.
-- The height/balance definitions and the `~1.44 log n` Fibonacci (AVL) bound are standard; both runnable blocks are verified by running (balanced `⇒ 2, True`; chains `⇒ 3/4, False`).
+- The height/balance definitions and the `~1.44 log n` Fibonacci (AVL) bound are standard; both runnable blocks are verified by running (balanced `⇒ 2 true`; degenerate `⇒ 4 false`).

@@ -4,6 +4,8 @@ summary: "Two-pointer simultaneous traversal — t's pointer always advances, s'
 prereqs:
   - 07-pattern-simultaneous-traversal/01-pattern
 difficulty: easy
+kind: problem
+topics: [two-pointers, arrays]
 ---
 
 # Subsequence Checker
@@ -30,6 +32,71 @@ s = "abc",  t = ""       →  False  (non-empty s cannot match inside an empty t
 **Example 2** — `s = "axc"`, `t = "ahbgdc"` → `False`. The first character `'a'` matches at `t[0]`, but `'x'` is never found in `t` — the second character of `s` fails.
 
 **Example 3** — `s = ""`, `t = "anything"` → `True`. An empty `s` has zero characters to match, so the constraint is vacuously satisfied.
+
+```quiz
+{
+  "prompt": "Now your turn!",
+  "input": "s = \"ace\", t = \"abcde\"",
+  "options": ["true", "false"],
+  "answer": "true"
+}
+```
+
+## Constraints
+
+- `0 ≤ s.length ≤ t.length ≤ 10^4`
+- `s` and `t` consist of lowercase English letters
+
+```python run viz=array
+class Solution:
+    def subsequence_checker(self, s: str, t: str) -> bool:
+        # Your code goes here — one pointer per string; t's pointer
+        # always advances, s's pointer only on a match.
+        return False
+
+
+s = input()                          # the test case's s
+t = input()                          # the test case's t
+print("true" if Solution().subsequence_checker(s, t) else "false")
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public boolean subsequenceChecker(String s, String t) {
+            // Your code goes here — one pointer per string; t's pointer
+            // always advances, s's pointer only on a match.
+            return false;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String s = sc.hasNextLine() ? sc.nextLine() : "";   // the test case's s
+        String t = sc.hasNextLine() ? sc.nextLine() : "";   // the test case's t
+        System.out.println(new Solution().subsequenceChecker(s, t));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "s", "type": "string", "placeholder": "abc" },
+    { "id": "t", "label": "t", "type": "string", "placeholder": "ahbgdc" }
+  ],
+  "cases": [
+    { "args": { "s": "abc", "t": "ahbgdc" }, "expected": "true" },
+    { "args": { "s": "ace", "t": "abcde" }, "expected": "true" },
+    { "args": { "s": "axc", "t": "ahbgdc" }, "expected": "false" },
+    { "args": { "s": "aec", "t": "abcde" }, "expected": "false" },
+    { "args": { "s": "", "t": "anything" }, "expected": "true" },
+    { "args": { "s": "x", "t": "aaaax" }, "expected": "true" }
+  ]
+}
+```
 
 <details>
 <summary><h2>Intuition &amp; Brute Force</h2></summary>
@@ -105,7 +172,7 @@ flowchart TB
 ### The Solution
 
 
-```python run viz=array
+```python solution time=O(n+m) space=O(1)
 class Solution:
     def subsequence_checker(self, s: str, t: str) -> bool:
 
@@ -130,20 +197,14 @@ class Solution:
         return index1 == len(s)
 
 
-# Examples from the problem statement
-print(Solution().subsequence_checker("abc", "ahbgdc"))      # True
-print(Solution().subsequence_checker("coin", "codeintuition"))  # True
-print(Solution().subsequence_checker("abc", "defghi"))      # False
-
-# Edge cases
-print(Solution().subsequence_checker("", "hello"))          # True — empty s is always subsequence
-print(Solution().subsequence_checker("a", "a"))             # True — single char match
-print(Solution().subsequence_checker("a", "b"))             # False — single char mismatch
-print(Solution().subsequence_checker("abc", "abc"))         # True — identical strings
-print(Solution().subsequence_checker("axc", "ahbgdc"))      # False — out-of-order chars
+s = input()                          # the test case's s
+t = input()                          # the test case's t
+print("true" if Solution().subsequence_checker(s, t) else "false")
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
     static class Solution {
         public boolean subsequenceChecker(String s, String t) {
@@ -173,17 +234,10 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().subsequenceChecker("abc", "ahbgdc"));       // true
-        System.out.println(new Solution().subsequenceChecker("coin", "codeintuition")); // true
-        System.out.println(new Solution().subsequenceChecker("abc", "defghi"));       // false
-
-        // Edge cases
-        System.out.println(new Solution().subsequenceChecker("", "hello"));           // true — empty s is always subsequence
-        System.out.println(new Solution().subsequenceChecker("a", "a"));              // true — single char match
-        System.out.println(new Solution().subsequenceChecker("a", "b"));              // false — single char mismatch
-        System.out.println(new Solution().subsequenceChecker("abc", "abc"));          // true — identical strings
-        System.out.println(new Solution().subsequenceChecker("axc", "ahbgdc"));       // false — out-of-order chars
+        Scanner sc = new Scanner(System.in);
+        String s = sc.hasNextLine() ? sc.nextLine() : "";   // the test case's s
+        String t = sc.hasNextLine() ? sc.nextLine() : "";   // the test case's t
+        System.out.println(new Solution().subsequenceChecker(s, t));
     }
 }
 ```

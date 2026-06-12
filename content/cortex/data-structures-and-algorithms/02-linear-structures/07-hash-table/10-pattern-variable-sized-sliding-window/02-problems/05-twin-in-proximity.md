@@ -4,6 +4,8 @@ summary: "Given an array arr and integer k, return true if there are two distinc
 prereqs:
   - 10-pattern-variable-sized-sliding-window/01-pattern
 difficulty: medium
+kind: problem
+topics: [variable-sized-sliding-window, hash-table]
 ---
 
 # Twin in proximity
@@ -11,15 +13,6 @@ difficulty: medium
 ## Problem Statement
 
 Given an array `arr` and integer `k`, return `true` if there are two distinct indices `i` and `j` with `arr[i] == arr[j]` and `|i − j| ≤ k`. Otherwise return `false`.
-
-### Example 1
-> -   **Input:** `arr = [1,2,3,4,1], k = 5` → **Output:** `true` (indices 0, 4; distance 4 ≤ 5)
-
-### Example 2
-> -   **Input:** `arr = [1,2,3,4,5,6,1], k = 5` → **Output:** `false` (closest twin is distance 6)
-
-### Example 3
-> -   **Input:** `arr = [1,7], k = 5` → **Output:** `false`
 
 ## Examples
 
@@ -85,144 +78,6 @@ inp -> s -> check -> r
 
 </details>
 <details>
-<summary><h2>Solution</h2></summary>
-
-
-
-```python run viz=array
-from typing import List
-
-class Solution:
-    def twin_in_proximity(self, arr: List[int], k: int) -> bool:
-
-        # Dictionary to store the most recent index of each element
-        element_index = {}
-
-        # Sliding window pointers
-        start, end = 0, 0
-
-        while end < len(arr):
-
-            # Check if the current element exists in the map and is
-            # within range
-            if (
-                arr[end] in element_index
-                and end - element_index[arr[end]] <= k
-            ):
-
-                # Found a duplicate within the required range
-                return True
-
-            # Update the map with the current element's index
-            element_index[arr[end]] = end
-
-            # Maintain the window size by removing elements out of range
-            if end - start >= k:
-                del element_index[arr[start]]
-
-                # Shrink the window
-                start += 1
-
-            # Expand the window
-            end += 1
-
-        # No duplicates found within the range
-        return False
-
-
-# Examples from the problem statement
-print(Solution().twin_in_proximity([1, 2, 3, 4, 1], 5))        # True
-print(Solution().twin_in_proximity([1, 2, 3, 4, 5, 6, 1], 5))  # False
-print(Solution().twin_in_proximity([1, 7], 5))                  # False
-
-# Edge cases
-print(Solution().twin_in_proximity([], 1))                      # False
-print(Solution().twin_in_proximity([1], 1))                     # False
-print(Solution().twin_in_proximity([1, 1], 1))                  # True
-print(Solution().twin_in_proximity([1, 2, 1], 1))               # False
-print(Solution().twin_in_proximity([1, 2, 1], 2))               # True
-```
-
-```java run viz=array
-import java.util.*;
-
-public class Main {
-    static class Solution {
-        public boolean twinInProximity(int[] arr, int k) {
-
-            // Map to store the most recent index of each element
-            Map<Integer, Integer> elementIndex = new HashMap<>();
-
-            // Sliding window pointers
-            int start = 0;
-            int end = 0;
-
-            while (end < arr.length) {
-
-                // Check if the current element exists in the map and is
-                // within range
-                if (
-                    elementIndex.containsKey(arr[end]) &&
-                    end - elementIndex.get(arr[end]) <= k
-                ) {
-
-                    // Found a duplicate within the required range
-                    return true;
-                }
-
-                // Update the map with the current element's index
-                elementIndex.put(arr[end], end);
-
-                // Maintain the window size by removing elements out of range
-                if (end - start >= k) {
-                    elementIndex.remove(arr[start]);
-
-                    // Shrink the window
-                    start++;
-                }
-
-                // Expand the window
-                end++;
-            }
-
-            // No duplicates found within the range
-            return false;
-        }
-    }
-
-    public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().twinInProximity(new int[]{1, 2, 3, 4, 1}, 5));        // true
-        System.out.println(new Solution().twinInProximity(new int[]{1, 2, 3, 4, 5, 6, 1}, 5));  // false
-        System.out.println(new Solution().twinInProximity(new int[]{1, 7}, 5));                  // false
-
-        // Edge cases
-        System.out.println(new Solution().twinInProximity(new int[]{}, 1));                      // false
-        System.out.println(new Solution().twinInProximity(new int[]{1}, 1));                     // false
-        System.out.println(new Solution().twinInProximity(new int[]{1, 1}, 1));                  // true
-        System.out.println(new Solution().twinInProximity(new int[]{1, 2, 1}, 1));               // false
-        System.out.println(new Solution().twinInProximity(new int[]{1, 2, 1}, 2));               // true
-    }
-}
-```
-
-</details>
-<details>
-<summary><h2>Key Takeaway</h2></summary>
-
-
-The variable-sized sliding window is the most flexible hash-table technique in this section. It handles a vast family of "find the longest/shortest contiguous something with property P" problems in **O(N)**, replacing nested-loop brute force with a single pass of two pointers.
-
-Three lessons:
-
-1. **Expand greedily, contract conditionally.** The right pointer always moves forward by one. The left pointer moves forward *only when the rule is violated*, and as far as needed to restore it. This asymmetry is what gives the algorithm its O(N) bound.
-2. **`while`, not `if`.** Contract until the rule is satisfied — not just by one step. A single expansion can blow past the rule by many slots; the loop has to drain all of them before the next expansion.
-3. **The map summarises the window.** Frequencies, distinct-counts, max-counts, sums — the map is whatever the rule needs to check in O(1). Pick the *smallest* summary that lets you decide expand-vs-contract; bigger summaries are wasted work.
-
-> *Coming up — the **prefix-sum + hash** pattern. Sliding windows fail when the rule is non-monotonic (think arrays with negatives, or "exact sum equals K"). The prefix-sum trick rescues these problems by transforming "subarray sum" into "difference of two prefix sums" — and a hash map of prefix sums turns that into a single-pass O(N) algorithm. We saw a teaser in the subarray-sum-equals-k problem above; the next lesson opens the toolbox.*
-
-</details>
-<details>
 <summary><h2>Intuition</h2></summary>
 
 
@@ -256,9 +111,155 @@ The naive approach is correct but wasteful. For each index you would scan the pr
 5. After the loop, return `false` — no twin within distance `k` was found.
 
 </details>
-<details>
-<summary><h2>Dry Run</h2></summary>
 
+```quiz
+{
+  "prompt": "What does twin_in_proximity([1, 2, 1], 2) return?",
+  "input": "arr = [1, 2, 1], k = 2",
+  "options": ["true", "false"],
+  "answer": "true"
+}
+```
+
+## Constraints
+
+- `1 ≤ arr.length ≤ 10⁵`
+- `-10⁹ ≤ arr[i] ≤ 10⁹`
+- `0 ≤ k ≤ 10⁵`
+
+```python run
+import ast
+
+arr = ast.literal_eval(input())
+k = int(input())
+
+class Solution:
+    def twin_in_proximity(self, arr, k):
+        # Your code goes here
+        return False
+
+r = Solution().twin_in_proximity(arr, k)
+print("true" if r else "false")
+```
+
+```java run
+import java.util.*;
+
+public class Main {
+    static int[] parseIntArray(String s) {
+        s = s.trim().replaceAll("[\\[\\]\\s]", "");
+        if (s.isEmpty()) return new int[0];
+        String[] parts = s.split(",");
+        int[] arr = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) arr[i] = Integer.parseInt(parts[i].trim());
+        return arr;
+    }
+
+    static class Solution {
+        public boolean twinInProximity(int[] arr, int k) {
+            // Your code goes here
+            return false;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        boolean r = new Solution().twinInProximity(arr, k);
+        System.out.println(r ? "true" : "false");
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "array", "placeholder": "[1, 2, 3, 4, 1]" },
+    { "id": "k", "label": "k", "type": "number", "placeholder": "5" }
+  ],
+  "cases": [
+    { "args": { "arr": "[1, 2, 3, 4, 1]", "k": "5" }, "expected": "true" },
+    { "args": { "arr": "[1, 2, 3, 4, 5, 6, 1]", "k": "5" }, "expected": "false" },
+    { "args": { "arr": "[1, 7]", "k": "5" }, "expected": "false" },
+    { "args": { "arr": "[1, 2, 1]", "k": "1" }, "expected": "false" },
+    { "args": { "arr": "[1, 2, 1]", "k": "2" }, "expected": "true" },
+    { "args": { "arr": "[1]", "k": "1" }, "expected": "false" },
+    { "args": { "arr": "[1, 1]", "k": "1" }, "expected": "true" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Map each value to its most recent index; before updating, check if the gap is `≤ k`. Cap the window at `k + 1` by deleting `arr[start]` once `end − start ≥ k`. Short-circuit `true` on first match; return `false` after the loop. `O(n)` time, `O(min(n, k))` space.
+
+```python solution time=O(n) space=O(min(n,k))
+import ast
+
+class Solution:
+    def twin_in_proximity(self, arr, k):
+        element_index = {}
+        start, end = 0, 0
+        while end < len(arr):
+            if arr[end] in element_index and end - element_index[arr[end]] <= k:
+                return True
+            element_index[arr[end]] = end
+            if end - start >= k:
+                del element_index[arr[start]]
+                start += 1
+            end += 1
+        return False
+
+arr = ast.literal_eval(input())
+k = int(input())
+r = Solution().twin_in_proximity(arr, k)
+print("true" if r else "false")
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+    static int[] parseIntArray(String s) {
+        s = s.trim().replaceAll("[\\[\\]\\s]", "");
+        if (s.isEmpty()) return new int[0];
+        String[] parts = s.split(",");
+        int[] arr = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) arr[i] = Integer.parseInt(parts[i].trim());
+        return arr;
+    }
+
+    static class Solution {
+        public boolean twinInProximity(int[] arr, int k) {
+            Map<Integer, Integer> elementIndex = new HashMap<>();
+            int start = 0, end = 0;
+            while (end < arr.length) {
+                if (elementIndex.containsKey(arr[end]) && end - elementIndex.get(arr[end]) <= k)
+                    return true;
+                elementIndex.put(arr[end], end);
+                if (end - start >= k) {
+                    elementIndex.remove(arr[start]);
+                    start++;
+                }
+                end++;
+            }
+            return false;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        boolean r = new Solution().twinInProximity(arr, k);
+        System.out.println(r ? "true" : "false");
+    }
+}
+```
+
+### Dry Run
 
 Walk Example 1: `arr = [1, 2, 3, 4, 1]`, `k = 5`, expected output `true`. The map stores each value's most recent index:
 
@@ -272,26 +273,17 @@ end=4  arr=1   1 in map (index 0)?  4 − 0 = 4 ≤ 5 → return true
 result = true
 ```
 
-The result `true` matches the expected output — the value `1` repeats at indices `0` and `4`, a gap of `4 ≤ 5`.
-
-</details>
-<details>
-<summary><h2>Complexity Analysis</h2></summary>
-
+### Complexity Analysis
 
 | | Cost | Why |
 |---|---|---|
 | **Time** | **O(N)** | One pass; each step does a constant number of `O(1)` map operations (lookup, insert, and at most one delete). |
 | **Space** | **O(min(N, k))** | The map holds at most `k + 1` live entries — the values currently in the window — capped by the array length. |
 
-</details>
-<details>
-<summary><h2>Edge Cases</h2></summary>
-
+### Edge Cases
 
 | Input | Output | Why |
 |---|---|---|
-| `arr = [], k = 1` | `false` | Empty array — no pair of indices exists. |
 | `arr = [1], k = 1` | `false` | A single element has no twin. |
 | `arr = [1, 1], k = 1` | `true` | Equal adjacent values at distance `1 ≤ 1`. |
 | `arr = [1, 2, 1], k = 1` | `false` | The two `1`s are distance `2 > 1` — out of range. |
@@ -302,6 +294,16 @@ The result `true` matches the expected output — the value `1` repeats at indic
 <details>
 <summary><h2>Key Takeaway</h2></summary>
 
+
+The variable-sized sliding window is the most flexible hash-table technique in this section. It handles a vast family of "find the longest/shortest contiguous something with property P" problems in **O(N)**, replacing nested-loop brute force with a single pass of two pointers.
+
+Three lessons:
+
+1. **Expand greedily, contract conditionally.** The right pointer always moves forward by one. The left pointer moves forward *only when the rule is violated*, and as far as needed to restore it. This asymmetry is what gives the algorithm its O(N) bound.
+2. **`while`, not `if`.** Contract until the rule is satisfied — not just by one step. A single expansion can blow past the rule by many slots; the loop has to drain all of them before the next expansion.
+3. **The map summarises the window.** Frequencies, distinct-counts, max-counts, sums — the map is whatever the rule needs to check in O(1). Pick the *smallest* summary that lets you decide expand-vs-contract; bigger summaries are wasted work.
+
+> *Coming up — the **prefix-sum + hash** pattern. Sliding windows fail when the rule is non-monotonic (think arrays with negatives, or "exact sum equals K"). The prefix-sum trick rescues these problems by transforming "subarray sum" into "difference of two prefix sums" — and a hash map of prefix sums turns that into a single-pass O(N) algorithm. We saw a teaser in the subarray-sum-equals-k problem above; the next lesson opens the toolbox.*
 
 Unlike the longest-window problems, the window here is *capped* at `k + 1` and the answer is a boolean — short-circuit `true` the moment an in-range duplicate appears. The map is keyed on value and stores the latest index, so each membership test is `O(1)`.
 

@@ -4,6 +4,8 @@ summary: "Given the heads of two linked lists, headA and headB, write a function
 prereqs:
   - 12-pattern-merge/01-pattern
 difficulty: easy
+kind: problem
+topics: [merge, singly-linked-list]
 ---
 
 # Alternate node fusion
@@ -37,8 +39,110 @@ Output: [1, 2, 3, 4]
 Explanation: A runs out after one alternation. The remaining B suffix [3, 4] is appended whole.
 ```
 
+## Constraints
 
----
+- `0 ≤ len(headA), len(headB) ≤ 10⁴`
+- `-10⁴ ≤ node.val ≤ 10⁴`
+- Merge **in place** — `O(1)` extra space; only `next` pointers change
+
+```python run viz=linked-list viz-root=head
+import ast
+
+class ListNode:
+    def __init__(self, val, next=None):
+        self.val = val
+        self.next = next
+
+class Solution:
+    def alternate_node_fusion(self, head_a, head_b):
+        # Your code goes here — dummy head, boolean selector that flips
+        # each tick, drain the non-empty suffix. Return dummy.next.
+        pass
+
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
+
+def print_list(head):                # 1 → 2 → 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
+
+head_a = build_list(ast.literal_eval(input()))   # the test case's headA
+head_b = build_list(ast.literal_eval(input()))   # the test case's headB
+print_list(Solution().alternate_node_fusion(head_a, head_b))
+```
+
+```java run viz=linked-list viz-root=head
+import java.util.*;
+
+public class Main {
+    static class ListNode {
+        int val; ListNode next;
+        ListNode(int val) { this.val = val; }
+        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+    }
+
+    static class Solution {
+        ListNode alternateNodeFusion(ListNode headA, ListNode headB) {
+            // Your code goes here — dummy head, boolean selector that flips
+            // each tick, drain the non-empty suffix. Return dummy.next.
+            return null;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        ListNode headA = buildList(parseIntArray(sc.nextLine()));
+        ListNode headB = buildList(parseIntArray(sc.nextLine()));
+        printList(new Solution().alternateNodeFusion(headA, headB));
+    }
+
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+        ListNode head = null;
+        for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+        return head;
+    }
+
+    static void printList(ListNode head) {         // 1 → 2 → 3 → [1, 2, 3]
+        List<Integer> out = new ArrayList<>();
+        for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+        System.out.println(out);
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's values
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "headA", "label": "headA", "type": "int[]", "placeholder": "[1, 2, 3]" },
+    { "id": "headB", "label": "headB", "type": "int[]", "placeholder": "[4, 5, 6]" }
+  ],
+  "cases": [
+    { "args": { "headA": "[1, 2, 3]", "headB": "[4, 5, 6]" }, "expected": "[1, 4, 2, 5, 3, 6]" },
+    { "args": { "headA": "[1, 2, 3, 4, 5]", "headB": "[6, 7]" }, "expected": "[1, 6, 2, 7, 3, 4, 5]" },
+    { "args": { "headA": "[1]", "headB": "[2, 3, 4]" }, "expected": "[1, 2, 3, 4]" },
+    { "args": { "headA": "[]", "headB": "[1, 2]" }, "expected": "[1, 2]" },
+    { "args": { "headA": "[1, 2]", "headB": "[]" }, "expected": "[1, 2]" },
+    { "args": { "headA": "[1]", "headB": "[2]" }, "expected": "[1, 2]" },
+    { "args": { "headA": "[1, 2, 3]", "headB": "[4]" }, "expected": "[1, 4, 2, 3]" }
+  ]
+}
+```
 
 <details>
 <summary><h2>Intuition</h2></summary>
@@ -83,1025 +187,23 @@ Run the dummy-head splice loop with a boolean selector that flips each iteration
 
 ### Solution
 
-```d3 widget=list-single
-{
-  "steps": [
-    {
-      "nodes": [
-        {
-          "id": "d",
-          "label": "·",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        },
-        {
-          "id": "a1",
-          "label": "1",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        },
-        {
-          "id": "a2",
-          "label": "2",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        },
-        {
-          "id": "a3",
-          "label": "3",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        },
-        {
-          "id": "b1",
-          "label": "4",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        },
-        {
-          "id": "b2",
-          "label": "5",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        },
-        {
-          "id": "b3",
-          "label": "6",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        }
-      ],
-      "edges": [
-        {
-          "from": "a1",
-          "to": "a2",
-          "label": "next"
-        },
-        {
-          "from": "a2",
-          "to": "a3",
-          "label": "next"
-        },
-        {
-          "from": "b1",
-          "to": "b2",
-          "label": "next"
-        },
-        {
-          "from": "b2",
-          "to": "b3",
-          "label": "next"
-        }
-      ],
-      "cursor": [
-        {
-          "name": "dummy",
-          "target": "d",
-          "color": "#6b7280"
-        },
-        {
-          "name": "headA",
-          "target": "a1",
-          "color": "#6b7280"
-        },
-        {
-          "name": "headB",
-          "target": "b1",
-          "color": "#6b7280"
-        },
-        {
-          "name": "current",
-          "target": "d",
-          "color": "#3b82f6"
-        }
-      ],
-      "highlight": [],
-      "changed": [],
-      "removed": [],
-      "annotation": "Init: dummy node created, current = dummy. mergeFirst = true. List A on row 0 (1→2→3); list B on row 1 (4→5→6).",
-      "line": 0,
-      "frames": [],
-      "cardCursor": []
-    },
-    {
-      "nodes": [
-        {
-          "id": "d",
-          "label": "·",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        },
-        {
-          "id": "a1",
-          "label": "1",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        },
-        {
-          "id": "a2",
-          "label": "2",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        },
-        {
-          "id": "a3",
-          "label": "3",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        },
-        {
-          "id": "b1",
-          "label": "4",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        },
-        {
-          "id": "b2",
-          "label": "5",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        },
-        {
-          "id": "b3",
-          "label": "6",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        }
-      ],
-      "edges": [
-        {
-          "from": "d",
-          "to": "a1",
-          "label": "next"
-        },
-        {
-          "from": "a1",
-          "to": "a2",
-          "label": "next"
-        },
-        {
-          "from": "a2",
-          "to": "a3",
-          "label": "next"
-        },
-        {
-          "from": "b1",
-          "to": "b2",
-          "label": "next"
-        },
-        {
-          "from": "b2",
-          "to": "b3",
-          "label": "next"
-        }
-      ],
-      "cursor": [
-        {
-          "name": "dummy",
-          "target": "d",
-          "color": "#6b7280"
-        },
-        {
-          "name": "headA",
-          "target": "a2",
-          "color": "#6b7280"
-        },
-        {
-          "name": "headB",
-          "target": "b1",
-          "color": "#6b7280"
-        },
-        {
-          "name": "current",
-          "target": "a1",
-          "color": "#3b82f6"
-        }
-      ],
-      "highlight": [],
-      "changed": [],
-      "removed": [],
-      "annotation": "Iter 1 (A): tail.next = currentA → dummy → 1. Advance currentA to 2, tail to 1. mergeFirst = false.",
-      "line": 0,
-      "frames": [],
-      "cardCursor": []
-    },
-    {
-      "nodes": [
-        {
-          "id": "d",
-          "label": "·",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        },
-        {
-          "id": "a1",
-          "label": "1",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        },
-        {
-          "id": "a2",
-          "label": "2",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        },
-        {
-          "id": "a3",
-          "label": "3",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        },
-        {
-          "id": "b1",
-          "label": "4",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        },
-        {
-          "id": "b2",
-          "label": "5",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        },
-        {
-          "id": "b3",
-          "label": "6",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        }
-      ],
-      "edges": [
-        {
-          "from": "d",
-          "to": "a1",
-          "label": "next"
-        },
-        {
-          "from": "a1",
-          "to": "b1",
-          "label": "next"
-        },
-        {
-          "from": "a2",
-          "to": "a3",
-          "label": "next"
-        },
-        {
-          "from": "b1",
-          "to": "b2",
-          "label": "next"
-        },
-        {
-          "from": "b2",
-          "to": "b3",
-          "label": "next"
-        }
-      ],
-      "cursor": [
-        {
-          "name": "dummy",
-          "target": "d",
-          "color": "#6b7280"
-        },
-        {
-          "name": "headA",
-          "target": "a2",
-          "color": "#6b7280"
-        },
-        {
-          "name": "headB",
-          "target": "b2",
-          "color": "#6b7280"
-        },
-        {
-          "name": "current",
-          "target": "b1",
-          "color": "#3b82f6"
-        }
-      ],
-      "highlight": [],
-      "changed": [],
-      "removed": [],
-      "annotation": "Iter 2 (B): tail.next = currentB → 1 → 4 (overwrites the old 1→2 link). Advance currentB to 5, tail to 4.",
-      "line": 0,
-      "frames": [],
-      "cardCursor": []
-    },
-    {
-      "nodes": [
-        {
-          "id": "d",
-          "label": "·",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        },
-        {
-          "id": "a1",
-          "label": "1",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        },
-        {
-          "id": "a2",
-          "label": "2",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        },
-        {
-          "id": "a3",
-          "label": "3",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        },
-        {
-          "id": "b1",
-          "label": "4",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        },
-        {
-          "id": "b2",
-          "label": "5",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        },
-        {
-          "id": "b3",
-          "label": "6",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        }
-      ],
-      "edges": [
-        {
-          "from": "d",
-          "to": "a1",
-          "label": "next"
-        },
-        {
-          "from": "a1",
-          "to": "b1",
-          "label": "next"
-        },
-        {
-          "from": "b1",
-          "to": "a2",
-          "label": "next"
-        },
-        {
-          "from": "a2",
-          "to": "a3",
-          "label": "next"
-        },
-        {
-          "from": "b2",
-          "to": "b3",
-          "label": "next"
-        }
-      ],
-      "cursor": [
-        {
-          "name": "dummy",
-          "target": "d",
-          "color": "#6b7280"
-        },
-        {
-          "name": "headA",
-          "target": "a3",
-          "color": "#6b7280"
-        },
-        {
-          "name": "headB",
-          "target": "b2",
-          "color": "#6b7280"
-        },
-        {
-          "name": "current",
-          "target": "a2",
-          "color": "#3b82f6"
-        }
-      ],
-      "highlight": [],
-      "changed": [],
-      "removed": [],
-      "annotation": "Iter 3 (A): tail.next = currentA → 4 → 2. Advance currentA to 3, tail to 2.",
-      "line": 0,
-      "frames": [],
-      "cardCursor": []
-    },
-    {
-      "nodes": [
-        {
-          "id": "d",
-          "label": "·",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        },
-        {
-          "id": "a1",
-          "label": "1",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        },
-        {
-          "id": "a2",
-          "label": "2",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        },
-        {
-          "id": "a3",
-          "label": "3",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        },
-        {
-          "id": "b1",
-          "label": "4",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        },
-        {
-          "id": "b2",
-          "label": "5",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        },
-        {
-          "id": "b3",
-          "label": "6",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        }
-      ],
-      "edges": [
-        {
-          "from": "d",
-          "to": "a1",
-          "label": "next"
-        },
-        {
-          "from": "a1",
-          "to": "b1",
-          "label": "next"
-        },
-        {
-          "from": "b1",
-          "to": "a2",
-          "label": "next"
-        },
-        {
-          "from": "a2",
-          "to": "b2",
-          "label": "next"
-        },
-        {
-          "from": "b2",
-          "to": "b3",
-          "label": "next"
-        }
-      ],
-      "cursor": [
-        {
-          "name": "dummy",
-          "target": "d",
-          "color": "#6b7280"
-        },
-        {
-          "name": "headA",
-          "target": "a3",
-          "color": "#6b7280"
-        },
-        {
-          "name": "headB",
-          "target": "b3",
-          "color": "#6b7280"
-        },
-        {
-          "name": "current",
-          "target": "b2",
-          "color": "#3b82f6"
-        }
-      ],
-      "highlight": [],
-      "changed": [],
-      "removed": [],
-      "annotation": "Iter 4 (B): tail.next = currentB → 2 → 5. Advance currentB to 6, tail to 5.",
-      "line": 0,
-      "frames": [],
-      "cardCursor": []
-    },
-    {
-      "nodes": [
-        {
-          "id": "d",
-          "label": "·",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        },
-        {
-          "id": "a1",
-          "label": "1",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        },
-        {
-          "id": "a2",
-          "label": "2",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        },
-        {
-          "id": "a3",
-          "label": "3",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        },
-        {
-          "id": "b1",
-          "label": "4",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        },
-        {
-          "id": "b2",
-          "label": "5",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        },
-        {
-          "id": "b3",
-          "label": "6",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        }
-      ],
-      "edges": [
-        {
-          "from": "d",
-          "to": "a1",
-          "label": "next"
-        },
-        {
-          "from": "a1",
-          "to": "b1",
-          "label": "next"
-        },
-        {
-          "from": "b1",
-          "to": "a2",
-          "label": "next"
-        },
-        {
-          "from": "a2",
-          "to": "b2",
-          "label": "next"
-        },
-        {
-          "from": "b2",
-          "to": "a3",
-          "label": "next"
-        }
-      ],
-      "cursor": [
-        {
-          "name": "dummy",
-          "target": "d",
-          "color": "#6b7280"
-        },
-        {
-          "name": "headA",
-          "target": "a3",
-          "color": "#6b7280"
-        },
-        {
-          "name": "headB",
-          "target": "b3",
-          "color": "#6b7280"
-        },
-        {
-          "name": "current",
-          "target": "a3",
-          "color": "#3b82f6"
-        }
-      ],
-      "highlight": [],
-      "changed": [],
-      "removed": [],
-      "annotation": "Iter 5 (A): tail.next = currentA → 5 → 3. Advance currentA to null, tail to 3. currentA is now null — exit loop.",
-      "line": 0,
-      "frames": [],
-      "cardCursor": []
-    },
-    {
-      "nodes": [
-        {
-          "id": "d",
-          "label": "·",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        },
-        {
-          "id": "a1",
-          "label": "1",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        },
-        {
-          "id": "a2",
-          "label": "2",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        },
-        {
-          "id": "a3",
-          "label": "3",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        },
-        {
-          "id": "b1",
-          "label": "4",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        },
-        {
-          "id": "b2",
-          "label": "5",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        },
-        {
-          "id": "b3",
-          "label": "6",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        }
-      ],
-      "edges": [
-        {
-          "from": "d",
-          "to": "a1",
-          "label": "next"
-        },
-        {
-          "from": "a1",
-          "to": "b1",
-          "label": "next"
-        },
-        {
-          "from": "b1",
-          "to": "a2",
-          "label": "next"
-        },
-        {
-          "from": "a2",
-          "to": "b2",
-          "label": "next"
-        },
-        {
-          "from": "b2",
-          "to": "a3",
-          "label": "next"
-        },
-        {
-          "from": "a3",
-          "to": "b3",
-          "label": "next"
-        }
-      ],
-      "cursor": [
-        {
-          "name": "dummy",
-          "target": "d",
-          "color": "#6b7280"
-        },
-        {
-          "name": "headB",
-          "target": "b3",
-          "color": "#6b7280"
-        },
-        {
-          "name": "current",
-          "target": "a3",
-          "color": "#3b82f6"
-        }
-      ],
-      "highlight": [],
-      "changed": [],
-      "removed": [],
-      "annotation": "Tail attach: currentB still has nodes. tail.next = currentB → 3 → 6. Done.",
-      "line": 0,
-      "frames": [],
-      "cardCursor": []
-    },
-    {
-      "nodes": [
-        {
-          "id": "d",
-          "label": "·",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        },
-        {
-          "id": "a1",
-          "label": "1",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        },
-        {
-          "id": "a2",
-          "label": "2",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        },
-        {
-          "id": "a3",
-          "label": "3",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        },
-        {
-          "id": "b1",
-          "label": "4",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        },
-        {
-          "id": "b2",
-          "label": "5",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        },
-        {
-          "id": "b3",
-          "label": "6",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        }
-      ],
-      "edges": [
-        {
-          "from": "d",
-          "to": "a1",
-          "label": "next"
-        },
-        {
-          "from": "a1",
-          "to": "b1",
-          "label": "next"
-        },
-        {
-          "from": "b1",
-          "to": "a2",
-          "label": "next"
-        },
-        {
-          "from": "a2",
-          "to": "b2",
-          "label": "next"
-        },
-        {
-          "from": "b2",
-          "to": "a3",
-          "label": "next"
-        },
-        {
-          "from": "a3",
-          "to": "b3",
-          "label": "next"
-        }
-      ],
-      "cursor": [
-        {
-          "name": "head",
-          "target": "a1",
-          "color": "#10b981"
-        }
-      ],
-      "highlight": [],
-      "changed": [],
-      "removed": [],
-      "annotation": "Return dummy.next — head of the alternate-fused list: 1 → 4 → 2 → 5 → 3 → 6. O(n+m) time, O(1) extra space (only the dummy).",
-      "line": 0,
-      "frames": [],
-      "cardCursor": []
-    }
-  ],
-  "title": "Alternate node fusion — Example 1: [1,2,3] + [4,5,6] → [1,4,2,5,3,6]"
-}
-```
-
-<p align="center"><strong>Alternate node fusion in-place — list A on row 0, list B on row 1. Each iteration splices one node into the tail, alternating between A and B; when one list runs out the remainder of the other gets attached whole.</strong></p>
-
-```python run viz=linked-list viz-root=head
-from typing import Optional, List, Any
-
+```python solution time=O(n+m) space=O(1)
+import ast
 
 class ListNode:
-    def __init__(self, val=0, nxt=None):
+    def __init__(self, val, next=None):
         self.val = val
-        self.next = nxt
-
-
-def from_list(values):
-    if not values:
-        return None
-    head = ListNode(values[0])
-    cur = head
-    for v in values[1:]:
-        cur.next = ListNode(v)
-        cur = cur.next
-    return head
-
-
-def to_list(head):
-    out = []
-    while head is not None:
-        out.append(head.val)
-        head = head.next
-    return out
-
+        self.next = next
 
 class Solution:
-    def alternate_node_fusion(
-        self, head_a: Optional[ListNode], head_b: Optional[ListNode]
-    ) -> Optional[ListNode]:
+    def alternate_node_fusion(self, head_a, head_b):
 
         # Create a new dummy node as the head of the merged list
-        dummy: Optional[ListNode] = ListNode(0)
-        tail: Optional[ListNode] = dummy
+        dummy = ListNode(0)
+        tail = dummy
 
-        current_a: Optional[ListNode] = head_a
-        current_b: Optional[ListNode] = head_b
+        current_a = head_a
+        current_b = head_b
 
         mergeFirst = True
 
@@ -1153,45 +255,32 @@ class Solution:
         # node
         return dummy.next
 
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
 
-print(to_list(Solution().alternate_node_fusion(from_list([1, 2, 3]), from_list([4, 5, 6]))))       # [1, 4, 2, 5, 3, 6]
-print(to_list(Solution().alternate_node_fusion(from_list([1, 2, 3, 4, 5]), from_list([6, 7]))))   # [1, 6, 2, 7, 3, 4, 5]
+def print_list(head):                # 1 → 2 → 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
 
-# Edge cases
-print(to_list(Solution().alternate_node_fusion(None, from_list([1, 2]))))                          # [1, 2]
-print(to_list(Solution().alternate_node_fusion(from_list([1, 2]), None)))                          # [1, 2]
-print(to_list(Solution().alternate_node_fusion(from_list([1]), from_list([2]))))                   # [1, 2]
-print(to_list(Solution().alternate_node_fusion(from_list([1]), from_list([2, 3, 4]))))             # [1, 2, 3, 4]
-print(to_list(Solution().alternate_node_fusion(from_list([1, 2, 3]), from_list([4]))))             # [1, 4, 2, 3]
+head_a = build_list(ast.literal_eval(input()))   # the test case's headA
+head_b = build_list(ast.literal_eval(input()))   # the test case's headB
+print_list(Solution().alternate_node_fusion(head_a, head_b))
 ```
 
-```java run viz=linked-list viz-root=head
+```java solution
 import java.util.*;
 
 public class Main {
     static class ListNode {
-        int val;
-        ListNode next;
-        ListNode() {}
+        int val; ListNode next;
         ListNode(int val) { this.val = val; }
         ListNode(int val, ListNode next) { this.val = val; this.next = next; }
-    }
-
-    static ListNode fromList(int... values) {
-        if (values.length == 0) return null;
-        ListNode head = new ListNode(values[0]);
-        ListNode cur = head;
-        for (int i = 1; i < values.length; i++) {
-            cur.next = new ListNode(values[i]);
-            cur = cur.next;
-        }
-        return head;
-    }
-
-    static java.util.List<Integer> toList(ListNode head) {
-        java.util.List<Integer> out = new java.util.ArrayList<>();
-        while (head != null) { out.add(head.val); head = head.next; }
-        return out;
     }
 
     static class Solution {
@@ -1262,15 +351,32 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        System.out.println(toList(new Solution().alternateNodeFusion(fromList(1, 2, 3), fromList(4, 5, 6))));       // [1, 4, 2, 5, 3, 6]
-        System.out.println(toList(new Solution().alternateNodeFusion(fromList(1, 2, 3, 4, 5), fromList(6, 7))));   // [1, 6, 2, 7, 3, 4, 5]
+        Scanner sc = new Scanner(System.in);
+        ListNode headA = buildList(parseIntArray(sc.nextLine()));
+        ListNode headB = buildList(parseIntArray(sc.nextLine()));
+        printList(new Solution().alternateNodeFusion(headA, headB));
+    }
 
-        // Edge cases
-        System.out.println(toList(new Solution().alternateNodeFusion(null, fromList(1, 2))));                        // [1, 2]
-        System.out.println(toList(new Solution().alternateNodeFusion(fromList(1, 2), null)));                        // [1, 2]
-        System.out.println(toList(new Solution().alternateNodeFusion(fromList(1), fromList(2))));                    // [1, 2]
-        System.out.println(toList(new Solution().alternateNodeFusion(fromList(1), fromList(2, 3, 4))));              // [1, 2, 3, 4]
-        System.out.println(toList(new Solution().alternateNodeFusion(fromList(1, 2, 3), fromList(4))));              // [1, 4, 2, 3]
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+        ListNode head = null;
+        for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+        return head;
+    }
+
+    static void printList(ListNode head) {         // 1 → 2 → 3 → [1, 2, 3]
+        List<Integer> out = new ArrayList<>();
+        for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+        System.out.println(out);
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's values
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

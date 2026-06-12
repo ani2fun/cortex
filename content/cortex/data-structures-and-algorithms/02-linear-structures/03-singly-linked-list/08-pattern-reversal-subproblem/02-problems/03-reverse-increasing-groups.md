@@ -1,9 +1,11 @@
 ---
 title: "Reverse Increasing Groups"
-summary: "Given the head of a singly linked list, write a function to reverse the list in groups of increasing size. The first group has size 1, the next group size 2, then 3, and so on. Return the head of the "
+summary: "Given the head of a singly linked list, write a function to reverse the list in groups of increasing size. The first group has size 1, the next group size 2, then 3, and so on. Return the head of the reversed list."
 prereqs:
   - 08-pattern-reversal-subproblem/01-pattern
 difficulty: medium
+kind: problem
+topics: [reversal-subproblem, singly-linked-list]
 ---
 
 # Reverse increasing groups
@@ -13,8 +15,6 @@ difficulty: medium
 Given the **head** of a singly linked list, write a function to reverse the list in groups of increasing size. The first group has size `1`, the next group size `2`, then `3`, and so on. Return the head of the reversed list.
 
 If, at the end, the length of the remaining list is less than the required group size, do not reverse that part of the list.
-
----
 
 ## Examples
 
@@ -44,6 +44,108 @@ Explanation: One chunk of size 1 covers the list; reversing a single node is a n
 Input:  head = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 Output: [1, 3, 2, 6, 5, 4, 10, 9, 8, 7]
 Explanation: Four chunks of sizes 1, 2, 3, 4 partition the list exactly (1 + 2 + 3 + 4 = 10). Each chunk reverses independently.
+```
+
+## Constraints
+
+- `0 ≤ list length ≤ 10⁵`
+- `-10⁴ ≤ node.val ≤ 10⁴`
+- Reverse **in place** — `O(1)` extra space
+- A trailing fragment shorter than the next group size is left untouched
+
+```python run viz=linked-list viz-root=head
+import ast
+
+class ListNode:
+    def __init__(self, val, next=None):
+        self.val = val
+        self.next = next
+
+class Solution:
+    def reverse_increasing_groups(self, head):
+        # Your code goes here — use a growing group_size counter, reverse
+        # each chunk while length >= group_size, stitch seams, advance.
+        pass
+
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
+
+def print_list(head):                # 1 → 2 → 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
+
+head = build_list(ast.literal_eval(input()))   # the test case's head
+print_list(Solution().reverse_increasing_groups(head))
+```
+
+```java run viz=linked-list viz-root=head
+import java.util.*;
+
+public class Main {
+    static class ListNode {
+        int val; ListNode next;
+        ListNode(int val) { this.val = val; }
+        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+    }
+
+    static class Solution {
+        ListNode reverseIncreasingGroups(ListNode head) {
+            // Your code goes here — use a growing groupSize counter, reverse
+            // each chunk while length >= groupSize, stitch seams, advance.
+            return null;
+        }
+    }
+
+    public static void main(String[] args) {
+        ListNode head = buildList(parseIntArray(new Scanner(System.in).nextLine()));
+        printList(new Solution().reverseIncreasingGroups(head));
+    }
+
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+        ListNode head = null;
+        for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+        return head;
+    }
+
+    static void printList(ListNode head) {         // 1 → 2 → 3 → [1, 2, 3]
+        List<Integer> out = new ArrayList<>();
+        for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+        System.out.println(out);
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's head
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "head", "label": "head", "type": "int[]", "placeholder": "[5, 7, 3, 10, 6, 8]" }
+  ],
+  "cases": [
+    { "args": { "head": "[5, 7, 3, 10, 6, 8]" }, "expected": "[5, 3, 7, 8, 6, 10]" },
+    { "args": { "head": "[5, 7, 3, 10, 6]" }, "expected": "[5, 3, 7, 10, 6]" },
+    { "args": { "head": "[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]" }, "expected": "[1, 3, 2, 6, 5, 4, 10, 9, 8, 7]" },
+    { "args": { "head": "[1, 2, 3]" }, "expected": "[1, 3, 2]" },
+    { "args": { "head": "[1, 2]" }, "expected": "[1, 2]" },
+    { "args": { "head": "[5]" }, "expected": "[5]" },
+    { "args": { "head": "[]" }, "expected": "[]" }
+  ]
+}
 ```
 
 <details>
@@ -88,57 +190,32 @@ Seven numbered steps. No code; the next section is the implementation.
 
 ### Solution
 
-```python run viz=linked-list viz-root=head
-from typing import Optional
-
+```python solution time=O(n) space=O(1)
+import ast
 
 class ListNode:
-    def __init__(self, val=0, nxt=None):
+    def __init__(self, val, next=None):
         self.val = val
-        self.next = nxt
-
-
-def from_list(values):
-    if not values:
-        return None
-    head = ListNode(values[0])
-    cur = head
-    for v in values[1:]:
-        cur.next = ListNode(v)
-        cur = cur.next
-    return head
-
-
-def to_list(head):
-    out = []
-    while head is not None:
-        out.append(head.val)
-        head = head.next
-    return out
-
+        self.next = next
 
 class Solution:
-    def find_length(self, head: Optional[ListNode]) -> int:
+    def find_length(self, head):
         length = 0
         while head is not None:
             length += 1
             head = head.next
         return length
 
-    def get_node_at_position(
-        self, head: ListNode, position: int
-    ) -> ListNode:
+    def get_node_at_position(self, head, position):
         current = head
         for _ in range(1, position):
             current = current.next
         return current
 
-    def reverse(
-        self, start: Optional[ListNode], end: Optional[ListNode]
-    ) -> Optional[ListNode]:
-        current: Optional[ListNode] = start
-        right_bound: Optional[ListNode] = end.next
-        previous: Optional[ListNode] = right_bound
+    def reverse(self, start, end):
+        current = start
+        right_bound = end.next
+        previous = right_bound
 
         while current != right_bound:
             next_node = current.next
@@ -148,9 +225,7 @@ class Solution:
 
         return previous
 
-    def reverse_increasing_groups(
-        self, head: Optional[ListNode]
-    ) -> Optional[ListNode]:
+    def reverse_increasing_groups(self, head):
 
         # If the list is empty or has only one node, no need to
         # reverse segments
@@ -208,46 +283,31 @@ class Solution:
         # Return the head of the modified list
         return head
 
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
 
-# Examples from the problem statement
-print(to_list(Solution().reverse_increasing_groups(from_list([5, 7, 3, 10, 6, 8]))))  # [5, 3, 7, 8, 6, 10]
-print(to_list(Solution().reverse_increasing_groups(from_list([5, 7, 3, 10, 6]))))     # [5, 3, 7, 10, 6]
-print(to_list(Solution().reverse_increasing_groups(from_list([5]))))                   # [5]
+def print_list(head):                # 1 → 2 → 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
 
-# Edge cases
-print(to_list(Solution().reverse_increasing_groups(None)))                             # []
-print(to_list(Solution().reverse_increasing_groups(from_list([1, 2]))))                # [1, 2]
-print(to_list(Solution().reverse_increasing_groups(from_list([1, 2, 3]))))             # [1, 3, 2]
-print(to_list(Solution().reverse_increasing_groups(from_list([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]))))  # [1, 3, 2, 6, 5, 4, 10, 9, 8, 7]
+head = build_list(ast.literal_eval(input()))   # the test case's head
+print_list(Solution().reverse_increasing_groups(head))
 ```
 
-```java run viz=linked-list viz-root=head
+```java solution
 import java.util.*;
 
 public class Main {
     static class ListNode {
-        int val;
-        ListNode next;
-        ListNode() {}
+        int val; ListNode next;
         ListNode(int val) { this.val = val; }
         ListNode(int val, ListNode next) { this.val = val; this.next = next; }
-    }
-
-    static ListNode fromList(int... values) {
-        if (values.length == 0) return null;
-        ListNode head = new ListNode(values[0]);
-        ListNode cur = head;
-        for (int i = 1; i < values.length; i++) {
-            cur.next = new ListNode(values[i]);
-            cur = cur.next;
-        }
-        return head;
-    }
-
-    static List<Integer> toList(ListNode head) {
-        List<Integer> out = new ArrayList<>();
-        while (head != null) { out.add(head.val); head = head.next; }
-        return out;
     }
 
     static class Solution {
@@ -348,16 +408,30 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(toList(new Solution().reverseIncreasingGroups(fromList(5, 7, 3, 10, 6, 8)))); // [5, 3, 7, 8, 6, 10]
-        System.out.println(toList(new Solution().reverseIncreasingGroups(fromList(5, 7, 3, 10, 6))));    // [5, 3, 7, 10, 6]
-        System.out.println(toList(new Solution().reverseIncreasingGroups(fromList(5))));                  // [5]
+        ListNode head = buildList(parseIntArray(new Scanner(System.in).nextLine()));
+        printList(new Solution().reverseIncreasingGroups(head));
+    }
 
-        // Edge cases
-        System.out.println(toList(new Solution().reverseIncreasingGroups(null)));                          // []
-        System.out.println(toList(new Solution().reverseIncreasingGroups(fromList(1, 2))));                // [1, 2]
-        System.out.println(toList(new Solution().reverseIncreasingGroups(fromList(1, 2, 3))));             // [1, 3, 2]
-        System.out.println(toList(new Solution().reverseIncreasingGroups(fromList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)))); // [1, 3, 2, 6, 5, 4, 10, 9, 8, 7]
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+        ListNode head = null;
+        for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+        return head;
+    }
+
+    static void printList(ListNode head) {         // 1 → 2 → 3 → [1, 2, 3]
+        List<Integer> out = new ArrayList<>();
+        for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+        System.out.println(out);
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's head
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```
@@ -371,13 +445,13 @@ public class Main {
 | step | state |
 |---|---|
 | `end = get_node_at_position(start, 1)` | `end = 5` (loop body runs zero hops) |
-| `reverse(5, 5)` | `right_bound = 7`, loop terminates immediately because `current = 5 != 7` becomes `current = 7` after first iteration; returns `reversed_head = 5` |
+| `reverse(5, 5)` | single-node reversal → no-op; returns `reversed_head = 5` |
 | `left_bound is None` → update head | `head = 5` |
 | `left_bound = start` | `left_bound = 5` |
 | `start = left_bound.next` | `start = 7` |
 | `length -= group_size; group_size += 1` | `length = 5`, `group_size = 2` |
 
-List after iteration 1: `5 → 7 → 3 → 10 → 6 → 8` (single-node reversal is a no-op on values; `left_bound` is now `5`).
+List after iteration 1: `5 → 7 → 3 → 10 → 6 → 8` (single-node reversal is a no-op).
 
 **Iteration 2 — chunk `(7, 3)`, `group_size = 2`:** `length = 5 >= 2`.
 

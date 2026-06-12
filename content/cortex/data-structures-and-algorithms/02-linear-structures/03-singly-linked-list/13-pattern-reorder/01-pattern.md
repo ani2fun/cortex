@@ -22,12 +22,20 @@ Reorder `1→2→3→4→5` so the odd-*position* nodes come first, then the eve
 > ▶ Run it, then click **Visualise** — `odd` and `even` chains grow interleaved as you walk; at the end the even chain is hung off the odd chain's tail.
 
 ```python run viz=linked-list viz-root=head viz-kind=list-single
+import ast
+
 class ListNode:
     def __init__(self, val, next=None):
         self.val = val
         self.next = next
 
-head = ListNode(1, ListNode(2, ListNode(3, ListNode(4, ListNode(5)))))   # 1 → 2 → 3 → 4 → 5
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
+
+head = build_list(ast.literal_eval(input()))   # the test case's values
 
 odd = head                           # 1st, 3rd, 5th … nodes
 even = head.next                     # 2nd, 4th … nodes
@@ -44,7 +52,66 @@ node = head
 while node:
     vals.append(node.val)
     node = node.next
-print(vals)                          # [1, 3, 5, 2, 4]
+print(vals)
+```
+
+```java run viz=linked-list viz-root=head viz-kind=list-single
+import java.util.*;
+
+public class Main {
+  static class ListNode {
+    int val; ListNode next;
+    ListNode(int val) { this.val = val; }
+    ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+  }
+
+  public static void main(String[] args) {
+    ListNode head = buildList(parseIntArray(new Scanner(System.in).nextLine()));
+
+    ListNode odd = head;
+    ListNode even = head.next;
+    ListNode evenHead = even;
+    while (even != null && even.next != null) {
+      odd.next = even.next; odd = odd.next;
+      even.next = odd.next; even = even.next;
+    }
+    odd.next = evenHead;
+
+    List<Integer> vals = new ArrayList<>();
+    for (ListNode n = head; n != null; n = n.next) vals.add(n.val);
+    System.out.println(vals);
+  }
+
+  static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+    ListNode head = null;
+    for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+    return head;
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's values
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "values", "label": "values", "type": "int[]", "placeholder": "[1, 2, 3, 4, 5]" }
+  ],
+  "cases": [
+    { "args": { "values": "[1, 2, 3, 4, 5]" }, "expected": "[1, 3, 5, 2, 4]" },
+    { "args": { "values": "[1, 2, 3, 4]" }, "expected": "[1, 3, 2, 4]" },
+    { "args": { "values": "[1, 2]" }, "expected": "[1, 2]" },
+    { "args": { "values": "[1]" }, "expected": "[1]" }
+  ]
+}
 ```
 
 ## How It Works
@@ -92,6 +159,102 @@ Because by the time the loop ends, the original `head.next` link has been **over
 The reusable odd/even-position reorder:
 
 ```python run viz=linked-list viz-root=head viz-kind=list-single
+import ast
+
+class ListNode:
+    def __init__(self, val, next=None):
+        self.val = val
+        self.next = next
+
+def odd_even(head):
+    # Your code goes here
+    pass
+
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
+
+def print_list(head):                # 1 → 2 → 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
+
+head = build_list(ast.literal_eval(input()))   # the test case's values
+print_list(odd_even(head))
+```
+
+```java run viz=linked-list viz-root=head viz-kind=list-single
+import java.util.*;
+
+public class Main {
+  static class ListNode {
+    int val; ListNode next;
+    ListNode(int val) { this.val = val; }
+    ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+  }
+
+  static ListNode oddEven(ListNode head) {
+    // Your code goes here
+    return null;
+  }
+
+  public static void main(String[] args) {
+    ListNode head = buildList(parseIntArray(new Scanner(System.in).nextLine()));
+    printList(oddEven(head));
+  }
+
+  static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+    ListNode head = null;
+    for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+    return head;
+  }
+
+  static void printList(ListNode head) {         // 1 → 2 → 3 → [1, 2, 3]
+    List<Integer> out = new ArrayList<>();
+    for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+    System.out.println(out);
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's values
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "values", "label": "values", "type": "int[]", "placeholder": "[1, 2, 3, 4, 5]" }
+  ],
+  "cases": [
+    { "args": { "values": "[1, 2, 3, 4, 5]" }, "expected": "[1, 3, 5, 2, 4]" },
+    { "args": { "values": "[1, 2, 3, 4]" }, "expected": "[1, 3, 2, 4]" },
+    { "args": { "values": "[1, 2, 3, 4, 5, 6]" }, "expected": "[1, 3, 5, 2, 4, 6]" },
+    { "args": { "values": "[1, 2]" }, "expected": "[1, 2]" },
+    { "args": { "values": "[1]" }, "expected": "[1]" },
+    { "args": { "values": "[]" }, "expected": "[]" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Save `even_head` before the loop, then grow two chains interleaved — each tick relinks one odd node and one even node — and concatenate with `odd.next = even_head`. The loop guard `even and even.next` handles both odd and even lengths cleanly.
+
+```python solution time=O(n) space=O(1)
+import ast
+
 class ListNode:
     def __init__(self, val, next=None):
         self.val = val
@@ -111,16 +274,32 @@ def odd_even(head):
     odd.next = even_head             # concatenate
     return head
 
-head = ListNode(1, ListNode(2, ListNode(3, ListNode(4, ListNode(5)))))
-out, node = [], odd_even(head)
-while node:
-    out.append(node.val); node = node.next
-print(out)                           # [1, 3, 5, 2, 4]
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
+
+def print_list(head):                # 1 → 2 → 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
+
+head = build_list(ast.literal_eval(input()))   # the test case's values
+print_list(odd_even(head))
 ```
 
-```java run viz=linked-list viz-root=head viz-kind=list-single
+```java solution
+import java.util.*;
+
 public class Main {
-  static class ListNode { int val; ListNode next; ListNode(int v){ val = v; } ListNode(int v, ListNode n){ val = v; next = n; } }
+  static class ListNode {
+    int val; ListNode next;
+    ListNode(int val) { this.val = val; }
+    ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+  }
 
   static ListNode oddEven(ListNode head) {
     if (head == null || head.next == null) return head;
@@ -134,17 +313,39 @@ public class Main {
   }
 
   public static void main(String[] args) {
-    ListNode head = new ListNode(1, new ListNode(2, new ListNode(3, new ListNode(4, new ListNode(5)))));
-    StringBuilder sb = new StringBuilder("[");
-    for (ListNode c = oddEven(head); c != null; c = c.next) sb.append(c.val).append(c.next != null ? ", " : "");
-    System.out.println(sb.append("]"));   // [1, 3, 5, 2, 4]
+    ListNode head = buildList(parseIntArray(new Scanner(System.in).nextLine()));
+    printList(oddEven(head));
+  }
+
+  static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+    ListNode head = null;
+    for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+    return head;
+  }
+
+  static void printList(ListNode head) {         // 1 → 2 → 3 → [1, 2, 3]
+    List<Integer> out = new ArrayList<>();
+    for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+    System.out.println(out);
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's values
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
   }
 }
 ```
 
-Drill the family in **Practice** — [Relocate Node](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-reorder/problems/relocate-node), [Parity Order](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-reorder/problems/parity-order), [Value Partition](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-reorder/problems/value-partition), and [Shuffle List](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-reorder/problems/shuffle-list).
+</details>
 
 ## Reflect & Connect
+
+Drill the family in **Practice** — [Relocate Node](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-reorder/problems/relocate-node), [Parity Order](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-reorder/problems/parity-order), [Value Partition](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-reorder/problems/value-partition), and [Shuffle List](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-reorder/problems/shuffle-list).
 
 Reorder is where the linked-list toolkit comes together:
 
@@ -195,4 +396,4 @@ Reorder is where the linked-list toolkit comes together:
 
 - **CLRS**, *Introduction to Algorithms*, 4th ed., §10.2 — linked-list pointer manipulation; partitioning by re-linking.
 - **Sedgewick & Wayne**, *Algorithms*, 4th ed., §1.3 — linked structures and in-place restructuring.
-- "Odd Even Linked List" (group by index parity) and the fold reorder are standard problems; both runnable blocks are verified by running (output `[1, 3, 5, 2, 4]`).
+- "Odd Even Linked List" (group by index parity) and the fold reorder are standard problems; both runnable blocks are verified by running against their test cases.

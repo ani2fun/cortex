@@ -4,6 +4,8 @@ summary: "Given an integer array arr and a positive integer k, find the minimum 
 prereqs:
   - 08-pattern-fixed-sliding-window/01-pattern
 difficulty: easy
+kind: problem
+topics: [sliding-window, arrays]
 ---
 
 # Subarray Size Equals K
@@ -44,6 +46,83 @@ Output: 11
 Explanation: The subarray [1, 2, 3, 5] has a minimum sum of 11 and a size of 4.
 ```
 
+```quiz
+{
+  "prompt": "Now your turn!",
+  "input": "arr = [2, 3, 1, 5, 4], k = 2",
+  "options": ["4", "5", "9", "-1"],
+  "answer": "4"
+}
+```
+
+## Constraints
+
+- `0 ≤ arr.length ≤ 10^5`
+- `1 ≤ k ≤ 10^5`
+- `-10^4 ≤ arr[i] ≤ 10^4`
+
+```python run viz=array viz-root=arr
+import ast
+from typing import List
+
+class Solution:
+    def subarray_size_equals_k(self, arr: List[int], k: int) -> int:
+        # Your code goes here — slide a fixed window of size k, tracking the
+        # minimum window sum; return -1 if no size-k window exists.
+        return -1
+
+arr = ast.literal_eval(input())      # the test case's arr
+k = int(input())                     # the test case's k
+print(Solution().subarray_size_equals_k(arr, k))
+```
+
+```java run viz=array viz-root=arr
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int subarraySizeEqualsK(int[] arr, int k) {
+            // Your code goes here — slide a fixed window of size k, tracking the
+            // minimum window sum; return -1 if no size-k window exists.
+            return -1;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().subarraySizeEqualsK(arr, k));
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's arr
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[4, 4, 5, 6, 4]" },
+    { "id": "k", "label": "k", "type": "int", "placeholder": "3" }
+  ],
+  "cases": [
+    { "args": { "arr": "[4, 4, 5, 6, 4]", "k": "3" }, "expected": "13" },
+    { "args": { "arr": "[2, 3, 1, 5, 4]", "k": "2" }, "expected": "4" },
+    { "args": { "arr": "[1, 2, 3, 5]", "k": "4" }, "expected": "11" },
+    { "args": { "arr": "[10, 1, 2]", "k": "5" }, "expected": "-1" },
+    { "args": { "arr": "[5]", "k": "1" }, "expected": "5" },
+    { "args": { "arr": "[-1, -2, -3, -4]", "k": "2" }, "expected": "-7" }
+  ]
+}
+```
 
 <details>
 <summary><h2>Applying the Diagnostic Questions</h2></summary>
@@ -187,7 +266,8 @@ Return: 13 ✓  —  total additions: 9 (3 windows × 3 elements each)
 
 ### Solution
 
-```python run viz=array
+```python solution time=O(N) space=O(1)
+import ast
 from typing import List
 
 class Solution:
@@ -239,20 +319,14 @@ class Solution:
         return min_sum
 
 
-# Examples from the problem statement
-print(Solution().subarray_size_equals_k([4, 4, 5, 6, 4], 3))   # 13
-print(Solution().subarray_size_equals_k([1, 2, 3, 5], 1))       # 1
-print(Solution().subarray_size_equals_k([1, 2, 3, 5], 4))       # 11
-
-# Edge cases
-print(Solution().subarray_size_equals_k([5], 1))                 # 5  — single element
-print(Solution().subarray_size_equals_k([3, 1], 2))              # 4  — two elements
-print(Solution().subarray_size_equals_k([2, 2, 2], 3))           # 6  — all same
-print(Solution().subarray_size_equals_k([10, 1, 2], 5))          # -1 — k > length
-print(Solution().subarray_size_equals_k([-1, -2, -3, -4], 2))   # -7 — negatives
+arr = ast.literal_eval(input())      # the test case's arr
+k = int(input())                     # the test case's k
+print(Solution().subarray_size_equals_k(arr, k))
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
     static class Solution {
         public int subarraySizeEqualsK(int[] arr, int k) {
@@ -309,17 +383,20 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().subarraySizeEqualsK(new int[]{4, 4, 5, 6, 4}, 3));   // 13
-        System.out.println(new Solution().subarraySizeEqualsK(new int[]{1, 2, 3, 5}, 1));       // 1
-        System.out.println(new Solution().subarraySizeEqualsK(new int[]{1, 2, 3, 5}, 4));       // 11
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().subarraySizeEqualsK(arr, k));
+    }
 
-        // Edge cases
-        System.out.println(new Solution().subarraySizeEqualsK(new int[]{5}, 1));                 // 5  — single element
-        System.out.println(new Solution().subarraySizeEqualsK(new int[]{3, 1}, 2));              // 4  — two elements
-        System.out.println(new Solution().subarraySizeEqualsK(new int[]{2, 2, 2}, 3));           // 6  — all same
-        System.out.println(new Solution().subarraySizeEqualsK(new int[]{10, 1, 2}, 5));          // -1 — k > length
-        System.out.println(new Solution().subarraySizeEqualsK(new int[]{-1, -2, -3, -4}, 2));   // -7 — negatives
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's arr
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

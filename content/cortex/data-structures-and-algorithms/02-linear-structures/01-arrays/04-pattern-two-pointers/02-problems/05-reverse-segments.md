@@ -4,6 +4,8 @@ summary: "Given a string s and an integer k, process the string in groups of 2k 
 prereqs:
   - 04-pattern-two-pointers/01-pattern
 difficulty: medium
+kind: problem
+topics: [two-pointers, arrays]
 ---
 
 # Reverse Segments
@@ -60,6 +62,71 @@ Input:  s = "abcdefg",  k = 2
 Output: "bacdfeg"
 ```
 - Groups are `abcd` and `efg`. In `abcd`, reverse `ab` → `ba`. `efg` has 3 characters (≥ `k`, < `2k`), so reverse the first `k` — `ef` → `fe` — and leave `g`.
+
+```quiz
+{
+  "prompt": "Now your turn!",
+  "input": "s = \"codewars\", k = 2",
+  "options": ["ocdeawrs", "codewars", "srawedoc", "ocdewars"],
+  "answer": "ocdeawrs"
+}
+```
+
+## Constraints
+
+- `0 ≤ s.length ≤ 1000`
+- `1 ≤ k ≤ 1000`
+- `s` consists of printable ASCII characters
+
+```python run viz=array viz-root=arr
+class Solution:
+    def reverse_segments(self, s: str, k: int) -> str:
+        # Your code goes here — stride start by 2k; for each block reverse
+        # arr[start .. min(start+k-1, n-1)] in place with two pointers.
+        return s
+
+s = input()                          # the test case's s
+k = int(input())                     # the test case's k
+print(Solution().reverse_segments(s, k))
+```
+
+```java run viz=array viz-root=arr
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public String reverseSegments(String s, int k) {
+            // Your code goes here — stride start by 2k; for each block reverse
+            // arr[start .. min(start+k-1, n-1)] in place with two pointers.
+            return s;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String s = sc.hasNextLine() ? sc.nextLine() : "";
+        int k = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().reverseSegments(s, k));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "s", "type": "string", "placeholder": "abcdefghij" },
+    { "id": "k", "label": "k", "type": "int", "placeholder": "2" }
+  ],
+  "cases": [
+    { "args": { "s": "abcdefghij", "k": "2" }, "expected": "bacdfeghji" },
+    { "args": { "s": "codewars", "k": "2" }, "expected": "ocdeawrs" },
+    { "args": { "s": "dfgh", "k": "5" }, "expected": "hgfd" },
+    { "args": { "s": "qwerty", "k": "3" }, "expected": "ewqrty" },
+    { "args": { "s": "abcdef", "k": "6" }, "expected": "fedcba" },
+    { "args": { "s": "abcdef", "k": "1" }, "expected": "abcdef" }
+  ]
+}
+```
 
 <details>
 <summary><h2>Intuition</h2></summary>
@@ -156,7 +223,7 @@ Reverse Segments is structurally identical to Flip Characters — the only diffe
 
 ### Solution
 
-```python run viz=array viz-root=arr
+```python solution time=O(n) space=O(n)
 from typing import List
 
 class Solution:
@@ -193,20 +260,14 @@ class Solution:
         return "".join(arr)
 
 
-# Examples from the problem statement
-print(Solution().reverse_segments("abcdefghij", 2))  # bacdfeghji
-print(Solution().reverse_segments("dfgh", 5))         # hgfd
-print(Solution().reverse_segments("qwerty", 3))       # ewqrty
-
-# Edge cases
-print(Solution().reverse_segments("", 2))             # ""
-print(Solution().reverse_segments("a", 1))            # a — single char
-print(Solution().reverse_segments("ab", 1))           # ab — k=1 reverses nothing visible
-print(Solution().reverse_segments("abcdef", 6))       # fedcba — k >= len reverses all
-print(Solution().reverse_segments("abcdef", 1))       # abcdef — k=1, each group of 1 reversed = unchanged
+s = input()                          # the test case's s
+k = int(input())                     # the test case's k
+print(Solution().reverse_segments(s, k))
 ```
 
-```java run viz=array viz-root=arr
+```java solution
+import java.util.*;
+
 public class Main {
     static class Solution {
         private void reverseSegment(char[] arr, int left, int right) {
@@ -242,17 +303,10 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().reverseSegments("abcdefghij", 2)); // bacdfeghji
-        System.out.println(new Solution().reverseSegments("dfgh", 5));        // hgfd
-        System.out.println(new Solution().reverseSegments("qwerty", 3));      // ewqrty
-
-        // Edge cases
-        System.out.println(new Solution().reverseSegments("", 2));            // ""
-        System.out.println(new Solution().reverseSegments("a", 1));           // a — single char
-        System.out.println(new Solution().reverseSegments("ab", 1));          // ab — k=1 reverses nothing visible
-        System.out.println(new Solution().reverseSegments("abcdef", 6));      // fedcba — k >= len reverses all
-        System.out.println(new Solution().reverseSegments("abcdef", 1));      // abcdef — k=1, unchanged
+        Scanner sc = new Scanner(System.in);
+        String s = sc.hasNextLine() ? sc.nextLine() : "";
+        int k = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().reverseSegments(s, k));
     }
 }
 ```

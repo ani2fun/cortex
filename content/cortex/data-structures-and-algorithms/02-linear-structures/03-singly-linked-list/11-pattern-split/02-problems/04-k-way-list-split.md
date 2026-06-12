@@ -4,6 +4,8 @@ summary: "Given the head of a singly linked list and an integer k, write a funct
 prereqs:
   - 11-pattern-split/01-pattern
 difficulty: medium
+kind: problem
+topics: [split, singly-linked-list]
 ---
 
 # K-way list split
@@ -41,8 +43,113 @@ Explanation: n = 6, k = 2 → partSize = 3, bigLists = 0.
              Each bucket gets exactly partSize = 3 nodes.
 ```
 
+## Constraints
 
----
+- `0 ≤ list length ≤ 10⁵`
+- `0 ≤ node.val ≤ 10³`
+- `1 ≤ k ≤ 50`
+- Re-link nodes — `O(k)` space for the result array; do not allocate new list nodes
+
+```python run viz=linked-list viz-root=head
+import ast
+
+class ListNode:
+    def __init__(self, val, next=None):
+        self.val = val
+        self.next = next
+
+class Solution:
+    def k_way_list_split(self, head, k):
+        # Your code goes here
+        pass
+
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
+
+def print_list(head):                # 1 → 2 → 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
+
+head = build_list(ast.literal_eval(input()))   # the test case's head
+k = int(input())                               # the test case's k
+for p in Solution().k_way_list_split(head, k):
+    print_list(p)
+```
+
+```java run viz=linked-list viz-root=head
+import java.util.*;
+
+public class Main {
+    static class ListNode {
+        int val; ListNode next;
+        ListNode(int val) { this.val = val; }
+        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+    }
+
+    static class Solution {
+        List<ListNode> kWayListSplit(ListNode head, int k) {
+            // Your code goes here
+            List<ListNode> parts = new ArrayList<>(k);
+            for (int i = 0; i < k; i++) parts.add(null);
+            return parts;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] values = parseIntArray(sc.nextLine());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        ListNode head = buildList(values);
+        for (ListNode p : new Solution().kWayListSplit(head, k)) printList(p);
+    }
+
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+        ListNode head = null;
+        for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+        return head;
+    }
+
+    static void printList(ListNode head) {         // 1 → 2 → 3 → [1, 2, 3]
+        List<Integer> out = new ArrayList<>();
+        for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+        System.out.println(out);
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's head
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "head", "label": "head", "type": "int[]", "placeholder": "[1, 2, 3]" },
+    { "id": "k", "label": "k", "type": "int", "placeholder": "5" }
+  ],
+  "cases": [
+    { "args": { "head": "[1, 2, 3]", "k": "5" }, "expected": "[1]\n[2]\n[3]\n[]\n[]" },
+    { "args": { "head": "[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]", "k": "3" }, "expected": "[1, 2, 3, 4]\n[5, 6, 7]\n[8, 9, 10]" },
+    { "args": { "head": "[1, 2, 3, 4, 5, 6]", "k": "2" }, "expected": "[1, 2, 3]\n[4, 5, 6]" },
+    { "args": { "head": "[]", "k": "3" }, "expected": "[]\n[]\n[]" },
+    { "args": { "head": "[1]", "k": "1" }, "expected": "[1]" },
+    { "args": { "head": "[1, 2]", "k": "2" }, "expected": "[1]\n[2]" },
+    { "args": { "head": "[1, 2, 3, 4, 5]", "k": "3" }, "expected": "[1, 2]\n[3, 4]\n[5]" }
+  ]
+}
+```
 
 <details>
 <summary><h2>Intuition</h2></summary>
@@ -50,7 +157,7 @@ Explanation: n = 6, k = 2 → partSize = 3, bigLists = 0.
 
 The **structural property** that makes this a split problem is that the parts are *consecutive segments* of the original list — every cut sits between two adjacent nodes. Unlike the value- or modulo-based splits, the classifier here is position-driven: bucket `i` collects the `i`-th block of nodes starting from the head. The only twist is sizing — when `n` isn't divisible by `k`, the first `n % k` parts get one extra node each so that no two parts differ by more than one and earlier parts are at least as large as later parts.
 
-The **bucket placement** uses a precomputed sizing pair: `partSize = n // k` and `bigLists = n % k`. Each part's exact size is `partSize + 1` for the first `bigLists` buckets and `partSize` for the rest. Because the parts are consecutive, no dummy-and-tails dance is needed — capture each part's head, walk forward by the part's size, sever, and move on. The walker holds the current node; severing means setting `current.next = null` at the boundary, after stashing `current.next` so the walker can step into the next part.
+The **bucket placement** uses a precomputed sizing pair: `partSize = n // k` and `extraNodes = length % k`. Each part's exact size is `partSize + 1` for the first `extraNodes` buckets and `partSize` for the rest. Because the parts are consecutive, no dummy-and-tails dance is needed — capture each part's head, walk forward by the part's size, sever, and move on. The walker holds the current node; severing means setting `current.next = null` at the boundary, after stashing `current.next` so the walker can step into the next part.
 
 What **breaks if you reach for a naive approach**? The brute force walks the original list once per output bucket to copy out its nodes — `O(n * k)` time and `O(n)` extra space for the copies. The same approach without copying (re-walk the list per bucket, re-thread the segment) doesn't even terminate cleanly: once the first bucket's segment is severed, the second walk can no longer reach the second segment because the chain is broken. The split-with-precomputed-sizes solution is one length pass plus one routing pass — `O(n)` total — and never copies a node.
 
@@ -62,7 +169,7 @@ What **breaks if you reach for a naive approach**? The brute force walks the ori
 | Check | Answer for K-Way List Split |
 |---|---|
 | **Q1.** Does the problem ask to partition the input into multiple output lists? | **Yes** — `k` consecutive output segments, one head per segment. |
-| **Q2.** Can each node's bucket be computed locally? | **Yes** — once `partSize` and `bigLists` are known, the bucket boundary advances by counter alone; no value lookup, no look-ahead. |
+| **Q2.** Can each node's bucket be computed locally? | **Yes** — once `partSize` and `extraNodes` are known, the bucket boundary advances by counter alone; no value lookup, no look-ahead. |
 | **Q3.** Is the work at each step `O(1)`? | **Yes** — each node visit performs at most one pointer hop and at most one severing assignment. The outer length pass is the only non-`O(1)` step, and it's a one-time `O(n)` cost. |
 | **Q4.** Can output lists share original nodes (re-linked, not copied)? | **Yes** — the problem returns the original nodes re-threaded; severing `.next` at each boundary is what turns one chain into `k`. |
 
@@ -90,46 +197,24 @@ Run a length pass, then a single routing pass that captures one segment per outp
 
 ### Solution
 
-```python run viz=linked-list viz-root=head
-from typing import List, Optional
 
+```python solution time=O(n + k) space=O(k)
+import ast
 
 class ListNode:
-    def __init__(self, val=0, nxt=None):
+    def __init__(self, val, next=None):
         self.val = val
-        self.next = nxt
-
-
-def from_list(values):
-    if not values:
-        return None
-    head = ListNode(values[0])
-    cur = head
-    for v in values[1:]:
-        cur.next = ListNode(v)
-        cur = cur.next
-    return head
-
-
-def to_list(head):
-    out = []
-    while head is not None:
-        out.append(head.val)
-        head = head.next
-    return out
-
+        self.next = next
 
 class Solution:
-    def find_length(self, head: Optional[ListNode]) -> int:
+    def find_length(self, head):
         length = 0
         while head is not None:
             length += 1
             head = head.next
         return length
 
-    def k_way_list_split(
-        self, head: Optional[ListNode], k: int
-    ) -> List[Optional[ListNode]]:
+    def k_way_list_split(self, head, k):
 
         # Get total number of nodes
         length = self.find_length(head)
@@ -141,7 +226,7 @@ class Solution:
         extra_nodes = length % k
 
         # Result list to store part heads
-        parts: List[Optional[ListNode]] = [None] * k
+        parts = [None] * k
 
         # Pointer to traverse the list
         current = head
@@ -171,54 +256,33 @@ class Solution:
 
         return parts
 
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
 
-r = Solution().k_way_list_split(from_list([1, 2, 3]), 5)
-print([to_list(x) for x in r])   # [[1], [2], [3], [], []]
+def print_list(head):                # 1 → 2 → 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
 
-r = Solution().k_way_list_split(from_list([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]), 3)
-print([to_list(x) for x in r])   # [[1, 2, 3, 4], [5, 6, 7], [8, 9, 10]]
-
-# Edge cases
-r = Solution().k_way_list_split(None, 3)
-print([to_list(x) for x in r])   # [[], [], []]
-
-r = Solution().k_way_list_split(from_list([1]), 1)
-print([to_list(x) for x in r])   # [[1]]
-
-r = Solution().k_way_list_split(from_list([1, 2]), 2)
-print([to_list(x) for x in r])   # [[1], [2]]
-
-r = Solution().k_way_list_split(from_list([1, 2, 3, 4, 5, 6]), 2)
-print([to_list(x) for x in r])   # [[1, 2, 3], [4, 5, 6]]
+head = build_list(ast.literal_eval(input()))   # the test case's head
+k = int(input())                               # the test case's k
+for p in Solution().k_way_list_split(head, k):
+    print_list(p)
 ```
 
-```java run viz=linked-list viz-root=head
+```java solution
 import java.util.*;
 
 public class Main {
     static class ListNode {
-        int val;
-        ListNode next;
-        ListNode() {}
+        int val; ListNode next;
         ListNode(int val) { this.val = val; }
         ListNode(int val, ListNode next) { this.val = val; this.next = next; }
-    }
-
-    static ListNode fromList(int... values) {
-        if (values.length == 0) return null;
-        ListNode head = new ListNode(values[0]);
-        ListNode cur = head;
-        for (int i = 1; i < values.length; i++) {
-            cur.next = new ListNode(values[i]);
-            cur = cur.next;
-        }
-        return head;
-    }
-
-    static java.util.List<Integer> toList(ListNode head) {
-        java.util.List<Integer> out = new java.util.ArrayList<>();
-        while (head != null) { out.add(head.val); head = head.next; }
-        return out;
     }
 
     static class Solution {
@@ -283,24 +347,33 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        List<ListNode> r1 = new Solution().kWayListSplit(fromList(1, 2, 3), 5);
-        System.out.println(r1.stream().map(Main::toList).toList());  // [[1], [2], [3], [], []]
+        Scanner sc = new Scanner(System.in);
+        int[] values = parseIntArray(sc.nextLine());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        ListNode head = buildList(values);
+        for (ListNode p : new Solution().kWayListSplit(head, k)) printList(p);
+    }
 
-        List<ListNode> r2 = new Solution().kWayListSplit(fromList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10), 3);
-        System.out.println(r2.stream().map(Main::toList).toList());  // [[1, 2, 3, 4], [5, 6, 7], [8, 9, 10]]
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+        ListNode head = null;
+        for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+        return head;
+    }
 
-        // Edge cases
-        List<ListNode> r3 = new Solution().kWayListSplit(null, 3);
-        System.out.println(r3.stream().map(Main::toList).toList());  // [[], [], []]
+    static void printList(ListNode head) {         // 1 → 2 → 3 → [1, 2, 3]
+        List<Integer> out = new ArrayList<>();
+        for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+        System.out.println(out);
+    }
 
-        List<ListNode> r4 = new Solution().kWayListSplit(fromList(1), 1);
-        System.out.println(r4.stream().map(Main::toList).toList());  // [[1]]
-
-        List<ListNode> r5 = new Solution().kWayListSplit(fromList(1, 2), 2);
-        System.out.println(r5.stream().map(Main::toList).toList());  // [[1], [2]]
-
-        List<ListNode> r6 = new Solution().kWayListSplit(fromList(1, 2, 3, 4, 5, 6), 2);
-        System.out.println(r6.stream().map(Main::toList).toList());  // [[1, 2, 3], [4, 5, 6]]
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's head
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```
@@ -408,7 +481,7 @@ When you next see "split by rule", "bucket by hash", "round-robin distribute", "
 
 </details>
 <details>
-<summary><h2>Key Takeaway</h2></summary>
+<summary><h2>Key Takeaway (position-driven variant)</h2></summary>
 
 
 The position-driven variant of the split template: precompute `partSize` and `bigLists` from one length pass, then sever the original chain at each segment boundary. No dummies are needed because consecutive segments inherit their head naturally — but the severing assignment (`current.next = null`) is still what isolates the buckets.

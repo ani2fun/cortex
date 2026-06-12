@@ -4,6 +4,8 @@ summary: "Given an array of meetings consisting of start and end times [[s1, e1]
 prereqs:
   - 11-pattern-maximum-overlap/01-pattern
 difficulty: medium
+kind: problem
+topics: [intervals, arrays]
 ---
 
 # Busiest Interval
@@ -47,6 +49,90 @@ Input:  meetings = [[1, 5], [5, 10], [10, 15]]
 Output: [-1, -1]
 Explanation: Meetings only touch at endpoints so there are no
              overlapping meetings.
+```
+
+```quiz
+{
+  "prompt": "Now your turn!",
+  "input": "meetings = [[1, 5], [2, 4], [3, 4]]",
+  "options": ["[1, 5]", "[3, 4]", "[2, 4]", "[-1, -1]"],
+  "answer": "[3, 4]"
+}
+```
+
+## Constraints
+
+- `0 ≤ meetings.length ≤ 10^4`
+- `meetings[i] = [start, end]` with `0 ≤ start < end ≤ 10^9`
+- On a tie for maximum overlap, return the first such window; if nothing overlaps, return `[-1, -1]`
+
+```python run viz=array viz-root=meetings
+import ast
+from typing import List, Tuple
+
+class Solution:
+    def busiest_interval(self, meetings: List[List[int]]) -> Tuple[int, int]:
+        # Your code goes here — split into +1/−1 events, sort (end before
+        # start at a tie), sweep tracking the first peak window, and
+        # return [start, end] or (-1, -1) if nothing overlaps.
+        return -1, -1
+
+
+meetings = ast.literal_eval(input())     # the test case's meetings
+print(list(Solution().busiest_interval(meetings)))
+```
+
+```java run viz=array viz-root=meetings
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int[] busiestInterval(int[][] meetings) {
+            // Your code goes here — split into +1/−1 events, sort (end before
+            // start at a tie), sweep tracking the first peak window, and
+            // return {start, end} or {-1, -1} if nothing overlaps.
+            return new int[] { -1, -1 };
+        }
+    }
+
+    public static void main(String[] args) {
+        int[][] meetings = parseIntMatrix(new Scanner(System.in).nextLine());
+        System.out.println(Arrays.toString(new Solution().busiestInterval(meetings)));
+    }
+
+    // "[[1, 4], [2, 5]]" → {{1, 4}, {2, 5}} — reads the test case's meetings
+    static int[][] parseIntMatrix(String line) {
+        String inner = line.trim().replaceAll("^\\[|\\]$", "").trim();
+        if (inner.isEmpty()) return new int[0][];
+        String[] rows = inner.split("\\]\\s*,\\s*\\[");
+        int[][] out = new int[rows.length][];
+        for (int i = 0; i < rows.length; i++) {
+            String r = rows[i].replaceAll("[\\[\\]\\s]", "");
+            if (r.isEmpty()) { out[i] = new int[0]; continue; }
+            String[] parts = r.split(",");
+            int[] pair = new int[parts.length];
+            for (int j = 0; j < parts.length; j++) pair[j] = Integer.parseInt(parts[j]);
+            out[i] = pair;
+        }
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "meetings", "label": "meetings", "type": "int[][]", "placeholder": "[[1, 3], [2, 4], [5, 6]]" }
+  ],
+  "cases": [
+    { "args": { "meetings": "[[1, 3], [2, 4], [5, 6]]" }, "expected": "[2, 3]" },
+    { "args": { "meetings": "[[1, 8], [4, 5], [6, 7], [7, 8]]" }, "expected": "[4, 5]" },
+    { "args": { "meetings": "[[1, 5], [5, 10], [10, 15]]" }, "expected": "[-1, -1]" },
+    { "args": { "meetings": "[[1, 5], [2, 4], [3, 4]]" }, "expected": "[3, 4]" },
+    { "args": { "meetings": "[[1, 2]]" }, "expected": "[-1, -1]" },
+    { "args": { "meetings": "[]" }, "expected": "[-1, -1]" }
+  ]
+}
 ```
 
 <details>
@@ -220,7 +306,8 @@ The final guard `maximumOverlap ≤ 1` returns `[-1, -1]` — a single interval 
 
 ### The Solution
 
-```python run viz=array viz-root=meetings
+```python solution time=O(N log N) space=O(N)
+import ast
 from typing import List, Tuple
 
 # Define a class to store the time and type ('s' or 'e')
@@ -306,19 +393,11 @@ class Solution:
         return interval_start, interval_end
 
 
-# Examples from the problem statement
-print(Solution().busiest_interval([[1, 3], [2, 4], [5, 6]]))           # (2, 3)
-print(Solution().busiest_interval([[1, 8], [4, 5], [6, 7], [7, 8]]))   # (4, 5)
-print(Solution().busiest_interval([[1, 5], [5, 10], [10, 15]]))        # (-1, -1)
-
-# Edge cases
-print(Solution().busiest_interval([[1, 2]]))                            # (-1, -1)  — single meeting
-print(Solution().busiest_interval([[1, 3], [2, 4]]))                    # (2, 3)   — two overlapping
-print(Solution().busiest_interval([[1, 2], [3, 4]]))                    # (-1, -1)  — no overlap
-print(Solution().busiest_interval([[1, 5], [2, 4], [3, 4]]))           # (3, 4)   — three overlapping
+meetings = ast.literal_eval(input())     # the test case's meetings
+print(list(Solution().busiest_interval(meetings)))
 ```
 
-```java run viz=array viz-root=meetings
+```java solution
 import java.util.*;
 
 public class Main {
@@ -423,16 +502,25 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(Arrays.toString(new Solution().busiestInterval(new int[][]{{1, 3}, {2, 4}, {5, 6}})));           // [2, 3]
-        System.out.println(Arrays.toString(new Solution().busiestInterval(new int[][]{{1, 8}, {4, 5}, {6, 7}, {7, 8}})));   // [4, 5]
-        System.out.println(Arrays.toString(new Solution().busiestInterval(new int[][]{{1, 5}, {5, 10}, {10, 15}})));        // [-1, -1]
+        int[][] meetings = parseIntMatrix(new Scanner(System.in).nextLine());
+        System.out.println(Arrays.toString(new Solution().busiestInterval(meetings)));
+    }
 
-        // Edge cases
-        System.out.println(Arrays.toString(new Solution().busiestInterval(new int[][]{{1, 2}})));                            // [-1, -1]  — single meeting
-        System.out.println(Arrays.toString(new Solution().busiestInterval(new int[][]{{1, 3}, {2, 4}})));                    // [2, 3]   — two overlapping
-        System.out.println(Arrays.toString(new Solution().busiestInterval(new int[][]{{1, 2}, {3, 4}})));                    // [-1, -1]  — no overlap
-        System.out.println(Arrays.toString(new Solution().busiestInterval(new int[][]{{1, 5}, {2, 4}, {3, 4}})));           // [3, 4]   — three overlapping
+    // "[[1, 4], [2, 5]]" → {{1, 4}, {2, 5}} — reads the test case's meetings
+    static int[][] parseIntMatrix(String line) {
+        String inner = line.trim().replaceAll("^\\[|\\]$", "").trim();
+        if (inner.isEmpty()) return new int[0][];
+        String[] rows = inner.split("\\]\\s*,\\s*\\[");
+        int[][] out = new int[rows.length][];
+        for (int i = 0; i < rows.length; i++) {
+            String r = rows[i].replaceAll("[\\[\\]\\s]", "");
+            if (r.isEmpty()) { out[i] = new int[0]; continue; }
+            String[] parts = r.split(",");
+            int[] pair = new int[parts.length];
+            for (int j = 0; j < parts.length; j++) pair[j] = Integer.parseInt(parts[j]);
+            out[i] = pair;
+        }
+        return out;
     }
 }
 ```

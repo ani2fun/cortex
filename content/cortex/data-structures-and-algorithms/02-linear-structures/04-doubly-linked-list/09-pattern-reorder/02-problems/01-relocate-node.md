@@ -4,29 +4,156 @@ summary: "Given the head of a doubly linked list, write a function to move the l
 prereqs:
   - 09-pattern-reorder/01-pattern
 difficulty: easy
+kind: problem
+topics: [reorder, doubly-linked-list]
 ---
 
 # Relocate node
 
-## The Problem
+## Problem Statement
 
-> Given the **head** of a doubly linked list, write a function to move the last node of the list to the start and return the head of the reordered list.
+Given the **head** of a doubly linked list, write a function to move the last node of the list to the start and return the head of the reordered list.
 
+## Examples
+
+**Example 1:**
 ```
-Example 1
-  Input:  head = [5, 7, 3, 10, 6, 8]
-  Output: [8, 5, 7, 3, 10, 6]
-  Reason: The last node (8) is moved to the start.
+Input:  head = [5, 7, 3, 10, 6, 8]
+Output: [8, 5, 7, 3, 10, 6]
+```
 
-Example 2
-  Input:  head = [5, 7]
-  Output: [7, 5]
-  Reason: The last node (7) is moved to the start.
+**Example 2:**
+```
+Input:  head = [5, 7]
+Output: [7, 5]
+```
 
-Example 3
-  Input:  head = [5]
-  Output: [5]
-  Reason: A single node is both head and tail — nothing to move.
+**Example 3:**
+```
+Input:  head = [5]
+Output: [5]
+```
+
+```quiz
+{
+  "prompt": "What is the output for head = [1, 2, 3, 4]?",
+  "input": "head = [1, 2, 3, 4]",
+  "options": ["[1, 2, 3, 4]", "[4, 1, 2, 3]", "[4, 3, 2, 1]", "[1, 4, 2, 3]"],
+  "answer": "[4, 1, 2, 3]"
+}
+```
+
+## Constraints
+
+- `0 ≤ list length ≤ 10⁵`
+- `-10⁴ ≤ node.val ≤ 10⁴`
+- Move the last node **in place** — `O(1)` extra space; node values must not be copied or rewritten
+
+```python run viz=linked-list viz-root=head
+import ast
+
+class ListNode:
+    def __init__(self, val, prev=None, next=None):
+        self.val = val
+        self.prev = prev
+        self.next = next
+
+class Solution:
+    def relocate_node(self, head):
+        # Your code goes here — walk to the last node, detach it from
+        # both directions, then splice it at the front with the mirror wired.
+        pass
+
+def build_list(values):              # [1, 2, 3] → 1 ⇄ 2 ⇄ 3
+    head = tail = None
+    for v in values:
+        node = ListNode(v, prev=tail)
+        if tail is not None:
+            tail.next = node
+        else:
+            head = node
+        tail = node
+    return head
+
+def print_list(head):                # 1 ⇄ 2 ⇄ 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
+
+head = build_list(ast.literal_eval(input()))   # the test case's head
+print_list(Solution().relocate_node(head))
+```
+
+```java run viz=linked-list viz-root=head
+import java.util.*;
+
+public class Main {
+    static class ListNode {
+        int val; ListNode prev, next;
+        ListNode(int val) { this.val = val; }
+    }
+
+    static class Solution {
+        ListNode relocateNode(ListNode head) {
+            // Your code goes here — walk to the last node, detach it from
+            // both directions, then splice it at the front with the mirror wired.
+            return null;
+        }
+    }
+
+    public static void main(String[] args) {
+        ListNode head = buildList(parseIntArray(new Scanner(System.in).nextLine()));
+        printList(new Solution().relocateNode(head));
+    }
+
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 ⇄ 2 ⇄ 3
+        ListNode head = null, tail = null;
+        for (int v : values) {
+            ListNode node = new ListNode(v);
+            node.prev = tail;
+            if (tail != null) tail.next = node;
+            else head = node;
+            tail = node;
+        }
+        return head;
+    }
+
+    static void printList(ListNode head) {         // 1 ⇄ 2 ⇄ 3 → [1, 2, 3]
+        List<Integer> out = new ArrayList<>();
+        for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+        System.out.println(out);
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's head
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "head", "label": "head", "type": "int[]", "placeholder": "[5, 7, 3, 10, 6, 8]" }
+  ],
+  "cases": [
+    { "args": { "head": "[5, 7, 3, 10, 6, 8]" }, "expected": "[8, 5, 7, 3, 10, 6]" },
+    { "args": { "head": "[5, 7]" }, "expected": "[7, 5]" },
+    { "args": { "head": "[5]" }, "expected": "[5]" },
+    { "args": { "head": "[]" }, "expected": "[]" },
+    { "args": { "head": "[1, 2, 3]" }, "expected": "[3, 1, 2]" },
+    { "args": { "head": "[1, 2, 3, 4, 5]" }, "expected": "[5, 1, 2, 3, 4]" },
+    { "args": { "head": "[9, 9]" }, "expected": "[9, 9]" },
+    { "args": { "head": "[1, 2, 3, 4]" }, "expected": "[4, 1, 2, 3]" }
+  ]
+}
 ```
 
 <details>
@@ -80,42 +207,21 @@ Reorder skeleton: `f1` selects the last node into bucket B and everything else i
 <details>
 <summary><h2>Solution &amp; Analysis</h2></summary>
 
-### The Solution
+### Solution
 
-```python run viz=linked-list viz-root=head
-from typing import Optional, Tuple
+
+```python solution time=O(n) space=O(1)
+import ast
 
 class ListNode:
-    def __init__(self, val=0, prev=None, nxt=None):
+    def __init__(self, val, prev=None, next=None):
         self.val = val
         self.prev = prev
-        self.next = nxt
-
-
-def from_list(values):
-    if not values:
-        return None
-    head = ListNode(values[0])
-    cur = head
-    for v in values[1:]:
-        node = ListNode(v, prev=cur)
-        cur.next = node
-        cur = node
-    return head
-
-
-def to_list(head):
-    out = []
-    while head is not None:
-        out.append(head.val)
-        head = head.next
-    return out
+        self.next = next
 
 
 class Solution:
-    def split_last_node(
-        self, head: ListNode
-    ) -> Tuple[ListNode, ListNode]:
+    def split_last_node(self, head):
         current = head
         previous = None
 
@@ -139,11 +245,7 @@ class Solution:
         # Return {head of remaining list, last node}
         return head, current
 
-    def merge_last_node(
-        self,
-        last_node: Optional[ListNode],
-        first_node: Optional[ListNode],
-    ) -> Optional[ListNode]:
+    def merge_last_node(self, last_node, first_node):
 
         # If there is no last node, return the first node
         if not last_node:
@@ -158,9 +260,7 @@ class Solution:
 
         return last_node
 
-    def relocate_node(
-        self, head: Optional[ListNode]
-    ) -> Optional[ListNode]:
+    def relocate_node(self, head):
 
         # If the list is empty or contains only one node, no need to
         # modify it
@@ -174,59 +274,37 @@ class Solution:
         return self.merge_last_node(last_node, first_node)
 
 
-# Examples from the problem statement
-head = from_list([5, 7, 3, 10, 6, 8])
-print(to_list(Solution().relocate_node(head)))   # [8, 5, 7, 3, 10, 6]
+def build_list(values):              # [1, 2, 3] → 1 ⇄ 2 ⇄ 3
+    head = tail = None
+    for v in values:
+        node = ListNode(v, prev=tail)
+        if tail is not None:
+            tail.next = node
+        else:
+            head = node
+        tail = node
+    return head
 
-head = from_list([5, 7])
-print(to_list(Solution().relocate_node(head)))   # [7, 5]
 
-head = from_list([5])
-print(to_list(Solution().relocate_node(head)))   # [5]
+def print_list(head):                # 1 ⇄ 2 ⇄ 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
 
-# Edge cases
-head = from_list([1, 2, 3])
-print(to_list(Solution().relocate_node(head)))   # [3, 1, 2]
 
-head = from_list([1, 2, 3, 4, 5])
-print(to_list(Solution().relocate_node(head)))   # [5, 1, 2, 3, 4]
-
-head = from_list([9, 9])
-print(to_list(Solution().relocate_node(head)))   # [9, 9]
-
-head = from_list([1, 2, 3, 4])
-print(to_list(Solution().relocate_node(head)))   # [4, 1, 2, 3]
+head = build_list(ast.literal_eval(input()))   # the test case's head
+print_list(Solution().relocate_node(head))
 ```
 
-```java run viz=linked-list viz-root=head
+```java solution
 import java.util.*;
 
 public class Main {
     static class ListNode {
-        int val;
-        ListNode prev;
-        ListNode next;
-        ListNode() {}
+        int val; ListNode prev, next;
         ListNode(int val) { this.val = val; }
-    }
-
-    static ListNode fromList(int... values) {
-        if (values.length == 0) return null;
-        ListNode head = new ListNode(values[0]);
-        ListNode cur = head;
-        for (int i = 1; i < values.length; i++) {
-            ListNode node = new ListNode(values[i]);
-            node.prev = cur;
-            cur.next = node;
-            cur = node;
-        }
-        return head;
-    }
-
-    static java.util.List<Integer> toList(ListNode head) {
-        java.util.List<Integer> out = new java.util.ArrayList<>();
-        while (head != null) { out.add(head.val); head = head.next; }
-        return out;
     }
 
     static class Solution {
@@ -295,16 +373,36 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(toList(new Solution().relocateNode(fromList(5, 7, 3, 10, 6, 8))));  // [8, 5, 7, 3, 10, 6]
-        System.out.println(toList(new Solution().relocateNode(fromList(5, 7))));                // [7, 5]
-        System.out.println(toList(new Solution().relocateNode(fromList(5))));                   // [5]
+        ListNode head = buildList(parseIntArray(new Scanner(System.in).nextLine()));
+        printList(new Solution().relocateNode(head));
+    }
 
-        // Edge cases
-        System.out.println(toList(new Solution().relocateNode(fromList(1, 2, 3))));             // [3, 1, 2]
-        System.out.println(toList(new Solution().relocateNode(fromList(1, 2, 3, 4, 5))));       // [5, 1, 2, 3, 4]
-        System.out.println(toList(new Solution().relocateNode(fromList(9, 9))));                // [9, 9]
-        System.out.println(toList(new Solution().relocateNode(fromList(1, 2, 3, 4))));          // [4, 1, 2, 3]
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 ⇄ 2 ⇄ 3
+        ListNode head = null, tail = null;
+        for (int v : values) {
+            ListNode node = new ListNode(v);
+            node.prev = tail;
+            if (tail != null) tail.next = node;
+            else head = node;
+            tail = node;
+        }
+        return head;
+    }
+
+    static void printList(ListNode head) {         // 1 ⇄ 2 ⇄ 3 → [1, 2, 3]
+        List<Integer> out = new ArrayList<>();
+        for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+        System.out.println(out);
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's head
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```
@@ -350,36 +448,6 @@ Result: [8, 5, 7, 3, 10, 6] ✓
 | Two nodes | `[5, 7]` | `[7, 5]` | Just swap; `previous` stops at the first node. |
 
 </details>
-## Examples
-
-**Example 1**
-```
-Input:  head = [5, 7, 3, 10, 6, 8]
-Output: [8, 5, 7, 3, 10, 6]
-Explanation: The last node (8) is detached from the back — both its prev (pointing at 6) and 6's next are nulled — then 8 is spliced at the front with 8.next = 5 and 5.prev = 8. Every other node keeps its relative order and its existing prev / next links.
-```
-
-**Example 2**
-```
-Input:  head = [5, 7]
-Output: [7, 5]
-Explanation: Two-node case — the last node (7) becomes the new head, the original head (5) becomes the new tail. 7.prev is zeroed; 5.next is zeroed; 7.next = 5 and 5.prev = 7.
-```
-
-**Example 3**
-```
-Input:  head = [5]
-Output: [5]
-Explanation: A single-node DLL is its own last node; detach-and-prepend is a no-op. Both prev and next are already null.
-```
-
-**Example 4**
-```
-Input:  head = []
-Output: []
-Explanation: An empty list has nothing to relocate. Return null.
-```
-
 <details>
 <summary><h2>Intuition</h2></summary>
 

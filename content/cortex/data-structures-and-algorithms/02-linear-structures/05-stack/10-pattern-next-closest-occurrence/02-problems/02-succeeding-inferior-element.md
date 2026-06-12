@@ -4,6 +4,8 @@ summary: "Same as above but strictly smaller. Maintain an *increasing* monotonic
 prereqs:
   - 10-pattern-next-closest-occurrence/01-pattern
 difficulty: easy
+kind: problem
+topics: [next-closest-occurrence, stack]
 ---
 
 # Succeeding inferior element
@@ -19,8 +21,6 @@ Given two arrays `arr1` and `arr2` (where `arr2` is a subset of `arr1` and all e
 ### Example 2
 > -   **Input:** `arr1 = [5, 9, 7, 8, 1]`, `arr2 = [5, 9, 7]`
 > -   **Output:** `[1, 7, 1]`
-
-<!-- VERIFY: the Sweep-2 problem statement listed Example 1 as arr1=[3,5,1,6,8,2], arr2=[3,1,8,2] → [1,-1,2,-1]; the frozen Solution code's first example is arr1=[3,5,1,6,8,9], arr2=[3,1,8,9] → [1,-1,-1,-1] (verified by execution). Example 1 was realigned to the frozen code so the statement, Examples, and Dry Run agree with the runnable block. -->
 
 ## Examples
 
@@ -54,6 +54,87 @@ Output: [-1, -1]
 Explanation: The array is strictly increasing, so nothing has a smaller value to its right.
 ```
 
+```quiz
+{
+  "prompt": "arr1 = [3, 1, 4, 1, 5], arr2 = [4, 3]. Note: assume all elements unique — arr2 = [4, 3] for arr1 = [3, 4, 5, 1, 2]. What does succeeding inferior return for arr2 = [4, 5] on arr1 = [3, 4, 5, 1, 2]?",
+  "options": ["[1, 1]", "[3, 4]", "[1, 3]", "[-1, 1]"],
+  "answer": "[1, 1]"
+}
+```
+
+## Constraints
+
+- `1 ≤ arr1.length ≤ 1000`
+- `1 ≤ arr2.length ≤ arr1.length`
+- All elements in `arr1` are unique
+- `arr2` is a subset of `arr1`
+
+```python run
+import ast
+from typing import List
+
+class Solution:
+    def succeeding_inferior_element(self, arr_1: List[int], arr_2: List[int]) -> List[int]:
+        # Your code goes here — build a next-smaller map for arr1 via a
+        # right-to-left increasing monotonic stack (pop while top >= num),
+        # then look up each arr2 value.
+        return [-1] * len(arr_2)
+
+arr1 = ast.literal_eval(input())
+arr2 = ast.literal_eval(input())
+print(Solution().succeeding_inferior_element(arr1, arr2))
+```
+
+```java run
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int[] succeedingInferiorElement(int[] arr1, int[] arr2) {
+            // Your code goes here — build a next-smaller map for arr1 via a
+            // right-to-left increasing monotonic stack (pop while top >= num),
+            // then look up each arr2 value.
+            int[] result = new int[arr2.length];
+            Arrays.fill(result, -1);
+            return result;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr1 = parseIntArray(sc.nextLine());
+        int[] arr2 = parseIntArray(sc.nextLine());
+        System.out.println(Arrays.toString(new Solution().succeedingInferiorElement(arr1, arr2)));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr1", "label": "arr1", "type": "int[]", "placeholder": "[3, 5, 1, 6, 8, 9]" },
+    { "id": "arr2", "label": "arr2", "type": "int[]", "placeholder": "[3, 1, 8, 9]" }
+  ],
+  "cases": [
+    { "args": { "arr1": "[3, 5, 1, 6, 8, 9]", "arr2": "[3, 1, 8, 9]" }, "expected": "[1, -1, -1, -1]" },
+    { "args": { "arr1": "[5, 9, 7, 8, 1]", "arr2": "[5, 9, 7]" }, "expected": "[1, 7, 1]" },
+    { "args": { "arr1": "[4, 3, 2, 1]", "arr2": "[4, 2]" }, "expected": "[3, 1]" },
+    { "args": { "arr1": "[1, 2, 3, 4]", "arr2": "[4, 1]" }, "expected": "[-1, -1]" },
+    { "args": { "arr1": "[2, 1]", "arr2": "[2, 1]" }, "expected": "[1, -1]" },
+    { "args": { "arr1": "[1, 2]", "arr2": "[1, 2]" }, "expected": "[-1, -1]" },
+    { "args": { "arr1": "[1]", "arr2": "[1]" }, "expected": "[-1]" }
+  ]
+}
+```
 
 <details>
 <summary><h2>Intuition</h2></summary>
@@ -93,11 +174,10 @@ Identical to the superior version with one flip: the stack is increasing, and a 
 
 </details>
 <details>
-<summary><h2>Solution</h2></summary>
+<summary><h2>Solution & Analysis</h2></summary>
 
-
-
-```python run viz=array viz-root=stack viz-kind=stack
+```python solution time=O(N+M) space=O(N)
+import ast
 from typing import List
 
 class Solution:
@@ -145,20 +225,12 @@ class Solution:
 
         return result
 
-
-# Examples from the problem statement
-print(Solution().succeeding_inferior_element([3, 5, 1, 6, 8, 9], [3, 1, 8, 9]))  # [1, -1, -1, -1]
-print(Solution().succeeding_inferior_element([5, 9, 7, 8, 1], [5, 9, 7]))        # [1, 7, 1]
-
-# Edge cases
-print(Solution().succeeding_inferior_element([1], [1]))                           # [-1]
-print(Solution().succeeding_inferior_element([1, 2], [1, 2]))                     # [-1, -1]
-print(Solution().succeeding_inferior_element([2, 1], [2, 1]))                     # [1, -1]
-print(Solution().succeeding_inferior_element([4, 3, 2, 1], [4, 2]))              # [3, 1]
-print(Solution().succeeding_inferior_element([1, 2, 3, 4], [4, 1]))              # [-1, -1]
+arr1 = ast.literal_eval(input())
+arr2 = ast.literal_eval(input())
+print(Solution().succeeding_inferior_element(arr1, arr2))
 ```
 
-```java run viz=array viz-root=stack viz-kind=stack
+```java solution
 import java.util.*;
 
 public class Main {
@@ -215,16 +287,19 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(Arrays.toString(new Solution().succeedingInferiorElement(new int[]{3, 5, 1, 6, 8, 9}, new int[]{3, 1, 8, 9})));  // [1, -1, -1, -1]
-        System.out.println(Arrays.toString(new Solution().succeedingInferiorElement(new int[]{5, 9, 7, 8, 1}, new int[]{5, 9, 7})));        // [1, 7, 1]
+        Scanner sc = new Scanner(System.in);
+        int[] arr1 = parseIntArray(sc.nextLine());
+        int[] arr2 = parseIntArray(sc.nextLine());
+        System.out.println(Arrays.toString(new Solution().succeedingInferiorElement(arr1, arr2)));
+    }
 
-        // Edge cases
-        System.out.println(Arrays.toString(new Solution().succeedingInferiorElement(new int[]{1}, new int[]{1})));                          // [-1]
-        System.out.println(Arrays.toString(new Solution().succeedingInferiorElement(new int[]{1, 2}, new int[]{1, 2})));                    // [-1, -1]
-        System.out.println(Arrays.toString(new Solution().succeedingInferiorElement(new int[]{2, 1}, new int[]{2, 1})));                    // [1, -1]
-        System.out.println(Arrays.toString(new Solution().succeedingInferiorElement(new int[]{4, 3, 2, 1}, new int[]{4, 2})));             // [3, 1]
-        System.out.println(Arrays.toString(new Solution().succeedingInferiorElement(new int[]{1, 2, 3, 4}, new int[]{4, 1})));             // [-1, -1]
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

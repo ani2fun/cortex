@@ -4,29 +4,15 @@ summary: "Given the head and tail of a doubly linked list sorted non-decreasing,
 prereqs:
   - 08-pattern-two-pointers/01-pattern
 difficulty: medium
+kind: problem
+topics: [two-pointers, doubly-linked-list]
 ---
 
 # Duplicate-Aware Two Sum
 
-## The Problem
+## Problem Statement
 
-Given the **head** and **tail** of a doubly linked list sorted non-decreasing, and an integer **target**, return all unique pairs summing to `target`. The list **may contain duplicates**, but the result must not contain duplicate pairs (in any order).
-
-```
-Input:  head = [1, 2, 2, 3, 4, 5], target = 6
-Output: [[1, 5], [2, 4]]
-Explanation: 1+5=6 and 2+4=6. The duplicate 2 is not paired again.
-
-Input:  head = [1, 2, 2, 2, 2], target = 3
-Output: [[1, 2]]
-Explanation: 1+2=3 — but only one such pair, despite four 2s.
-
-Input:  head = [2], target = 2
-Output: []
-Explanation: Need two values to sum.
-```
-
----
+Given the **head** of a doubly linked list sorted non-decreasing, and an integer **target**, return all unique pairs summing to `target`. The list **may contain duplicates**, but the result must not contain duplicate pairs (in any order).
 
 ## Examples
 
@@ -34,21 +20,21 @@ Explanation: Need two values to sum.
 ```
 Input:  head = [1, 2, 2, 3, 4, 5], target = 6
 Output: [[1, 5], [2, 4]]
-Explanation: 1+5=6 and 2+4=6. The duplicate 2 is not paired with itself or recorded twice — the skip-duplicates helper walks past the second 2 on the left side after the (2, 4) pair is recorded.
+Explanation: 1+5=6 and 2+4=6. The duplicate 2 is not paired again.
 ```
 
 **Example 2**
 ```
 Input:  head = [1, 2, 2, 2, 2], target = 3
 Output: [[1, 2]]
-Explanation: Only one value pair (1, 2) reaches the target, even though four 2s exist. After the first match, the left helper skips past the run of 2s to land on a fresh value.
+Explanation: 1+2=3 — but only one such pair, despite four 2s.
 ```
 
 **Example 3**
 ```
 Input:  head = [2], target = 2
 Output: []
-Explanation: A single node cannot form a pair; the guard returns the empty result immediately.
+Explanation: Need two values to sum.
 ```
 
 **Example 4**
@@ -58,8 +44,124 @@ Output: [[1, 1]]
 Explanation: Every value is the same; the first (1, 1) pair is recorded, and the duplicate-skip helpers collapse the rest of the run to a single recorded pair.
 ```
 
+## Constraints
 
----
+- `0 ≤ list length ≤ 10⁵`
+- `-10⁴ ≤ node.val ≤ 10⁴`
+- The list is sorted in non-decreasing order and may contain duplicates
+- `-10⁸ ≤ target ≤ 10⁸`
+
+```python run viz=linked-list viz-root=head
+import ast
+
+class ListNode:
+    def __init__(self, val, prev=None, next=None):
+        self.val = val
+        self.prev = prev
+        self.next = next
+
+class Solution:
+    def duplicate_aware_two_sum(self, head, target):
+        # Your code goes here — find the tail, run the converging loop;
+        # after a match, skip past all nodes sharing the same value on
+        # both sides before resuming.
+        pass
+
+def build_list(values):              # [1, 2, 3] → 1 ⇄ 2 ⇄ 3
+    head = tail = None
+    for v in values:
+        node = ListNode(v, prev=tail)
+        if tail is not None:
+            tail.next = node
+        else:
+            head = node
+        tail = node
+    return head
+
+def print_list(head):                # 1 ⇄ 2 ⇄ 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
+
+head = build_list(ast.literal_eval(input()))   # the test case's head
+target = int(input())
+print(Solution().duplicate_aware_two_sum(head, target))
+```
+
+```java run viz=linked-list viz-root=head
+import java.util.*;
+
+public class Main {
+    static class ListNode {
+        int val; ListNode prev, next;
+        ListNode(int val) { this.val = val; }
+    }
+
+    static class Solution {
+        public List<List<Integer>> duplicateAwareTwoSum(ListNode head, int target) {
+            // Your code goes here — find the tail, run the converging loop;
+            // after a match, skip past all nodes sharing the same value on
+            // both sides before resuming.
+            return new ArrayList<>();
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        ListNode head = buildList(parseIntArray(sc.nextLine()));
+        int target = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().duplicateAwareTwoSum(head, target));
+    }
+
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 ⇄ 2 ⇄ 3
+        ListNode head = null, tail = null;
+        for (int v : values) {
+            ListNode node = new ListNode(v);
+            node.prev = tail;
+            if (tail != null) tail.next = node;
+            else head = node;
+            tail = node;
+        }
+        return head;
+    }
+
+    static void printList(ListNode head) {         // 1 ⇄ 2 ⇄ 3 → [1, 2, 3]
+        List<Integer> out = new ArrayList<>();
+        for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+        System.out.println(out);
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "head", "label": "head", "type": "int[]", "placeholder": "[1, 2, 2, 3, 4, 5]" },
+    { "id": "target", "label": "target", "type": "int", "placeholder": "6" }
+  ],
+  "cases": [
+    { "args": { "head": "[1, 2, 2, 3, 4, 5]", "target": "6" }, "expected": "[[1, 5], [2, 4]]" },
+    { "args": { "head": "[1, 2, 2, 2, 2]", "target": "3" }, "expected": "[[1, 2]]" },
+    { "args": { "head": "[2]", "target": "2" }, "expected": "[]" },
+    { "args": { "head": "[1, 1, 1, 1]", "target": "2" }, "expected": "[[1, 1]]" },
+    { "args": { "head": "[1, 1, 2, 3]", "target": "4" }, "expected": "[[1, 3]]" },
+    { "args": { "head": "[1, 2, 3, 4, 5]", "target": "10" }, "expected": "[]" },
+    { "args": { "head": "[1, 2]", "target": "3" }, "expected": "[[1, 2]]" },
+    { "args": { "head": "[2, 2, 2, 2]", "target": "5" }, "expected": "[]" }
+  ]
+}
+```
 
 <details>
 <summary><h2>Intuition</h2></summary>
@@ -139,43 +241,22 @@ flowchart TB
 <details>
 <summary><h2>Solution &amp; Analysis</h2></summary>
 
-### The Solution
+### Solution
 
-```python run viz=linked-list viz-root=head
-from typing import Optional, List
+```python solution time=O(n) space=O(1)
+import ast
+from typing import List, Optional
 
 class ListNode:
-    def __init__(self, val=0, prev=None, nxt=None):
+    def __init__(self, val, prev=None, next=None):
         self.val = val
         self.prev = prev
-        self.next = nxt
-
-
-def from_list(values):
-    if not values:
-        return None
-    head = ListNode(values[0])
-    cur = head
-    for v in values[1:]:
-        node = ListNode(v, prev=cur)
-        cur.next = node
-        cur = node
-    return head
-
-
-def get_tail(head):
-    if head is None:
-        return None
-    cur = head
-    while cur.next is not None:
-        cur = cur.next
-    return cur
-
+        self.next = next
 
 class Solution:
     def skip_duplicates_left(
-        self, left: Optional[ListNode], right: Optional[ListNode]
-    ) -> Optional[ListNode]:
+        self, left: Optional['ListNode'], right: Optional['ListNode']
+    ) -> Optional['ListNode']:
         while (
             left
             and left.next
@@ -188,8 +269,8 @@ class Solution:
         return left.next if left else None
 
     def skip_duplicates_right(
-        self, left: Optional[ListNode], right: Optional[ListNode]
-    ) -> Optional[ListNode]:
+        self, left: Optional['ListNode'], right: Optional['ListNode']
+    ) -> Optional['ListNode']:
         while (
             right
             and right.prev
@@ -201,39 +282,34 @@ class Solution:
         # Return the pointer to the next unique element
         return right.prev if right else None
 
-    def duplicate_aware_two_sum(
-        self,
-        head: Optional[ListNode],
-        tail: Optional[ListNode],
-        target: int,
-    ) -> List[List[int]]:
+    def duplicate_aware_two_sum(self, head, target: int) -> List[List[int]]:
+
+        # Find the tail
+        tail = head
+        while tail and tail.next:
+            tail = tail.next
 
         # Check if the list is empty or has only one element
         if not head or not head.next:
-
-            # Return an empty list since there are no pairs to be found
             return []
 
         # Store the pairs of values that sum up to the target
         result: List[List[int]] = []
-        left: Optional[ListNode] = head
-        right: Optional[ListNode] = tail
+        left = head
+        right = tail
 
         # Use a while loop to traverse the list using the two pointers
         while left and right and left != right and left.val <= right.val:
             total = left.val + right.val
 
-            # If the sum matches the target, add the pair to the
-            # result list
+            # If the sum matches the target, add the pair to the result list
             if total == target:
                 result.append([left.val, right.val])
 
-                # Move the left pointer to the next unique element to
-                # avoid duplicates
+                # Move the left pointer to the next unique element
                 left = self.skip_duplicates_left(left, right)
 
                 # Move the right pointer to the previous unique element
-                # to avoid duplicates
                 right = self.skip_duplicates_right(left, right)
 
             # Move the left pointer to increase the sum
@@ -246,64 +322,36 @@ class Solution:
 
         return result
 
+def build_list(values):              # [1, 2, 3] → 1 ⇄ 2 ⇄ 3
+    head = tail = None
+    for v in values:
+        node = ListNode(v, prev=tail)
+        if tail is not None:
+            tail.next = node
+        else:
+            head = node
+        tail = node
+    return head
 
-# Examples from the problem statement
-h = from_list([1, 2, 2, 3, 4, 5])
-print(Solution().duplicate_aware_two_sum(h, get_tail(h), 6))   # [[1, 5], [2, 4]]
+def print_list(head):                # 1 ⇄ 2 ⇄ 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
 
-h = from_list([1, 2, 2, 2, 2])
-print(Solution().duplicate_aware_two_sum(h, get_tail(h), 3))   # [[1, 2]]
-
-h = from_list([2])
-print(Solution().duplicate_aware_two_sum(h, get_tail(h), 2))   # []
-
-# Edge cases
-h = from_list([1, 1, 2, 3])
-print(Solution().duplicate_aware_two_sum(h, get_tail(h), 4))   # [[1, 3]]
-
-h = from_list([1, 2, 3, 4, 5])
-print(Solution().duplicate_aware_two_sum(h, get_tail(h), 10))  # []
-
-h = from_list([1, 2])
-print(Solution().duplicate_aware_two_sum(h, get_tail(h), 3))   # [[1, 2]]
-
-h = from_list([1, 1, 1, 1])
-print(Solution().duplicate_aware_two_sum(h, get_tail(h), 2))   # [[1, 1]]
-
-h = from_list([2, 2, 2, 2])
-print(Solution().duplicate_aware_two_sum(h, get_tail(h), 5))   # []
+head = build_list(ast.literal_eval(input()))   # the test case's head
+target = int(input())
+print(Solution().duplicate_aware_two_sum(head, target))
 ```
 
-```java run viz=linked-list viz-root=head
+```java solution
 import java.util.*;
 
 public class Main {
     static class ListNode {
-        int val;
-        ListNode prev;
-        ListNode next;
-        ListNode() {}
+        int val; ListNode prev, next;
         ListNode(int val) { this.val = val; }
-    }
-
-    static ListNode fromList(int... values) {
-        if (values.length == 0) return null;
-        ListNode head = new ListNode(values[0]);
-        ListNode cur = head;
-        for (int i = 1; i < values.length; i++) {
-            ListNode node = new ListNode(values[i]);
-            node.prev = cur;
-            cur.next = node;
-            cur = node;
-        }
-        return head;
-    }
-
-    static ListNode getTail(ListNode head) {
-        if (head == null) return null;
-        ListNode cur = head;
-        while (cur.next != null) cur = cur.next;
-        return cur;
     }
 
     static class Solution {
@@ -318,7 +366,7 @@ public class Main {
             }
 
             // Return the pointer to the next unique element
-            return left.next;
+            return left != null ? left.next : null;
         }
 
         private ListNode skipDuplicatesRight(ListNode left, ListNode right) {
@@ -332,19 +380,17 @@ public class Main {
             }
 
             // Return the pointer to the next unique element
-            return right.prev;
+            return right != null ? right.prev : null;
         }
 
-        public List<List<Integer>> duplicateAwareTwoSum(
-            ListNode head,
-            ListNode tail,
-            int target
-        ) {
+        public List<List<Integer>> duplicateAwareTwoSum(ListNode head, int target) {
+
+            // Find the tail
+            ListNode tail = head;
+            while (tail != null && tail.next != null) tail = tail.next;
 
             // Check if the list is empty or has only one element
             if (head == null || head.next == null) {
-
-                // Return an empty list since there are no pairs to be found
                 return new ArrayList<>();
             }
 
@@ -362,17 +408,14 @@ public class Main {
             ) {
                 int sum = left.val + right.val;
 
-                // If the sum matches the target, add the pair to the
-                // result list
+                // If the sum matches the target, add the pair to the result list
                 if (sum == target) {
-                    result.add(List.of(left.val, right.val));
+                    result.add(Arrays.asList(left.val, right.val));
 
-                    // Move the left pointer to the next unique element to
-                    // avoid duplicates
+                    // Move the left pointer to the next unique element
                     left = skipDuplicatesLeft(left, right);
 
                     // Move the right pointer to the previous unique element
-                    // to avoid duplicates
                     right = skipDuplicatesRight(left, right);
                 }
 
@@ -392,33 +435,37 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        ListNode h;
+        Scanner sc = new Scanner(System.in);
+        ListNode head = buildList(parseIntArray(sc.nextLine()));
+        int target = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().duplicateAwareTwoSum(head, target));
+    }
 
-        // Examples from the problem statement
-        h = fromList(1, 2, 2, 3, 4, 5);
-        System.out.println(new Solution().duplicateAwareTwoSum(h, getTail(h), 6));   // [[1, 5], [2, 4]]
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 ⇄ 2 ⇄ 3
+        ListNode head = null, tail = null;
+        for (int v : values) {
+            ListNode node = new ListNode(v);
+            node.prev = tail;
+            if (tail != null) tail.next = node;
+            else head = node;
+            tail = node;
+        }
+        return head;
+    }
 
-        h = fromList(1, 2, 2, 2, 2);
-        System.out.println(new Solution().duplicateAwareTwoSum(h, getTail(h), 3));   // [[1, 2]]
+    static void printList(ListNode head) {         // 1 ⇄ 2 ⇄ 3 → [1, 2, 3]
+        List<Integer> out = new ArrayList<>();
+        for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+        System.out.println(out);
+    }
 
-        h = fromList(2);
-        System.out.println(new Solution().duplicateAwareTwoSum(h, getTail(h), 2));   // []
-
-        // Edge cases
-        h = fromList(1, 1, 2, 3);
-        System.out.println(new Solution().duplicateAwareTwoSum(h, getTail(h), 4));   // [[1, 3]]
-
-        h = fromList(1, 2, 3, 4, 5);
-        System.out.println(new Solution().duplicateAwareTwoSum(h, getTail(h), 10));  // []
-
-        h = fromList(1, 2);
-        System.out.println(new Solution().duplicateAwareTwoSum(h, getTail(h), 3));   // [[1, 2]]
-
-        h = fromList(1, 1, 1, 1);
-        System.out.println(new Solution().duplicateAwareTwoSum(h, getTail(h), 2));   // [[1, 1]]
-
-        h = fromList(2, 2, 2, 2);
-        System.out.println(new Solution().duplicateAwareTwoSum(h, getTail(h), 5));   // []
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```
@@ -430,13 +477,13 @@ public class Main {
 ```
 arr = [1, 2, 2, 3, 4, 5] (already sorted), target = 6, result = []
 
-Step 1 │ left=0 (1), right=5 (5) │ total=1+5=6 == 6 │ result=[[1,5]]
-       │ skip_duplicates_left(arr,0,5):  arr[0]=1 ≠ arr[1]=2 → returns left+1 = 1
-       │ skip_duplicates_right(arr,1,5): arr[5]=5 ≠ arr[4]=4 → returns right-1 = 4
-Step 2 │ left=1 (2), right=4 (4) │ total=2+4=6 == 6 │ result=[[1,5],[2,4]]
-       │ skip_duplicates_left(arr,1,4):  arr[1]=2 == arr[2]=2 → left=2; arr[2]=2 ≠ arr[3]=3 → returns 3
-       │ skip_duplicates_right(arr,3,4): arr[4]=4 ≠ arr[3]=3 → returns right-1 = 3
-Done   │ left=3, right=3 → left < right false → exit
+Step 1 │ left=node(1), right=node(5) │ total=1+5=6 == 6 │ result=[[1,5]]
+       │ skip_left: 1 ≠ 2 → left=node(2)
+       │ skip_right: 5 ≠ 4 → right=node(4)
+Step 2 │ left=node(2), right=node(4) │ total=2+4=6 == 6 │ result=[[1,5],[2,4]]
+       │ skip_left: 2 == 2 → advance; next is 3 → left=node(3)
+       │ skip_right: 4 ≠ 3 → right=node(3)
+Done   │ left == right → exit
 Result: [[1, 5], [2, 4]] ✓
 ```
 
@@ -446,8 +493,8 @@ Result: [[1, 5], [2, 4]] ✓
 
 | Measure | Value | Reason |
 |---|---|---|
-| Time  | **O(N log N)** | `arr.sort()` dominates; the main loop plus skip helpers visit each index at most once, O(N). |
-| Space | **O(1)** auxiliary | Constant index variables; output list excluded. |
+| Time  | **O(N)** | Main loop plus skip helpers visit each node at most once; skip work amortises to O(N). |
+| Space | **O(1)** auxiliary | Constant pointer variables; output list excluded. |
 
 ### Edge Cases
 

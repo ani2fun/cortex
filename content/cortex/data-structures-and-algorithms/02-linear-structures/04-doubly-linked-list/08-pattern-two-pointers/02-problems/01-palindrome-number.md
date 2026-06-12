@@ -4,26 +4,15 @@ summary: "Given the head and tail of a sorted (well — *symmetric*) doubly link
 prereqs:
   - 08-pattern-two-pointers/01-pattern
 difficulty: easy
+kind: problem
+topics: [two-pointers, doubly-linked-list]
 ---
 
 # Palindrome Number
 
-## The Problem
+## Problem Statement
 
-Given the **head** and **tail** of a sorted (well — *symmetric*) doubly linked list, return `true` if the list reads the same forwards and backwards, `false` otherwise. A palindrome number reads identically left-to-right and right-to-left.
-
-```
-Input:  head = [1, 2, 3, 2, 1]
-Output: true
-
-Input:  head = [6, 6, 6]
-Output: true
-
-Input:  head = [1, 2, 3, 4, 5]
-Output: false
-```
-
----
+Given the **head** of a doubly linked list, return `true` if the list reads the same forwards and backwards, `false` otherwise.
 
 ## Examples
 
@@ -55,8 +44,120 @@ Output: true
 Explanation: Even-length palindrome — the pointers never land on the same node; they cross past each other after the inner (2, 2) match passes.
 ```
 
+## Constraints
 
----
+- `0 ≤ list length ≤ 10⁵`
+- `-10⁴ ≤ node.val ≤ 10⁴`
+
+```python run viz=linked-list viz-root=head
+import ast
+
+class ListNode:
+    def __init__(self, val, prev=None, next=None):
+        self.val = val
+        self.prev = prev
+        self.next = next
+
+class Solution:
+    def palindrome_number(self, head):
+        # Your code goes here — find the tail, then place left at head and
+        # right at tail; compare values and step inward; return True if all
+        # mirror pairs match, False on the first mismatch.
+        pass
+
+def build_list(values):              # [1, 2, 3] → 1 ⇄ 2 ⇄ 3
+    head = tail = None
+    for v in values:
+        node = ListNode(v, prev=tail)
+        if tail is not None:
+            tail.next = node
+        else:
+            head = node
+        tail = node
+    return head
+
+def print_list(head):                # 1 ⇄ 2 ⇄ 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
+
+head = build_list(ast.literal_eval(input()))   # the test case's head
+result = Solution().palindrome_number(head)
+print("true" if result else "false")
+```
+
+```java run viz=linked-list viz-root=head
+import java.util.*;
+
+public class Main {
+    static class ListNode {
+        int val; ListNode prev, next;
+        ListNode(int val) { this.val = val; }
+    }
+
+    static class Solution {
+        public boolean palindromeNumber(ListNode head) {
+            // Your code goes here — find the tail, then place left at head and
+            // right at tail; compare values and step inward; return true if all
+            // mirror pairs match, false on the first mismatch.
+            return false;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        ListNode head = buildList(parseIntArray(sc.nextLine()));
+        System.out.println(new Solution().palindromeNumber(head));
+    }
+
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 ⇄ 2 ⇄ 3
+        ListNode head = null, tail = null;
+        for (int v : values) {
+            ListNode node = new ListNode(v);
+            node.prev = tail;
+            if (tail != null) tail.next = node;
+            else head = node;
+            tail = node;
+        }
+        return head;
+    }
+
+    static void printList(ListNode head) {         // 1 ⇄ 2 ⇄ 3 → [1, 2, 3]
+        List<Integer> out = new ArrayList<>();
+        for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+        System.out.println(out);
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "head", "label": "head", "type": "int[]", "placeholder": "[1, 2, 3, 2, 1]" }
+  ],
+  "cases": [
+    { "args": { "head": "[1, 2, 3, 2, 1]" }, "expected": "true" },
+    { "args": { "head": "[6, 6, 6]" }, "expected": "true" },
+    { "args": { "head": "[1, 2, 3, 4, 5]" }, "expected": "false" },
+    { "args": { "head": "[1, 2, 2, 1]" }, "expected": "true" },
+    { "args": { "head": "[5]" }, "expected": "true" },
+    { "args": { "head": "[1, 2]" }, "expected": "false" },
+    { "args": { "head": "[1, 2, 1]" }, "expected": "true" },
+    { "args": { "head": "[9, 9, 9, 9]" }, "expected": "true" }
+  ]
+}
+```
 
 <details>
 <summary><h2>Intuition</h2></summary>
@@ -126,43 +227,24 @@ flowchart TB
 <details>
 <summary><h2>Solution &amp; Analysis</h2></summary>
 
-### The Solution
+### Solution
 
-```python run viz=linked-list viz-root=head
-from typing import Optional
+```python solution time=O(n) space=O(1)
+import ast
 
 class ListNode:
-    def __init__(self, val=0, prev=None, nxt=None):
+    def __init__(self, val, prev=None, next=None):
         self.val = val
         self.prev = prev
-        self.next = nxt
-
-
-def from_list(values):
-    if not values:
-        return None
-    head = ListNode(values[0])
-    cur = head
-    for v in values[1:]:
-        node = ListNode(v, prev=cur)
-        cur.next = node
-        cur = node
-    return head
-
-
-def get_tail(head):
-    if head is None:
-        return None
-    cur = head
-    while cur.next is not None:
-        cur = cur.next
-    return cur
-
+        self.next = next
 
 class Solution:
-    def palindrome_number(
-        self, head: Optional[ListNode], tail: Optional[ListNode]
-    ) -> bool:
+    def palindrome_number(self, head):
+
+        # Find the tail
+        tail = head
+        while tail and tail.next:
+            tail = tail.next
 
         # Empty list or single element is a palindrome
         if not head or head == tail:
@@ -186,71 +268,44 @@ class Solution:
         # If all values matched, it's a palindrome
         return True
 
+def build_list(values):              # [1, 2, 3] → 1 ⇄ 2 ⇄ 3
+    head = tail = None
+    for v in values:
+        node = ListNode(v, prev=tail)
+        if tail is not None:
+            tail.next = node
+        else:
+            head = node
+        tail = node
+    return head
 
-# Examples from the problem statement
-h = from_list([1, 2, 3, 2, 1])
-print(Solution().palindrome_number(h, get_tail(h)))   # True
+def print_list(head):                # 1 ⇄ 2 ⇄ 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
 
-h = from_list([6, 6, 6])
-print(Solution().palindrome_number(h, get_tail(h)))   # True
-
-h = from_list([1, 2, 3, 4, 5])
-print(Solution().palindrome_number(h, get_tail(h)))   # False
-
-# Edge cases
-h = from_list([5])
-print(Solution().palindrome_number(h, get_tail(h)))   # True
-
-h = from_list([1, 2, 1])
-print(Solution().palindrome_number(h, get_tail(h)))   # True
-
-h = from_list([1, 2])
-print(Solution().palindrome_number(h, get_tail(h)))   # False
-
-h = from_list([1, 2, 2, 1])
-print(Solution().palindrome_number(h, get_tail(h)))   # True
-
-h = from_list([9, 9, 9, 9])
-print(Solution().palindrome_number(h, get_tail(h)))   # True
-
-h = from_list([1, 2, 3])
-print(Solution().palindrome_number(h, get_tail(h)))   # False
+head = build_list(ast.literal_eval(input()))   # the test case's head
+result = Solution().palindrome_number(head)
+print("true" if result else "false")
 ```
 
-```java run viz=linked-list viz-root=head
+```java solution
 import java.util.*;
 
 public class Main {
     static class ListNode {
-        int val;
-        ListNode prev;
-        ListNode next;
-        ListNode() {}
+        int val; ListNode prev, next;
         ListNode(int val) { this.val = val; }
     }
 
-    static ListNode fromList(int... values) {
-        if (values.length == 0) return null;
-        ListNode head = new ListNode(values[0]);
-        ListNode cur = head;
-        for (int i = 1; i < values.length; i++) {
-            ListNode node = new ListNode(values[i]);
-            node.prev = cur;
-            cur.next = node;
-            cur = node;
-        }
-        return head;
-    }
-
-    static ListNode getTail(ListNode head) {
-        if (head == null) return null;
-        ListNode cur = head;
-        while (cur.next != null) cur = cur.next;
-        return cur;
-    }
-
     static class Solution {
-        public boolean palindromeNumber(ListNode head, ListNode tail) {
+        public boolean palindromeNumber(ListNode head) {
+
+            // Find the tail
+            ListNode tail = head;
+            while (tail != null && tail.next != null) tail = tail.next;
 
             // Empty list or single element is a palindrome
             if (head == null || head == tail) {
@@ -285,36 +340,36 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        ListNode h;
+        Scanner sc = new Scanner(System.in);
+        ListNode head = buildList(parseIntArray(sc.nextLine()));
+        System.out.println(new Solution().palindromeNumber(head));
+    }
 
-        h = fromList(1, 2, 3, 2, 1);
-        System.out.println(new Solution().palindromeNumber(h, getTail(h)));  // true
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 ⇄ 2 ⇄ 3
+        ListNode head = null, tail = null;
+        for (int v : values) {
+            ListNode node = new ListNode(v);
+            node.prev = tail;
+            if (tail != null) tail.next = node;
+            else head = node;
+            tail = node;
+        }
+        return head;
+    }
 
-        h = fromList(6, 6, 6);
-        System.out.println(new Solution().palindromeNumber(h, getTail(h)));  // true
+    static void printList(ListNode head) {         // 1 ⇄ 2 ⇄ 3 → [1, 2, 3]
+        List<Integer> out = new ArrayList<>();
+        for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+        System.out.println(out);
+    }
 
-        h = fromList(1, 2, 3, 4, 5);
-        System.out.println(new Solution().palindromeNumber(h, getTail(h)));  // false
-
-        // Edge cases
-        h = fromList(5);
-        System.out.println(new Solution().palindromeNumber(h, getTail(h)));  // true
-
-        h = fromList(1, 2, 1);
-        System.out.println(new Solution().palindromeNumber(h, getTail(h)));  // true
-
-        h = fromList(1, 2);
-        System.out.println(new Solution().palindromeNumber(h, getTail(h)));  // false
-
-        h = fromList(1, 2, 2, 1);
-        System.out.println(new Solution().palindromeNumber(h, getTail(h)));  // true
-
-        h = fromList(9, 9, 9, 9);
-        System.out.println(new Solution().palindromeNumber(h, getTail(h)));  // true
-
-        h = fromList(1, 2, 3);
-        System.out.println(new Solution().palindromeNumber(h, getTail(h)));  // false
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

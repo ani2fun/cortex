@@ -4,6 +4,8 @@ summary: "Given an array of jobs, consisting of start time, end time, and requir
 prereqs:
   - 11-pattern-maximum-overlap/01-pattern
 difficulty: hard
+kind: problem
+topics: [intervals, arrays]
 ---
 
 # Peak Resource Requirement
@@ -49,6 +51,92 @@ Input:  jobs = [[1, 5, 2], [5, 10, 3], [10, 15, 5]]
 Output: [-1, -1, 0]
 Explanation: Jobs only touch at endpoints, so there are no
              overlapping jobs.
+```
+
+```quiz
+{
+  "prompt": "Now your turn!",
+  "input": "jobs = [[1, 4, 1], [2, 5, 2], [3, 6, 3]]",
+  "options": ["[1, 6, 6]", "[3, 4, 6]", "[3, 4, 3]", "[-1, -1, 0]"],
+  "answer": "[3, 4, 6]"
+}
+```
+
+## Constraints
+
+- `0 ≤ jobs.length ≤ 10^4`
+- `jobs[i] = [start, end, resources]` with `0 ≤ start < end ≤ 10^9` and `1 ≤ resources ≤ 10^4`
+- On a tie for maximum resources, return the first such window; if nothing overlaps, return `[-1, -1, 0]`
+
+```python run viz=array viz-root=jobs
+import ast
+from typing import List, Tuple
+
+class Solution:
+    def peak_resource_requirement(self, jobs: List[List[int]]) -> Tuple[int, int, int]:
+        # Your code goes here — split into +resources/−resources events,
+        # sort (end before start at a tie), sweep the weighted total
+        # tracking the first peak window, and return [start, end, peak]
+        # or (-1, -1, 0) when no two jobs ever overlap.
+        return -1, -1, 0
+
+
+jobs = ast.literal_eval(input())         # the test case's jobs
+print(list(Solution().peak_resource_requirement(jobs)))
+```
+
+```java run viz=array viz-root=jobs
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int[] peakResourceRequirement(int[][] jobs) {
+            // Your code goes here — split into +resources/−resources events,
+            // sort (end before start at a tie), sweep the weighted total
+            // tracking the first peak window, and return {start, end, peak}
+            // or {-1, -1, 0} when no two jobs ever overlap.
+            return new int[] { -1, -1, 0 };
+        }
+    }
+
+    public static void main(String[] args) {
+        int[][] jobs = parseIntMatrix(new Scanner(System.in).nextLine());
+        System.out.println(Arrays.toString(new Solution().peakResourceRequirement(jobs)));
+    }
+
+    // "[[1, 5, 2], [2, 6, 3]]" → {{1, 5, 2}, {2, 6, 3}} — reads the test case's jobs
+    static int[][] parseIntMatrix(String line) {
+        String inner = line.trim().replaceAll("^\\[|\\]$", "").trim();
+        if (inner.isEmpty()) return new int[0][];
+        String[] rows = inner.split("\\]\\s*,\\s*\\[");
+        int[][] out = new int[rows.length][];
+        for (int i = 0; i < rows.length; i++) {
+            String r = rows[i].replaceAll("[\\[\\]\\s]", "");
+            if (r.isEmpty()) { out[i] = new int[0]; continue; }
+            String[] parts = r.split(",");
+            int[] triple = new int[parts.length];
+            for (int j = 0; j < parts.length; j++) triple[j] = Integer.parseInt(parts[j]);
+            out[i] = triple;
+        }
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "jobs", "label": "jobs", "type": "int[][]", "placeholder": "[[1, 5, 2], [2, 6, 3], [4, 7, 4]]" }
+  ],
+  "cases": [
+    { "args": { "jobs": "[[1, 5, 2], [2, 6, 3], [4, 7, 4]]" }, "expected": "[4, 5, 9]" },
+    { "args": { "jobs": "[[1, 3, 1], [2, 4, 5], [5, 6, 4]]" }, "expected": "[2, 3, 6]" },
+    { "args": { "jobs": "[[1, 5, 2], [5, 10, 3], [10, 15, 5]]" }, "expected": "[-1, -1, 0]" },
+    { "args": { "jobs": "[[1, 4, 1], [2, 5, 2], [3, 6, 3]]" }, "expected": "[3, 4, 6]" },
+    { "args": { "jobs": "[[1, 5, 3]]" }, "expected": "[-1, -1, 0]" },
+    { "args": { "jobs": "[]" }, "expected": "[-1, -1, 0]" }
+  ]
+}
 ```
 
 <details>
@@ -224,7 +312,8 @@ flowchart TB
 
 ### The Solution
 
-```python run viz=array viz-root=jobs
+```python solution time=O(N log N) space=O(N)
+import ast
 from typing import List, Tuple
 
 # Define a class to store the time and type ('s' or 'e')
@@ -323,19 +412,11 @@ class Solution:
         return interval_start, interval_end, maximum_resources
 
 
-# Examples from the problem statement
-print(Solution().peak_resource_requirement([[1, 5, 2], [2, 6, 3], [4, 7, 4]]))   # (4, 5, 9)
-print(Solution().peak_resource_requirement([[1, 3, 1], [2, 4, 5], [5, 6, 4]]))   # (2, 3, 6)
-print(Solution().peak_resource_requirement([[1, 5, 2], [5, 10, 3], [10, 15, 5]]))# (-1, -1, 0)
-
-# Edge cases
-print(Solution().peak_resource_requirement([[1, 5, 3]]))                           # (-1, -1, 0)  — single job
-print(Solution().peak_resource_requirement([[1, 3, 2], [2, 4, 2]]))               # (2, 3, 4)  — two overlapping
-print(Solution().peak_resource_requirement([[1, 2, 5], [3, 4, 5]]))               # (-1, -1, 0)  — no overlap
-print(Solution().peak_resource_requirement([[1, 4, 1], [2, 5, 2], [3, 6, 3]]))   # (3, 4, 6)  — peak at last overlap
+jobs = ast.literal_eval(input())         # the test case's jobs
+print(list(Solution().peak_resource_requirement(jobs)))
 ```
 
-```java run viz=array viz-root=jobs
+```java solution
 import java.util.*;
 
 public class Main {
@@ -455,16 +536,25 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(Arrays.toString(new Solution().peakResourceRequirement(new int[][]{{1, 5, 2}, {2, 6, 3}, {4, 7, 4}})));   // [4, 5, 9]
-        System.out.println(Arrays.toString(new Solution().peakResourceRequirement(new int[][]{{1, 3, 1}, {2, 4, 5}, {5, 6, 4}})));   // [2, 3, 6]
-        System.out.println(Arrays.toString(new Solution().peakResourceRequirement(new int[][]{{1, 5, 2}, {5, 10, 3}, {10, 15, 5}}))); // [-1, -1, 0]
+        int[][] jobs = parseIntMatrix(new Scanner(System.in).nextLine());
+        System.out.println(Arrays.toString(new Solution().peakResourceRequirement(jobs)));
+    }
 
-        // Edge cases
-        System.out.println(Arrays.toString(new Solution().peakResourceRequirement(new int[][]{{1, 5, 3}})));                           // [-1, -1, 0]  — single job
-        System.out.println(Arrays.toString(new Solution().peakResourceRequirement(new int[][]{{1, 3, 2}, {2, 4, 2}})));               // [2, 3, 4]  — two overlapping
-        System.out.println(Arrays.toString(new Solution().peakResourceRequirement(new int[][]{{1, 2, 5}, {3, 4, 5}})));               // [-1, -1, 0]  — no overlap
-        System.out.println(Arrays.toString(new Solution().peakResourceRequirement(new int[][]{{1, 4, 1}, {2, 5, 2}, {3, 6, 3}})));   // [3, 4, 6]  — peak at last overlap
+    // "[[1, 5, 2], [2, 6, 3]]" → {{1, 5, 2}, {2, 6, 3}} — reads the test case's jobs
+    static int[][] parseIntMatrix(String line) {
+        String inner = line.trim().replaceAll("^\\[|\\]$", "").trim();
+        if (inner.isEmpty()) return new int[0][];
+        String[] rows = inner.split("\\]\\s*,\\s*\\[");
+        int[][] out = new int[rows.length][];
+        for (int i = 0; i < rows.length; i++) {
+            String r = rows[i].replaceAll("[\\[\\]\\s]", "");
+            if (r.isEmpty()) { out[i] = new int[0]; continue; }
+            String[] parts = r.split(",");
+            int[] triple = new int[parts.length];
+            for (int j = 0; j < parts.length; j++) triple[j] = Integer.parseInt(parts[j]);
+            out[i] = triple;
+        }
+        return out;
     }
 }
 ```

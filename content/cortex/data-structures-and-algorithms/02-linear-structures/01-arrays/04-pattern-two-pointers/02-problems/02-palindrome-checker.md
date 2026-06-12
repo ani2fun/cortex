@@ -4,6 +4,8 @@ summary: "Given a string s, return true if it is a palindrome — a string that 
 prereqs:
   - 04-pattern-two-pointers/01-pattern
 difficulty: easy
+kind: problem
+topics: [two-pointers, arrays]
 ---
 
 # Palindrome Checker
@@ -49,6 +51,70 @@ Explanation: After filtering, "thisiscodeintuition" reads differently forwards v
 ```
 Input:  s = "a"
 Output: True   (every single alphanumeric character is trivially a palindrome)
+```
+
+```quiz
+{
+  "prompt": "Now your turn!",
+  "input": "s = \"Was it a car or a cat I saw?\"",
+  "options": ["true", "false"],
+  "answer": "true"
+}
+```
+
+## Constraints
+
+- `0 ≤ s.length ≤ 1000`
+- `s` consists of printable ASCII characters
+
+```python run viz=array viz-root=s
+class Solution:
+    def palindrome_checker(self, s: str) -> bool:
+        # Your code goes here — two pointers from both ends; skip
+        # non-alphanumerics, compare lowercased; return False on a
+        # mismatch, True when they meet.
+        return False
+
+s = input()                          # the test case's s
+print("true" if Solution().palindrome_checker(s) else "false")
+```
+
+```java run viz=array viz-root=s
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public boolean palindromeChecker(String s) {
+            // Your code goes here — two pointers from both ends; skip
+            // non-alphanumerics, compare lowercased; return false on a
+            // mismatch, true when they meet.
+            return false;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String s = sc.hasNextLine() ? sc.nextLine() : "";
+        System.out.println(new Solution().palindromeChecker(s));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "s", "type": "string", "placeholder": "a man nam a" }
+  ],
+  "cases": [
+    { "args": { "s": "a man nam a" }, "expected": "true" },
+    { "args": { "s": "race car rac ecar" }, "expected": "true" },
+    { "args": { "s": "This is codeintuition" }, "expected": "false" },
+    { "args": { "s": "A man, a plan, a canal: Panama" }, "expected": "true" },
+    { "args": { "s": "Was it a car or a cat I saw?" }, "expected": "true" },
+    { "args": { "s": "" }, "expected": "true" },
+    { "args": { "s": "ab" }, "expected": "false" }
+  ]
+}
 ```
 
 <details>
@@ -491,7 +557,7 @@ This early-exit property makes two-pointer palindrome checking efficient in prac
 
 ### Solution
 
-```python run viz=array viz-root=s viz-kind=array-1d
+```python solution time=O(n) space=O(1)
 class Solution:
     def palindrome_checker(self, s: str) -> bool:
         if not s:
@@ -530,21 +596,13 @@ class Solution:
         return True
 
 
-# Examples from the problem statement
-print(Solution().palindrome_checker("a man nam a"))          # True
-print(Solution().palindrome_checker("race car rac ecar"))    # True
-print(Solution().palindrome_checker("This is codeintuition"))# False
-
-# Edge cases
-print(Solution().palindrome_checker(""))                     # True — empty string
-print(Solution().palindrome_checker("a"))                    # True — single char
-print(Solution().palindrome_checker("aa"))                   # True — two same chars
-print(Solution().palindrome_checker("ab"))                   # False — two diff chars
-print(Solution().palindrome_checker("A man, a plan, a canal: Panama"))  # True
-print(Solution().palindrome_checker("Was it a car or a cat I saw?"))    # True
+s = input()                          # the test case's s
+print("true" if Solution().palindrome_checker(s) else "false")
 ```
 
-```java run viz=array viz-root=s viz-kind=array-1d
+```java solution
+import java.util.*;
+
 public class Main {
     static class Solution {
         public boolean palindromeChecker(String s) {
@@ -597,18 +655,9 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().palindromeChecker("a man nam a"));          // true
-        System.out.println(new Solution().palindromeChecker("race car rac ecar"));    // true
-        System.out.println(new Solution().palindromeChecker("This is codeintuition"));// false
-
-        // Edge cases
-        System.out.println(new Solution().palindromeChecker(""));                     // true — empty string
-        System.out.println(new Solution().palindromeChecker("a"));                    // true — single char
-        System.out.println(new Solution().palindromeChecker("aa"));                   // true — two same chars
-        System.out.println(new Solution().palindromeChecker("ab"));                   // false — two diff chars
-        System.out.println(new Solution().palindromeChecker("A man, a plan, a canal: Panama")); // true
-        System.out.println(new Solution().palindromeChecker("Was it a car or a cat I saw?"));   // true
+        Scanner sc = new Scanner(System.in);
+        String s = sc.hasNextLine() ? sc.nextLine() : "";
+        System.out.println(new Solution().palindromeChecker(s));
     }
 }
 ```

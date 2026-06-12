@@ -4,6 +4,8 @@ summary: "Given the head of a singly linked list and a positive integer k, write
 prereqs:
   - 09-pattern-sliding-window-traversal/01-pattern
 difficulty: easy
+kind: problem
+topics: [sliding-window-traversal, singly-linked-list]
 ---
 
 # K maximum sum
@@ -35,8 +37,103 @@ Output: -3
 ```
 Every window sum is negative; the maximum is the least-negative pair `(-1) + (-2) = -3`.
 
+## Constraints
 
----
+- `0 ≤ list length ≤ 10⁵`
+- `-10⁴ ≤ node.val ≤ 10⁴`
+- `1 ≤ k ≤ 10⁵`
+- Return `-1` if the list has fewer than `k` nodes
+
+```python run viz=linked-list viz-root=head
+import ast
+
+class ListNode:
+    def __init__(self, val, next=None):
+        self.val = val
+        self.next = next
+
+class Solution:
+    def k_maximum_sum(self, head, k):
+        # Your code goes here — slide a k-node window, tracking the running
+        # sum with O(1) updates (subtract left, add right). Return -1 if
+        # the list has fewer than k nodes.
+        pass
+
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
+
+head_vals = ast.literal_eval(input())   # the test case's head
+k = int(input())                         # the test case's k
+head = build_list(head_vals) if head_vals else None
+print(Solution().k_maximum_sum(head, k))
+```
+
+```java run viz=linked-list viz-root=head
+import java.util.*;
+
+public class Main {
+    static class ListNode {
+        int val; ListNode next;
+        ListNode(int val) { this.val = val; }
+        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+    }
+
+    static class Solution {
+        int kMaximumSum(ListNode head, int k) {
+            // Your code goes here — slide a k-node window, tracking the running
+            // sum with O(1) updates (subtract left, add right). Return -1 if
+            // the list has fewer than k nodes.
+            return -1;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] headVals = parseIntArray(sc.nextLine());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        ListNode head = buildList(headVals);
+        System.out.println(new Solution().kMaximumSum(head, k));
+    }
+
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+        ListNode head = null;
+        for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+        return head;
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's head
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "head", "label": "head", "type": "int[]", "placeholder": "[1, 2, -3, 4, 5]" },
+    { "id": "k", "label": "k", "type": "int", "placeholder": "2" }
+  ],
+  "cases": [
+    { "args": { "head": "[1, 2, -3, 4, 5]", "k": "2" }, "expected": "9" },
+    { "args": { "head": "[0, 1, 2]", "k": "4" }, "expected": "-1" },
+    { "args": { "head": "[-1, -2, -3, -4]", "k": "2" }, "expected": "-3" },
+    { "args": { "head": "[5]", "k": "1" }, "expected": "5" },
+    { "args": { "head": "[5]", "k": "2" }, "expected": "-1" },
+    { "args": { "head": "[1, 2]", "k": "2" }, "expected": "3" },
+    { "args": { "head": "[10, 1, 1, 10]", "k": "3" }, "expected": "12" },
+    { "args": { "head": "[3, 3, 3, 3, 3]", "k": "3" }, "expected": "9" }
+  ]
+}
+```
 
 <details>
 <summary><h2>Intuition</h2></summary>
@@ -93,54 +190,32 @@ Maintain two pointers (`start` and `end`) and a running window sum (`current_sum
 
 ### Solution
 
-
-```python run viz=linked-list viz-root=head
-from typing import Optional
-
+```python solution time=O(n) space=O(1)
+import ast
 
 class ListNode:
-    def __init__(self, val=0, nxt=None):
+    def __init__(self, val, next=None):
         self.val = val
-        self.next = nxt
-
-
-def from_list(values):
-    if not values:
-        return None
-    head = ListNode(values[0])
-    cur = head
-    for v in values[1:]:
-        cur.next = ListNode(v)
-        cur = cur.next
-    return head
-
-
-def to_list(head):
-    out = []
-    while head is not None:
-        out.append(head.val)
-        head = head.next
-    return out
-
+        self.next = next
 
 class Solution:
-    def k_maximum_sum(self, head: Optional[ListNode], k: int) -> int:
+    def k_maximum_sum(self, head, k):
 
         # Handle edge case: empty list or invalid k
         if head is None or k <= 0:
             return -1
 
         # Pointer to mark the start of the current window
-        start: Optional[ListNode] = head
+        start = head
 
         # Pointer to mark the end of the current window
-        end: Optional[ListNode] = head
+        end = head
 
         # Variable to store the sum of the current window
-        current_sum: int = 0
+        current_sum = 0
 
         # Counter to count nodes in the first window
-        count: int = 0
+        count = 0
 
         # Step 1: Calculate the sum of the first window of size k
         while end is not None and count < k:
@@ -159,7 +234,7 @@ class Solution:
             return -1
 
         # Initialize max_sum with the sum of the first window
-        max_sum: int = current_sum
+        max_sum = current_sum
 
         # Step 2: Slide the window through the rest of the list
         while end is not None:
@@ -179,41 +254,26 @@ class Solution:
         # Return the maximum sum of any contiguous k nodes
         return max_sum
 
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
 
-print(Solution().k_maximum_sum(from_list([1, 2, -3, 4, 5]), 2))  # 9
-print(Solution().k_maximum_sum(from_list([0, 1, 2]), 4))          # -1
-
-# Edge cases
-print(Solution().k_maximum_sum(None, 2))                          # -1
-print(Solution().k_maximum_sum(from_list([5]), 1))                # 5
-print(Solution().k_maximum_sum(from_list([5]), 2))                # -1
-print(Solution().k_maximum_sum(from_list([1, 2]), 2))             # 3
-print(Solution().k_maximum_sum(from_list([-1, -2, -3, -4]), 2))  # -3
-print(Solution().k_maximum_sum(from_list([10, 1, 1, 10]), 3))    # 12
-print(Solution().k_maximum_sum(from_list([3, 3, 3, 3, 3]), 3))   # 9
+head_vals = ast.literal_eval(input())   # the test case's head
+k = int(input())                         # the test case's k
+head = build_list(head_vals) if head_vals else None
+print(Solution().k_maximum_sum(head, k))
 ```
 
-```java run viz=linked-list viz-root=head
+```java solution
 import java.util.*;
 
 public class Main {
     static class ListNode {
-        int val;
-        ListNode next;
-        ListNode() {}
+        int val; ListNode next;
         ListNode(int val) { this.val = val; }
         ListNode(int val, ListNode next) { this.val = val; this.next = next; }
-    }
-
-    static ListNode fromList(int... values) {
-        if (values.length == 0) return null;
-        ListNode head = new ListNode(values[0]);
-        ListNode cur = head;
-        for (int i = 1; i < values.length; i++) {
-            cur.next = new ListNode(values[i]);
-            cur = cur.next;
-        }
-        return head;
     }
 
     static class Solution {
@@ -281,17 +341,27 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().kMaximumSum(fromList(1, 2, -3, 4, 5), 2));  // 9
-        System.out.println(new Solution().kMaximumSum(fromList(0, 1, 2), 4));          // -1
+        Scanner sc = new Scanner(System.in);
+        int[] headVals = parseIntArray(sc.nextLine());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        ListNode head = buildList(headVals);
+        System.out.println(new Solution().kMaximumSum(head, k));
+    }
 
-        // Edge cases
-        System.out.println(new Solution().kMaximumSum(null, 2));                       // -1
-        System.out.println(new Solution().kMaximumSum(fromList(5), 1));                // 5
-        System.out.println(new Solution().kMaximumSum(fromList(5), 2));                // -1
-        System.out.println(new Solution().kMaximumSum(fromList(1, 2), 2));             // 3
-        System.out.println(new Solution().kMaximumSum(fromList(-1, -2, -3, -4), 2));  // -3
-        System.out.println(new Solution().kMaximumSum(fromList(10, 1, 1, 10), 3));    // 12
-        System.out.println(new Solution().kMaximumSum(fromList(3, 3, 3, 3, 3), 3));   // 9
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+        ListNode head = null;
+        for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+        return head;
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's head
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

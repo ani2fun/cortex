@@ -1,0 +1,899 @@
+@layer components {
+    /* Workbench family — the stacked Code-over-Test-cases editor (.wb), its
+       schema-driven console (.wb-tests + .wb-legend), the language dropdown
+       (.langselect), the two-pane problem workbench (.pwb + .ed-acc), the
+       read-only solution viewer (.wb-solution), the quiz card (.quiz), the
+       static coach tab (.coach), the Your-Turn launch card (.yt-card), the
+       workbench modal (.wb-modal), and the authoring-error card
+       (.workbench-error). Design source: ui-design-system/designs/. */
+
+    /* ─── Stacked editor card ────────────────────────────────────── */
+    .wb {
+        @apply my-6 flex flex-col overflow-hidden rounded-lg border border-border bg-card shadow-sm;
+    }
+    .wb--fill {
+        @apply my-0 rounded-none border-0 shadow-none;
+    }
+    .wb__code-pane {
+        @apply flex min-h-0 flex-col;
+        flex: 0 0 auto;
+    }
+    .wb__toolbar {
+        @apply flex items-center justify-between gap-2 border-b border-border bg-muted/40 py-1.5 pl-3 pr-2;
+        min-height: 42px;
+    }
+    .wb__toolbar-title {
+        @apply flex items-center gap-2;
+    }
+    .wb__toolbar-icon {
+        @apply grid h-5 w-5 place-items-center rounded bg-primary/10 text-primary;
+    }
+    .wb__toolbar-icon-svg {
+        @apply h-3 w-3;
+    }
+    .wb__eyebrow {
+        @apply text-[11px] font-semibold uppercase tracking-[0.14em] text-foreground;
+    }
+    .wb__toolbar-actions {
+        @apply flex items-center gap-2;
+    }
+    .wb__btn {
+        @apply inline-flex items-center gap-1.5 rounded-md border border-border px-2 py-1
+               text-xs font-semibold text-muted-foreground hover:bg-accent;
+        position: relative;
+    }
+    .wb__btn--icon {
+        @apply px-1.5;
+    }
+    .wb__btn--run {
+        @apply border-transparent bg-primary px-3 text-primary-foreground hover:bg-primary/90;
+    }
+    .wb__btn--cancel {
+        @apply px-3;
+    }
+    .wb__btn--viz {
+        @apply hover:border-primary hover:bg-primary/10 hover:text-primary;
+    }
+    .wb__btn--locked {
+        @apply opacity-80;
+    }
+    .wb__btn-icon {
+        @apply h-3 w-3;
+    }
+    .wb__lock {
+        @apply absolute -right-1.5 -top-1.5 grid h-3.5 w-3.5 place-items-center rounded-full
+               border border-border bg-background;
+    }
+    .wb__lock-icon {
+        @apply h-2 w-2 text-muted-foreground;
+    }
+    .wb__editor {
+        @apply min-h-0 flex-1 overflow-hidden bg-[#2d2d2d] p-0 text-zinc-100;
+    }
+    .wb__editor--static {
+        @apply overflow-auto px-4 py-3 font-mono text-[13px] leading-[22px];
+    }
+    .wb__edit-bar {
+        @apply flex items-center gap-3 border-t border-border bg-[#2d2d2d] px-3 py-1.5
+               text-[11px] text-zinc-400;
+    }
+    .wb__edit-bar-dirty {
+        @apply text-amber-400;
+    }
+    .wb__edit-bar-spacer {
+        @apply flex-1;
+    }
+    .wb__edit-bar-hint kbd {
+        @apply rounded border border-zinc-600 bg-zinc-800 px-1 font-mono text-[10px] text-zinc-300;
+    }
+
+    /* ─── Splitter (shared by the stacked editor and the problem panes) ── */
+    .wb-split {
+        @apply relative z-[1] bg-transparent;
+        flex: 0 0 auto;
+    }
+    .wb-split--h {
+        @apply w-full cursor-row-resize;
+        height: 9px;
+    }
+    .wb-split--v {
+        @apply cursor-col-resize;
+        width: 9px;
+    }
+    .wb-split__line {
+        @apply absolute bg-border transition-colors;
+    }
+    .wb-split--h .wb-split__line {
+        left: 0;
+        right: 0;
+        top: 50%;
+        height: 1px;
+        transform: translateY(-50%);
+    }
+    .wb-split--v .wb-split__line {
+        top: 0;
+        bottom: 0;
+        left: 50%;
+        width: 1px;
+        transform: translateX(-50%);
+    }
+    .wb-split__grip {
+        @apply absolute flex rounded border border-border bg-secondary transition-colors;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        gap: 3px;
+    }
+    .wb-split--h .wb-split__grip {
+        @apply flex-row px-1.5 py-0.5;
+    }
+    .wb-split--v .wb-split__grip {
+        @apply flex-col px-0.5 py-1.5;
+    }
+    .wb-split__dot {
+        @apply rounded-full bg-muted-foreground;
+        width: 2.5px;
+        height: 2.5px;
+    }
+    .wb-split:hover .wb-split__line,
+    .wb-split:active .wb-split__line {
+        @apply bg-primary;
+    }
+    .wb-split:hover .wb-split__grip,
+    .wb-split:active .wb-split__grip {
+        @apply bg-primary;
+    }
+    .wb-split:hover .wb-split__dot,
+    .wb-split:active .wb-split__dot {
+        @apply bg-primary-foreground;
+    }
+
+    /* ─── Test-cases console ─────────────────────────────────────── */
+    .wb-tests {
+        @apply flex min-h-0 min-w-0 flex-1 flex-col bg-card/60;
+    }
+    .wb-tests__head {
+        @apply flex items-center justify-between gap-2 border-b border-border bg-muted/40 py-1.5 pl-3 pr-2;
+        min-height: 42px;
+    }
+    .wb-tests__head-title {
+        @apply flex items-center gap-2;
+    }
+    .wb-tests__head-icon {
+        @apply grid h-5 w-5 place-items-center rounded bg-primary/10 text-primary;
+    }
+    .wb-tests__head-icon-svg {
+        @apply h-3 w-3;
+    }
+    .wb-tests__eyebrow {
+        @apply text-[11px] font-semibold uppercase tracking-[0.14em] text-foreground;
+    }
+    .wb-tests__head-actions {
+        @apply flex items-center gap-1.5;
+    }
+    .wb-tests__body {
+        @apply min-h-0 flex-1 overflow-y-auto px-4 py-3.5;
+    }
+    .wb-tests__chips {
+        @apply mb-3 flex flex-wrap items-center gap-1.5;
+    }
+    .wb-tests__chip {
+        @apply inline-flex items-center gap-1.5 rounded-full border border-border/60 px-3 py-1
+               font-mono text-[11.5px] font-medium text-muted-foreground transition-colors
+               hover:bg-secondary/50;
+        flex: 0 0 auto;
+    }
+    .wb-tests__chip--on {
+        @apply border-border bg-secondary text-foreground;
+    }
+    .wb-tests__chip--add {
+        @apply px-2;
+    }
+    .wb-tests__chip-check {
+        @apply h-3 w-3;
+    }
+    .wb-tests__chip--passed .wb-tests__chip-check {
+        @apply text-emerald-600 dark:text-emerald-400;
+    }
+    .wb-tests__status {
+        @apply mb-3.5 flex min-h-[22px] items-center gap-2.5;
+    }
+    .wb-tests__status-running {
+        @apply inline-flex items-center gap-2 text-muted-foreground;
+    }
+    .wb-tests__spinner {
+        @apply h-3.5 w-3.5 animate-spin;
+    }
+    .wb-tests__status-accepted {
+        @apply inline-flex items-center gap-2 text-[14.5px] font-semibold
+               text-emerald-700 dark:text-emerald-400;
+    }
+    .wb-tests__status-wrong {
+        @apply inline-flex items-center gap-2 text-[14.5px] font-semibold
+               text-rose-700 dark:text-rose-400;
+    }
+    .wb-tests__status-finished {
+        @apply inline-flex items-center gap-2 text-[14.5px] font-semibold text-foreground;
+    }
+    .wb-tests__status-icon {
+        @apply h-4 w-4;
+    }
+    .wb-tests__status-meta {
+        @apply font-mono text-[11.5px] font-normal text-muted-foreground;
+    }
+    .wb-tests__status-idle {
+        @apply font-mono text-[11.5px] italic text-muted-foreground;
+    }
+    .wb-tests__grid {
+        @apply mb-4 grid grid-cols-2 gap-3.5;
+    }
+    .wb-tests__grid--outputs {
+        @apply mb-0;
+    }
+    .wb-tests__out-pre {
+        @apply m-0 whitespace-pre-wrap font-mono text-sm leading-normal text-foreground;
+        min-height: 21px;
+    }
+    .wb-tests__out-pre--empty {
+        @apply text-muted-foreground/60;
+    }
+    .wb-tests__out-pre--compile {
+        @apply text-amber-700 dark:text-amber-400;
+    }
+    .wb-tests__out-pre--stderr {
+        @apply text-rose-700 dark:text-rose-400;
+    }
+
+    /* Floating-label fieldset for console inputs + outputs. */
+    .wb-legend {
+        @apply relative min-w-0 rounded-md border border-border px-3.5 pb-2.5 pt-3;
+    }
+    .wb-legend--span {
+        grid-column: 1 / -1;
+    }
+    .wb-legend--ok {
+        @apply border-emerald-500/50;
+    }
+    .wb-legend--err {
+        @apply border-rose-500/50;
+    }
+    .wb-legend--disabled {
+        @apply border-dashed border-border/70;
+    }
+    .wb-tests__custom-note {
+        @apply m-0 text-[12.5px] italic leading-snug text-muted-foreground;
+    }
+    .wb-legend__label {
+        @apply absolute left-3 px-1.5 text-[10px] font-semibold uppercase tracking-[0.14em]
+               text-muted-foreground;
+        top: -8px;
+        background: hsl(var(--card));
+    }
+    .wb-legend__type {
+        @apply ml-1.5 font-normal lowercase tracking-[0.02em] text-muted-foreground/80;
+        text-transform: none;
+    }
+    .wb-legend__input {
+        @apply w-full border-none bg-transparent p-0 font-mono text-sm text-foreground outline-none;
+    }
+
+    /* ─── Language dropdown ──────────────────────────────────────── */
+    .langselect {
+        @apply relative;
+        flex: 0 0 auto;
+    }
+    .langselect__btn {
+        @apply inline-flex items-center gap-1.5 rounded-md border border-border py-1 pl-2.5 pr-2
+               font-mono text-xs font-medium text-foreground hover:bg-accent;
+    }
+    .langselect__btn--open {
+        @apply bg-secondary;
+    }
+    .langselect__glyph {
+        @apply text-xs;
+    }
+    .langselect__glyph--python {
+        @apply text-sky-600 dark:text-sky-400;
+    }
+    .langselect__glyph--java {
+        @apply text-amber-600 dark:text-amber-400;
+    }
+    .langselect__glyph--scala {
+        color: #DC322F;
+    }
+    .langselect__glyph--other {
+        @apply text-muted-foreground;
+    }
+    .langselect__chevron {
+        @apply h-3 w-3 text-muted-foreground transition-transform;
+    }
+    .langselect__chevron--open {
+        transform: rotate(180deg);
+    }
+    .langselect__backdrop {
+        @apply fixed inset-0 z-40;
+    }
+    .langselect__menu {
+        @apply absolute right-0 z-50 rounded-md border border-border bg-card p-1 shadow-lg;
+        top: calc(100% + 5px);
+        min-width: 176px;
+    }
+    .langselect__item {
+        @apply flex w-full items-center gap-2 rounded px-2.5 py-2 text-left font-mono text-xs
+               font-medium text-muted-foreground hover:bg-secondary/60;
+    }
+    .langselect__item--active {
+        @apply bg-secondary text-foreground;
+    }
+    .langselect__item-label {
+        @apply flex-1;
+    }
+    .langselect__check {
+        @apply h-3 w-3 text-primary;
+    }
+
+    /* ─── Problem workbench (two-pane) ───────────────────────────── */
+    .pwb {
+        @apply flex items-stretch overflow-hidden rounded-lg border border-border bg-background;
+    }
+    .pwb__left {
+        @apply flex min-h-0 min-w-0 flex-col;
+        flex: 0 0 auto;
+    }
+    .pwb__tabs {
+        @apply flex items-center gap-1 overflow-x-auto border-b border-border px-3;
+        flex: 0 0 auto;
+    }
+    .pwb__tab {
+        @apply -mb-px inline-flex items-center gap-1.5 border-b-2 border-transparent px-3 py-2.5
+               text-[13px] font-medium text-muted-foreground hover:text-foreground;
+        white-space: nowrap;
+    }
+    .pwb__tab--active {
+        @apply border-primary font-semibold text-foreground;
+    }
+    .pwb__tab-icon {
+        @apply h-3.5 w-3.5;
+    }
+    .pwb__panels {
+        @apply min-h-0 flex-1;
+    }
+    .pwb__panel {
+        @apply h-full overflow-y-auto px-5 py-4;
+    }
+    .pwb__titlerow {
+        @apply mb-4;
+    }
+    .pwb__titleline {
+        @apply mb-2.5 flex flex-wrap items-center gap-3;
+    }
+    .pwb__title {
+        @apply m-0 font-head text-2xl font-medium text-foreground;
+    }
+    .pwb__badge {
+        @apply inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold;
+    }
+    .pwb__badge--easy {
+        @apply border-emerald-500/50 text-emerald-700 dark:text-emerald-400;
+    }
+    .pwb__badge--medium {
+        @apply border-amber-500/50 text-amber-700 dark:text-amber-400;
+    }
+    .pwb__badge--hard {
+        @apply border-rose-500/50 text-rose-700 dark:text-rose-400;
+    }
+    .pwb__topics {
+        @apply flex flex-wrap gap-1.5;
+    }
+    .pwb__topic-pill {
+        @apply rounded-full border border-border px-2.5 py-1 font-mono text-[11.5px]
+               text-muted-foreground;
+        white-space: nowrap;
+    }
+    .pwb__empty {
+        @apply m-0 py-6 text-center text-sm italic text-muted-foreground;
+    }
+    .pwb__accordion {
+        @apply flex flex-col gap-2.5;
+    }
+    .pwb__right {
+        @apply flex min-h-0 min-w-0 flex-1 flex-col;
+    }
+    /* Injected markdown panels — rein the chapter prose styles into the pane. */
+    .pwb__html {
+        @apply text-[15px];
+    }
+    /* Problem examples render as quiet left-rule boxes, not full code cards — BlockMounter skips
+       the .cortex-code-block chrome inside panels, and this overrides the chapter-content slab.
+       !important beats rehype-pretty-code's inline shiki background on the <pre>. */
+    .pwb__html pre {
+        @apply my-3 rounded-r-md border-l-2 border-border px-4 py-3 font-mono text-[13px]
+               leading-relaxed;
+        background: hsl(var(--muted) / 0.45) !important;
+        border-top: none;
+        border-right: none;
+        border-bottom: none;
+        box-shadow: none;
+    }
+    /* Examples are plaintext: shiki's inline token colors are tuned for the dark code slab and
+       wash out on this light box in light mode — force every token to the page foreground. */
+    .pwb__html pre,
+    .pwb__html pre code,
+    .pwb__html pre span {
+        color: hsl(var(--foreground) / 0.88) !important;
+    }
+    .pwb__html pre code,
+    .pwb__html pre span {
+        background: transparent !important;
+    }
+    /* Inline `code` chips inside the panels. The `.not-prose` island rule in
+       chapter-content.css (tuned for D2 SVG labels) hardcodes a light background
+       with `color: inherit`, which renders inline code invisible on the dark
+       theme and low-contrast on light here. Re-assert a theme-aware muted chip
+       with higher specificity (the panel carries both .pwb__html + .chapter-content
+       and lives inside a .not-prose mount root). */
+    .not-prose .pwb__html.chapter-content :not(pre) > code {
+        color: hsl(var(--foreground)) !important;
+        background-color: hsl(var(--muted)) !important;
+    }
+
+    /* ─── Editorial accordion ────────────────────────────────────── */
+    .ed-acc {
+        @apply overflow-hidden rounded-lg border border-border bg-card/60 transition-colors;
+    }
+    .ed-acc--open,
+    .ed-acc:hover {
+        @apply bg-card;
+    }
+    .ed-acc__head {
+        @apply flex w-full items-center gap-3 px-4 py-3.5 text-left;
+    }
+    .ed-acc__chevron {
+        @apply h-4 w-4 text-muted-foreground transition-transform;
+    }
+    .ed-acc__chevron--open {
+        transform: rotate(90deg);
+    }
+    .ed-acc__title {
+        @apply font-head text-lg font-medium text-foreground;
+        letter-spacing: -0.01em;
+    }
+    .ed-acc__body {
+        @apply px-4 pb-4 pl-11;
+    }
+
+    /* ─── Read-only solution viewer ──────────────────────────────── */
+    .wb-solution {
+        @apply my-4 overflow-hidden rounded-md border border-border;
+    }
+    .wb-solution__head {
+        @apply flex items-center justify-between gap-2 border-b border-border bg-muted/40 pr-3;
+    }
+    .wb-solution__tabs {
+        @apply flex;
+    }
+    .wb-solution__tab {
+        @apply border-b-2 border-transparent px-3 py-2 text-xs font-medium text-muted-foreground
+               hover:text-foreground;
+    }
+    .wb-solution__tab--active {
+        @apply border-primary font-semibold text-foreground;
+    }
+    .wb-solution__lock {
+        @apply inline-flex items-center gap-1.5 text-[10.5px] font-semibold uppercase
+               tracking-[0.14em] text-muted-foreground;
+    }
+    .wb-solution__lock-icon {
+        @apply h-3 w-3;
+    }
+    /* Read-only Monaco surface — the theme paints its own background; height set inline. */
+    .wb-solution__monaco {
+        @apply overflow-hidden bg-[#2d2d2d] p-0;
+    }
+    .wb-solution__meta {
+        @apply flex flex-wrap items-center gap-2.5 border-t border-border bg-muted/30 px-3 py-2;
+    }
+    .wb-solution__meta-chip {
+        @apply inline-flex items-center gap-1.5 font-mono text-xs text-muted-foreground;
+    }
+    .wb-solution__meta-icon {
+        @apply h-3 w-3;
+    }
+
+    /* ─── Quiz card ──────────────────────────────────────────────── */
+    .quiz {
+        @apply my-5;
+    }
+    .quiz__title {
+        @apply mb-2.5 mt-0 text-[15px] font-semibold text-foreground;
+    }
+    .quiz__card {
+        @apply rounded-md border border-border bg-background/50 px-4 pb-4 pt-3.5;
+        /* amber-500 at 55% — raw value; v4 @apply has no border-l color/55 shorthand */
+        border-left: 2px solid rgb(245 158 11 / 0.55);
+    }
+    .quiz__io {
+        @apply mb-1 font-mono text-[13px] leading-relaxed text-foreground/90;
+    }
+    .quiz__io--out {
+        @apply mb-3 flex items-center gap-2.5;
+    }
+    .quiz__io-label {
+        @apply text-muted-foreground;
+    }
+    .quiz__pill {
+        @apply inline-flex items-center rounded-full border px-3 py-1 text-[13px] font-medium;
+        font-family: var(--font-sans);
+    }
+    .quiz__pill--prompt {
+        @apply border-transparent p-0 text-amber-700 dark:text-amber-400;
+    }
+    .quiz__pill--validate {
+        @apply cursor-pointer border-amber-500/60 bg-transparent text-amber-700
+               hover:bg-amber-500/10 dark:text-amber-400;
+    }
+    .quiz__pill--ok {
+        @apply border-emerald-500/55 text-emerald-700 dark:text-emerald-400;
+    }
+    .quiz__pill--bad {
+        @apply border-rose-500/55 text-rose-700 dark:text-rose-400;
+    }
+    .quiz__options {
+        @apply grid grid-cols-2 gap-2.5;
+    }
+    .quiz__opt {
+        @apply flex cursor-pointer items-center gap-3 rounded-md border border-border bg-transparent
+               px-3.5 py-3 text-left transition-colors;
+    }
+    .quiz__opt--on {
+        @apply border-amber-500 bg-amber-500/5;
+    }
+    .quiz__opt--ok {
+        @apply border-emerald-500 bg-emerald-500/5;
+    }
+    .quiz__opt--bad {
+        @apply border-rose-500 bg-rose-500/5;
+    }
+    .quiz__radio {
+        @apply grid h-[18px] w-[18px] place-items-center rounded-full border border-border
+               bg-secondary/50;
+        flex: 0 0 auto;
+    }
+    .quiz__radio--on {
+        @apply border-amber-500 bg-amber-500;
+    }
+    .quiz__radio--ok {
+        @apply border-emerald-500 bg-emerald-500 text-background;
+    }
+    .quiz__radio--bad {
+        @apply border-rose-500 bg-rose-500 text-background;
+    }
+    .quiz__radio-dot {
+        @apply h-1.5 w-1.5 rounded-full bg-background;
+    }
+    .quiz__radio-icon {
+        @apply h-2.5 w-2.5;
+    }
+    .quiz__opt-label {
+        @apply font-mono text-[13.5px] text-foreground/80;
+    }
+    .quiz__opt--on .quiz__opt-label,
+    .quiz__opt--ok .quiz__opt-label,
+    .quiz__opt--bad .quiz__opt-label {
+        @apply text-foreground;
+    }
+
+    /* ─── Coach tab (design-only) ────────────────────────────────── */
+    .coach {
+        @apply flex flex-col gap-4;
+    }
+    .coach__tracker {
+        @apply flex flex-wrap items-center justify-between gap-3;
+    }
+    .coach__tracker-left {
+        @apply flex min-w-0 items-center gap-2;
+    }
+    .coach__brand {
+        @apply inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase
+               tracking-[0.14em] text-primary;
+    }
+    .coach__brand-icon {
+        @apply h-3.5 w-3.5;
+    }
+    .coach__dots {
+        @apply flex items-center gap-1;
+    }
+    .coach__dot {
+        @apply grid h-6 w-6 place-items-center rounded-full border border-border bg-secondary
+               font-mono text-[10px] font-semibold text-muted-foreground;
+        flex: 0 0 auto;
+    }
+    .coach__dot--on {
+        @apply border-transparent bg-primary text-primary-foreground;
+    }
+    .coach__dot--done {
+        @apply border-transparent bg-emerald-500/15 text-emerald-600 dark:text-emerald-400;
+    }
+    .coach__dot-check {
+        @apply h-3 w-3;
+    }
+    .coach__coding-badge {
+        @apply inline-flex items-center rounded-full border border-primary/40 bg-primary/10 px-3
+               py-1 text-xs font-semibold text-primary;
+    }
+    .coach__skip {
+        @apply inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5
+               text-[12.5px] font-medium text-muted-foreground hover:text-foreground;
+        white-space: nowrap;
+    }
+    .coach__skip-icon {
+        @apply h-3.5 w-3.5;
+    }
+    .coach__eyebrow {
+        @apply text-[11px] font-semibold uppercase tracking-[0.14em] text-primary;
+    }
+    .coach__eyebrow--primary {
+        @apply text-primary;
+    }
+    .coach__verb {
+        @apply mb-0 mt-2 font-head text-[22px] font-medium text-foreground;
+    }
+    .coach__blurb {
+        @apply m-0 text-sm leading-relaxed text-muted-foreground;
+    }
+    .coach__note {
+        @apply rounded-md border border-primary/20 bg-primary/5 px-4 py-3.5;
+    }
+    .coach__note-head {
+        @apply mb-2 flex items-center gap-2;
+    }
+    .coach__note-icon {
+        @apply h-3.5 w-3.5 text-primary;
+    }
+    .coach__note-body {
+        @apply m-0 text-sm leading-relaxed text-foreground/90;
+    }
+    .coach__checks {
+        @apply flex flex-col gap-2;
+    }
+    .coach__check {
+        @apply flex items-center gap-2.5 rounded-md border border-border bg-card px-3.5 py-2.5;
+    }
+    .coach__check-icon {
+        @apply h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400;
+        flex: 0 0 auto;
+    }
+    .coach__check-text {
+        @apply min-w-0 flex-1 text-sm leading-snug text-foreground/90;
+    }
+    .coach__actions {
+        @apply mt-1 flex gap-2.5;
+    }
+    .coach__next-btn {
+        @apply inline-flex items-center gap-1.5 rounded-md bg-primary px-3.5 py-2 text-[13px]
+               font-semibold text-primary-foreground hover:bg-primary/90;
+    }
+    .coach__next-btn-icon {
+        @apply h-3.5 w-3.5;
+    }
+    .coach__ghost-btn {
+        @apply inline-flex items-center gap-1.5 rounded-md border border-transparent px-3 py-2
+               text-[13px] font-medium text-muted-foreground hover:bg-accent hover:text-foreground;
+    }
+    .coach__ghost-btn-icon {
+        @apply h-3.5 w-3.5;
+    }
+    .coach__handoff {
+        @apply rounded-lg border border-border bg-card px-5 pb-5 pt-4;
+    }
+    .coach__handoff .coach__blurb {
+        @apply my-3;
+    }
+    .coach__soon {
+        @apply m-0 flex items-center gap-2 rounded-md border border-rose-500/40 bg-rose-500/5
+               px-3 py-2 text-xs font-medium text-rose-700 dark:text-rose-400;
+    }
+    .coach__soon-icon {
+        @apply h-3.5 w-3.5;
+        flex: 0 0 auto;
+    }
+
+    /* ─── Your-Turn inline workbench (same panel as problem pages) ── */
+    .yt-inline {
+        @apply my-8;
+    }
+    .yt-inline__head {
+        @apply mb-2.5 flex flex-wrap items-center justify-between gap-2;
+    }
+    .yt-inline__kicker {
+        @apply inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase
+               tracking-[0.14em] text-primary;
+    }
+    .yt-inline__kicker-icon {
+        @apply h-3.5 w-3.5;
+    }
+    .yt-inline__meta {
+        @apply font-mono text-[11.5px] text-muted-foreground;
+    }
+
+    /* ─── Submit button + tooltip + result banner ────────────────── */
+    .wb-submit {
+        @apply relative inline-flex;
+    }
+    .wb__btn--submit {
+        @apply border-primary/40 bg-primary/10 px-3 text-primary hover:bg-primary/20;
+    }
+    .wb__btn--submit:disabled {
+        @apply cursor-default opacity-70;
+    }
+    .wb-submit__spin {
+        @apply animate-spin;
+    }
+    .wb-submit__tip {
+        @apply pointer-events-none absolute right-0 z-50 hidden w-80 rounded-md border border-border
+               bg-card px-3.5 py-3 text-left shadow-lg;
+        top: calc(100% + 6px);
+    }
+    .wb-submit:hover .wb-submit__tip,
+    .wb-submit:focus-within .wb-submit__tip {
+        @apply block;
+    }
+    .wb-submit__tip p {
+        @apply m-0 mb-2 text-xs font-normal normal-case leading-relaxed text-muted-foreground;
+        letter-spacing: normal;
+        white-space: normal;
+    }
+    .wb-submit__tip p:last-child {
+        @apply mb-0;
+    }
+    .wb-submit__tip-head {
+        @apply font-medium text-foreground;
+    }
+    .wb-submit__tip strong {
+        @apply font-semibold text-foreground;
+    }
+    .wb-submit__tip code {
+        @apply rounded bg-secondary px-1 font-mono text-[11px];
+    }
+    .wb-submit__banner {
+        @apply flex items-center gap-2 border-b border-border px-3.5 py-2 text-[13px] font-medium;
+        flex: 0 0 auto;
+    }
+    .wb-submit__banner-icon {
+        @apply h-4 w-4;
+        flex: 0 0 auto;
+    }
+    .wb-submit__banner--ok {
+        @apply bg-emerald-500/10 text-emerald-700 dark:text-emerald-400;
+    }
+    .wb-submit__banner--warn {
+        @apply bg-amber-500/10 text-amber-700 dark:text-amber-400;
+    }
+    .wb-submit__banner--err {
+        @apply bg-rose-500/10 text-rose-700 dark:text-rose-400;
+    }
+
+    /* ─── Authoring-error card (mirrors .d2-error) ───────────────── */
+    .workbench-error {
+        @apply my-4 rounded-md border border-rose-500/40 bg-rose-500/5 px-4 py-3;
+    }
+    .workbench-error__title {
+        @apply mb-1 mt-0 text-sm font-semibold text-rose-700 dark:text-rose-400;
+    }
+    .workbench-error pre {
+        @apply m-0 whitespace-pre-wrap font-mono text-xs text-muted-foreground;
+    }
+
+    /* ─── Submissions tab (problem-page only) ────────────────────── */
+    .subs {
+        @apply flex flex-col gap-5;
+    }
+    .subs__section {
+        @apply flex flex-col gap-2;
+    }
+    .subs__heading {
+        @apply m-0 text-[12px] font-semibold uppercase tracking-[0.12em] text-muted-foreground;
+    }
+    .subs__table {
+        @apply w-full border-collapse text-[13px];
+    }
+    .subs__th {
+        @apply border-b border-border px-3 py-2 text-left text-[11px] font-semibold uppercase
+               tracking-[0.1em] text-muted-foreground;
+    }
+    .subs__cell {
+        @apply border-b border-border/60 px-3 py-2.5 align-middle;
+    }
+    .subs__cell--no {
+        @apply w-10 text-center font-mono text-muted-foreground;
+    }
+    .subs__cell--action {
+        @apply w-14 text-center;
+    }
+    .subs__status {
+        @apply font-semibold;
+    }
+    .subs__status--ok {
+        @apply text-emerald-600 dark:text-emerald-400;
+    }
+    .subs__status--bad {
+        @apply text-amber-600 dark:text-amber-400;
+    }
+    .subs__time {
+        @apply block font-mono text-[11px] font-normal text-muted-foreground;
+    }
+    .subs__lang {
+        @apply inline-flex items-center rounded-full border border-border bg-secondary/50 px-2.5 py-0.5
+               font-mono text-[11.5px] text-foreground;
+    }
+    .subs__icon-btn {
+        @apply inline-flex h-7 w-7 items-center justify-center rounded-md border border-border
+               text-muted-foreground transition-colors hover:bg-accent hover:text-foreground;
+    }
+    .subs__icon-btn--on {
+        @apply border-primary bg-primary/10 text-primary;
+    }
+    .subs__icon-btn--danger {
+        @apply hover:border-rose-500/50 hover:bg-rose-500/10 hover:text-rose-600 dark:hover:text-rose-400;
+    }
+    .subs__icon {
+        @apply h-3.5 w-3.5;
+    }
+    .subs__count {
+        @apply m-0 text-xs text-muted-foreground;
+    }
+    .subs__code {
+        @apply overflow-hidden rounded-md border border-border;
+    }
+    .subs__code-head {
+        @apply flex items-center justify-between gap-2 border-b border-border bg-muted/40 px-3 py-1.5;
+    }
+    .subs__code-title {
+        @apply font-mono text-xs font-medium text-foreground;
+    }
+    .subs__code-close {
+        @apply inline-flex h-6 w-6 items-center justify-center rounded text-muted-foreground
+               hover:text-foreground;
+    }
+    .subs__code-pre {
+        @apply m-0 max-h-80 overflow-auto bg-[#2d2d2d] p-4 font-mono text-[13px] leading-[20px]
+               text-zinc-100;
+    }
+    .subs__empty {
+        @apply flex flex-col items-center gap-2 rounded-lg border border-dashed border-border
+               px-6 py-10 text-center;
+    }
+    .subs__empty-icon {
+        @apply h-7 w-7 text-muted-foreground/60;
+    }
+    .subs__empty-title {
+        @apply m-0 text-sm font-semibold text-foreground;
+    }
+    .subs__empty-body {
+        @apply m-0 max-w-sm text-[13px] text-muted-foreground;
+    }
+    .subs__note {
+        @apply flex flex-col items-start gap-3 text-sm text-muted-foreground;
+    }
+    .subs__note--info {
+        @apply flex-row items-center gap-2 rounded-md border border-primary/20 bg-primary/5
+               px-3 py-2.5 text-foreground/90;
+    }
+    .subs__note--err {
+        @apply flex-row items-center gap-2 rounded-md border border-rose-500/40 bg-rose-500/5
+               px-3 py-2.5 text-rose-700 dark:text-rose-400;
+    }
+    .subs__note-icon {
+        @apply h-4 w-4;
+        flex: 0 0 auto;
+    }
+    .subs__signin {
+        @apply inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-2 text-[13px]
+               font-semibold text-primary-foreground hover:bg-primary/90;
+    }
+
+    /* ─── Problem-page column (ChapterPage `kind: problem` branch) ── */
+    .cortex-reader-layout__workbench {
+        @apply w-full;
+    }
+}

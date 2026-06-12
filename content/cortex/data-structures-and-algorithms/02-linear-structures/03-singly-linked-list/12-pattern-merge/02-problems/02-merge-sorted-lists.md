@@ -4,6 +4,8 @@ summary: "Given the heads of two sorted linked lists headA and headB, write a fu
 prereqs:
   - 12-pattern-merge/01-pattern
 difficulty: easy
+kind: problem
+topics: [merge, singly-linked-list]
 ---
 
 # Merge sorted lists
@@ -35,8 +37,111 @@ Output: [1, 2, 3, 4, 5, 6, 7]
 Explanation: B is fully consumed before A. The drain step attaches A's tail [5, 6, 7].
 ```
 
+## Constraints
 
----
+- `0 ≤ len(headA), len(headB) ≤ 10⁴`
+- `-10⁴ ≤ node.val ≤ 10⁴`
+- Both lists are sorted in **ascending** order
+- Merge **in place** — `O(1)` extra space; only `next` pointers change
+
+```python run viz=linked-list viz-root=head
+import ast
+
+class ListNode:
+    def __init__(self, val, next=None):
+        self.val = val
+        self.next = next
+
+class Solution:
+    def merge_sorted_lists(self, head_a, head_b):
+        # Your code goes here — dummy head, compare current heads with <=,
+        # splice the smaller, drain the remainder. Return dummy.next.
+        pass
+
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
+
+def print_list(head):                # 1 → 2 → 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
+
+head_a = build_list(ast.literal_eval(input()))   # the test case's headA
+head_b = build_list(ast.literal_eval(input()))   # the test case's headB
+print_list(Solution().merge_sorted_lists(head_a, head_b))
+```
+
+```java run viz=linked-list viz-root=head
+import java.util.*;
+
+public class Main {
+    static class ListNode {
+        int val; ListNode next;
+        ListNode(int val) { this.val = val; }
+        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+    }
+
+    static class Solution {
+        ListNode mergeSortedLists(ListNode headA, ListNode headB) {
+            // Your code goes here — dummy head, compare current heads with <=,
+            // splice the smaller, drain the remainder. Return dummy.next.
+            return null;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        ListNode headA = buildList(parseIntArray(sc.nextLine()));
+        ListNode headB = buildList(parseIntArray(sc.nextLine()));
+        printList(new Solution().mergeSortedLists(headA, headB));
+    }
+
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+        ListNode head = null;
+        for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+        return head;
+    }
+
+    static void printList(ListNode head) {         // 1 → 2 → 3 → [1, 2, 3]
+        List<Integer> out = new ArrayList<>();
+        for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+        System.out.println(out);
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's values
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "headA", "label": "headA", "type": "int[]", "placeholder": "[1, 2, 4]" },
+    { "id": "headB", "label": "headB", "type": "int[]", "placeholder": "[1, 3, 4]" }
+  ],
+  "cases": [
+    { "args": { "headA": "[1, 2, 4]", "headB": "[1, 3, 4]" }, "expected": "[1, 1, 2, 3, 4, 4]" },
+    { "args": { "headA": "[1, 2, 3, 8, 9]", "headB": "[6, 7]" }, "expected": "[1, 2, 3, 6, 7, 8, 9]" },
+    { "args": { "headA": "[1, 3, 5, 6, 7]", "headB": "[2, 4]" }, "expected": "[1, 2, 3, 4, 5, 6, 7]" },
+    { "args": { "headA": "[]", "headB": "[1, 2]" }, "expected": "[1, 2]" },
+    { "args": { "headA": "[1, 2]", "headB": "[]" }, "expected": "[1, 2]" },
+    { "args": { "headA": "[1]", "headB": "[1]" }, "expected": "[1, 1]" },
+    { "args": { "headA": "[5]", "headB": "[1, 2, 3]" }, "expected": "[1, 2, 3, 5]" }
+  ]
+}
+```
 
 <details>
 <summary><h2>Intuition</h2></summary>
@@ -81,46 +186,23 @@ Run the dummy-head splice loop with a comparator selector that picks the smaller
 
 ### Solution
 
-```python run viz=linked-list viz-root=head
-from typing import Optional
-
+```python solution time=O(n+m) space=O(1)
+import ast
 
 class ListNode:
-    def __init__(self, val=0, nxt=None):
+    def __init__(self, val, next=None):
         self.val = val
-        self.next = nxt
-
-
-def from_list(values):
-    if not values:
-        return None
-    head = ListNode(values[0])
-    cur = head
-    for v in values[1:]:
-        cur.next = ListNode(v)
-        cur = cur.next
-    return head
-
-
-def to_list(head):
-    out = []
-    while head is not None:
-        out.append(head.val)
-        head = head.next
-    return out
-
+        self.next = next
 
 class Solution:
-    def merge_sorted_lists(
-        self, head_a: Optional[ListNode], head_b: Optional[ListNode]
-    ) -> Optional[ListNode]:
+    def merge_sorted_lists(self, head_a, head_b):
 
         # Create a dummy node and initialize the tail pointer
         dummy = ListNode(0)
         tail = dummy
 
-        current_a: Optional[ListNode] = head_a
-        current_b: Optional[ListNode] = head_b
+        current_a = head_a
+        current_b = head_b
 
         # Traverse both lists until one of them becomes empty
         while current_a is not None and current_b is not None:
@@ -154,45 +236,32 @@ class Solution:
         # Return the merged list (excluding the dummy node)
         return dummy.next
 
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
 
-print(to_list(Solution().merge_sorted_lists(from_list([1, 2, 4]), from_list([1, 3, 4]))))       # [1, 1, 2, 3, 4, 4]
-print(to_list(Solution().merge_sorted_lists(from_list([1, 2, 3, 8, 9]), from_list([6, 7]))))   # [1, 2, 3, 6, 7, 8, 9]
-print(to_list(Solution().merge_sorted_lists(from_list([1, 3, 5, 6, 7]), from_list([2, 4]))))   # [1, 2, 3, 4, 5, 6, 7]
+def print_list(head):                # 1 → 2 → 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
 
-# Edge cases
-print(to_list(Solution().merge_sorted_lists(None, from_list([1, 2]))))                          # [1, 2]
-print(to_list(Solution().merge_sorted_lists(from_list([1, 2]), None)))                          # [1, 2]
-print(to_list(Solution().merge_sorted_lists(from_list([1]), from_list([1]))))                   # [1, 1]
-print(to_list(Solution().merge_sorted_lists(from_list([5]), from_list([1, 2, 3]))))             # [1, 2, 3, 5]
+head_a = build_list(ast.literal_eval(input()))   # the test case's headA
+head_b = build_list(ast.literal_eval(input()))   # the test case's headB
+print_list(Solution().merge_sorted_lists(head_a, head_b))
 ```
 
-```java run viz=linked-list viz-root=head
+```java solution
 import java.util.*;
 
 public class Main {
     static class ListNode {
-        int val;
-        ListNode next;
-        ListNode() {}
+        int val; ListNode next;
         ListNode(int val) { this.val = val; }
         ListNode(int val, ListNode next) { this.val = val; this.next = next; }
-    }
-
-    static ListNode fromList(int... values) {
-        if (values.length == 0) return null;
-        ListNode head = new ListNode(values[0]);
-        ListNode cur = head;
-        for (int i = 1; i < values.length; i++) {
-            cur.next = new ListNode(values[i]);
-            cur = cur.next;
-        }
-        return head;
-    }
-
-    static java.util.List<Integer> toList(ListNode head) {
-        java.util.List<Integer> out = new java.util.ArrayList<>();
-        while (head != null) { out.add(head.val); head = head.next; }
-        return out;
     }
 
     static class Solution {
@@ -245,15 +314,32 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        System.out.println(toList(new Solution().mergeSortedLists(fromList(1, 2, 4), fromList(1, 3, 4))));       // [1, 1, 2, 3, 4, 4]
-        System.out.println(toList(new Solution().mergeSortedLists(fromList(1, 2, 3, 8, 9), fromList(6, 7))));   // [1, 2, 3, 6, 7, 8, 9]
-        System.out.println(toList(new Solution().mergeSortedLists(fromList(1, 3, 5, 6, 7), fromList(2, 4))));   // [1, 2, 3, 4, 5, 6, 7]
+        Scanner sc = new Scanner(System.in);
+        ListNode headA = buildList(parseIntArray(sc.nextLine()));
+        ListNode headB = buildList(parseIntArray(sc.nextLine()));
+        printList(new Solution().mergeSortedLists(headA, headB));
+    }
 
-        // Edge cases
-        System.out.println(toList(new Solution().mergeSortedLists(null, fromList(1, 2))));                        // [1, 2]
-        System.out.println(toList(new Solution().mergeSortedLists(fromList(1, 2), null)));                        // [1, 2]
-        System.out.println(toList(new Solution().mergeSortedLists(fromList(1), fromList(1))));                    // [1, 1]
-        System.out.println(toList(new Solution().mergeSortedLists(fromList(5), fromList(1, 2, 3))));              // [1, 2, 3, 5]
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+        ListNode head = null;
+        for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+        return head;
+    }
+
+    static void printList(ListNode head) {         // 1 → 2 → 3 → [1, 2, 3]
+        List<Integer> out = new ArrayList<>();
+        for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+        System.out.println(out);
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's values
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

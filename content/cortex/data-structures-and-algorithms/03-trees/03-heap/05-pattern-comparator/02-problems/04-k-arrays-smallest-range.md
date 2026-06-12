@@ -1,9 +1,11 @@
 ---
 title: "K Arrays Smallest Range"
-summary: "Given an array of k sorted integer arrays, return the smallest range [a, b] such that the range contains at least one number from each of the k arrays."
+summary: "Given k sorted integer arrays, return the smallest range [a, b] that contains at least one number from each array. Uses a K-way merge min-heap tracking the running max."
 prereqs:
   - 05-pattern-comparator/01-pattern
 difficulty: hard
+kind: problem
+topics: [comparator, heap]
 ---
 
 # K arrays smallest range
@@ -14,24 +16,104 @@ Given an array of `k` sorted integer arrays, return the **smallest range `[a, b]
 
 > A range `[a, b]` is "smaller than" `[c, d]` if `b − a < d − c`, or if their widths are equal and `a < c`.
 
-### Example 1
+## Examples
 
-> - **Input:** `arr = [[4, 8], [3, 6], [4, 5]]`
-> - **Output:** `[3, 4]`
+**Example 1:**
+```
+Input:  arr = [[4, 8], [3, 6], [4, 5]]
+Output: [3, 4]
+```
 
-### Example 2
+**Example 2:**
+```
+Input:  arr = [[1, 2, 5], [6, 7, 9], [3, 4]]
+Output: [4, 6]
+```
 
-> - **Input:** `arr = [[1, 2, 5], [6, 7, 9], [3, 4]]`
-> - **Output:** `[4, 6]`
+**Example 3:**
+```
+Input:  arr = [[1, 5, 9], [3, 7, 12]]
+Output: [1, 3]
+```
 
-### Example 3
+## Constraints
 
-> - **Input:** `arr = [[1, 5, 9], [3, 7, 12]]`
-> - **Output:** `[1, 3]`
+- `1 ≤ arr.length ≤ 3500`
+- `1 ≤ arr[i].length ≤ 50`
+- `-10⁵ ≤ arr[i][j] ≤ 10⁵`
+- Each `arr[i]` is sorted in ascending order
+
+```python run
+import ast
+import heapq
+
+class Solution:
+    def k_arrays_smallest_range(self, arr):
+        # Your code goes here — initialize a min-heap with the first element
+        # of each list plus a running max. Pop the min, check the candidate
+        # range [min, max], then push the next element from that list.
+        # Stop when any list is exhausted.
+        return []
+
+arr = ast.literal_eval(input())
+print(Solution().k_arrays_smallest_range(arr))
+```
+
+```java run
+import java.util.*;
+
+public class Main {
+  static int[][] parseIntMatrix(String line) {
+    String trimmed = line.trim();
+    if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+    String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+    String[] rows = inner.split("\\],\\s*\\[");
+    int[][] mat = new int[rows.length][];
+    for (int r = 0; r < rows.length; r++) {
+      String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+      if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+      String[] parts = row.split(",");
+      mat[r] = new int[parts.length];
+      for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+    }
+    return mat;
+  }
+
+  static class Solution {
+    public List<Integer> kArraysSmallestRange(int[][] arr) {
+      // Your code goes here — initialize a min-heap with the first element
+      // of each row plus a running max. Pop the min, check [min, max], then
+      // push the next element from that row. Stop when any row is exhausted.
+      return new ArrayList<>();
+    }
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[][] arr = parseIntMatrix(sc.nextLine());
+    System.out.println(new Solution().kArraysSmallestRange(arr));
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[][]", "placeholder": "[[4, 8], [3, 6], [4, 5]]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[[4, 8], [3, 6], [4, 5]]" }, "expected": "[3, 4]" },
+    { "args": { "arr": "[[1, 2, 5], [6, 7, 9], [3, 4]]" }, "expected": "[4, 6]" },
+    { "args": { "arr": "[[1, 5, 9], [3, 7, 12]]" }, "expected": "[1, 3]" },
+    { "args": { "arr": "[[1], [2], [3]]" }, "expected": "[1, 3]" },
+    { "args": { "arr": "[[1, 2], [1, 2]]" }, "expected": "[1, 1]" },
+    { "args": { "arr": "[[5], [5]]" }, "expected": "[5, 5]" }
+  ]
+}
+```
 
 <details>
 <summary><h2>The Strategy</h2></summary>
-
 
 This is a classic **K-way merge** with a twist — we don't merge into one list, we slide a window across the merge.
 
@@ -64,211 +146,110 @@ flowchart LR
 
 </details>
 <details>
-<summary><h2>The Solution</h2></summary>
+<summary><h2>Solution</h2></summary>
 
+Push the first element from each row into a min-heap tracking `(value, rowIdx, colIdx)`. Keep a running `maxValue`. Each iteration: pop the minimum, check if `[min, maxValue]` is the best range so far, then push the next element of that row. Stop when any row is exhausted (heap size drops below k). The output is a 2-element list — deterministic.
 
-
-```python run viz=array viz-root=min_heap
+```python solution time=O(n log k) space=O(k)
+import ast
 import heapq
-from typing import List
 
-# Define a class to store the value, list index, and element index
 class Element:
-    def __init__(
-        self, value: int, list_idx: int, element_idx: int
-    ) -> None:
+    def __init__(self, value, list_idx, element_idx):
         self.value = value
         self.list_idx = list_idx
         self.element_idx = element_idx
-
-    # For comparison in heapq
     def __lt__(self, other):
         return self.value < other.value
 
 class Solution:
-    def k_arrays_smallest_range(self, arr: List[List[int]]) -> List[int]:
+    def k_arrays_smallest_range(self, arr):
         k = len(arr)
-
-        # Define a min heap to store the elements from each list
-        # The key of the heap is the value of the element
-        # The value is a pair representing the list index and the
-        # element index within the list
         min_heap = []
-
-        # Initialize the maximum value seen so far
         max_value = float("-inf")
-
-        # Initialize the heap with the first element from each list
         for i in range(k):
             if arr[i]:
                 heapq.heappush(min_heap, Element(arr[i][0], i, 0))
                 max_value = max(max_value, arr[i][0])
-
-        # Initialize variables to track the smallest range
-        range_start = -1
-        range_end = -1
-        range_length = float("inf")
-
-        # Process the elements in the min heap until at least one element
-        # from each list is included
+        range_start, range_end, range_length = -1, -1, float("inf")
         while len(min_heap) == k:
-
-            # Extract the minimum element from the heap
             current = heapq.heappop(min_heap)
-
-            value = current.value
-            list_idx = current.list_idx
-            idx = current.element_idx
-
-            # Update the smallest range if the current range is smaller
+            value, list_idx, idx = current.value, current.list_idx, current.element_idx
             if max_value - value < range_length:
                 range_start = value
                 range_end = max_value
                 range_length = range_end - range_start
-
-            # Move to the next element in the list and update the maximum
-            # value seen so far
             if idx + 1 < len(arr[list_idx]):
-                heapq.heappush(
-                    min_heap,
-                    Element(arr[list_idx][idx + 1], list_idx, idx + 1),
-                )
+                heapq.heappush(min_heap, Element(arr[list_idx][idx + 1], list_idx, idx + 1))
                 max_value = max(max_value, arr[list_idx][idx + 1])
-
-        # Return the smallest range as a list
         return [range_start, range_end]
 
-
-# Examples from the problem statement
-print(Solution().k_arrays_smallest_range([[4, 8], [3, 6], [4, 5]]))       # [3, 4]
-print(Solution().k_arrays_smallest_range([[1, 2, 5], [6, 7, 9], [3, 4]])) # [4, 6]
-print(Solution().k_arrays_smallest_range([[1, 5, 9], [3, 7, 12]]))        # [1, 3]
-
-# Edge cases
-print(Solution().k_arrays_smallest_range([[1], [2], [3]]))                # [1, 3] — single-element arrays
-print(Solution().k_arrays_smallest_range([[1, 2], [1, 2]]))               # [1, 1] — identical arrays
-print(Solution().k_arrays_smallest_range([[5], [5]]))                     # [5, 5] — same values
+arr = ast.literal_eval(input())
+print(Solution().k_arrays_smallest_range(arr))
 ```
 
-```java run viz=array viz-root=minHeap
+```java solution
 import java.util.*;
 
 public class Main {
+  static int[][] parseIntMatrix(String line) {
+    String trimmed = line.trim();
+    if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+    String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+    String[] rows = inner.split("\\],\\s*\\[");
+    int[][] mat = new int[rows.length][];
+    for (int r = 0; r < rows.length; r++) {
+      String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+      if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+      String[] parts = row.split(",");
+      mat[r] = new int[parts.length];
+      for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+    }
+    return mat;
+  }
 
-    // Define an internal class to store the value, list index, and
-    // element index
-    static class Element {
+  static class Element {
+    int value, listIdx, elementIdx;
+    Element(int value, int listIdx, int elementIdx) {
+      this.value = value; this.listIdx = listIdx; this.elementIdx = elementIdx;
+    }
+  }
 
-        int value;
-        int listIdx;
-        int elementIdx;
-
-        Element(int value, int listIdx, int elementIdx) {
-            this.value = value;
-            this.listIdx = listIdx;
-            this.elementIdx = elementIdx;
+  static class Solution {
+    public List<Integer> kArraysSmallestRange(int[][] arr) {
+      int k = arr.length;
+      PriorityQueue<Element> minHeap = new PriorityQueue<>(
+        (a, b) -> Integer.compare(a.value, b.value));
+      int maxValue = Integer.MIN_VALUE;
+      for (int i = 0; i < k; i++) {
+        if (arr[i].length > 0) {
+          minHeap.add(new Element(arr[i][0], i, 0));
+          maxValue = Math.max(maxValue, arr[i][0]);
         }
-    }
-
-    // Define an internal comparator class to compare the elements based
-    // on their value
-    static class CompareMinHeap implements Comparator<Element> {
-        public int compare(Element a, Element b) {
-
-            // Min-heap based on the value
-            return Integer.compare(a.value, b.value);
+      }
+      int rangeStart = -1, rangeEnd = -1, rangeLength = Integer.MAX_VALUE;
+      while (minHeap.size() == k) {
+        Element current = minHeap.poll();
+        int value = current.value, listIdx = current.listIdx, idx = current.elementIdx;
+        if (maxValue - value < rangeLength) {
+          rangeStart = value;
+          rangeEnd = maxValue;
+          rangeLength = rangeEnd - rangeStart;
         }
-    }
-
-    static class Solution {
-        public List<Integer> kArraysSmallestRange(List<List<Integer>> arr) {
-            int k = arr.size();
-
-            // Define a min heap to store the elements from each list
-            // The key of the heap is the value of the element
-            // The value is a pair representing the list index and the
-            // element index within the list
-            PriorityQueue<Element> minHeap = new PriorityQueue<>(
-                new CompareMinHeap()
-            );
-
-            // Initialize the maximum value seen so far
-            int maxValue = Integer.MIN_VALUE;
-
-            // Initialize the heap with the first element from each list
-            for (int i = 0; i < k; i++) {
-                if (!arr.get(i).isEmpty()) {
-                    minHeap.add(new Element(arr.get(i).get(0), i, 0));
-                    maxValue = Math.max(maxValue, arr.get(i).get(0));
-                }
-            }
-
-            // Initialize variables to track the smallest range
-            int rangeStart = -1;
-            int rangeEnd = -1;
-            int rangeLength = Integer.MAX_VALUE;
-
-            // Process the elements in the min heap until at least one
-            // element from each list is included
-            while (minHeap.size() == k) {
-
-                // Extract the minimum element from the heap
-                Element current = minHeap.poll();
-
-                int value = current.value;
-                int listIdx = current.listIdx;
-                int idx = current.elementIdx;
-
-                // Update the smallest range if the current range is smaller
-                if (maxValue - value < rangeLength) {
-                    rangeStart = value;
-                    rangeEnd = maxValue;
-                    rangeLength = rangeEnd - rangeStart;
-                }
-
-                // Move to the next element in the list and update the
-                // maximum value seen so far
-                if (idx + 1 < arr.get(listIdx).size()) {
-                    minHeap.add(
-                        new Element(
-                            arr.get(listIdx).get(idx + 1),
-                            listIdx,
-                            idx + 1
-                        )
-                    );
-                    maxValue = Math.max(
-                        maxValue,
-                        arr.get(listIdx).get(idx + 1)
-                    );
-                }
-            }
-
-            // Return the smallest range as an array
-            return List.of(rangeStart, rangeEnd);
+        if (idx + 1 < arr[listIdx].length) {
+          minHeap.add(new Element(arr[listIdx][idx + 1], listIdx, idx + 1));
+          maxValue = Math.max(maxValue, arr[listIdx][idx + 1]);
         }
+      }
+      return Arrays.asList(rangeStart, rangeEnd);
     }
+  }
 
-    public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().kArraysSmallestRange(
-            List.of(List.of(4, 8), List.of(3, 6), List.of(4, 5))));       // [3, 4]
-
-        System.out.println(new Solution().kArraysSmallestRange(
-            List.of(List.of(1, 2, 5), List.of(6, 7, 9), List.of(3, 4)))); // [4, 6]
-
-        System.out.println(new Solution().kArraysSmallestRange(
-            List.of(List.of(1, 5, 9), List.of(3, 7, 12))));               // [1, 3]
-
-        // Edge cases
-        System.out.println(new Solution().kArraysSmallestRange(
-            List.of(List.of(1), List.of(2), List.of(3))));                 // [1, 3]
-
-        System.out.println(new Solution().kArraysSmallestRange(
-            List.of(List.of(1, 2), List.of(1, 2))));                       // [1, 1]
-
-        System.out.println(new Solution().kArraysSmallestRange(
-            List.of(List.of(5), List.of(5))));                             // [5, 5]
-    }
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[][] arr = parseIntMatrix(sc.nextLine());
+    System.out.println(new Solution().kArraysSmallestRange(arr));
+  }
 }
 ```
 

@@ -4,6 +4,8 @@ summary: "Given an array arr, return the start/end indices of every subarray tha
 prereqs:
   - 11-pattern-prefix-sum/01-pattern
 difficulty: medium
+kind: problem
+topics: [prefix-sum, hash-table]
 ---
 
 # Zero sum subarrays
@@ -14,7 +16,7 @@ Given an array `arr`, return the start/end indices of **every** subarray that su
 
 ### Example 1
 > -   **Input:** `[6, 3, -1, -3, 4, -2, 2, 4, 6, -12, -7]`
-> -   **Output:** `[[2, 4], [2, 6], [5, 6], [6, 9], [0, 10]]`
+> -   **Output:** `[[0, 10], [2, 4], [2, 6], [5, 6], [6, 9]]`
 
 ### Example 2
 > -   **Input:** `[1, 2, 3, 4, 0]` → **Output:** `[[4, 4]]`
@@ -27,9 +29,10 @@ Given an array `arr`, return the start/end indices of **every** subarray that su
 **Example 1**
 ```
 Input:  [6, 3, -1, -3, 4, -2, 2, 4, 6, -12, -7]
-Output: [[2, 4], [2, 6], [5, 6], [6, 9], [0, 10]]
+Output: [[0, 10], [2, 4], [2, 6], [5, 6], [6, 9]]
 Explanation: five slices net to zero, e.g. arr[2..4] = -1 + -3 + 4 = 0 and the whole
 array arr[0..10] sums to 0. Each pair gives the start and end indices, inclusive.
+Pairs are sorted by start index, then end index.
 ```
 
 **Example 2**
@@ -46,146 +49,157 @@ Output: []
 Explanation: every prefix sum is distinct and never zero, so no slice nets to zero.
 ```
 
-<!-- VERIFY: frozen solution's inline comment reads [[0, 1], [0, 3], [2, 3]] but the code actually emits [[0, 1], [1, 2], [0, 3], [2, 3]] — arr[1..2] = -1 + 1 = 0 is also zero-sum; Examples block follows the real output. -->
 **Example 4**
 ```
 Input:  [1, -1, 1, -1]
-Output: [[0, 1], [1, 2], [0, 3], [2, 3]]
+Output: [[0, 1], [0, 3], [1, 2], [2, 3]]
 Explanation: prefix sum 0 recurs at indices 1 and 3, and prefix sum 1 recurs at
-index 2, producing four overlapping zero-sum slices.
+index 2, producing four overlapping zero-sum slices (sorted by start, then end).
+```
+
+## Constraints
+
+- `1 ≤ arr.length ≤ 10^4`
+- `-1000 ≤ arr[i] ≤ 1000`
+
+```python run
+import ast
+
+class Solution:
+    def zero_sum_subarrays(self, arr):
+        # Your code goes here — maintain a map of prefix_sum → list of indices,
+        # seeded {0: [-1]}. Whenever prefix_sum recurs, emit a [start, end] pair
+        # for each earlier index. Sort the result before returning.
+        return []
+
+arr = ast.literal_eval(input())
+print(sorted(Solution().zero_sum_subarrays(arr)))
+```
+
+```java run
+import java.util.*;
+
+public class Main {
+  static class Solution {
+    public List<List<Integer>> zeroSumSubarrays(int[] arr) {
+      // Your code goes here — maintain a map of prefixSum → list of indices,
+      // seeded {0: [-1]}. Whenever prefixSum recurs, emit a [start, end] pair
+      // for each earlier index. Sort the result before returning.
+      return new ArrayList<>();
+    }
+  }
+
+  static int[] parseIntArray(String s) {
+    s = s.trim().replaceAll("[\\[\\]\\s]", "");
+    if (s.isEmpty()) return new int[0];
+    String[] t = s.split(",");
+    int[] a = new int[t.length];
+    for (int i = 0; i < t.length; i++) a[i] = Integer.parseInt(t[i].trim());
+    return a;
+  }
+
+  public static void main(String[] args) {
+    int[] arr = parseIntArray(new Scanner(System.in).nextLine());
+    List<List<Integer>> result = new Solution().zeroSumSubarrays(arr);
+    result.sort((a, b) -> a.get(0).equals(b.get(0)) ? a.get(1).compareTo(b.get(1)) : a.get(0).compareTo(b.get(0)));
+    System.out.println(result);
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[6, 3, -1, -3, 4, -2, 2, 4, 6, -12, -7]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[6, 3, -1, -3, 4, -2, 2, 4, 6, -12, -7]" }, "expected": "[[0, 10], [2, 4], [2, 6], [5, 6], [6, 9]]" },
+    { "args": { "arr": "[1, 2, 3, 4, 0]" },    "expected": "[[4, 4]]" },
+    { "args": { "arr": "[1, 2, 3]" },           "expected": "[]" },
+    { "args": { "arr": "[0]" },                 "expected": "[[0, 0]]" },
+    { "args": { "arr": "[-1, 1]" },             "expected": "[[0, 1]]" },
+    { "args": { "arr": "[1, -1, 1, -1]" },      "expected": "[[0, 1], [0, 3], [1, 2], [2, 3]]" }
+  ]
+}
 ```
 
 <details>
-<summary><h2>Approach</h2></summary>
+<summary>Editorial</summary>
 
+Maintain `prefix_sum → list of indices where it appeared`, seeded `{0: [-1]}`. At each index `i`, if `prefix_sum` is already in the map, emit `[prev + 1, i]` for every earlier index `prev` in its list. Then append `i` to the list. Sort the result by `[start, end]` before returning so both languages print identically. `O(N + M)` time where `M` is the number of zero-sum slices (`O(N²)` worst case); `O(N)` auxiliary space.
 
-Same prefix-sum trick. Two indices `i < j` with `P[i] == P[j+1]` means `arr[i..j]` sums to zero. So maintain a hash map `{prefixSum → list of indices where it appeared}`; whenever we see a prefix sum that has appeared before, every previous occurrence is the *start − 1* of a zero-sum subarray ending at the current index.
-
-The base case `prefixSumIndices[0] = [-1]` lets us catch zero-sum subarrays that start at index 0.
-
-</details>
-<details>
-<summary><h2>Solution</h2></summary>
-
-
-
-```python run viz=array viz-root=result
-from typing import List
+```python solution time=O(n+m) space=O(n)
+import ast
 
 class Solution:
-    def zero_sum_subarrays(self, arr: List[int]) -> List[List[int]]:
-
-        # Dictionary to store prefix sums and their indices
-        prefix_sum_indices: dict[int, List[int]] = {}
-
-        # To store the actual start and end indices of all subarrays
-        result: List[List[int]] = []
+    def zero_sum_subarrays(self, arr):
+        prefix_sum_indices = {}
+        result = []
         prefix_sum = 0
-
-        # Add a base case for prefix_sum = 0
         prefix_sum_indices[0] = [-1]
 
         for i in range(len(arr)):
             prefix_sum += arr[i]
-
-            # If the prefix_sum exists in the map, it means we found
-            # subarrays summing to 0
             if prefix_sum in prefix_sum_indices:
                 for prev_index in prefix_sum_indices[prefix_sum]:
-
-                    # Add (prev_index + 1) as the correct start index
                     result.append([prev_index + 1, i])
-
-            # Add the current index to the list of indices for this
-            # prefix_sum
             if prefix_sum not in prefix_sum_indices:
                 prefix_sum_indices[prefix_sum] = []
             prefix_sum_indices[prefix_sum].append(i)
 
         return result
 
-
-# Examples from the problem statement
-r1 = Solution().zero_sum_subarrays([6, 3, -1, -3, 4, -2, 2, 4, 6, -12, -7])
-print(sorted([sorted(p) for p in r1]))   # [[0, 10], [2, 4], [2, 6], [5, 6], [6, 9]]
-
-print(Solution().zero_sum_subarrays([1, 2, 3, 4, 0]))  # [[4, 4]]
-print(Solution().zero_sum_subarrays([1, 2, 3]))         # []
-
-# Edge cases
-print(Solution().zero_sum_subarrays([]))                # []
-print(Solution().zero_sum_subarrays([0]))               # [[0, 0]]
-print(Solution().zero_sum_subarrays([-1, 1]))           # [[0, 1]]
-print(Solution().zero_sum_subarrays([1, -1, 1, -1]))    # [[0, 1], [0, 3], [2, 3]]
+arr = ast.literal_eval(input())
+print(sorted(Solution().zero_sum_subarrays(arr)))
 ```
 
-```java run viz=array viz-root=result
+```java solution
 import java.util.*;
 
 public class Main {
-    static class Solution {
-        public List<List<Integer>> zeroSumSubarrays(int[] arr) {
+  static class Solution {
+    public List<List<Integer>> zeroSumSubarrays(int[] arr) {
+      Map<Integer, List<Integer>> prefixSumIndices = new HashMap<>();
+      List<List<Integer>> result = new ArrayList<>();
+      int prefixSum = 0;
+      prefixSumIndices.put(0, new ArrayList<>(Collections.singletonList(-1)));
 
-            // Map to store prefix sums and their indices
-            Map<Integer, List<Integer>> prefixSumIndices = new HashMap<>();
-
-            // To store the actual start and end indices of all subarrays
-            List<List<Integer>> result = new ArrayList<>();
-            int prefixSum = 0;
-
-            // Add a base case for prefixSum = 0
-            prefixSumIndices.put(0, new ArrayList<>());
-            prefixSumIndices.get(0).add(-1);
-
-            for (int i = 0; i < arr.length; i++) {
-                prefixSum += arr[i];
-
-                // If the prefixSum exists in the map, it means we found
-                // subarrays summing to 0
-                if (prefixSumIndices.containsKey(prefixSum)) {
-                    for (int prevIndex : prefixSumIndices.get(prefixSum)) {
-
-                        // Add (prevIndex + 1) as the correct start index
-                        List<Integer> subarray = new ArrayList<>();
-                        subarray.add(prevIndex + 1);
-                        subarray.add(i);
-                        result.add(subarray);
-                    }
-                }
-
-                // Add the current index to the list of indices for this
-                // prefixSum
-                prefixSumIndices
-                    .computeIfAbsent(prefixSum, k -> new ArrayList<>())
-                    .add(i);
-            }
-
-            return result;
+      for (int i = 0; i < arr.length; i++) {
+        prefixSum += arr[i];
+        if (prefixSumIndices.containsKey(prefixSum)) {
+          for (int prevIndex : prefixSumIndices.get(prefixSum)) {
+            List<Integer> sub = new ArrayList<>();
+            sub.add(prevIndex + 1); sub.add(i);
+            result.add(sub);
+          }
         }
+        prefixSumIndices.computeIfAbsent(prefixSum, k -> new ArrayList<>()).add(i);
+      }
+      return result;
     }
+  }
 
-    public static void main(String[] args) {
-        // Examples from the problem statement
-        var r1 = new Solution().zeroSumSubarrays(new int[]{6, 3, -1, -3, 4, -2, 2, 4, 6, -12, -7});
-        r1.forEach(p -> { Collections.sort(p); System.out.print(p + " "); }); System.out.println();
-        // [0, 10] [2, 4] [2, 6] [5, 6] [6, 9] (order may vary)
+  static int[] parseIntArray(String s) {
+    s = s.trim().replaceAll("[\\[\\]\\s]", "");
+    if (s.isEmpty()) return new int[0];
+    String[] t = s.split(",");
+    int[] a = new int[t.length];
+    for (int i = 0; i < t.length; i++) a[i] = Integer.parseInt(t[i].trim());
+    return a;
+  }
 
-        System.out.println(new Solution().zeroSumSubarrays(new int[]{1, 2, 3, 4, 0}));  // [[4, 4]]
-        System.out.println(new Solution().zeroSumSubarrays(new int[]{1, 2, 3}));         // []
-
-        // Edge cases
-        System.out.println(new Solution().zeroSumSubarrays(new int[]{}));                // []
-        System.out.println(new Solution().zeroSumSubarrays(new int[]{0}));               // [[0, 0]]
-        System.out.println(new Solution().zeroSumSubarrays(new int[]{-1, 1}));           // [[0, 1]]
-        System.out.println(new Solution().zeroSumSubarrays(new int[]{1, -1, 1, -1}));   // [[0, 1], [0, 3], [2, 3]]
-    }
+  public static void main(String[] args) {
+    int[] arr = parseIntArray(new Scanner(System.in).nextLine());
+    List<List<Integer>> result = new Solution().zeroSumSubarrays(arr);
+    result.sort((a, b) -> a.get(0).equals(b.get(0)) ? a.get(1).compareTo(b.get(1)) : a.get(0).compareTo(b.get(0)));
+    System.out.println(result);
+  }
 }
 ```
 
 </details>
 <details>
 <summary><h2>Key Takeaway</h2></summary>
-
 
 Prefix sum is the bridge that turns *quadratic* subarray problems into *linear* ones. The pattern is so flexible it shows up in problems that don't even mention sums — anywhere "balanced" or "equal" or "net zero" can be encoded as a sum, the same machinery applies.
 
@@ -212,7 +226,6 @@ The four moves:
 <details>
 <summary><h2>Intuition</h2></summary>
 
-
 The task is to report *every* contiguous slice that sums to zero, as start-end index pairs. The brute-force read sums every slice: fix a start, extend an end, add as you go, and emit the pair whenever the running sum hits zero. Each of the `O(N²)` start-end pairs is examined, and re-summing makes it `O(N³)` unless you cache the running sum per start — still `O(N²)`.
 
 The prefix sum reframes "this slice sums to zero" as "two prefix sums are equal". If `P[i]` denotes the prefix sum up to index `i`, then the slice `arr[a..b]` nets to zero exactly when the prefix sum just before `a` equals the prefix sum at `b`. So whenever the current prefix sum has been seen at earlier indices, *each* of those earlier indices marks the start (minus one) of a distinct zero-sum slice ending here. Storing a *list* of indices per prefix value — not only the first — is what lets the algorithm emit all of them.
@@ -222,7 +235,6 @@ This is the same-value-search flavour, extended from "longest" to "all". The has
 </details>
 <details>
 <summary><h2>Applying the Diagnostic Questions</h2></summary>
-
 
 | Check | Answer for Zero Sum Subarrays |
 |---|---|
@@ -235,19 +247,17 @@ This is the same-value-search flavour, extended from "longest" to "all". The has
 <details>
 <summary><h2>Approach</h2></summary>
 
-
 1. Initialise `prefix_sum = 0`, an empty result list, and a map `prefix_sum_indices` seeded with `{0: [-1]}` so slices starting at index `0` are caught.
 2. Sweep `i` across the array, adding `arr[i]` to `prefix_sum`.
 3. If `prefix_sum` is already a key, then for *every* earlier index `j` in its list, the slice `arr[j+1..i]` nets to zero — append `[j + 1, i]` to the result.
 4. Append the current index `i` to the list for `prefix_sum` (creating the list if this prefix value is new).
-5. After the loop, return the result list of index pairs.
+5. After the loop, sort the result by `[start, end]` and return.
 
 </details>
 <details>
 <summary><h2>Dry Run</h2></summary>
 
-
-Walk Example 1: `arr = [6, 3, -1, -3, 4, -2, 2, 4, 6, -12, -7]`, expected output `[[2, 4], [2, 6], [5, 6], [6, 9], [0, 10]]`. The map stores each prefix sum's list of indices; a repeat emits one pair per earlier index:
+Walk Example 1: `arr = [6, 3, -1, -3, 4, -2, 2, 4, 6, -12, -7]`, expected output `[[0, 10], [2, 4], [2, 6], [5, 6], [6, 9]]`. The map stores each prefix sum's list of indices; a repeat emits one pair per earlier index:
 
 ```
 prefix_sum=0, map={0:[-1]}
@@ -264,7 +274,7 @@ i=8   arr=  6  P=19   new → store {19:[8]}
 i=9   arr=-12  P=7    seen @ [5] → emit [6, 9]                 map[7]=[5, 9]
 i=10  arr= -7  P=0    seen @ [-1] → emit [0, 10]               map[0]=[-1, 10]
 
-result = [[2, 4], [2, 6], [5, 6], [6, 9], [0, 10]]
+result (sorted) = [[0, 10], [2, 4], [2, 6], [5, 6], [6, 9]]
 ```
 
 The result matches the expected output — prefix sum `9` recurs across indices `1`, `4`, `6` to produce the overlapping slices, and the final prefix sum `0` pairs with the seeded `−1` to report the whole array `arr[0..10]`.
@@ -272,7 +282,6 @@ The result matches the expected output — prefix sum `9` recurs across indices 
 </details>
 <details>
 <summary><h2>Complexity Analysis</h2></summary>
-
 
 | | Cost | Why |
 |---|---|---|
@@ -283,21 +292,12 @@ The result matches the expected output — prefix sum `9` recurs across indices 
 <details>
 <summary><h2>Edge Cases</h2></summary>
 
-
 | Input | Output | Why |
 |---|---|---|
-| `[]` | `[]` | Empty array — the loop never runs. |
 | `[0]` | `[[0, 0]]` | A single `0` is a zero-sum slice; `P` returns to `0` at index `0`, pairing with the seeded `−1`. |
 | `[1, 2, 3]` | `[]` | Every prefix sum is distinct and never zero — no pair repeats. |
 | `[-1, 1]` | `[[0, 1]]` | Prefix sum `0` recurs at index `1`, pairing with `−1` → the whole array. |
-| `[1, -1, 1, -1]` | `[[0, 1], [1, 2], [0, 3], [2, 3]]` | Prefix sum `0` recurs at indices `1`, `3` and prefix sum `1` recurs at index `2` → four overlapping slices. |
+| `[1, -1, 1, -1]` | `[[0, 1], [0, 3], [1, 2], [2, 3]]` | Prefix sum `0` recurs at indices `1`, `3` and prefix sum `1` recurs at index `2` → four overlapping slices. |
 | `[1, 2, 3, 4, 0]` | `[[4, 4]]` | Only the trailing `0` makes a prefix sum repeat (`10` at indices `3` and `4`). |
-
-</details>
-<details>
-<summary><h2>Key Takeaway</h2></summary>
-
-
-Mapping each prefix sum to the *list* of indices where it occurred — not only the first — turns "find every zero-sum subarray" into one `O(N)` sweep that emits a pair for each repeated prefix value, and the `map[0] = [-1]` base case is what catches slices anchored at index `0`.
 
 </details>

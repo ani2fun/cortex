@@ -4,6 +4,8 @@ summary: "Given an integer array arr, find all unique triplets [a, b, c] such th
 prereqs:
   - 06-pattern-two-pointers-subproblem/01-pattern
 difficulty: medium
+kind: problem
+topics: [two-pointers, arrays]
 ---
 
 # Three Sum
@@ -44,6 +46,81 @@ Explanation: No triplet sums to 0.
 ```
 Input:  arr = [-2, 0, 0, 2, 2]
 Output: [[-2, 0, 2]]
+```
+
+```quiz
+{
+  "prompt": "Now your turn!",
+  "input": "arr = [-1, 0, 1, 2, -1, -4]",
+  "options": ["[[-1, -1, 2], [-1, 0, 1]]", "[[-1, 0, 1]]", "[[-1, -1, 2]]", "[]"],
+  "answer": "[[-1, -1, 2], [-1, 0, 1]]"
+}
+```
+
+## Constraints
+
+- `0 ≤ arr.length ≤ 3000`
+- `-10^5 ≤ arr[i] ≤ 10^5`
+- The solution set must not contain duplicate triplets
+
+```python run viz=array viz-root=arr
+import ast
+from typing import List
+
+class Solution:
+    def three_sum(self, arr: List[int]) -> List[List[int]]:
+        # Your code goes here — sort, then fix arr[i] and run a converging
+        # two-pointer sweep on the suffix to collect all unique triplets.
+        return []
+
+arr = ast.literal_eval(input())      # the test case's arr
+print(Solution().three_sum(arr))
+```
+
+```java run viz=array viz-root=arr
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public List<List<Integer>> threeSum(int[] arr) {
+            // Your code goes here — sort, then fix arr[i] and run a converging
+            // two-pointer sweep on the suffix to collect all unique triplets.
+            return new ArrayList<>();
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        System.out.println(new Solution().threeSum(arr));
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's arr
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[-1, 0, 1, 2, -1, -4]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[-1, 0, 1, 2, -1, -4]" }, "expected": "[[-1, -1, 2], [-1, 0, 1]]" },
+    { "args": { "arr": "[0, 0, 0, 0]" }, "expected": "[[0, 0, 0]]" },
+    { "args": { "arr": "[1, 2, 3]" }, "expected": "[]" },
+    { "args": { "arr": "[-2, 0, 0, 2, 2]" }, "expected": "[[-2, 0, 2]]" },
+    { "args": { "arr": "[]" }, "expected": "[]" },
+    { "args": { "arr": "[-4, -2, -2, 0, 2, 2, 4]" }, "expected": "[[-4, 0, 4], [-4, 2, 2], [-2, -2, 4], [-2, 0, 2]]" }
+  ]
+}
 ```
 
 <details>
@@ -166,7 +243,8 @@ Since the array is sorted, if `arr[i] > 0`, then `arr[left] ≥ arr[i] > 0` and 
 
 ### Solution
 
-```python run viz=array viz-root=arr
+```python solution time=O(n^2) space=O(k)
+import ast
 from typing import List
 
 class Solution:
@@ -242,19 +320,11 @@ class Solution:
         return result
 
 
-# Examples from the problem statement
-print(Solution().three_sum([-1, 0, 1, 2, -1, -4]))  # [[-1, -1, 2], [-1, 0, 1]]
-print(Solution().three_sum([0, 0, 0]))               # [[0, 0, 0]]
-print(Solution().three_sum([2, 7, 11, 15]))          # []
-
-# Edge cases
-print(Solution().three_sum([]))                      # []
-print(Solution().three_sum([1, 2]))                  # [] — too few elements
-print(Solution().three_sum([-2, 0, 2]))              # [[-2, 0, 2]]
-print(Solution().three_sum([0, 0, 0, 0]))            # [[0, 0, 0]] — no duplicate triplets
+arr = ast.literal_eval(input())      # the test case's arr
+print(Solution().three_sum(arr))
 ```
 
-```java run viz=array viz-root=arr
+```java solution
 import java.util.*;
 
 public class Main {
@@ -342,16 +412,18 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().threeSum(new int[]{-1,0,1,2,-1,-4})); // [[-1, -1, 2], [-1, 0, 1]]
-        System.out.println(new Solution().threeSum(new int[]{0,0,0}));           // [[0, 0, 0]]
-        System.out.println(new Solution().threeSum(new int[]{2,7,11,15}));       // []
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        System.out.println(new Solution().threeSum(arr));
+    }
 
-        // Edge cases
-        System.out.println(new Solution().threeSum(new int[]{}));                // []
-        System.out.println(new Solution().threeSum(new int[]{1,2}));             // [] — too few elements
-        System.out.println(new Solution().threeSum(new int[]{-2,0,2}));          // [[-2, 0, 2]]
-        System.out.println(new Solution().threeSum(new int[]{0,0,0,0}));         // [[0, 0, 0]] — no duplicate triplets
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

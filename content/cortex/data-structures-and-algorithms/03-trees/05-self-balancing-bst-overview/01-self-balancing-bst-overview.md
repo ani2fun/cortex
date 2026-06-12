@@ -18,9 +18,11 @@ The fix: make the tree **rebalance itself** on every insert and delete, holding 
 
 ## See It Work
 
-The cliff, measured. The *same 31 keys* inserted sorted versus in bisection order. Height is the longest root-to-leaf path in edges. Run it.
+The cliff, measured. The *same n keys* inserted sorted versus in bisection order. Height is the longest root-to-leaf path in edges. Run it.
 
 ```python run viz=binary-tree viz-root=root
+import ast
+
 class Node:
     __slots__ = ("key", "left", "right")
     def __init__(self, k): self.key, self.left, self.right = k, None, None
@@ -45,16 +47,70 @@ def bisection(lo, hi, out):                   # insert order that builds a balan
     mid = (lo + hi) // 2
     out.append(mid); bisection(lo, mid - 1, out); bisection(mid + 1, hi, out)
 
-n = 31
+n = int(input())
 sorted_root = None
 for x in range(1, n + 1): sorted_root = insert(sorted_root, x)
-print("sorted insert:   height =", height(sorted_root))     # 30  → a 31-node chain, O(n)
+print("sorted insert:   height =", height(sorted_root))
 
 order = []; bisection(1, n, order)
 bal_root = None
 for x in order: bal_root = insert(bal_root, x)
-print("balanced insert: height =", height(bal_root))        # 4   ≈ log2(31)
+print("balanced insert: height =", height(bal_root))
 ```
+
+```java run viz=binary-tree viz-root=root
+import java.util.*;
+public class Main {
+  static class Node { int key; Node left, right; Node(int k){ key = k; } }
+  static Node insert(Node root, int k) {
+    if (root == null) return new Node(k);
+    Node cur = root;
+    while (true) {
+      if (k < cur.key) {
+        if (cur.left == null) { cur.left = new Node(k); return root; }
+        cur = cur.left;
+      } else {
+        if (cur.right == null) { cur.right = new Node(k); return root; }
+        cur = cur.right;
+      }
+    }
+  }
+  static int height(Node n) { return n == null ? -1 : 1 + Math.max(height(n.left), height(n.right)); }
+  static void bisection(int lo, int hi, List<Integer> out) {
+    if (lo > hi) return;
+    int mid = (lo + hi) / 2;
+    out.add(mid); bisection(lo, mid - 1, out); bisection(mid + 1, hi, out);
+  }
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int n = Integer.parseInt(sc.nextLine().trim());
+    Node sorted = null;
+    for (int x = 1; x <= n; x++) sorted = insert(sorted, x);
+    System.out.println("sorted insert:   height = " + height(sorted));
+    List<Integer> order = new ArrayList<>();
+    bisection(1, n, order);
+    Node bal = null;
+    for (int x : order) bal = insert(bal, x);
+    System.out.println("balanced insert: height = " + height(bal));
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "n", "label": "n (keys 1..n)", "type": "number", "placeholder": "31" }
+  ],
+  "cases": [
+    { "args": { "n": "31" }, "expected": "sorted insert:   height = 30\nbalanced insert: height = 4" },
+    { "args": { "n": "7" },  "expected": "sorted insert:   height = 6\nbalanced insert: height = 2" },
+    { "args": { "n": "15" }, "expected": "sorted insert:   height = 14\nbalanced insert: height = 3" },
+    { "args": { "n": "1" },  "expected": "sorted insert:   height = 0\nbalanced insert: height = 0" }
+  ]
+}
+```
+
+Both print `sorted insert: height = 30` and `balanced insert: height = 4` — the same 31 keys, the same two orders, a factor-of-7 difference in height.
 
 ## How It Works
 
@@ -117,9 +173,20 @@ def insert(root, k):
 def height(r):
     return -1 if r is None else 1 + max(height(r.left), height(r.right))
 
+def bisection(lo, hi, out):
+    if lo > hi: return
+    mid = (lo + hi) // 2
+    out.append(mid); bisection(lo, mid - 1, out); bisection(mid + 1, hi, out)
+
+n = int(input())
 root = None
-for x in range(1, 32): root = insert(root, x)       # sorted 1..31
-print("sorted height:", height(root))               # 30
+for x in range(1, n + 1): root = insert(root, x)
+print("sorted height:", height(root))
+order = []
+bisection(1, n, order)
+bal = None
+for x in order: bal = insert(bal, x)
+print("balanced height:", height(bal))
 ```
 
 ```java run viz=binary-tree viz-root=root
@@ -146,15 +213,31 @@ public class Main {
     out.add(mid); bisection(lo, mid - 1, out); bisection(mid + 1, hi, out);
   }
   public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int n = Integer.parseInt(sc.nextLine().trim());
     Node sorted = null;
-    for (int x = 1; x <= 31; x++) sorted = insert(sorted, x);
-    System.out.println("sorted height:   " + height(sorted));     // 30
+    for (int x = 1; x <= n; x++) sorted = insert(sorted, x);
+    System.out.println("sorted height: " + height(sorted));
     List<Integer> order = new ArrayList<>();
-    bisection(1, 31, order);
+    bisection(1, n, order);
     Node bal = null;
     for (int x : order) bal = insert(bal, x);
-    System.out.println("balanced height: " + height(bal));        // 4
+    System.out.println("balanced height: " + height(bal));
   }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "n", "label": "n (keys 1..n)", "type": "number", "placeholder": "31" }
+  ],
+  "cases": [
+    { "args": { "n": "31" }, "expected": "sorted height: 30\nbalanced height: 4" },
+    { "args": { "n": "7" },  "expected": "sorted height: 6\nbalanced height: 2" },
+    { "args": { "n": "15" }, "expected": "sorted height: 14\nbalanced height: 3" },
+    { "args": { "n": "1" },  "expected": "sorted height: 0\nbalanced height: 0" }
+  ]
 }
 ```
 

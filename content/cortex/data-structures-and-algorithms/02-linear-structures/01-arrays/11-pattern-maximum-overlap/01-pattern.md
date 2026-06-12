@@ -15,10 +15,14 @@ You could, for every interval, count how many others overlap it — `O(n²)`. Bu
 
 ## See It Work
 
-Four meetings; how many rooms do you need at the peak? Turn each into a start/end event, sort, sweep. Run it.
+Some meetings; how many rooms do you need at the peak? Turn each into a start/end event, sort, sweep. Pick a case below, **Run** it, then **Visualise**. The first line just reads the case's `intervals` from input — the pattern is the events and the sweep.
+
+> ▶ Run it against a case, then click **Visualise** — watch the running `concurrent` count rise and fall as the sweep crosses each `+1`/`−1` event; its peak is the answer.
 
 ```python run viz=array
-intervals = [[1, 4], [2, 5], [7, 9], [3, 6]]
+import ast
+
+intervals = ast.literal_eval(input())   # the test case's intervals
 events = []
 for start, end in intervals:
     events.append((start, +1))    # a meeting begins
@@ -28,7 +32,60 @@ concurrent = best = 0
 for _, delta in events:
     concurrent += delta            # how many meetings are active right now
     best = max(best, concurrent)
-print(best)                        # 3
+print(best)
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+  public static void main(String[] args) {
+    int[][] intervals = parseIntMatrix(new Scanner(System.in).nextLine());   // the test case's intervals
+    List<int[]> events = new ArrayList<>();
+    for (int[] iv : intervals) {
+      events.add(new int[]{iv[0], +1});    // a meeting begins
+      events.add(new int[]{iv[1], -1});    // a meeting ends
+    }
+    events.sort((a, b) -> a[0] != b[0] ? a[0] - b[0] : a[1] - b[1]);   // end (−1) before start (+1) at a tie
+    int concurrent = 0, best = 0;
+    for (int[] e : events) {
+      concurrent += e[1];                  // how many meetings are active right now
+      best = Math.max(best, concurrent);
+    }
+    System.out.println(best);
+  }
+
+  // "[[1, 4], [2, 5]]" → {{1, 4}, {2, 5}} — reads the test case's intervals
+  static int[][] parseIntMatrix(String line) {
+    String inner = line.trim().replaceAll("^\\[|\\]$", "").trim();
+    if (inner.isEmpty()) return new int[0][];
+    String[] rows = inner.split("\\]\\s*,\\s*\\[");
+    int[][] out = new int[rows.length][];
+    for (int i = 0; i < rows.length; i++) {
+      String r = rows[i].replaceAll("[\\[\\]\\s]", "");
+      if (r.isEmpty()) { out[i] = new int[0]; continue; }
+      String[] parts = r.split(",");
+      int[] pair = new int[parts.length];
+      for (int j = 0; j < parts.length; j++) pair[j] = Integer.parseInt(parts[j]);
+      out[i] = pair;
+    }
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "intervals", "label": "intervals", "type": "int[][]", "placeholder": "[[1, 4], [2, 5], [7, 9], [3, 6]]" }
+  ],
+  "cases": [
+    { "args": { "intervals": "[[1, 4], [2, 5], [7, 9], [3, 6]]" }, "expected": "3" },
+    { "args": { "intervals": "[[0, 30], [5, 10], [15, 20]]" }, "expected": "2" },
+    { "args": { "intervals": "[[1, 4], [4, 8]]" }, "expected": "1" },
+    { "args": { "intervals": "[]" }, "expected": "0" }
+  ]
+}
 ```
 
 ## How It Works
@@ -75,9 +132,77 @@ Before you read on: the peak of `3` happened at time `3`. Which three meetings w
 
 ## Your Turn
 
-The reusable peak-overlap (a.k.a. minimum meeting rooms):
+Implement the reusable peak-overlap (a.k.a. minimum meeting rooms) yourself: explode each interval into a `+1` start and a `−1` end event, sort them (end before start at a tie), then sweep a running count and return its peak.
 
 ```python run viz=array
+import ast
+
+def max_overlap(intervals):
+    # Your code goes here — build +1/−1 events, sort, sweep a
+    # running count and return its peak.
+    return 0
+
+intervals = ast.literal_eval(input())   # the test case's intervals
+print(max_overlap(intervals))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+  static int maxOverlap(int[][] intervals) {
+    // Your code goes here — build +1/−1 events, sort, sweep a
+    // running count and return its peak.
+    return 0;
+  }
+
+  public static void main(String[] args) {
+    int[][] intervals = parseIntMatrix(new Scanner(System.in).nextLine());
+    System.out.println(maxOverlap(intervals));
+  }
+
+  // "[[1, 4], [2, 5]]" → {{1, 4}, {2, 5}} — reads the test case's intervals
+  static int[][] parseIntMatrix(String line) {
+    String inner = line.trim().replaceAll("^\\[|\\]$", "").trim();
+    if (inner.isEmpty()) return new int[0][];
+    String[] rows = inner.split("\\]\\s*,\\s*\\[");
+    int[][] out = new int[rows.length][];
+    for (int i = 0; i < rows.length; i++) {
+      String r = rows[i].replaceAll("[\\[\\]\\s]", "");
+      if (r.isEmpty()) { out[i] = new int[0]; continue; }
+      String[] parts = r.split(",");
+      int[] pair = new int[parts.length];
+      for (int j = 0; j < parts.length; j++) pair[j] = Integer.parseInt(parts[j]);
+      out[i] = pair;
+    }
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "intervals", "label": "intervals", "type": "int[][]", "placeholder": "[[1, 4], [2, 5], [7, 9], [3, 6]]" }
+  ],
+  "cases": [
+    { "args": { "intervals": "[[1, 4], [2, 5], [7, 9], [3, 6]]" }, "expected": "3" },
+    { "args": { "intervals": "[[0, 30], [5, 10], [15, 20]]" }, "expected": "2" },
+    { "args": { "intervals": "[[1, 4], [4, 8]]" }, "expected": "1" },
+    { "args": { "intervals": "[[1, 5]]" }, "expected": "1" },
+    { "args": { "intervals": "[]" }, "expected": "0" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+The sweep line in full: each interval becomes a `+1` at its start and a `−1` at its end, the events sort by coordinate (and at a tie the `−1` lands before the `+1`, so half-open intervals that merely touch don't double-count), then a single pass adds the deltas and tracks the running maximum. The sort is `O(n log n)`; the sweep and the event list are `O(n)`.
+
+```python solution time=O(n log n) space=O(n)
+import ast
+
 def max_overlap(intervals):
     events = []
     for start, end in intervals:
@@ -90,10 +215,11 @@ def max_overlap(intervals):
         best = max(best, concurrent)
     return best
 
-print(max_overlap([[1, 4], [2, 5], [7, 9], [3, 6]]))   # 3
+intervals = ast.literal_eval(input())   # the test case's intervals
+print(max_overlap(intervals))
 ```
 
-```java run viz=array
+```java solution
 import java.util.*;
 
 public class Main {
@@ -105,15 +231,36 @@ public class Main {
     for (int[] e : events) { concurrent += e[1]; best = Math.max(best, concurrent); }
     return best;
   }
+
   public static void main(String[] args) {
-    System.out.println(maxOverlap(new int[][]{{1, 4}, {2, 5}, {7, 9}, {3, 6}}));   // 3
+    int[][] intervals = parseIntMatrix(new Scanner(System.in).nextLine());
+    System.out.println(maxOverlap(intervals));
+  }
+
+  // "[[1, 4], [2, 5]]" → {{1, 4}, {2, 5}} — reads the test case's intervals
+  static int[][] parseIntMatrix(String line) {
+    String inner = line.trim().replaceAll("^\\[|\\]$", "").trim();
+    if (inner.isEmpty()) return new int[0][];
+    String[] rows = inner.split("\\]\\s*,\\s*\\[");
+    int[][] out = new int[rows.length][];
+    for (int i = 0; i < rows.length; i++) {
+      String r = rows[i].replaceAll("[\\[\\]\\s]", "");
+      if (r.isEmpty()) { out[i] = new int[0]; continue; }
+      String[] parts = r.split(",");
+      int[] pair = new int[parts.length];
+      for (int j = 0; j < parts.length; j++) pair[j] = Integer.parseInt(parts[j]);
+      out[i] = pair;
+    }
+    return out;
   }
 }
 ```
 
-Drill the family in **Practice** — [Minimum Meeting Rooms](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-maximum-overlap/problems/minimum-meeting-rooms) and [Peak Resource Requirement](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-maximum-overlap/problems/peak-resource-requirement).
+</details>
 
 ## Reflect & Connect
+
+Drill the family in **Practice** — [Minimum Meeting Rooms](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-maximum-overlap/problems/minimum-meeting-rooms) and [Peak Resource Requirement](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-maximum-overlap/problems/peak-resource-requirement).
 
 The sweep line generalizes far past counting:
 

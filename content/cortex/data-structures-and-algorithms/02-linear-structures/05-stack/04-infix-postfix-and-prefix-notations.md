@@ -58,6 +58,15 @@ public class Main {
 }
 ```
 
+```testcases
+{
+  "args": [],
+  "cases": [
+    { "args": {}, "expected": "prefix  (preorder):  * + 2 3 4\ninfix   (inorder):   2 + 3 * 4\npostfix (postorder): 2 3 + 4 *" }
+  ]
+}
+```
+
 Both print `prefix: * + 2 3 4`, `infix: 2 + 3 * 4`, `postfix: 2 3 + 4 *`. The *same* tree, walked three ways, gives the three notations — operator-before (visit node first), operator-between (visit node in the middle), operator-after (visit node last). Notice the catch: the inorder string `2 + 3 * 4` is **ambiguous** — read with normal precedence it means `2 + (3 * 4) = 14`, but the tree encodes `(2 + 3) * 4 = 20`. Infix loses the grouping unless you add parentheses. Prefix and postfix never do — their position *is* the grouping.
 
 ## How It Works
@@ -102,6 +111,35 @@ print("'2 3 + 4 *' =", eval_postfix("2 3 + 4 *".split()))   # (2+3)*4
 print("'2 3 4 * +' =", eval_postfix("2 3 4 * +".split()))   # 2+(3*4)
 ```
 
+```java run viz=array viz-kind=stack
+import java.util.*;
+public class Main {
+    static int evalPostfix(String[] tokens) {
+        List<Integer> st = new ArrayList<>();
+        for (String t : tokens) {
+            if (t.length() == 1 && "+-*/".contains(t)) {
+                int b = st.remove(st.size() - 1), a = st.remove(st.size() - 1);  // b = right, a = left
+                st.add(switch (t) { case "+" -> a + b; case "-" -> a - b; case "*" -> a * b; default -> a / b; });
+            } else st.add(Integer.parseInt(t));
+        }
+        return st.get(st.size() - 1);
+    }
+    public static void main(String[] x) {
+        System.out.println("'2 3 + 4 *' = " + evalPostfix("2 3 + 4 *".split(" ")));   // (2+3)*4
+        System.out.println("'2 3 4 * +' = " + evalPostfix("2 3 4 * +".split(" ")));   // 2+(3*4)
+    }
+}
+```
+
+```testcases
+{
+  "args": [],
+  "cases": [
+    { "args": {}, "expected": "'2 3 + 4 *' = 20\n'2 3 4 * +' = 14" }
+  ]
+}
+```
+
 <details>
 <summary><strong>Reveal</strong></summary>
 
@@ -111,26 +149,69 @@ print("'2 3 4 * +' =", eval_postfix("2 3 4 * +".split()))   # 2+(3*4)
 
 ## Your Turn
 
-Postfix is postorder evaluated left-to-right. Prefix is preorder — the mirror image — evaluated **right-to-left** with the same stack trick. Let's confirm it produces the same answers as the trees from See It.
-
-**Predict:** `* + 2 3 4` is the *preorder* (prefix) of the `(2+3)*4` tree. Scanning it right-to-left with a stack, what does it evaluate to? And `+ 2 * 3 4` (the prefix of `2+(3*4)`)?
+Postfix is postorder evaluated left-to-right. Prefix is preorder — the mirror image — evaluated **right-to-left** with the same stack trick. Implement `eval_prefix(tokens)`: scan the token list *right to left*, push operands, and on each operator pop the top two (first pop = left operand, second pop = right) and push the result. The lone survivor is the answer.
 
 ```python run viz=array viz-kind=stack
+def eval_prefix(tokens):
+    # Your code goes here — scan right to left; push operands; on an operator
+    # pop the top two (first pop = left operand, second = right) and push the result.
+    pass
+
+tokens = input().split()
+print(eval_prefix(tokens))
+```
+
+```java run viz=array viz-kind=stack
+import java.util.*;
+public class Main {
+    static int evalPrefix(String[] tokens) {
+        // Your code goes here — scan right to left; push operands; on an operator
+        // pop the top two (first pop = left operand, second = right) and push the result.
+        return 0;
+    }
+    public static void main(String[] x) {
+        String[] tokens = new Scanner(System.in).nextLine().split(" ");
+        System.out.println(evalPrefix(tokens));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "expr", "label": "prefix expression", "type": "string", "placeholder": "* + 2 3 4" }
+  ],
+  "cases": [
+    { "args": { "expr": "* + 2 3 4" }, "expected": "20" },
+    { "args": { "expr": "+ 2 * 3 4" }, "expected": "14" },
+    { "args": { "expr": "- 10 3" }, "expected": "7" },
+    { "args": { "expr": "/ 8 2" }, "expected": "4" },
+    { "args": { "expr": "* - 5 3 4" }, "expected": "8" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Scanning right-to-left means each operator's left operand lands on the stack *last* — so the first pop is the **left** operand (opposite of postfix, where the first pop is the right). For non-commutative operators (`-`, `/`) this distinction matters: `- 10 3` should compute `10 − 3 = 7`, not `3 − 10 = −7`. Integer division truncates toward zero.
+
+```python solution time=O(n) space=O(n)
 def eval_prefix(tokens):
     st = []
     for t in reversed(tokens):                             # scan RIGHT to left
         if t in "+-*/":
             a, b = st.pop(), st.pop()                      # a = left operand (pushed last), b = right
-            st.append({"+": a+b, "-": a-b, "*": a*b, "/": a//b}[t])
+            st.append({"+": a+b, "-": a-b, "*": a*b, "/": int(a/b)}[t])
         else:
             st.append(int(t))
     return st[-1]
 
-print("'* + 2 3 4' =", eval_prefix("* + 2 3 4".split()))   # preorder of (2+3)*4
-print("'+ 2 * 3 4' =", eval_prefix("+ 2 * 3 4".split()))   # 2+(3*4)
+tokens = input().split()
+print(eval_prefix(tokens))
 ```
 
-```java run viz=array viz-kind=stack
+```java solution
 import java.util.*;
 public class Main {
     static int evalPrefix(String[] tokens) {
@@ -139,19 +220,19 @@ public class Main {
             String t = tokens[i];
             if (t.length() == 1 && "+-*/".contains(t)) {
                 int a = st.pop(), b = st.pop();             // a = left operand, b = right
-                st.push(switch (t) { case "+" -> a + b; case "-" -> a - b; case "*" -> a * b; default -> a / b; });
+                st.push(switch (t) { case "+" -> a + b; case "-" -> a - b; case "*" -> a * b; default -> (int) ((double) a / b); });
             } else st.push(Integer.parseInt(t));
         }
         return st.peek();
     }
     public static void main(String[] x) {
-        System.out.println("'* + 2 3 4' = " + evalPrefix("* + 2 3 4".split(" ")));
-        System.out.println("'+ 2 * 3 4' = " + evalPrefix("+ 2 * 3 4".split(" ")));
+        String[] tokens = new Scanner(System.in).nextLine().split(" ");
+        System.out.println(evalPrefix(tokens));
     }
 }
 ```
 
-Both print `'* + 2 3 4' = 20` and `'+ 2 * 3 4' = 14` — the same values as the matching postfix expressions, because they're the same trees, just traversed (and scanned) in the mirror direction. The one thing to get right is operand order for `-` and `/`: scanning prefix right-to-left, the operator's left operand is the one pushed *last* (so the *first* pop), the opposite of postfix where the left operand is the *second* pop. Get that backwards and `-`/`/` silently compute the wrong thing while `+`/`*` still look fine — a classic subtle bug. Postfix and prefix are duals: pick postfix and scan forward, or prefix and scan backward; either way a single stack and one pass turn a notation into a number.
+</details>
 
 ## Reflect & Connect
 

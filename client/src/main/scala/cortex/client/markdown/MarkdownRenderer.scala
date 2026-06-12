@@ -32,10 +32,11 @@ object MarkdownRenderer:
 
   /**
    * Resolves to a `renderChapter` function via dynamic-import. The loader caches the inner Promise on the JS
-   * side, so subsequent calls are cheap.
+   * side, so subsequent calls are cheap. Second argument is the optional `{ mode }` options object.
    */
   @js.native @JSImport("@markdown/loader", "loadRenderChapter")
-  private def loadRenderChapter(): js.Promise[js.Function1[String, js.Promise[JsRenderResult]]] =
+  private def loadRenderChapter()
+      : js.Promise[js.Function2[String, js.UndefOr[js.Object], js.Promise[JsRenderResult]]] =
     js.native
 
   // ---- Public API --------------------------------------------------------
@@ -45,12 +46,17 @@ object MarkdownRenderer:
 
   /**
    * Render a chapter. The returned Future fails if the pipeline throws — mostly KaTeX / D2 syntax errors in
-   * the source.
+   * the source. `problemMode = true` asks the pipeline to package the whole document into a single
+   * `.problem-workbench` placeholder (ChapterPage's `kind: problem` branch); the pipeline falls back to the
+   * normal prose rendering when the document doesn't have the workbench shape.
    */
-  def render(source: String): Future[Result] =
+  def render(source: String, problemMode: Boolean = false): Future[Result] =
+    val opts: js.UndefOr[js.Object] =
+      if problemMode then js.Dynamic.literal(mode = "problem").asInstanceOf[js.Object]
+      else js.undefined
     for
       renderFn <- loadRenderChapter().toFuture
-      js       <- renderFn(source).toFuture
+      js       <- renderFn(source, opts).toFuture
     yield Result(
       html = js.html,
       toc = js.toc.toList.map(e => TocEntry(e.depth, e.slug, e.text))

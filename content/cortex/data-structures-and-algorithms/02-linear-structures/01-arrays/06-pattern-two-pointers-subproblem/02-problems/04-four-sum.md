@@ -4,6 +4,8 @@ summary: "Given an integer array arr and an integer target, find all unique quad
 prereqs:
   - 06-pattern-two-pointers-subproblem/01-pattern
 difficulty: hard
+kind: problem
+topics: [two-pointers, arrays]
 ---
 
 # Four Sum
@@ -45,6 +47,84 @@ Explanation: No quadruplet sums to 100.
 ```
 Input:  arr = [0, 0, 0, 0],  target = 0
 Output: [[0, 0, 0, 0]]
+```
+
+```quiz
+{
+  "prompt": "Now your turn!",
+  "input": "arr = [1, 0, -1, 0, -2, 2], target = 0",
+  "options": ["[[-2, -1, 1, 2], [-2, 0, 0, 2], [-1, 0, 0, 1]]", "[[-2, 0, 0, 2], [-1, 0, 0, 1]]", "[[-2, -1, 1, 2]]", "[]"],
+  "answer": "[[-2, -1, 1, 2], [-2, 0, 0, 2], [-1, 0, 0, 1]]"
+}
+```
+
+## Constraints
+
+- `0 ≤ arr.length ≤ 200`
+- `-10^9 ≤ arr[i] ≤ 10^9`, and the same bound on `target`
+- The solution set must not contain duplicate quadruplets
+
+```python run viz=array viz-root=arr
+import ast
+from typing import List
+
+class Solution:
+    def four_sum(self, arr: List[int], target: int) -> List[List[int]]:
+        # Your code goes here — sort, fix two elements with nested loops, then
+        # run a converging two-pointer sweep on the suffix for each pair.
+        return []
+
+arr = ast.literal_eval(input())      # the test case's arr
+target = int(input())                # the test case's target
+print(Solution().four_sum(arr, target))
+```
+
+```java run viz=array viz-root=arr
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public List<List<Integer>> fourSum(int[] arr, int target) {
+            // Your code goes here — sort, fix two elements with nested loops,
+            // then run a converging two-pointer sweep on the suffix for each pair.
+            return new ArrayList<>();
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int target = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().fourSum(arr, target));
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's arr
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[1, 0, -1, 0, -2, 2]" },
+    { "id": "target", "label": "target", "type": "int", "placeholder": "0" }
+  ],
+  "cases": [
+    { "args": { "arr": "[1, 0, -1, 0, -2, 2]", "target": "0" }, "expected": "[[-2, -1, 1, 2], [-2, 0, 0, 2], [-1, 0, 0, 1]]" },
+    { "args": { "arr": "[2, 2, 2, 2, 2]", "target": "8" }, "expected": "[[2, 2, 2, 2]]" },
+    { "args": { "arr": "[1, 2, 3, 4]", "target": "100" }, "expected": "[]" },
+    { "args": { "arr": "[0, 0, 0, 0]", "target": "0" }, "expected": "[[0, 0, 0, 0]]" },
+    { "args": { "arr": "[]", "target": "0" }, "expected": "[]" },
+    { "args": { "arr": "[-3, -2, -1, 0, 0, 1, 2, 3]", "target": "0" }, "expected": "[[-3, -2, 2, 3], [-3, -1, 1, 3], [-3, 0, 0, 3], [-3, 0, 1, 2], [-2, -1, 0, 3], [-2, -1, 1, 2], [-2, 0, 0, 2], [-1, 0, 0, 1]]" }
+  ]
+}
 ```
 
 <details>
@@ -188,7 +268,8 @@ The `j > i+1` guard for the inner skip is important — without it, `j = i+1` wo
 
 ### Solution
 
-```python run viz=array viz-root=arr
+```python solution time=O(n^3) space=O(k)
+import ast
 from typing import List
 
 class Solution:
@@ -282,18 +363,12 @@ class Solution:
         return result
 
 
-# Examples from the problem statement
-print(Solution().four_sum([1, 0, -1, 0, -2, 2], 0))  # [[-2, -1, 1, 2], [-2, 0, 0, 2], [-1, 0, 0, 1]]
-print(Solution().four_sum([2, 2, 2, 2, 2], 8))        # [[2, 2, 2, 2]]
-
-# Edge cases
-print(Solution().four_sum([], 0))                      # []
-print(Solution().four_sum([1, 2, 3], 6))               # [] — too few elements
-print(Solution().four_sum([0, 0, 0, 0], 0))            # [[0, 0, 0, 0]]
-print(Solution().four_sum([-3, -2, -1, 0, 0, 1, 2, 3], 0))  # multiple quadruplets
+arr = ast.literal_eval(input())      # the test case's arr
+target = int(input())                # the test case's target
+print(Solution().four_sum(arr, target))
 ```
 
-```java run viz=array viz-root=arr
+```java solution
 import java.util.*;
 
 public class Main {
@@ -405,15 +480,19 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().fourSum(new int[]{1,0,-1,0,-2,2}, 0));  // [[-2, -1, 1, 2], [-2, 0, 0, 2], [-1, 0, 0, 1]]
-        System.out.println(new Solution().fourSum(new int[]{2,2,2,2,2}, 8));       // [[2, 2, 2, 2]]
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int target = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().fourSum(arr, target));
+    }
 
-        // Edge cases
-        System.out.println(new Solution().fourSum(new int[]{}, 0));                // []
-        System.out.println(new Solution().fourSum(new int[]{1,2,3}, 6));           // [] — too few elements
-        System.out.println(new Solution().fourSum(new int[]{0,0,0,0}, 0));         // [[0, 0, 0, 0]]
-        System.out.println(new Solution().fourSum(new int[]{-3,-2,-1,0,0,1,2,3}, 0)); // multiple quadruplets
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

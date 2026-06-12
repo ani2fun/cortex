@@ -4,6 +4,8 @@ summary: "Given heads of two non-empty singly linked lists headA and headB, repr
 prereqs:
   - 12-pattern-merge/01-pattern
 difficulty: medium
+kind: problem
+topics: [merge, singly-linked-list]
 ---
 
 # List addition
@@ -35,8 +37,117 @@ Output: [0]
 Explanation: 0 + 0 = 0. Single-digit inputs, single-digit output.
 ```
 
+## Constraints
 
----
+- `1 ≤ len(headA), len(headB) ≤ 10²`
+- `0 ≤ node.val ≤ 9`
+- Digits are stored in **reverse order** (head = least-significant digit)
+- The output must also be in reverse order
+- Allocate fresh output nodes — do not reuse input nodes
+
+```python run viz=linked-list viz-root=head
+import ast
+
+class ListNode:
+    def __init__(self, val, next=None):
+        self.val = val
+        self.next = next
+
+class Solution:
+    def list_addition(self, head_a, head_b):
+        # Your code goes here — dummy head, walk both lists in lockstep,
+        # sum digits + carry, emit ListNode(sum % 10), update carry.
+        # Drain the longer input (still add carry). Append carry node if > 0.
+        # Return dummy.next.
+        pass
+
+def build_list(values):              # [2, 4, 3] → 2 → 4 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
+
+def print_list(head):                # 2 → 4 → 3 → [2, 4, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
+
+head_a = build_list(ast.literal_eval(input()))   # the test case's headA
+head_b = build_list(ast.literal_eval(input()))   # the test case's headB
+print_list(Solution().list_addition(head_a, head_b))
+```
+
+```java run viz=linked-list viz-root=head
+import java.util.*;
+
+public class Main {
+    static class ListNode {
+        int val; ListNode next;
+        ListNode(int val) { this.val = val; }
+        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+    }
+
+    static class Solution {
+        ListNode listAddition(ListNode headA, ListNode headB) {
+            // Your code goes here — dummy head, walk both lists in lockstep,
+            // sum digits + carry, emit new ListNode(sum % 10), update carry.
+            // Drain the longer input (still add carry). Append carry node if > 0.
+            // Return dummy.next.
+            return null;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        ListNode headA = buildList(parseIntArray(sc.nextLine()));
+        ListNode headB = buildList(parseIntArray(sc.nextLine()));
+        printList(new Solution().listAddition(headA, headB));
+    }
+
+    static ListNode buildList(int[] values) {      // {2, 4, 3} → 2 → 4 → 3 → null
+        ListNode head = null;
+        for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+        return head;
+    }
+
+    static void printList(ListNode head) {         // 2 → 4 → 3 → [2, 4, 3]
+        List<Integer> out = new ArrayList<>();
+        for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+        System.out.println(out);
+    }
+
+    // "[2, 4, 3]" → {2, 4, 3} — reads the test case's values
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "headA", "label": "headA", "type": "int[]", "placeholder": "[2, 4, 3]" },
+    { "id": "headB", "label": "headB", "type": "int[]", "placeholder": "[5, 6, 4]" }
+  ],
+  "cases": [
+    { "args": { "headA": "[2, 4, 3]", "headB": "[5, 6, 4]" }, "expected": "[7, 0, 8]" },
+    { "args": { "headA": "[9, 8, 7]", "headB": "[4, 3, 7]" }, "expected": "[3, 2, 5, 1]" },
+    { "args": { "headA": "[0]", "headB": "[0]" }, "expected": "[0]" },
+    { "args": { "headA": "[1]", "headB": "[9]" }, "expected": "[0, 1]" },
+    { "args": { "headA": "[9, 9]", "headB": "[1]" }, "expected": "[0, 0, 1]" },
+    { "args": { "headA": "[1, 0, 0]", "headB": "[9, 9, 9]" }, "expected": "[0, 0, 0, 1]" },
+    { "args": { "headA": "[5]", "headB": "[5]" }, "expected": "[0, 1]" },
+    { "args": { "headA": "[1, 2, 3]", "headB": "[4]" }, "expected": "[5, 2, 3]" }
+  ]
+}
+```
 
 <details>
 <summary><h2>Intuition</h2></summary>
@@ -81,47 +192,24 @@ Run the dummy-head splice loop with an arithmetic selector that emits a new node
 
 ### Solution
 
-```python run viz=linked-list viz-root=head
-from typing import Optional
-
+```python solution time=O(max(n,m)) space=O(max(n,m))
+import ast
 
 class ListNode:
-    def __init__(self, val=0, nxt=None):
+    def __init__(self, val, next=None):
         self.val = val
-        self.next = nxt
-
-
-def from_list(values):
-    if not values:
-        return None
-    head = ListNode(values[0])
-    cur = head
-    for v in values[1:]:
-        cur.next = ListNode(v)
-        cur = cur.next
-    return head
-
-
-def to_list(head):
-    out = []
-    while head is not None:
-        out.append(head.val)
-        head = head.next
-    return out
-
+        self.next = next
 
 class Solution:
-    def list_addition(
-        self, head_a: Optional[ListNode], head_b: Optional[ListNode]
-    ) -> Optional[ListNode]:
+    def list_addition(self, head_a, head_b):
 
         # Create a new head for the result list and initialize tail
         # pointer
         dummy = ListNode(0)
         tail = dummy
 
-        current_a: Optional[ListNode] = head_a
-        current_b: Optional[ListNode] = head_b
+        current_a = head_a
+        current_b = head_b
 
         # Initialize carry to 0
         carry = 0
@@ -172,47 +260,32 @@ class Solution:
         # node)
         return dummy.next
 
+def build_list(values):              # [2, 4, 3] → 2 → 4 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
 
-# Examples from the problem statement
-print(to_list(Solution().list_addition(from_list([2, 4, 3]), from_list([5, 6, 4]))))  # [7, 0, 8]
-print(to_list(Solution().list_addition(from_list([9, 8, 7]), from_list([4, 3, 7]))))  # [3, 2, 5, 1]
-print(to_list(Solution().list_addition(from_list([0]), from_list([0]))))               # [0]
+def print_list(head):                # 2 → 4 → 3 → [2, 4, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
 
-# Edge cases
-print(to_list(Solution().list_addition(from_list([1]), from_list([9]))))               # [0, 1]  (1+9=10)
-print(to_list(Solution().list_addition(from_list([9, 9]), from_list([1]))))            # [0, 0, 1]  (99+1=100)
-print(to_list(Solution().list_addition(from_list([1, 0, 0]), from_list([9, 9, 9]))))  # [0, 0, 0, 1]  (1+999=1000)
-print(to_list(Solution().list_addition(from_list([5]), from_list([5]))))               # [0, 1]  (5+5=10)
-print(to_list(Solution().list_addition(from_list([1, 2, 3]), from_list([4]))))         # [5, 2, 3]  (321+4=325)
+head_a = build_list(ast.literal_eval(input()))   # the test case's headA
+head_b = build_list(ast.literal_eval(input()))   # the test case's headB
+print_list(Solution().list_addition(head_a, head_b))
 ```
 
-```java run viz=linked-list viz-root=head
+```java solution
 import java.util.*;
 
 public class Main {
     static class ListNode {
-        int val;
-        ListNode next;
-        ListNode() {}
+        int val; ListNode next;
         ListNode(int val) { this.val = val; }
         ListNode(int val, ListNode next) { this.val = val; this.next = next; }
-    }
-
-    static ListNode fromList(int... values) {
-        if (values.length == 0) return null;
-        ListNode head = new ListNode(values[0]);
-        ListNode cur = head;
-        for (int i = 1; i < values.length; i++) {
-            cur.next = new ListNode(values[i]);
-            cur = cur.next;
-        }
-        return head;
-    }
-
-    static java.util.List<Integer> toList(ListNode head) {
-        java.util.List<Integer> out = new java.util.ArrayList<>();
-        while (head != null) { out.add(head.val); head = head.next; }
-        return out;
     }
 
     static class Solution {
@@ -282,17 +355,32 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(toList(new Solution().listAddition(fromList(2, 4, 3), fromList(5, 6, 4))));  // [7, 0, 8]
-        System.out.println(toList(new Solution().listAddition(fromList(9, 8, 7), fromList(4, 3, 7))));  // [3, 2, 5, 1]
-        System.out.println(toList(new Solution().listAddition(fromList(0), fromList(0))));               // [0]
+        Scanner sc = new Scanner(System.in);
+        ListNode headA = buildList(parseIntArray(sc.nextLine()));
+        ListNode headB = buildList(parseIntArray(sc.nextLine()));
+        printList(new Solution().listAddition(headA, headB));
+    }
 
-        // Edge cases
-        System.out.println(toList(new Solution().listAddition(fromList(1), fromList(9))));               // [0, 1]  (1+9=10)
-        System.out.println(toList(new Solution().listAddition(fromList(9, 9), fromList(1))));            // [0, 0, 1]  (99+1=100)
-        System.out.println(toList(new Solution().listAddition(fromList(1, 0, 0), fromList(9, 9, 9))));  // [0, 0, 0, 1]  (1+999=1000)
-        System.out.println(toList(new Solution().listAddition(fromList(5), fromList(5))));               // [0, 1]  (5+5=10)
-        System.out.println(toList(new Solution().listAddition(fromList(1, 2, 3), fromList(4))));         // [5, 2, 3]  (321+4=325)
+    static ListNode buildList(int[] values) {      // {2, 4, 3} → 2 → 4 → 3 → null
+        ListNode head = null;
+        for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+        return head;
+    }
+
+    static void printList(ListNode head) {         // 2 → 4 → 3 → [2, 4, 3]
+        List<Integer> out = new ArrayList<>();
+        for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+        System.out.println(out);
+    }
+
+    // "[2, 4, 3]" → {2, 4, 3} — reads the test case's values
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```
@@ -368,11 +456,6 @@ The output has `max(n, m)` digits if the final carry is zero, otherwise `max(n, 
 
 
 List addition is the merge variant where the selector emits a brand-new node per tick instead of splicing an input node, and the `O(1)` per-step state grows to include a running `carry`. The skeleton is unchanged — dummy head, main loop on both cursors, drain step on the longer input, then one final flourish for the tail carry.
-
-</details>
-<details>
-<summary><h2>Key Takeaway</h2></summary>
-
 
 Merge is the dual of split. Where split routed nodes from one list into `k` outputs by a classifier, merge routes nodes from `k` inputs into one output by a selector. The template:
 

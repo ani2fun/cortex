@@ -18,18 +18,30 @@ The chapter taught traversals one at a time — preorder, inorder, postorder, le
 The full boundary, anticlockwise, from three stitched sub-walks:
 
 ```python run viz=binary-tree viz-root=root
+import json
+from collections import deque
+
 class TreeNode:
     def __init__(self, val=0, left=None, right=None):
         self.val, self.left, self.right = val, left, right
-#            20
-#          /    \
-#         8      22
-#        / \       \
-#       4   12      25
-#          /  \
-#         10   14
-root = TreeNode(20, TreeNode(8, TreeNode(4), TreeNode(12, TreeNode(10), TreeNode(14))),
-                    TreeNode(22, None, TreeNode(25)))
+
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
 
 def is_leaf(n): return n.left is None and n.right is None
 
@@ -53,47 +65,98 @@ def boundary(root):
     res.extend(reversed(rb))                           # ...then reversed -> bottom-up
     return res
 
-print("boundary:", boundary(root))   # [20, 8, 4, 10, 14, 25, 22]
+root = build_tree(json.loads(input()))   # the test case's level-order values
+print(boundary(root))
 ```
 
 ```java run viz=binary-tree viz-root=root
 import java.util.*;
+
 public class Main {
-    static class TreeNode {
-        int val; TreeNode left, right;
-        TreeNode(int val) { this.val = val; }
-        TreeNode(int val, TreeNode left, TreeNode right) { this.val = val; this.left = left; this.right = right; }
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
+  }
+
+  static boolean isLeaf(TreeNode n) { return n.left == null && n.right == null; }
+  static List<Integer> res;
+
+  static void leaves(TreeNode n) {
+    if (n == null) return;
+    if (isLeaf(n)) { res.add(n.val); return; }
+    leaves(n.left); leaves(n.right);
+  }
+
+  static List<Integer> boundary(TreeNode root) {
+    res = new ArrayList<>();
+    if (root == null) return res;
+    if (!isLeaf(root)) res.add(root.val);                                  // 1. root
+    TreeNode n = root.left;                                                // 2. left boundary
+    while (n != null) { if (!isLeaf(n)) res.add(n.val); n = n.left != null ? n.left : n.right; }
+    leaves(root);                                                          // 3. leaves L->R
+    List<Integer> rb = new ArrayList<>();                                  // 4. right boundary...
+    n = root.right;
+    while (n != null) { if (!isLeaf(n)) rb.add(n.val); n = n.right != null ? n.right : n.left; }
+    Collections.reverse(rb);                                              // ...reversed
+    res.addAll(rb);
+    return res;
+  }
+
+  static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();    // build queue: only real nodes, ArrayDeque ok
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
     }
-    static boolean isLeaf(TreeNode n) { return n.left == null && n.right == null; }
-    static List<Integer> res;
-    static void leaves(TreeNode n) {
-        if (n == null) return;
-        if (isLeaf(n)) { res.add(n.val); return; }
-        leaves(n.left); leaves(n.right);
-    }
-    static List<Integer> boundary(TreeNode root) {
-        res = new ArrayList<>();
-        if (root == null) return res;
-        if (!isLeaf(root)) res.add(root.val);                                  // 1. root
-        TreeNode n = root.left;                                                // 2. left boundary
-        while (n != null) { if (!isLeaf(n)) res.add(n.val); n = n.left != null ? n.left : n.right; }
-        leaves(root);                                                          // 3. leaves L->R
-        List<Integer> rb = new ArrayList<>();                                  // 4. right boundary...
-        n = root.right;
-        while (n != null) { if (!isLeaf(n)) rb.add(n.val); n = n.right != null ? n.right : n.left; }
-        Collections.reverse(rb);                                              // ...reversed
-        res.addAll(rb);
-        return res;
-    }
-    public static void main(String[] a) {
-        TreeNode root = new TreeNode(20, new TreeNode(8, new TreeNode(4), new TreeNode(12, new TreeNode(10), new TreeNode(14))),
-                                         new TreeNode(22, null, new TreeNode(25)));
-        System.out.println("boundary: " + boundary(root));
-    }
+    return root;
+  }
+
+  // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+    System.out.println(boundary(root));
+  }
 }
 ```
 
-Both print `boundary: [20, 8, 4, 10, 14, 25, 22]` — root `20`, down the left edge (`8`), across the leaves (`4, 10, 14, 25`), back up the right edge (`22`). Four little loops, one anticlockwise tour.
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[20, 8, 22, 4, 12, null, 25, null, null, 10, 14]" }
+  ],
+  "cases": [
+    { "args": { "root": "[20, 8, 22, 4, 12, null, 25, null, null, 10, 14]" }, "expected": "[20, 8, 4, 10, 14, 25, 22]" },
+    { "args": { "root": "[1, 2, 3, 4, 5]" }, "expected": "[1, 2, 4, 5, 3]" },
+    { "args": { "root": "[1]" }, "expected": "[1]" },
+    { "args": { "root": "[1, 2, null, 3]" }, "expected": "[1, 2, 3]" },
+    { "args": { "root": "[]" }, "expected": "[]" }
+  ]
+}
+```
+
+Both print the anticlockwise boundary — root `20`, down the left edge (`8`), across the leaves (`4, 10, 14, 25`), back up the right edge (`22`). Four little loops, one anticlockwise tour.
 
 ## How It Works
 
@@ -155,17 +218,42 @@ skip leaves = False: [8, 4]
 
 With the guard the left boundary is just `[8]`; without it, the leaf `4` sneaks in → `[8, 4]`. The problem: `4` is a **leaf**, so the separate leaves pass *also* emits it. Stitch the unguarded edge with the leaves pass and you get `…, 8, 4, … 4, …` — `4` counted twice, and the boundary is wrong. The fix is the one-line rule: edge walks skip leaves, the leaves pass owns them. It's the same "who is responsible for this node" discipline that makes any multi-piece traversal correct — each node must belong to exactly one sub-walk. (Symmetric trap: the rightmost leaf `25` would double-count on the right edge without the same guard.)
 
+</details>
+
 ## Your Turn
 
 Decompositions have to survive degenerate shapes. Run the *same* `boundary` function on a tree that's all left edge and no right edge — a left-skewed spine.
 
-**Predict:** for the spine `1 → 2 → 3` (each node's only child is its left), what is the boundary? (Hint: every node is on the left edge or is the single leaf.)
+**Predict:** for a left-skewed spine tree, what is the boundary? (Hint: every node is on the left edge or is the single leaf.)
 
 ```python run viz=binary-tree viz-root=root
+import json
+from collections import deque
+
 class TreeNode:
     def __init__(self, val=0, left=None, right=None):
         self.val, self.left, self.right = val, left, right
+
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
+
 def is_leaf(n): return n.left is None and n.right is None
+
 def boundary(root):
     if root is None: return []
     res = []
@@ -186,52 +274,98 @@ def boundary(root):
     res.extend(reversed(rb))
     return res
 
-#   1
-#  /
-# 2
-#/
-# 3
-spine = TreeNode(1, TreeNode(2, TreeNode(3), None), None)
-print("spine boundary:", boundary(spine))   # [1, 2, 3]
+root = build_tree(json.loads(input()))   # the test case's level-order values
+print(boundary(root))
 ```
 
 ```java run viz=binary-tree viz-root=root
 import java.util.*;
+
 public class Main {
-    static class TreeNode {
-        int val; TreeNode left, right;
-        TreeNode(int val) { this.val = val; }
-        TreeNode(int val, TreeNode left, TreeNode right) { this.val = val; this.left = left; this.right = right; }
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
+  }
+
+  static boolean isLeaf(TreeNode n) { return n.left == null && n.right == null; }
+  static List<Integer> res;
+
+  static void leaves(TreeNode n) {
+    if (n == null) return;
+    if (isLeaf(n)) { res.add(n.val); return; }
+    leaves(n.left); leaves(n.right);
+  }
+
+  static List<Integer> boundary(TreeNode root) {
+    res = new ArrayList<>();
+    if (root == null) return res;
+    if (!isLeaf(root)) res.add(root.val);
+    TreeNode n = root.left;
+    while (n != null) { if (!isLeaf(n)) res.add(n.val); n = n.left != null ? n.left : n.right; }
+    leaves(root);
+    List<Integer> rb = new ArrayList<>();
+    n = root.right;
+    while (n != null) { if (!isLeaf(n)) rb.add(n.val); n = n.right != null ? n.right : n.left; }
+    Collections.reverse(rb);
+    res.addAll(rb);
+    return res;
+  }
+
+  static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();    // build queue: only real nodes, ArrayDeque ok
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
     }
-    static boolean isLeaf(TreeNode n) { return n.left == null && n.right == null; }
-    static List<Integer> res;
-    static void leaves(TreeNode n) {
-        if (n == null) return;
-        if (isLeaf(n)) { res.add(n.val); return; }
-        leaves(n.left); leaves(n.right);
-    }
-    static List<Integer> boundary(TreeNode root) {
-        res = new ArrayList<>();
-        if (root == null) return res;
-        if (!isLeaf(root)) res.add(root.val);
-        TreeNode n = root.left;
-        while (n != null) { if (!isLeaf(n)) res.add(n.val); n = n.left != null ? n.left : n.right; }
-        leaves(root);
-        List<Integer> rb = new ArrayList<>();
-        n = root.right;
-        while (n != null) { if (!isLeaf(n)) rb.add(n.val); n = n.right != null ? n.right : n.left; }
-        Collections.reverse(rb);
-        res.addAll(rb);
-        return res;
-    }
-    public static void main(String[] a) {
-        TreeNode spine = new TreeNode(1, new TreeNode(2, new TreeNode(3), null), null);
-        System.out.println("spine boundary: " + boundary(spine));
-    }
+    return root;
+  }
+
+  // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+    System.out.println(boundary(root));
+  }
 }
 ```
 
-Both print `spine boundary: [1, 2, 3]` — the whole tree. Root `1` and `2` are on the left edge (neither is a leaf), `3` is the lone leaf, and the right edge is empty. The decomposition degrades gracefully: with no right subtree the fourth piece contributes nothing, and the skip-leaves rule keeps `3` out of the edge walk so it appears once, via the leaves pass.
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[1, 2, null, 3]" }
+  ],
+  "cases": [
+    { "args": { "root": "[1, 2, null, 3]" }, "expected": "[1, 2, 3]" },
+    { "args": { "root": "[1, 2, null, 3, null, 4]" }, "expected": "[1, 2, 3, 4]" },
+    { "args": { "root": "[1]" }, "expected": "[1]" },
+    { "args": { "root": "[1, 2, 3]" }, "expected": "[1, 2, 3]" },
+    { "args": { "root": "[]" }, "expected": "[]" }
+  ]
+}
+```
+
+Root `1` and `2` are on the left edge (neither is a leaf), `3` is the lone leaf, and the right edge is empty. The decomposition degrades gracefully: with no right subtree the fourth piece contributes nothing, and the skip-leaves rule keeps `3` out of the edge walk so it appears once, via the leaves pass.
 
 ## Reflect & Connect
 
@@ -278,4 +412,4 @@ Both print `spine boundary: [1, 2, 3]` — the whole tree. Root `1` and `2` are 
 
 - **Boundary of Binary Tree** — LeetCode 545 and the GeeksforGeeks "boundary traversal" problem are the canonical statements; the decomposition (left boundary + leaves + reversed right boundary) is the standard solution.
 - The [recursive-traversals lesson](/cortex/data-structures-and-algorithms/trees/binary-tree/recursive-traversals-in-binary-trees) for the preorder pieces and the [iterative-traversals lesson](/cortex/data-structures-and-algorithms/trees/binary-tree/iterative-traversals-in-binary-trees) for the descend-then-reverse trick this reuses.
-- The boundary `[20, 8, 4, 10, 14, 25, 22]`, the skip-leaves contrast (`[8]` vs `[8, 4]`), and the left-spine `[1, 2, 3]` all come from the runnable blocks above (deterministic) — re-run to verify.
+- All boundary outputs come from the runnable blocks above (deterministic) — re-run to verify.

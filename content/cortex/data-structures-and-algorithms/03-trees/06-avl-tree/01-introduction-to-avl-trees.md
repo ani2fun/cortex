@@ -16,7 +16,7 @@ That invariant defeats the [sorted-input cliff](/cortex/data-structures-and-algo
 
 ## See It Work
 
-Insert the sorted run `1 … 15` — the worst case for a plain BST. The AVL tree stays balanced (height 4, not 14), and an in-order walk still returns sorted keys. Run it.
+Insert the sorted run `1 … n` — the worst case for a plain BST. The AVL tree stays balanced, and an in-order walk still returns sorted keys. Run it.
 
 ```python run viz=binary-tree viz-root=root
 class Node:
@@ -51,12 +51,78 @@ def insert(node, key):
 def inorder(n, out):
     if n: inorder(n.left, out); out.append(n.key); inorder(n.right, out)
 
+n = int(input())
 root = None
-for k in range(1, 16): root = insert(root, k)        # sorted — the BST worst case
+for k in range(1, n + 1): root = insert(root, k)
 out = []; inorder(root, out)
-print("AVL height:", h(root), "(a plain BST would be 14)")    # 4
-print("root:", root.key, " in-order == sorted:", out == list(range(1, 16)))   # 8  True
+print("AVL height:", h(root))
+print("root:", root.key)
+print("inorder sorted:", "true" if out == list(range(1, n + 1)) else "false")
 ```
+
+```java run viz=binary-tree viz-root=root
+import java.util.*;
+public class Main {
+  static class Node {
+    int key, height = 1; Node left, right; Node(int k){ key = k; }
+  }
+  static int h(Node n) { return n == null ? 0 : n.height; }
+  static int bf(Node n) { return n == null ? 0 : h(n.left) - h(n.right); }
+  static void update(Node n) { n.height = 1 + Math.max(h(n.left), h(n.right)); }
+  static Node rotRight(Node p) { Node l = p.left; p.left = l.right; l.right = p; update(p); update(l); return l; }
+  static Node rotLeft(Node p)  { Node r = p.right; p.right = r.left; r.left = p; update(p); update(r); return r; }
+
+  static Node insert(Node node, int key) {
+    if (node == null) return new Node(key);
+    if (key < node.key) node.left = insert(node.left, key);
+    else if (key > node.key) node.right = insert(node.right, key);
+    else return node;
+    update(node);
+    int b = bf(node);
+    if (b >  1 && key < node.left.key)  return rotRight(node);
+    if (b < -1 && key > node.right.key) return rotLeft(node);
+    if (b >  1 && key > node.left.key)  { node.left  = rotLeft(node.left);  return rotRight(node); }
+    if (b < -1 && key < node.right.key) { node.right = rotRight(node.right); return rotLeft(node); }
+    return node;
+  }
+  static List<Integer> inorder(Node n) {
+    List<Integer> out = new ArrayList<>();
+    inorderHelper(n, out); return out;
+  }
+  static void inorderHelper(Node n, List<Integer> out) {
+    if (n == null) return;
+    inorderHelper(n.left, out); out.add(n.key); inorderHelper(n.right, out);
+  }
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int n = Integer.parseInt(sc.nextLine().trim());
+    Node root = null;
+    for (int k = 1; k <= n; k++) root = insert(root, k);
+    List<Integer> out = inorder(root);
+    System.out.println("AVL height: " + h(root));
+    System.out.println("root: " + root.key);
+    List<Integer> expected = new ArrayList<>();
+    for (int i = 1; i <= n; i++) expected.add(i);
+    System.out.println("inorder sorted: " + out.equals(expected));
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "n", "label": "n (insert 1..n sorted)", "type": "number", "placeholder": "15" }
+  ],
+  "cases": [
+    { "args": { "n": "15" }, "expected": "AVL height: 4\nroot: 8\ninorder sorted: true" },
+    { "args": { "n": "7" },  "expected": "AVL height: 3\nroot: 4\ninorder sorted: true" },
+    { "args": { "n": "1" },  "expected": "AVL height: 1\nroot: 1\ninorder sorted: true" },
+    { "args": { "n": "31" }, "expected": "AVL height: 5\nroot: 16\ninorder sorted: true" }
+  ]
+}
+```
+
+Both print `AVL height: 4`, `root: 8`, `inorder sorted: true` for n=15 — the sorted run stays balanced (height 4, not 14), and in-order emits all keys in sorted order.
 
 ## How It Works
 
@@ -105,9 +171,11 @@ It is **not** — a single right-rotate leaves the tree just as unbalanced, only
 
 ## Your Turn
 
-AVL insert in both languages — the sorted run stays balanced, and `30,10,20` exercises the LR double rotation:
+AVL insert in both languages — insert a sequence of keys and print the root, its left child key, and its right child key:
 
 ```python run viz=binary-tree viz-root=root
+import json
+
 class Node:
     __slots__ = ("key", "left", "right", "height")
     def __init__(self, key):
@@ -134,12 +202,16 @@ def insert(node, key):
     if b < -1 and key < node.right.key: node.right = rot_right(node.right); return rot_left(node)
     return node
 
+keys = json.loads(input())
 r = None
-for k in [30, 10, 20]: r = insert(r, k)              # LR case
-print(r.key, r.left.key, r.right.key)                # 20 10 30
+for k in keys: r = insert(r, k)
+left_key = r.left.key if r.left else -1
+right_key = r.right.key if r.right else -1
+print(r.key, left_key, right_key)
 ```
 
 ```java run viz=binary-tree viz-root=root
+import java.util.*;
 public class Main {
   static class Node { int key, height = 1; Node left, right; Node(int k){ key = k; } }
   static int h(Node n) { return n == null ? 0 : n.height; }
@@ -161,13 +233,41 @@ public class Main {
     if (b < -1 && key < node.right.key) { node.right = rotRight(node.right); return rotLeft(node);  } // RL
     return node;
   }
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
   public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] keys = parseIntArray(sc.nextLine());
     Node root = null;
-    for (int k = 1; k <= 15; k++) root = insert(root, k);    // sorted — worst case
-    System.out.println("sorted 1..15 -> height " + h(root) + ", root " + root.key);   // 4, 8
+    for (int k : keys) root = insert(root, k);
+    int leftKey = root.left != null ? root.left.key : -1;
+    int rightKey = root.right != null ? root.right.key : -1;
+    System.out.println(root.key + " " + leftKey + " " + rightKey);
   }
 }
 ```
+
+```testcases
+{
+  "args": [
+    { "id": "keys", "label": "keys to insert", "type": "array", "placeholder": "[30, 10, 20]" }
+  ],
+  "cases": [
+    { "args": { "keys": "[30, 10, 20]" }, "expected": "20 10 30" },
+    { "args": { "keys": "[1, 2, 3]" },    "expected": "2 1 3" },
+    { "args": { "keys": "[3, 2, 1]" },    "expected": "2 1 3" },
+    { "args": { "keys": "[10, 20, 30, 40, 50, 25]" }, "expected": "30 20 40" }
+  ]
+}
+```
+
+`[30, 10, 20]` exercises the LR double rotation — after inserting all three, `20` rises to the root with `10` left and `30` right. `[1,2,3]` exercises RR (root `2`); `[3,2,1]` exercises LL (root `2`); `[10,20,30,40,50,25]` mixes RR then RL (root `30`).
 
 Then climb the ladder: verify the invariant recursively (return `(height, isAvl)`); trace the rotations for `[10,20,30,40,50,25]` by hand (RR, then RL); build an AVL from a sorted array in `O(n)` (recursive middle-as-root, no rotations); augment nodes with a `size` field for `kthSmallest` in `O(log n)`; implement `delete` and confirm every intermediate state stays AVL.
 

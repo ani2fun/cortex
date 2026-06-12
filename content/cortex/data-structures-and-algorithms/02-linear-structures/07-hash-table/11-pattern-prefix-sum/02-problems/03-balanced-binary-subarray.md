@@ -4,6 +4,8 @@ summary: "Given a binary array arr (only 0s and 1s), return the length of the lo
 prereqs:
   - 11-pattern-prefix-sum/01-pattern
 difficulty: medium
+kind: problem
+topics: [prefix-sum, hash-table]
 ---
 
 # Balanced binary subarray
@@ -53,134 +55,138 @@ Output: 2
 Explanation: one 0 and one 1 — the whole array is balanced → length 2.
 ```
 
-<details>
-<summary><h2>Approach</h2></summary>
+## Constraints
 
+- `1 ≤ arr.length ≤ 10^5`
+- `arr[i]` is `0` or `1`
 
-The encoding trick: **0 → −1, 1 → +1**. Now "equal 0s and 1s" becomes "subarray sums to 0", which becomes "two prefix sums are equal". Walk the array maintaining `prefixSum`; for each new value, check if it has been seen before. If yes, the subarray between the first occurrence and now has sum 0 → equal counts. Track the max length.
-
-The `prefixSumIndex[0] = -1` base case handles subarrays starting at index 0.
-
-</details>
-<details>
-<summary><h2>Solution</h2></summary>
-
-
-
-```python run viz=array viz-root=arr
-from typing import List
+```python run
+import ast
 
 class Solution:
-    def balanced_binary_subarray(self, arr: List[int]) -> int:
+    def balanced_binary_subarray(self, arr):
+        # Your code goes here — re-encode 0 → -1, 1 → +1, then find the
+        # longest subarray with prefix sum 0 using a hash map of first occurrences.
+        return 0
 
-        # Dictionary to store the first occurrence of each prefix sum
+arr = ast.literal_eval(input())
+print(Solution().balanced_binary_subarray(arr))
+```
+
+```java run
+import java.util.*;
+
+public class Main {
+  static class Solution {
+    public int balancedBinarySubarray(int[] arr) {
+      // Your code goes here — re-encode 0 → -1, 1 → +1, then find the
+      // longest subarray with prefix sum 0 using a map of first occurrences.
+      return 0;
+    }
+  }
+
+  static int[] parseIntArray(String s) {
+    s = s.trim().replaceAll("[\\[\\]\\s]", "");
+    if (s.isEmpty()) return new int[0];
+    String[] t = s.split(",");
+    int[] a = new int[t.length];
+    for (int i = 0; i < t.length; i++) a[i] = Integer.parseInt(t[i].trim());
+    return a;
+  }
+
+  public static void main(String[] args) {
+    int[] arr = parseIntArray(new Scanner(System.in).nextLine());
+    System.out.println(new Solution().balancedBinarySubarray(arr));
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[1, 0, 1, 1, 1, 0, 0]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[1, 0, 1, 1, 1, 0, 0]" }, "expected": "6" },
+    { "args": { "arr": "[0, 0, 1, 1, 0]" },       "expected": "4" },
+    { "args": { "arr": "[1, 1, 1, 1]" },           "expected": "0" },
+    { "args": { "arr": "[0, 1]" },                 "expected": "2" },
+    { "args": { "arr": "[1, 0]" },                 "expected": "2" },
+    { "args": { "arr": "[0, 0, 1, 1]" },           "expected": "4" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Re-encode `0 → −1`, `1 → +1`. Now "equal 0s and 1s" becomes "subarray sums to 0" — two equal prefix sums. Keep a map `prefix_sum → first index seen`, seeded with `{0: -1}`. When `prefix_sum` recurs at index `i`, the slice `arr[j+1..i]` is balanced; update `max_length = max(max_length, i − j)`. `O(N)` time, `O(N)` space. The `{0: -1}` seed catches slices anchored at index 0.
+
+```python solution time=O(n) space=O(n)
+import ast
+
+class Solution:
+    def balanced_binary_subarray(self, arr):
         prefix_sum_index = {}
-
-        # To store the maximum length of the subarray
         max_length = 0
-
-        # Initialize the prefix sum
         prefix_sum = 0
-
-        # Add a base case for prefix_sum = 0
         prefix_sum_index[0] = -1
 
         for i in range(len(arr)):
-
-            # Treat 0 as -1 for the prefix sum calculation
             prefix_sum += -1 if arr[i] == 0 else 1
-
-            # If the prefix sum has been seen before
             if prefix_sum in prefix_sum_index:
-
-                # Calculate the length of the subarray
                 length = i - prefix_sum_index[prefix_sum]
                 max_length = max(max_length, length)
-
-            # Otherwise, store the first occurrence of this prefix
-            # sum
             else:
                 prefix_sum_index[prefix_sum] = i
 
         return max_length
 
-
-# Examples from the problem statement
-print(Solution().balanced_binary_subarray([1, 0, 1, 1, 1, 0, 0]))  # 6
-print(Solution().balanced_binary_subarray([0, 0, 1, 1, 0]))        # 4
-print(Solution().balanced_binary_subarray([1, 1, 1, 1]))            # 0
-
-# Edge cases
-print(Solution().balanced_binary_subarray([]))                       # 0
-print(Solution().balanced_binary_subarray([0]))                      # 0
-print(Solution().balanced_binary_subarray([0, 1]))                   # 2
-print(Solution().balanced_binary_subarray([0, 0, 1, 1]))             # 4
-print(Solution().balanced_binary_subarray([1, 0]))                   # 2
+arr = ast.literal_eval(input())
+print(Solution().balanced_binary_subarray(arr))
 ```
 
-```java run viz=array viz-root=arr
+```java solution
 import java.util.*;
 
 public class Main {
-    static class Solution {
-        public int balancedBinarySubarray(int[] arr) {
+  static class Solution {
+    public int balancedBinarySubarray(int[] arr) {
+      Map<Integer, Integer> psIdx = new HashMap<>();
+      int maxLen = 0, ps = 0;
+      psIdx.put(0, -1);
 
-            // Map to store the first occurrence of each prefix sum
-            Map<Integer, Integer> prefixSumIndex = new HashMap<>();
-
-            // To store the maximum length of the subarray
-            int maxLength = 0;
-
-            // Initialize the prefix sum
-            int prefixSum = 0;
-
-            // Add a base case for prefixSum = 0
-            prefixSumIndex.put(0, -1);
-
-            for (int i = 0; i < arr.length; i++) {
-
-                // Treat 0 as -1 for the prefix sum calculation
-                prefixSum += (arr[i] == 0 ? -1 : 1);
-
-                // If the prefix sum has been seen before
-                if (prefixSumIndex.containsKey(prefixSum)) {
-
-                    // Calculate the length of the subarray
-                    int length = i - prefixSumIndex.get(prefixSum);
-                    maxLength = Math.max(maxLength, length);
-                }
-
-                // Otherwise, store the first occurrence of this prefix
-                // sum
-                else {
-                    prefixSumIndex.put(prefixSum, i);
-                }
-            }
-
-            return maxLength;
+      for (int i = 0; i < arr.length; i++) {
+        ps += (arr[i] == 0 ? -1 : 1);
+        if (psIdx.containsKey(ps)) {
+          maxLen = Math.max(maxLen, i - psIdx.get(ps));
+        } else {
+          psIdx.put(ps, i);
         }
+      }
+      return maxLen;
     }
+  }
 
-    public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().balancedBinarySubarray(new int[]{1, 0, 1, 1, 1, 0, 0})); // 6
-        System.out.println(new Solution().balancedBinarySubarray(new int[]{0, 0, 1, 1, 0}));       // 4
-        System.out.println(new Solution().balancedBinarySubarray(new int[]{1, 1, 1, 1}));           // 0
+  static int[] parseIntArray(String s) {
+    s = s.trim().replaceAll("[\\[\\]\\s]", "");
+    if (s.isEmpty()) return new int[0];
+    String[] t = s.split(",");
+    int[] a = new int[t.length];
+    for (int i = 0; i < t.length; i++) a[i] = Integer.parseInt(t[i].trim());
+    return a;
+  }
 
-        // Edge cases
-        System.out.println(new Solution().balancedBinarySubarray(new int[]{}));                     // 0
-        System.out.println(new Solution().balancedBinarySubarray(new int[]{0}));                    // 0
-        System.out.println(new Solution().balancedBinarySubarray(new int[]{0, 1}));                 // 2
-        System.out.println(new Solution().balancedBinarySubarray(new int[]{0, 0, 1, 1}));           // 4
-        System.out.println(new Solution().balancedBinarySubarray(new int[]{1, 0}));                 // 2
-    }
+  public static void main(String[] args) {
+    int[] arr = parseIntArray(new Scanner(System.in).nextLine());
+    System.out.println(new Solution().balancedBinarySubarray(arr));
+  }
 }
 ```
 
 </details>
 <details>
 <summary><h2>Intuition</h2></summary>
-
 
 A balanced subarray holds an equal number of `0`s and `1`s. The brute-force read counts both within every candidate slice: fix a start, extend an end, tally the two counts, record the length whenever they match. Each of the `O(N)` starts runs an `O(N)` extension, so the work is `O(N²)` time — and the inner tally re-counts elements the previous slice already saw.
 
@@ -191,7 +197,6 @@ This is the same-value-search flavour of prefix sums, and the hash map is what m
 </details>
 <details>
 <summary><h2>Applying the Diagnostic Questions</h2></summary>
-
 
 | Check | Answer for Balanced Binary Subarray |
 |---|---|
@@ -204,7 +209,6 @@ This is the same-value-search flavour of prefix sums, and the hash map is what m
 <details>
 <summary><h2>Approach</h2></summary>
 
-
 1. Initialise `prefix_sum = 0`, `max_length = 0`, and a map `prefix_sum_index` seeded with `{0: -1}` so a balanced slice starting at index `0` is caught.
 2. Sweep `i` across the array. Add `+1` to `prefix_sum` for a `1` and `−1` for a `0`.
 3. If `prefix_sum` has appeared before at index `j`, the slice `arr[j+1..i]` nets to zero — compute its length `i − j` and update `max_length` if it is larger.
@@ -214,7 +218,6 @@ This is the same-value-search flavour of prefix sums, and the hash map is what m
 </details>
 <details>
 <summary><h2>Dry Run</h2></summary>
-
 
 Walk Example 1: `arr = [1, 0, 1, 1, 1, 0, 0]`, encoded as `+1, -1, +1, +1, +1, -1, -1`, expected output `6`. The map stores each prefix value's first index; a repeat marks a balanced slice:
 
@@ -238,7 +241,6 @@ The result `6` matches the expected output — prefix value `1` first appears at
 <details>
 <summary><h2>Complexity Analysis</h2></summary>
 
-
 | | Cost | Why |
 |---|---|---|
 | **Time** | **O(N)** | One pass over the array; each step does a constant number of `O(1)` hash-map reads and at most one write. |
@@ -248,10 +250,8 @@ The result `6` matches the expected output — prefix value `1` first appears at
 <details>
 <summary><h2>Edge Cases</h2></summary>
 
-
 | Input | Output | Why |
 |---|---|---|
-| `[]` | `0` | Empty array — the loop never runs, `max_length` stays `0`. |
 | `[0]` | `0` | A single `0` can never balance against a `1`. |
 | `[1, 1, 1, 1]` | `0` | All `1`s — no prefix value ever repeats except via the seeded `0`, which never recurs. |
 | `[0, 1]` | `2` | One `0`, one `1` — the whole array nets to zero → length `2`. |
@@ -261,7 +261,6 @@ The result `6` matches the expected output — prefix value `1` first appears at
 </details>
 <details>
 <summary><h2>Key Takeaway</h2></summary>
-
 
 Re-encoding `0 → −1` converts "equal counts" into "two prefix sums are equal", so a hash map of first occurrences finds the longest balanced subarray in one `O(N)` pass — and the `map[0] = -1` base case is what catches slices anchored at index `0`.
 

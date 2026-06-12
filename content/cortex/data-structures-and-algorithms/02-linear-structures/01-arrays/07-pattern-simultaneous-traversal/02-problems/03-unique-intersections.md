@@ -4,6 +4,8 @@ summary: "Sort both arrays then walk in lock-step — record a value only the fi
 prereqs:
   - 07-pattern-simultaneous-traversal/01-pattern
 difficulty: medium
+kind: problem
+topics: [two-pointers, arrays]
 ---
 
 # Unique Intersections
@@ -43,6 +45,87 @@ Explanation: No value appears in both arrays.
 Input:  arr1 = [2, 2, 2],  arr2 = [2, 2]
 Output: [2]
 Explanation: 2 is common, but unique intersections means it appears once.
+```
+
+```quiz
+{
+  "prompt": "Now your turn!",
+  "input": "arr1 = [1, 2, 2, 3, 4], arr2 = [2, 2, 3, 5]",
+  "options": ["[2, 3]", "[2, 2, 3]", "[2, 3, 5]", "[2]"],
+  "answer": "[2, 3]"
+}
+```
+
+## Constraints
+
+- `0 ≤ arr1.length, arr2.length ≤ 10^4`
+- `-10^9 ≤ arr1[i], arr2[i] ≤ 10^9`
+- Each value in the result appears once, in non-decreasing order
+
+```python run viz=array viz-root=result
+import ast
+from typing import List
+
+class Solution:
+    def unique_intersections(
+        self, arr_1: List[int], arr_2: List[int]
+    ) -> List[int]:
+        # Your code goes here — sort both, walk in lock-step; on a match
+        # record the value only if it differs from the last recorded one.
+        return []
+
+
+arr1 = ast.literal_eval(input())     # the test case's arr1
+arr2 = ast.literal_eval(input())     # the test case's arr2
+print(Solution().unique_intersections(arr1, arr2))
+```
+
+```java run viz=array viz-root=result
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public List<Integer> uniqueIntersections(int[] arr1, int[] arr2) {
+            // Your code goes here — sort both, walk in lock-step; on a match
+            // record the value only if it differs from the last recorded one.
+            return new ArrayList<>();
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr1 = parseIntArray(sc.nextLine());   // the test case's arr1
+        int[] arr2 = parseIntArray(sc.nextLine());   // the test case's arr2
+        System.out.println(new Solution().uniqueIntersections(arr1, arr2));
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's array
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr1", "label": "arr1", "type": "int[]", "placeholder": "[1, 2, 2, 3, 4]" },
+    { "id": "arr2", "label": "arr2", "type": "int[]", "placeholder": "[2, 2, 3, 5]" }
+  ],
+  "cases": [
+    { "args": { "arr1": "[1, 2, 2, 3, 4]", "arr2": "[2, 2, 3, 5]" }, "expected": "[2, 3]" },
+    { "args": { "arr1": "[4, 9, 5]", "arr2": "[9, 4, 9, 8, 4]" }, "expected": "[4, 9]" },
+    { "args": { "arr1": "[1, 3, 5]", "arr2": "[2, 4, 6]" }, "expected": "[]" },
+    { "args": { "arr1": "[]", "arr2": "[1, 2]" }, "expected": "[]" },
+    { "args": { "arr1": "[2, 2, 2]", "arr2": "[2, 2]" }, "expected": "[2]" },
+    { "args": { "arr1": "[1, 2, 3, 4, 5]", "arr2": "[1, 3, 5, 7]" }, "expected": "[1, 3, 5]" }
+  ]
+}
 ```
 
 <details>
@@ -159,7 +242,8 @@ The brute force rescans `arr2` for every element of `arr1` — `O(N × M)` time,
 
 ### The Solution
 
-```python run viz=array viz-root=result
+```python solution time=O(n log n + m log m) space=O(k)
+import ast
 from typing import List
 
 class Solution:
@@ -198,20 +282,12 @@ class Solution:
         return result
 
 
-# Examples from the problem statement
-print(Solution().unique_intersections([1, 2, 2, 1], [2, 2]))              # [2]
-print(Solution().unique_intersections([4, 9, 5], [9, 4, 9, 8, 4]))        # [4, 9]
-print(Solution().unique_intersections([4, 9, 5], [1, 2]))                  # []
-
-# Edge cases
-print(Solution().unique_intersections([], [1, 2]))                         # []
-print(Solution().unique_intersections([1], [1]))                           # [1] — single element match
-print(Solution().unique_intersections([1], [2]))                           # [] — single element miss
-print(Solution().unique_intersections([1, 1, 1], [1, 1, 1]))              # [1] — all duplicates
-print(Solution().unique_intersections([1, 2, 3], [3, 4, 5]))              # [3] — one common element
+arr1 = ast.literal_eval(input())     # the test case's arr1
+arr2 = ast.literal_eval(input())     # the test case's arr2
+print(Solution().unique_intersections(arr1, arr2))
 ```
 
-```java run viz=array viz-root=result
+```java solution
 import java.util.*;
 
 public class Main {
@@ -259,17 +335,20 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().uniqueIntersections(new int[]{1,2,2,1}, new int[]{2,2}));          // [2]
-        System.out.println(new Solution().uniqueIntersections(new int[]{4,9,5}, new int[]{9,4,9,8,4}));      // [4, 9]
-        System.out.println(new Solution().uniqueIntersections(new int[]{4,9,5}, new int[]{1,2}));             // []
+        Scanner sc = new Scanner(System.in);
+        int[] arr1 = parseIntArray(sc.nextLine());   // the test case's arr1
+        int[] arr2 = parseIntArray(sc.nextLine());   // the test case's arr2
+        System.out.println(new Solution().uniqueIntersections(arr1, arr2));
+    }
 
-        // Edge cases
-        System.out.println(new Solution().uniqueIntersections(new int[]{}, new int[]{1,2}));                  // []
-        System.out.println(new Solution().uniqueIntersections(new int[]{1}, new int[]{1}));                   // [1] — single element match
-        System.out.println(new Solution().uniqueIntersections(new int[]{1}, new int[]{2}));                   // [] — single element miss
-        System.out.println(new Solution().uniqueIntersections(new int[]{1,1,1}, new int[]{1,1,1}));           // [1] — all duplicates
-        System.out.println(new Solution().uniqueIntersections(new int[]{1,2,3}, new int[]{3,4,5}));           // [3] — one common element
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's array
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

@@ -4,6 +4,8 @@ summary: "Sort both arrays then walk in lock-step — record every matching pair
 prereqs:
   - 07-pattern-simultaneous-traversal/01-pattern
 difficulty: medium
+kind: problem
+topics: [two-pointers, arrays]
 ---
 
 # Repeated Intersections
@@ -43,6 +45,87 @@ Explanation: 2 appears 3 times in arr1, 2 times in arr2 → min(3,2)=2 appearanc
 Input:  arr1 = [1, 3, 5],  arr2 = [2, 4, 6]
 Output: []
 Explanation: No common values exist.
+```
+
+```quiz
+{
+  "prompt": "Now your turn!",
+  "input": "arr1 = [1, 2, 2, 3], arr2 = [2, 2, 3, 3]",
+  "options": ["[2, 2, 3]", "[2, 3]", "[2, 2, 3, 3]", "[2, 2]"],
+  "answer": "[2, 2, 3]"
+}
+```
+
+## Constraints
+
+- `0 ≤ arr1.length, arr2.length ≤ 10^4`
+- `-10^9 ≤ arr1[i], arr2[i] ≤ 10^9`
+- A value shared `p` times in `arr1` and `q` times in `arr2` appears `min(p, q)` times, in non-decreasing order
+
+```python run viz=array viz-root=result
+import ast
+from typing import List
+
+class Solution:
+    def repeated_intersections(
+        self, arr_1: List[int], arr_2: List[int]
+    ) -> List[int]:
+        # Your code goes here — sort both, walk in lock-step; on a match
+        # record the value unconditionally and advance both pointers.
+        return []
+
+
+arr1 = ast.literal_eval(input())     # the test case's arr1
+arr2 = ast.literal_eval(input())     # the test case's arr2
+print(Solution().repeated_intersections(arr1, arr2))
+```
+
+```java run viz=array viz-root=result
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public List<Integer> repeatedIntersections(int[] arr1, int[] arr2) {
+            // Your code goes here — sort both, walk in lock-step; on a match
+            // record the value unconditionally and advance both pointers.
+            return new ArrayList<>();
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr1 = parseIntArray(sc.nextLine());   // the test case's arr1
+        int[] arr2 = parseIntArray(sc.nextLine());   // the test case's arr2
+        System.out.println(new Solution().repeatedIntersections(arr1, arr2));
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's array
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr1", "label": "arr1", "type": "int[]", "placeholder": "[1, 2, 2, 3]" },
+    { "id": "arr2", "label": "arr2", "type": "int[]", "placeholder": "[2, 2, 3, 3]" }
+  ],
+  "cases": [
+    { "args": { "arr1": "[1, 2, 2, 3]", "arr2": "[2, 2, 3, 3]" }, "expected": "[2, 2, 3]" },
+    { "args": { "arr1": "[2, 2, 2]", "arr2": "[2, 2]" }, "expected": "[2, 2]" },
+    { "args": { "arr1": "[1, 3, 5]", "arr2": "[2, 4, 6]" }, "expected": "[]" },
+    { "args": { "arr1": "[]", "arr2": "[1, 2]" }, "expected": "[]" },
+    { "args": { "arr1": "[4, 9, 5]", "arr2": "[9, 4, 9, 8, 4]" }, "expected": "[4, 9]" },
+    { "args": { "arr1": "[1, 2, 3]", "arr2": "[1, 2, 3]" }, "expected": "[1, 2, 3]" }
+  ]
+}
 ```
 
 <details>
@@ -117,7 +200,8 @@ Count occurrences of every value in `arr1` into a hash map, then count occurrenc
 
 ### The Solution
 
-```python run viz=array viz-root=result
+```python solution time=O(n log n + m log m) space=O(k)
+import ast
 from typing import List
 
 class Solution:
@@ -150,20 +234,12 @@ class Solution:
         return result
 
 
-# Examples from the problem statement
-print(Solution().repeated_intersections([1, 2, 2, 1], [2, 2]))            # [2, 2]
-print(Solution().repeated_intersections([4, 9, 5], [9, 4, 9, 8, 4]))      # [4, 9]
-print(Solution().repeated_intersections([4, 9, 5], [1, 2]))                # []
-
-# Edge cases
-print(Solution().repeated_intersections([], [1, 2]))                       # []
-print(Solution().repeated_intersections([1], [1]))                         # [1] — single element match
-print(Solution().repeated_intersections([1], [2]))                         # [] — single element miss
-print(Solution().repeated_intersections([1, 2, 2, 2], [2, 2]))            # [2, 2] — count limited by shorter
-print(Solution().repeated_intersections([1, 2, 3], [1, 2, 3]))            # [1, 2, 3] — identical arrays
+arr1 = ast.literal_eval(input())     # the test case's arr1
+arr2 = ast.literal_eval(input())     # the test case's arr2
+print(Solution().repeated_intersections(arr1, arr2))
 ```
 
-```java run viz=array viz-root=result
+```java solution
 import java.util.*;
 
 public class Main {
@@ -201,17 +277,20 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().repeatedIntersections(new int[]{1,2,2,1}, new int[]{2,2}));        // [2, 2]
-        System.out.println(new Solution().repeatedIntersections(new int[]{4,9,5}, new int[]{9,4,9,8,4}));    // [4, 9]
-        System.out.println(new Solution().repeatedIntersections(new int[]{4,9,5}, new int[]{1,2}));           // []
+        Scanner sc = new Scanner(System.in);
+        int[] arr1 = parseIntArray(sc.nextLine());   // the test case's arr1
+        int[] arr2 = parseIntArray(sc.nextLine());   // the test case's arr2
+        System.out.println(new Solution().repeatedIntersections(arr1, arr2));
+    }
 
-        // Edge cases
-        System.out.println(new Solution().repeatedIntersections(new int[]{}, new int[]{1,2}));                // []
-        System.out.println(new Solution().repeatedIntersections(new int[]{1}, new int[]{1}));                 // [1] — single element match
-        System.out.println(new Solution().repeatedIntersections(new int[]{1}, new int[]{2}));                 // [] — single element miss
-        System.out.println(new Solution().repeatedIntersections(new int[]{1,2,2,2}, new int[]{2,2}));         // [2, 2] — count limited by shorter
-        System.out.println(new Solution().repeatedIntersections(new int[]{1,2,3}, new int[]{1,2,3}));         // [1, 2, 3] — identical arrays
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's array
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

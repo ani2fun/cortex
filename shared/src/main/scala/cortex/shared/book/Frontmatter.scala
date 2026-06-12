@@ -30,7 +30,10 @@ object Frontmatter:
           frontmatter = ChapterFrontmatter(
             title = fields.getOrElse("title", fallbackTitle),
             summary = fields.get("summary"),
-            essential = fields.get("essential").flatMap(toBooleanOpt)
+            essential = fields.get("essential").flatMap(toBooleanOpt),
+            kind = fields.get("kind"),
+            difficulty = fields.get("difficulty"),
+            topics = fields.get("topics").map(parseInlineList).filter(_.nonEmpty)
           ),
           body = body
         )
@@ -89,6 +92,15 @@ object Frontmatter:
       val rawValue = line.substring(idx + 1).trim
       val value    = stripQuotes(rawValue)
       if value.nonEmpty then Some(key -> value) else None
+
+  /**
+   * Flow-style YAML list: `[a, b, "c d"]` → `Seq("a", "b", "c d")`. The line-based parser never sees
+   * block-style lists (their `- item` lines have no colon), so flow style is the only supported shape —
+   * documented on the `topics` schema in `openapi.yaml`.
+   */
+  private def parseInlineList(raw: String): Seq[String] =
+    val inner = raw.trim.stripPrefix("[").stripSuffix("]")
+    inner.split(",").toSeq.map(s => stripQuotes(s.trim)).filter(_.nonEmpty)
 
   private def stripQuotes(s: String): String =
     if (s.startsWith("\"") && s.endsWith("\"")) || (s.startsWith("'") && s.endsWith("'")) then

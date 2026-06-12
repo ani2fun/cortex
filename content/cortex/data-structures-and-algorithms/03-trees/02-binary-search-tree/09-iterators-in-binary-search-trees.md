@@ -18,16 +18,31 @@ The naive iterator flattens the whole tree into a sorted list up front — `O(n)
 Iterate the BST and pull keys one at a time — they come out sorted. Run it.
 
 ```python run viz=binary-tree viz-root=root
-class TreeNode:
-    def __init__(self, val):
-        self.val = val
-        self.left = None
-        self.right = None
+import json
+from collections import deque
 
-def insert(root, val):
-    if root is None: return TreeNode(val)
-    if val < root.val: root.left = insert(root.left, val)
-    elif val > root.val: root.right = insert(root.right, val)
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
     return root
 
 class BSTIterator:
@@ -48,15 +63,85 @@ class BSTIterator:
         self._push_left(node.right)        # then descend its right subtree's left spine
         return node.val
 
-root = None
-for v in [5, 3, 8, 1, 4, 7, 9]:
-    root = insert(root, v)
-
+root = build_tree(json.loads(input()))
 it = BSTIterator(root)
 out = []
 while it.has_next():
     out.append(it.next())
-print(out)                                 # [1, 3, 4, 5, 7, 8, 9] — sorted, on demand
+print(out)                                 # sorted keys, on demand
+```
+
+```java run viz=binary-tree viz-root=root
+import java.util.*;
+
+public class Main {
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
+  }
+
+  static class BSTIterator {
+    Deque<TreeNode> stack = new ArrayDeque<>();
+    BSTIterator(TreeNode root) { pushLeft(root); }
+    void pushLeft(TreeNode n) { while (n != null) { stack.push(n); n = n.left; } }
+    boolean hasNext() { return !stack.isEmpty(); }
+    int next() { TreeNode n = stack.pop(); pushLeft(n.right); return n.val; }
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+    BSTIterator it = new BSTIterator(root);
+    List<Integer> out = new ArrayList<>();
+    while (it.hasNext()) out.add(it.next());
+    System.out.println(out);
+  }
+
+  static TreeNode buildTree(Integer[] values) {
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
+    }
+    return root;
+  }
+
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "BST (level-order)", "type": "tree", "placeholder": "[5, 3, 8, 1, 4, 7, 9]" }
+  ],
+  "cases": [
+    { "args": { "root": "[5, 3, 8, 1, 4, 7, 9]" }, "expected": "[1, 3, 4, 5, 7, 8, 9]" },
+    { "args": { "root": "[4, 2, 6, 1, 3, 5, 7]" }, "expected": "[1, 2, 3, 4, 5, 6, 7]" },
+    { "args": { "root": "[5]" }, "expected": "[5]" },
+    { "args": { "root": "[3, 1, 4, null, 2]" }, "expected": "[1, 2, 3, 4]" },
+    { "args": { "root": "[]" }, "expected": "[]" }
+  ]
+}
 ```
 
 ## How It Works
@@ -98,19 +183,34 @@ Because the cost is bounded *across the whole sequence*, not per call. Every nod
 
 ## Your Turn
 
-The reusable BST iterator:
+The reusable BST iterator — runs `k` steps then reports `has_next`:
 
 ```python run viz=binary-tree viz-root=root
-class TreeNode:
-    def __init__(self, val):
-        self.val = val
-        self.left = None
-        self.right = None
+import json
+from collections import deque
 
-def insert(root, val):
-    if root is None: return TreeNode(val)
-    if val < root.val: root.left = insert(root.left, val)
-    elif val > root.val: root.right = insert(root.right, val)
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
     return root
 
 class BSTIterator:
@@ -128,11 +228,12 @@ class BSTIterator:
         self._push_left(node.right)
         return node.val
 
-root = None
-for v in [5, 3, 8, 1, 4, 7, 9]:
-    root = insert(root, v)
+root = build_tree(json.loads(input()))
+k = int(input())
 it = BSTIterator(root)
-print([it.next() for _ in range(3)], it.has_next())   # [1, 3, 4] True
+first_k = [it.next() for _ in range(k)]
+print(first_k)
+print("true" if it.has_next() else "false")
 ```
 
 ```java run viz=binary-tree viz-root=root
@@ -140,12 +241,7 @@ import java.util.*;
 
 public class Main {
   static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } }
-  static TreeNode insert(TreeNode r, int v) {
-    if (r == null) return new TreeNode(v);
-    if (v < r.val) r.left = insert(r.left, v);
-    else if (v > r.val) r.right = insert(r.right, v);
-    return r;
-  }
+
   static class BSTIterator {
     Deque<TreeNode> stack = new ArrayDeque<>();
     BSTIterator(TreeNode root) { pushLeft(root); }
@@ -153,14 +249,63 @@ public class Main {
     boolean hasNext() { return !stack.isEmpty(); }
     int next() { TreeNode n = stack.pop(); pushLeft(n.right); return n.val; }
   }
+
   public static void main(String[] args) {
-    TreeNode root = null;
-    for (int v : new int[]{5, 3, 8, 1, 4, 7, 9}) root = insert(root, v);
+    Scanner sc = new Scanner(System.in);
+    TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+    int k = Integer.parseInt(sc.nextLine().trim());
     BSTIterator it = new BSTIterator(root);
-    List<Integer> out = new ArrayList<>();
-    while (it.hasNext()) out.add(it.next());
-    System.out.println(out);   // [1, 3, 4, 5, 7, 8, 9]
+    List<Integer> firstK = new ArrayList<>();
+    for (int i = 0; i < k; i++) firstK.add(it.next());
+    System.out.println(firstK);
+    System.out.println(it.hasNext());
   }
+
+  static TreeNode buildTree(Integer[] values) {
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
+    }
+    return root;
+  }
+
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "BST (level-order)", "type": "tree", "placeholder": "[5, 3, 8, 1, 4, 7, 9]" },
+    { "id": "k", "label": "k (steps)", "type": "int", "placeholder": "3" }
+  ],
+  "cases": [
+    { "args": { "root": "[5, 3, 8, 1, 4, 7, 9]", "k": "3" }, "expected": "[1, 3, 4]\ntrue" },
+    { "args": { "root": "[5, 3, 8, 1, 4, 7, 9]", "k": "5" }, "expected": "[1, 3, 4, 5, 7]\ntrue" },
+    { "args": { "root": "[5, 3, 8, 1, 4, 7, 9]", "k": "7" }, "expected": "[1, 3, 4, 5, 7, 8, 9]\nfalse" },
+    { "args": { "root": "[4, 2, 6, 1, 3, 5, 7]", "k": "4" }, "expected": "[1, 2, 3, 4]\ntrue" },
+    { "args": { "root": "[5]", "k": "1" }, "expected": "[5]\nfalse" }
+  ]
 }
 ```
 

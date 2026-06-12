@@ -4,8 +4,8 @@
 
 ## Chapters
 
-- [LSM trees vs B-trees](/cortex/system-design/storage-and-search/lsm-trees-vs-btrees)
-- [Probabilistic data structures](/cortex/system-design/storage-and-search/probabilistic-data-structures)
-- [Time-series databases](/cortex/system-design/storage-and-search/time-series-databases)
-- [Search systems](/cortex/system-design/storage-and-search/search-systems)
-- [Object storage and blob stores](/cortex/system-design/storage-and-search/object-storage)
+- [22. LSM-trees vs B-trees](/cortex/system-design/storage-and-search/lsm-trees-vs-btrees)
+- [23. Probabilistic data structures](/cortex/system-design/storage-and-search/probabilistic-data-structures)
+- [24. Time-series databases](/cortex/system-design/storage-and-search/time-series-databases)
+- [25. Search systems](/cortex/system-design/storage-and-search/search-systems)
+- [26. Object storage](/cortex/system-design/storage-and-search/object-storage)

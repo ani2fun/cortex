@@ -1,9 +1,11 @@
 ---
 title: "Range Leaves"
-summary: "Given the root of a BST and a range [low, high], replace the value of each *non-leaf* in-range node with the count of in-range leaves in its subtree."
+summary: "Given the root of a BST and a range [low, high], replace the value of each non-leaf in-range node with the count of in-range leaves in its subtree."
 prereqs:
   - 13-pattern-range-postorder/01-pattern
 difficulty: medium
+kind: problem
+topics: [range-postorder, binary-search-tree]
 ---
 
 # Range leaves
@@ -14,144 +16,82 @@ Given the **root** of a BST and a range `[low, high]`, replace the value of each
 
 > A *leaf* here is a node whose subtree contains no in-range descendants — typically an actual leaf in the original tree.
 
-### Example 1
+## Examples
 
-> - **Input:** `root = [4, 2, 5, 1, 3, null, 6]`, `low = 2`, `high = 5`
-> - **Output:** `[1, 1, 0, 1, 3, null, 6]`
+**Example 1:**
+```
+Input:  root = [4, 2, 5, 1, 3, null, 6], low = 2, high = 5
+Output: [1, 1, 0, 1, 3, null, 6]
+```
 
-### Example 2
+**Example 2:**
+```
+Input:  root = [5, 1, 8, null, null, 6, 9], low = 6, high = 9
+Output: [5, 1, 2, null, null, 6, 9]
+```
 
-> - **Input:** `root = [5, 1, 8, null, null, 6, 9]`, `low = 6`, `high = 9`
-> - **Output:** `[5, 1, 2, null, null, 6, 9]`
+## Constraints
 
-<details>
-<summary><h2>The Strategy</h2></summary>
-
-
-Same skeleton as range summation, but instead of returning the sum of in-range descendants, return the *count of in-range leaves*. A leaf returns `1`; an internal in-range node returns `leftLeaves + rightLeaves` and overwrites its own value with that count.
-
-</details>
-<details>
-<summary><h2>The Solution</h2></summary>
-
-
+- `0 ≤ number of nodes ≤ 10⁴`
+- `-10⁴ ≤ node.val ≤ 10⁴`
+- `low ≤ high`
+- All node values are unique
 
 ```python run viz=binary-tree viz-root=root
-from typing import Optional
-
+import json
+from collections import deque
 
 class TreeNode:
-    def __init__(self, val=0, left=None, right=None):
+    def __init__(self, val, left=None, right=None):
         self.val = val
         self.left = left
         self.right = right
 
+class Solution:
+    def range_leaves_helper(self, root, low, high):
+        # Your code goes here
+        return 0
 
-def from_level_order(values):
-    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    def range_leaves(self, root, low, high):
+        self.range_leaves_helper(root, low, high)
+        return root
+
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
     if not values:
         return None
     root = TreeNode(values[0])
-    queue = [root]
+    queue = deque([root])
     i = 1
     while queue and i < len(values):
-        node = queue.pop(0)
-        if i < len(values) and values[i] is not None:
-            node.left = TreeNode(values[i])
-            queue.append(node.left)
-        i += 1
-        if i < len(values) and values[i] is not None:
-            node.right = TreeNode(values[i])
-            queue.append(node.right)
-        i += 1
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
     return root
 
-
-def level_order_vals(root):
-    if not root:
-        return []
-    result, queue = [], [root]
+def print_tree(root):                # root → [1, 2, 3, null, 4], trailing nulls trimmed
+    out, queue = [], deque([root])
     while queue:
-        node = queue.pop(0)
-        if node:
-            result.append(node.val)
+        node = queue.popleft()
+        if node is None:
+            out.append(None)
+        else:
+            out.append(node.val)
             queue.append(node.left)
             queue.append(node.right)
-        else:
-            result.append(None)
-    while result and result[-1] is None:
-        result.pop()
-    return result
+    while out and out[-1] is None:
+        out.pop()
+    print(json.dumps(out))
 
-
-class Solution:
-    def range_leaves_helper(
-        self, root: Optional[TreeNode], low: int, high: int
-    ) -> int:
-
-        # Base Case : if root is null return 0
-        if root is None:
-            return 0
-
-        # If the node's value is less than the lower bound,
-        # discard the left subtree and move to the right subtree
-        if root.val < low:
-            return self.range_leaves_helper(root.right, low, high)
-
-        # If the node's value is greater than the upper bound,
-        # discard the right subtree and move to the left subtree
-        if root.val > high:
-            return self.range_leaves_helper(root.left, low, high)
-
-        # If it's a leaf node, return 1
-        if root.left is None and root.right is None:
-
-            # Return 1 since it's a leaf node
-            return 1
-
-        # If the node's value is within the range [low, high],
-        # recursively trim its left and right subtrees
-        left_leaves = self.range_leaves_helper(root.left, low, high)
-        right_leaves = self.range_leaves_helper(root.right, low, high)
-
-        # Update the current node's value with the count of leaves in
-        # its subtrees
-        root.val = left_leaves + right_leaves
-
-        # Return the total count of leaves in the current subtree
-        return root.val
-
-    def range_leaves(
-        self, root: Optional[TreeNode], low: int, high: int
-    ) -> None:
-
-        # Call the helper function to calculate the count of leaves
-        # in the range [low, high] and update the node values
-        self.range_leaves_helper(root, low, high)
-
-
-# Example 1: [4, 2, 5, 1, 3, null, 6], low=2, high=5 → [1, 1, 0, 1, 3, null, 6]
-t1 = from_level_order([4, 2, 5, 1, 3, None, 6])
-Solution().range_leaves(t1, 2, 5)
-print(level_order_vals(t1))   # [1, 1, 0, 1, 3, 6]
-
-# Example 2: [5, 1, 8, null, null, 6, 9], low=6, high=9 → [5, 1, 2, null, null, 6, 9]
-t2 = from_level_order([5, 1, 8, None, None, 6, 9])
-Solution().range_leaves(t2, 6, 9)
-print(level_order_vals(t2))   # [5, 1, 2, 6, 9]
-
-# Edge cases
-Solution().range_leaves(None, 1, 5)   # no-op
-
-# Single node in range (leaf)
-t3 = from_level_order([5])
-Solution().range_leaves(t3, 1, 10)
-print(t3.val)                 # 5  (leaf unchanged)
-
-# Range excludes all nodes
-t4 = from_level_order([4, 2, 5, 1, 3, None, 6])
-Solution().range_leaves(t4, 7, 10)
-print(level_order_vals(t4))   # [4, 2, 5, 1, 3, 6]  (unchanged)
+root = build_tree(json.loads(input()))   # the test case's level-order values
+low = int(input())
+high = int(input())
+print_tree(Solution().range_leaves(root, low, high))
 ```
 
 ```java run viz=binary-tree viz-root=root
@@ -159,120 +99,258 @@ import java.util.*;
 
 public class Main {
     static class TreeNode {
-        int val;
-        TreeNode left;
-        TreeNode right;
-        TreeNode() {}
+        int val; TreeNode left, right;
         TreeNode(int val) { this.val = val; }
-    }
-
-    static TreeNode fromLevelOrder(Integer... values) {
-        if (values.length == 0 || values[0] == null) return null;
-        TreeNode root = new TreeNode(values[0]);
-        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
-        queue.add(root);
-        int i = 1;
-        while (!queue.isEmpty() && i < values.length) {
-            TreeNode node = queue.poll();
-            if (i < values.length && values[i] != null) {
-                node.left = new TreeNode(values[i]);
-                queue.add(node.left);
-            }
-            i++;
-            if (i < values.length && values[i] != null) {
-                node.right = new TreeNode(values[i]);
-                queue.add(node.right);
-            }
-            i++;
-        }
-        return root;
-    }
-
-    static List<Integer> levelOrderVals(TreeNode root) {
-        if (root == null) return List.of();
-        List<Integer> result = new ArrayList<>();
-        java.util.Deque<TreeNode> q = new java.util.ArrayDeque<>();
-        q.add(root);
-        while (!q.isEmpty()) {
-            TreeNode node = q.poll();
-            result.add(node.val);
-            if (node.left != null) q.add(node.left);
-            if (node.right != null) q.add(node.right);
-        }
-        return result;
     }
 
     static class Solution {
         private int rangeLeavesHelper(TreeNode root, int low, int high) {
-
-            // Base Case : if root is null return 0
-            if (root == null) {
-                return 0;
-            }
-
-            // If the node's value is less than the lower bound,
-            // discard the left subtree and move to the right subtree
-            if (root.val < low) {
-                return rangeLeavesHelper(root.right, low, high);
-            }
-
-            // If the node's value is greater than the upper bound,
-            // discard the right subtree and move to the left subtree
-            if (root.val > high) {
-                return rangeLeavesHelper(root.left, low, high);
-            }
-
-            // If it's a leaf node, return 1
-            if (root.left == null && root.right == null) {
-
-                // Return 1 since it's a leaf node
-                return 1;
-            }
-
-            // If the node's value is within the range [low, high],
-            // recursively trim its left and right subtrees
-            int leftLeaves = rangeLeavesHelper(root.left, low, high);
-            int rightLeaves = rangeLeavesHelper(root.right, low, high);
-
-            // Update the current node's value with the count of leaves in
-            // its subtrees
-            root.val = leftLeaves + rightLeaves;
-
-            // Return the total count of leaves in the current subtree
-            return root.val;
+            // Your code goes here
+            return 0;
         }
 
-        public void rangeLeaves(TreeNode root, int low, int high) {
-
-            // Call the helper function to calculate the count of leaves
-            // in the range [low, high] and update the node values
+        TreeNode rangeLeaves(TreeNode root, int low, int high) {
             rangeLeavesHelper(root, low, high);
+            return root;
         }
     }
 
     public static void main(String[] args) {
-        // Example 1
-        TreeNode t1 = fromLevelOrder(4, 2, 5, 1, 3, null, 6);
-        new Solution().rangeLeaves(t1, 2, 5);
-        System.out.println(levelOrderVals(t1));   // [1, 1, 0, 1, 3, 6]
+        Scanner sc = new Scanner(System.in);
+        TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+        int low = Integer.parseInt(sc.nextLine().trim());
+        int high = Integer.parseInt(sc.nextLine().trim());
+        printTree(new Solution().rangeLeaves(root, low, high));
+    }
 
-        // Example 2
-        TreeNode t2 = fromLevelOrder(5, 1, 8, null, null, 6, 9);
-        new Solution().rangeLeaves(t2, 6, 9);
-        System.out.println(levelOrderVals(t2));   // [5, 1, 2, 6, 9]
+    static TreeNode buildTree(Integer[] values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+            }
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+            }
+        }
+        return root;
+    }
 
-        // Edge cases
-        new Solution().rangeLeaves(null, 1, 5);    // no-op
+    static void printTree(TreeNode root) {
+        List<String> out = new ArrayList<>();
+        Deque<TreeNode> queue = new LinkedList<>();
+        queue.add(root);
+        while (!queue.isEmpty()) {
+            TreeNode node = queue.poll();
+            if (node == null) {
+                out.add("null");
+            } else {
+                out.add(String.valueOf(node.val));
+                queue.add(node.left);
+                queue.add(node.right);
+            }
+        }
+        while (!out.isEmpty() && out.get(out.size() - 1).equals("null"))
+            out.remove(out.size() - 1);
+        System.out.println("[" + String.join(", ", out) + "]");
+    }
 
-        // Single node in range (leaf)
-        TreeNode t3 = fromLevelOrder(5);
-        new Solution().rangeLeaves(t3, 1, 10);
-        System.out.println(t3.val);               // 5
+    static Integer[] parseIntegerArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new Integer[0];
+        String[] parts = inner.split(",");
+        Integer[] out = new Integer[parts.length];
+        for (int i = 0; i < parts.length; i++)
+            out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
 
-        // Range excludes all nodes
-        TreeNode t4 = fromLevelOrder(4, 2, 5, 1, 3, null, 6);
-        new Solution().rangeLeaves(t4, 7, 10);
-        System.out.println(levelOrderVals(t4));   // [4, 2, 5, 1, 3, 6]
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[4, 2, 5, 1, 3, null, 6]" },
+    { "id": "low", "label": "low", "type": "int", "placeholder": "2" },
+    { "id": "high", "label": "high", "type": "int", "placeholder": "5" }
+  ],
+  "cases": [
+    { "args": { "root": "[4, 2, 5, 1, 3, null, 6]", "low": "2", "high": "5" }, "expected": "[1, 1, 0, 1, 3, null, 6]" },
+    { "args": { "root": "[5, 1, 8, null, null, 6, 9]", "low": "6", "high": "9" }, "expected": "[5, 1, 2, null, null, 6, 9]" },
+    { "args": { "root": "[5]", "low": "1", "high": "10" }, "expected": "[5]" },
+    { "args": { "root": "[4, 2, 5, 1, 3, null, 6]", "low": "7", "high": "10" }, "expected": "[4, 2, 5, 1, 3, null, 6]" },
+    { "args": { "root": "[4, 2, 6, 1, 3, 5, 7]", "low": "2", "high": "6" }, "expected": "[2, 1, 1, 1, 3, 5, 7]" }
+  ]
+}
+```
+
+<details>
+<summary><h2>The Strategy</h2></summary>
+
+Same skeleton as range summation, but instead of returning the sum of in-range descendants, return the *count of in-range leaves*. A leaf returns `1`; an internal in-range node returns `leftLeaves + rightLeaves` and overwrites its own value with that count.
+
+</details>
+<details>
+<summary><h2>Solution</h2></summary>
+
+BST pruning handles out-of-range nodes as before. For in-range nodes: if the node is a leaf (no children), it returns `1` — it *is* an in-range leaf. Otherwise, recursively count in-range leaves in both subtrees and overwrite the node's value with the total. The returned count propagates up so each ancestor can include it in its own tally.
+
+```python solution time=O(n) space=O(h)
+import json
+from collections import deque
+
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+class Solution:
+    def range_leaves_helper(self, root, low, high):
+        if root is None:
+            return 0
+        if root.val < low:
+            return self.range_leaves_helper(root.right, low, high)
+        if root.val > high:
+            return self.range_leaves_helper(root.left, low, high)
+        if root.left is None and root.right is None:
+            return 1
+        left_leaves = self.range_leaves_helper(root.left, low, high)
+        right_leaves = self.range_leaves_helper(root.right, low, high)
+        root.val = left_leaves + right_leaves
+        return root.val
+
+    def range_leaves(self, root, low, high):
+        self.range_leaves_helper(root, low, high)
+        return root
+
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
+
+def print_tree(root):                # root → [1, 2, 3, null, 4], trailing nulls trimmed
+    out, queue = [], deque([root])
+    while queue:
+        node = queue.popleft()
+        if node is None:
+            out.append(None)
+        else:
+            out.append(node.val)
+            queue.append(node.left)
+            queue.append(node.right)
+    while out and out[-1] is None:
+        out.pop()
+    print(json.dumps(out))
+
+root = build_tree(json.loads(input()))   # the test case's level-order values
+low = int(input())
+high = int(input())
+print_tree(Solution().range_leaves(root, low, high))
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+    static class TreeNode {
+        int val; TreeNode left, right;
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static class Solution {
+        private int rangeLeavesHelper(TreeNode root, int low, int high) {
+            if (root == null) return 0;
+            if (root.val < low) return rangeLeavesHelper(root.right, low, high);
+            if (root.val > high) return rangeLeavesHelper(root.left, low, high);
+            if (root.left == null && root.right == null) return 1;
+            int leftLeaves = rangeLeavesHelper(root.left, low, high);
+            int rightLeaves = rangeLeavesHelper(root.right, low, high);
+            root.val = leftLeaves + rightLeaves;
+            return root.val;
+        }
+
+        TreeNode rangeLeaves(TreeNode root, int low, int high) {
+            rangeLeavesHelper(root, low, high);
+            return root;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+        int low = Integer.parseInt(sc.nextLine().trim());
+        int high = Integer.parseInt(sc.nextLine().trim());
+        printTree(new Solution().rangeLeaves(root, low, high));
+    }
+
+    static TreeNode buildTree(Integer[] values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+            }
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+            }
+        }
+        return root;
+    }
+
+    static void printTree(TreeNode root) {
+        List<String> out = new ArrayList<>();
+        Deque<TreeNode> queue = new LinkedList<>();
+        queue.add(root);
+        while (!queue.isEmpty()) {
+            TreeNode node = queue.poll();
+            if (node == null) {
+                out.add("null");
+            } else {
+                out.add(String.valueOf(node.val));
+                queue.add(node.left);
+                queue.add(node.right);
+            }
+        }
+        while (!out.isEmpty() && out.get(out.size() - 1).equals("null"))
+            out.remove(out.size() - 1);
+        System.out.println("[" + String.join(", ", out) + "]");
+    }
+
+    static Integer[] parseIntegerArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new Integer[0];
+        String[] parts = inner.split(",");
+        Integer[] out = new Integer[parts.length];
+        for (int i = 0; i < parts.length; i++)
+            out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

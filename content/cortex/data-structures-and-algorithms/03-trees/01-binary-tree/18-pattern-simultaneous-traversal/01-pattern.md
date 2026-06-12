@@ -15,9 +15,12 @@ The cleaner idea: recurse on **pairs**. Instead of `f(node)`, write `f(a, b)` an
 
 ## See It Work
 
-Are two trees **identical** — same shape, same values? Step through both at once; mismatch in structure or value fails fast. Run it.
+Are two trees **identical** — same shape, same values? Step through both at once; mismatch in structure or value fails fast. Pick a case and **Run** it.
 
 ```python run viz=binary-tree viz-root=a
+import json
+from collections import deque
+
 class TreeNode:
     def __init__(self, val, left=None, right=None):
         self.val = val
@@ -33,10 +36,100 @@ def is_same(a, b):
         return False
     return is_same(a.left, b.left) and is_same(a.right, b.right)   # pair SAME sides
 
-a = TreeNode(1, TreeNode(2), TreeNode(3))
-b = TreeNode(1, TreeNode(2), TreeNode(3))
-print(is_same(a, b))     # True
-print(is_same(a, TreeNode(1, TreeNode(2), TreeNode(4))))   # False
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
+
+a = build_tree(json.loads(input()))
+b = build_tree(json.loads(input()))
+print("true" if is_same(a, b) else "false")
+```
+
+```java run viz=binary-tree viz-root=a
+import java.util.*;
+
+public class Main {
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
+  }
+
+  static boolean isSame(TreeNode a, TreeNode b) {
+    if (a == null && b == null) return true;
+    if (a == null || b == null) return false;
+    if (a.val != b.val) return false;
+    return isSame(a.left, b.left) && isSame(a.right, b.right);   // pair SAME sides
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    TreeNode a = buildTree(parseIntegerArray(sc.nextLine()));
+    TreeNode b = buildTree(parseIntegerArray(sc.nextLine()));
+    System.out.println(isSame(a, b));
+  }
+
+  static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
+    }
+    return root;
+  }
+
+  // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "a", "label": "tree a", "type": "tree", "placeholder": "[1, 2, 3]" },
+    { "id": "b", "label": "tree b", "type": "tree", "placeholder": "[1, 2, 3]" }
+  ],
+  "cases": [
+    { "args": { "a": "[1, 2, 3]", "b": "[1, 2, 3]" }, "expected": "true" },
+    { "args": { "a": "[1, 2, 3]", "b": "[1, 2, 4]" }, "expected": "false" },
+    { "args": { "a": "[1, 2, 3, 4, 5]", "b": "[1, 2, 3, 4, 5]" }, "expected": "true" },
+    { "args": { "a": "[1, 2, 3, 4, 5]", "b": "[1, 2, 3, 4]" }, "expected": "false" },
+    { "args": { "a": "[]", "b": "[]" }, "expected": "true" },
+    { "args": { "a": "[1]", "b": "[]" }, "expected": "false" }
+  ]
+}
 ```
 
 ## How It Works
@@ -83,14 +176,135 @@ Because **symmetry is a *mirror*, not a *copy*.** `is_same` pairs same-side chil
 
 ## Your Turn
 
-Mirror **symmetry** (cross-pairing) plus **merge two trees** (same-pairing, summing overlaps — LeetCode 617):
+Write mirror **symmetry** (cross-pairing) — `is_symmetric(root)` returns whether the tree is a mirror of itself. The skeleton is identical to `is_same` except for the pairing direction.
 
 ```python run viz=binary-tree viz-root=root
+import json
 from collections import deque
 
 class TreeNode:
     def __init__(self, val, left=None, right=None):
-        self.val = val; self.left = left; self.right = right
+        self.val = val
+        self.left = left
+        self.right = right
+
+def is_symmetric(root):
+    def mirror(a, b):
+        # Your code goes here — same base cases as is_same, but pair cross-side:
+        # mirror(a.left, b.right) and mirror(a.right, b.left)
+        pass
+    return root is None or mirror(root.left, root.right)
+
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
+
+root = build_tree(json.loads(input()))
+print("true" if is_symmetric(root) else "false")
+```
+
+```java run viz=binary-tree viz-root=root
+import java.util.*;
+
+public class Main {
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
+  }
+
+  static boolean mirror(TreeNode a, TreeNode b) {
+    // Your code goes here — same base cases as isSame, but pair cross-side:
+    // mirror(a.left, b.right) && mirror(a.right, b.left)
+    return false;
+  }
+
+  static boolean isSymmetric(TreeNode root) {
+    return root == null || mirror(root.left, root.right);
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+    System.out.println(isSymmetric(root));
+  }
+
+  static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
+    }
+    return root;
+  }
+
+  // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[1, 2, 2, 3, 4, 4, 3]" }
+  ],
+  "cases": [
+    { "args": { "root": "[1, 2, 2, 3, 4, 4, 3]" }, "expected": "true" },
+    { "args": { "root": "[1, 2, 2, null, 3, null, 3]" }, "expected": "false" },
+    { "args": { "root": "[1, 2, 2, 4, null, null, 4]" }, "expected": "true" },
+    { "args": { "root": "[1, 2, 3]" }, "expected": "false" },
+    { "args": { "root": "[]" }, "expected": "true" },
+    { "args": { "root": "[1]" }, "expected": "true" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+The skeleton is identical to `is_same` — same three base cases, same `val` check — but the recursive call crosses the pairing: `mirror(a.left, b.right)` and `mirror(a.right, b.left)`. A symmetric tree is one where the left subtree is a mirror image of the right subtree, not a copy. That single pairing swap is the whole algorithm.
+
+```python solution time=O(n) space=O(h)
+import json
+from collections import deque
+
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
 
 def is_symmetric(root):
     def mirror(a, b):
@@ -100,33 +314,36 @@ def is_symmetric(root):
         return mirror(a.left, b.right) and mirror(a.right, b.left)   # CROSS pairing
     return root is None or mirror(root.left, root.right)
 
-def merge(a, b):
-    if a is None: return b                  # one missing → keep the other whole
-    if b is None: return a
-    return TreeNode(a.val + b.val, merge(a.left, b.left), merge(a.right, b.right))
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
 
-def to_list(node):                          # level-order, trailing Nones trimmed
-    if node is None: return []
-    out, q = [], deque([node])
-    while q:
-        n = q.popleft()
-        if n is None: out.append(None); continue
-        out.append(n.val); q.append(n.left); q.append(n.right)
-    while out and out[-1] is None: out.pop()
-    return out
-
-sym = TreeNode(1, TreeNode(2, TreeNode(3), TreeNode(4)),
-                  TreeNode(2, TreeNode(4), TreeNode(3)))
-print(is_symmetric(sym))    # True
-
-a = TreeNode(1, TreeNode(3, TreeNode(5)), TreeNode(2))
-b = TreeNode(2, TreeNode(1, None, TreeNode(4)), TreeNode(3, None, TreeNode(7)))
-print(to_list(merge(a, b)))   # [3, 4, 5, 5, 4, None, 7]
+root = build_tree(json.loads(input()))
+print("true" if is_symmetric(root) else "false")
 ```
 
-```java run viz=binary-tree viz-root=root
+```java solution
+import java.util.*;
+
 public class Main {
-  static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } TreeNode(int v, TreeNode l, TreeNode r){ val=v; left=l; right=r; } }
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
+  }
 
   static boolean mirror(TreeNode a, TreeNode b) {
     if (a == null && b == null) return true;
@@ -134,20 +351,55 @@ public class Main {
     if (a.val != b.val) return false;
     return mirror(a.left, b.right) && mirror(a.right, b.left);   // cross pairing
   }
+
   static boolean isSymmetric(TreeNode root) {
     return root == null || mirror(root.left, root.right);
   }
+
   public static void main(String[] args) {
-    TreeNode sym = new TreeNode(1, new TreeNode(2, new TreeNode(3), new TreeNode(4)),
-                                   new TreeNode(2, new TreeNode(4), new TreeNode(3)));
-    System.out.println(isSymmetric(sym));   // true
+    Scanner sc = new Scanner(System.in);
+    TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+    System.out.println(isSymmetric(root));
+  }
+
+  static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
+    }
+    return root;
+  }
+
+  // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
   }
 }
 ```
 
-Drill the family in **Practice** — [Identical Trees](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-simultaneous-traversal/problems/identical-trees), [Symmetry Detection](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-simultaneous-traversal/problems/symmetry-detection), [Subtree Detection](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-simultaneous-traversal/problems/subtree-detection), and [Merge Trees](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-simultaneous-traversal/problems/merge-trees).
+</details>
 
 ## Reflect & Connect
+
+Drill the family in **Practice** — [Identical Trees](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-simultaneous-traversal/problems/identical-trees), [Symmetry Detection](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-simultaneous-traversal/problems/symmetry-detection), [Subtree Detection](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-simultaneous-traversal/problems/subtree-detection), and [Merge Trees](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-simultaneous-traversal/problems/merge-trees).
 
 Simultaneous traversal is single-tree recursion lifted to operate on a *pair*:
 

@@ -5,14 +5,15 @@ import zio.test.*
 
 /**
  * Golden-fixture tests for the pure go-judge wire adapter: the `/run` request shape (sh -c command, copyIn
- * source, stdin/stdout/stderr collectors, per-language limits, compile markers) and the response → `RunResult`
- * mapping (status/exit → statusId, the compile-marker → Compilation Error path, ns→seconds time). Exercised
- * without an HTTP server so wire bugs surface at test time.
+ * source, stdin/stdout/stderr collectors, per-language limits, compile markers) and the response →
+ * `RunResult` mapping (status/exit → statusId, the compile-marker → Compilation Error path, ns→seconds time,
+ * bytes→KB memory). Exercised without an HTTP server so wire bugs surface at test time.
  */
 object GoJudgeWireSpec extends ZIOSpecDefault:
 
   private val python: Language =
     Languages.resolve("python").getOrElse(throw new IllegalStateException("python missing"))
+
   private val java: Language =
     Languages.resolve("java").getOrElse(throw new IllegalStateException("java missing"))
 
@@ -51,10 +52,10 @@ object GoJudgeWireSpec extends ZIOSpecDefault:
         assertTrue(
           body.contains("\"/bin/sh\""),
           body.contains("python3 main.py"),
-          body.contains("\"main.py\""),       // copyIn key
-          body.contains("print('hi')"),       // raw source (not base64)
+          body.contains("\"main.py\""),          // copyIn key
+          body.contains("print('hi')"),          // raw source (not base64)
           body.contains("\"content\":\"data\""), // stdin collector content
-          !body.contains("__cf_crc")           // interpreted → no compile markers
+          !body.contains("__cf_crc")             // interpreted → no compile markers
         )
       },
       test("compiled language: wraps compile+run with markers and normalises the Java entrypoint") {
@@ -66,9 +67,9 @@ object GoJudgeWireSpec extends ZIOSpecDefault:
         assertTrue(
           body.contains("javac Main.java"),
           body.contains("java -cp . Main"),
-          body.contains("__cf_crc"),           // marker in shell + copyOut
-          body.contains("\"Main.java\""),       // copyIn key
-          body.contains("public class Main"),   // entrypoint normalised Solution -> Main
+          body.contains("__cf_crc"),          // marker in shell + copyOut
+          body.contains("\"Main.java\""),     // copyIn key
+          body.contains("public class Main"), // entrypoint normalised Solution -> Main
           !body.contains("class Solution")
         )
       },
@@ -78,16 +79,16 @@ object GoJudgeWireSpec extends ZIOSpecDefault:
       }
     ),
     suite("parseRunResult")(
-      test("Accepted + exit 0 maps to statusId 3 and propagates time/memory") {
+      test("Accepted + exit 0 maps to statusId 3 and normalises time ns→s, memory bytes→KB") {
         val r = GoJudgeWire.parseRunResult(compiled = false)(
-          resp(stdout = "hello\n", time = Some(12_000_000L), memory = Some(2048L))
+          resp(stdout = "hello\n", time = Some(12_000_000L), memory = Some(5_632_000L))
         )
         assertTrue(
           r.stdout == "hello\n",
           r.statusId == 3,
           r.statusDescription == "Accepted",
           r.time == Some("0.012"),
-          r.memory == Some(2048L)
+          r.memory == Some(5500L) // 5 632 000 bytes — go-judge reports bytes, the contract is KB
         )
       },
       test("non-zero exit maps to Runtime Error (NZEC)") {

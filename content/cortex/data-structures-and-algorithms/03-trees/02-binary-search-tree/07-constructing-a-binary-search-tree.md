@@ -15,35 +15,121 @@ The idea is divide-and-conquer. Pick the **middle** element as the root; then ev
 
 ## See It Work
 
-Turn the sorted array `[1..7]` into a balanced BST. Inserting it one-by-one would give a height-6 chain; the middle-as-root build gives height 2. Run it, then **Visualise** the balanced shape.
+Turn a sorted array into a balanced BST. Inserting it one-by-one would give a height-`n` chain; the middle-as-root build gives the optimal height. Run it, then **Visualise** the balanced shape.
 
-> ▶ Run it, then click **Visualise** — `4` (the middle) becomes the root, `[1,2,3]` and `[5,6,7]` recurse into balanced subtrees.
+> ▶ Run it, then click **Visualise** — `4` (the middle of `[1..7]`) becomes the root, `[1,2,3]` and `[5,6,7]` recurse into balanced subtrees.
 
 ```python run viz=binary-tree viz-root=root
+import ast
+import json
+from collections import deque
+
 class TreeNode:
-    def __init__(self, val):
+    def __init__(self, val, left=None, right=None):
         self.val = val
-        self.left = None
-        self.right = None
+        self.left = left
+        self.right = right
 
 def sorted_array_to_bst(arr):
     if not arr:
         return None
     mid = len(arr) // 2                      # middle as root → equal-ish halves
     root = TreeNode(arr[mid])
-    root.left = sorted_array_to_bst(arr[:mid])      # smaller half → left subtree
-    root.right = sorted_array_to_bst(arr[mid + 1:]) # larger half → right subtree
+    root.left  = sorted_array_to_bst(arr[:mid])       # smaller half → left subtree
+    root.right = sorted_array_to_bst(arr[mid + 1:])   # larger half → right subtree
     return root
 
-def height(n):
-    return -1 if n is None else 1 + max(height(n.left), height(n.right))
+def print_tree(root):
+    out, queue = [], deque([root])
+    while queue:
+        node = queue.popleft()
+        if node is None:
+            out.append(None)
+        else:
+            out.append(node.val)
+            queue.append(node.left)
+            queue.append(node.right)
+    while out and out[-1] is None:
+        out.pop()
+    print(json.dumps(out))
 
-def inorder(n):
-    return inorder(n.left) + [n.val] + inorder(n.right) if n else []
-
-root = sorted_array_to_bst([1, 2, 3, 4, 5, 6, 7])
-print(inorder(root), "height", height(root))   # [1..7] sorted, height 2 (not 6!)
+arr  = ast.literal_eval(input())
+root = sorted_array_to_bst(arr)
+print_tree(root)
 ```
+
+```java run viz=binary-tree viz-root=root
+import java.util.*;
+
+public class Main {
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
+  }
+
+  static TreeNode build(int[] a, int lo, int hi) {
+    if (lo > hi) return null;
+    int mid = (lo + hi + 1) / 2;                // right-center midpoint, matches Python len//2
+    TreeNode root = new TreeNode(a[mid]);
+    root.left  = build(a, lo, mid - 1);
+    root.right = build(a, mid + 1, hi);
+    return root;
+  }
+
+  static void printTree(TreeNode root) {
+    List<String> out = new ArrayList<>();
+    Deque<TreeNode> queue = new LinkedList<>();
+    queue.add(root);
+    while (!queue.isEmpty()) {
+      TreeNode node = queue.poll();
+      if (node == null) {
+        out.add("null");
+      } else {
+        out.add(String.valueOf(node.val));
+        queue.add(node.left);
+        queue.add(node.right);
+      }
+    }
+    while (!out.isEmpty() && out.get(out.size() - 1).equals("null"))
+      out.remove(out.size() - 1);
+    System.out.println("[" + String.join(", ", out) + "]");
+  }
+
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());
+    TreeNode root = arr.length == 0 ? null : build(arr, 0, arr.length - 1);
+    printTree(root);
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "sorted array", "type": "int[]", "placeholder": "[1, 2, 3, 4, 5, 6, 7]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[1, 2, 3, 4, 5, 6, 7]" }, "expected": "[4, 2, 6, 1, 3, 5, 7]" },
+    { "args": { "arr": "[1, 2, 3]" },               "expected": "[2, 1, 3]" },
+    { "args": { "arr": "[1, 2, 3, 4, 5]" },         "expected": "[3, 2, 5, 1, null, 4]" },
+    { "args": { "arr": "[-3, -1, 0, 2, 4, 6, 8]" }, "expected": "[2, -1, 6, -3, 0, 4, 8]" },
+    { "args": { "arr": "[1]" },                      "expected": "[1]" },
+    { "args": { "arr": "[]" },                       "expected": "[]" }
+  ]
+}
+```
+
+The output is the balanced BST in level-order-with-nulls — for `[1..7]`, root `4` with perfectly balanced left `[1,2,3]` and right `[5,6,7]` subtrees, height 2 instead of the 6 you'd get from sequential insertion.
 
 ## How It Works
 
@@ -90,55 +176,207 @@ Because of **which element becomes the root, and when the structure is decided**
 
 ## Your Turn
 
-The reusable balanced builder:
+Implement `sorted_array_to_bst`: given a sorted integer array, return the root of a balanced BST. Print the result with `print_tree`.
 
 ```python run viz=binary-tree viz-root=root
+import ast
+import json
+from collections import deque
+
 class TreeNode:
-    def __init__(self, val):
+    def __init__(self, val, left=None, right=None):
         self.val = val
-        self.left = None
-        self.right = None
+        self.left = left
+        self.right = right
+
+def sorted_array_to_bst(arr):
+    # Your code goes here
+    pass
+
+def print_tree(root):
+    out, queue = [], deque([root])
+    while queue:
+        node = queue.popleft()
+        if node is None:
+            out.append(None)
+        else:
+            out.append(node.val)
+            queue.append(node.left)
+            queue.append(node.right)
+    while out and out[-1] is None:
+        out.pop()
+    print(json.dumps(out))
+
+arr  = ast.literal_eval(input())
+root = sorted_array_to_bst(arr)
+print_tree(root)
+```
+
+```java run viz=binary-tree viz-root=root
+import java.util.*;
+
+public class Main {
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
+  }
+
+  static TreeNode build(int[] a, int lo, int hi) {
+    // Your code goes here
+    return null;
+  }
+
+  static void printTree(TreeNode root) {
+    List<String> out = new ArrayList<>();
+    Deque<TreeNode> queue = new LinkedList<>();
+    queue.add(root);
+    while (!queue.isEmpty()) {
+      TreeNode node = queue.poll();
+      if (node == null) {
+        out.add("null");
+      } else {
+        out.add(String.valueOf(node.val));
+        queue.add(node.left);
+        queue.add(node.right);
+      }
+    }
+    while (!out.isEmpty() && out.get(out.size() - 1).equals("null"))
+      out.remove(out.size() - 1);
+    System.out.println("[" + String.join(", ", out) + "]");
+  }
+
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());
+    TreeNode root = arr.length == 0 ? null : build(arr, 0, arr.length - 1);
+    printTree(root);
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "sorted array", "type": "int[]", "placeholder": "[1, 2, 3, 4, 5, 6, 7]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[1, 2, 3, 4, 5, 6, 7]" }, "expected": "[4, 2, 6, 1, 3, 5, 7]" },
+    { "args": { "arr": "[1, 2, 3]" },               "expected": "[2, 1, 3]" },
+    { "args": { "arr": "[1, 2, 3, 4, 5]" },         "expected": "[3, 2, 5, 1, null, 4]" },
+    { "args": { "arr": "[-3, -1, 0, 2, 4, 6, 8]" }, "expected": "[2, -1, 6, -3, 0, 4, 8]" },
+    { "args": { "arr": "[1]" },                      "expected": "[1]" },
+    { "args": { "arr": "[]" },                       "expected": "[]" }
+  ]
+}
+```
+
+<details>
+<summary><strong>Editorial</strong></summary>
+
+```python solution viz=binary-tree viz-root=root
+import ast
+import json
+from collections import deque
+
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
 
 def sorted_array_to_bst(arr):
     if not arr:
         return None
     mid = len(arr) // 2
     root = TreeNode(arr[mid])
-    root.left = sorted_array_to_bst(arr[:mid])
+    root.left  = sorted_array_to_bst(arr[:mid])
     root.right = sorted_array_to_bst(arr[mid + 1:])
     return root
 
-def height(n):
-    return -1 if n is None else 1 + max(height(n.left), height(n.right))
+def print_tree(root):
+    out, queue = [], deque([root])
+    while queue:
+        node = queue.popleft()
+        if node is None:
+            out.append(None)
+        else:
+            out.append(node.val)
+            queue.append(node.left)
+            queue.append(node.right)
+    while out and out[-1] is None:
+        out.pop()
+    print(json.dumps(out))
 
-for n in (7, 15, 31):
-    h = height(sorted_array_to_bst(list(range(n))))
-    print(n, "elements →  height", h)   # 7→2, 15→3, 31→4 (⌊log2 n⌋)
+arr  = ast.literal_eval(input())
+root = sorted_array_to_bst(arr)
+print_tree(root)
 ```
 
-```java run viz=binary-tree viz-root=root
-public class Main {
-  static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } }
+```java solution viz=binary-tree viz-root=root
+import java.util.*;
 
-  static TreeNode build(int[] a, int lo, int hi) {     // index bounds, no slicing
+public class Main {
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
+  }
+
+  static TreeNode build(int[] a, int lo, int hi) {
     if (lo > hi) return null;
-    int mid = lo + (hi - lo) / 2;
+    int mid = (lo + hi + 1) / 2;                // right-center midpoint, matches Python len//2
     TreeNode root = new TreeNode(a[mid]);
-    root.left = build(a, lo, mid - 1);
+    root.left  = build(a, lo, mid - 1);
     root.right = build(a, mid + 1, hi);
     return root;
   }
-  static int height(TreeNode n) { return n == null ? -1 : 1 + Math.max(height(n.left), height(n.right)); }
+
+  static void printTree(TreeNode root) {
+    List<String> out = new ArrayList<>();
+    Deque<TreeNode> queue = new LinkedList<>();
+    queue.add(root);
+    while (!queue.isEmpty()) {
+      TreeNode node = queue.poll();
+      if (node == null) {
+        out.add("null");
+      } else {
+        out.add(String.valueOf(node.val));
+        queue.add(node.left);
+        queue.add(node.right);
+      }
+    }
+    while (!out.isEmpty() && out.get(out.size() - 1).equals("null"))
+      out.remove(out.size() - 1);
+    System.out.println("[" + String.join(", ", out) + "]");
+  }
+
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
 
   public static void main(String[] args) {
-    int[] a = {1, 2, 3, 4, 5, 6, 7};
-    TreeNode root = build(a, 0, a.length - 1);
-    System.out.println("height " + height(root));   // 2
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());
+    TreeNode root = arr.length == 0 ? null : build(arr, 0, arr.length - 1);
+    printTree(root);
   }
 }
 ```
 
-This is a structural lesson — balanced construction is the offline counterpart to the self-balancing trees later in the section.
+</details>
 
 ## Reflect & Connect
 
@@ -192,4 +430,4 @@ Construction is "you have the data — lay it out optimally":
 
 - **CLRS**, *Introduction to Algorithms*, 4th ed., §12 — BST structure; optimal-height balanced trees.
 - **Sedgewick & Wayne**, *Algorithms*, 4th ed., §3.2–3.3 — balanced construction and the online/offline distinction.
-- "Convert sorted array to balanced BST" (middle-as-root) is the standard construction; both runnable blocks are verified by running (`[1..7] ⇒ height 2`; `7/15/31 ⇒ heights 2/3/4 = ⌊log₂ n⌋`).
+- "Convert sorted array to balanced BST" (middle-as-root) is the standard construction; all runnable cases are verified by running (e.g. `[1..7]` → `[4, 2, 6, 1, 3, 5, 7]`; `[]` → `[]`).

@@ -4,6 +4,8 @@ summary: "Given an array of meetings consisting of the start and end times [[s1,
 prereqs:
   - 10-pattern-interval-merging/01-pattern
 difficulty: medium
+kind: problem
+topics: [intervals, arrays]
 ---
 
 # Employee Free Time
@@ -47,6 +49,89 @@ Explanation: There are no time intervals during which all employees are
              simultaneously free.
 ```
 
+```quiz
+{
+  "prompt": "Now your turn!",
+  "input": "meetings = [[1, 2], [5, 6]]",
+  "options": ["[[2, 5]]", "[]", "[[1, 6]]", "[[2, 5], [6, 6]]"],
+  "answer": "[[2, 5]]"
+}
+```
+
+## Constraints
+
+- `1 ≤ meetings.length ≤ 10^4`
+- `meetings[i] = [si, ei]` with `0 ≤ si < ei ≤ 10^6`
+
+```python run viz=grid viz-root=meetings
+import ast
+from typing import List
+
+class Solution:
+    def employee_free_time(self, meetings: List[List[int]]) -> List[List[int]]:
+        # Your code goes here — merge the meetings (sort by start, sweep), then
+        # emit [prev.end, curr.start] for every gap between consecutive blocks.
+        return []
+
+meetings = ast.literal_eval(input())     # the test case's meetings
+print(Solution().employee_free_time(meetings))
+```
+
+```java run viz=grid viz-root=meetings
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int[][] employeeFreeTime(int[][] meetings) {
+            // Your code goes here — merge the meetings (sort by start, sweep), then
+            // emit [prev.end, curr.start] for every gap between consecutive blocks.
+            return new int[0][];
+        }
+    }
+
+    public static void main(String[] args) {
+        int[][] meetings = parseIntMatrix(new Scanner(System.in).nextLine());
+        System.out.println(Arrays.deepToString(new Solution().employeeFreeTime(meetings)));
+    }
+
+    // "[[1, 3], [2, 6]]" → {{1, 3}, {2, 6}} — reads the test case's meetings
+    static int[][] parseIntMatrix(String line) {
+        String s = line.trim();
+        if (s.startsWith("[")) s = s.substring(1);
+        if (s.endsWith("]")) s = s.substring(0, s.length() - 1);
+        s = s.trim();
+        if (s.isEmpty()) return new int[0][];
+        String[] rows = s.split("\\]\\s*,\\s*\\[");
+        int[][] out = new int[rows.length][];
+        for (int i = 0; i < rows.length; i++) {
+            String inner = rows[i].replaceAll("[\\[\\]\\s]", "");
+            if (inner.isEmpty()) { out[i] = new int[0]; continue; }
+            String[] parts = inner.split(",");
+            int[] pair = new int[parts.length];
+            for (int j = 0; j < parts.length; j++) pair[j] = Integer.parseInt(parts[j]);
+            out[i] = pair;
+        }
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "meetings", "label": "meetings", "type": "int[][]", "placeholder": "[[1, 4], [2, 3], [3, 4], [4, 6], [8, 9]]" }
+  ],
+  "cases": [
+    { "args": { "meetings": "[[1, 4], [2, 3], [3, 4], [4, 6], [8, 9]]" }, "expected": "[[6, 8]]" },
+    { "args": { "meetings": "[[1, 2], [4, 6], [5, 7], [9, 10]]" }, "expected": "[[2, 4], [7, 9]]" },
+    { "args": { "meetings": "[[1, 5], [2, 4], [5, 9]]" }, "expected": "[]" },
+    { "args": { "meetings": "[[1, 2], [5, 6]]" }, "expected": "[[2, 5]]" },
+    { "args": { "meetings": "[[1, 2], [4, 5], [7, 8]]" }, "expected": "[[2, 4], [5, 7]]" },
+    { "args": { "meetings": "[[1, 3], [3, 5]]" }, "expected": "[]" }
+  ]
+}
+```
+
 <details>
 <summary><h2>Intuition</h2></summary>
 
@@ -86,7 +171,8 @@ The pattern fits with one extra step: a second pass reads gaps from the merged l
 
 ### The Solution
 
-```python run viz=grid viz-root=meetings
+```python solution time=O(N log N) space=O(N)
+import ast
 from typing import List
 
 class Solution:
@@ -123,20 +209,11 @@ class Solution:
         return free_times
 
 
-# Examples from the problem statement
-print(Solution().employee_free_time([[1, 4], [2, 3], [3, 4], [4, 6], [8, 9]]))   # [[6, 8]]
-print(Solution().employee_free_time([[1, 2], [4, 6], [5, 7], [9, 10]]))           # [[2, 4], [7, 9]]
-print(Solution().employee_free_time([[1, 5], [2, 4], [5, 9]]))                    # []
-
-# Edge cases
-print(Solution().employee_free_time([[1, 2]]))                                     # []   — single meeting, no gaps
-print(Solution().employee_free_time([[1, 2], [5, 6]]))                             # [[2, 5]]  — two meetings with gap
-print(Solution().employee_free_time([[1, 3], [3, 5]]))                             # []   — touching, no gap
-print(Solution().employee_free_time([[1, 2], [4, 5], [7, 8]]))                    # [[2, 4], [5, 7]]  — multiple gaps
-print(Solution().employee_free_time([[1, 10], [2, 5], [6, 8]]))                   # []   — all inside one interval
+meetings = ast.literal_eval(input())     # the test case's meetings
+print(Solution().employee_free_time(meetings))
 ```
 
-```java run viz=grid viz-root=meetings
+```java solution
 import java.util.*;
 
 public class Main {
@@ -185,17 +262,28 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(Arrays.deepToString(new Solution().employeeFreeTime(new int[][]{{1, 4}, {2, 3}, {3, 4}, {4, 6}, {8, 9}})));   // [[6, 8]]
-        System.out.println(Arrays.deepToString(new Solution().employeeFreeTime(new int[][]{{1, 2}, {4, 6}, {5, 7}, {9, 10}})));           // [[2, 4], [7, 9]]
-        System.out.println(Arrays.deepToString(new Solution().employeeFreeTime(new int[][]{{1, 5}, {2, 4}, {5, 9}})));                    // []
+        int[][] meetings = parseIntMatrix(new Scanner(System.in).nextLine());
+        System.out.println(Arrays.deepToString(new Solution().employeeFreeTime(meetings)));
+    }
 
-        // Edge cases
-        System.out.println(Arrays.deepToString(new Solution().employeeFreeTime(new int[][]{{1, 2}})));                                     // []   — single meeting, no gaps
-        System.out.println(Arrays.deepToString(new Solution().employeeFreeTime(new int[][]{{1, 2}, {5, 6}})));                             // [[2, 5]]  — two meetings with gap
-        System.out.println(Arrays.deepToString(new Solution().employeeFreeTime(new int[][]{{1, 3}, {3, 5}})));                             // []   — touching, no gap
-        System.out.println(Arrays.deepToString(new Solution().employeeFreeTime(new int[][]{{1, 2}, {4, 5}, {7, 8}})));                    // [[2, 4], [5, 7]]  — multiple gaps
-        System.out.println(Arrays.deepToString(new Solution().employeeFreeTime(new int[][]{{1, 10}, {2, 5}, {6, 8}})));                   // []   — all inside one interval
+    // "[[1, 3], [2, 6]]" → {{1, 3}, {2, 6}} — reads the test case's meetings
+    static int[][] parseIntMatrix(String line) {
+        String s = line.trim();
+        if (s.startsWith("[")) s = s.substring(1);
+        if (s.endsWith("]")) s = s.substring(0, s.length() - 1);
+        s = s.trim();
+        if (s.isEmpty()) return new int[0][];
+        String[] rows = s.split("\\]\\s*,\\s*\\[");
+        int[][] out = new int[rows.length][];
+        for (int i = 0; i < rows.length; i++) {
+            String inner = rows[i].replaceAll("[\\[\\]\\s]", "");
+            if (inner.isEmpty()) { out[i] = new int[0]; continue; }
+            String[] parts = inner.split(",");
+            int[] pair = new int[parts.length];
+            for (int j = 0; j < parts.length; j++) pair[j] = Integer.parseInt(parts[j]);
+            out[i] = pair;
+        }
+        return out;
     }
 }
 ```

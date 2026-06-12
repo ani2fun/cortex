@@ -15,16 +15,37 @@ Finding it is just a search. Search for the key; since it's not present, the sea
 
 ## See It Work
 
-Insert `6` into an existing BST and confirm it lands as a leaf at the search-failure point. Run it, then **Visualise** — the new node hangs off an existing one.
+Insert a key into an existing BST and confirm it lands as a leaf at the search-failure point. The inorder traversal must still be sorted after the insert.
 
-> ▶ Run it, then click **Visualise** — `6` searches down (5→8→7) and attaches as `7`'s left child; nothing else moves.
+> ▶ Run it, then click **Visualise** — the new node hangs off an existing one; nothing else moves.
 
 ```python run viz=binary-tree viz-root=root
+import json
+from collections import deque
+
 class TreeNode:
-    def __init__(self, val):
+    def __init__(self, val, left=None, right=None):
         self.val = val
-        self.left = None
-        self.right = None
+        self.left = left
+        self.right = right
+
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
 
 def insert(root, val):
     if root is None:
@@ -39,12 +60,98 @@ def insert(root, val):
 def inorder(n):
     return inorder(n.left) + [n.val] + inorder(n.right) if n else []
 
-root = None
-for v in [5, 3, 8, 1, 4, 7, 9]:
-    root = insert(root, v)
-root = insert(root, 6)                   # 6 < 5? no → 6 < 8 → 6 < 7 → empty → leaf
-print(inorder(root))                     # [1, 3, 4, 5, 6, 7, 8, 9] — still sorted
+root = build_tree(json.loads(input()))
+key = int(input())
+root = insert(root, key)
+print(inorder(root))
 ```
+
+```java run viz=binary-tree viz-root=root
+import java.util.*;
+
+public class Main {
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
+  }
+
+  static TreeNode buildTree(Integer[] values) {
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
+    }
+    return root;
+  }
+
+  static TreeNode insert(TreeNode r, int v) {
+    if (r == null) return new TreeNode(v);
+    if (v < r.val) r.left = insert(r.left, v);
+    else if (v > r.val) r.right = insert(r.right, v);
+    return r;
+  }
+
+  static List<Integer> inorder(TreeNode n) {
+    List<Integer> out = new ArrayList<>();
+    inorderHelper(n, out);
+    return out;
+  }
+
+  static void inorderHelper(TreeNode n, List<Integer> out) {
+    if (n == null) return;
+    inorderHelper(n.left, out);
+    out.add(n.val);
+    inorderHelper(n.right, out);
+  }
+
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+    int key = Integer.parseInt(sc.nextLine().trim());
+    root = insert(root, key);
+    System.out.println(inorder(root));
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[5, 3, 8, 1, 4, 7, 9]" },
+    { "id": "key", "label": "key", "type": "int", "placeholder": "6" }
+  ],
+  "cases": [
+    { "args": { "root": "[5, 3, 8, 1, 4, 7, 9]", "key": "6" }, "expected": "[1, 3, 4, 5, 6, 7, 8, 9]" },
+    { "args": { "root": "[5, 3, 8, 1, 4, 7, 9]", "key": "2" }, "expected": "[1, 2, 3, 4, 5, 7, 8, 9]" },
+    { "args": { "root": "[5, 3, 8, 1, 4, 7, 9]", "key": "10" }, "expected": "[1, 3, 4, 5, 7, 8, 9, 10]" },
+    { "args": { "root": "[5]", "key": "3" }, "expected": "[3, 5]" },
+    { "args": { "root": "[]", "key": "1" }, "expected": "[1]" }
+  ]
+}
+```
+
+Both print the inorder traversal after insertion — it must be sorted, confirming the BST invariant is preserved.
 
 ## How It Works
 
@@ -87,14 +194,16 @@ Because each key is placed *relative to the keys already there*, and "always att
 
 ## Your Turn
 
-The reusable insert — note how order changes the shape:
+Insert a list of values one at a time into an empty tree and print the tree's height — watch how order changes the shape.
 
-```python run viz=binary-tree viz-root=root
+```python run viz=binary-tree viz-root=balanced
+import json
+
 class TreeNode:
-    def __init__(self, val):
+    def __init__(self, val, left=None, right=None):
         self.val = val
-        self.left = None
-        self.right = None
+        self.left = left
+        self.right = right
 
 def insert(root, val):
     if root is None:
@@ -106,34 +215,138 @@ def insert(root, val):
 def height(n):
     return -1 if n is None else 1 + max(height(n.left), height(n.right))
 
-balanced = None
-for v in [4, 2, 6, 1, 3, 5, 7]:        # near-balanced insertion order
-    balanced = insert(balanced, v)
-chain = None
-for v in [1, 2, 3, 4, 5, 6, 7]:        # sorted order → degenerate
-    chain = insert(chain, v)
-print(height(balanced), height(chain))   # 2 6  (same 7 keys, very different height)
+vals = json.loads(input())
+root = None
+for v in vals:
+    root = insert(root, v)
+print(height(root))
 ```
 
-```java run viz=binary-tree viz-root=root
+```java run viz=binary-tree viz-root=balanced
+import java.util.*;
+
 public class Main {
-  static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } }
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
+  }
+
   static TreeNode insert(TreeNode r, int v) {
     if (r == null) return new TreeNode(v);
     if (v < r.val) r.left = insert(r.left, v);
     else if (v > r.val) r.right = insert(r.right, v);
     return r;
   }
-  static int height(TreeNode n) { return n == null ? -1 : 1 + Math.max(height(n.left), height(n.right)); }
+
+  static int height(TreeNode n) {
+    return n == null ? -1 : 1 + Math.max(height(n.left), height(n.right));
+  }
+
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i].trim());
+    return out;
+  }
+
   public static void main(String[] args) {
-    TreeNode balanced = null;
-    for (int v : new int[]{4, 2, 6, 1, 3, 5, 7}) balanced = insert(balanced, v);
-    TreeNode chain = null;
-    for (int v : new int[]{1, 2, 3, 4, 5, 6, 7}) chain = insert(chain, v);
-    System.out.println(height(balanced) + " " + height(chain));   // 2 6
+    Scanner sc = new Scanner(System.in);
+    int[] vals = parseIntArray(sc.nextLine());
+    TreeNode root = null;
+    for (int v : vals) root = insert(root, v);
+    System.out.println(height(root));
   }
 }
 ```
+
+```testcases
+{
+  "args": [
+    { "id": "vals", "label": "values to insert", "type": "int[]", "placeholder": "[4, 2, 6, 1, 3, 5, 7]" }
+  ],
+  "cases": [
+    { "args": { "vals": "[4, 2, 6, 1, 3, 5, 7]" }, "expected": "2" },
+    { "args": { "vals": "[1, 2, 3, 4, 5, 6, 7]" }, "expected": "6" },
+    { "args": { "vals": "[5, 3, 8, 1, 4, 7, 9]" }, "expected": "2" },
+    { "args": { "vals": "[7]" }, "expected": "0" },
+    { "args": { "vals": "[3, 1, 2]" }, "expected": "2" }
+  ]
+}
+```
+
+<details>
+<summary><strong>Editorial</strong></summary>
+
+The same 7 keys produce height 2 (balanced order) vs height 6 (sorted order — a chain). Insertion only ever adds at the bottom; the shape is locked in by history.
+
+```python solution
+import json
+
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+def insert(root, val):
+    if root is None:
+        return TreeNode(val)
+    if val < root.val: root.left = insert(root.left, val)
+    elif val > root.val: root.right = insert(root.right, val)
+    return root
+
+def height(n):
+    return -1 if n is None else 1 + max(height(n.left), height(n.right))
+
+vals = json.loads(input())
+root = None
+for v in vals:
+    root = insert(root, v)
+print(height(root))
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
+  }
+
+  static TreeNode insert(TreeNode r, int v) {
+    if (r == null) return new TreeNode(v);
+    if (v < r.val) r.left = insert(r.left, v);
+    else if (v > r.val) r.right = insert(r.right, v);
+    return r;
+  }
+
+  static int height(TreeNode n) {
+    return n == null ? -1 : 1 + Math.max(height(n.left), height(n.right));
+  }
+
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i].trim());
+    return out;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] vals = parseIntArray(sc.nextLine());
+    TreeNode root = null;
+    for (int v : vals) root = insert(root, v);
+    System.out.println(height(root));
+  }
+}
+```
+
+</details>
 
 This is a structural lesson — insertion plus search are the building blocks for construction, deletion, and the BST patterns.
 
@@ -189,4 +402,4 @@ Insertion is "search, then attach a leaf" — simple, with one consequential sid
 
 - **CLRS**, *Introduction to Algorithms*, 4th ed., §12.3 — `TREE-INSERT` and the leaf-attachment property.
 - **Sedgewick & Wayne**, *Algorithms*, 4th ed., §3.2 — BST insertion and the effect of insertion order on shape.
-- The search-and-attach insertion and order-dependent shape are standard; both runnable blocks are verified by running (in-order stays sorted after inserting `6`; balanced vs sorted orders give heights `2` vs `6`).
+- The search-and-attach insertion and order-dependent shape are standard; both runnable blocks are verified by running (inorder stays sorted after inserting `6`; balanced vs sorted orders give heights `2` vs `6`).

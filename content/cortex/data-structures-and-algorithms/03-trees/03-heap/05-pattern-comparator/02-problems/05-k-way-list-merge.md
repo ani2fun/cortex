@@ -1,235 +1,202 @@
 ---
 title: "K-Way List Merge"
-summary: "Given an array of k linked-list head nodes, each list sorted in ascending order, merge all lists into one sorted list and return its head."
+summary: "Given k sorted arrays, merge them into one sorted array using a K-way min-heap that always yields the global minimum. O(n log k) time."
 prereqs:
   - 05-pattern-comparator/01-pattern
 difficulty: hard
+kind: problem
+topics: [comparator, heap]
 ---
 
 # K-way list merge
 
 ## Problem Statement
 
-Given an array of `k` linked-list head nodes, each list sorted in ascending order, merge all lists into one sorted list and return its head.
+Given an array of `k` sorted integer arrays, merge all of them into one sorted array and return it.
 
-### Example 1
+## Examples
 
-> - **Input:** `lists = [[1, 4, 5], [1, 3, 4], [2, 6]]`
-> - **Output:** `[1, 1, 2, 3, 4, 4, 5, 6]`
+**Example 1:**
+```
+Input:  lists = [[1, 4, 5], [1, 3, 4], [2, 6]]
+Output: [1, 1, 2, 3, 4, 4, 5, 6]
+```
 
-### Example 2
+**Example 2:**
+```
+Input:  lists = []
+Output: []
+```
 
-> - **Input:** `lists = []`
-> - **Output:** `[]`
+**Example 3:**
+```
+Input:  lists = [[1, 2, 3]]
+Output: [1, 2, 3]
+```
+
+## Constraints
+
+- `0 ≤ lists.length ≤ 10⁴`
+- `0 ≤ lists[i].length ≤ 500`
+- `-10⁴ ≤ lists[i][j] ≤ 10⁴`
+- Each `lists[i]` is sorted in ascending order
+- The total number of elements across all lists does not exceed 10⁴
+
+```python run
+import ast
+import heapq
+
+class Solution:
+    def k_way_list_merge(self, lists):
+        # Your code goes here — push (value, list_idx, element_idx) for the
+        # first element of each non-empty list. Repeatedly pop the minimum,
+        # append to result, then push the next element from that list.
+        return []
+
+raw = input().strip()
+lists = ast.literal_eval(raw) if raw != "[]" else []
+print(Solution().k_way_list_merge(lists))
+```
+
+```java run
+import java.util.*;
+
+public class Main {
+  static int[][] parseIntMatrix(String line) {
+    String trimmed = line.trim();
+    if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+    String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+    String[] rows = inner.split("\\],\\s*\\[");
+    int[][] mat = new int[rows.length][];
+    for (int r = 0; r < rows.length; r++) {
+      String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+      if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+      String[] parts = row.split(",");
+      mat[r] = new int[parts.length];
+      for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+    }
+    return mat;
+  }
+
+  static class Solution {
+    public List<Integer> kWayListMerge(int[][] lists) {
+      // Your code goes here — push {value, listIdx, elemIdx} for the first
+      // element of each non-empty list. Pop minimum repeatedly, appending to
+      // result and pushing the next element from that list.
+      return new ArrayList<>();
+    }
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[][] lists = parseIntMatrix(sc.nextLine());
+    System.out.println(new Solution().kWayListMerge(lists));
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "lists", "label": "lists", "type": "int[][]", "placeholder": "[[1, 4, 5], [1, 3, 4], [2, 6]]" }
+  ],
+  "cases": [
+    { "args": { "lists": "[[1, 4, 5], [1, 3, 4], [2, 6]]" }, "expected": "[1, 1, 2, 3, 4, 4, 5, 6]" },
+    { "args": { "lists": "[]" }, "expected": "[]" },
+    { "args": { "lists": "[[1, 2, 3]]" }, "expected": "[1, 2, 3]" },
+    { "args": { "lists": "[[1], [2], [3]]" }, "expected": "[1, 2, 3]" },
+    { "args": { "lists": "[[1, 1, 1], [1, 1]]" }, "expected": "[1, 1, 1, 1, 1]" }
+  ]
+}
+```
 
 <details>
 <summary><h2>The Strategy</h2></summary>
 
+The textbook K-way merge: at every step, the next element of the merged list is the *globally smallest* among the heads of all unmerged lists. A min-heap of size K holds those heads. Pop the smallest, append to the output, push the *next* element of that list (if any). Done in `O(N log K)` total, where `N` is the total number of elements.
 
-The textbook K-way merge: at every step, the next node of the merged list is the *globally smallest* among the heads of all unmerged lists. A min-heap of size K holds those heads. Pop the smallest, append to the output, push the *next* node of that list (if any). Done in `O(N log K)` total, where `N` is the total number of nodes.
-
-The comparator is "compare list nodes by value, ascending".
+The comparator is "compare list elements by value, ascending". The heap entry carries `(value, listIndex, elementIndex)` so we can retrieve the next element.
 
 </details>
 <details>
-<summary><h2>The Solution</h2></summary>
+<summary><h2>Solution</h2></summary>
 
+A min-heap of `(value, listIdx, elemIdx)` tuples (using `listIdx` as a tiebreaker to avoid comparing lists). Each pop yields the current global minimum; push its successor to continue. The merged output is naturally sorted — no post-sort needed.
 
-
-```python run viz=array viz-root=min_heap
-from typing import List, Optional, Tuple
+```python solution time=O(n log k) space=O(k)
+import ast
 import heapq
 
-class ListNode:
-    def __init__(self, val=0, nxt=None):
-        self.val = val
-        self.next = nxt
-
-
-def from_list(values):
-    if not values:
-        return None
-    head = ListNode(values[0])
-    cur = head
-    for v in values[1:]:
-        cur.next = ListNode(v)
-        cur = cur.next
-    return head
-
-
-def to_list(head):
-    out = []
-    while head is not None:
-        out.append(head.val)
-        head = head.next
-    return out
-
-
 class Solution:
-    def k_way_list_merge(
-        self, lists: List[Optional[ListNode]]
-    ) -> Optional[ListNode]:
-
-        # Create a new head and tail node to build the merged list
-        dummy: ListNode = ListNode(0)
-        tail: ListNode = dummy
-
-        # Define the heap type as a list of tuples: (node value, list
-        # index, ListNode)
-        min_heap: List[Tuple[int, int, ListNode]] = []
-
-        # Push the first node of each list into the heap
-        for i, head in enumerate(lists):
-            if head:
-                heapq.heappush(min_heap, (head.val, i, head))
-
-        # Extract the smallest item and add the next node from that list
-        # to the heap
+    def k_way_list_merge(self, lists):
+        result = []
+        # push (value, list_idx, elem_idx) — list_idx breaks value ties
+        min_heap = []
+        for i, lst in enumerate(lists):
+            if lst:
+                heapq.heappush(min_heap, (lst[0], i, 0))
         while min_heap:
-            val, i, node = heapq.heappop(min_heap)
+            val, i, j = heapq.heappop(min_heap)
+            result.append(val)
+            if j + 1 < len(lists[i]):
+                heapq.heappush(min_heap, (lists[i][j + 1], i, j + 1))
+        return result
 
-            # Add the node to the merged list
-            tail.next = node
-            tail = tail.next
-
-            # If there's a next node, push it to the heap
-            if node.next:
-                heapq.heappush(min_heap, (node.next.val, i, node.next))
-
-        return dummy.next
-
-
-# Examples from the problem statement
-l1 = [from_list([1, 4, 5]), from_list([1, 3, 4]), from_list([2, 6])]
-print(to_list(Solution().k_way_list_merge(l1)))   # [1, 1, 2, 3, 4, 4, 5, 6]
-
-print(to_list(Solution().k_way_list_merge([])))   # []
-
-# Edge cases
-l2 = [from_list([1, 2, 3])]
-print(to_list(Solution().k_way_list_merge(l2)))   # [1, 2, 3] — single list
-
-l3 = [from_list([1]), from_list([2]), from_list([3])]
-print(to_list(Solution().k_way_list_merge(l3)))   # [1, 2, 3] — single-node lists
-
-l4 = [None, from_list([1, 2])]
-print(to_list(Solution().k_way_list_merge(l4)))   # [1, 2] — one null list
-
-l5 = [from_list([1, 1, 1]), from_list([1, 1])]
-print(to_list(Solution().k_way_list_merge(l5)))   # [1, 1, 1, 1, 1] — all same
+raw = input().strip()
+lists = ast.literal_eval(raw) if raw != "[]" else []
+print(Solution().k_way_list_merge(lists))
 ```
 
-```java run viz=array viz-root=minHeap
+```java solution
 import java.util.*;
 
 public class Main {
-    static class ListNode {
-        int val;
-        ListNode next;
-        ListNode() {}
-        ListNode(int val) { this.val = val; }
-        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+  static int[][] parseIntMatrix(String line) {
+    String trimmed = line.trim();
+    if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+    String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+    String[] rows = inner.split("\\],\\s*\\[");
+    int[][] mat = new int[rows.length][];
+    for (int r = 0; r < rows.length; r++) {
+      String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+      if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+      String[] parts = row.split(",");
+      mat[r] = new int[parts.length];
+      for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
     }
+    return mat;
+  }
 
-    static ListNode fromList(int... values) {
-        if (values.length == 0) return null;
-        ListNode head = new ListNode(values[0]);
-        ListNode cur = head;
-        for (int i = 1; i < values.length; i++) {
-            cur.next = new ListNode(values[i]);
-            cur = cur.next;
-        }
-        return head;
+  static class Solution {
+    public List<Integer> kWayListMerge(int[][] lists) {
+      List<Integer> result = new ArrayList<>();
+      // heap entry: {value, listIdx, elemIdx} — listIdx breaks ties
+      PriorityQueue<int[]> minHeap = new PriorityQueue<>(
+        (a, b) -> a[0] != b[0] ? Integer.compare(a[0], b[0]) : Integer.compare(a[1], b[1]));
+      for (int i = 0; i < lists.length; i++) {
+        if (lists[i].length > 0) minHeap.offer(new int[]{lists[i][0], i, 0});
+      }
+      while (!minHeap.isEmpty()) {
+        int[] top = minHeap.poll();
+        int val = top[0], i = top[1], j = top[2];
+        result.add(val);
+        if (j + 1 < lists[i].length) minHeap.offer(new int[]{lists[i][j + 1], i, j + 1});
+      }
+      return result;
     }
+  }
 
-    static java.util.List<Integer> toList(ListNode head) {
-        java.util.List<Integer> out = new java.util.ArrayList<>();
-        while (head != null) { out.add(head.val); head = head.next; }
-        return out;
-    }
-
-    static class CompareMinHeap implements Comparator<ListNode> {
-        public int compare(ListNode nodeA, ListNode nodeB) {
-
-            // Custom comparison function used by the PriorityQueue.
-            // It compares the values of the nodes and returns a negative
-            // value if nodeA's value is less than nodeB's value, zero if
-            // they are equal, and a positive value if nodeA's value is
-            // greater than nodeB's value.
-            return Integer.compare(nodeA.val, nodeB.val);
-        }
-    }
-
-    static class Solution {
-        public ListNode kWayListMerge(java.util.List<ListNode> lists) {
-
-            // Create a PriorityQueue with ListNode as the type and use the
-            // CompareNodes class as the comparator.
-            PriorityQueue<ListNode> minHeap = new PriorityQueue<>(
-                new CompareMinHeap()
-            );
-
-            // Push all non-null heads of the input lists into the priority
-            // queue.
-            for (ListNode head : lists) {
-                if (head != null) minHeap.add(head);
-            }
-
-            // Create a dummy and tail pointers for building the merged list.
-            ListNode dummy = new ListNode(0);
-            ListNode tail = dummy;
-
-            // Continue until the priority queue is empty.
-            while (!minHeap.isEmpty()) {
-
-                // Get the node with the smallest value from the priority
-                // queue.
-                ListNode node = minHeap.poll();
-
-                // Add the node to the merged list.
-                tail.next = node;
-                tail = tail.next;
-
-                // If the current node has a next node, push the next node
-                // into the priority queue for further processing.
-                if (node.next != null) {
-                    minHeap.add(node.next);
-                }
-            }
-
-            // Return the head of the merged list (excluding the dummy node).
-            return dummy.next;
-        }
-    }
-
-    public static void main(String[] args) {
-        // Examples from the problem statement
-        java.util.List<ListNode> l1 = List.of(fromList(1, 4, 5), fromList(1, 3, 4), fromList(2, 6));
-        System.out.println(toList(new Solution().kWayListMerge(l1)));   // [1, 1, 2, 3, 4, 4, 5, 6]
-
-        System.out.println(toList(new Solution().kWayListMerge(List.of())));   // []
-
-        // Edge cases
-        java.util.List<ListNode> l2 = List.of(fromList(1, 2, 3));
-        System.out.println(toList(new Solution().kWayListMerge(l2)));   // [1, 2, 3]
-
-        java.util.List<ListNode> l3 = List.of(fromList(1), fromList(2), fromList(3));
-        System.out.println(toList(new Solution().kWayListMerge(l3)));   // [1, 2, 3]
-
-        java.util.List<ListNode> l4 = new ArrayList<>();
-        l4.add(null); l4.add(fromList(1, 2));
-        System.out.println(toList(new Solution().kWayListMerge(l4)));   // [1, 2]
-
-        java.util.List<ListNode> l5 = List.of(fromList(1, 1, 1), fromList(1, 1));
-        System.out.println(toList(new Solution().kWayListMerge(l5)));   // [1, 1, 1, 1, 1]
-    }
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[][] lists = parseIntMatrix(sc.nextLine());
+    System.out.println(new Solution().kWayListMerge(lists));
+  }
 }
 ```
 
 </details>
 <details>
 <summary><h2>Key Takeaway</h2></summary>
-
 
 A comparator is the **bridge between a generic priority queue and any custom type with a total order**. Once you can plug a comparator in, every Top-K problem from lesson 3 generalises to records, structs, tree nodes, list nodes — anything with a defined ordering.
 
@@ -238,7 +205,5 @@ Three patterns to take with you:
 1. **Heap of records, ordered by score.** Word + frequency, point + distance, pair + sum, list-node + value. The heap holds *records*, the comparator orders by the *score field*.
 2. **K-way merge with a heap of size K.** When you need the global minimum across K sorted streams, a heap of size K with one head per stream gives it to you in O(log K) per pop. K-way merge, K-sorted ranges, K-way list merge — all the same skeleton.
 3. **Tiebreakers in language-specific ways.** Most heap libraries can't compare arbitrary types directly (Python tuples, Rust `Box`); inserting a unique counter or a list index as a tiebreaker is a common idiom that prevents the comparator from ever needing to look at non-comparable fields.
-
-The next and final lesson zooms back out: **design** problems that combine multiple heaps, or a heap with another data structure, to build something larger — finding the running median, tracking K-sized windowed maxima, deferred-decision priority queues. The comparator pattern is the toolbox for those designs.
 
 </details>

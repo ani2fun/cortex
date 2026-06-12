@@ -4,6 +4,8 @@ summary: "Given an array heights of non-negative integers representing an elevat
 prereqs:
   - 10-pattern-next-closest-occurrence/01-pattern
 difficulty: hard
+kind: problem
+topics: [next-closest-occurrence, stack]
 ---
 
 # Retained rainwater
@@ -47,6 +49,78 @@ Output: 0
 Explanation: A monotonically increasing wall has no valley — water runs straight off.
 ```
 
+```quiz
+{
+  "prompt": "heights = [2, 0, 2]. How much water is trapped?",
+  "options": ["0", "1", "2", "4"],
+  "answer": "2"
+}
+```
+
+## Constraints
+
+- `0 ≤ heights.length ≤ 20 000`
+- `0 ≤ heights[i] ≤ 100 000`
+
+```python run
+import ast
+from typing import List
+
+class Solution:
+    def retained_rainwater(self, heights: List[int]) -> int:
+        # Your code goes here — sweep left to right with a decreasing stack
+        # of bar indices; on each pop compute the trapped strip.
+        return 0
+
+heights = ast.literal_eval(input())
+print(Solution().retained_rainwater(heights))
+```
+
+```java run
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int retainedRainwater(int[] heights) {
+            // Your code goes here — sweep left to right with a decreasing stack
+            // of bar indices; on each pop compute the trapped strip.
+            return 0;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] heights = parseIntArray(sc.nextLine());
+        System.out.println(new Solution().retainedRainwater(heights));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "heights", "label": "heights", "type": "int[]", "placeholder": "[0, 2, 4, 3, 0, 3, 5, 2, 0, 4, 3, 0, 2]" }
+  ],
+  "cases": [
+    { "args": { "heights": "[0, 2, 4, 3, 0, 3, 5, 2, 0, 4, 3, 0, 2]" }, "expected": "14" },
+    { "args": { "heights": "[3, 0, 3]" }, "expected": "3" },
+    { "args": { "heights": "[3, 0, 2]" }, "expected": "2" },
+    { "args": { "heights": "[1, 2, 3, 4, 5]" }, "expected": "0" },
+    { "args": { "heights": "[5, 4, 3, 2, 1]" }, "expected": "0" },
+    { "args": { "heights": "[5]" }, "expected": "0" },
+    { "args": { "heights": "[1, 2]" }, "expected": "0" }
+  ]
+}
+```
 
 <details>
 <summary><h2>Intuition</h2></summary>
@@ -116,11 +190,10 @@ Sweep left to right with a decreasing stack of bar indices, settling one horizon
 
 </details>
 <details>
-<summary><h2>Solution</h2></summary>
+<summary><h2>Solution & Analysis</h2></summary>
 
-
-
-```python run viz=array viz-root=stack viz-kind=stack
+```python solution time=O(N) space=O(N)
+import ast
 from typing import List
 
 class Solution:
@@ -156,22 +229,11 @@ class Solution:
 
         return water_trapped
 
-
-# Example from the problem statement
-print(Solution().retained_rainwater([0, 2, 4, 3, 0, 3, 5, 2, 0, 4, 3, 0, 2]))  # 14
-
-# Edge cases
-print(Solution().retained_rainwater([]))                     # 0
-print(Solution().retained_rainwater([5]))                    # 0
-print(Solution().retained_rainwater([1, 2]))                 # 0
-print(Solution().retained_rainwater([0, 1, 0]))              # 0 — single valley traps nothing (width 0)
-print(Solution().retained_rainwater([3, 0, 3]))              # 3
-print(Solution().retained_rainwater([3, 0, 2]))              # 2
-print(Solution().retained_rainwater([1, 2, 3, 4, 5]))        # 0 — monotonically increasing
-print(Solution().retained_rainwater([5, 4, 3, 2, 1]))        # 0 — monotonically decreasing
+heights = ast.literal_eval(input())
+print(Solution().retained_rainwater(heights))
 ```
 
-```java run viz=array viz-root=stack viz-kind=stack
+```java solution
 import java.util.*;
 
 public class Main {
@@ -216,18 +278,18 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Example from the problem statement
-        System.out.println(new Solution().retainedRainwater(new int[]{0, 2, 4, 3, 0, 3, 5, 2, 0, 4, 3, 0, 2}));  // 14
+        Scanner sc = new Scanner(System.in);
+        int[] heights = parseIntArray(sc.nextLine());
+        System.out.println(new Solution().retainedRainwater(heights));
+    }
 
-        // Edge cases
-        System.out.println(new Solution().retainedRainwater(new int[]{}));                    // 0
-        System.out.println(new Solution().retainedRainwater(new int[]{5}));                   // 0
-        System.out.println(new Solution().retainedRainwater(new int[]{1, 2}));                // 0
-        System.out.println(new Solution().retainedRainwater(new int[]{0, 1, 0}));             // 0
-        System.out.println(new Solution().retainedRainwater(new int[]{3, 0, 3}));             // 3
-        System.out.println(new Solution().retainedRainwater(new int[]{3, 0, 2}));             // 2
-        System.out.println(new Solution().retainedRainwater(new int[]{1, 2, 3, 4, 5}));       // 0
-        System.out.println(new Solution().retainedRainwater(new int[]{5, 4, 3, 2, 1}));       // 0
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```
@@ -271,10 +333,8 @@ Each pop computes a single strip in `O(1)`, so the total strip work is bounded b
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
-| Empty array | `heights = []` | `0` | No bars, no water. |
 | Single bar | `heights = [5]` | `0` | One wall cannot trap anything. |
 | Two bars | `heights = [1, 2]` | `0` | No bar sits between two taller walls. |
-| Zero-width valley | `heights = [0, 1, 0]` | `0` | The dip has no floor below a pair of walls — width collapses to 0. |
 | Symmetric valley | `heights = [3, 0, 3]` | `3` | One floor of depth 3, width 1, bounded by two walls of height 3. |
 | Monotonic increasing | `heights = [1, 2, 3, 4, 5]` | `0` | No right wall ever closes a valley — water runs off the top. |
 | Monotonic decreasing | `heights = [5, 4, 3, 2, 1]` | `0` | No left wall ever exists — water runs off the start. |

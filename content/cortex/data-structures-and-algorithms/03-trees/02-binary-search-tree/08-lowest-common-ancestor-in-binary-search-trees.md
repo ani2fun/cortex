@@ -18,16 +18,31 @@ In a *general* binary tree, finding the LCA needs a full traversal (you don't kn
 In the BST below, the LCA of `1` and `9` is the root `5` (they split immediately); the LCA of `1` and `4` is `3`. Run it.
 
 ```python run viz=binary-tree viz-root=root
-class TreeNode:
-    def __init__(self, val):
-        self.val = val
-        self.left = None
-        self.right = None
+import json
+from collections import deque
 
-def insert(root, val):
-    if root is None: return TreeNode(val)
-    if val < root.val: root.left = insert(root.left, val)
-    elif val > root.val: root.right = insert(root.right, val)
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
     return root
 
 def lca(root, p, q):
@@ -41,11 +56,88 @@ def lca(root, p, q):
             return node.val               # paths split here (or one == node) → LCA
     return None
 
-root = None
-for v in [5, 3, 8, 1, 4, 7, 9]:
-    root = insert(root, v)
-print(lca(root, 1, 9))   # 5  (split at the root)
-print(lca(root, 1, 4))   # 3
+root = build_tree(json.loads(input()))
+p = int(input())
+q = int(input())
+print(lca(root, p, q))
+```
+
+```java run viz=binary-tree viz-root=root
+import java.util.*;
+
+public class Main {
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
+  }
+
+  static Integer lca(TreeNode node, int p, int q) {
+    while (node != null) {
+      if (p < node.val && q < node.val) node = node.left;
+      else if (p > node.val && q > node.val) node = node.right;
+      else return node.val;
+    }
+    return null;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+    int p = Integer.parseInt(sc.nextLine().trim());
+    int q = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(lca(root, p, q));
+  }
+
+  static TreeNode buildTree(Integer[] values) {
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
+    }
+    return root;
+  }
+
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "BST (level-order)", "type": "tree", "placeholder": "[5, 3, 8, 1, 4, 7, 9]" },
+    { "id": "p", "label": "p", "type": "int", "placeholder": "1" },
+    { "id": "q", "label": "q", "type": "int", "placeholder": "9" }
+  ],
+  "cases": [
+    { "args": { "root": "[5, 3, 8, 1, 4, 7, 9]", "p": "1", "q": "9" }, "expected": "5" },
+    { "args": { "root": "[5, 3, 8, 1, 4, 7, 9]", "p": "1", "q": "4" }, "expected": "3" },
+    { "args": { "root": "[5, 3, 8, 1, 4, 7, 9]", "p": "7", "q": "9" }, "expected": "8" },
+    { "args": { "root": "[5, 3, 8, 1, 4, 7, 9]", "p": "3", "q": "4" }, "expected": "3" },
+    { "args": { "root": "[5, 3, 8, 1, 4, 7, 9]", "p": "4", "q": "7" }, "expected": "5" },
+    { "args": { "root": "[5, 3, 8, 1, 4, 7, 9]", "p": "3", "q": "7" }, "expected": "5" },
+    { "args": { "root": "[5, 3, 8, 1, 4, 7, 9]", "p": "8", "q": "9" }, "expected": "8" },
+    { "args": { "root": "[5]", "p": "5", "q": "5" }, "expected": "5" }
+  ]
+}
 ```
 
 ## How It Works
@@ -92,16 +184,31 @@ The collapse comes from the **ordering letting one comparison decide direction f
 The reusable BST LCA:
 
 ```python run viz=binary-tree viz-root=root
-class TreeNode:
-    def __init__(self, val):
-        self.val = val
-        self.left = None
-        self.right = None
+import json
+from collections import deque
 
-def insert(root, val):
-    if root is None: return TreeNode(val)
-    if val < root.val: root.left = insert(root.left, val)
-    elif val > root.val: root.right = insert(root.right, val)
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
     return root
 
 def lca(root, p, q):
@@ -115,21 +222,18 @@ def lca(root, p, q):
             return node.val
     return None
 
-root = None
-for v in [5, 3, 8, 1, 4, 7, 9]:
-    root = insert(root, v)
-print(lca(root, 7, 9), lca(root, 3, 4), lca(root, 4, 7))   # 8 3 5
+root = build_tree(json.loads(input()))
+p = int(input())
+q = int(input())
+print(lca(root, p, q))
 ```
 
 ```java run viz=binary-tree viz-root=root
+import java.util.*;
+
 public class Main {
   static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } }
-  static TreeNode insert(TreeNode r, int v) {
-    if (r == null) return new TreeNode(v);
-    if (v < r.val) r.left = insert(r.left, v);
-    else if (v > r.val) r.right = insert(r.right, v);
-    return r;
-  }
+
   static Integer lca(TreeNode node, int p, int q) {
     while (node != null) {
       if (p < node.val && q < node.val) node = node.left;
@@ -138,11 +242,62 @@ public class Main {
     }
     return null;
   }
+
   public static void main(String[] args) {
-    TreeNode root = null;
-    for (int v : new int[]{5, 3, 8, 1, 4, 7, 9}) root = insert(root, v);
-    System.out.println(lca(root, 1, 9) + " " + lca(root, 1, 4) + " " + lca(root, 7, 9));   // 5 3 8
+    Scanner sc = new Scanner(System.in);
+    TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+    int p = Integer.parseInt(sc.nextLine().trim());
+    int q = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(lca(root, p, q));
   }
+
+  static TreeNode buildTree(Integer[] values) {
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
+    }
+    return root;
+  }
+
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "BST (level-order)", "type": "tree", "placeholder": "[5, 3, 8, 1, 4, 7, 9]" },
+    { "id": "p", "label": "p", "type": "int", "placeholder": "7" },
+    { "id": "q", "label": "q", "type": "int", "placeholder": "9" }
+  ],
+  "cases": [
+    { "args": { "root": "[5, 3, 8, 1, 4, 7, 9]", "p": "7", "q": "9" }, "expected": "8" },
+    { "args": { "root": "[5, 3, 8, 1, 4, 7, 9]", "p": "3", "q": "4" }, "expected": "3" },
+    { "args": { "root": "[5, 3, 8, 1, 4, 7, 9]", "p": "4", "q": "7" }, "expected": "5" },
+    { "args": { "root": "[5, 3, 8, 1, 4, 7, 9]", "p": "1", "q": "9" }, "expected": "5" },
+    { "args": { "root": "[6, 2, 8, 0, 4, 7, 9, null, null, 3, 5]", "p": "2", "q": "4" }, "expected": "2" },
+    { "args": { "root": "[6, 2, 8, 0, 4, 7, 9, null, null, 3, 5]", "p": "2", "q": "8" }, "expected": "6" }
+  ]
 }
 ```
 

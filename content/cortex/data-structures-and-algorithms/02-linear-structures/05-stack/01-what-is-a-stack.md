@@ -20,18 +20,62 @@ That's a **stack**. It's the structure behind undo, Back, bracket-matching, and 
 
 ## See It Work
 
-A stack only ever touches its **top**. Run this — push three values, then peek and pop — and click **Visualise** to watch items pile on and come off the same end.
+A stack only ever touches its **top**. Pick a case and **Run** it — push the values, then peek once and pop twice — and click **Visualise** to watch items pile on and come off the same end.
 
 > ▶ Run it, then click **Visualise** — watch items pile onto the top and come off the same end; the bottom never moves.
 
 ```python run viz=array viz-root=stack viz-kind=stack
+import ast
+
+values = ast.literal_eval(input())   # the test case's values, pushed left to right
+
 stack = []
-for x in [3, 5, 7]:
+for x in values:
     stack.append(x)        # push onto the top
-print(stack[-1])           # peek the top → 7 (look, don't remove)
-print(stack.pop())         # pop the top → 7
-print(stack.pop())         # → 5
-print(stack)               # [3] — only the bottom is left
+print(stack[-1])           # peek the top (look, don't remove)
+print(stack.pop())         # pop the top
+print(stack.pop())         # pop again
+print(stack)               # what's left, bottom on the left
+```
+
+```java run viz=array viz-root=stack viz-kind=stack
+import java.util.*;
+
+public class Main {
+  public static void main(String[] args) {
+    int[] values = parseIntArray(new Scanner(System.in).nextLine());  // pushed left to right
+
+    List<Integer> stack = new ArrayList<>();             // a list used as a stack: top is the last slot
+    for (int x : values) stack.add(x);                   // push onto the top
+    System.out.println(stack.get(stack.size() - 1));     // peek the top (look, don't remove)
+    System.out.println(stack.remove(stack.size() - 1));  // pop the top
+    System.out.println(stack.remove(stack.size() - 1));  // pop again
+    System.out.println(stack);                           // what's left, bottom on the left
+  }
+
+  // "[3, 5, 7]" → {3, 5, 7} — reads the test case's values
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "values", "label": "values", "type": "int[]", "placeholder": "[3, 5, 7]" }
+  ],
+  "cases": [
+    { "args": { "values": "[3, 5, 7]" }, "expected": "7\n7\n5\n[3]" },
+    { "args": { "values": "[1, 2]" }, "expected": "2\n2\n1\n[]" },
+    { "args": { "values": "[10, 20, 30, 40]" }, "expected": "40\n40\n30\n[10, 20]" }
+  ]
+}
 ```
 
 ## How It Works
@@ -91,28 +135,73 @@ Last of all. It sits at the bottom the entire time, reachable only after everyth
 
 ## Your Turn
 
-The classic use: checking whether brackets are balanced. Every opener gets pushed; every closer must pop its matching opener. If the stack ends empty, the brackets matched.
+The classic use: checking whether brackets are balanced. Every opener gets pushed; every closer must pop its matching opener. If the stack ends empty, the brackets matched. Implement `balanced(s)` — non-bracket characters are ignored.
 
 ```python run viz=array viz-kind=stack
+def balanced(s):
+    # Your code goes here — push every opener; for each closer, pop the top
+    # and check it matches. Return True only if nothing is left over.
+    pass
+
+s = input()
+print("true" if balanced(s) else "false")
+```
+
+```java run viz=array viz-kind=stack
+import java.util.*;
+
+public class Main {
+  static boolean balanced(String s) {
+    // Your code goes here — push every opener; for each closer, pop the top
+    // and check it matches. Return true only if nothing is left over.
+    return false;
+  }
+  public static void main(String[] args) {
+    String s = new Scanner(System.in).nextLine();
+    System.out.println(balanced(s));
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "s", "type": "string", "placeholder": "a(b[c]{d})" }
+  ],
+  "cases": [
+    { "args": { "s": "a(b[c]{d})" }, "expected": "true" },
+    { "args": { "s": "(]" }, "expected": "false" },
+    { "args": { "s": "(((" }, "expected": "false" },
+    { "args": { "s": "([)]" }, "expected": "false" },
+    { "args": { "s": "{[()]}" }, "expected": "true" },
+    { "args": { "s": "no brackets here" }, "expected": "true" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+A stack is the natural fit because brackets nest *last-opened, first-closed* — exactly LIFO. Push every opener; when a closer arrives, the only opener it can legally match is the one on top. Pop it and check: if the stack is empty (a closer with nothing to match) or the popped opener is the wrong kind, the string is unbalanced. After the whole scan, a non-empty stack means some opener never closed — so balanced means the stack ends empty. Non-bracket characters are simply skipped. One pass, `O(n)` time, `O(n)` worst-case stack space.
+
+```python solution time=O(n) space=O(n)
 def balanced(s):
     stack = []
     pairs = {')': '(', ']': '[', '}': '{'}
     for c in s:
         if c in '([{':
-            stack.append(c)                          # push an opener
+            stack.append(c)                           # push an opener
         elif c in ')]}':
-            if not stack or stack.pop() != pairs[c]:  # the popped opener must match
+            if not stack or stack.pop() != pairs[c]:   # the popped opener must match
                 return False
     return not stack                                  # everything closed?
 
-print(balanced("a(b[c]{d})"))   # True
-print(balanced("(]"))           # False — '(' can't close with ']'
+s = input()
+print("true" if balanced(s) else "false")
 ```
 
-```java run viz=array viz-kind=stack
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.Map;
+```java solution
+import java.util.*;
 
 public class Main {
   static boolean balanced(String s) {
@@ -126,11 +215,13 @@ public class Main {
     return stack.isEmpty();
   }
   public static void main(String[] args) {
-    System.out.println(balanced("a(b[c]{d})"));   // true
-    System.out.println(balanced("(]"));           // false
+    String s = new Scanner(System.in).nextLine();
+    System.out.println(balanced(s));
   }
 }
 ```
+
+</details>
 
 Make it your own with the section's problems, and see how a stack parses and evaluates arithmetic in [Evaluating Expressions](/cortex/data-structures-and-algorithms/linear-structures/stack/evaluating-expressions-using-stack).
 

@@ -19,16 +19,57 @@ That's an array. It's the oldest data structure there is, and it's the one nearl
 
 ## See It Work
 
-Here's an array of six numbers, and a loop that visits each one to add them up. Run it — then click **Visualise** and watch the index `i` walk the cells one at a time.
+Here's an array of numbers, and a loop that visits each one by index to add them up. Pick a test case below and **Run** it — then click **Visualise** and watch the index `i` walk the cells one at a time. Try your own `arr` too.
 
-> ▶ Run it, then hit **Visualise** — watch the index `i` step across the cells, one slot of consecutive memory at a time.
+> ▶ Run it against a case, then click **Visualise** — watch the index `i` step across the cells, one slot of consecutive memory at a time.
 
 ```python run viz=array viz-root=arr
-arr = [5, 2, 8, 1, 9, 3]
+import ast
+
+arr = ast.literal_eval(input())   # the test case's arr
 total = 0
 for i in range(len(arr)):
-    total += arr[i]      # reach cell i directly
+    total += arr[i]               # reach cell i directly
 print(total)
+```
+
+```java run viz=array viz-root=arr
+import java.util.*;
+
+public class Main {
+  public static void main(String[] args) {
+    int[] arr = parseIntArray(new Scanner(System.in).nextLine());
+    int total = 0;
+    for (int i = 0; i < arr.length; i++) {
+      total += arr[i];                 // reach cell i directly
+    }
+    System.out.println(total);
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's arr
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[5, 2, 8, 1, 9, 3]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[5, 2, 8, 1, 9, 3]" }, "expected": "28" },
+    { "args": { "arr": "[1, 2, 3, 4, 5]" }, "expected": "15" },
+    { "args": { "arr": "[10]" }, "expected": "10" },
+    { "args": { "arr": "[]" }, "expected": "0" }
+  ]
+}
 ```
 
 ## How It Works
@@ -90,36 +131,133 @@ Still one. Indexing doesn't care how big the array is. Now the other side: inser
 
 ## Your Turn
 
-Reach in, overwrite, and reshape — and feel which operations are cheap:
+You just saw that reading `arr[i]` is one instant jump — but reshaping is the expensive part: insert near the front and every later element has to shift right to keep the slots consecutive. Now do that shift yourself.
 
-```python run viz=array
-arr = [5, 2, 8, 1, 9, 3]
-print(arr[0], arr[3])     # O(1): jump straight to an index
-arr[3] = 99               # O(1): overwrite in place
-print(arr)
-arr.insert(0, 7)          # O(n): everything shifts right
-print(arr)
+Implement `insert_at(arr, index, value)`: return a **new** array equal to `arr` with `value` placed at position `index`, so everything from `index` onward slides one slot to the right. Inserting at `0` shifts the whole array; inserting at `len(arr)` is a plain append that shifts nothing.
+
+```python run viz=array viz-root=result
+import ast
+
+def insert_at(arr, index, value):
+    # Your code goes here — build a new array with value at position index,
+    # copying arr[0:index], then value, then the rest shifted right by one.
+    return []
+
+arr = ast.literal_eval(input())    # the test case's arr
+index = int(input())               # where to insert
+value = int(input())               # what to insert
+result = insert_at(arr, index, value)
+print(result)
 ```
 
-```java run viz=array
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+```java run viz=array viz-root=result
+import java.util.*;
 
 public class Main {
-  public static void main(String[] args) {
-    int[] arr = {5, 2, 8, 1, 9, 3};
-    System.out.println(arr[0] + " " + arr[3]);   // O(1) access
-    arr[3] = 99;                                  // O(1) update
-    System.out.println(Arrays.toString(arr));
+  static int[] insertAt(int[] arr, int index, int value) {
+    // Your code goes here — build a new array with value at position index,
+    // copying arr[0..index), then value, then the rest shifted right by one.
+    return new int[0];
+  }
 
-    // a growable list to show the O(n) front-insert
-    ArrayList<Integer> list = new ArrayList<>(List.of(5, 2, 8, 1, 9, 3));
-    list.add(0, 7);                               // shifts everything right
-    System.out.println(list);
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());
+    int index = Integer.parseInt(sc.nextLine().trim());
+    int value = Integer.parseInt(sc.nextLine().trim());
+    int[] result = insertAt(arr, index, value);
+    System.out.println(Arrays.toString(result));
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's arr
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
   }
 }
 ```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[5, 2, 8, 1, 9, 3]" },
+    { "id": "index", "label": "index", "type": "int", "placeholder": "0" },
+    { "id": "value", "label": "value", "type": "int", "placeholder": "7" }
+  ],
+  "cases": [
+    { "args": { "arr": "[5, 2, 8, 1, 9, 3]", "index": "0", "value": "7" }, "expected": "[7, 5, 2, 8, 1, 9, 3]" },
+    { "args": { "arr": "[5, 2, 8, 1, 9, 3]", "index": "3", "value": "99" }, "expected": "[5, 2, 8, 99, 1, 9, 3]" },
+    { "args": { "arr": "[1, 2, 3]", "index": "3", "value": "4" }, "expected": "[1, 2, 3, 4]" },
+    { "args": { "arr": "[]", "index": "0", "value": "1" }, "expected": "[1]" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+The new value lands at `index`, so the array splits there: everything before `index` stays put, the value drops in, and everything from `index` onward shifts one slot to the right. Building a fresh array makes the shift explicit — copy the left part, append the value, then copy the right part. That's the `O(n)` reshape the chapter warned about: insert at the front (`index = 0`) and all `n` elements move; insert at the end (`index = len(arr)`) and none do.
+
+```python solution time=O(n) space=O(n)
+import ast
+
+def insert_at(arr, index, value):
+    result = []
+    for i in range(index):              # the part before the gap stays put
+        result.append(arr[i])
+    result.append(value)                # the new value lands at index
+    for i in range(index, len(arr)):    # everything after shifts right by one
+        result.append(arr[i])
+    return result
+
+arr = ast.literal_eval(input())
+index = int(input())
+value = int(input())
+result = insert_at(arr, index, value)
+print(result)
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+  static int[] insertAt(int[] arr, int index, int value) {
+    int[] result = new int[arr.length + 1];
+    for (int i = 0; i < index; i++) {            // the part before the gap stays put
+      result[i] = arr[i];
+    }
+    result[index] = value;                       // the new value lands at index
+    for (int i = index; i < arr.length; i++) {   // everything after shifts right by one
+      result[i + 1] = arr[i];
+    }
+    return result;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());
+    int index = Integer.parseInt(sc.nextLine().trim());
+    int value = Integer.parseInt(sc.nextLine().trim());
+    int[] result = insertAt(arr, index, value);
+    System.out.println(Arrays.toString(result));
+  }
+
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+</details>
 
 ## Pitfalls
 

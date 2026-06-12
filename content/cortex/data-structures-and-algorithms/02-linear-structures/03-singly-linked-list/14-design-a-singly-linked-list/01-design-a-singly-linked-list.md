@@ -3,23 +3,16 @@ title: "Design a Singly Linked List"
 summary: "Implement a SinglyLinkedList class that exposes prepend, append, insert, remove, search, size, and empty as a single self-contained object."
 prereqs:
   - 02-linear-structures/03-singly-linked-list/01-what-is-a-linked-list
-  - 02-linear-structures/03-singly-linked-list/01-what-is-a-linked-list
 difficulty: hard
+kind: problem
+topics: [singly-linked-list, design]
 ---
 
-<details>
-<summary><h2>The Hook</h2></summary>
-
-
-Every language you'll ever use ships with a linked-list library — Java's `LinkedList`, C++'s `std::list`, Python's `collections.deque`. You've used them. You've never built one. This is the lesson where you stop being a consumer and become the engineer who understands why `list.addFirst(x)` is O(1) but `list.get(99)` is not.
-
-You've already met every primitive you need — node definition (lesson 1), traversal (lesson 2), insertion (lesson 3), deletion (lesson 4). This lesson ties them together into one class that exposes a complete public API: `prepend`, `append`, `insert`, `remove`, `search`, `size`, `empty`. Writing it from scratch forces you to confront **every design trade-off** you've been meeting one at a time — cached size vs computed size, head-only vs head + tail, bounds semantics, null safety. The implementation is short; the *choices* are what matter.
-
-</details>
-
----
+# Design a Singly Linked List
 
 ## The Problem
+
+Every language ships a linked-list library — Java's `LinkedList`, C++'s `std::list`, Python's `collections.deque`. You've used them; now build one. You've already met every primitive — node, traversal, insertion, deletion. This challenge ties them into one class with a complete public API, where the *choices* (cache the size or recompute it? keep a tail pointer or walk?) matter more than the code.
 
 > Implement a `SinglyLinkedList` class that supports:
 >
@@ -52,234 +45,245 @@ Step-by-step:
   empty()               → false
 ```
 
----
-
-<details>
-<summary><h2>What Does "Design a Linked List" Really Ask?</h2></summary>
-
-
-"Design" is the keyword that separates this from the operation-specific lessons. You're not implementing *one* operation — you're deciding **what state the class keeps** so that all seven operations run efficiently and coexist correctly.
-
-Two design decisions shape every linked-list class you'll ever write:
-
-1. **Do we cache `size` on the object, or recompute it every call?**  
-   *Cached* — `size()` is O(1), but every insert and delete must increment or decrement a counter. Mismatched book-keeping (forgetting to decrement on a failed delete, double-counting on re-entrant inserts) is a classic silent bug.  
-   *Recomputed* — `size()` costs O(n) time, O(1) space. No counter to maintain. Slower for size-heavy workloads.
-
-2. **Do we keep a `tail` pointer, or walk to find the tail?**  
-   *Cached `tail`* — `append` becomes O(1). But every operation that might change the tail (head deletion that empties the list, removal of the last node, insert at position = size) must update it.  
-   *No `tail`* — `append` is O(n) but there's one less invariant to maintain.
-
-```d3 widget=list-single
+```quiz
 {
-  "steps": [
-    {
-      "nodes": [
-        {
-          "id": "n1",
-          "label": "3",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        },
-        {
-          "id": "n2",
-          "label": "8",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        },
-        {
-          "id": "n3",
-          "label": "2",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        },
-        {
-          "id": "n4",
-          "label": "1",
-          "kind": "node",
-          "meta": [],
-          "slot": null,
-          "cardId": "",
-          "layoutKind": ""
-        }
-      ],
-      "edges": [
-        {
-          "from": "n1",
-          "to": "n2",
-          "label": "next"
-        },
-        {
-          "from": "n2",
-          "to": "n3",
-          "label": "next"
-        },
-        {
-          "from": "n3",
-          "to": "n4",
-          "label": "next"
-        }
-      ],
-      "cursor": [
-        {
-          "name": "head",
-          "target": "n1",
-          "color": "#10b981"
-        },
-        {
-          "name": "tail",
-          "target": "n4",
-          "color": "#8b5cf6"
-        }
-      ],
-      "highlight": [],
-      "changed": [],
-      "removed": [],
-      "annotation": "head + cached currentSize is the minimal viable design; tail is optional (makes append O(1) but costs an extra field to maintain)",
-      "line": 0,
-      "frames": [],
-      "cardCursor": []
-    }
-  ],
-  "title": "SinglyLinkedList state — head (always) + currentSize (cached) + tail (optional)"
+  "prompt": "Now your turn!",
+  "input": "prepend(1), prepend(2), append(3), insert(1, 9) on an empty list",
+  "options": ["[2, 9, 1, 3]", "[1, 2, 9, 3]", "[9, 2, 1, 3]", "[2, 1, 9, 3]"],
+  "answer": "[2, 9, 1, 3]"
 }
 ```
 
-<p align="center"><strong>The <code>SinglyLinkedList</code> object owns three pieces of state — <code>head</code> (always), <code>currentSize</code> (usually cached), and <code>tail</code> (sometimes cached). The trade-offs are the whole design.</strong></p>
+## Constraints
 
-For this lesson we take the **cached-size, no-tail** design. It matches the reference and highlights the O(n) cost of `append` as a teachable weakness. The transfer challenge at the end adds a tail pointer and walks through the change in operation costs.
+- `0 ≤ total operations ≤ 1000`, `-10^9 ≤ val ≤ 10^9`
+- `insert` clamps: `position ≤ 0` means prepend, `position > length` means append
+- `remove` deletes only the **first** match
+- `size()` and `empty()` must run in **O(1)**
 
-</details>
-<details>
-<summary><h2>Applying the Diagnostic Questions</h2></summary>
-
-
-| Question | Answer |
-|---|---|
-| **Q1.** Why do we need the `empty()` predicate when we could just check `size() == 0`? | **Clarity & cheapness** — `empty()` is an O(1) head-null check; readable at call sites. |
-| **Q2.** Why track `currentSize` at all? | **O(1) `size()` queries** — recomputing via traversal costs O(n) per call. |
-| **Q3.** Why does `insert(pos, val)` with `pos ≤ 0` reduce to `prepend`? | **Negative / zero positions map to "before the head"** — a single degenerate case handled once. |
-| **Q4.** Why does `remove(val)` need a special case for the head? | **The head has no predecessor** — the generic "find predecessor, splice" logic can't apply. |
-
-### Q1 — Why a dedicated `empty()` method?
-
-**Mental model:** `empty()` is about *existence*, `size()` is about *count*. Clients frequently want "is there anything here?" — not "how many?". Giving each question its own method makes call sites read clearly.
-
-**Concrete numbers:** `empty()` is one pointer comparison against `null` — roughly one nanosecond. `size() == 0` costs the same *if* `size` is cached. In designs where it isn't, that comparison is O(n). Defining both decouples API ergonomics from implementation choices.
-
-**What breaks otherwise:** omitting `empty()` forces every caller to write `list.size() == 0`. That obscures intent and couples the caller to the cost of `size()` — innocent until the day you switch to a recomputed-size design.
-
-### Q2 — Why cache `currentSize`?
-
-**Mental model:** `size()` is called **far more often** than insertions and deletions in typical workloads (think: "while size > 0, pop and process"). Optimising the common case is worth a small bookkeeping price on the rare case.
-
-**Concrete numbers:** one increment on `prepend`, `append`, `insert`; one decrement on successful `remove`. Six extra lines of code total. In exchange, `size()` drops from O(n) to O(1) time, O(1) space.
-
-**What breaks otherwise:** if `remove` forgets to decrement on success, `size()` drifts upward and stays wrong forever. The counter updates live *inside* the methods, next to the pointer mutations — never in a wrapper.
-
-### Q3 — Why does `pos ≤ 0` collapse to `prepend`?
-
-**Mental model:** inserting at position `0` puts the new node at the head. A negative position is nonsense, but rather than throw, the standard convention is to clamp it to the nearest legal value — `0` — and prepend. "Before the start" means "at the start".
-
-**Concrete numbers:** `insert(0, 8)` → prepend. `insert(-5, 8)` → prepend. `insert(1, 8)` on a 5-node list → splice at position `1`. `insert(100, 8)` on a 5-node list → walk to the tail and append (the loop terminates at `current.next == null`).
-
-**What breaks otherwise:** throwing on negative positions punishes defensive callers. Clamping makes the API forgiving. The clamp-at-zero pattern matches the one you meet in `array.slice(-1)` — negative indices have conventions, not errors.
-
-### Q4 — Why the head special case in `remove`?
-
-**Mental model:** every other node has a predecessor whose `.next` pointer we can redirect. The head has nothing pointing at it — except the list's own `head` field. Removing the head means updating the list object, not splicing a pointer elsewhere.
-
-**Concrete numbers:** for `[3, 8, 1]` with target `val = 3`, the splice-by-predecessor logic would need a "fake predecessor" to redirect. Cleaner to check `head.val == val` up front and do `head = head.next`.
-
-**What breaks otherwise:** without the head special case, `remove` on the head either crashes with a null-deref (no predecessor to follow) or requires contortions like a dummy sentinel. Treating the head as its own case is the conventional, readable answer.
-
-</details>
-<details>
-<summary><h2>The Operation Map (Visualised)</h2></summary>
-
-
-```d2
-direction: right
-
-fast: "O(1) operations" {
-  style.fill: "#dcfce7"
-  style.stroke: "#16a34a"
-  grid-columns: 3
-  grid-gap: 12
-  a1: "size()"
-  a2: "empty()"
-  a3: "prepend(val)"
-}
-
-slow: "O(n) operations" {
-  style.fill: "#fee2e2"
-  style.stroke: "#dc2626"
-  grid-rows: 2
-  grid-gap: 12
-  b1: "append(val)"
-  b2: "insert(pos, val) (worst case)"
-  b3: "remove(val) (worst case)"
-  b4: "search(val) (worst case)"
-}
-```
-
-<p align="center"><strong>The cost map. Three operations are O(1) because they touch only <code>head</code> and <code>currentSize</code>. The other four require traversal. Caching a <code>tail</code> pointer would move <code>append</code> into the fast column.</strong></p>
-
-</details>
-<details>
-<summary><h2>The Solution</h2></summary>
-
-
+The workbench drives your class through every operation: it prepends the `prepends` values in order, appends the `appends` values, then performs one `insert`, one `remove`, and one `search` — and prints the final list plus what the queries returned. Implement all seven methods.
 
 ```python run viz=linked-list viz-root=head
-from typing import Optional
-
+import ast
 
 class ListNode:
-    def __init__(self, val=0, nxt=None):
+    def __init__(self, val, next=None):
         self.val = val
-        self.next = nxt
+        self.next = next
 
+class SinglyLinkedList:
+    def __init__(self):
+        self.head = None          # pointer to the front node
+        self.current_size = 0     # cached element count
 
-def to_list(head):
-    out = []
-    while head is not None:
-        out.append(head.val)
-        head = head.next
-    return out
+    def empty(self):
+        # Your code goes here — one null check.
+        return True
 
+    def size(self):
+        # Your code goes here — O(1), use the cached counter.
+        return 0
+
+    def prepend(self, val):
+        # Your code goes here — two pointer writes + count.
+        pass
+
+    def append(self, val):
+        # Your code goes here — walk to the tail (or become the head).
+        pass
+
+    def insert(self, position, val):
+        # Your code goes here — clamp position ≤ 0 to prepend; walking off
+        # the end appends.
+        pass
+
+    def remove(self, val):
+        # Your code goes here — head is a special case; return True/False.
+        return False
+
+    def search(self, val):
+        # Your code goes here — linear scan.
+        return False
+
+ll = SinglyLinkedList()
+prepends = ast.literal_eval(input())     # values to prepend, in order
+appends = ast.literal_eval(input())      # values to append, in order
+pos = int(input())                       # insert position
+insert_val = int(input())                # insert value
+remove_val = int(input())                # value to remove
+search_val = int(input())                # value to search for
+
+for v in prepends:
+    ll.prepend(v)
+for v in appends:
+    ll.append(v)
+ll.insert(pos, insert_val)
+removed = ll.remove(remove_val)
+found = ll.search(search_val)
+
+out = []
+node = ll.head
+while node:                              # traverse to collect the values in order
+    out.append(node.val)
+    node = node.next
+print(out)
+print("removed =", "true" if removed else "false")
+print("found =", "true" if found else "false")
+print("size =", ll.size(), "empty =", "true" if ll.empty() else "false")
+```
+
+```java run viz=linked-list viz-root=head
+import java.util.*;
+
+public class Main {
+    static class ListNode {
+        int val; ListNode next;
+        ListNode(int val) { this.val = val; }
+        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+    }
+
+    static class SinglyLinkedList {
+        ListNode head = null;     // pointer to the front node
+        int currentSize = 0;      // cached element count
+
+        boolean empty() {
+            // Your code goes here — one null check.
+            return true;
+        }
+
+        int size() {
+            // Your code goes here — O(1), use the cached counter.
+            return 0;
+        }
+
+        void prepend(int val) {
+            // Your code goes here — two pointer writes + count.
+        }
+
+        void append(int val) {
+            // Your code goes here — walk to the tail (or become the head).
+        }
+
+        void insert(int position, int val) {
+            // Your code goes here — clamp position ≤ 0 to prepend; walking
+            // off the end appends.
+        }
+
+        boolean remove(int val) {
+            // Your code goes here — head is a special case.
+            return false;
+        }
+
+        boolean search(int val) {
+            // Your code goes here — linear scan.
+            return false;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        SinglyLinkedList ll = new SinglyLinkedList();
+        int[] prepends = parseIntArray(sc.nextLine());           // values to prepend, in order
+        int[] appends = parseIntArray(sc.nextLine());            // values to append, in order
+        int pos = Integer.parseInt(sc.nextLine().trim());        // insert position
+        int insertVal = Integer.parseInt(sc.nextLine().trim());  // insert value
+        int removeVal = Integer.parseInt(sc.nextLine().trim());  // value to remove
+        int searchVal = Integer.parseInt(sc.nextLine().trim());  // value to search for
+
+        for (int v : prepends) ll.prepend(v);
+        for (int v : appends) ll.append(v);
+        ll.insert(pos, insertVal);
+        boolean removed = ll.remove(removeVal);
+        boolean found = ll.search(searchVal);
+
+        List<Integer> out = new ArrayList<>();
+        for (ListNode node = ll.head; node != null; node = node.next) out.add(node.val);
+        System.out.println(out);
+        System.out.println("removed = " + removed);
+        System.out.println("found = " + found);
+        System.out.println("size = " + ll.size() + " empty = " + ll.empty());
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads a test-case list
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "prepends", "label": "prepends", "type": "int[]", "placeholder": "[2, 3]" },
+    { "id": "appends", "label": "appends", "type": "int[]", "placeholder": "[1]" },
+    { "id": "pos", "label": "pos", "type": "int", "placeholder": "1" },
+    { "id": "insertVal", "label": "insertVal", "type": "int", "placeholder": "8" },
+    { "id": "removeVal", "label": "removeVal", "type": "int", "placeholder": "2" },
+    { "id": "searchVal", "label": "searchVal", "type": "int", "placeholder": "5" }
+  ],
+  "cases": [
+    { "args": { "prepends": "[2, 3]", "appends": "[1]", "pos": "1", "insertVal": "8", "removeVal": "2", "searchVal": "5" }, "expected": "[3, 8, 1]\nremoved = true\nfound = false\nsize = 3 empty = false" },
+    { "args": { "prepends": "[]", "appends": "[]", "pos": "0", "insertVal": "7", "removeVal": "7", "searchVal": "7" }, "expected": "[]\nremoved = true\nfound = false\nsize = 0 empty = true" },
+    { "args": { "prepends": "[]", "appends": "[1, 2, 3]", "pos": "100", "insertVal": "9", "removeVal": "99", "searchVal": "2" }, "expected": "[1, 2, 3, 9]\nremoved = false\nfound = true\nsize = 4 empty = false" },
+    { "args": { "prepends": "[5]", "appends": "[]", "pos": "-5", "insertVal": "9", "removeVal": "5", "searchVal": "9" }, "expected": "[9]\nremoved = true\nfound = true\nsize = 1 empty = false" },
+    { "args": { "prepends": "[]", "appends": "[1, 2, 2, 3]", "pos": "2", "insertVal": "2", "removeVal": "2", "searchVal": "4" }, "expected": "[1, 2, 2, 3]\nremoved = true\nfound = false\nsize = 4 empty = false" }
+  ]
+}
+```
+
+<details>
+<summary><h2>Intuition</h2></summary>
+
+"Design" is the keyword that separates this from the operation-specific lessons. You're not implementing *one* operation — you're deciding **what state the class keeps** so all seven operations run efficiently and coexist correctly. Two decisions shape every linked-list class you'll ever write:
+
+1. **Cache `size` on the object, or recompute it?** Cached — `size()` is O(1), but every insert and delete must bump a counter, and mismatched book-keeping (forgetting to decrement on a failed remove) is a classic silent bug. Recomputed — no counter to corrupt, but `size()` costs O(n).
+2. **Keep a `tail` pointer, or walk to the end?** A cached `tail` makes `append` O(1), but every operation that might change the last node has to maintain it. No `tail` — `append` is O(n), one less invariant.
+
+This challenge takes the **cached-size, no-tail** design: `head` + `currentSize` is the minimal viable state, and the O(n) `append` is a teachable weakness (the transfer challenge in Key Takeaway adds the tail).
+
+The other thing to internalise before coding: **the head is always special.** Every other node has a predecessor whose `.next` you can redirect; the head has nothing pointing at it except the list's own `head` field. That's why `remove` checks `head.val == val` up front, and why `insert(pos ≤ 0)` collapses to `prepend` — "before the start" means "at the start", a clamp rather than an error, the same convention as negative indices in `array.slice(-1)`.
+
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
+
+### Solution
+
+```python solution time=O(n) space=O(1)
+import ast
+
+class ListNode:
+    def __init__(self, val, next=None):
+        self.val = val
+        self.next = next
 
 class SinglyLinkedList:
     def __init__(self):
 
         # Pointer to the front node of the list
-        self.head: Optional[ListNode] = None
+        self.head = None
 
         # Current number of elements in the list
-        self.current_size: int = 0
+        self.current_size = 0
 
-    def empty(self) -> bool:
+    def empty(self):
         return self.head is None
 
-    def size(self) -> int:
+    def size(self):
         return self.current_size
 
-    def prepend(self, val: int) -> None:
+    def prepend(self, val):
         new_node = ListNode(val)
         new_node.next = self.head
         self.head = new_node
         self.current_size += 1
 
-    def append(self, val: int) -> None:
+    def append(self, val):
         new_node = ListNode(val)
 
         # If the list is empty, set the new node as the head
@@ -296,7 +300,7 @@ class SinglyLinkedList:
 
         self.current_size += 1
 
-    def insert(self, position: int, val: int) -> None:
+    def insert(self, position, val):
 
         # If the position is less than or equal to 0, prepend the new
         # node
@@ -325,7 +329,7 @@ class SinglyLinkedList:
         current.next = new_node
         self.current_size += 1
 
-    def remove(self, val: int) -> bool:
+    def remove(self, val):
 
         # If the list is empty, no removal is possible
         if self.empty():
@@ -351,7 +355,7 @@ class SinglyLinkedList:
 
         return False
 
-    def search(self, val: int) -> bool:
+    def search(self, val):
         current = self.head
         while current:
 
@@ -363,76 +367,67 @@ class SinglyLinkedList:
         # If the value is not found, return False
         return False
 
-
-# Example from the problem statement
 ll = SinglyLinkedList()
-print(ll.empty())                         # True
-ll.prepend(2); print(to_list(ll.head))    # [2]
-ll.prepend(3); print(to_list(ll.head))    # [3, 2]
-ll.append(1);  print(to_list(ll.head))    # [3, 2, 1]
-print(ll.size())                          # 3
-print(ll.search(5))                       # False
-ll.insert(1, 8); print(to_list(ll.head))  # [3, 8, 2, 1]
-print(ll.remove(2))                       # True
-print(to_list(ll.head))                   # [3, 8, 1]
-print(ll.empty())                         # False
+prepends = ast.literal_eval(input())     # values to prepend, in order
+appends = ast.literal_eval(input())      # values to append, in order
+pos = int(input())                       # insert position
+insert_val = int(input())                # insert value
+remove_val = int(input())                # value to remove
+search_val = int(input())                # value to search for
 
-# Edge cases
-ll2 = SinglyLinkedList()
-print(ll2.remove(10))                     # False  (remove from empty)
-print(ll2.search(1))                      # False  (search in empty)
-ll2.append(5); print(ll2.size())          # 1
-ll2.insert(0, 9); print(to_list(ll2.head))# [9, 5]  (insert at position 0)
-print(ll2.remove(9))                      # True   (remove head)
-print(to_list(ll2.head))                  # [5]
+for v in prepends:
+    ll.prepend(v)
+for v in appends:
+    ll.append(v)
+ll.insert(pos, insert_val)
+removed = ll.remove(remove_val)
+found = ll.search(search_val)
+
+out = []
+node = ll.head
+while node:                              # traverse to collect the values in order
+    out.append(node.val)
+    node = node.next
+print(out)
+print("removed =", "true" if removed else "false")
+print("found =", "true" if found else "false")
+print("size =", ll.size(), "empty =", "true" if ll.empty() else "false")
 ```
 
-```java run viz=linked-list viz-root=head
+```java solution
 import java.util.*;
 
 public class Main {
     static class ListNode {
-        int val;
-        ListNode next;
-        ListNode() {}
+        int val; ListNode next;
         ListNode(int val) { this.val = val; }
-    }
-
-    static java.util.List<Integer> toList(ListNode head) {
-        java.util.List<Integer> out = new java.util.ArrayList<>();
-        while (head != null) { out.add(head.val); head = head.next; }
-        return out;
+        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
     }
 
     static class SinglyLinkedList {
 
         // Pointer to the front node of the list
-        private ListNode head;
+        ListNode head = null;
 
         // Current number of elements in the list
-        private int currentSize;
+        int currentSize = 0;
 
-        public SinglyLinkedList() {
-            head = null;
-            currentSize = 0;
-        }
-
-        public boolean empty() {
+        boolean empty() {
             return head == null;
         }
 
-        public int size() {
+        int size() {
             return currentSize;
         }
 
-        public void prepend(int val) {
+        void prepend(int val) {
             ListNode newNode = new ListNode(val);
             newNode.next = head;
             head = newNode;
             currentSize++;
         }
 
-        public void append(int val) {
+        void append(int val) {
             ListNode newNode = new ListNode(val);
 
             // If the list is empty, set the new node as the head
@@ -453,7 +448,7 @@ public class Main {
             currentSize++;
         }
 
-        public void insert(int position, int val) {
+        void insert(int position, int val) {
 
             // If the position is less than or equal to 0, prepend the
             // new node
@@ -486,7 +481,7 @@ public class Main {
             currentSize++;
         }
 
-        public boolean remove(int val) {
+        boolean remove(int val) {
 
             // If the list is empty, no removal is possible
             if (empty()) {
@@ -516,7 +511,7 @@ public class Main {
             return false;
         }
 
-        public boolean search(int val) {
+        boolean search(int val) {
             ListNode current = head;
             while (current != null) {
 
@@ -533,34 +528,42 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Example from the problem statement
+        Scanner sc = new Scanner(System.in);
         SinglyLinkedList ll = new SinglyLinkedList();
-        System.out.println(ll.empty());                         // true
-        ll.prepend(2); System.out.println(toList(ll.head));     // [2]
-        ll.prepend(3); System.out.println(toList(ll.head));     // [3, 2]
-        ll.append(1);  System.out.println(toList(ll.head));     // [3, 2, 1]
-        System.out.println(ll.size());                          // 3
-        System.out.println(ll.search(5));                       // false
-        ll.insert(1, 8); System.out.println(toList(ll.head));   // [3, 8, 2, 1]
-        System.out.println(ll.remove(2));                       // true
-        System.out.println(toList(ll.head));                    // [3, 8, 1]
-        System.out.println(ll.empty());                         // false
+        int[] prepends = parseIntArray(sc.nextLine());           // values to prepend, in order
+        int[] appends = parseIntArray(sc.nextLine());            // values to append, in order
+        int pos = Integer.parseInt(sc.nextLine().trim());        // insert position
+        int insertVal = Integer.parseInt(sc.nextLine().trim());  // insert value
+        int removeVal = Integer.parseInt(sc.nextLine().trim());  // value to remove
+        int searchVal = Integer.parseInt(sc.nextLine().trim());  // value to search for
 
-        // Edge cases
-        SinglyLinkedList ll2 = new SinglyLinkedList();
-        System.out.println(ll2.remove(10));                     // false  (remove from empty)
-        System.out.println(ll2.search(1));                      // false  (search in empty)
-        ll2.append(5); System.out.println(ll2.size());          // 1
-        ll2.insert(0, 9); System.out.println(toList(ll2.head)); // [9, 5]  (insert at position 0)
-        System.out.println(ll2.remove(9));                      // true   (remove head)
-        System.out.println(toList(ll2.head));                   // [5]
+        for (int v : prepends) ll.prepend(v);
+        for (int v : appends) ll.append(v);
+        ll.insert(pos, insertVal);
+        boolean removed = ll.remove(removeVal);
+        boolean found = ll.search(searchVal);
+
+        List<Integer> out = new ArrayList<>();
+        for (ListNode node = ll.head; node != null; node = node.next) out.add(node.val);
+        System.out.println(out);
+        System.out.println("removed = " + removed);
+        System.out.println("found = " + found);
+        System.out.println("size = " + ll.size() + " empty = " + ll.empty());
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads a test-case list
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```
 
-</details>
-<details>
-<summary><strong>Trace — the canonical example sequence</strong></summary>
+### Dry Run — the canonical example sequence
 
 ```
 Op                         | Internal state              | Return
@@ -581,10 +584,6 @@ remove(2)                   | head → 3 → 8 → 1;   size=3  | true
 empty()                     | head is not null            | false
 ```
 
-</details>
-<details>
-<summary><h2>Solution &amp; Analysis</h2></summary>
-
 ### Complexity Analysis
 
 | Operation | Time | Space | Notes |
@@ -598,7 +597,7 @@ empty()                     | head is not null            | false
 | `remove(val)` | **O(n)** worst case, O(1) at head | O(1) | find predecessor, splice |
 | `search(val)` | **O(n)** worst case, O(1) at head | O(1) | linear scan |
 
-The "**all O(n)**" row is the cost of the **no-tail** design. Caching a `tail` pointer drops `append` to O(1) time, but requires `tail` updates on every insert or delete that might change the last node.
+The "**all O(n)**" rows are the cost of the **no-tail** design. Caching a `tail` pointer drops `append` to O(1) time, but requires `tail` updates on every insert or delete that might change the last node.
 
 ### Edge Cases
 
@@ -618,8 +617,7 @@ The "**all O(n)**" row is the cost of the **no-tail** design. Caching a `tail` p
 <details>
 <summary><h2>Key Takeaway</h2></summary>
 
-
-You just built the linked list. Every operation from lessons 1–4 is here, wired together into a single class with a cohesive API. Two lessons are worth taking away:
+You just built the linked list. Every operation from the earlier lessons is here, wired together into a single class with a cohesive API. Two lessons are worth taking away:
 
 1. **The class's state IS the design.** `head`, `currentSize`, and (optionally) `tail` are three fields that encode three trade-offs. Every design decision — cache this, recompute that, reject this, clamp that — lives in those fields and the invariants you maintain on them.
 2. **The head is always special.** Every linked-list operation has a "the head case" because the head has no predecessor. Internalise this and you stop being surprised by it. Read *any* linked-list library code in the wild and you'll see the same pattern — head is always its own branch.

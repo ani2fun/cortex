@@ -10,11 +10,11 @@ import scala.scalajs.js
  * Read-only Monaco editor for the Visualise modal's SOURCE pane.
  *
  * The modal traces a fixed snapshot of the code, so this pane never edits — it only *displays* the source
- * through the same Monaco surface + `cortex-dark` theme as the chapter code blocks (visual consistency,
- * real syntax highlighting), and marks the line that just executed (`currentLine`) and the line the next step
- * will run (`nextLine`) with whole-line decorations. Decorations + a gentle
- * `revealLineInCenterIfOutsideViewport` are applied imperatively through the editor instance captured in
- * `onMount`, driven by a `(currentLine, nextLine)`-keyed effect — so stepping never remounts Monaco.
+ * through the same Monaco surface + `cortex-dark` theme as the chapter code blocks (visual consistency, real
+ * syntax highlighting), and marks the line that just executed (`currentLine`) and the line the next step will
+ * run (`nextLine`) with whole-line decorations. Decorations + a gentle `revealLineInCenterIfOutsideViewport`
+ * are applied imperatively through the editor instance captured in `onMount`, driven by a `(currentLine,
+ * nextLine)`-keyed effect — so stepping never remounts Monaco.
  *
  * Self-contained: it owns its editor / monaco / decoration-id refs, so the host modal's (large) hook chain is
  * untouched. The hand-rolled tokenizer's hover-to-highlight-cursor affordance is intentionally dropped here —

@@ -39,8 +39,9 @@ def infix_to_postfix(tokens):                       # Dijkstra's shunting-yard
         out.append(ops.pop())                        # drain remaining operators
     return out
 
-print("infix:   2 + 3 * 4")
-print("postfix:", " ".join(infix_to_postfix("2 + 3 * 4".split())))
+expr = input()
+print("infix:  ", expr)
+print("postfix:", " ".join(infix_to_postfix(expr.split())))
 ```
 
 ```java run viz=array viz-kind=stack
@@ -65,13 +66,27 @@ public class Main {
         return out;
     }
     public static void main(String[] x) {
-        System.out.println("infix:   2 + 3 * 4");
-        System.out.println("postfix: " + String.join(" ", infixToPostfix("2 + 3 * 4".split(" "))));
+        String expr = new Scanner(System.in).nextLine();
+        System.out.println("infix:   " + expr);
+        System.out.println("postfix: " + String.join(" ", infixToPostfix(expr.split(" "))));
     }
 }
 ```
 
-Both print `postfix: 2 3 4 * +`. Trace it: `2` goes to output; `+` waits on the stack; `3` goes to output; now `*` arrives — its precedence (2) is higher than the waiting `+` (1), so `+` is *not* released yet and `*` stacks on top; `4` goes to output; at end-of-input the stack drains top-first, emitting `*` then `+`. The result `2 3 4 * +` means `2 + (3*4)` — the multiplication bound tighter, exactly as arithmetic precedence demands. The `+` had to *wait* on the stack until everything higher-priority after it was done.
+```testcases
+{
+  "args": [
+    { "id": "expr", "label": "infix expression", "type": "string", "placeholder": "2 + 3 * 4" }
+  ],
+  "cases": [
+    { "args": { "expr": "2 + 3 * 4" }, "expected": "infix:   2 + 3 * 4\npostfix: 2 3 4 * +" },
+    { "args": { "expr": "( 2 + 3 ) * 4" }, "expected": "infix:   ( 2 + 3 ) * 4\npostfix: 2 3 + 4 *" },
+    { "args": { "expr": "10 - 3 + 2" }, "expected": "infix:   10 - 3 + 2\npostfix: 10 3 - 2 +" }
+  ]
+}
+```
+
+Both print `postfix: 2 3 4 * +` for the first case. Trace it: `2` goes to output; `+` waits on the stack; `3` goes to output; now `*` arrives — its precedence (2) is higher than the waiting `+` (1), so `+` is *not* released yet and `*` stacks on top; `4` goes to output; at end-of-input the stack drains top-first, emitting `*` then `+`. The result `2 3 4 * +` means `2 + (3*4)` — the multiplication bound tighter, exactly as arithmetic precedence demands. The `+` had to *wait* on the stack until everything higher-priority after it was done.
 
 ## How It Works
 
@@ -126,6 +141,40 @@ print("'2 + 3 * 4'     ->", " ".join(infix_to_postfix("2 + 3 * 4".split())))
 print("'( 2 + 3 ) * 4' ->", " ".join(infix_to_postfix("( 2 + 3 ) * 4".split())))
 ```
 
+```java run viz=array viz-kind=stack
+import java.util.*;
+public class Main {
+    static Map<String,Integer> prec = Map.of("+", 1, "-", 1, "*", 2, "/", 2);
+    static String infixToPostfix(String[] tokens) {
+        List<String> out = new ArrayList<>();
+        Deque<String> ops = new ArrayDeque<>();
+        for (String t : tokens) {
+            if (prec.containsKey(t)) {
+                while (!ops.isEmpty() && !ops.peek().equals("(") && prec.get(ops.peek()) >= prec.get(t)) out.add(ops.pop());
+                ops.push(t);
+            } else if (t.equals("(")) ops.push(t);
+            else if (t.equals(")")) { while (!ops.isEmpty() && !ops.peek().equals("(")) out.add(ops.pop()); ops.pop(); }
+            else out.add(t);
+        }
+        while (!ops.isEmpty()) out.add(ops.pop());
+        return String.join(" ", out);
+    }
+    public static void main(String[] x) {
+        System.out.println("'2 + 3 * 4'     -> " + infixToPostfix("2 + 3 * 4".split(" ")));
+        System.out.println("'( 2 + 3 ) * 4' -> " + infixToPostfix("( 2 + 3 ) * 4".split(" ")));
+    }
+}
+```
+
+```testcases
+{
+  "args": [],
+  "cases": [
+    { "args": {}, "expected": "'2 + 3 * 4'     -> 2 3 4 * +\n'( 2 + 3 ) * 4' -> 2 3 + 4 *" }
+  ]
+}
+```
+
 <details>
 <summary><strong>Reveal</strong></summary>
 
@@ -135,12 +184,72 @@ print("'( 2 + 3 ) * 4' ->", " ".join(infix_to_postfix("( 2 + 3 ) * 4".split())))
 
 ## Your Turn
 
-Convert plus evaluate is a complete calculator: shunting-yard parses the human-friendly infix into postfix, then the [previous lesson's](/cortex/data-structures-and-algorithms/linear-structures/stack/evaluating-expressions-using-stack) stack machine computes the number. Compose them.
-
-**Predict:** running both `2 + 3 * 4` and `( 2 + 3 ) * 4` through *convert-then-evaluate*, what two values come out?
+Convert plus evaluate is a complete calculator: shunting-yard parses the human-friendly infix into postfix, then the [previous lesson's](/cortex/data-structures-and-algorithms/linear-structures/stack/evaluating-expressions-using-stack) stack machine computes the number. Implement both `infix_to_postfix(tokens)` and `eval_postfix(tokens)`, then compose them to evaluate an infix expression given as a single line.
 
 ```python run viz=array viz-kind=stack
 prec = {"+": 1, "-": 1, "*": 2, "/": 2}
+
+def infix_to_postfix(tokens):
+    # Your code goes here — shunting-yard: operands to output; operators wait on
+    # the ops stack, released by precedence; ( is a barrier, ) flushes to (.
+    pass
+
+def eval_postfix(tokens):
+    # Your code goes here — push operands; on an operator pop two (top = right),
+    # apply, push the result; return the lone survivor.
+    pass
+
+infix = input().split()
+post = infix_to_postfix(infix)
+print(eval_postfix(post))
+```
+
+```java run viz=array viz-kind=stack
+import java.util.*;
+public class Main {
+    static Map<String,Integer> prec = Map.of("+", 1, "-", 1, "*", 2, "/", 2);
+
+    static List<String> infixToPostfix(String[] tokens) {
+        // Your code goes here — shunting-yard: operands to output; operators wait on
+        // the ops stack, released by precedence; ( is a barrier, ) flushes to (.
+        return new ArrayList<>();
+    }
+
+    static int evalPostfix(List<String> tokens) {
+        // Your code goes here — push operands; on an operator pop two (top = right),
+        // apply, push the result; return the lone survivor.
+        return 0;
+    }
+
+    public static void main(String[] x) {
+        String[] infix = new Scanner(System.in).nextLine().split(" ");
+        System.out.println(evalPostfix(infixToPostfix(infix)));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "expr", "label": "infix expression", "type": "string", "placeholder": "2 + 3 * 4" }
+  ],
+  "cases": [
+    { "args": { "expr": "2 + 3 * 4" }, "expected": "14" },
+    { "args": { "expr": "( 2 + 3 ) * 4" }, "expected": "20" },
+    { "args": { "expr": "10 - 3 + 2" }, "expected": "9" },
+    { "args": { "expr": "6 / 2 * 3" }, "expected": "9" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Two `O(N)` passes: shunting-yard converts the infix to postfix (all precedence and parenthesis logic lives here), then the stack evaluator computes the result (trivial, because postfix is unambiguous). Operand order for `-` and `/`: the first pop from the evaluator stack is the **right** operand.
+
+```python solution time=O(n) space=O(n)
+prec = {"+": 1, "-": 1, "*": 2, "/": 2}
+
 def infix_to_postfix(tokens):
     out, ops = [], []
     for t in tokens:
@@ -155,7 +264,7 @@ def infix_to_postfix(tokens):
     while ops: out.append(ops.pop())
     return out
 
-def eval_postfix(tokens):                            # the stack evaluator from the previous lesson
+def eval_postfix(tokens):
     st = []
     for t in tokens:
         if t in "+-*/":
@@ -164,15 +273,16 @@ def eval_postfix(tokens):                            # the stack evaluator from 
         else: st.append(int(t))
     return st[-1]
 
-for infix in ["2 + 3 * 4", "( 2 + 3 ) * 4"]:
-    post = infix_to_postfix(infix.split())
-    print(f"{infix:>15}  ->  {' '.join(post):>9}  =  {eval_postfix(post)}")
+infix = input().split()
+post = infix_to_postfix(infix)
+print(eval_postfix(post))
 ```
 
-```java run viz=array viz-kind=stack
+```java solution
 import java.util.*;
 public class Main {
     static Map<String,Integer> prec = Map.of("+", 1, "-", 1, "*", 2, "/", 2);
+
     static List<String> infixToPostfix(String[] tokens) {
         List<String> out = new ArrayList<>(); Deque<String> ops = new ArrayDeque<>();
         for (String t : tokens) {
@@ -186,7 +296,8 @@ public class Main {
         while (!ops.isEmpty()) out.add(ops.pop());
         return out;
     }
-    static int evalPostfix(List<String> tokens) {    // the stack evaluator from the previous lesson
+
+    static int evalPostfix(List<String> tokens) {
         Deque<Integer> st = new ArrayDeque<>();
         for (String t : tokens) {
             if (t.length() == 1 && "+-*/".contains(t)) {
@@ -196,16 +307,15 @@ public class Main {
         }
         return st.peek();
     }
+
     public static void main(String[] x) {
-        for (String infix : new String[]{"2 + 3 * 4", "( 2 + 3 ) * 4"}) {
-            List<String> post = infixToPostfix(infix.split(" "));
-            System.out.printf("%15s  ->  %9s  =  %d%n", infix, String.join(" ", post), evalPostfix(post));
-        }
+        String[] infix = new Scanner(System.in).nextLine().split(" ");
+        System.out.println(evalPostfix(infixToPostfix(infix)));
     }
 }
 ```
 
-Both print `2 + 3 * 4 → 2 3 4 * + = 14` and `( 2 + 3 ) * 4 → 2 3 + 4 * = 20`. Two `O(N)` passes — shunting-yard to convert, the stack machine to evaluate — and you've built the core of a four-function calculator. The first expression honours precedence (multiply first → 14); the second honours the parentheses the user typed (add first → 20). The conversion is where all the precedence and parenthesis logic lives; the evaluator stays blissfully simple because postfix has already encoded every decision. Real calculators and language interpreters split the work exactly this way: a parser produces an unambiguous intermediate form (postfix, or an [expression tree](/cortex/data-structures-and-algorithms/linear-structures/stack/infix-postfix-and-prefix-notations)), and a separate, trivial evaluator runs it.
+</details>
 
 ## Reflect & Connect
 

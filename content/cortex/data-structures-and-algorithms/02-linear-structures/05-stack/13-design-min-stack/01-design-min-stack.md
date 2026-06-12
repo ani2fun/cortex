@@ -1,51 +1,166 @@
 ---
 title: "Design a Min Stack"
-summary: "Design a stack that supports push, pop, top, and getMin all in O(1) — the challenge is tracking the minimum as elements are pushed and popped."
+summary: "Design a stack that supports push, pop, top, and getMin all in O(1) — the challenge is tracking the minimum as elements are pushed and popped, using a single internal stack."
 prereqs:
   - 02-linear-structures/05-stack/01-what-is-a-stack
 difficulty: hard
+kind: problem
+topics: [stack, design]
 ---
 
-A normal stack does push, pop, and top in O(1). Can you add **`getMin()`** — the smallest value currently in the stack — *also* in O(1), with no scanning, using only **one** internal stack? The trick is to **encode the previous minimum directly into the storage stack**: when a new minimum is pushed, push the *old* minimum onto the stack first, then the new value on top. The only moment you need the old min is when you pop the current min — and it's sitting right underneath, ready to restore. This lesson designs **Min Stack** and its mirror **Max Stack** from that one idea: a single auxiliary integer plus one stack adds a whole new O(1) query without breaking any existing guarantee.
+# Design a Min Stack
 
-## Design a Min Stack
+## The Problem
 
-### Problem Statement
+A normal stack does push, pop, and top in O(1). Can you add **`getMin()`** — the smallest value currently in the stack — *also* in O(1), with no scanning, using only **one** internal stack? The trick is to **encode the previous minimum directly into the storage stack**: when a new minimum is pushed, push the *old* minimum onto the stack first, then the new value on top. The only moment you need that old minimum is when you pop the current one — and it's sitting right underneath, ready to restore.
 
-Implement a `MinStack` class with the following operations, all amortised **O(1)**:
-
-> -   **`MinStack()`** — initialise.
-> -   **`push(int val)`** — push onto the top.
-> -   **`pop()`** — remove and discard the top.
-> -   **`top()`** — return the top element.
-> -   **`getMin()`** — return the smallest value currently in the stack.
-
-> **Constraints:**
-> - `getMin()` must run in **O(1)**.
-> - You may use only **one** internal stack.
-> - Assume no duplicate values are ever pushed.
-
-> **Example:**
+> Implement a `MinStack` class that supports, all in **O(1)**:
 >
-> | Operation | Stack state | Output |
-> |---|---|---|
-> | `MinStack()` | `[]` | `null` |
-> | `push(2)` | `[2]` | `null` |
-> | `push(3)` | `[3, 2]` (top first) | `null` |
-> | `top()` | `[3, 2]` | `3` |
-> | `getMin()` | `[3, 2]` | `2` |
-> | `pop()` | `[2]` | `null` |
-> | `getMin()` | `[2]` | `2` |
-> | `push(-1)` | `[-1, 2]` | `null` |
-> | `getMin()` | `[-1, 2]` | `-1` |
+> - `MinStack()` — initialise an empty stack.
+> - `push(val)` — push `val` onto the top.
+> - `pop()` — remove the top element.
+> - `top()` — return the top element.
+> - `getMin()` — return the smallest value currently in the stack.
+
+```
+Input:
+  ops  = [MinStack, push, push, top, getMin, pop, getMin, push, getMin]
+  args = [[],        [2],  [3],  [],  [],     [],  [],     [-1], []]
+
+Output:
+  [null, null, null, 3, 2, null, 2, null, -1]
+```
+
+```quiz
+{
+  "prompt": "On a fresh MinStack, you run push(5), push(3), push(8), then pop(). What does getMin() return next?",
+  "input": "push(5), push(3), push(8), pop()",
+  "options": ["3", "5", "8", "Undefined"],
+  "answer": "3"
+}
+```
+
+## Constraints
+
+- `getMin()` must run in **O(1)**.
+- You may use only **one** internal stack.
+- Assume no duplicate values are ever pushed.
+
+The workbench drives your class through a fixed sequence: it pushes the `pushes` values in order, prints the current `top` and `min`, then performs `pops` pops, printing `top` and `min` after each one. Implement all four methods so every line matches.
+
+```python run viz=array viz-root=storage_stack viz-kind=stack
+import ast
+
+class MinStack:
+    def __init__(self):
+        self.min = float("inf")          # running minimum-so-far
+        self.storage_stack = []          # the single backing stack
+
+    def push(self, val):
+        # Your code goes here — if val is a new minimum, bury the old
+        # minimum on the stack first, then push val and update min.
+        pass
+
+    def pop(self):
+        # Your code goes here — pop the top; if it was the current min,
+        # the value now exposed is the buried previous min — restore from it.
+        pass
+
+    def top(self):
+        # Your code goes here — the top of the storage stack.
+        return 0
+
+    def get_min(self):
+        # Your code goes here — O(1): return the tracked minimum.
+        return 0
+
+ms = MinStack()
+pushes = ast.literal_eval(input())   # values to push, in order
+pops = int(input())                  # number of pops afterwards
+
+for v in pushes:
+    ms.push(v)
+print("top =", ms.top(), "min =", ms.get_min())
+for _ in range(pops):
+    ms.pop()
+    print("top =", ms.top(), "min =", ms.get_min())
+```
+
+```java run viz=array viz-root=storage_stack viz-kind=stack
+import java.util.*;
+
+public class Main {
+    static class MinStack {
+        private int min = Integer.MAX_VALUE;          // running minimum-so-far
+        private Stack<Integer> storageStack = new Stack<>();  // the single backing stack
+
+        public void push(int val) {
+            // Your code goes here — if val is a new minimum, bury the old
+            // minimum on the stack first, then push val and update min.
+        }
+
+        public void pop() {
+            // Your code goes here — pop the top; if it was the current min,
+            // the value now exposed is the buried previous min — restore from it.
+        }
+
+        public int top() {
+            // Your code goes here — the top of the storage stack.
+            return 0;
+        }
+
+        public int getMin() {
+            // Your code goes here — O(1): return the tracked minimum.
+            return 0;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        MinStack ms = new MinStack();
+        int[] pushes = parseIntArray(sc.nextLine());        // values to push, in order
+        int pops = Integer.parseInt(sc.nextLine().trim());  // number of pops afterwards
+
+        for (int v : pushes) ms.push(v);
+        System.out.println("top = " + ms.top() + " min = " + ms.getMin());
+        for (int i = 0; i < pops; i++) {
+            ms.pop();
+            System.out.println("top = " + ms.top() + " min = " + ms.getMin());
+        }
+    }
+
+    // "[2, 3]" → {2, 3} — reads a test-case list
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "pushes", "label": "pushes", "type": "int[]", "placeholder": "[2, 3]" },
+    { "id": "pops", "label": "pops", "type": "int", "placeholder": "1" }
+  ],
+  "cases": [
+    { "args": { "pushes": "[2, 3]", "pops": "1" }, "expected": "top = 3 min = 2\ntop = 2 min = 2" },
+    { "args": { "pushes": "[5]", "pops": "0" }, "expected": "top = 5 min = 5" },
+    { "args": { "pushes": "[10, 1, 7]", "pops": "1" }, "expected": "top = 7 min = 1\ntop = 1 min = 1" },
+    { "args": { "pushes": "[3, 1, 2]", "pops": "2" }, "expected": "top = 2 min = 1\ntop = 1 min = 1\ntop = 3 min = 3" },
+    { "args": { "pushes": "[-1, -5, 3]", "pops": "0" }, "expected": "top = 3 min = -5" }
+  ]
+}
+```
 
 <details>
-<summary><h2>Approach — encode the previous minimum into the stack</h2></summary>
+<summary><h2>Intuition</h2></summary>
 
-
-The clever invariant: maintain a running `min` field; when a *new* minimum arrives, **push the OLD min onto the stack first**, *then* push the new value. Update `min` to the new value.
-
-Now the stack contains, just below every "minimum so far" record, the previous minimum. When we eventually pop the current min, we know to also pop the saved previous min — and that saved value becomes the new current min.
+The clever invariant: maintain a running `min` field; when a *new* minimum arrives, **push the OLD min onto the stack first**, *then* push the new value, and update `min`. Now the stack holds, just below every "minimum so far" record, the previous minimum. When you eventually pop the current min, the previous one is sitting right underneath — pop it too and it becomes the new current min.
 
 ```mermaid
 ---
@@ -72,18 +187,20 @@ flowchart LR
     PUSH3 --> PUSH2 --> POP
 ```
 
-<p align="center"><strong>Min Stack — when a new min lands, the previous min is buried just below it. When the current min is popped, restore from the buried record. Push of a non-min value is just a regular push.</strong></p>
+<p align="center"><strong>Min Stack — when a new min lands, the previous min is buried just below it. When the current min is popped, restore from the buried record. Pushing a non-min value is just a regular push.</strong></p>
 
-> **Why this works** — the key observation is that the only time we need the *previous* min is when we *remove* the current min. At that moment, the value sitting just under the current-min slot is exactly the previous min. So encoding it inline is sufficient — we don't need a parallel auxiliary stack.
+> **Why this works** — the only time you need the *previous* min is when you *remove* the current min. At that moment the value sitting just under the current-min slot is exactly the previous min. Encoding it inline is sufficient — no parallel auxiliary stack required.
+
+**The Max Stack is the mirror image.** Want the *largest* value in O(1) instead? Flip three things: track `max` initialised to `-∞`, bury the old max when `val >= max`, and restore on a pop that equals `max`. Everything else — the single stack, the burial trick, the O(1) guarantees — is identical. The idea, not the comparison, is what transfers.
 
 </details>
 <details>
-<summary><h2>Solution</h2></summary>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
+### Solution
 
-
-```python run viz=array viz-root=storage_stack viz-kind=stack
-import math
+```python solution time=O(1) space=O(n)
+import ast
 
 class MinStack:
     def __init__(self):
@@ -94,11 +211,10 @@ class MinStack:
         # Stack to store the elements
         self.storage_stack = []
 
-    def push(self, val: int) -> None:
+    def push(self, val):
 
         # If the new element is smaller or equal to the current minimum,
-        # push the current minimum onto the stack and update the
-        # minimum
+        # push the current minimum onto the stack and update the minimum
         if val <= self.min:
             self.storage_stack.append(self.min)
             self.min = val
@@ -106,51 +222,36 @@ class MinStack:
         # Push the element onto the stack
         self.storage_stack.append(val)
 
-    def pop(self) -> None:
+    def pop(self):
 
-        # If the top element is equal to the current minimum,
-        # update the minimum by popping another element from the
-        # stack
+        # If the popped element is the current minimum, restore the
+        # previous minimum from the slot buried just beneath it
         if self.storage_stack.pop() == self.min:
             self.min = self.storage_stack.pop()
 
-    def top(self) -> int:
+    def top(self):
 
         # Return the top element of the stack
         return self.storage_stack[-1]
 
-    def get_min(self) -> int:
+    def get_min(self):
 
         # Return the current minimum element
         return self.min
 
-
-# Example from the problem statement
 ms = MinStack()
-ms.push(2); ms.push(3)
-print(ms.top())      # 3
-print(ms.get_min())  # 2
-ms.pop()
-print(ms.get_min())  # 2
-ms.push(-1)
-print(ms.get_min())  # -1
+pushes = ast.literal_eval(input())   # values to push, in order
+pops = int(input())                  # number of pops afterwards
 
-# Edge cases
-ms2 = MinStack()
-ms2.push(5)
-print(ms2.top())     # 5
-print(ms2.get_min()) # 5
-
-ms3 = MinStack()
-ms3.push(10); ms3.push(1); ms3.push(7)
-print(ms3.get_min()) # 1
-ms3.pop()
-print(ms3.get_min()) # 1
-ms3.pop()
-print(ms3.get_min()) # 10
+for v in pushes:
+    ms.push(v)
+print("top =", ms.top(), "min =", ms.get_min())
+for _ in range(pops):
+    ms.pop()
+    print("top =", ms.top(), "min =", ms.get_min())
 ```
 
-```java run viz=array viz-root=storage_stack viz-kind=stack
+```java solution
 import java.util.*;
 
 public class Main {
@@ -160,7 +261,7 @@ public class Main {
         private int min = Integer.MAX_VALUE;
 
         // Stack to store the elements
-        private Stack<Integer> storageStack = new Stack<Integer>();
+        private Stack<Integer> storageStack = new Stack<>();
 
         public void push(int val) {
 
@@ -178,9 +279,8 @@ public class Main {
 
         public void pop() {
 
-            // If the popped element is equal to the current minimum,
-            // update the minimum by popping another element from the
-            // stack
+            // If the popped element is the current minimum, restore the
+            // previous minimum from the slot buried just beneath it
             if (storageStack.pop() == min) {
                 min = storageStack.pop();
             }
@@ -200,227 +300,75 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Example from the problem statement
+        Scanner sc = new Scanner(System.in);
         MinStack ms = new MinStack();
-        ms.push(2); ms.push(3);
-        System.out.println(ms.top());    // 3
-        System.out.println(ms.getMin()); // 2
-        ms.pop();
-        System.out.println(ms.getMin()); // 2
-        ms.push(-1);
-        System.out.println(ms.getMin()); // -1
+        int[] pushes = parseIntArray(sc.nextLine());        // values to push, in order
+        int pops = Integer.parseInt(sc.nextLine().trim());  // number of pops afterwards
 
-        // Edge cases
-        MinStack ms2 = new MinStack();
-        ms2.push(5);
-        System.out.println(ms2.top());    // 5
-        System.out.println(ms2.getMin()); // 5
+        for (int v : pushes) ms.push(v);
+        System.out.println("top = " + ms.top() + " min = " + ms.getMin());
+        for (int i = 0; i < pops; i++) {
+            ms.pop();
+            System.out.println("top = " + ms.top() + " min = " + ms.getMin());
+        }
+    }
 
-        MinStack ms3 = new MinStack();
-        ms3.push(10); ms3.push(1); ms3.push(7);
-        System.out.println(ms3.getMin()); // 1
-        ms3.pop();
-        System.out.println(ms3.getMin()); // 1
-        ms3.pop();
-        System.out.println(ms3.getMin()); // 10
+    // "[2, 3]" → {2, 3} — reads a test-case list
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```
 
-</details>
+### Dry Run — the canonical example sequence
 
+```
+Op          | storage_stack (bottom→top) | min | Return
+------------|----------------------------|-----|-------
+MinStack()  | []                         | ∞   | —
+push(2)     | [∞, 2]                     | 2   | null   ← 2 ≤ ∞: bury ∞, then push 2
+push(3)     | [∞, 2, 3]                  | 2   | null   ← 3 > 2: plain push
+top()       | [∞, 2, 3]                  | 2   | 3
+getMin()    | [∞, 2, 3]                  | 2   | 2
+pop()       | [∞, 2]                     | 2   | null   ← popped 3 ≠ min: nothing buried
+getMin()    | [∞, 2]                     | 2   | 2
+push(-1)    | [∞, 2, 2, -1]             | -1  | null   ← -1 ≤ 2: bury 2, then push -1
+getMin()    | [∞, 2, 2, -1]            | -1  | -1
+```
 
-***
+### Complexity Analysis
 
-## Design a Max Stack
+| Operation | Time | Space | Notes |
+|---|---|---|---|
+| `MinStack()` | O(1) | O(1) | trivial init |
+| `push(val)` | O(1) | — | at most one burial + one push |
+| `pop()` | O(1) | — | at most two physical pops |
+| `top()` | O(1) | — | peek the stack |
+| `getMin()` | O(1) | O(1) | read the cached field |
+| total | — | O(n) | one slot per element, plus one buried record per descending minimum |
 
-### Problem Statement
+### Edge Cases
 
-Identical to Min Stack, but track the **maximum** instead of the minimum.
-
-> -   **`MaxStack()`**, **`push(val)`**, **`pop()`**, **`top()`** — same semantics.
-> -   **`getMax()`** — return the largest value currently in the stack, in **O(1)**.
-
-> **Constraints:**
-> - `getMax()` must run in **O(1)**.
-> - Use only one internal stack.
-> - No duplicate values.
-
-> **Example:**
->
-> | Operation | Stack state | Output |
-> |---|---|---|
-> | `MaxStack()` | `[]` | `null` |
-> | `push(3)` | `[3]` | `null` |
-> | `push(2)` | `[2, 3]` (top first) | `null` |
-> | `top()` | `[2, 3]` | `2` |
-> | `getMax()` | `[2, 3]` | `3` |
-> | `pop()` | `[3]` | `null` |
-> | `getMax()` | `[3]` | `3` |
-> | `push(5)` | `[5, 3]` | `null` |
-> | `getMax()` | `[5, 3]` | `5` |
-
-<details>
-<summary><h2>Approach</h2></summary>
-
-
-Mirror image of MinStack. Maintain a running `max`. When a new max arrives, push the old max as a burial record, then the new value, and update max. When popping a value equal to the current max, also pop the buried record and restore max from it.
+| Case | Example | Expected behaviour |
+|---|---|---|
+| Single element | `push(5)` | `top` and `min` both `5` |
+| Strictly increasing pushes | `[10, 1, 7]` after one pop | min stays `1` — popping the non-min `7` buries nothing |
+| Pop the current min | `[3, 1, 2]`, two pops | popping `1` exposes the buried `3`, restoring `min = 3` |
+| All-negative / new minima | `[-1, -5, 3]` | each new low buries the old one; `min = -5` |
 
 </details>
 <details>
-<summary><h2>Solution</h2></summary>
+<summary><h2>Key Takeaway</h2></summary>
 
+1. **One auxiliary integer + one stack = O(1) min.** No second stack required — *bury* the previous minimum just below every new-minimum value in the same stack, and the restore comes for free on pop.
+2. **The trigger to restore is `popped == current min`.** When the popped value equals the current min, the buried record sits one slot below — pop it and restore. Otherwise, no extra work.
+3. **The move that transfers is encoding metadata *into* the structure**, not alongside it. A two-stack version (a parallel stack of running minima) also works and is more obvious, but the single-stack trick is the one worth keeping.
 
-
-```python run viz=array viz-root=storage_stack viz-kind=stack
-import math
-from typing import List
-
-class MaxStack:
-    def __init__(self):
-
-        # Variable to track the maximum element
-        self.max = float("-inf")
-
-        # Stack to store the elements
-        self.storage_stack: List[int] = []
-
-    def push(self, val: int) -> None:
-
-        # If the new element is greater or equal to the current maximum,
-        # push the current maximum onto the stack and update the
-        # maximum
-        if val >= self.max:
-            self.storage_stack.append(self.max)
-            self.max = val
-
-        # Push the element onto the stack
-        self.storage_stack.append(val)
-
-    def pop(self) -> None:
-
-        # If the popped element is equal to the current maximum,
-        # update the maximum by popping another element from the
-        # stack
-        if self.storage_stack.pop() == self.max:
-            self.max = self.storage_stack.pop()
-
-    def top(self) -> int:
-
-        # Return the top element of the stack
-        return self.storage_stack[-1]
-
-    def get_max(self) -> int:
-
-        # Return the current maximum element
-        return self.max
-
-
-# Example from the problem statement
-ms = MaxStack()
-ms.push(3); ms.push(2)
-print(ms.top())      # 2
-print(ms.get_max())  # 3
-ms.pop()
-print(ms.get_max())  # 3
-ms.push(5)
-print(ms.get_max())  # 5
-
-# Edge cases
-ms2 = MaxStack()
-ms2.push(7)
-print(ms2.top())     # 7
-print(ms2.get_max()) # 7
-
-ms3 = MaxStack()
-ms3.push(1); ms3.push(10); ms3.push(4)
-print(ms3.get_max()) # 10
-ms3.pop()
-print(ms3.get_max()) # 10
-ms3.pop()
-print(ms3.get_max()) # 1
-```
-
-```java run viz=array viz-root=storage_stack viz-kind=stack
-import java.util.*;
-
-public class Main {
-    static class MaxStack {
-
-        // Variable to track the maximum element
-        private int max = Integer.MIN_VALUE;
-
-        // Stack to store the elements
-        private Stack<Integer> storageStack = new Stack<Integer>();
-
-        public void push(int val) {
-
-            // If the new element is greater or equal to the current
-            // maximum, push the current maximum onto the stack and
-            // update the maximum
-            if (val >= max) {
-                storageStack.push(max);
-                max = val;
-            }
-
-            // Push the element onto the stack
-            storageStack.push(val);
-        }
-
-        public void pop() {
-
-            // If the popped element is equal to the current maximum,
-            // update the maximum by popping another element from the
-            // stack
-            if (storageStack.pop() == max) {
-                max = storageStack.pop();
-            }
-        }
-
-        public int top() {
-
-            // Return the top element of the stack
-            return storageStack.peek();
-        }
-
-        public int getMax() {
-
-            // Return the current maximum element
-            return max;
-        }
-    }
-
-    public static void main(String[] args) {
-        // Example from the problem statement
-        MaxStack ms = new MaxStack();
-        ms.push(3); ms.push(2);
-        System.out.println(ms.top());    // 2
-        System.out.println(ms.getMax()); // 3
-        ms.pop();
-        System.out.println(ms.getMax()); // 3
-        ms.push(5);
-        System.out.println(ms.getMax()); // 5
-
-        // Edge cases
-        MaxStack ms2 = new MaxStack();
-        ms2.push(7);
-        System.out.println(ms2.top());    // 7
-        System.out.println(ms2.getMax()); // 7
-
-        MaxStack ms3 = new MaxStack();
-        ms3.push(1); ms3.push(10); ms3.push(4);
-        System.out.println(ms3.getMax()); // 10
-        ms3.pop();
-        System.out.println(ms3.getMax()); // 10
-        ms3.pop();
-        System.out.println(ms3.getMax()); // 1
-    }
-}
-```
+> **Transfer Challenge:** Turn this into a **Max Stack** — `getMax()` in O(1). What is the *minimum* set of edits? (Initialise the tracker to `-∞`, bury the old max when `val >= max`, restore on a pop equal to `max`. Three comparisons flip; the structure does not.)
 
 </details>
-## Key Takeaway
-
-1. **One auxiliary integer + one stack = O(1) min/max.** No second stack required — *bury* the previous extremum just below every new-extremum value in the same stack.
-2. **The trigger to restore is `top == current min`.** When the popped value equals the current min, a saved record sits one slot below — pop it and restore. Otherwise, no extra work.
-3. **A two-stack version also works** (a parallel stack of running minima) and is more obvious; the single-stack version is the one that teaches the deeper move — encoding metadata *into* the structure rather than alongside it.

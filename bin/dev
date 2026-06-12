@@ -41,7 +41,32 @@ cleanup() {
 }
 trap cleanup EXIT INT TERM
 
+# Kill orphaned sbt watcher / forked-server JVMs left behind by a PRIOR ./bin/dev
+# that didn't shut down cleanly. Ctrl-C runs the trap above, but closing the
+# terminal (or a SIGKILL) orphans the backgrounded `sbt … "~ ;client/fastLinkJS …"`
+# watcher: it reparents to PID 1, keeps a JVM pegged near 100% CPU, and holds the
+# scalajs zinc cache lock. The port pre-flight below only catches processes still
+# LISTENING — a watcher whose forked server already died holds no port and would
+# otherwise accumulate across sessions (we have seen ~10 pile up). Match the
+# watcher by its distinctive `client/fastLinkJS` task chain and the forked server
+# by its main class. Runs BEFORE we start our own watcher, so it never self-kills.
+kill_stale_sbt() {
+  local stale
+  stale="$(pgrep -f 'client/fastLinkJS' 2>/dev/null || true)"
+  stale="$stale $(pgrep -f 'cortex\.server\.Main' 2>/dev/null || true)"
+  stale="$(printf '%s\n' $stale | grep -E '^[0-9]+$' | sort -u | tr '\n' ' ' || true)"
+  if [[ -n "${stale// /}" ]]; then
+    warn "killing stale sbt watcher/server JVM(s) from a prior run: ${stale}"
+    kill -9 $stale 2>/dev/null || true
+    sleep 1
+  fi
+  return 0
+}
+
 # ---- 1. Pre-flight: free the ports we need ------------------------------
+
+# Sweep orphaned sbt watcher/server JVMs from prior runs first (see above).
+kill_stale_sbt
 
 # Stop any background sbt-revolver server first (clean if a previous run
 # of this script was killed without releasing it).

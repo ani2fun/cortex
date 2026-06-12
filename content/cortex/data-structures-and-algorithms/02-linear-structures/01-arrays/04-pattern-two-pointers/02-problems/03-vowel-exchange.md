@@ -4,6 +4,8 @@ summary: "Given a string s, reverse the vowels in the string and return the upda
 prereqs:
   - 04-pattern-two-pointers/01-pattern
 difficulty: easy
+kind: problem
+topics: [two-pointers, arrays]
 ---
 
 # Vowel Exchange
@@ -51,6 +53,67 @@ Explanation: No vowels — the string is unchanged.
 Input:  s = "aeiou"
 Output: "uoiea"
 Explanation: Every position is a vowel, so the swap reduces to a full reversal.
+```
+
+```quiz
+{
+  "prompt": "Now your turn!",
+  "input": "s = \"cortex\"",
+  "options": ["cortex", "certox", "cortxe", "cxrteo"],
+  "answer": "certox"
+}
+```
+
+## Constraints
+
+- `0 ≤ s.length ≤ 1000`
+- `s` consists of printable ASCII characters
+
+```python run viz=array viz-root=chars
+class Solution:
+    def vowel_exchange(self, s: str) -> str:
+        # Your code goes here — two pointers from both ends; slide past
+        # consonants, swap when both sides land on a vowel.
+        return s
+
+s = input()                          # the test case's s
+print(Solution().vowel_exchange(s))
+```
+
+```java run viz=array viz-root=chars
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public String vowelExchange(String s) {
+            // Your code goes here — two pointers from both ends; slide past
+            // consonants, swap when both sides land on a vowel.
+            return s;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String s = sc.hasNextLine() ? sc.nextLine() : "";
+        System.out.println(new Solution().vowelExchange(s));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "s", "type": "string", "placeholder": "afegijoku" }
+  ],
+  "cases": [
+    { "args": { "s": "random" }, "expected": "rondam" },
+    { "args": { "s": "afegijoku" }, "expected": "ufogijeka" },
+    { "args": { "s": "bcdf" }, "expected": "bcdf" },
+    { "args": { "s": "aeiou" }, "expected": "uoiea" },
+    { "args": { "s": "AEIou" }, "expected": "uoIEA" },
+    { "args": { "s": "hello" }, "expected": "holle" }
+  ]
+}
 ```
 
 <details>
@@ -635,7 +698,7 @@ This is a direct application with one variation: not every iteration produces a 
 
 ### Solution
 
-```python run viz=array viz-root=chars
+```python solution time=O(n) space=O(n)
 class Solution:
     def vowel_exchange(self, s: str) -> str:
 
@@ -677,20 +740,11 @@ class Solution:
         return "".join(chars)
 
 
-# Examples from the problem statement
-print(Solution().vowel_exchange("random"))    # rondam
-print(Solution().vowel_exchange("afegijoku")) # ufogijeka
-print(Solution().vowel_exchange("bcdf"))      # bcdf
-
-# Edge cases
-print(Solution().vowel_exchange(""))          # ""
-print(Solution().vowel_exchange("a"))         # a — single vowel, no swap
-print(Solution().vowel_exchange("b"))         # b — single consonant
-print(Solution().vowel_exchange("aeiou"))     # uoiea — all vowels reversed
-print(Solution().vowel_exchange("AEIou"))     # uoIEA — mixed case vowels reversed
+s = input()                          # the test case's s
+print(Solution().vowel_exchange(s))
 ```
 
-```java run viz=array viz-root=chars
+```java solution
 import java.util.*;
 
 public class Main {
@@ -754,17 +808,9 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().vowelExchange("random"));    // rondam
-        System.out.println(new Solution().vowelExchange("afegijoku")); // ufogijeka
-        System.out.println(new Solution().vowelExchange("bcdf"));      // bcdf
-
-        // Edge cases
-        System.out.println(new Solution().vowelExchange(""));          // ""
-        System.out.println(new Solution().vowelExchange("a"));         // a — single vowel, no swap
-        System.out.println(new Solution().vowelExchange("b"));         // b — single consonant
-        System.out.println(new Solution().vowelExchange("aeiou"));     // uoiea — all vowels reversed
-        System.out.println(new Solution().vowelExchange("AEIou"));     // uoIEA — mixed case vowels reversed
+        Scanner sc = new Scanner(System.in);
+        String s = sc.hasNextLine() ? sc.nextLine() : "";
+        System.out.println(new Solution().vowelExchange(s));
     }
 }
 ```

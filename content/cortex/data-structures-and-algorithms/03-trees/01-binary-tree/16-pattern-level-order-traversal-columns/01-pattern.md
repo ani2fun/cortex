@@ -18,7 +18,8 @@ Give every node a **column index**: the root is column `0`, a left child is `col
 Vertical columns, left to right. Left children drift to negative columns, right children to positive; nodes sharing a column stack top-down. Run it.
 
 ```python run viz=binary-tree viz-root=root
-from collections import deque, defaultdict
+import json
+from collections import deque
 
 class TreeNode:
     def __init__(self, val, left=None, right=None):
@@ -26,21 +27,120 @@ class TreeNode:
         self.left = left
         self.right = right
 
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
+
 def vertical_order(root):
     if root is None:
         return []
-    cols = defaultdict(list)
+    cols = {}
     q = deque([(root, 0)])                       # carry (node, column)
     while q:
         node, c = q.popleft()
+        if c not in cols: cols[c] = []
         cols[c].append(node.val)                 # BFS ⇒ each column fills top-down
         if node.left:  q.append((node.left,  c - 1))   # left  ⇒ column − 1
         if node.right: q.append((node.right, c + 1))   # right ⇒ column + 1
     return [cols[c] for c in range(min(cols), max(cols) + 1)]   # read left → right
 
-root = TreeNode(3, TreeNode(9, TreeNode(4), TreeNode(11)),
-                   TreeNode(20, TreeNode(15), TreeNode(7)))
-print(vertical_order(root))     # [[4], [9], [3, 11, 15], [20], [7]]
+root = build_tree(json.loads(input()))
+print(vertical_order(root))
+```
+
+```java run viz=binary-tree viz-root=root
+import java.util.*;
+
+public class Main {
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
+  }
+
+  static List<List<Integer>> verticalOrder(TreeNode root) {
+    List<List<Integer>> out = new ArrayList<>();
+    if (root == null) return out;
+    Map<Integer, List<Integer>> cols = new TreeMap<>();
+    Deque<Map.Entry<TreeNode, Integer>> queue = new ArrayDeque<>();
+    queue.add(Map.entry(root, 0));
+    while (!queue.isEmpty()) {
+      var e = queue.poll();
+      TreeNode node = e.getKey(); int c = e.getValue();
+      cols.computeIfAbsent(c, k -> new ArrayList<>()).add(node.val);
+      if (node.left  != null) queue.add(Map.entry(node.left,  c - 1));
+      if (node.right != null) queue.add(Map.entry(node.right, c + 1));
+    }
+    out.addAll(cols.values());
+    return out;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+    System.out.println(verticalOrder(root));
+  }
+
+  static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
+    }
+    return root;
+  }
+
+  // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[3, 9, 20, 4, 11, 15, 7]" }
+  ],
+  "cases": [
+    { "args": { "root": "[3, 9, 20, 4, 11, 15, 7]" }, "expected": "[[4], [9], [3, 11, 15], [20], [7]]" },
+    { "args": { "root": "[1, 2, 3]" }, "expected": "[[2], [1], [3]]" },
+    { "args": { "root": "[1]" }, "expected": "[[1]]" },
+    { "args": { "root": "[]" }, "expected": "[]" },
+    { "args": { "root": "[1, 2, null, 3]" }, "expected": "[[3], [2], [1]]" },
+    { "args": { "root": "[1, null, 2, null, 3]" }, "expected": "[[1], [2], [3]]" }
+  ]
+}
 ```
 
 ## How It Works
@@ -93,25 +193,177 @@ It works because **BFS dequeues in nondecreasing depth**: level 0, then level 1,
 Vertical order, plus **top view** (first per column) and **bottom view** (last per column) — same BFS, three reducers:
 
 ```python run viz=binary-tree viz-root=root
-from collections import deque, defaultdict
+import json
+from collections import deque
 
 class TreeNode:
     def __init__(self, val, left=None, right=None):
         self.val = val; self.left = left; self.right = right
 
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
+
 def vertical_order(root):
-    if root is None: return []
-    cols = defaultdict(list)
+    # Your code goes here — BFS carrying (node, col); bucket by col;
+    # return [cols[c] for c in range(min, max+1)]
+    return []
+
+def top_view(root):
+    # Your code goes here — first BFS node per column wins
+    return []
+
+def bottom_view(root):
+    # Your code goes here — last BFS node per column wins (unconditional update)
+    return []
+
+root = build_tree(json.loads(input()))
+print(vertical_order(root))
+print(top_view(root))
+print(bottom_view(root))
+```
+
+```java run viz=binary-tree viz-root=root
+import java.util.*;
+
+public class Main {
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
+  }
+
+  static List<List<Integer>> verticalOrder(TreeNode root) {
+    // Your code goes here — BFS with Map.entry(node, col); TreeMap for sorted iteration
+    return new ArrayList<>();
+  }
+
+  static List<Integer> topView(TreeNode root) {
+    // Your code goes here — first BFS node per column wins (putIfAbsent / !containsKey)
+    return new ArrayList<>();
+  }
+
+  static List<Integer> bottomView(TreeNode root) {
+    // Your code goes here — last BFS node per column wins (unconditional put)
+    return new ArrayList<>();
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+    System.out.println(verticalOrder(root));
+    System.out.println(topView(root));
+    System.out.println(bottomView(root));
+  }
+
+  static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
+    }
+    return root;
+  }
+
+  // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[3, 9, 20, 4, 11, 15, 7]" }
+  ],
+  "cases": [
+    { "args": { "root": "[3, 9, 20, 4, 11, 15, 7]" }, "expected": "[[4], [9], [3, 11, 15], [20], [7]]\n[4, 9, 3, 20, 7]\n[4, 9, 15, 20, 7]" },
+    { "args": { "root": "[1, 2, 3]" }, "expected": "[[2], [1], [3]]\n[2, 1, 3]\n[2, 1, 3]" },
+    { "args": { "root": "[1]" }, "expected": "[[1]]\n[1]\n[1]" },
+    { "args": { "root": "[]" }, "expected": "[]\n[]\n[]" },
+    { "args": { "root": "[1, 2, null, 3]" }, "expected": "[[3], [2], [1]]\n[3, 2, 1]\n[3, 2, 1]" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+The three reducers share one BFS loop — only the per-column accumulation differs. `vertical_order` appends every node; `top_view` records only the first arrival (`if c not in seen`); `bottom_view` overwrites unconditionally so the last write wins. Iterate `range(min_col, max_col + 1)` in Python (or a `TreeMap` in Java) so the output is always left-to-right regardless of dict/HashMap insertion order.
+
+```python solution time=O(n) space=O(n)
+import json
+from collections import deque
+
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val; self.left = left; self.right = right
+
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
+
+def vertical_order(root):
+    if root is None:
+        return []
+    cols = {}
     q = deque([(root, 0)])
     while q:
         node, c = q.popleft()
+        if c not in cols: cols[c] = []
         cols[c].append(node.val)
         if node.left:  q.append((node.left,  c - 1))
         if node.right: q.append((node.right, c + 1))
     return [cols[c] for c in range(min(cols), max(cols) + 1)]
 
 def top_view(root):
-    if root is None: return []
+    if root is None:
+        return []
     seen, q = {}, deque([(root, 0)])
     while q:
         node, c = q.popleft()
@@ -121,7 +373,8 @@ def top_view(root):
     return [seen[c] for c in range(min(seen), max(seen) + 1)]
 
 def bottom_view(root):
-    if root is None: return []
+    if root is None:
+        return []
     seen, q = {}, deque([(root, 0)])
     while q:
         node, c = q.popleft()
@@ -130,45 +383,114 @@ def bottom_view(root):
         if node.right: q.append((node.right, c + 1))
     return [seen[c] for c in range(min(seen), max(seen) + 1)]
 
-root = TreeNode(3, TreeNode(9, TreeNode(4), TreeNode(11)),
-                   TreeNode(20, TreeNode(15), TreeNode(7)))
-print(vertical_order(root))   # [[4], [9], [3, 11, 15], [20], [7]]
-print(top_view(root))         # [4, 9, 3, 20, 7]
-print(bottom_view(root))      # [4, 9, 15, 20, 7]
+root = build_tree(json.loads(input()))
+print(vertical_order(root))
+print(top_view(root))
+print(bottom_view(root))
 ```
 
-```java run viz=binary-tree viz-root=root
+```java solution
 import java.util.*;
+
 public class Main {
-  static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } TreeNode(int v, TreeNode l, TreeNode r){ val=v; left=l; right=r; } }
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
+  }
 
   static List<List<Integer>> verticalOrder(TreeNode root) {
     List<List<Integer>> out = new ArrayList<>();
     if (root == null) return out;
-    Map<Integer, List<Integer>> cols = new HashMap<>();
-    int min = 0, max = 0;
+    Map<Integer, List<Integer>> cols = new TreeMap<>();
     Deque<Map.Entry<TreeNode, Integer>> q = new ArrayDeque<>();
     q.add(Map.entry(root, 0));
     while (!q.isEmpty()) {
       var e = q.poll();
       TreeNode node = e.getKey(); int c = e.getValue();
       cols.computeIfAbsent(c, k -> new ArrayList<>()).add(node.val);
-      min = Math.min(min, c); max = Math.max(max, c);
       if (node.left  != null) q.add(Map.entry(node.left,  c - 1));
       if (node.right != null) q.add(Map.entry(node.right, c + 1));
     }
-    for (int c = min; c <= max; c++) out.add(cols.get(c));
+    out.addAll(cols.values());
     return out;
   }
+
+  static List<Integer> topView(TreeNode root) {
+    List<Integer> out = new ArrayList<>();
+    if (root == null) return out;
+    Map<Integer, Integer> cols = new TreeMap<>();
+    Deque<Map.Entry<TreeNode, Integer>> q = new ArrayDeque<>();
+    q.add(Map.entry(root, 0));
+    while (!q.isEmpty()) {
+      var e = q.poll();
+      TreeNode node = e.getKey(); int c = e.getValue();
+      if (!cols.containsKey(c)) cols.put(c, node.val);   // first BFS = top
+      if (node.left  != null) q.add(Map.entry(node.left,  c - 1));
+      if (node.right != null) q.add(Map.entry(node.right, c + 1));
+    }
+    out.addAll(cols.values());
+    return out;
+  }
+
+  static List<Integer> bottomView(TreeNode root) {
+    List<Integer> out = new ArrayList<>();
+    if (root == null) return out;
+    Map<Integer, Integer> cols = new TreeMap<>();
+    Deque<Map.Entry<TreeNode, Integer>> q = new ArrayDeque<>();
+    q.add(Map.entry(root, 0));
+    while (!q.isEmpty()) {
+      var e = q.poll();
+      TreeNode node = e.getKey(); int c = e.getValue();
+      cols.put(c, node.val);                             // last write wins = bottom
+      if (node.left  != null) q.add(Map.entry(node.left,  c - 1));
+      if (node.right != null) q.add(Map.entry(node.right, c + 1));
+    }
+    out.addAll(cols.values());
+    return out;
+  }
+
   public static void main(String[] args) {
-    TreeNode root = new TreeNode(3, new TreeNode(9, new TreeNode(4), new TreeNode(11)),
-                                    new TreeNode(20, new TreeNode(15), new TreeNode(7)));
-    System.out.println(verticalOrder(root));   // [[4], [9], [3, 11, 15], [20], [7]]
+    Scanner sc = new Scanner(System.in);
+    TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+    System.out.println(verticalOrder(root));
+    System.out.println(topView(root));
+    System.out.println(bottomView(root));
+  }
+
+  static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
+    }
+    return root;
+  }
+
+  // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
   }
 }
 ```
 
-Drill the family in **Practice** — [Top View](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-level-order-traversal-columns/problems/top-view), [Bottom View](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-level-order-traversal-columns/problems/bottom-view), [Vertical Traversal](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-level-order-traversal-columns/problems/vertical-traversal), and [Diagonal Traversal](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-level-order-traversal-columns/problems/diagonal-traversal).
+</details>
 
 ## Reflect & Connect
 
@@ -177,6 +499,8 @@ Column-order is level-order with a *second* coordinate threaded through the queu
 - **The family** — vertical order, top view, bottom view, diagonal order (use `c` for diagonals: left = `c+1`, right = `c`). All BFS, all bucket-by-coordinate; only the coordinate update and the per-bucket reducer change.
 - **Coordinate-carrying BFS** — the queue can carry *anything* alongside the node: a column (here), a depth, a running path, a `(row, col)` for a grid. The same "enqueue node + metadata" trick reappears in [grid BFS](/cortex/data-structures-and-algorithms/graphs-pattern-grid-traversal-pattern), where each cell carries its coordinates and distance.
 - **Why first/last = top/bottom** — it's BFS's depth-ordering doing the work. Whenever a problem says "the first/nearest thing along some axis," check whether a breadth-first order already sorts your buckets for you before reaching for an explicit sort.
+
+Drill the family in **Practice** — [Top View](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-level-order-traversal-columns/problems/top-view), [Bottom View](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-level-order-traversal-columns/problems/bottom-view), [Vertical Traversal](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-level-order-traversal-columns/problems/vertical-traversal), and [Diagonal Traversal](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-level-order-traversal-columns/problems/diagonal-traversal).
 
 **Prerequisites:** [Level-Order Traversal](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-level-order-traversal/pattern).
 **What's next:** find where two nodes' paths converge — the lowest common ancestor — [Lowest Common Ancestor](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-lowest-common-ancestor/pattern).

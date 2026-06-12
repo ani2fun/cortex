@@ -19,21 +19,33 @@ The one subtlety, when `n` doesn't divide evenly by `k`: the parts can't all be 
 
 Split `1→2→3→4→5` into `k = 2` parts. With `5 = 2·2 + 1`, the first part gets the extra node: `[1,2,3]` and `[4,5]`. Run it.
 
+> ▶ Run it to see the list split into two pieces by severing pointers at the cut point.
+
 ```python run viz=linked-list viz-root=head viz-kind=list-single
+import ast
+
 class ListNode:
     def __init__(self, val, next=None):
         self.val = val
         self.next = next
 
-def to_list(node):
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
+
+def print_list(head):                # 1 → 2 → 3 → [1, 2, 3]
     out = []
-    while node:
-        out.append(node.val); node = node.next
-    return out
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
 
-head = ListNode(1, ListNode(2, ListNode(3, ListNode(4, ListNode(5)))))   # 1 → 2 → 3 → 4 → 5
-k = 2
+values = ast.literal_eval(input())   # the test case's values
+k = int(input())                     # the test case's k
 
+head = build_list(values)
 n, node = 0, head
 while node:                          # one pass to measure
     n += 1
@@ -44,13 +56,87 @@ parts, cur = [], head
 for i in range(k):
     size = base + (1 if i < extra else 0)   # first `extra` parts are one longer
     parts.append(cur)                       # this part's head
-    for _ in range(size - 1):               # walk to its last node
+    for _ in range(max(size - 1, 0)):       # walk to its last node
         cur = cur.next
-    nxt = cur.next
-    cur.next = None                         # sever — this is the cut
-    cur = nxt
+    if size > 0:
+        nxt = cur.next
+        cur.next = None                     # sever — this is the cut
+        cur = nxt
 
-print([to_list(p) for p in parts])          # [[1, 2, 3], [4, 5]]
+for p in parts:
+    print_list(p)
+```
+
+```java run viz=linked-list viz-root=head viz-kind=list-single
+import java.util.*;
+
+public class Main {
+  static class ListNode {
+    int val; ListNode next;
+    ListNode(int val) { this.val = val; }
+    ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] values = parseIntArray(sc.nextLine());
+    int k = Integer.parseInt(sc.nextLine().trim());
+
+    ListNode head = buildList(values);
+    int n = 0;
+    for (ListNode x = head; x != null; x = x.next) n++;
+    int base = n / k, extra = n % k;
+
+    ListNode[] parts = new ListNode[k];
+    ListNode cur = head;
+    for (int i = 0; i < k; i++) {
+      int size = base + (i < extra ? 1 : 0);   // first `extra` parts are one longer
+      parts[i] = cur;                           // this part's head
+      for (int s = 0; s < Math.max(size - 1, 0); s++) cur = cur.next;
+      if (size > 0) { ListNode nxt = cur.next; cur.next = null; cur = nxt; }   // sever
+    }
+
+    for (ListNode p : parts) printList(p);
+  }
+
+  static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+    ListNode head = null;
+    for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+    return head;
+  }
+
+  static void printList(ListNode head) {         // 1 → 2 → 3 → [1, 2, 3]
+    List<Integer> out = new ArrayList<>();
+    for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+    System.out.println(out);
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's values
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "values", "label": "values", "type": "int[]", "placeholder": "[1, 2, 3, 4, 5]" },
+    { "id": "k", "label": "k", "type": "int", "placeholder": "2" }
+  ],
+  "cases": [
+    { "args": { "values": "[1, 2, 3, 4, 5]", "k": "2" }, "expected": "[1, 2, 3]\n[4, 5]" },
+    { "args": { "values": "[1, 2, 3, 4, 5]", "k": "3" }, "expected": "[1, 2]\n[3, 4]\n[5]" },
+    { "args": { "values": "[1, 2, 3]", "k": "5" }, "expected": "[1]\n[2]\n[3]\n[]\n[]" },
+    { "args": { "values": "[1, 2, 3, 4]", "k": "2" }, "expected": "[1, 2]\n[3, 4]" },
+    { "args": { "values": "[]", "k": "2" }, "expected": "[]\n[]" }
+  ]
+}
 ```
 
 ## How It Works
@@ -95,6 +181,109 @@ Before you read on: what happens if you ask for **more parts than nodes** — sa
 The reusable `k`-way split — returns `k` heads (some possibly empty):
 
 ```python run viz=linked-list viz-root=head viz-kind=list-single
+import ast
+
+class ListNode:
+    def __init__(self, val, next=None):
+        self.val = val
+        self.next = next
+
+def split_into_k(head, k):
+    # Your code goes here
+    pass
+
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
+
+def print_list(head):                # 1 → 2 → 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
+
+values = ast.literal_eval(input())   # the test case's values
+k = int(input())                     # the test case's k
+head = build_list(values)
+for p in split_into_k(head, k):
+    print_list(p)
+```
+
+```java run viz=linked-list viz-root=head viz-kind=list-single
+import java.util.*;
+
+public class Main {
+  static class ListNode {
+    int val; ListNode next;
+    ListNode(int val) { this.val = val; }
+    ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+  }
+
+  static ListNode[] splitIntoK(ListNode head, int k) {
+    // Your code goes here
+    return new ListNode[k];
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] values = parseIntArray(sc.nextLine());
+    int k = Integer.parseInt(sc.nextLine().trim());
+    ListNode head = buildList(values);
+    for (ListNode p : splitIntoK(head, k)) printList(p);
+  }
+
+  static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+    ListNode head = null;
+    for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+    return head;
+  }
+
+  static void printList(ListNode head) {         // 1 → 2 → 3 → [1, 2, 3]
+    List<Integer> out = new ArrayList<>();
+    for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+    System.out.println(out);
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's values
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "values", "label": "values", "type": "int[]", "placeholder": "[1, 2, 3, 4, 5]" },
+    { "id": "k", "label": "k", "type": "int", "placeholder": "3" }
+  ],
+  "cases": [
+    { "args": { "values": "[1, 2, 3, 4, 5]", "k": "3" }, "expected": "[1, 2]\n[3, 4]\n[5]" },
+    { "args": { "values": "[1, 2, 3, 4, 5]", "k": "2" }, "expected": "[1, 2, 3]\n[4, 5]" },
+    { "args": { "values": "[1, 2, 3]", "k": "5" }, "expected": "[1]\n[2]\n[3]\n[]\n[]" },
+    { "args": { "values": "[1, 2, 3, 4, 5, 6]", "k": "3" }, "expected": "[1, 2]\n[3, 4]\n[5, 6]" },
+    { "args": { "values": "[]", "k": "2" }, "expected": "[]\n[]" },
+    { "args": { "values": "[1]", "k": "1" }, "expected": "[1]" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+One pass to measure `n`, then `base = n // k` and `extra = n % k`. Walk `size − 1` hops to reach the last node of each part, sever its `next`, and resume from the saved forward pointer. The trailing `extra == 0` parts naturally get `size = 0` — the inner walk is a no-op, the sever guard fires only when `size > 0`, and their heads are set to wherever `cur` lands (which is `None` once the original list runs out).
+
+```python solution time=O(n) space=O(1)
+import ast
+
 class ListNode:
     def __init__(self, val, next=None):
         self.val = val
@@ -118,50 +307,88 @@ def split_into_k(head, k):
             cur = nxt
     return parts
 
-def to_list(node):
-    out = []
-    while node:
-        out.append(node.val); node = node.next
-    return out
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
 
-head = ListNode(1, ListNode(2, ListNode(3, ListNode(4, ListNode(5)))))
-print([to_list(p) for p in split_into_k(head, 3)])   # [[1, 2], [3, 4], [5]]
+def print_list(head):                # 1 → 2 → 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
+
+values = ast.literal_eval(input())   # the test case's values
+k = int(input())                     # the test case's k
+head = build_list(values)
+for p in split_into_k(head, k):
+    print_list(p)
 ```
 
-```java run viz=linked-list viz-root=head viz-kind=list-single
+```java solution
 import java.util.*;
 
 public class Main {
-  static class ListNode { int val; ListNode next; ListNode(int v){ val = v; } ListNode(int v, ListNode n){ val = v; next = n; } }
+  static class ListNode {
+    int val; ListNode next;
+    ListNode(int val) { this.val = val; }
+    ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+  }
 
   static ListNode[] splitIntoK(ListNode head, int k) {
     int n = 0;
     for (ListNode x = head; x != null; x = x.next) n++;
     int base = n / k, extra = n % k;
-    ListNode[] parts = new ListNode[k];
+    ListNode[] res = new ListNode[k];
     ListNode cur = head;
     for (int i = 0; i < k; i++) {
       int size = base + (i < extra ? 1 : 0);
-      parts[i] = cur;
+      res[i] = cur;
       for (int s = 0; s < Math.max(size - 1, 0); s++) cur = cur.next;
       if (size > 0) { ListNode nxt = cur.next; cur.next = null; cur = nxt; }   // sever
     }
-    return parts;
+    return res;
   }
 
   public static void main(String[] args) {
-    ListNode head = new ListNode(1, new ListNode(2, new ListNode(3, new ListNode(4, new ListNode(5)))));
-    ListNode[] parts = splitIntoK(head, 3);
-    List<List<Integer>> out = new ArrayList<>();
-    for (ListNode p : parts) { List<Integer> seg = new ArrayList<>(); for (ListNode c = p; c != null; c = c.next) seg.add(c.val); out.add(seg); }
-    System.out.println(out);   // [[1, 2], [3, 4], [5]]
+    Scanner sc = new Scanner(System.in);
+    int[] values = parseIntArray(sc.nextLine());
+    int k = Integer.parseInt(sc.nextLine().trim());
+    ListNode head = buildList(values);
+    for (ListNode p : splitIntoK(head, k)) printList(p);
+  }
+
+  static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+    ListNode head = null;
+    for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+    return head;
+  }
+
+  static void printList(ListNode head) {         // 1 → 2 → 3 → [1, 2, 3]
+    List<Integer> out = new ArrayList<>();
+    for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+    System.out.println(out);
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's values
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
   }
 }
 ```
 
-Drill the family in **Practice** — [Even-Odd Split](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-split/problems/even-odd-split), [Split Alternate Groups](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-split/problems/split-alternate-groups), [Split by Modulo](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-split/problems/split-by-modulo), and [K-Way List Split](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-split/problems/k-way-list-split).
+</details>
 
 ## Reflect & Connect
+
+Drill the family in **Practice** — [Even-Odd Split](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-split/problems/even-odd-split), [Split Alternate Groups](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-split/problems/split-alternate-groups), [Split by Modulo](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-split/problems/split-by-modulo), and [K-Way List Split](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-split/problems/k-way-list-split).
 
 Splitting is the "re-link, never copy" principle applied to *carving*:
 

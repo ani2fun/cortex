@@ -15,24 +15,78 @@ Here's the unlock: you don't need two pointers to do the *whole* job — only th
 
 ## See It Work
 
-3Sum on a sorted array: the outer loop fixes `arr[i]`, the inner two pointers sweep the rest for the matching pair. Run it, then **Visualise**.
+3Sum on a sorted array: the outer loop fixes `arr[i]`, the inner two pointers sweep the rest for the matching pair. Pick a case below, **Run** it, then **Visualise**.
 
-> ▶ Run it, then click **Visualise** — for each fixed `arr[i]`, `left` and `right` sweep the suffix looking for `-arr[i]`.
+> ▶ Run it against a case, then click **Visualise** — for each fixed `arr[i]`, `left` and `right` sweep the suffix looking for `-arr[i]`.
 
 ```python run viz=array viz-root=arr
-arr = [-3, -1, 0, 2, 4]              # sorted; find triples summing to 0
+import ast
+
+arr = ast.literal_eval(input())      # sorted; find triples summing to 0
 n, triples = len(arr), []
 for i in range(n - 2):               # OUTER: fix arr[i]...
     left, right = i + 1, n - 1       # ...INNER: two-pointer the rest (a Two Sum)
     while left < right:
         s = arr[i] + arr[left] + arr[right]
         if s == 0:
-            triples.append((arr[i], arr[left], arr[right])); left += 1; right -= 1
+            triples.append([arr[i], arr[left], arr[right]]); left += 1; right -= 1
         elif s < 0:
             left += 1
         else:
             right -= 1
-print(triples)                       # [(-3, -1, 4)]
+print(triples)
+```
+
+```java run viz=array viz-root=arr
+import java.util.*;
+
+public class Main {
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());   // sorted; find triples summing to 0
+    int n = arr.length;
+    List<List<Integer>> triples = new ArrayList<>();
+    for (int i = 0; i < n - 2; i++) {            // OUTER: fix arr[i]...
+      int left = i + 1, right = n - 1;           // ...INNER: two-pointer the rest
+      while (left < right) {
+        int s = arr[i] + arr[left] + arr[right];
+        if (s == 0) {
+          triples.add(List.of(arr[i], arr[left], arr[right]));
+          left++; right--;
+        } else if (s < 0) {
+          left++;
+        } else {
+          right--;
+        }
+      }
+    }
+    System.out.println(triples);
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's arr
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr (sorted)", "type": "int[]", "placeholder": "[-3, -1, 0, 2, 4]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[-3, -1, 0, 2, 4]" }, "expected": "[[-3, -1, 4]]" },
+    { "args": { "arr": "[-2, -1, 0, 1, 2]" }, "expected": "[[-2, 0, 2], [-1, 0, 1]]" },
+    { "args": { "arr": "[0, 0, 0]" }, "expected": "[[0, 0, 0]]" },
+    { "args": { "arr": "[1, 2, 3]" }, "expected": "[]" }
+  ]
+}
 ```
 
 ## How It Works
@@ -70,9 +124,69 @@ Because every triple containing `-3` was fully explored while `-3` was fixed —
 
 ## Your Turn
 
-The reusable 3Sum — outer loop + inner reduction (real code also skips equal neighbours to dedupe; omitted here for clarity):
+Implement the reusable 3Sum: sort, then for each fixed `arr[i]` run an inner two-pointer sweep over the suffix for a pair summing to `-arr[i]`. Return every triple as a list — this simple version may repeat a triple (that's the dedupe gotcha the [Three Sum](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers-subproblem/problems/three-sum) problem fixes).
 
-```python run viz=array
+```python run viz=array viz-root=arr
+import ast
+
+def three_sum(arr):
+    # Your code goes here — sort, then for each fixed arr[i] run an inner
+    # two-pointer sweep over the suffix for a pair summing to -arr[i].
+    return []
+
+arr = ast.literal_eval(input())      # the test case's arr
+print(three_sum(arr))
+```
+
+```java run viz=array viz-root=arr
+import java.util.*;
+
+public class Main {
+  static List<List<Integer>> threeSum(int[] a) {
+    // Your code goes here — sort, then for each fixed a[i] run an inner
+    // two-pointer sweep over the suffix for a pair summing to -a[i].
+    return new ArrayList<>();
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());
+    System.out.println(threeSum(arr));
+  }
+
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[-1, 0, 1, 2, -1, -4]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[-1, 0, 1, 2, -1, -4]" }, "expected": "[[-1, -1, 2], [-1, 0, 1], [-1, 0, 1]]" },
+    { "args": { "arr": "[0, 0, 0]" }, "expected": "[[0, 0, 0]]" },
+    { "args": { "arr": "[-2, 0, 1, 1, 2]" }, "expected": "[[-2, 0, 2], [-2, 1, 1]]" },
+    { "args": { "arr": "[1, 2, 3]" }, "expected": "[]" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+The outer loop fixes `arr[i]`; the remainder is "find two values in the suffix summing to `-arr[i]`" — exactly the Two Sum reduction, run as an inner two-pointer sweep. Sorting first is what lets the inner pass work, and gives the `O(n²)` total: `n` fixes × an `O(n)` sweep. This bare version can emit the *same* triple more than once (run `[-1, 0, 1, 2, -1, -4]` and watch `[-1, 0, 1]` appear twice) — production 3Sum skips equal adjacent values after the sort to keep the output distinct, which is exactly what the [Three Sum](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers-subproblem/problems/three-sum) problem builds next.
+
+```python solution time=O(n^2) space=O(1)
+import ast
+
 def three_sum(arr):
     arr = sorted(arr)
     n, out = len(arr), []
@@ -81,43 +195,58 @@ def three_sum(arr):
         while left < right:
             s = arr[i] + arr[left] + arr[right]
             if s == 0:
-                out.append((arr[i], arr[left], arr[right])); left += 1; right -= 1
+                out.append([arr[i], arr[left], arr[right]]); left += 1; right -= 1
             elif s < 0:
                 left += 1
             else:
                 right -= 1
     return out
 
-print(three_sum([-1, 0, 1, 2, -1, -4]))    # [(-1,-1,2), (-1,0,1), (-1,0,1)] — note the repeat: the dedupe gotcha
+arr = ast.literal_eval(input())
+print(three_sum(arr))
 ```
 
-```java run viz=array
+```java solution
 import java.util.*;
 
 public class Main {
-  static List<int[]> threeSum(int[] a) {
+  static List<List<Integer>> threeSum(int[] a) {
     Arrays.sort(a);
-    List<int[]> out = new ArrayList<>();
+    List<List<Integer>> out = new ArrayList<>();
     for (int i = 0; i < a.length - 2; i++) {          // outer: fix a[i]
       int left = i + 1, right = a.length - 1;          // inner: Two Sum
       while (left < right) {
         int s = a[i] + a[left] + a[right];
-        if (s == 0) { out.add(new int[]{a[i], a[left], a[right]}); left++; right--; }
+        if (s == 0) { out.add(List.of(a[i], a[left], a[right])); left++; right--; }
         else if (s < 0) left++;
         else right--;
       }
     }
     return out;
   }
-  public static void main(String[] x) {
-    for (int[] t : threeSum(new int[]{-1, 0, 1, 2, -1, -4})) System.out.println(Arrays.toString(t));
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());
+    System.out.println(threeSum(arr));
+  }
+
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
   }
 }
 ```
 
-Drill the family in **Practice** — [Three Sum](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers-subproblem/problems/three-sum), then [Four Sum](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers-subproblem/problems/four-sum) and [K Rotations](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers-subproblem/problems/k-rotations).
+</details>
 
 ## Reflect & Connect
+
+Drill the family in **Practice** — [Three Sum](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers-subproblem/problems/three-sum), then [Four Sum](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers-subproblem/problems/four-sum) and [K Rotations](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers-subproblem/problems/k-rotations).
 
 This is the pattern that scales two pointers past pairs:
 

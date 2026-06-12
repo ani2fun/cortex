@@ -84,6 +84,19 @@ object LucideIcons:
 
   @js.native @JSImport("lucide-react", "Share2") private object Share2Raw extends js.Object
 
+  @js.native @JSImport("lucide-react", "Sparkles") private object SparklesRaw       extends js.Object
+  @js.native @JSImport("lucide-react", "Target") private object TargetRaw           extends js.Object
+  @js.native @JSImport("lucide-react", "Lightbulb") private object LightbulbRaw     extends js.Object
+  @js.native @JSImport("lucide-react", "Clock") private object ClockRaw             extends js.Object
+  @js.native @JSImport("lucide-react", "Cpu") private object CpuRaw                 extends js.Object
+  @js.native @JSImport("lucide-react", "Plus") private object PlusRaw               extends js.Object
+  @js.native @JSImport("lucide-react", "ListChecks") private object ListChecksRaw   extends js.Object
+  @js.native @JSImport("lucide-react", "CircleCheck") private object CircleCheckRaw extends js.Object
+  @js.native @JSImport("lucide-react", "Send") private object SendRaw               extends js.Object
+  @js.native @JSImport("lucide-react", "Trash2") private object Trash2Raw           extends js.Object
+  @js.native @JSImport("lucide-react", "Inbox") private object InboxRaw             extends js.Object
+  @js.native @JSImport("lucide-react", "LogIn") private object LogInRaw             extends js.Object
+
   // ---- Components (call as Sun(withClass("h-5 w-5"))) --------------------
 
   val Sun           = JsComponent[IconProps, Children.None, Null](SunRaw)
@@ -131,3 +144,15 @@ object LucideIcons:
   val Network       = JsComponent[IconProps, Children.None, Null](NetworkRaw)
   val Info          = JsComponent[IconProps, Children.None, Null](InfoRaw)
   val Share2        = JsComponent[IconProps, Children.None, Null](Share2Raw)
+  val Sparkles      = JsComponent[IconProps, Children.None, Null](SparklesRaw)
+  val Target        = JsComponent[IconProps, Children.None, Null](TargetRaw)
+  val Lightbulb     = JsComponent[IconProps, Children.None, Null](LightbulbRaw)
+  val Clock         = JsComponent[IconProps, Children.None, Null](ClockRaw)
+  val Cpu           = JsComponent[IconProps, Children.None, Null](CpuRaw)
+  val Plus          = JsComponent[IconProps, Children.None, Null](PlusRaw)
+  val ListChecks    = JsComponent[IconProps, Children.None, Null](ListChecksRaw)
+  val CircleCheck   = JsComponent[IconProps, Children.None, Null](CircleCheckRaw)
+  val Send          = JsComponent[IconProps, Children.None, Null](SendRaw)
+  val Trash2        = JsComponent[IconProps, Children.None, Null](Trash2Raw)
+  val Inbox         = JsComponent[IconProps, Children.None, Null](InboxRaw)
+  val LogIn         = JsComponent[IconProps, Children.None, Null](LogInRaw)

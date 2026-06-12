@@ -19,19 +19,60 @@ What you want is a structure where *both* the insert and the grab-the-smallest a
 
 ## See It Work
 
-A heap keeps the smallest value at the front, no matter what order things arrive. Run this — push six numbers, then peek and pop — and click **Visualise** to see the array drawn as the tree it secretly is.
+A heap keeps the smallest value at the front, no matter what order things arrive. Run this — push a list of numbers, then peek and pop — and click **Visualise** to see the array drawn as the tree it secretly is.
 
 > ▶ Run it, then click **Visualise** — the array renders as a binary tree; the smallest value sits at the root, ready to pop.
 
 ```python run viz=array viz-root=heap viz-kind=heap
+import ast
 import heapq
 
 heap = []
-for x in [5, 3, 8, 1, 9, 2]:
-    heapq.heappush(heap, x)     # O(log n) each; heapq is a min-heap
-print(heap[0])                   # peek the smallest → 1 (O(1), always at the root)
-print(heapq.heappop(heap))       # remove the smallest → 1 (O(log n))
-print(heap[0])                   # new smallest → 2
+for x in ast.literal_eval(input()):
+    heapq.heappush(heap, x)          # O(log n) each; heapq is a min-heap
+print(heap[0])                        # peek the smallest (O(1), always at the root)
+print(heapq.heappop(heap))            # remove the smallest (O(log n))
+print(heap[0])                        # new smallest
+```
+
+```java run viz=array viz-root=heap viz-kind=heap
+import java.util.*;
+
+public class Main {
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] vals = parseIntArray(sc.nextLine());
+    PriorityQueue<Integer> heap = new PriorityQueue<>();   // a min-heap by default
+    for (int x : vals) heap.add(x);                        // O(log n) each
+    System.out.println(heap.peek());                        // peek the smallest (O(1))
+    System.out.println(heap.poll());                        // remove the smallest (O(log n))
+    System.out.println(heap.peek());                        // new smallest
+  }
+
+  // "[5, 3, 8, 1, 9, 2]" → {5, 3, 8, 1, 9, 2}
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "values", "label": "values", "type": "int[]", "placeholder": "[5, 3, 8, 1, 9, 2]" }
+  ],
+  "cases": [
+    { "args": { "values": "[5, 3, 8, 1, 9, 2]" }, "expected": "1\n1\n2" },
+    { "args": { "values": "[10, 4, 7, 2, 6]" },    "expected": "2\n2\n4" },
+    { "args": { "values": "[1, 2, 3]" },            "expected": "1\n1\n2" },
+    { "args": { "values": "[9, 5, 3]" },            "expected": "3\n3\n5" }
+  ]
+}
 ```
 
 ## How It Works
@@ -85,32 +126,99 @@ The last element (`8`) moves to the root, then sifts down: its children are `3` 
 
 ## Your Turn
 
-Every language ships a heap as its priority queue — you rarely build one by hand. Watch it drain in sorted order, smallest first:
+Every language ships a heap as its priority queue — you rarely build one by hand. Use it to drain a list in sorted order, smallest first.
 
 ```python run viz=array viz-root=tasks viz-kind=heap
+import ast
 import heapq
 
 tasks = []
-for deadline in [5, 3, 8, 1, 9, 2]:
+for deadline in ast.literal_eval(input()):
     heapq.heappush(tasks, deadline)   # O(log n) per push
-print(heapq.heappop(tasks))           # earliest deadline first → 1
-print(heapq.heappop(tasks))           # → 2
-print(heapq.heappop(tasks))           # → 3
+
+# Your code goes here — pop three times, printing each popped value
 ```
 
 ```java run viz=array viz-root=tasks viz-kind=heap
-import java.util.PriorityQueue;
+import java.util.*;
 
 public class Main {
   public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] deadlines = parseIntArray(sc.nextLine());
     PriorityQueue<Integer> tasks = new PriorityQueue<>();   // a min-heap by default
-    for (int d : new int[]{5, 3, 8, 1, 9, 2}) tasks.add(d);
-    System.out.println(tasks.poll());   // → 1
-    System.out.println(tasks.poll());   // → 2
-    System.out.println(tasks.poll());   // → 3
+    for (int d : deadlines) tasks.add(d);
+
+    // Your code goes here — poll three times, printing each popped value
+  }
+
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
   }
 }
 ```
+
+```testcases
+{
+  "args": [
+    { "id": "deadlines", "label": "deadlines", "type": "int[]", "placeholder": "[5, 3, 8, 1, 9, 2]" }
+  ],
+  "cases": [
+    { "args": { "deadlines": "[5, 3, 8, 1, 9, 2]" }, "expected": "1\n2\n3" },
+    { "args": { "deadlines": "[10, 4, 7, 2, 6]" },    "expected": "2\n4\n6" },
+    { "args": { "deadlines": "[1, 2, 3]" },            "expected": "1\n2\n3" },
+    { "args": { "deadlines": "[9, 5, 3]" },            "expected": "3\n5\n9" }
+  ]
+}
+```
+
+<details>
+<summary><h2>Editorial</h2></summary>
+
+```python solution
+import ast
+import heapq
+
+tasks = []
+for deadline in ast.literal_eval(input()):
+    heapq.heappush(tasks, deadline)
+
+print(heapq.heappop(tasks))           # earliest deadline first → smallest
+print(heapq.heappop(tasks))           # → second smallest
+print(heapq.heappop(tasks))           # → third smallest
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] deadlines = parseIntArray(sc.nextLine());
+    PriorityQueue<Integer> tasks = new PriorityQueue<>();
+    for (int d : deadlines) tasks.add(d);
+    System.out.println(tasks.poll());   // earliest deadline first
+    System.out.println(tasks.poll());   // second smallest
+    System.out.println(tasks.poll());   // third smallest
+  }
+
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+</details>
 
 ## Reflect & Connect
 

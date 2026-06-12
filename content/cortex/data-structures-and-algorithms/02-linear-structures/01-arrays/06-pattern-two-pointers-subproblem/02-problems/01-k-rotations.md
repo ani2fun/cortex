@@ -4,6 +4,8 @@ summary: "Given an array arr and a non-negative number k, rotate the array by k 
 prereqs:
   - 06-pattern-two-pointers-subproblem/01-pattern
 difficulty: easy
+kind: problem
+topics: [two-pointers, arrays]
 ---
 
 # K Rotations (Right)
@@ -32,6 +34,84 @@ Output: [1, 2, 3, 4, 5]    ← rotating n times returns the original
 ```
 Input:  arr = [1, 2, 3, 4, 5], k = 0
 Output: [1, 2, 3, 4, 5]
+```
+
+```quiz
+{
+  "prompt": "Now your turn!",
+  "input": "arr = [10, 20, 30, 40], k = 1",
+  "options": ["[40, 10, 20, 30]", "[20, 30, 40, 10]", "[10, 20, 30, 40]", "[40, 30, 20, 10]"],
+  "answer": "[40, 10, 20, 30]"
+}
+```
+
+## Constraints
+
+- `1 ≤ arr.length ≤ 10^5`
+- `0 ≤ k ≤ 10^9`
+
+```python run viz=array viz-root=arr
+import ast
+from typing import List
+
+class Solution:
+    def k_rotations(self, arr: List[int], k: int) -> None:
+        # Your code goes here — normalise k %= n, then three in-place reversals:
+        # reverse the whole array, reverse the first k, reverse the last n-k.
+        pass
+
+arr = ast.literal_eval(input())      # the test case's arr
+k = int(input())                     # the test case's k
+Solution().k_rotations(arr, k)
+print(arr)
+```
+
+```java run viz=array viz-root=arr
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public void kRotations(int[] arr, int k) {
+            // Your code goes here — normalise k %= n, then three in-place reversals:
+            // reverse the whole array, reverse the first k, reverse the last n-k.
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        new Solution().kRotations(arr, k);
+        System.out.println(Arrays.toString(arr));
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's arr
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[1, 2, 3, 4, 5]" },
+    { "id": "k", "label": "k", "type": "int", "placeholder": "3" }
+  ],
+  "cases": [
+    { "args": { "arr": "[1, 2, 3, 4, 5]", "k": "3" }, "expected": "[3, 4, 5, 1, 2]" },
+    { "args": { "arr": "[10, 20, 30, 40]", "k": "1" }, "expected": "[40, 10, 20, 30]" },
+    { "args": { "arr": "[1, 2, 3, 4, 5]", "k": "5" }, "expected": "[1, 2, 3, 4, 5]" },
+    { "args": { "arr": "[1, 2, 3, 4, 5]", "k": "7" }, "expected": "[4, 5, 1, 2, 3]" },
+    { "args": { "arr": "[1, 2]", "k": "1" }, "expected": "[2, 1]" },
+    { "args": { "arr": "[1]", "k": "0" }, "expected": "[1]" }
+  ]
+}
 ```
 
 ---
@@ -190,7 +270,8 @@ s2 -> s3: "reverse arr[3..4]"
 
 
 
-```python run viz=array viz-root=arr
+```python solution time=O(n) space=O(1)
+import ast
 from typing import List
 
 class Solution:
@@ -216,13 +297,14 @@ class Solution:
         self.reverse(arr, k, n - 1)
 
 
-arr = [1, 2, 3, 4, 5]
-Solution().k_rotations(arr, 3)
-print(arr)   # [3, 4, 5, 1, 2]
+arr = ast.literal_eval(input())      # the test case's arr
+k = int(input())                     # the test case's k
+Solution().k_rotations(arr, k)
+print(arr)
 ```
 
-```java run viz=array viz-root=arr
-import java.util.Arrays;
+```java solution
+import java.util.*;
 
 public class Main {
     static class Solution {
@@ -254,9 +336,20 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        int[] arr = {1, 2, 3, 4, 5};
-        new Solution().kRotations(arr, 3);
-        System.out.println(Arrays.toString(arr));   // [3, 4, 5, 1, 2]
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        new Solution().kRotations(arr, k);
+        System.out.println(Arrays.toString(arr));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

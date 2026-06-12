@@ -1,16 +1,18 @@
 ---
 title: "Preceding Inferior Element II"
-summary: "Circular variant of preceding inferior. Same approach with the comparison flipped."
+summary: "Circular variant of preceding inferior. Same approach with the comparison flipped — increasing stack, pop while top >= current, iterate 2n times."
 prereqs:
   - 09-pattern-previous-closest-occurrence/01-pattern
 difficulty: medium
+kind: problem
+topics: [previous-closest-occurrence, stack]
 ---
 
 # Preceding inferior element II
 
 ## Problem Statement
 
-Circular variant of preceding inferior. Same approach with the comparison flipped.
+Given a circular array `arr`, return for each position the **preceding inferior element** — the nearest strictly-smaller value to its left, allowing the search to wrap around past the start of the array. If no smaller exists even after a full circle, return `-1`.
 
 ### Example 1
 > -   **Input:** `arr = [2, 5, 1, 6, 10, 3]`
@@ -47,11 +49,77 @@ Explanation: 3 and 2 both wrap to the trailing 1 → 1. 1 is the minimum → -1.
 
 **Example 4**
 ```
-Input:  arr = []
-Output: []
-Explanation: An empty array yields an empty result; the loop runs zero times.
+Input:  arr = [5, 5, 5]
+Output: [-1, -1, -1]
+Explanation: Equal values are popped by the >= test; nothing strictly smaller survives.
 ```
 
+## Constraints
+
+- `0 ≤ arr.length ≤ 1000`
+- `1 ≤ arr[i] ≤ 10^4`
+
+```python run
+import ast
+from typing import List
+
+class Solution:
+    def preceding_inferior_element_ii(self, arr: List[int]) -> List[int]:
+        # Your code goes here — iterate 2*n times with i % n indexing,
+        # using an increasing stack (pop while top >= num).
+        return [-1] * len(arr)
+
+arr = ast.literal_eval(input())
+print(Solution().preceding_inferior_element_ii(arr))
+```
+
+```java run
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int[] precedingInferiorElementII(int[] arr) {
+            // Your code goes here — iterate 2*n times with i % n indexing,
+            // using an increasing stack (pop while top >= num).
+            int[] result = new int[arr.length];
+            Arrays.fill(result, -1);
+            return result;
+        }
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        System.out.println(Arrays.toString(new Solution().precedingInferiorElementII(arr)));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[2, 5, 1, 6, 10, 3]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[2, 5, 1, 6, 10, 3]" }, "expected": "[1, 2, -1, 1, 6, 1]" },
+    { "args": { "arr": "[6, 7, 8, 9, 8]" },      "expected": "[-1, 6, 7, 8, 7]" },
+    { "args": { "arr": "[5]" },                   "expected": "[-1]" },
+    { "args": { "arr": "[3, 1]" },                "expected": "[1, -1]" },
+    { "args": { "arr": "[1, 2, 3]" },             "expected": "[-1, 1, 2]" },
+    { "args": { "arr": "[3, 2, 1]" },             "expected": "[1, 1, -1]" },
+    { "args": { "arr": "[5, 5, 5]" },             "expected": "[-1, -1, -1]" }
+  ]
+}
+```
 
 <details>
 <summary><h2>Intuition</h2></summary>
@@ -61,7 +129,7 @@ The structural property is the circular previous-**smaller** query — each valu
 
 The stack holds a strictly *increasing* chain of previous-smaller candidates, and the loop runs `2n` times with `i % n` indexing. The increasing order means a new value pops every candidate that matches or exceeds it, leaving the nearest smaller survivor on top. The second lap lets a value whose smaller predecessor lives past the wrap finally resolve.
 
-The naive circular approach breaks the time budget the same way both predecessors did. Per index it scans up to `n` wrapped positions for `O(N²)` time, with fiddly seam handling. The doubled increasing-stack pass keeps the `O(N)` guarantee and treats the wrap as just more iterations of the same loop.
+The naive circular approach breaks the time budget the same way both predecessors did — per index it scans up to `n` wrapped positions for `O(N²)` time. The doubled increasing-stack pass keeps the `O(N)` guarantee and treats the wrap as just more iterations of the same loop.
 
 </details>
 <details>
@@ -77,25 +145,13 @@ The naive circular approach breaks the time budget the same way both predecessor
 
 </details>
 <details>
-<summary><h2>Approach</h2></summary>
+<summary><h2>Solution & Analysis</h2></summary>
 
 
 Run the linear previous-smaller walk over a doubled index range.
 
-1. **Allocate the holders.** Create `result` of length `n`, filled with `-1`, and an empty `stack`.
-2. **Iterate `2n` times.** For loop counter `i`, take the circular index `index = i % n` and the value `num = arr[index]`.
-3. **Pop the dominated candidates.** While the stack is non-empty and its top `≥ num`, pop.
-4. **Record the survivor.** If the stack is non-empty, set `result[index]` to the top. Re-assigning the same answer on the second lap is harmless.
-5. **Always push.** Push `num` so it can serve later (including wrapped) elements.
-6. **Return the result.** After `2n` iterations, positions with a direct or wrapped smaller predecessor are filled; the rest stay `-1`.
-
-</details>
-<details>
-<summary><h2>Solution</h2></summary>
-
-
-
-```python run viz=array viz-root=stack viz-kind=stack
+```python solution time=O(N) space=O(N)
+import ast
 from typing import List
 
 class Solution:
@@ -129,20 +185,11 @@ class Solution:
         return result
 
 
-# Examples from the problem statement
-print(Solution().preceding_inferior_element_ii([2, 5, 1, 6, 10, 3]))  # [1, 2, -1, 1, 6, 1]
-print(Solution().preceding_inferior_element_ii([6, 7, 8, 9, 8]))      # [-1, 6, 7, 8, 7]
-
-# Edge cases
-print(Solution().preceding_inferior_element_ii([]))                    # []
-print(Solution().preceding_inferior_element_ii([5]))                   # [-1]
-print(Solution().preceding_inferior_element_ii([3, 1]))                # [1, -1]
-print(Solution().preceding_inferior_element_ii([1, 2, 3]))             # [-1, 1, 2]
-print(Solution().preceding_inferior_element_ii([3, 2, 1]))             # [1, 1, -1]
-print(Solution().preceding_inferior_element_ii([5, 5, 5]))             # [-1, -1, -1]
+arr = ast.literal_eval(input())
+print(Solution().preceding_inferior_element_ii(arr))
 ```
 
-```java run viz=array viz-root=stack viz-kind=stack
+```java solution
 import java.util.*;
 
 public class Main {
@@ -150,14 +197,10 @@ public class Main {
         public int[] precedingInferiorElementII(int[] arr) {
             int n = arr.length;
             int[] result = new int[n];
-
-            // Initialize result with -1
-            for (int i = 0; i < n; i++) {
-                result[i] = -1;
-            }
+            Arrays.fill(result, -1);
 
             // Stack to store elements
-            Stack<Integer> stack = new Stack<>();
+            Deque<Integer> stack = new ArrayDeque<>();
 
             // Iterate twice through the array (circularly)
             for (int i = 0; i < 2 * n; i++) {
@@ -186,26 +229,24 @@ public class Main {
         }
     }
 
-    public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(Arrays.toString(new Solution().precedingInferiorElementII(new int[]{2, 5, 1, 6, 10, 3})));  // [1, 2, -1, 1, 6, 1]
-        System.out.println(Arrays.toString(new Solution().precedingInferiorElementII(new int[]{6, 7, 8, 9, 8})));      // [-1, 6, 7, 8, 7]
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
 
-        // Edge cases
-        System.out.println(Arrays.toString(new Solution().precedingInferiorElementII(new int[]{})));                   // []
-        System.out.println(Arrays.toString(new Solution().precedingInferiorElementII(new int[]{5})));                  // [-1]
-        System.out.println(Arrays.toString(new Solution().precedingInferiorElementII(new int[]{3, 1})));               // [1, -1]
-        System.out.println(Arrays.toString(new Solution().precedingInferiorElementII(new int[]{1, 2, 3})));            // [-1, 1, 2]
-        System.out.println(Arrays.toString(new Solution().precedingInferiorElementII(new int[]{3, 2, 1})));            // [1, 1, -1]
-        System.out.println(Arrays.toString(new Solution().precedingInferiorElementII(new int[]{5, 5, 5})));            // [-1, -1, -1]
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        System.out.println(Arrays.toString(new Solution().precedingInferiorElementII(arr)));
     }
 }
 ```
 
-</details>
-<details>
-<summary><h2>Dry Run</h2></summary>
-
+### Dry Run
 
 Walk Example 1 — `arr = [2, 5, 1, 6, 10, 3]`, `n = 6`, so `12` iterations. Increasing stack, pop while the top `≥ num`:
 
@@ -226,28 +267,19 @@ i=11 idx5 num=3    pop 10, pop 6      top=1   res[5]=1    push 3   [1,3]
 result = [1, 2, -1, 1, 6, 1]
 ```
 
-The result `[1, 2, -1, 1, 6, 1]` matches the expected output. `res[2]` stays `-1` because `1` is the global minimum — no value, wrapped or direct, is strictly smaller.
+`res[2]` stays `-1` because `1` is the global minimum — no value, wrapped or direct, is strictly smaller.
 
-</details>
-<details>
-<summary><h2>Complexity Analysis</h2></summary>
-
+### Complexity Analysis
 
 | Measure | Value | Why |
 |---|---|---|
 | Time  | **O(N)** | `2n` iterations, each value pushed once and popped at most once across the doubled pass. |
 | Space | **O(N)** | The result holds `n` entries; the stack holds up to `n` values during a single lap. |
 
-Stacking the *inferior* flip on top of the *circular* doubled pass changes neither bound — both twists are constant-factor adjustments the `O(N)` analysis absorbs.
-
-</details>
-<details>
-<summary><h2>Edge Cases</h2></summary>
-
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
-| Empty array | `arr = []` | `[]` | `2n = 0`, so the loop never runs and the result is empty. |
 | Single element | `arr = [5]` | `[-1]` | One element wrapping onto itself has no strictly-smaller predecessor. |
 | Two descending | `arr = [3, 1]` | `[1, -1]` | `3` wraps to `1`; `1` is the minimum → -1. |
 | Ascending | `arr = [1, 2, 3]` | `[-1, 1, 2]` | Each value sees its strictly-smaller left neighbour; `1` is the minimum → -1. |
@@ -260,17 +292,10 @@ Stacking the *inferior* flip on top of the *circular* doubled pass changes neith
 
 This problem stacks both prior twists: the *increasing* stack of the inferior variant runs over the `2n`-iteration doubled pass of the circular variant. Nothing new is invented — it is the composition of the operator flip and the modular index, still `O(N)` time and `O(N)` space.
 
-</details>
-<details>
-<summary><h2>Key Takeaway</h2></summary>
+Three lessons to carry forward:
 
-
-Three lessons:
-
-1. **A monotonic stack stores un-disqualified candidates.** The moment a new element arrives that "dominates" something on the stack (greater or smaller, depending on the variant), the dominated value is no longer a viable answer for any future query. Pop it. The stack stays clean.
+1. **A monotonic stack stores un-disqualified candidates.** The moment a new element arrives that dominates something on the stack, the dominated value is no longer a viable answer for any future query. Pop it.
 2. **Amortised O(N) is the magic.** A nested `while` looks like O(N²) but each element enters and leaves the stack at most once, capping total stack ops at 2N.
 3. **Circular arrays double the iteration, not the memory.** Iterate `2*n` times with `i % n` indexing; the second pass catches answers that need to wrap around the start.
-
-> *Coming up — same machinery, opposite direction. **Lesson 9** does **next-closest** — for each element, find the closest <em>later</em> element satisfying the condition. Two ways to set this up: scan right-to-left with the same stack rules as previous-closest, or scan left-to-right and resolve answers retroactively when an element pops. The latter is more elegant; the former is more straightforward. Both come up in interviews.*
 
 </details>

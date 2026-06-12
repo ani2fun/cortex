@@ -8,8 +8,8 @@ import io.circe.parser.parse
 /**
  * Pure wire-format adapter for the go-judge execution backend.
  *
- * go-judge (`criyle/go-judge`) is a raw command-runner sandbox: its `POST /run` takes a `cmd` describing
- * argv + files + resource limits + files to copy in/out, and returns each command's status, exit code, and
+ * go-judge (`criyle/go-judge`) is a raw command-runner sandbox: its `POST /run` takes a `cmd` describing argv
+ * + files + resource limits + files to copy in/out, and returns each command's status, exit code, and
  * captured streams. Unlike Judge0 it has no `language_id` abstraction and no compile/run orchestration — that
  * lives here, driven by each language's [[Languages.GoJudgeSpec]].
  *
@@ -19,8 +19,8 @@ import io.circe.parser.parse
  * reconstruct a distinct `Compilation Error` (statusId 6) with the compiler output — matching the
  * Piston/Judge0 semantics the client already renders.
  *
- * Exercised directly by `GoJudgeWireSpec` against golden fixtures so wire-level mapping bugs surface without a
- * stub HTTP server.
+ * Exercised directly by `GoJudgeWireSpec` against golden fixtures so wire-level mapping bugs surface without
+ * a stub HTTP server.
  */
 private[codeRunPipeline] object GoJudgeWire:
 
@@ -57,9 +57,9 @@ private[codeRunPipeline] object GoJudgeWire:
         Json.fromString("GOPATH=/w/go")
       ),
       "files" -> Json.arr(
-        Json.obj("content" -> Json.fromString(stdin.getOrElse(""))),              // fd 0: stdin
-        Json.obj("name" -> Json.fromString("stdout"), "max" -> Json.fromInt(MaxOutputBytes)), // fd 1
-        Json.obj("name" -> Json.fromString("stderr"), "max" -> Json.fromInt(MaxOutputBytes))  // fd 2
+        Json.obj("content" -> Json.fromString(stdin.getOrElse(""))), // fd 0: stdin
+        Json.obj("name"    -> Json.fromString("stdout"), "max" -> Json.fromInt(MaxOutputBytes)), // fd 1
+        Json.obj("name"    -> Json.fromString("stderr"), "max" -> Json.fromInt(MaxOutputBytes))  // fd 2
       ),
       "cpuLimit"    -> Json.fromLong(spec.cpuSeconds.toLong * 1_000_000_000L),
       "clockLimit"  -> Json.fromLong(spec.clockSeconds.toLong * 1_000_000_000L),
@@ -84,7 +84,8 @@ private[codeRunPipeline] object GoJudgeWire:
    * Parse a go-judge `/run` response into our canonical [[RunResult]].
    *
    * `compiled` selects whether to inspect the compile-marker files. go-judge returns an array (one entry per
-   * `cmd` — we send one); output streams are RAW (not base64); `time` is nanoseconds, `memory` is bytes.
+   * `cmd` — we send one); output streams are RAW (not base64); `time` is nanoseconds and `memory` is bytes,
+   * both normalised here to the Judge0-shaped [[RunResult]] contract (seconds-as-string, KB).
    */
   def parseRunResult(compiled: Boolean)(body: String): RunResult =
     val json = parse(body) match
@@ -97,7 +98,7 @@ private[codeRunPipeline] object GoJudgeWire:
     val files      = r.downField("files")
     val stdout     = files.get[String]("stdout").toOption.getOrElse("")
     val stderr     = files.get[String]("stderr").toOption.getOrElse("")
-    val memory     = r.get[Long]("memory").toOption
+    val memory     = r.get[Long]("memory").toOption.map(_ / 1024L)
     val time       = r.get[Long]("time").toOption.map(ns => f"${ns.toDouble / 1e9}%.3f")
 
     val compileFailed =

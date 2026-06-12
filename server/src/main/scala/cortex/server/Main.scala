@@ -18,6 +18,7 @@ import cortex.server.cortexPipeline.CortexPipeline
 import cortex.server.db.{DataSource, Migrations}
 import cortex.server.helloPipeline.HelloPipeline
 import cortex.server.http.RateLimiter
+import cortex.server.submissionPipeline.SubmissionPipeline
 import org.slf4j.bridge.SLF4JBridgeHandler
 import zio.*
 import zio.config.typesafe.TypesafeConfigProvider
@@ -93,23 +94,24 @@ object Main extends ZIOAppDefault:
 
     program
       .provide(
-        AppConfig.live,       // reads `application.conf` + env vars
-        dbCfg,                // AppConfig → DbConfig
-        redisCfg,             // AppConfig → RedisConfig
-        mongoCfg,             // AppConfig → MongoConfig
-        runnerCfg,            // AppConfig → RunnerConfig
-        cortexCfg,            // AppConfig → CortexConfig
-        blogCfg,              // AppConfig → BlogConfig
-        authCfg,              // AppConfig → AuthConfig
-        rateLimitCfg,         // AppConfig → RateLimitConfig
-        DataSource.live,      // HikariCP pool over Postgres
-        HelloPipeline.live,   // /api/hello, /api/recent, /api/health (Postgres + Redis + Mongo)
-        CodeRunPipeline.live, // /api/run (Piston / Code Runner)
-        CortexPipeline.live,  // /api/cortex/*
-        BlogPipeline.live,    // /api/blogs/*
-        Auth.live,            // Keycloak JWT verifier (no-op when AUTH_ENABLED=false)
-        RateLimiter.live,     // Redis token bucket for /api/run
-        HttpApp.live          // tapir + zio-http + static + SPA fallback
+        AppConfig.live,          // reads `application.conf` + env vars
+        dbCfg,                   // AppConfig → DbConfig
+        redisCfg,                // AppConfig → RedisConfig
+        mongoCfg,                // AppConfig → MongoConfig
+        runnerCfg,               // AppConfig → RunnerConfig
+        cortexCfg,               // AppConfig → CortexConfig
+        blogCfg,                 // AppConfig → BlogConfig
+        authCfg,                 // AppConfig → AuthConfig
+        rateLimitCfg,            // AppConfig → RateLimitConfig
+        DataSource.live,         // HikariCP pool over Postgres
+        HelloPipeline.live,      // /api/hello, /api/recent, /api/health (Postgres + Redis + Mongo)
+        CodeRunPipeline.live,    // /api/run (Piston / Code Runner)
+        CortexPipeline.live,     // /api/cortex/*
+        BlogPipeline.live,       // /api/blogs/*
+        Auth.live,               // Keycloak JWT verifier (no-op when AUTH_ENABLED=false)
+        RateLimiter.live,        // Redis token bucket for /api/run
+        SubmissionPipeline.live, // /api/submissions (allow-listed save + self-service delete)
+        HttpApp.live             // tapir + zio-http + static + SPA fallback
       )
 
   // Type alias kept short to make the `run` signature read cleanly above.

@@ -4,6 +4,8 @@ summary: "Given two arrays arr1 and arr2 (where arr2 is a subset of arr1 and all
 prereqs:
   - 10-pattern-next-closest-occurrence/01-pattern
 difficulty: easy
+kind: problem
+topics: [next-closest-occurrence, stack]
 ---
 
 # Succeeding superior element
@@ -52,6 +54,85 @@ Output: [-1, -1]
 Explanation: The array is strictly decreasing, so nothing has a greater value to its right.
 ```
 
+```quiz
+{
+  "prompt": "arr1 = [1, 3, 2, 4], arr2 = [3, 2]. What does the next-greater for arr2 return?",
+  "options": ["[4, 4]", "[4, 3]", "[2, 4]", "[-1, 4]"],
+  "answer": "[4, 4]"
+}
+```
+
+## Constraints
+
+- `1 ≤ arr1.length ≤ 1000`
+- `1 ≤ arr2.length ≤ arr1.length`
+- All elements in `arr1` are unique
+- `arr2` is a subset of `arr1`
+
+```python run
+import ast
+from typing import List
+
+class Solution:
+    def succeeding_superior_element(self, arr_1: List[int], arr_2: List[int]) -> List[int]:
+        # Your code goes here — build a next-greater map for arr1 via a
+        # right-to-left monotonic stack, then look up each arr2 value.
+        return [-1] * len(arr_2)
+
+arr1 = ast.literal_eval(input())
+arr2 = ast.literal_eval(input())
+print(Solution().succeeding_superior_element(arr1, arr2))
+```
+
+```java run
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int[] succeedingSuperiorElement(int[] arr1, int[] arr2) {
+            // Your code goes here — build a next-greater map for arr1 via a
+            // right-to-left monotonic stack, then look up each arr2 value.
+            int[] result = new int[arr2.length];
+            Arrays.fill(result, -1);
+            return result;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr1 = parseIntArray(sc.nextLine());
+        int[] arr2 = parseIntArray(sc.nextLine());
+        System.out.println(Arrays.toString(new Solution().succeedingSuperiorElement(arr1, arr2)));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr1", "label": "arr1", "type": "int[]", "placeholder": "[3, 5, 1, 6, 8, 7]" },
+    { "id": "arr2", "label": "arr2", "type": "int[]", "placeholder": "[3, 1, 8, 7]" }
+  ],
+  "cases": [
+    { "args": { "arr1": "[3, 5, 1, 6, 8, 7]", "arr2": "[3, 1, 8, 7]" }, "expected": "[5, 6, -1, -1]" },
+    { "args": { "arr1": "[5, 9, 7, 8, 1]", "arr2": "[5, 9, 7]" }, "expected": "[9, -1, 8]" },
+    { "args": { "arr1": "[1, 2, 3, 4]", "arr2": "[1, 3]" }, "expected": "[2, 4]" },
+    { "args": { "arr1": "[4, 3, 2, 1]", "arr2": "[4, 1]" }, "expected": "[-1, -1]" },
+    { "args": { "arr1": "[1, 2]", "arr2": "[1, 2]" }, "expected": "[2, -1]" },
+    { "args": { "arr1": "[2, 1]", "arr2": "[2, 1]" }, "expected": "[-1, -1]" },
+    { "args": { "arr1": "[1]", "arr2": "[1]" }, "expected": "[-1]" }
+  ]
+}
+```
 
 <details>
 <summary><h2>Intuition</h2></summary>
@@ -91,11 +172,10 @@ Solve the all-positions problem on `arr1` first, then answer `arr2` by lookup. T
 
 </details>
 <details>
-<summary><h2>Solution</h2></summary>
+<summary><h2>Solution & Analysis</h2></summary>
 
-
-
-```python run viz=array viz-root=stack viz-kind=stack
+```python solution time=O(N+M) space=O(N)
+import ast
 from typing import List
 
 class Solution:
@@ -143,20 +223,12 @@ class Solution:
 
         return result
 
-
-# Examples from the problem statement
-print(Solution().succeeding_superior_element([3, 5, 1, 6, 8, 7], [3, 1, 8, 7]))  # [5, 6, -1, -1]
-print(Solution().succeeding_superior_element([5, 9, 7, 8, 1], [5, 9, 7]))        # [9, -1, 8]
-
-# Edge cases
-print(Solution().succeeding_superior_element([1], [1]))                           # [-1]
-print(Solution().succeeding_superior_element([2, 1], [2, 1]))                     # [-1, -1]
-print(Solution().succeeding_superior_element([1, 2], [1, 2]))                     # [2, -1]
-print(Solution().succeeding_superior_element([1, 2, 3, 4], [1, 3]))              # [2, 4]
-print(Solution().succeeding_superior_element([4, 3, 2, 1], [4, 1]))              # [-1, -1]
+arr1 = ast.literal_eval(input())
+arr2 = ast.literal_eval(input())
+print(Solution().succeeding_superior_element(arr1, arr2))
 ```
 
-```java run viz=array viz-root=stack viz-kind=stack
+```java solution
 import java.util.*;
 
 public class Main {
@@ -213,16 +285,19 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(Arrays.toString(new Solution().succeedingSuperiorElement(new int[]{3, 5, 1, 6, 8, 7}, new int[]{3, 1, 8, 7})));  // [5, 6, -1, -1]
-        System.out.println(Arrays.toString(new Solution().succeedingSuperiorElement(new int[]{5, 9, 7, 8, 1}, new int[]{5, 9, 7})));        // [9, -1, 8]
+        Scanner sc = new Scanner(System.in);
+        int[] arr1 = parseIntArray(sc.nextLine());
+        int[] arr2 = parseIntArray(sc.nextLine());
+        System.out.println(Arrays.toString(new Solution().succeedingSuperiorElement(arr1, arr2)));
+    }
 
-        // Edge cases
-        System.out.println(Arrays.toString(new Solution().succeedingSuperiorElement(new int[]{1}, new int[]{1})));                          // [-1]
-        System.out.println(Arrays.toString(new Solution().succeedingSuperiorElement(new int[]{2, 1}, new int[]{2, 1})));                    // [-1, -1]
-        System.out.println(Arrays.toString(new Solution().succeedingSuperiorElement(new int[]{1, 2}, new int[]{1, 2})));                    // [2, -1]
-        System.out.println(Arrays.toString(new Solution().succeedingSuperiorElement(new int[]{1, 2, 3, 4}, new int[]{1, 3})));             // [2, 4]
-        System.out.println(Arrays.toString(new Solution().succeedingSuperiorElement(new int[]{4, 3, 2, 1}, new int[]{4, 1})));             // [-1, -1]
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

@@ -4,26 +4,15 @@ summary: "Given the head and tail of a doubly linked list sorted in non-decreasi
 prereqs:
   - 08-pattern-two-pointers/01-pattern
 difficulty: easy
+kind: problem
+topics: [two-pointers, doubly-linked-list]
 ---
 
 # Two Sum
 
-## The Problem
+## Problem Statement
 
-Given the **head** and **tail** of a doubly linked list sorted in non-decreasing order and an integer **target**, return *all* unique pairs that sum to the target. Do it without extra space. Inputs contain no duplicates.
-
-```
-Input:  head = [1, 2, 3, 4, 5], target = 6
-Output: [[1, 5], [2, 4]]
-
-Input:  head = [1, 2, 3, 4, 5], target = 10
-Output: []
-
-Input:  head = [1, 2, 3, 4, 5], target = 9
-Output: [[4, 5]]
-```
-
----
+Given the **head** of a doubly linked list sorted in non-decreasing order and an integer **target**, return *all* unique pairs that sum to the target. Do it without extra space. Inputs contain no duplicates.
 
 ## Examples
 
@@ -55,8 +44,126 @@ Output: [[1, 2]]
 Explanation: The minimum-length valid case — one pair, one iteration, one match.
 ```
 
+## Constraints
 
----
+- `0 ≤ list length ≤ 10⁵`
+- `-10⁴ ≤ node.val ≤ 10⁴`
+- The list is sorted in non-decreasing order with no duplicate values
+- `-10⁸ ≤ target ≤ 10⁸`
+
+```python run viz=linked-list viz-root=head
+import ast
+
+class ListNode:
+    def __init__(self, val, prev=None, next=None):
+        self.val = val
+        self.prev = prev
+        self.next = next
+
+class Solution:
+    def two_sum(self, head, target):
+        # Your code goes here — find the tail, then converge left from head
+        # and right from tail; when sum == target record [left.val, right.val]
+        # and step both inward; advance left if sum < target, retreat right
+        # if sum > target; stop when left.val >= right.val.
+        pass
+
+def build_list(values):              # [1, 2, 3] → 1 ⇄ 2 ⇄ 3
+    head = tail = None
+    for v in values:
+        node = ListNode(v, prev=tail)
+        if tail is not None:
+            tail.next = node
+        else:
+            head = node
+        tail = node
+    return head
+
+def print_list(head):                # 1 ⇄ 2 ⇄ 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
+
+head = build_list(ast.literal_eval(input()))   # the test case's head
+target = int(input())
+print(Solution().two_sum(head, target))
+```
+
+```java run viz=linked-list viz-root=head
+import java.util.*;
+
+public class Main {
+    static class ListNode {
+        int val; ListNode prev, next;
+        ListNode(int val) { this.val = val; }
+    }
+
+    static class Solution {
+        public List<List<Integer>> twoSum(ListNode head, int target) {
+            // Your code goes here — find the tail, then converge left from head
+            // and right from tail; when sum == target record Arrays.asList(left.val,
+            // right.val) and step both inward; advance left if sum < target,
+            // retreat right if sum > target; stop when left.val >= right.val.
+            return new ArrayList<>();
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        ListNode head = buildList(parseIntArray(sc.nextLine()));
+        int target = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().twoSum(head, target));
+    }
+
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 ⇄ 2 ⇄ 3
+        ListNode head = null, tail = null;
+        for (int v : values) {
+            ListNode node = new ListNode(v);
+            node.prev = tail;
+            if (tail != null) tail.next = node;
+            else head = node;
+            tail = node;
+        }
+        return head;
+    }
+
+    static void printList(ListNode head) {         // 1 ⇄ 2 ⇄ 3 → [1, 2, 3]
+        List<Integer> out = new ArrayList<>();
+        for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+        System.out.println(out);
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "head", "label": "head", "type": "int[]", "placeholder": "[1, 2, 3, 4, 5]" },
+    { "id": "target", "label": "target", "type": "int", "placeholder": "6" }
+  ],
+  "cases": [
+    { "args": { "head": "[1, 2, 3, 4, 5]", "target": "6" }, "expected": "[[1, 5], [2, 4]]" },
+    { "args": { "head": "[1, 2, 3, 4, 5]", "target": "10" }, "expected": "[]" },
+    { "args": { "head": "[1, 2, 3, 4, 5]", "target": "9" }, "expected": "[[4, 5]]" },
+    { "args": { "head": "[1, 2]", "target": "3" }, "expected": "[[1, 2]]" },
+    { "args": { "head": "[1]", "target": "1" }, "expected": "[]" },
+    { "args": { "head": "[1, 2]", "target": "5" }, "expected": "[]" },
+    { "args": { "head": "[1, 3, 5, 7, 9]", "target": "10" }, "expected": "[[1, 9], [3, 7]]" },
+    { "args": { "head": "[2, 4, 6, 8]", "target": "10" }, "expected": "[[2, 8], [4, 6]]" }
+  ]
+}
+```
 
 <details>
 <summary><h2>Intuition</h2></summary>
@@ -142,65 +249,40 @@ flowchart TB
 <details>
 <summary><h2>Solution &amp; Analysis</h2></summary>
 
-### The Solution
+### Solution
 
-```python run viz=linked-list viz-root=head
-from typing import Optional, List
+```python solution time=O(n) space=O(1)
+import ast
+from typing import List
 
 class ListNode:
-    def __init__(self, val=0, prev=None, nxt=None):
+    def __init__(self, val, prev=None, next=None):
         self.val = val
         self.prev = prev
-        self.next = nxt
-
-
-def from_list(values):
-    if not values:
-        return None
-    head = ListNode(values[0])
-    cur = head
-    for v in values[1:]:
-        node = ListNode(v, prev=cur)
-        cur.next = node
-        cur = node
-    return head
-
-
-def get_tail(head):
-    if head is None:
-        return None
-    cur = head
-    while cur.next is not None:
-        cur = cur.next
-    return cur
-
+        self.next = next
 
 class Solution:
-    def two_sum(
-        self,
-        head: Optional[ListNode],
-        tail: Optional[ListNode],
-        target: int,
-    ) -> List[List[int]]:
+    def two_sum(self, head, target: int) -> List[List[int]]:
+
+        # Find the tail
+        tail = head
+        while tail and tail.next:
+            tail = tail.next
 
         # Check if the list is empty or has only one element
         if not head or not head.next:
-
-            # Return an empty list since there are no pairs to be found
             return []
 
         # Store the pairs of values that sum up to the target
         result: List[List[int]] = []
-        left: Optional[ListNode] = head
-        right: Optional[ListNode] = tail
+        left = head
+        right = tail
 
-        # Iterate until either left or right becomes None or left's value
-        # becomes greater than right's value
+        # Iterate until left's value becomes greater than right's value
         while left and right and left.val < right.val:
             if left.val + right.val == target:
 
-                # If the sum of left and right values is equal to the
-                # target. Add the pair to the result list
+                # Add the pair to the result list
                 result.append([left.val, right.val])
 
                 # Move left to the next node
@@ -209,91 +291,57 @@ class Solution:
                 # Move right to the previous node
                 right = right.prev
 
-            # If the sum of left and right values is less than the target
             # Move left to the next node
             elif left.val + right.val < target:
                 left = left.next
 
-            # If the sum of left and right values is greater than the
-            # target. Move right to the previous node
+            # Move right to the previous node
             else:
                 right = right.prev
 
-        # Return the list containing pairs of values that sum up to the
-        # target
         return result
 
+def build_list(values):              # [1, 2, 3] → 1 ⇄ 2 ⇄ 3
+    head = tail = None
+    for v in values:
+        node = ListNode(v, prev=tail)
+        if tail is not None:
+            tail.next = node
+        else:
+            head = node
+        tail = node
+    return head
 
-# Examples from the problem statement
-h = from_list([1, 2, 3, 4, 5])
-print(Solution().two_sum(h, get_tail(h), 6))   # [[1, 5], [2, 4]]
+def print_list(head):                # 1 ⇄ 2 ⇄ 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
 
-h = from_list([1, 2, 3, 4, 5])
-print(Solution().two_sum(h, get_tail(h), 10))  # []
-
-h = from_list([1, 2, 3, 4, 5])
-print(Solution().two_sum(h, get_tail(h), 9))   # [[4, 5]]
-
-# Edge cases
-h = from_list([1])
-print(Solution().two_sum(h, get_tail(h), 1))   # []
-
-h = from_list([1, 2])
-print(Solution().two_sum(h, get_tail(h), 3))   # [[1, 2]]
-
-h = from_list([1, 2])
-print(Solution().two_sum(h, get_tail(h), 5))   # []
-
-h = from_list([1, 3, 5, 7, 9])
-print(Solution().two_sum(h, get_tail(h), 10))  # [[1, 9], [3, 7]]
-
-h = from_list([2, 4, 6, 8])
-print(Solution().two_sum(h, get_tail(h), 10))  # [[2, 8], [4, 6]]
+head = build_list(ast.literal_eval(input()))   # the test case's head
+target = int(input())
+print(Solution().two_sum(head, target))
 ```
 
-```java run viz=linked-list viz-root=head
+```java solution
 import java.util.*;
 
 public class Main {
     static class ListNode {
-        int val;
-        ListNode prev;
-        ListNode next;
-        ListNode() {}
+        int val; ListNode prev, next;
         ListNode(int val) { this.val = val; }
     }
 
-    static ListNode fromList(int... values) {
-        if (values.length == 0) return null;
-        ListNode head = new ListNode(values[0]);
-        ListNode cur = head;
-        for (int i = 1; i < values.length; i++) {
-            ListNode node = new ListNode(values[i]);
-            node.prev = cur;
-            cur.next = node;
-            cur = node;
-        }
-        return head;
-    }
-
-    static ListNode getTail(ListNode head) {
-        if (head == null) return null;
-        ListNode cur = head;
-        while (cur.next != null) cur = cur.next;
-        return cur;
-    }
-
     static class Solution {
-        public List<List<Integer>> twoSum(
-            ListNode head,
-            ListNode tail,
-            int target
-        ) {
+        public List<List<Integer>> twoSum(ListNode head, int target) {
+
+            // Find the tail
+            ListNode tail = head;
+            while (tail != null && tail.next != null) tail = tail.next;
 
             // Check if the list is empty or has only one element
             if (head == null || head.next == null) {
-
-                // Return an empty list since there are no pairs to be found
                 return new ArrayList<>();
             }
 
@@ -302,17 +350,12 @@ public class Main {
             ListNode left = head;
             ListNode right = tail;
 
-            // Iterate until either left or right becomes null or left's
-            // value becomes greater than right's value
+            // Iterate until left's value becomes greater than right's value
             while (left != null && right != null && left.val < right.val) {
                 if (left.val + right.val == target) {
 
-                    // If the sum of left and right values is equal to the
-                    // target Add the pair to the result list
-                    List<Integer> pair = new ArrayList<>();
-                    pair.add(left.val);
-                    pair.add(right.val);
-                    result.add(pair);
+                    // Add the pair to the result list
+                    result.add(Arrays.asList(left.val, right.val));
 
                     // Move left to the next node
                     left = left.next;
@@ -321,53 +364,53 @@ public class Main {
                     right = right.prev;
                 }
 
-                // If the sum of left and right values is less than the
-                // target Move left to the next node
+                // Move left to the next node
                 else if (left.val + right.val < target) {
                     left = left.next;
                 }
 
-                // If the sum of left and right values is greater than
-                // the target Move right to the previous node
+                // Move right to the previous node
                 else {
                     right = right.prev;
                 }
             }
 
-            // Return the list containing pairs of values that sum up to the
-            // target
             return result;
         }
     }
 
     public static void main(String[] args) {
-        ListNode h;
+        Scanner sc = new Scanner(System.in);
+        ListNode head = buildList(parseIntArray(sc.nextLine()));
+        int target = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().twoSum(head, target));
+    }
 
-        // Examples from the problem statement
-        h = fromList(1, 2, 3, 4, 5);
-        System.out.println(new Solution().twoSum(h, getTail(h), 6));   // [[1, 5], [2, 4]]
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 ⇄ 2 ⇄ 3
+        ListNode head = null, tail = null;
+        for (int v : values) {
+            ListNode node = new ListNode(v);
+            node.prev = tail;
+            if (tail != null) tail.next = node;
+            else head = node;
+            tail = node;
+        }
+        return head;
+    }
 
-        h = fromList(1, 2, 3, 4, 5);
-        System.out.println(new Solution().twoSum(h, getTail(h), 10));  // []
+    static void printList(ListNode head) {         // 1 ⇄ 2 ⇄ 3 → [1, 2, 3]
+        List<Integer> out = new ArrayList<>();
+        for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+        System.out.println(out);
+    }
 
-        h = fromList(1, 2, 3, 4, 5);
-        System.out.println(new Solution().twoSum(h, getTail(h), 9));   // [[4, 5]]
-
-        // Edge cases
-        h = fromList(1);
-        System.out.println(new Solution().twoSum(h, getTail(h), 1));   // []
-
-        h = fromList(1, 2);
-        System.out.println(new Solution().twoSum(h, getTail(h), 3));   // [[1, 2]]
-
-        h = fromList(1, 2);
-        System.out.println(new Solution().twoSum(h, getTail(h), 5));   // []
-
-        h = fromList(1, 3, 5, 7, 9);
-        System.out.println(new Solution().twoSum(h, getTail(h), 10));  // [[1, 9], [3, 7]]
-
-        h = fromList(2, 4, 6, 8);
-        System.out.println(new Solution().twoSum(h, getTail(h), 10));  // [[2, 8], [4, 6]]
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```
@@ -379,9 +422,12 @@ public class Main {
 ```
 arr = [1, 2, 3, 4, 5] (already sorted), target = 6
 
-Step 1 │ left=0 (arr[left]=1), right=4 (arr[right]=5)
-        │ sum = 1 + 5 = 6 == target → return [arr[left], arr[right]]
-Result: [1, 5] ✓  (returns on the first matching pair — no further scanning)
+Step 1 │ left=node(1), right=node(5)
+        │ sum = 1 + 5 = 6 == target → record [1, 5], left→2, right→4
+Step 2 │ left=node(2), right=node(4)
+        │ sum = 2 + 4 = 6 == target → record [2, 4], left→3, right→3
+Done   │ left.val == right.val → exit
+Result: [[1, 5], [2, 4]] ✓
 ```
 
 </details>
@@ -390,8 +436,8 @@ Result: [1, 5] ✓  (returns on the first matching pair — no further scanning)
 
 | Measure | Value | Reason |
 |---|---|---|
-| Time  | **O(N log N)** | `arr.sort()` dominates; the converging two-pointer scan that follows is O(N). |
-| Space | **O(1)** auxiliary | Beyond the sort, only two index variables and a `sum` scalar. |
+| Time  | **O(N)** | Single converging pass; each node visited at most once. |
+| Space | **O(1)** auxiliary | Beyond the output list, only two pointer variables. |
 
 ### Edge Cases
 

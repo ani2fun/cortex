@@ -20,14 +20,33 @@ Reverse `1 ⇄ 2 ⇄ 3` into `3 ⇄ 2 ⇄ 1` by swapping `prev` and `next` on ev
 > ▶ Run it, then click **Visualise** — each node swaps its two pointers; the walk advances through the *old* `next` (now sitting in `prev`), and the old tail becomes the head.
 
 ```python run viz=linked-list viz-root=head viz-kind=list-double
-class Node:
-    def __init__(self, val):
-        self.val = val
-        self.prev = None
-        self.next = None
+import ast
 
-head = Node(1); b = Node(2); c = Node(3)          # build 1 ⇄ 2 ⇄ 3
-head.next = b; b.prev = head; b.next = c; c.prev = b
+class ListNode:
+    def __init__(self, val, prev=None, next=None):
+        self.val = val
+        self.prev = prev
+        self.next = next
+
+def build_list(values):              # [1, 2, 3] → 1 ⇄ 2 ⇄ 3
+    head = tail = None
+    for v in values:
+        node = ListNode(v, prev=tail)
+        if tail is not None:
+            tail.next = node
+        else:
+            head = node
+        tail = node
+    return head
+
+def print_list(head):                # 1 ⇄ 2 ⇄ 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
+
+head = build_list(ast.literal_eval(input()))   # the test case's values
 
 current = head
 new_head = head
@@ -37,12 +56,76 @@ while current is not None:
     current = current.prev                                    # advance via old next (now stored in prev)
 head = new_head
 
-vals = []
-node = head
-while node:
-    vals.append(node.val)
-    node = node.next
-print(vals)                                                   # [3, 2, 1]
+print_list(head)
+```
+
+```java run viz=linked-list viz-root=head viz-kind=list-double
+import java.util.*;
+
+public class Main {
+  static class ListNode {
+    int val; ListNode prev, next;
+    ListNode(int val) { this.val = val; }
+  }
+
+  public static void main(String[] args) {
+    ListNode head = buildList(parseIntArray(new Scanner(System.in).nextLine()));
+
+    ListNode current = head, newHead = head;
+    while (current != null) {
+      ListNode tmp = current.next;     // swap the two pointers
+      current.next = current.prev;
+      current.prev = tmp;
+      newHead = current;               // old tail becomes the new head
+      current = current.prev;          // advance via old next (now stored in prev)
+    }
+    head = newHead;
+
+    printList(head);
+  }
+
+  static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 ⇄ 2 ⇄ 3
+    ListNode head = null, tail = null;
+    for (int v : values) {
+      ListNode node = new ListNode(v);
+      node.prev = tail;
+      if (tail != null) tail.next = node;
+      else head = node;
+      tail = node;
+    }
+    return head;
+  }
+
+  static void printList(ListNode head) {         // 1 ⇄ 2 ⇄ 3 → [1, 2, 3]
+    List<Integer> out = new ArrayList<>();
+    for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+    System.out.println(out);
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's values
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "values", "label": "values", "type": "int[]", "placeholder": "[1, 2, 3]" }
+  ],
+  "cases": [
+    { "args": { "values": "[1, 2, 3]" }, "expected": "[3, 2, 1]" },
+    { "args": { "values": "[5, 7, 3, 10]" }, "expected": "[10, 3, 7, 5]" },
+    { "args": { "values": "[42]" }, "expected": "[42]" },
+    { "args": { "values": "[]" }, "expected": "[]" }
+  ]
+}
 ```
 
 ## How It Works
@@ -85,14 +168,122 @@ Because the swap already happened. The instant we swapped node `1`, its old `nex
 
 ## Your Turn
 
-The reusable doubly-list reversal:
+Write the reusable doubly-list reversal — `reverse(head)` returns the new head. One swap per node, walk via the old `next`:
 
 ```python run viz=linked-list viz-root=head viz-kind=list-double
-class Node:
-    def __init__(self, val):
+import ast
+
+class ListNode:
+    def __init__(self, val, prev=None, next=None):
         self.val = val
-        self.prev = None
-        self.next = None
+        self.prev = prev
+        self.next = next
+
+def reverse(head):
+    # Your code goes here — swap each node's prev and next, walk via the old
+    # next (now in prev), and return the old tail as the new head.
+    pass
+
+def build_list(values):              # [1, 2, 3] → 1 ⇄ 2 ⇄ 3
+    head = tail = None
+    for v in values:
+        node = ListNode(v, prev=tail)
+        if tail is not None:
+            tail.next = node
+        else:
+            head = node
+        tail = node
+    return head
+
+def print_list(head):                # 1 ⇄ 2 ⇄ 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
+
+head = build_list(ast.literal_eval(input()))   # the test case's values
+print_list(reverse(head))
+```
+
+```java run viz=linked-list viz-root=head viz-kind=list-double
+import java.util.*;
+
+public class Main {
+  static class ListNode {
+    int val; ListNode prev, next;
+    ListNode(int val) { this.val = val; }
+  }
+
+  static ListNode reverse(ListNode head) {
+    // Your code goes here — swap each node's prev and next, walk via the old
+    // next (now in prev), and return the old tail as the new head.
+    return null;
+  }
+
+  public static void main(String[] args) {
+    ListNode head = buildList(parseIntArray(new Scanner(System.in).nextLine()));
+    printList(reverse(head));
+  }
+
+  static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 ⇄ 2 ⇄ 3
+    ListNode head = null, tail = null;
+    for (int v : values) {
+      ListNode node = new ListNode(v);
+      node.prev = tail;
+      if (tail != null) tail.next = node;
+      else head = node;
+      tail = node;
+    }
+    return head;
+  }
+
+  static void printList(ListNode head) {         // 1 ⇄ 2 ⇄ 3 → [1, 2, 3]
+    List<Integer> out = new ArrayList<>();
+    for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+    System.out.println(out);
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's values
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "values", "label": "values", "type": "int[]", "placeholder": "[1, 2, 3, 4]" }
+  ],
+  "cases": [
+    { "args": { "values": "[1, 2, 3, 4]" }, "expected": "[4, 3, 2, 1]" },
+    { "args": { "values": "[5, 7, 3, 10]" }, "expected": "[10, 3, 7, 5]" },
+    { "args": { "values": "[42]" }, "expected": "[42]" },
+    { "args": { "values": "[]" }, "expected": "[]" },
+    { "args": { "values": "[1, 1, 2, 2]" }, "expected": "[2, 2, 1, 1]" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+The loop is exactly the See-It-Work walk, packaged to return its result: a single cursor `current` sweeps the list, and each tick swaps that node's `prev` and `next` in one stroke. After the swap, the old forward link sits in `current.prev`, so `current = current.prev` advances toward the old tail. `new_head` tracks the most recently swapped node, so when `current` falls off the end it holds the old tail — the new head. An empty list never enters the loop and returns `None`.
+
+```python solution time=O(n) space=O(1)
+import ast
+
+class ListNode:
+    def __init__(self, val, prev=None, next=None):
+        self.val = val
+        self.prev = prev
+        self.next = next
 
 def reverse(head):
     current = head
@@ -103,47 +294,89 @@ def reverse(head):
         current = current.prev                                    # old next
     return new_head
 
-# build 1 ⇄ 2 ⇄ 3 ⇄ 4, reverse, read forward
-nodes = [Node(v) for v in (1, 2, 3, 4)]
-for i in range(len(nodes) - 1):
-    nodes[i].next = nodes[i + 1]; nodes[i + 1].prev = nodes[i]
+def build_list(values):              # [1, 2, 3] → 1 ⇄ 2 ⇄ 3
+    head = tail = None
+    for v in values:
+        node = ListNode(v, prev=tail)
+        if tail is not None:
+            tail.next = node
+        else:
+            head = node
+        tail = node
+    return head
 
-out, node = [], reverse(nodes[0])
-while node:
-    out.append(node.val); node = node.next
-print(out)                                                        # [4, 3, 2, 1]
+def print_list(head):                # 1 ⇄ 2 ⇄ 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
+
+head = build_list(ast.literal_eval(input()))   # the test case's values
+print_list(reverse(head))
 ```
 
-```java run viz=linked-list viz-root=head viz-kind=list-double
-public class Main {
-  static class Node { int val; Node prev, next; Node(int v){ val = v; } }
+```java solution
+import java.util.*;
 
-  static Node reverse(Node head) {
-    Node current = head, newHead = head;
+public class Main {
+  static class ListNode {
+    int val; ListNode prev, next;
+    ListNode(int val) { this.val = val; }
+  }
+
+  static ListNode reverse(ListNode head) {
+    ListNode current = head, newHead = head;
     while (current != null) {
-      Node tmp = current.next;          // swap prev and next
+      ListNode tmp = current.next;     // swap prev and next
       current.next = current.prev;
       current.prev = tmp;
       newHead = current;
-      current = current.prev;           // old next
+      current = current.prev;          // old next
     }
     return newHead;
   }
 
   public static void main(String[] args) {
-    Node[] n = new Node[4];
-    for (int i = 0; i < 4; i++) n[i] = new Node(i + 1);
-    for (int i = 0; i < 3; i++) { n[i].next = n[i + 1]; n[i + 1].prev = n[i]; }
-    StringBuilder sb = new StringBuilder("[");
-    for (Node c = reverse(n[0]); c != null; c = c.next) sb.append(c.val).append(c.next != null ? ", " : "");
-    System.out.println(sb.append("]"));   // [4, 3, 2, 1]
+    ListNode head = buildList(parseIntArray(new Scanner(System.in).nextLine()));
+    printList(reverse(head));
+  }
+
+  static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 ⇄ 2 ⇄ 3
+    ListNode head = null, tail = null;
+    for (int v : values) {
+      ListNode node = new ListNode(v);
+      node.prev = tail;
+      if (tail != null) tail.next = node;
+      else head = node;
+      tail = node;
+    }
+    return head;
+  }
+
+  static void printList(ListNode head) {         // 1 ⇄ 2 ⇄ 3 → [1, 2, 3]
+    List<Integer> out = new ArrayList<>();
+    for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+    System.out.println(out);
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's values
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
   }
 }
 ```
 
-Drill the family in **Practice** — [Reverse a List](/cortex/data-structures-and-algorithms/linear-structures/doubly-linked-list/pattern-reversal/problems/reverse-a-list), [Reverse First K Nodes](/cortex/data-structures-and-algorithms/linear-structures/doubly-linked-list/pattern-reversal/problems/reverse-first-k-nodes), [Reverse Last K Nodes](/cortex/data-structures-and-algorithms/linear-structures/doubly-linked-list/pattern-reversal/problems/reverse-last-k-nodes), and [Reverse the Given Segment](/cortex/data-structures-and-algorithms/linear-structures/doubly-linked-list/pattern-reversal/problems/reverse-the-given-segment).
+</details>
 
 ## Reflect & Connect
+
+Drill the family in **Practice** — [Reverse a List](/cortex/data-structures-and-algorithms/linear-structures/doubly-linked-list/pattern-reversal/problems/reverse-a-list), [Reverse First K Nodes](/cortex/data-structures-and-algorithms/linear-structures/doubly-linked-list/pattern-reversal/problems/reverse-first-k-nodes), [Reverse Last K Nodes](/cortex/data-structures-and-algorithms/linear-structures/doubly-linked-list/pattern-reversal/problems/reverse-last-k-nodes), and [Reverse the Given Segment](/cortex/data-structures-and-algorithms/linear-structures/doubly-linked-list/pattern-reversal/problems/reverse-the-given-segment).
 
 The doubly-list reversal is a clean lesson in how a richer structure simplifies an algorithm:
 

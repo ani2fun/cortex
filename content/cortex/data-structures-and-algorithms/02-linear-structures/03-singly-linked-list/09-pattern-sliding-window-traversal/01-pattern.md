@@ -20,30 +20,109 @@ Remove the 2nd node from the end of `1→2→3→4→5` (that's the `4`). One pa
 > ▶ Run it, then click **Visualise** — `lead` opens a gap of `k`, then `lead` and `lag` slide together until `lead` hits the tail; `lag` is left just before the target.
 
 ```python run viz=linked-list viz-root=head viz-kind=list-single
+import ast
+
 class ListNode:
     def __init__(self, val, next=None):
         self.val = val
         self.next = next
 
-head = ListNode(1, ListNode(2, ListNode(3, ListNode(4, ListNode(5)))))   # 1 → 2 → 3 → 4 → 5
-k = 2                                  # remove the 2nd node from the end
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
 
+def print_list(head):                # 1 → 2 → 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
+
+values = ast.literal_eval(input())   # the test case's values
+k = int(input())                     # the test case's k
+
+head = build_list(values)
 dummy = ListNode(0, head)
 lead = lag = dummy
-for _ in range(k):                     # open a gap of k: lead leads lag by k nodes
+for _ in range(k):                   # open a gap of k: lead leads lag by k nodes
     lead = lead.next
-while lead.next is not None:           # slide both in lockstep until lead is at the last node
+while lead.next is not None:         # slide both in lockstep until lead is at the last node
     lead = lead.next
     lag = lag.next
-lag.next = lag.next.next               # lag sits just before the target → unlink it
+lag.next = lag.next.next             # lag sits just before the target → unlink it
 head = dummy.next
 
-vals = []
-node = head
-while node:
-    vals.append(node.val)
-    node = node.next
-print(vals)                            # [1, 2, 3, 5]
+print_list(head)
+```
+
+```java run viz=linked-list viz-root=head viz-kind=list-single
+import java.util.*;
+
+public class Main {
+  static class ListNode {
+    int val; ListNode next;
+    ListNode(int val) { this.val = val; }
+    ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] values = parseIntArray(sc.nextLine());
+    int k = Integer.parseInt(sc.nextLine().trim());
+
+    ListNode head = buildList(values);
+    ListNode dummy = new ListNode(0, head);
+    ListNode lead = dummy, lag = dummy;
+    for (int i = 0; i < k; i++) lead = lead.next;   // open the k-gap
+    while (lead.next != null) {                      // slide in lockstep to the tail
+      lead = lead.next;
+      lag = lag.next;
+    }
+    lag.next = lag.next.next;                        // unlink the k-th-from-end
+    head = dummy.next;
+
+    printList(head);
+  }
+
+  static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+    ListNode head = null;
+    for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+    return head;
+  }
+
+  static void printList(ListNode head) {         // 1 → 2 → 3 → [1, 2, 3]
+    List<Integer> out = new ArrayList<>();
+    for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+    System.out.println(out);
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's values
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "values", "label": "values", "type": "int[]", "placeholder": "[1, 2, 3, 4, 5]" },
+    { "id": "k", "label": "k", "type": "int", "placeholder": "2" }
+  ],
+  "cases": [
+    { "args": { "values": "[1, 2, 3, 4, 5]", "k": "2" }, "expected": "[1, 2, 3, 5]" },
+    { "args": { "values": "[1, 2, 3, 4, 5]", "k": "1" }, "expected": "[1, 2, 3, 4]" },
+    { "args": { "values": "[1, 2, 3, 4, 5]", "k": "5" }, "expected": "[2, 3, 4, 5]" },
+    { "args": { "values": "[1]", "k": "1" }, "expected": "[]" }
+  ]
+}
 ```
 
 ## How It Works
@@ -92,6 +171,108 @@ To unlink a node from a singly linked list you need its **predecessor**, because
 The reusable remove-`k`-th-from-end — one pass:
 
 ```python run viz=linked-list viz-root=head viz-kind=list-single
+import ast
+
+class ListNode:
+    def __init__(self, val, next=None):
+        self.val = val
+        self.next = next
+
+def remove_kth_from_end(head, k):
+    # Your code goes here — dummy + two pointers a k-gap apart;
+    # prime lead k steps, slide in lockstep, unlink at lag.
+    pass
+
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
+
+def print_list(head):                # 1 → 2 → 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
+
+values = ast.literal_eval(input())   # the test case's values
+k = int(input())                     # the test case's k
+print_list(remove_kth_from_end(build_list(values), k))
+```
+
+```java run viz=linked-list viz-root=head viz-kind=list-single
+import java.util.*;
+
+public class Main {
+  static class ListNode {
+    int val; ListNode next;
+    ListNode(int val) { this.val = val; }
+    ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+  }
+
+  static ListNode removeKthFromEnd(ListNode head, int k) {
+    // Your code goes here — dummy + two pointers a k-gap apart;
+    // prime lead k steps, slide in lockstep, unlink at lag.
+    return null;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] values = parseIntArray(sc.nextLine());
+    int k = Integer.parseInt(sc.nextLine().trim());
+    printList(removeKthFromEnd(buildList(values), k));
+  }
+
+  static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+    ListNode head = null;
+    for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+    return head;
+  }
+
+  static void printList(ListNode head) {         // 1 → 2 → 3 → [1, 2, 3]
+    List<Integer> out = new ArrayList<>();
+    for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+    System.out.println(out);
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's values
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "values", "label": "values", "type": "int[]", "placeholder": "[1, 2, 3, 4, 5]" },
+    { "id": "k", "label": "k", "type": "int", "placeholder": "2" }
+  ],
+  "cases": [
+    { "args": { "values": "[1, 2, 3, 4, 5]", "k": "2" }, "expected": "[1, 2, 3, 5]" },
+    { "args": { "values": "[1, 2, 3, 4, 5]", "k": "1" }, "expected": "[1, 2, 3, 4]" },
+    { "args": { "values": "[1, 2, 3, 4, 5]", "k": "5" }, "expected": "[2, 3, 4, 5]" },
+    { "args": { "values": "[1]", "k": "1" }, "expected": "[]" },
+    { "args": { "values": "[1, 2]", "k": "1" }, "expected": "[1]" },
+    { "args": { "values": "[1, 2]", "k": "2" }, "expected": "[2]" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Prime the dummy-rooted `lead` pointer `k` steps ahead to open the window, then slide both pointers in lockstep until `lead.next` is `null` — `lag` is now just before the target. Unlink with `lag.next = lag.next.next` and return `dummy.next`.
+
+```python solution time=O(n) space=O(1)
+import ast
+
 class ListNode:
     def __init__(self, val, next=None):
         self.val = val
@@ -100,27 +281,45 @@ class ListNode:
 def remove_kth_from_end(head, k):
     dummy = ListNode(0, head)
     lead = lag = dummy
-    for _ in range(k):                 # open the k-gap
+    for _ in range(k):              # open the k-gap
         lead = lead.next
-    while lead.next is not None:       # slide in lockstep to the tail
+    while lead.next is not None:    # slide in lockstep to the tail
         lead = lead.next
         lag = lag.next
-    lag.next = lag.next.next           # unlink the k-th-from-end
+    lag.next = lag.next.next        # unlink the k-th-from-end
     return dummy.next
 
-head = ListNode(1, ListNode(2, ListNode(3, ListNode(4, ListNode(5)))))
-out, node = [], remove_kth_from_end(head, 2)
-while node:
-    out.append(node.val); node = node.next
-print(out)                             # [1, 2, 3, 5]
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
+
+def print_list(head):                # 1 → 2 → 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
+
+values = ast.literal_eval(input())   # the test case's values
+k = int(input())                     # the test case's k
+print_list(remove_kth_from_end(build_list(values), k))
 ```
 
-```java run viz=linked-list viz-root=head viz-kind=list-single
+```java solution
+import java.util.*;
+
 public class Main {
-  static class ListNode { int val; ListNode next; ListNode(int v){ val = v; } ListNode(int v, ListNode n){ val = v; next = n; } }
+  static class ListNode {
+    int val; ListNode next;
+    ListNode(int val) { this.val = val; }
+    ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+  }
 
   static ListNode removeKthFromEnd(ListNode head, int k) {
-    ListNode dummy = new ListNode(0, head), lead = dummy, lag = dummy;
+    ListNode dummy = new ListNode(0, head);
+    ListNode lead = dummy, lag = dummy;
     for (int i = 0; i < k; i++) lead = lead.next;   // open the k-gap
     while (lead.next != null) {                      // slide in lockstep to the tail
       lead = lead.next;
@@ -131,17 +330,41 @@ public class Main {
   }
 
   public static void main(String[] args) {
-    ListNode head = new ListNode(1, new ListNode(2, new ListNode(3, new ListNode(4, new ListNode(5)))));
-    StringBuilder sb = new StringBuilder("[");
-    for (ListNode c = removeKthFromEnd(head, 2); c != null; c = c.next) sb.append(c.val).append(c.next != null ? ", " : "");
-    System.out.println(sb.append("]"));   // [1, 2, 3, 5]
+    Scanner sc = new Scanner(System.in);
+    int[] values = parseIntArray(sc.nextLine());
+    int k = Integer.parseInt(sc.nextLine().trim());
+    printList(removeKthFromEnd(buildList(values), k));
+  }
+
+  static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+    ListNode head = null;
+    for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+    return head;
+  }
+
+  static void printList(ListNode head) {         // 1 → 2 → 3 → [1, 2, 3]
+    List<Integer> out = new ArrayList<>();
+    for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+    System.out.println(out);
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's values
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
   }
 }
 ```
 
-Drill the family in **Practice** — [K Maximum Sum](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-sliding-window-traversal/problems/k-maximum-sum), [Trim Nth Node](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-sliding-window-traversal/problems/trim-nth-node), [Swap Nth Nodes](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-sliding-window-traversal/problems/swap-nth-nodes), and [K Rotations](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-sliding-window-traversal/problems/k-rotations).
+</details>
 
 ## Reflect & Connect
+
+Drill the family in **Practice** — [K Maximum Sum](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-sliding-window-traversal/problems/k-maximum-sum), [Trim Nth Node](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-sliding-window-traversal/problems/trim-nth-node), [Swap Nth Nodes](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-sliding-window-traversal/problems/swap-nth-nodes), and [K Rotations](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-sliding-window-traversal/problems/k-rotations).
 
 The fixed-gap window is the linked-list answer to "I need to know where I am *relative to the end*":
 
@@ -195,4 +418,4 @@ This is one specialization of the two-pointer idea; the **next** pattern uses tw
 
 - **CLRS**, *Introduction to Algorithms*, 4th ed., §10.2 — singly linked lists; sentinel/dummy nodes to remove boundary special cases.
 - **Sedgewick & Wayne**, *Algorithms*, 4th ed., §1.3 — linked structures and traversal.
-- "Remove the Nth node from the end in one pass" with two gap-separated pointers is the standard result; both runnable blocks are verified by running (output `[1, 2, 3, 5]`).
+- "Remove the Nth node from the end in one pass" with two gap-separated pointers is the standard result; both runnable blocks are verified by running against their test cases.

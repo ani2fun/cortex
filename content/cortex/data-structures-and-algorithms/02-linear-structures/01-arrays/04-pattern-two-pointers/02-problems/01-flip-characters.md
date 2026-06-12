@@ -4,6 +4,8 @@ summary: "Given an array of characters arr, reverse the array by swapping equidi
 prereqs:
   - 04-pattern-two-pointers/01-pattern
 difficulty: easy
+kind: problem
+topics: [two-pointers, arrays]
 ---
 
 # Flip Characters
@@ -39,6 +41,79 @@ Output:       [e, d, c, b, a]
 ```
 Input:  arr = []
 Output:       []
+```
+
+```quiz
+{
+  "prompt": "Now your turn!",
+  "input": "arr = [c, o, r, t, e, x]",
+  "options": ["[c, o, r, t, e, x]", "[x, e, t, r, o, c]", "[x, c, e, o, t, r]", "[c, x, o, e, r, t]"],
+  "answer": "[x, e, t, r, o, c]"
+}
+```
+
+## Constraints
+
+- `0 ≤ arr.length ≤ 1000`
+- `arr[i]` is a printable ASCII character
+
+```python run viz=array viz-root=arr
+from typing import List
+
+class Solution:
+    def flip_characters(self, arr: List[str]) -> None:
+        # Your code goes here — reverse arr in place with two pointers.
+        pass
+
+# Reads the test case's arr, e.g. [a, e, i, o, u]
+inner = input().strip()[1:-1].strip()
+arr = [t.strip() for t in inner.split(",")] if inner else []
+Solution().flip_characters(arr)
+print("[" + ", ".join(arr) + "]")
+```
+
+```java run viz=array viz-root=arr
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        void flipCharacters(char[] arr) {
+            // Your code goes here — reverse arr in place with two pointers.
+        }
+    }
+
+    public static void main(String[] args) {
+        char[] arr = parseCharArray(new Scanner(System.in).nextLine());
+        new Solution().flipCharacters(arr);
+        System.out.println(Arrays.toString(arr));
+    }
+
+    // "[a, e, i]" → {'a', 'e', 'i'} — reads the test case's arr
+    static char[] parseCharArray(String line) {
+        String inner = line.trim().replaceAll("^\\[|\\]$", "").trim();
+        if (inner.isEmpty()) return new char[0];
+        String[] parts = inner.split(",");
+        char[] out = new char[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = parts[i].trim().charAt(0);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "char[]", "placeholder": "[a, e, i, o, u]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[a, e, i, o, u]" }, "expected": "[u, o, i, e, a]" },
+    { "args": { "arr": "[a, b, c, d, e]" }, "expected": "[e, d, c, b, a]" },
+    { "args": { "arr": "[]" }, "expected": "[]" },
+    { "args": { "arr": "[x]" }, "expected": "[x]" },
+    { "args": { "arr": "[x, y]" }, "expected": "[y, x]" },
+    { "args": { "arr": "[a, b, a]" }, "expected": "[a, b, a]" }
+  ]
+}
 ```
 
 <details>
@@ -361,7 +436,7 @@ Every box is checked with nothing extra needed. This is the purest direct applic
 
 ### Solution
 
-```python run viz=array viz-root=arr
+```python solution time=O(n) space=O(1)
 from typing import List
 
 class Solution:
@@ -383,35 +458,15 @@ class Solution:
             right -= 1
 
 
-# Examples from the problem statement
-a1 = ['a', 'e', 'i', 'o', 'u']
-Solution().flip_characters(a1); print(a1)         # ['u', 'o', 'i', 'e', 'a']
-
-a2 = ['a', 'b', 'c', 'd', 'e']
-Solution().flip_characters(a2); print(a2)         # ['e', 'd', 'c', 'b', 'a']
-
-a3: List[str] = []
-Solution().flip_characters(a3); print(a3)         # []
-
-# Edge cases
-a4 = ['x']                                        # single element — no swap
-Solution().flip_characters(a4); print(a4)         # ['x']
-
-a5 = ['x', 'y']                                   # two elements — single swap
-Solution().flip_characters(a5); print(a5)         # ['y', 'x']
-
-a6 = ['a', 'b', 'a']                              # palindrome stays a palindrome
-Solution().flip_characters(a6); print(a6)         # ['a', 'b', 'a']
-
-a7 = ['z', 'z', 'z', 'z']                         # all same — output identical
-Solution().flip_characters(a7); print(a7)         # ['z', 'z', 'z', 'z']
-
-a8 = list('abcdefghij')                           # longer even-length input
-Solution().flip_characters(a8); print(a8)         # ['j', 'i', 'h', 'g', 'f', 'e', 'd', 'c', 'b', 'a']
+# Reads the test case's arr, e.g. [a, e, i, o, u]
+inner = input().strip()[1:-1].strip()
+arr = [t.strip() for t in inner.split(",")] if inner else []
+Solution().flip_characters(arr)
+print("[" + ", ".join(arr) + "]")
 ```
 
-```java run viz=array viz-root=arr
-import java.util.Arrays;
+```java solution
+import java.util.*;
 
 public class Main {
     static class Solution {
@@ -438,39 +493,19 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        char[] a1 = {'a', 'e', 'i', 'o', 'u'};
-        new Solution().flipCharacters(a1);
-        System.out.println(Arrays.toString(a1));     // [u, o, i, e, a]
+        char[] arr = parseCharArray(new Scanner(System.in).nextLine());
+        new Solution().flipCharacters(arr);
+        System.out.println(Arrays.toString(arr));
+    }
 
-        char[] a2 = {'a', 'b', 'c', 'd', 'e'};
-        new Solution().flipCharacters(a2);
-        System.out.println(Arrays.toString(a2));     // [e, d, c, b, a]
-
-        char[] a3 = {};
-        new Solution().flipCharacters(a3);
-        System.out.println(Arrays.toString(a3));     // []
-
-        // Edge cases
-        char[] a4 = {'x'};                           // single element — no swap
-        new Solution().flipCharacters(a4);
-        System.out.println(Arrays.toString(a4));     // [x]
-
-        char[] a5 = {'x', 'y'};                      // two elements — single swap
-        new Solution().flipCharacters(a5);
-        System.out.println(Arrays.toString(a5));     // [y, x]
-
-        char[] a6 = {'a', 'b', 'a'};                 // palindrome stays a palindrome
-        new Solution().flipCharacters(a6);
-        System.out.println(Arrays.toString(a6));     // [a, b, a]
-
-        char[] a7 = {'z', 'z', 'z', 'z'};            // all same — output identical
-        new Solution().flipCharacters(a7);
-        System.out.println(Arrays.toString(a7));     // [z, z, z, z]
-
-        char[] a8 = "abcdefghij".toCharArray();      // longer even-length input
-        new Solution().flipCharacters(a8);
-        System.out.println(Arrays.toString(a8));     // [j, i, h, g, f, e, d, c, b, a]
+    // "[a, e, i]" → {'a', 'e', 'i'} — reads the test case's arr
+    static char[] parseCharArray(String line) {
+        String inner = line.trim().replaceAll("^\\[|\\]$", "").trim();
+        if (inner.isEmpty()) return new char[0];
+        String[] parts = inner.split(",");
+        char[] out = new char[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = parts[i].trim().charAt(0);
+        return out;
     }
 }
 ```

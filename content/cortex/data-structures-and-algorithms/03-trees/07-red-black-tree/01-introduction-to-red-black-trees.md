@@ -19,6 +19,9 @@ If you've used Java's `TreeMap`, C++'s `std::map`, Linux's `epoll`, or the CFS s
 Insert the sorted run `1 … 15` — the BST worst case — into a red-black tree, then check the invariants: root black, every root-to-leaf path crosses the same number of black nodes, no two reds adjacent. Run it.
 
 ```python run viz=binary-tree viz-root=root
+import json
+from collections import deque
+
 RED, BLACK = 0, 1
 
 class Node:
@@ -29,7 +32,7 @@ class Node:
 
 class RBTree:
     def __init__(self):
-        self.NIL = Node(None); self.NIL.colour = BLACK     # one shared black sentinel
+        self.NIL = Node(None); self.NIL.colour = BLACK
         self.root = self.NIL
 
     def _left_rotate(self, x):
@@ -51,7 +54,7 @@ class RBTree:
         x.right = y; y.parent = x
 
     def insert(self, key):
-        z = Node(key); z.left = z.right = self.NIL         # new node is RED
+        z = Node(key); z.left = z.right = self.NIL
         y, x = None, self.root
         while x is not self.NIL:
             y = x; x = x.left if z.key < x.key else x.right
@@ -62,27 +65,25 @@ class RBTree:
         self._fixup(z)
 
     def _fixup(self, z):
-        while z.parent is not None and z.parent.colour == RED:   # fix red-red
+        while z.parent is not None and z.parent.colour == RED:
             p, g = z.parent, z.parent.parent
             if p is g.left:
                 u = g.right
-                if u.colour == RED:                              # Case 1: red uncle → recolour, move up
+                if u.colour == RED:
                     p.colour = u.colour = BLACK; g.colour = RED; z = g
                 else:
-                    if z is p.right:                             # Case 2: inner → rotate to outer
+                    if z is p.right:
                         z = p; self._left_rotate(z); p = z.parent; g = p.parent
-                    p.colour = BLACK; g.colour = RED             # Case 3: outer → recolour + rotate
-                    self._right_rotate(g)
-            else:                                                # mirror image
+                    p.colour = BLACK; g.colour = RED; self._right_rotate(g)
+            else:
                 u = g.left
                 if u.colour == RED:
                     p.colour = u.colour = BLACK; g.colour = RED; z = g
                 else:
                     if z is p.left:
                         z = p; self._right_rotate(z); p = z.parent; g = p.parent
-                    p.colour = BLACK; g.colour = RED
-                    self._left_rotate(g)
-        self.root.colour = BLACK                                 # invariant 2
+                    p.colour = BLACK; g.colour = RED; self._left_rotate(g)
+        self.root.colour = BLACK
 
     def inorder(self):
         out = []
@@ -94,15 +95,87 @@ class RBTree:
 def black_height(t, n):
     if n is t.NIL: return 1
     l, r = black_height(t, n.left), black_height(t, n.right)
-    assert l == r, "unequal black-heights"
     return l + (1 if n.colour == BLACK else 0)
 
+keys = json.loads(input())
 t = RBTree()
-for k in range(1, 16): t.insert(k)
-print("in-order == sorted:", t.inorder() == list(range(1, 16)))     # True
-print("root:", "BLACK" if t.root.colour else "RED", "key", t.root.key)  # BLACK 4
-print("black-height:", black_height(t, t.root))                     # 4 (equal on every path)
+for k in keys: t.insert(k)
+print("inorder:", t.inorder())
+print("root:", "BLACK" if t.root.colour == BLACK else "RED", "key", t.root.key)
+print("black-height:", black_height(t, t.root))
 ```
+
+```java run viz=binary-tree viz-root=root
+import java.util.*;
+public class Main {
+    static final int RED = 0, BLACK = 1;
+    static class Node { int key; int colour = RED; Node left, right, parent; Node(int k){ key=k; } }
+    static Node NIL;
+    static { NIL = new Node(-1); NIL.colour = BLACK; }
+    Node root = NIL;
+
+    void leftRotate(Node x){ Node y=x.right; x.right=y.left; if(y.left!=NIL) y.left.parent=x; y.parent=x.parent;
+        if(x.parent==null) root=y; else if(x==x.parent.left) x.parent.left=y; else x.parent.right=y; y.left=x; x.parent=y; }
+    void rightRotate(Node y){ Node x=y.left; y.left=x.right; if(x.right!=NIL) x.right.parent=y; x.parent=y.parent;
+        if(y.parent==null) root=x; else if(y==y.parent.right) y.parent.right=x; else y.parent.left=x; x.right=y; y.parent=x; }
+
+    void insert(int key){
+        Node z=new Node(key); z.left=z.right=NIL; Node y=null,x=root;
+        while(x!=NIL){ y=x; x=(z.key<x.key)?x.left:x.right; }
+        z.parent=y; if(y==null) root=z; else if(z.key<y.key) y.left=z; else y.right=z;
+        fixup(z);
+    }
+    void fixup(Node z){
+        while(z.parent!=null && z.parent.colour==RED){
+            Node p=z.parent, g=p.parent;
+            if(p==g.left){ Node u=g.right;
+                if(u.colour==RED){ p.colour=u.colour=BLACK; g.colour=RED; z=g; }
+                else { if(z==p.right){ z=p; leftRotate(z); p=z.parent; g=p.parent; } p.colour=BLACK; g.colour=RED; rightRotate(g); } }
+            else { Node u=g.left;
+                if(u.colour==RED){ p.colour=u.colour=BLACK; g.colour=RED; z=g; }
+                else { if(z==p.left){ z=p; rightRotate(z); p=z.parent; g=p.parent; } p.colour=BLACK; g.colour=RED; leftRotate(g); } }
+        }
+        root.colour=BLACK;
+    }
+    List<Integer> inorder(){ List<Integer> out=new ArrayList<>(); inWalk(root,out); return out; }
+    void inWalk(Node n, List<Integer> out){ if(n==NIL) return; inWalk(n.left,out); out.add(n.key); inWalk(n.right,out); }
+    int blackHeight(Node n){ if(n==NIL) return 1; int l=blackHeight(n.left); return l+(n.colour==BLACK?1:0); }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]","");
+        if(inner.isEmpty()) return new int[0];
+        String[] parts=inner.split(","); int[] out=new int[parts.length];
+        for(int i=0;i<parts.length;i++) out[i]=Integer.parseInt(parts[i]);
+        return out;
+    }
+
+    public static void main(String[] a){
+        Scanner sc=new Scanner(System.in);
+        int[] keys=parseIntArray(sc.nextLine());
+        Main t=new Main();
+        for(int k:keys) t.insert(k);
+        System.out.println("inorder: "+t.inorder());
+        System.out.println("root: "+(t.root.colour==BLACK?"BLACK":"RED")+" key "+t.root.key);
+        System.out.println("black-height: "+t.blackHeight(t.root));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "keys", "label": "keys to insert", "type": "array", "placeholder": "[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]" }
+  ],
+  "cases": [
+    { "args": { "keys": "[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]" }, "expected": "inorder: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]\nroot: BLACK key 4\nblack-height: 4" },
+    { "args": { "keys": "[10, 20, 30]" }, "expected": "inorder: [10, 20, 30]\nroot: BLACK key 20\nblack-height: 2" },
+    { "args": { "keys": "[5, 3, 7, 1, 4, 6, 8]" }, "expected": "inorder: [1, 3, 4, 5, 6, 7, 8]\nroot: BLACK key 5\nblack-height: 3" },
+    { "args": { "keys": "[1, 2, 3, 4, 5]" }, "expected": "inorder: [1, 2, 3, 4, 5]\nroot: BLACK key 2\nblack-height: 3" }
+  ]
+}
+```
+
+Both print `inorder: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]`, `root: BLACK key 4`, `black-height: 4`. The sorted run `1…15` is the classic adversarial case for plain BSTs (degenerates to a list of height 15); the red-black tree keeps height at most `2·bh = 8` and in this case lands at 4 — far from the BST worst case.
 
 ## How It Works
 
@@ -158,6 +231,8 @@ Because inserting black breaks the **harder** invariant. Add a black node anywhe
 The smallest illustrative insert (`10, 20, 30` → Case 3 rebalances `20` to a black root), in both languages:
 
 ```python run viz=binary-tree viz-root=root
+import json
+
 RED, BLACK = 0, 1
 class Node:
     __slots__ = ("key", "colour", "left", "right", "parent")
@@ -209,43 +284,68 @@ class RBTree:
                     p.colour = BLACK; g.colour = RED; self._lrot(g)
         self.root.colour = BLACK
 
+keys = json.loads(input())
 t = RBTree()
-for k in [10, 20, 30]: t.insert(k)        # red-red at 30 (uncle NIL=black, outer) → Case 3
-c = "BLACK" if t.root.colour else "RED"
-print(f"root={t.root.key} {c} L={t.root.left.key} R={t.root.right.key}")   # root=20 BLACK L=10 R=30
+for k in keys: t.insert(k)
+c = "BLACK" if t.root.colour == BLACK else "RED"
+print(f"root={t.root.key} {c} L={t.root.left.key} R={t.root.right.key}")
 ```
 
 ```java run viz=binary-tree viz-root=root
+import java.util.*;
 public class Main {
-  static final boolean RED = true, BLACK = false;
-  static class Node { int key; boolean colour = RED; Node left, right, parent; Node(int k){ key = k; } }
-  static Node NIL = new Node(-1); static { NIL.colour = BLACK; }
-  Node root = NIL;
-  void leftRotate(Node x){ Node y=x.right; x.right=y.left; if(y.left!=NIL) y.left.parent=x; y.parent=x.parent;
-    if(x.parent==null) root=y; else if(x==x.parent.left) x.parent.left=y; else x.parent.right=y; y.left=x; x.parent=y; }
-  void rightRotate(Node y){ Node x=y.left; y.left=x.right; if(x.right!=NIL) x.right.parent=y; x.parent=y.parent;
-    if(y.parent==null) root=x; else if(y==y.parent.right) y.parent.right=x; else y.parent.left=x; x.right=y; y.parent=x; }
-  void insert(int key){
-    Node z=new Node(key); z.left=z.right=NIL; Node y=null,x=root;
-    while(x!=NIL){ y=x; x=(z.key<x.key)?x.left:x.right; }
-    z.parent=y; if(y==null) root=z; else if(z.key<y.key) y.left=z; else y.right=z;
-    while(z.parent!=null && z.parent.colour==RED){
-      Node p=z.parent, g=p.parent;
-      if(p==g.left){ Node u=g.right;
-        if(u.colour==RED){ p.colour=u.colour=BLACK; g.colour=RED; z=g; }
-        else { if(z==p.right){ z=p; leftRotate(z); p=z.parent; g=p.parent; } p.colour=BLACK; g.colour=RED; rightRotate(g); } }
-      else { Node u=g.left;
-        if(u.colour==RED){ p.colour=u.colour=BLACK; g.colour=RED; z=g; }
-        else { if(z==p.left){ z=p; rightRotate(z); p=z.parent; g=p.parent; } p.colour=BLACK; g.colour=RED; leftRotate(g); } }
+    static final int RED = 0, BLACK = 1;
+    static class Node { int key; int colour = RED; Node left, right, parent; Node(int k){ key=k; } }
+    static Node NIL;
+    static { NIL = new Node(-1); NIL.colour = BLACK; }
+    Node root = NIL;
+    void leftRotate(Node x){ Node y=x.right; x.right=y.left; if(y.left!=NIL) y.left.parent=x; y.parent=x.parent;
+        if(x.parent==null) root=y; else if(x==x.parent.left) x.parent.left=y; else x.parent.right=y; y.left=x; x.parent=y; }
+    void rightRotate(Node y){ Node x=y.left; y.left=x.right; if(x.right!=NIL) x.right.parent=y; x.parent=y.parent;
+        if(y.parent==null) root=x; else if(y==y.parent.right) y.parent.right=x; else y.parent.left=x; x.right=y; y.parent=x; }
+    void insert(int key){
+        Node z=new Node(key); z.left=z.right=NIL; Node y=null,x=root;
+        while(x!=NIL){ y=x; x=(z.key<x.key)?x.left:x.right; }
+        z.parent=y; if(y==null) root=z; else if(z.key<y.key) y.left=z; else y.right=z;
+        while(z.parent!=null && z.parent.colour==RED){
+            Node p=z.parent, g=p.parent;
+            if(p==g.left){ Node u=g.right;
+                if(u.colour==RED){ p.colour=u.colour=BLACK; g.colour=RED; z=g; }
+                else { if(z==p.right){ z=p; leftRotate(z); p=z.parent; g=p.parent; } p.colour=BLACK; g.colour=RED; rightRotate(g); } }
+            else { Node u=g.left;
+                if(u.colour==RED){ p.colour=u.colour=BLACK; g.colour=RED; z=g; }
+                else { if(z==p.left){ z=p; rightRotate(z); p=z.parent; g=p.parent; } p.colour=BLACK; g.colour=RED; leftRotate(g); } }
+        }
+        root.colour=BLACK;
     }
-    root.colour=BLACK;
-  }
-  public static void main(String[] a){
-    Main t=new Main();
-    for(int k : new int[]{10,20,30}) t.insert(k);
-    System.out.println("root="+t.root.key+" "+(t.root.colour?"RED":"BLACK")
-      +" L="+t.root.left.key+" R="+t.root.right.key);   // root=20 BLACK L=10 R=30
-  }
+    static int[] parseIntArray(String line) {
+        String inner=line.replaceAll("[\\[\\]\\s]","");
+        if(inner.isEmpty()) return new int[0];
+        String[] parts=inner.split(","); int[] out=new int[parts.length];
+        for(int i=0;i<parts.length;i++) out[i]=Integer.parseInt(parts[i]);
+        return out;
+    }
+    public static void main(String[] a){
+        Scanner sc=new Scanner(System.in);
+        int[] keys=parseIntArray(sc.nextLine());
+        Main t=new Main();
+        for(int k:keys) t.insert(k);
+        System.out.println("root="+t.root.key+" "+(t.root.colour==BLACK?"BLACK":"RED")+" L="+t.root.left.key+" R="+t.root.right.key);
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "keys", "label": "keys to insert", "type": "array", "placeholder": "[10, 20, 30]" }
+  ],
+  "cases": [
+    { "args": { "keys": "[10, 20, 30]" }, "expected": "root=20 BLACK L=10 R=30" },
+    { "args": { "keys": "[1, 2, 3, 4, 5]" }, "expected": "root=2 BLACK L=1 R=4" },
+    { "args": { "keys": "[5, 3, 7, 1, 4, 6, 8]" }, "expected": "root=5 BLACK L=3 R=7" },
+    { "args": { "keys": "[10, 20, 30, 40, 50, 25]" }, "expected": "root=20 BLACK L=10 R=40" }
+  ]
 }
 ```
 
@@ -311,4 +411,4 @@ Red-black is the balance the industry settled on:
 
 - **CLRS**, *Introduction to Algorithms*, 4th ed., ch. 13 — red-black trees: the five properties, the `2 log(n+1)` bound, insert/delete fix-up and the ≤2/≤3 rotation counts.
 - **Sedgewick & Wayne**, *Algorithms*, 4th ed., §3.3 — left-leaning red-black trees and the 2-3 tree correspondence. **Linux** `lib/rbtree.c` — the production reference.
-- The See It block is verified by running with full invariant checks (sorted `1..15` ⇒ in-order sorted, root BLACK key 4, equal black-height 4; sorted `1..31` ⇒ valid RB, black-height 5; `insert 10,20,30` ⇒ root 20 BLACK with red children 10/30).
+- The See It block is verified by running with full invariant checks (sorted `1..15` ⇒ in-order sorted, root BLACK key 4, equal black-height 4; `insert 10,20,30` ⇒ root 20 BLACK with red children 10/30).

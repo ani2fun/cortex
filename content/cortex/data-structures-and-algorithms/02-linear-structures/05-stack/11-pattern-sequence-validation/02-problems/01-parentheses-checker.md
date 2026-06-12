@@ -4,6 +4,8 @@ summary: "Given a string s containing only (, ), [, ], {, }, return true iff eve
 prereqs:
   - 11-pattern-sequence-validation/01-pattern
 difficulty: easy
+kind: problem
+topics: [sequence-validation, stack]
 ---
 
 # Parentheses checker
@@ -11,15 +13,6 @@ difficulty: easy
 ## Problem Statement
 
 Given a string `s` containing only `(`, `)`, `[`, `]`, `{`, `}`, return `true` iff every bracket is matched and closed in the right order.
-
-### Example 1
-> -   **Input:** `s = "()"` → **Output:** `true`
-
-### Example 2
-> -   **Input:** `s = "(({}))[]"` → **Output:** `true`
-
-### Example 3
-> -   **Input:** `s = "({{)[]"` → **Output:** `false`
 
 ## Examples
 
@@ -55,6 +48,65 @@ Explanation: counts balance — one of each bracket — but ')' tries to
 close while '[' is the freshest opener. Order, not count, decides validity.
 ```
 
+```quiz
+{
+  "prompt": "What does the stack hold after scanning '([{' in '([{}])'?",
+  "input": "s = \"([{}])\"",
+  "options": ["( [ {", "[ { (", "( ) [", "empty"],
+  "answer": "( [ {"
+}
+```
+
+## Constraints
+
+- `1 ≤ s.length ≤ 10⁴`
+- `s` consists only of `(`, `)`, `[`, `]`, `{`, `}`
+
+```python run viz=array viz-root=stack viz-kind=stack
+class Solution:
+    def parentheses_checker(self, s: str) -> bool:
+        # Your code goes here — push openers; for each closer, check and pop
+        # the matching opener from the top; valid iff the stack ends empty.
+        return False
+
+s = input()
+print("true" if Solution().parentheses_checker(s) else "false")
+```
+
+```java run viz=array viz-root=stack viz-kind=stack
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public boolean parenthesesChecker(String s) {
+            // Your code goes here — push openers; for each closer, check and pop
+            // the matching opener from the top; valid iff the stack ends empty.
+            return false;
+        }
+    }
+
+    public static void main(String[] args) {
+        String s = new Scanner(System.in).nextLine();
+        System.out.println(new Solution().parenthesesChecker(s));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "s", "type": "string", "placeholder": "()" }
+  ],
+  "cases": [
+    { "args": { "s": "()" }, "expected": "true" },
+    { "args": { "s": "(({}))[]" }, "expected": "true" },
+    { "args": { "s": "{[()]}" }, "expected": "true" },
+    { "args": { "s": "([)]" }, "expected": "false" },
+    { "args": { "s": "({{)[]{" }, "expected": "false" },
+    { "args": { "s": "((({})))[]{" }, "expected": "false" }
+  ]
+}
+```
 
 <details>
 <summary><h2>Intuition</h2></summary>
@@ -93,11 +145,9 @@ Push openers; match-and-pop closers; demand an empty stack at the end.
 
 </details>
 <details>
-<summary><h2>Solution</h2></summary>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-
-```python run viz=array viz-root=stack viz-kind=stack
+```python solution time=O(n) space=O(n)
 from typing import List
 
 class Solution:
@@ -139,22 +189,11 @@ class Solution:
         # If the stack is empty at the end, the string is valid
         return not stack
 
-
-# Examples from the problem statement
-print(Solution().parentheses_checker("()"))          # True
-print(Solution().parentheses_checker("(({}))[]{"))  # False — extra open
-print(Solution().parentheses_checker("({{)[]{"))    # False
-
-# Edge cases
-print(Solution().parentheses_checker(""))            # True — empty string is valid
-print(Solution().parentheses_checker("("))           # False — unmatched open
-print(Solution().parentheses_checker(")"))           # False — unmatched close
-print(Solution().parentheses_checker("([{}])"))      # True
-print(Solution().parentheses_checker("([)]"))        # False — wrong order
-print(Solution().parentheses_checker("{[()]}"))      # True
+s = input()
+print("true" if Solution().parentheses_checker(s) else "false")
 ```
 
-```java run viz=array viz-root=stack viz-kind=stack
+```java solution
 import java.util.*;
 
 public class Main {
@@ -207,32 +246,15 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().parenthesesChecker("()"));          // true
-        System.out.println(new Solution().parenthesesChecker("(({}))[]{"));  // false
-        System.out.println(new Solution().parenthesesChecker("({{)[]{"));    // false
-
-        // Edge cases
-        System.out.println(new Solution().parenthesesChecker(""));            // true
-        System.out.println(new Solution().parenthesesChecker("("));           // false
-        System.out.println(new Solution().parenthesesChecker(")"));           // false
-        System.out.println(new Solution().parenthesesChecker("([{}])"));      // true
-        System.out.println(new Solution().parenthesesChecker("([)]"));        // false
-        System.out.println(new Solution().parenthesesChecker("{[()]}"));      // true
+        String s = new Scanner(System.in).nextLine();
+        System.out.println(new Solution().parenthesesChecker(s));
     }
 }
 ```
 
-</details>
-<details>
-<summary><h2>Dry Run</h2></summary>
-
-
-Walk Example 1 — `s = "()"`. The stack holds unmatched openers; push on an opener, match-and-pop on a closer:
+### Dry Run — `s = "()"`
 
 ```
-s = "()"
-
 '('  opener → push          → stack (bottom→top): (
 ')'  closer, top='(' matches → pop  → stack: (empty)
 
@@ -254,26 +276,17 @@ A longer trace on `s = "(({}))[]"` shows the nesting clearly — openers stack u
 end of input, stack empty → return true ✓
 ```
 
-</details>
-<details>
-<summary><h2>Complexity Analysis</h2></summary>
-
+### Complexity Analysis
 
 | Measure | Value | Why |
 |---|---|---|
 | Time  | **O(N)** worst, **O(1)** best | One pass over `N` characters with `O(1)` push/peek/pop each; a leading unmatched closer fails on the first token. |
 | Space | **O(N)** worst, **O(1)** best | A string of all openers (`"((((("`) pushes every character; an immediate failure pushes nothing. |
 
-The worst case is `O(N)` time and `O(N)` space: when every character is an opener, the single pass pushes all `N` and the stack grows to `N`. The best case is `O(1)` time and `O(1)` space: a string starting with a closer (`")"`) hits the empty-stack check on the first token and returns `false` before pushing anything.
-
-</details>
-<details>
-<summary><h2>Edge Cases</h2></summary>
-
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
-| Empty string | `s = ""` | `true` | No brackets to match; the stack starts and ends empty. |
 | Single opener | `s = "("` | `false` | The opener is never matched, so the stack is non-empty at the end. |
 | Single closer | `s = ")"` | `false` | The closer finds an empty stack on the first token and fails immediately. |
 | Wrong order | `s = "([)]"` | `false` | Counts balance, but `)` does not match the freshest opener `[`. |

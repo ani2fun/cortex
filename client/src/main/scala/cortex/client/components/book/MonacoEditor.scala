@@ -26,8 +26,17 @@ object MonacoEditor:
   private object EditorRaw extends js.Object
 
   trait EditorProps extends js.Object:
-    var value: js.UndefOr[String]                                            = js.undefined
-    var language: js.UndefOr[String]                                         = js.undefined
+    var value: js.UndefOr[String]    = js.undefined
+    var language: js.UndefOr[String] = js.undefined
+    // Multi-model mode: a unique `path` per logical file gives each tab its own Monaco model —
+    // content, undo stack and (with saveViewState) cursor/scroll survive tab switches, and the
+    // wrapper never pushes one tab's text into another through the controlled `value` prop (the
+    // race behind the workbench's language-switch corruption). Pair `path` with `defaultValue` /
+    // `defaultLanguage` (NOT `value`) so each model owns its content after creation.
+    var path: js.UndefOr[String]                                             = js.undefined
+    var defaultValue: js.UndefOr[String]                                     = js.undefined
+    var defaultLanguage: js.UndefOr[String]                                  = js.undefined
+    var saveViewState: js.UndefOr[Boolean]                                   = js.undefined
     var theme: js.UndefOr[String]                                            = js.undefined
     var height: js.UndefOr[js.Any]                                           = js.undefined
     var width: js.UndefOr[js.Any]                                            = js.undefined

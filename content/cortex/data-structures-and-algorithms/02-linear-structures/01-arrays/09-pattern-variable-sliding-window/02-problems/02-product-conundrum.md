@@ -4,6 +4,8 @@ summary: "Given an array of positive integers arr and an integer k, find and ret
 prereqs:
   - 09-pattern-variable-sliding-window/01-pattern
 difficulty: medium
+kind: problem
+topics: [sliding-window, arrays]
 ---
 
 # Product Conundrum
@@ -48,6 +50,84 @@ Output: 0
 Explanation: There are no subarrays whose product is less than k.
 ```
 
+```quiz
+{
+  "prompt": "Now your turn!",
+  "input": "arr = [2, 3, 4], k = 25",
+  "options": ["3", "5", "6", "8"],
+  "answer": "6"
+}
+```
+
+## Constraints
+
+- `0 ≤ arr.length ≤ 10^4`
+- `1 ≤ arr[i] ≤ 1000` (positive integers only)
+- `0 ≤ k ≤ 10^9`
+
+```python run viz=array viz-root=arr
+import ast
+from typing import List
+
+class Solution:
+    def product_conundrum(self, arr: List[int], k: int) -> int:
+        # Your code goes here — grow a window, divide arr[start] out while the
+        # product reaches k, and add end - start + 1 valid subarrays each step.
+        return 0
+
+arr = ast.literal_eval(input())      # the test case's arr
+k = int(input())                     # the test case's k
+print(Solution().product_conundrum(arr, k))
+```
+
+```java run viz=array viz-root=arr
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int productConundrum(int[] arr, int k) {
+            // Your code goes here — grow a window, divide arr[start] out while the
+            // product reaches k, and add end - start + 1 valid subarrays each step.
+            return 0;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().productConundrum(arr, k));
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's arr
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[10, 5, 2, 6]" },
+    { "id": "k", "label": "k", "type": "int", "placeholder": "100" }
+  ],
+  "cases": [
+    { "args": { "arr": "[10, 5, 2, 6]", "k": "100" }, "expected": "8" },
+    { "args": { "arr": "[10, 5]", "k": "50" }, "expected": "2" },
+    { "args": { "arr": "[1]", "k": "1" }, "expected": "0" },
+    { "args": { "arr": "[2, 3, 4]", "k": "25" }, "expected": "6" },
+    { "args": { "arr": "[1, 1, 1]", "k": "2" }, "expected": "6" },
+    { "args": { "arr": "[100, 1, 1]", "k": "50" }, "expected": "3" }
+  ]
+}
+```
+
 <details>
 <summary><h2>Intuition</h2></summary>
 
@@ -89,7 +169,8 @@ The naive approach enumerates every subarray and multiplies its elements — O(N
 
 ### The Solution
 
-```python run viz=array viz-root=arr
+```python solution time=O(N) space=O(1)
+import ast
 from typing import List
 
 class Solution:
@@ -133,20 +214,14 @@ class Solution:
         return answer
 
 
-# Examples from the problem statement
-print(Solution().product_conundrum([10, 5, 2, 6], 100))   # 8
-print(Solution().product_conundrum([10, 5], 50))           # 2
-print(Solution().product_conundrum([1], 1))                # 0
-
-# Edge cases
-print(Solution().product_conundrum([1], 2))                # 1  — single element less than k
-print(Solution().product_conundrum([2, 3], 7))             # 3  — two elements
-print(Solution().product_conundrum([1, 1, 1], 2))          # 6  — all ones
-print(Solution().product_conundrum([5, 5, 5], 5))          # 0  — all equal to k
-print(Solution().product_conundrum([1, 2, 3], 0))          # 0  — k=0 no valid subarray
+arr = ast.literal_eval(input())      # the test case's arr
+k = int(input())                     # the test case's k
+print(Solution().product_conundrum(arr, k))
 ```
 
-```java run viz=array viz-root=arr
+```java solution
+import java.util.*;
+
 public class Main {
     static class Solution {
         public int productConundrum(int[] arr, int k) {
@@ -193,17 +268,20 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().productConundrum(new int[]{10, 5, 2, 6}, 100));   // 8
-        System.out.println(new Solution().productConundrum(new int[]{10, 5}, 50));           // 2
-        System.out.println(new Solution().productConundrum(new int[]{1}, 1));                // 0
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().productConundrum(arr, k));
+    }
 
-        // Edge cases
-        System.out.println(new Solution().productConundrum(new int[]{1}, 2));                // 1  — single element less than k
-        System.out.println(new Solution().productConundrum(new int[]{2, 3}, 7));             // 3  — two elements
-        System.out.println(new Solution().productConundrum(new int[]{1, 1, 1}, 2));          // 6  — all ones
-        System.out.println(new Solution().productConundrum(new int[]{5, 5, 5}, 5));          // 0  — all equal to k
-        System.out.println(new Solution().productConundrum(new int[]{1, 2, 3}, 0));          // 0  — k=0 no valid subarray
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's arr
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```
@@ -248,7 +326,7 @@ The amortised argument matters: the inner `while` looks quadratic, but across th
 | All elements `< k` | `arr=[1, 1, 1]`, `k=2` | `6` | Every non-empty subarray valid: 3 + 2 + 1 = 6 |
 | Empty array | `arr=[]`, `k=10` | `0` | Loop never executes |
 | Product exactly equals `k` | `arr=[2, 5]`, `k=10` | `2` | `2 * 5 = 10` not strictly less — only `[2]` and `[5]` count |
-| Large single element | `arr=[100, 1, 1]`, `k=50` | `2` | `start` leaps past `100`; the two `1`s each count alone |
+| Large single element | `arr=[100, 1, 1]`, `k=50` | `3` | `start` leaps past `100`; the valid windows are `[1]`, `[1]`, and `[1, 1]` |
 
 </details>
 <details>

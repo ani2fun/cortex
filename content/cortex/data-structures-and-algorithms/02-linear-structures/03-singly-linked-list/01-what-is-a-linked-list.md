@@ -19,26 +19,76 @@ That's the **linked list**. It throws out the one rule that makes arrays both fa
 
 ## See It Work
 
-Here are three nodes linked into a chain, and a loop that walks it from the `head` to the end. Run it — then click **Visualise** and watch the walker hop along the `next` pointers.
+Here are three nodes linked into a chain, and a loop that walks it from the `head` to the end. Pick a case and **Run** it — then click **Visualise** and watch the walker hop along the `next` pointers.
 
 > ▶ Run it, then click **Visualise** — watch the walker hop along the `next` pointers from `head` to `null`.
 
 ```python run viz=linked-list viz-root=head viz-kind=list-single
+import ast
+
 class Node:
     def __init__(self, val):
         self.val = val
         self.next = None        # link to the next node — None means "end"
 
-# build  head → 10 → 20 → 30 → null
-head = Node(10)
-head.next = Node(20)
-head.next.next = Node(30)
+v = ast.literal_eval(input())   # the test case's three values
+
+# build  head → v0 → v1 → v2 → null
+head = Node(v[0])
+head.next = Node(v[1])
+head.next.next = Node(v[2])
 
 # traverse: follow `next` until it runs off the end
 node = head
 while node is not None:
     print(node.val)
     node = node.next
+```
+
+```java run viz=linked-list viz-root=head viz-kind=list-single
+import java.util.*;
+
+public class Main {
+  static class Node {
+    int val; Node next;                 // next starts null — "end"
+    Node(int val) { this.val = val; }
+  }
+
+  public static void main(String[] args) {
+    int[] v = parseIntArray(new Scanner(System.in).nextLine());  // the test case's three values
+
+    Node head = new Node(v[0]);          // build  head → v0 → v1 → v2 → null
+    head.next = new Node(v[1]);
+    head.next.next = new Node(v[2]);
+
+    // traverse: follow `next` until it runs off the end
+    for (Node node = head; node != null; node = node.next)
+      System.out.println(node.val);
+  }
+
+  // "[10, 20, 30]" → {10, 20, 30} — reads the test case's values
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "values", "label": "values", "type": "int[]", "placeholder": "[10, 20, 30]" }
+  ],
+  "cases": [
+    { "args": { "values": "[10, 20, 30]" }, "expected": "10\n20\n30" },
+    { "args": { "values": "[1, 2, 3]" }, "expected": "1\n2\n3" },
+    { "args": { "values": "[-5, 0, 5]" }, "expected": "-5\n0\n5" }
+  ]
+}
 ```
 
 ## How It Works
@@ -91,9 +141,95 @@ Still zero. That's the whole point — the cost of a head insert doesn't depend 
 
 ## Your Turn
 
-Build a list by pushing onto the front — each push is the `O(1)` two-write splice you just traced — then walk it:
+Build a list by pushing onto the front — each push is the `O(1)` two-write splice you just traced — then walk it. Implement `push_front`: it takes the current head and a value, and returns the new head.
 
 ```python run viz=linked-list viz-root=head viz-kind=list-single
+import ast
+
+class Node:
+    def __init__(self, val, nxt=None):
+        self.val = val
+        self.next = nxt
+
+def push_front(head, val):
+    # Your code goes here — return the new head: a node holding `val`
+    # whose `next` is the old head. Two writes, no shifting.
+    pass
+
+values = ast.literal_eval(input())   # the test case's values
+head = None
+for v in reversed(values):           # push right-to-left so the list reads in order
+    head = push_front(head, v)
+
+node, out = head, []
+while node:                          # traverse to collect the values in order
+    out.append(node.val)
+    node = node.next
+print(out)
+```
+
+```java run viz=linked-list viz-root=head viz-kind=list-single
+import java.util.*;
+
+public class Main {
+  static class Node {
+    int val; Node next;
+    Node(int val, Node next) { this.val = val; this.next = next; }
+  }
+
+  static Node pushFront(Node head, int val) {
+    // Your code goes here — return the new head: a node holding `val`
+    // whose `next` is the old head. Two writes, no shifting.
+    return null;
+  }
+
+  public static void main(String[] args) {
+    int[] values = parseIntArray(new Scanner(System.in).nextLine());
+    Node head = null;
+    for (int i = values.length - 1; i >= 0; i--)   // push right-to-left so the list reads in order
+      head = pushFront(head, values[i]);
+
+    List<Integer> out = new ArrayList<>();
+    for (Node node = head; node != null; node = node.next) out.add(node.val);
+    System.out.println(out);
+  }
+
+  // "[10, 20, 30]" → {10, 20, 30} — reads the test case's values
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "values", "label": "values", "type": "int[]", "placeholder": "[10, 20, 30]" }
+  ],
+  "cases": [
+    { "args": { "values": "[10, 20, 30]" }, "expected": "[10, 20, 30]" },
+    { "args": { "values": "[42]" }, "expected": "[42]" },
+    { "args": { "values": "[5, -3, 8, 0]" }, "expected": "[5, -3, 8, 0]" },
+    { "args": { "values": "[]" }, "expected": "[]" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+`push_front` is the two-write splice from Trace It, packaged as a function: make a node holding `val` whose `next` is the old head, and return it as the new head. The constructor does both writes at once — `Node(val, head)` points the new node at the rest of the list, and returning it re-anchors `head`. Nothing about the existing chain is touched, so the cost is `O(1)` whatever the length.
+
+The driver pushes the values right-to-left: each push lands in front of the previous one, so the finished list reads left-to-right in input order — the same trick the original demo pulled with `[30, 20, 10]`.
+
+```python solution time=O(1) space=O(1)
+import ast
+
 class Node:
     def __init__(self, val, nxt=None):
         self.val = val
@@ -102,38 +238,59 @@ class Node:
 def push_front(head, val):       # O(1): the new node points at the old head
     return Node(val, head)
 
+values = ast.literal_eval(input())   # the test case's values
 head = None
-for v in [30, 20, 10]:           # push 30, then 20, then 10 → list reads 10, 20, 30
+for v in reversed(values):           # push right-to-left so the list reads in order
     head = push_front(head, v)
 
 node, out = head, []
-while node:                      # traverse to collect the values in order
+while node:                          # traverse to collect the values in order
     out.append(node.val)
     node = node.next
-print(out)                       # [10, 20, 30]
+print(out)
 ```
 
-```java run viz=linked-list viz-root=head viz-kind=list-single
+```java solution
+import java.util.*;
+
 public class Main {
   static class Node {
     int val; Node next;
     Node(int val, Node next) { this.val = val; this.next = next; }
   }
 
-  public static void main(String[] args) {
-    Node head = null;
-    for (int v : new int[]{30, 20, 10}) head = new Node(v, head);  // O(1) push-front
+  static Node pushFront(Node head, int val) {  // O(1): the new node points at the old head
+    return new Node(val, head);
+  }
 
-    StringBuilder out = new StringBuilder();
-    for (Node node = head; node != null; node = node.next) out.append(node.val).append(" ");
-    System.out.println(out.toString().trim());   // 10 20 30
+  public static void main(String[] args) {
+    int[] values = parseIntArray(new Scanner(System.in).nextLine());
+    Node head = null;
+    for (int i = values.length - 1; i >= 0; i--)   // push right-to-left so the list reads in order
+      head = pushFront(head, values[i]);
+
+    List<Integer> out = new ArrayList<>();
+    for (Node node = head; node != null; node = node.next) out.add(node.val);
+    System.out.println(out);
+  }
+
+  // "[10, 20, 30]" → {10, 20, 30} — reads the test case's values
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
   }
 }
 ```
 
-Ready to make the pointers dance? Start with [Reverse a List](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-reversal/pattern) — the three-pointer walk that every linked-list interview leans on.
+</details>
 
 ## Reflect & Connect
+
+Ready to make the pointers dance? Start with [Reverse a List](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-reversal/pattern) — the three-pointer walk that every linked-list interview leans on.
 
 Linked lists rarely show up in everyday application code, yet they sit under some of the most critical infrastructure in the stack — precisely because `O(1)` splicing is worth more than fast scanning when the list *is* a queue of work. (The systems named below are ones you'll meet later; the point here is just that the humble linked list is everywhere underneath.)
 

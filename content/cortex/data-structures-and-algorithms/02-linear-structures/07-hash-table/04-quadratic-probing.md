@@ -17,7 +17,11 @@ Quadratic probing attacks exactly that. Instead of walking one slot at a time, i
 
 The same three keys from the linear-probing lesson — `1, 9, 17`, all hashing to slot `1`. With the quadratic jump they land on slots `1, 2, 5` (not the adjacent `1, 2, 3` linear gave). Run it.
 
+> The input is `[k1, k2, k3]` — three keys all hashing to the same home slot in a capacity-8 table. The driver inserts them (value = key), prints where each landed, then looks up the last key.
+
 ```python run viz=array
+import ast
+
 EMPTY = None
 DELETED = object()
 
@@ -53,10 +57,86 @@ class QuadraticProbing:
             if s is not EMPTY and s is not DELETED and s[0] == key: return i
         return None
 
+keys = ast.literal_eval(input())            # [1, 9, 17]
+k1, k2, k3 = keys[0], keys[1], keys[2]
 t = QuadraticProbing(8)
-t.put(1, "a"); t.put(9, "b"); t.put(17, "c")   # all home slot 1
-print(t.slot_of(1), t.slot_of(9), t.slot_of(17))   # 1 2 5  — scattered, not 1,2,3
-print(t.get(17))                                    # c
+t.put(k1, k1); t.put(k2, k2); t.put(k3, k3)   # value = key
+print(t.slot_of(k1), t.slot_of(k2), t.slot_of(k3))   # 1 2 5 — scattered, not 1,2,3
+print(t.get(k3))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+  static final int[] DELETED = new int[0];
+
+  static class QuadraticProbing {
+    int capacity; int[][] slots;
+    QuadraticProbing(int cap) { capacity = cap; slots = new int[cap][]; }
+    int idx(int start, int step) { return (start + step * step) % capacity; }
+    void put(int key, int value) {
+      int start = Math.floorMod(key, capacity), firstDel = -1;
+      for (int step = 0; step < capacity; step++) {
+        int i = idx(start, step);
+        int[] s = slots[i];
+        if (s == null) { slots[firstDel != -1 ? firstDel : i] = new int[]{key, value}; return; }
+        if (s == DELETED) { if (firstDel == -1) firstDel = i; }
+        else if (s[0] == key) { slots[i] = new int[]{key, value}; return; }
+      }
+    }
+    Integer get(int key) {
+      int start = Math.floorMod(key, capacity);
+      for (int step = 0; step < capacity; step++) {
+        int[] s = slots[idx(start, step)];
+        if (s == null) return null;
+        if (s != DELETED && s[0] == key) return s[1];
+      }
+      return null;
+    }
+    Integer slotOf(int key) {
+      int start = Math.floorMod(key, capacity);
+      for (int step = 0; step < capacity; step++) {
+        int i = idx(start, step);
+        int[] s = slots[i];
+        if (s != null && s != DELETED && s[0] == key) return i;
+      }
+      return null;
+    }
+  }
+
+  // "[1, 9, 17]" → {1, 9, 17}
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+
+  public static void main(String[] args) {
+    int[] keys = parseIntArray(new Scanner(System.in).nextLine());
+    int k1 = keys[0], k2 = keys[1], k3 = keys[2];
+    QuadraticProbing t = new QuadraticProbing(8);
+    t.put(k1, k1); t.put(k2, k2); t.put(k3, k3);
+    System.out.println(t.slotOf(k1) + " " + t.slotOf(k2) + " " + t.slotOf(k3));
+    System.out.println(t.get(k3));
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "keys", "label": "keys", "type": "int[]", "placeholder": "[1, 9, 17]" }
+  ],
+  "cases": [
+    { "args": { "keys": "[1, 9, 17]" }, "expected": "1 2 5\n17" },
+    { "args": { "keys": "[3, 11, 19]" }, "expected": "3 4 7\n19" },
+    { "args": { "keys": "[0, 8, 16]" }, "expected": "0 1 4\n16" }
+  ]
+}
 ```
 
 ## How It Works
@@ -102,9 +182,70 @@ It fixed **primary** clustering — the problem where a key hashing *near* an oc
 
 ## Your Turn
 
-The reusable quadratic-probing table:
+The reusable quadratic-probing table. Implement `put` and `get`, then run the driver — it inserts two keys that share a home slot and looks up both plus a missing key.
 
 ```python run viz=array
+EMPTY = None
+DELETED = object()
+
+class QuadraticProbing:
+    def __init__(self, capacity=8):
+        self.capacity = capacity
+        self.slots = [EMPTY] * capacity
+    def _i(self, start, step):
+        return (start + step * step) % self.capacity
+    def put(self, key, value):
+        # Your code goes here
+        pass
+    def get(self, key):
+        # Your code goes here
+        return None
+
+t = QuadraticProbing()
+t.put(3, 30); t.put(11, 110)          # both home slot 3 → 3, then 3+1=4
+r3 = t.get(3); r11 = t.get(11); r99 = t.get(99)
+print(str(r3) + " " + str(r11) + " " + ("null" if r99 is None else str(r99)))
+```
+
+```java run viz=array
+public class Main {
+  static final int[] DELETED = new int[0];
+  static class QuadraticProbing {
+    int capacity; int[][] slots;
+    QuadraticProbing(int cap) { capacity = cap; slots = new int[cap][]; }
+    int idx(int start, int step) { return (start + step * step) % capacity; }
+    void put(int key, int value) {
+      // Your code goes here
+    }
+    Integer get(int key) {
+      // Your code goes here
+      return null;
+    }
+  }
+  public static void main(String[] args) {
+    QuadraticProbing t = new QuadraticProbing(8);
+    t.put(3, 30); t.put(11, 110);
+    System.out.println(t.get(3) + " " + t.get(11) + " " + t.get(99));
+  }
+}
+```
+
+```testcases
+{
+  "args": [],
+  "cases": [
+    { "args": {}, "expected": "30 110 null" }
+  ],
+  "verifying": "solution"
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+The structure is identical to linear probing — one-liner swap: replace `start + step` with `start + step * step`. That single change in `_i` / `idx` is the whole algorithm. Everything else (tombstone logic, `get` stopping at `EMPTY`) is copy-paste from the linear version.
+
+```python solution time=O(1) space=O(n)
 EMPTY = None
 DELETED = object()
 
@@ -134,11 +275,12 @@ class QuadraticProbing:
         return None
 
 t = QuadraticProbing()
-t.put(3, "p"); t.put(11, "q")          # both home slot 3 → 3, then 3+1=4
-print(t.get(3), t.get(11), t.get(99))  # p q None
+t.put(3, 30); t.put(11, 110)          # both home slot 3 → 3, then 3+1=4
+r3 = t.get(3); r11 = t.get(11); r99 = t.get(99)
+print(str(r3) + " " + str(r11) + " " + ("null" if r99 is None else str(r99)))
 ```
 
-```java run viz=array
+```java solution
 public class Main {
   static final int[] DELETED = new int[0];
   static class QuadraticProbing {
@@ -167,11 +309,13 @@ public class Main {
   }
   public static void main(String[] args) {
     QuadraticProbing t = new QuadraticProbing(8);
-    t.put(3, 30); t.put(11, 110);          // both home slot 3 → 3, 4
-    System.out.println(t.get(3) + " " + t.get(11) + " " + t.get(99));   // 30 110 null
+    t.put(3, 30); t.put(11, 110);
+    System.out.println(t.get(3) + " " + t.get(11) + " " + t.get(99));
   }
 }
 ```
+
+</details>
 
 ## Reflect & Connect
 

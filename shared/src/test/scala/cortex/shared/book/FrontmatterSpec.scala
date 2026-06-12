@@ -88,6 +88,31 @@ object FrontmatterSpec extends ZIOSpecDefault:
       test("missing essential key yields None (inheritance lives in the walker)") {
         val parsed = Frontmatter.parse("---\ntitle: T\nsummary: hi\n---\n", "F")
         assertTrue(parsed.frontmatter.essential.isEmpty)
+      },
+      test("kind + difficulty parse as plain string fields") {
+        val parsed = Frontmatter.parse("---\ntitle: T\nkind: problem\ndifficulty: easy\n---\n", "F")
+        assertTrue(
+          parsed.frontmatter.kind == Some("problem"),
+          parsed.frontmatter.difficulty == Some("easy")
+        )
+      },
+      test("topics parses a flow-style list, trimming and unquoting items") {
+        val parsed =
+          Frontmatter.parse("---\ntitle: T\ntopics: [two-pointers, \"arrays\", 'in place']\n---\n", "F")
+        assertTrue(parsed.frontmatter.topics == Some(Seq("two-pointers", "arrays", "in place")))
+      },
+      test("empty or whitespace-only topics list yields None") {
+        val empty = Frontmatter.parse("---\ntitle: T\ntopics: []\n---\n", "F")
+        val blank = Frontmatter.parse("---\ntitle: T\ntopics: [ , ]\n---\n", "F")
+        assertTrue(empty.frontmatter.topics.isEmpty, blank.frontmatter.topics.isEmpty)
+      },
+      test("missing workbench keys yield None across the board") {
+        val parsed = Frontmatter.parse("---\ntitle: T\n---\n", "F")
+        assertTrue(
+          parsed.frontmatter.kind.isEmpty,
+          parsed.frontmatter.difficulty.isEmpty,
+          parsed.frontmatter.topics.isEmpty
+        )
       }
     ),
     suite("extractEssential")(

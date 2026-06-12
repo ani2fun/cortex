@@ -1,127 +1,78 @@
 ---
 title: "Lowest Absolute Variance"
-summary: "Given the root of a binary search tree, return the lowest absolute variance — the minimum absolute difference — between the values of any two different nodes."
+summary: "Given the root of a BST with at least two nodes, return the minimum absolute difference between the values of any two different nodes."
 prereqs:
   - 11-pattern-sorted-traversal/01-pattern
 difficulty: medium
+kind: problem
+topics: [sorted-traversal, binary-search-tree]
 ---
 
 # Lowest absolute variance
 
 ## Problem Statement
 
-Given the **root** of a binary search tree, return the lowest absolute variance — the minimum absolute difference — between the values of any two different nodes.
+Given the **root** of a binary search tree, return the lowest absolute variance — the minimum absolute difference — between the values of any two different nodes. The tree is guaranteed to have at least two nodes.
 
-### Example 1
+## Examples
 
-> - **Input:** `root = [5, 4, 8, 2, null, null, 10]`
-> - **Output:** `1`
-> - **Explanation:** The smallest gap is between `4` and `5`.
+**Example 1:**
+```
+Input:  root = [5, 4, 8, 2, null, null, 10]
+Output: 1
+```
+The smallest gap is between `4` and `5`.
 
-### Example 2
+**Example 2:**
+```
+Input:  root = [10, 8, 14, 5, null, 12, 17]
+Output: 2
+```
+The smallest gap is `2` (between `8` and `10`, or between `12` and `14`).
 
-> - **Input:** `root = [10, 8, 14, 5, null, 12, 17]`
-> - **Output:** `2`
-> - **Explanation:** The smallest gap is `2` (between `8` and `10`, or between `12` and `14`).
+## Constraints
 
-<details>
-<summary><h2>The Solution</h2></summary>
-
-
+- `2 ≤ number of nodes ≤ 10⁴`
+- `0 ≤ node.val ≤ 10⁵`
+- The tree is a valid BST.
 
 ```python run viz=binary-tree viz-root=root
-from typing import Optional, List
-
+import json
+from collections import deque
 
 class TreeNode:
-    def __init__(self, val=0, left=None, right=None):
+    def __init__(self, val, left=None, right=None):
         self.val = val
         self.left = left
         self.right = right
 
+class Solution:
+    def lowest_absolute_variance(self, root):
+        # Your code goes here — iterative in-order walk; track the previous
+        # node value; update min_diff = min(min_diff, node.val - prev).
+        # Return min_diff.
+        return 0
 
-def from_level_order(values):
-    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
     if not values:
         return None
     root = TreeNode(values[0])
-    queue = [root]
+    queue = deque([root])
     i = 1
     while queue and i < len(values):
-        node = queue.pop(0)
-        if i < len(values) and values[i] is not None:
-            node.left = TreeNode(values[i])
-            queue.append(node.left)
-        i += 1
-        if i < len(values) and values[i] is not None:
-            node.right = TreeNode(values[i])
-            queue.append(node.right)
-        i += 1
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
     return root
 
-
-class Solution:
-    def __init__(self):
-
-        # Variable to keep track of the minimum difference
-        self.min_diff = float("inf")
-
-        # Reference to keep track of the previous node
-        self.prev_node = None
-
-    def inorder(self, root: Optional[TreeNode]):
-        if root is None:
-            return
-
-        # Traverse left subtree
-        self.inorder(root.left)
-
-        # Check the difference with the previous node
-        if self.prev_node is not None:
-            self.min_diff = min(
-                self.min_diff, root.val - self.prev_node.val
-            )
-
-        # Update the previous node
-        self.prev_node = root
-
-        # Traverse right subtree
-        self.inorder(root.right)
-
-    def lowest_absolute_variance(self, root: Optional[TreeNode]) -> int:
-
-        # Perform in-order traversal
-        self.inorder(root)
-
-        # Return the minimum difference found
-        return self.min_diff
-
-
-# Example 1: [5, 4, 8, 2, null, null, 10] → 1
-print(Solution().lowest_absolute_variance(
-    from_level_order([5, 4, 8, 2, None, None, 10])))   # 1
-
-# Example 2: [10, 8, 14, 5, null, 12, 17] → 2
-print(Solution().lowest_absolute_variance(
-    from_level_order([10, 8, 14, 5, None, 12, 17])))   # 2
-
-# Edge cases
-print(Solution().lowest_absolute_variance(
-    from_level_order([5])))                             # inf (single node)
-
-print(Solution().lowest_absolute_variance(
-    from_level_order([3, 1, 5])))                      # 2
-
-# Left-skew BST: 1, 2, 3, 4
-root_skew = TreeNode(4)
-root_skew.left = TreeNode(3)
-root_skew.left.left = TreeNode(2)
-root_skew.left.left.left = TreeNode(1)
-print(Solution().lowest_absolute_variance(root_skew))  # 1
-
-# Consecutive values: consecutive diffs of 1
-print(Solution().lowest_absolute_variance(
-    from_level_order([5, 3, 7, 2, 4, 6, 8])))         # 1
+root = build_tree(json.loads(input()))   # the test case's level-order values
+print(Solution().lowest_absolute_variance(root))
 ```
 
 ```java run viz=binary-tree viz-root=root
@@ -129,100 +80,188 @@ import java.util.*;
 
 public class Main {
     static class TreeNode {
-        int val;
-        TreeNode left;
-        TreeNode right;
-        TreeNode() {}
+        int val; TreeNode left, right;
         TreeNode(int val) { this.val = val; }
     }
 
-    static TreeNode fromLevelOrder(Integer... values) {
+    static class Solution {
+        public int lowestAbsoluteVariance(TreeNode root) {
+            // Your code goes here — iterative in-order; Integer prev = null;
+            // update minDiff = Math.min(minDiff, node.val - prev);
+            // Return minDiff.
+            return 0;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+        System.out.println(new Solution().lowestAbsoluteVariance(root));
+    }
+
+    static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
         if (values.length == 0 || values[0] == null) return null;
         TreeNode root = new TreeNode(values[0]);
-        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        Deque<TreeNode> queue = new ArrayDeque<>();
         queue.add(root);
         int i = 1;
         while (!queue.isEmpty() && i < values.length) {
             TreeNode node = queue.poll();
-            if (i < values.length && values[i] != null) {
-                node.left = new TreeNode(values[i]);
-                queue.add(node.left);
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
             }
-            i++;
-            if (i < values.length && values[i] != null) {
-                node.right = new TreeNode(values[i]);
-                queue.add(node.right);
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
             }
-            i++;
         }
         return root;
     }
 
+    // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+    static Integer[] parseIntegerArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new Integer[0];
+        String[] parts = inner.split(",");
+        Integer[] out = new Integer[parts.length];
+        for (int i = 0; i < parts.length; i++)
+            out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[5, 4, 8, 2, null, null, 10]" }
+  ],
+  "cases": [
+    { "args": { "root": "[5, 4, 8, 2, null, null, 10]" }, "expected": "1" },
+    { "args": { "root": "[10, 8, 14, 5, null, 12, 17]" }, "expected": "2" },
+    { "args": { "root": "[3, 1, 5]" }, "expected": "2" },
+    { "args": { "root": "[5, 3, 7, 2, 4, 6, 8]" }, "expected": "1" },
+    { "args": { "root": "[4, 2, null, 1]" }, "expected": "1" },
+    { "args": { "root": "[100, 50, null, 40]" }, "expected": "10" }
+  ]
+}
+```
+
+<details>
+<summary><h2>Solution</h2></summary>
+
+An in-order walk of a BST delivers keys in ascending sorted order. For any sorted sequence, the minimum absolute difference between any two elements is always between **adjacent** elements. So we track the previous key seen (`prev`) and update `min_diff` on each visit. An iterative approach avoids shared instance state and makes resetting trivial.
+
+```python solution time=O(n) space=O(h)
+import json
+from collections import deque
+
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+class Solution:
+    def lowest_absolute_variance(self, root):
+        min_diff = float("inf")
+        prev = None
+        stack, node = [], root
+        while stack or node:
+            while node:
+                stack.append(node)
+                node = node.left
+            node = stack.pop()
+            if prev is not None:
+                min_diff = min(min_diff, node.val - prev)
+            prev = node.val
+            node = node.right
+        return min_diff
+
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
+
+root = build_tree(json.loads(input()))   # the test case's level-order values
+print(Solution().lowest_absolute_variance(root))
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+    static class TreeNode {
+        int val; TreeNode left, right;
+        TreeNode(int val) { this.val = val; }
+    }
+
     static class Solution {
-
-        // Variable to keep track of the minimum difference
-        private int minDiff = Integer.MAX_VALUE;
-
-        // Reference to keep track of the previous node
-        private TreeNode prevNode = null;
-
-        private void inorder(TreeNode root) {
-            if (root == null) {
-                return;
-            }
-
-            // Traverse left subtree
-            inorder(root.left);
-
-            // Check the difference with the previous node
-            if (prevNode != null) {
-                minDiff = Math.min(minDiff, root.val - prevNode.val);
-            }
-
-            // Update the previous node
-            prevNode = root;
-
-            // Traverse right subtree
-            inorder(root.right);
-        }
-
         public int lowestAbsoluteVariance(TreeNode root) {
-
-            // Perform in-order traversal
-            inorder(root);
-
-            // Return the minimum difference found
+            int minDiff = Integer.MAX_VALUE;
+            Integer prev = null;
+            Deque<TreeNode> stack = new ArrayDeque<>();
+            TreeNode node = root;
+            while (!stack.isEmpty() || node != null) {
+                while (node != null) { stack.push(node); node = node.left; }
+                node = stack.pop();
+                if (prev != null) minDiff = Math.min(minDiff, node.val - prev);
+                prev = node.val;
+                node = node.right;
+            }
             return minDiff;
         }
     }
 
     public static void main(String[] args) {
-        // Example 1: [5, 4, 8, 2, null, null, 10] → 1
-        System.out.println(new Solution().lowestAbsoluteVariance(
-            fromLevelOrder(5, 4, 8, 2, null, null, 10)));   // 1
+        Scanner sc = new Scanner(System.in);
+        TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+        System.out.println(new Solution().lowestAbsoluteVariance(root));
+    }
 
-        // Example 2: [10, 8, 14, 5, null, 12, 17] → 2
-        System.out.println(new Solution().lowestAbsoluteVariance(
-            fromLevelOrder(10, 8, 14, 5, null, 12, 17)));   // 2
+    static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+            }
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+            }
+        }
+        return root;
+    }
 
-        // Single node — no pair exists
-        System.out.println(new Solution().lowestAbsoluteVariance(
-            fromLevelOrder(5)));                             // Integer.MAX_VALUE
-
-        // Balanced BST with min diff = 2
-        System.out.println(new Solution().lowestAbsoluteVariance(
-            fromLevelOrder(3, 1, 5)));                      // 2
-
-        // Left-skew BST: 4-3-2-1
-        TreeNode skew = new TreeNode(4);
-        skew.left = new TreeNode(3);
-        skew.left.left = new TreeNode(2);
-        skew.left.left.left = new TreeNode(1);
-        System.out.println(new Solution().lowestAbsoluteVariance(skew)); // 1
-
-        // Consecutive values: min diff = 1
-        System.out.println(new Solution().lowestAbsoluteVariance(
-            fromLevelOrder(5, 3, 7, 2, 4, 6, 8)));         // 1
+    // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+    static Integer[] parseIntegerArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new Integer[0];
+        String[] parts = inner.split(",");
+        Integer[] out = new Integer[parts.length];
+        for (int i = 0; i < parts.length; i++)
+            out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

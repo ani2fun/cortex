@@ -4,6 +4,8 @@ summary: "Given the root of a binary search tree, replace each node's value with
 prereqs:
   - 12-pattern-reversed-sorted-traversal/01-pattern
 difficulty: medium
+kind: problem
+topics: [reversed-sorted-traversal, binary-search-tree]
 ---
 
 # Rank nodes
@@ -12,126 +14,77 @@ difficulty: medium
 
 Given the **root** of a binary search tree, replace each node's value with its **rank in descending order** (largest = rank 1).
 
-### Example 1
+## Examples
 
-> - **Input:** `root = [4, 2, 5, 1, 3, null, 6]`
-> - **Output:** `[3, 5, 2, 6, 4, null, 1]`
+**Example 1:**
+```
+Input:  root = [4, 2, 5, 1, 3, null, 6]
+Output: [3, 5, 2, 6, 4, null, 1]
+```
 
-### Example 2
+**Example 2:**
+```
+Input:  root = [5, 4, 10, null, null, 9, 11]
+Output: [4, 5, 2, null, null, 3, 1]
+```
 
-> - **Input:** `root = [5, 4, 10, null, null, 9, 11]`
-> - **Output:** `[4, 5, 2, null, null, 3, 1]`
+## Constraints
 
-<details>
-<summary><h2>The Strategy</h2></summary>
-
-
-Walk the tree in reverse in-order. The first node visited (the largest) gets rank `1`; the next gets `2`; and so on. Just maintain a running `rank` counter; every node overwrites its own value with the current `rank`, then increments it.
-
-</details>
-<details>
-<summary><h2>The Solution</h2></summary>
-
-
+- `0 ≤ number of nodes ≤ 10⁴`
+- `-10⁴ ≤ node.val ≤ 10⁴`
+- All BST keys are distinct
 
 ```python run viz=binary-tree viz-root=root
-from typing import Optional
-
+import json
+from collections import deque
 
 class TreeNode:
-    def __init__(self, val=0, left=None, right=None):
+    def __init__(self, val, left=None, right=None):
         self.val = val
         self.left = left
         self.right = right
 
+class Solution:
+    def rank_nodes(self, root):
+        # Your code goes here — reversed in-order (right → node → left);
+        # assign rank 1 to the largest key, 2 to the next, etc.
+        # Mutate each node.val in place; return root.
+        return root
 
-def from_level_order(values):
-    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
     if not values:
         return None
     root = TreeNode(values[0])
-    queue = [root]
+    queue = deque([root])
     i = 1
     while queue and i < len(values):
-        node = queue.pop(0)
-        if i < len(values) and values[i] is not None:
-            node.left = TreeNode(values[i])
-            queue.append(node.left)
-        i += 1
-        if i < len(values) and values[i] is not None:
-            node.right = TreeNode(values[i])
-            queue.append(node.right)
-        i += 1
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
     return root
 
-
-def level_order_vals(root):
-    """Collect values level-order (None for missing children)."""
-    if not root:
-        return []
-    result, queue = [], [root]
+def print_tree(root):                # root → [1, 2, 3, null, 4], trailing nulls trimmed
+    out, queue = [], deque([root])
     while queue:
-        node = queue.pop(0)
-        if node:
-            result.append(node.val)
+        node = queue.popleft()
+        if node is None:
+            out.append(None)
+        else:
+            out.append(node.val)
             queue.append(node.left)
             queue.append(node.right)
-        else:
-            result.append(None)
-    # strip trailing Nones
-    while result and result[-1] is None:
-        result.pop()
-    return result
+    while out and out[-1] is None:
+        out.pop()
+    print(json.dumps(out))
 
-
-class Solution:
-    def __init__(self) -> None:
-
-        # Variable to keep track of the running rank of the tree
-        self.rank: int = 1
-
-    def rank_nodes(self, root: Optional[TreeNode]) -> None:
-
-        # Base case
-        if root is None:
-            return
-
-        # Recursively process the right subtree
-        self.rank_nodes(root.right)
-
-        # Update the current node's value
-        root.val = self.rank
-
-        # Increment the rank for the next node
-        self.rank += 1
-
-        # Recursively process the left subtree
-        self.rank_nodes(root.left)
-
-
-# Example 1: [4, 2, 5, 1, 3, null, 6] → [3, 5, 2, 6, 4, null, 1]
-t1 = from_level_order([4, 2, 5, 1, 3, None, 6])
-Solution().rank_nodes(t1)
-print(level_order_vals(t1))   # [3, 5, 2, 6, 4, 1]
-
-# Example 2: [5, 4, 10, null, null, 9, 11] → [4, 5, 2, null, null, 3, 1]
-t2 = from_level_order([5, 4, 10, None, None, 9, 11])
-Solution().rank_nodes(t2)
-print(level_order_vals(t2))   # [4, 5, 2, 3, 1]
-
-# Edge cases
-t3 = None
-Solution().rank_nodes(t3)
-print(t3)                     # None
-
-t4 = from_level_order([7])
-Solution().rank_nodes(t4)
-print(t4.val)                 # 1
-
-# Two-node tree: root=5, right=10 → root ranks 2, right ranks 1
-t5 = from_level_order([5, None, 10])
-Solution().rank_nodes(t5)
-print(t5.val, t5.right.val)   # 2 1
+root = build_tree(json.loads(input()))   # the test case's level-order values
+print_tree(Solution().rank_nodes(root))
 ```
 
 ```java run viz=binary-tree viz-root=root
@@ -139,97 +92,239 @@ import java.util.*;
 
 public class Main {
     static class TreeNode {
-        int val;
-        TreeNode left;
-        TreeNode right;
-        TreeNode() {}
+        int val; TreeNode left, right;
         TreeNode(int val) { this.val = val; }
     }
 
-    static TreeNode fromLevelOrder(Integer... values) {
-        if (values.length == 0 || values[0] == null) return null;
-        TreeNode root = new TreeNode(values[0]);
-        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
-        queue.add(root);
-        int i = 1;
-        while (!queue.isEmpty() && i < values.length) {
-            TreeNode node = queue.poll();
-            if (i < values.length && values[i] != null) {
-                node.left = new TreeNode(values[i]);
-                queue.add(node.left);
-            }
-            i++;
-            if (i < values.length && values[i] != null) {
-                node.right = new TreeNode(values[i]);
-                queue.add(node.right);
-            }
-            i++;
-        }
-        return root;
-    }
-
-    static List<Integer> levelOrderVals(TreeNode root) {
-        if (root == null) return List.of();
-        List<Integer> result = new ArrayList<>();
-        java.util.Deque<TreeNode> q = new java.util.ArrayDeque<>();
-        q.add(root);
-        while (!q.isEmpty()) {
-            TreeNode node = q.poll();
-            result.add(node.val);
-            if (node.left != null) q.add(node.left);
-            if (node.right != null) q.add(node.right);
-        }
-        return result;
-    }
-
     static class Solution {
-
-        // Variable to keep track of the running rank of the tree
-        private int rank = 1;
-
-        public void rankNodes(TreeNode root) {
-
-            // Base case
-            if (root == null) {
-                return;
-            }
-
-            // Recursively process the right subtree
-            rankNodes(root.right);
-
-            // Update the current node's value
-            root.val = rank;
-
-            // Increment the rank for the next node
-            rank++;
-
-            // Recursively process the left subtree
-            rankNodes(root.left);
+        TreeNode rankNodes(TreeNode root) {
+            // Your code goes here — reversed in-order (right → node → left);
+            // assign rank 1 to the largest key, 2 to the next, etc.
+            // Mutate each node.val in place; return root.
+            return root;
         }
     }
 
     public static void main(String[] args) {
-        // Example 1
-        TreeNode t1 = fromLevelOrder(4, 2, 5, 1, 3, null, 6);
-        new Solution().rankNodes(t1);
-        System.out.println(levelOrderVals(t1));   // [3, 5, 2, 6, 4, 1]
+        TreeNode root = buildTree(parseIntegerArray(new Scanner(System.in).nextLine()));
+        printTree(new Solution().rankNodes(root));
+    }
 
-        // Example 2
-        TreeNode t2 = fromLevelOrder(5, 4, 10, null, null, 9, 11);
-        new Solution().rankNodes(t2);
-        System.out.println(levelOrderVals(t2));   // [4, 5, 2, 3, 1]
+    static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+            }
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+            }
+        }
+        return root;
+    }
 
-        // Edge cases
-        new Solution().rankNodes(null);            // no-op
+    static void printTree(TreeNode root) {          // root → [1, 2, 3, null, 4], trailing nulls trimmed
+        List<String> out = new ArrayList<>();
+        Deque<TreeNode> queue = new LinkedList<>();
+        queue.add(root);
+        while (!queue.isEmpty()) {
+            TreeNode node = queue.poll();
+            if (node == null) {
+                out.add("null");
+            } else {
+                out.add(String.valueOf(node.val));
+                queue.add(node.left);
+                queue.add(node.right);
+            }
+        }
+        while (!out.isEmpty() && out.get(out.size() - 1).equals("null"))
+            out.remove(out.size() - 1);
+        System.out.println("[" + String.join(", ", out) + "]");
+    }
 
-        TreeNode t4 = fromLevelOrder(7);
-        new Solution().rankNodes(t4);
-        System.out.println(t4.val);               // 1
+    // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+    static Integer[] parseIntegerArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new Integer[0];
+        String[] parts = inner.split(",");
+        Integer[] out = new Integer[parts.length];
+        for (int i = 0; i < parts.length; i++)
+            out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
 
-        // Two-node tree: root=5, right=10 → root ranks 2, right ranks 1
-        TreeNode t5 = fromLevelOrder(5, null, 10);
-        new Solution().rankNodes(t5);
-        System.out.println(t5.val + " " + t5.right.val);  // 2 1
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[4, 2, 5, 1, 3, null, 6]" }
+  ],
+  "cases": [
+    { "args": { "root": "[4, 2, 5, 1, 3, null, 6]" }, "expected": "[3, 5, 2, 6, 4, null, 1]" },
+    { "args": { "root": "[5, 4, 10, null, null, 9, 11]" }, "expected": "[4, 5, 2, null, null, 3, 1]" },
+    { "args": { "root": "[]" }, "expected": "[]" },
+    { "args": { "root": "[7]" }, "expected": "[1]" },
+    { "args": { "root": "[5, null, 10]" }, "expected": "[2, null, 1]" }
+  ]
+}
+```
+
+<details>
+<summary><h2>Solution</h2></summary>
+
+Walk the tree in reverse in-order. The first node visited (the largest) gets rank `1`; the next gets `2`; and so on. Maintain a running `rank` counter; every node overwrites its own value with the current `rank`, then increments it.
+
+```python solution time=O(n) space=O(h)
+import json
+from collections import deque
+
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+class Solution:
+    def __init__(self):
+        self.rank = 1
+
+    def rank_nodes(self, root):
+        if root is None:
+            return root
+        self._helper(root)
+        return root
+
+    def _helper(self, root):
+        if root is None:
+            return
+        self._helper(root.right)
+        root.val = self.rank
+        self.rank += 1
+        self._helper(root.left)
+
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
+
+def print_tree(root):                # root → [1, 2, 3, null, 4], trailing nulls trimmed
+    out, queue = [], deque([root])
+    while queue:
+        node = queue.popleft()
+        if node is None:
+            out.append(None)
+        else:
+            out.append(node.val)
+            queue.append(node.left)
+            queue.append(node.right)
+    while out and out[-1] is None:
+        out.pop()
+    print(json.dumps(out))
+
+root = build_tree(json.loads(input()))   # the test case's level-order values
+print_tree(Solution().rank_nodes(root))
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+    static class TreeNode {
+        int val; TreeNode left, right;
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static class Solution {
+        private int rank = 1;
+
+        TreeNode rankNodes(TreeNode root) {
+            if (root == null) return null;
+            helper(root);
+            return root;
+        }
+
+        private void helper(TreeNode root) {
+            if (root == null) return;
+            helper(root.right);
+            root.val = rank++;
+            helper(root.left);
+        }
+    }
+
+    public static void main(String[] args) {
+        TreeNode root = buildTree(parseIntegerArray(new Scanner(System.in).nextLine()));
+        printTree(new Solution().rankNodes(root));
+    }
+
+    static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+            }
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+            }
+        }
+        return root;
+    }
+
+    static void printTree(TreeNode root) {          // root → [1, 2, 3, null, 4], trailing nulls trimmed
+        List<String> out = new ArrayList<>();
+        Deque<TreeNode> queue = new LinkedList<>();
+        queue.add(root);
+        while (!queue.isEmpty()) {
+            TreeNode node = queue.poll();
+            if (node == null) {
+                out.add("null");
+            } else {
+                out.add(String.valueOf(node.val));
+                queue.add(node.left);
+                queue.add(node.right);
+            }
+        }
+        while (!out.isEmpty() && out.get(out.size() - 1).equals("null"))
+            out.remove(out.size() - 1);
+        System.out.println("[" + String.join(", ", out) + "]");
+    }
+
+    // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+    static Integer[] parseIntegerArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new Integer[0];
+        String[] parts = inner.split(",");
+        Integer[] out = new Integer[parts.length];
+        for (int i = 0; i < parts.length; i++)
+            out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

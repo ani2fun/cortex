@@ -4,6 +4,8 @@ summary: "Given the head of a singly linked list and a positive integer k, write
 prereqs:
   - 11-pattern-split/01-pattern
 difficulty: easy
+kind: problem
+topics: [split, singly-linked-list]
 ---
 
 # Split alternate groups
@@ -40,8 +42,112 @@ Output: [[1, 2, 3], [4, 5, 6]]
 Explanation: Two full groups of three — first to list 0, second to list 1.
 ```
 
+## Constraints
 
----
+- `0 ≤ list length ≤ 10⁵`
+- `1 ≤ k ≤ 10⁴`
+- Re-link nodes — `O(1)` extra space; do not allocate new nodes
+
+```python run viz=linked-list viz-root=head
+import ast
+
+class ListNode:
+    def __init__(self, val, next=None):
+        self.val = val
+        self.next = next
+
+class Solution:
+    def split_alternate_groups(self, head, k):
+        # Your code goes here
+        pass
+
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
+
+def print_list(head):                # 1 → 2 → 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
+
+head = build_list(ast.literal_eval(input()))   # the test case's head
+k = int(input())                               # the test case's k
+f, s = Solution().split_alternate_groups(head, k)
+print_list(f)
+print_list(s)
+```
+
+```java run viz=linked-list viz-root=head
+import java.util.*;
+
+public class Main {
+    static class ListNode {
+        int val; ListNode next;
+        ListNode(int val) { this.val = val; }
+        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+    }
+
+    static class Solution {
+        List<ListNode> splitAlternateGroups(ListNode head, int k) {
+            // Your code goes here
+            return Arrays.asList(null, null);
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        ListNode head = buildList(parseIntArray(sc.nextLine()));
+        int k = Integer.parseInt(sc.nextLine().trim());
+        List<ListNode> r = new Solution().splitAlternateGroups(head, k);
+        printList(r.get(0));
+        printList(r.get(1));
+    }
+
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+        ListNode head = null;
+        for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+        return head;
+    }
+
+    static void printList(ListNode head) {         // 1 → 2 → 3 → [1, 2, 3]
+        List<Integer> out = new ArrayList<>();
+        for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+        System.out.println(out);
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's head
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "head", "label": "head", "type": "int[]", "placeholder": "[5, 2, 3, 10, 6, 8]" },
+    { "id": "k", "label": "k", "type": "int", "placeholder": "2" }
+  ],
+  "cases": [
+    { "args": { "head": "[5, 2, 3, 10, 6, 8]", "k": "2" }, "expected": "[5, 2, 6, 8]\n[3, 10]" },
+    { "args": { "head": "[6, 1, 3, 10, 6, 8]", "k": "5" }, "expected": "[6, 1, 3, 10, 6]\n[8]" },
+    { "args": { "head": "[1, 2, 3, 4, 5, 6]", "k": "3" }, "expected": "[1, 2, 3]\n[4, 5, 6]" },
+    { "args": { "head": "[1]", "k": "1" }, "expected": "[1]\n[]" },
+    { "args": { "head": "[1, 2]", "k": "1" }, "expected": "[1]\n[2]" },
+    { "args": { "head": "[1, 2, 3, 4]", "k": "4" }, "expected": "[1, 2, 3, 4]\n[]" },
+    { "args": { "head": "[]", "k": "2" }, "expected": "[]\n[]" }
+  ]
+}
+```
 
 <details>
 <summary><h2>Intuition</h2></summary>
@@ -88,58 +194,36 @@ Walk the original list in chunks of up to `k` nodes. Splice each chunk onto the 
 
 ### Solution
 
-```python run viz=linked-list viz-root=head
-from typing import List, Optional
 
+```python solution time=O(n) space=O(1)
+import ast
 
 class ListNode:
-    def __init__(self, val=0, nxt=None):
+    def __init__(self, val, next=None):
         self.val = val
-        self.next = nxt
-
-
-def from_list(values):
-    if not values:
-        return None
-    head = ListNode(values[0])
-    cur = head
-    for v in values[1:]:
-        cur.next = ListNode(v)
-        cur = cur.next
-    return head
-
-
-def to_list(head):
-    out = []
-    while head is not None:
-        out.append(head.val)
-        head = head.next
-    return out
-
+        self.next = next
 
 class Solution:
-    def split_alternate_groups(
-        self, head: Optional[ListNode], k: int
-    ) -> List[Optional[ListNode]]:
+    def split_alternate_groups(self, head, k):
 
         # Head and tail references for the two resulting lists
-        first_list_dummy: ListNode = ListNode(0)
-        first_list_tail: ListNode = first_list_dummy
+        first_list_dummy = ListNode(0)
+        first_list_tail = first_list_dummy
 
-        second_list_dummy: ListNode = ListNode(0)
-        second_list_tail: ListNode = second_list_dummy
+        second_list_dummy = ListNode(0)
+        second_list_tail = second_list_dummy
 
-        current: Optional[ListNode] = head
+        current = head
 
         # Flag to alternate between the two lists
-        add_to_first_list: bool = True
+        add_to_first_list = True
 
         # Iterate through the original list
         while current is not None:
 
             # Start of the current chunk
-            chunk_start: ListNode = current
-            previous: Optional[ListNode] = None
+            chunk_start = current
+            previous = None
 
             # Traverse up to k nodes for the current chunk
             for _ in range(k):
@@ -174,54 +258,34 @@ class Solution:
         # Return heads of the two lists
         return [first_list_dummy.next, second_list_dummy.next]
 
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
 
-f, s = Solution().split_alternate_groups(from_list([5, 2, 3, 10, 6, 8]), 2)
-print(to_list(f), to_list(s))   # [5, 2, 6, 8] [3, 10]
+def print_list(head):                # 1 → 2 → 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
 
-f, s = Solution().split_alternate_groups(from_list([6, 1, 3, 10, 6, 8]), 5)
-print(to_list(f), to_list(s))   # [6, 1, 3, 10, 6] [8]
-
-# Edge cases
-f, s = Solution().split_alternate_groups(from_list([1]), 1)
-print(to_list(f), to_list(s))   # [1] []
-
-f, s = Solution().split_alternate_groups(from_list([1, 2]), 1)
-print(to_list(f), to_list(s))   # [1] [2]
-
-f, s = Solution().split_alternate_groups(from_list([1, 2, 3, 4]), 4)
-print(to_list(f), to_list(s))   # [1, 2, 3, 4] []
-
-f, s = Solution().split_alternate_groups(from_list([1, 2, 3, 4, 5, 6]), 3)
-print(to_list(f), to_list(s))   # [1, 2, 3] [4, 5, 6]
+head = build_list(ast.literal_eval(input()))   # the test case's head
+k = int(input())                               # the test case's k
+f, s = Solution().split_alternate_groups(head, k)
+print_list(f)
+print_list(s)
 ```
 
-```java run viz=linked-list viz-root=head
+```java solution
 import java.util.*;
 
 public class Main {
     static class ListNode {
-        int val;
-        ListNode next;
-        ListNode() {}
+        int val; ListNode next;
         ListNode(int val) { this.val = val; }
         ListNode(int val, ListNode next) { this.val = val; this.next = next; }
-    }
-
-    static ListNode fromList(int... values) {
-        if (values.length == 0) return null;
-        ListNode head = new ListNode(values[0]);
-        ListNode cur = head;
-        for (int i = 1; i < values.length; i++) {
-            cur.next = new ListNode(values[i]);
-            cur = cur.next;
-        }
-        return head;
-    }
-
-    static java.util.List<Integer> toList(ListNode head) {
-        java.util.List<Integer> out = new java.util.ArrayList<>();
-        while (head != null) { out.add(head.val); head = head.next; }
-        return out;
     }
 
     static class Solution {
@@ -285,24 +349,34 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        List<ListNode> r1 = new Solution().splitAlternateGroups(fromList(5, 2, 3, 10, 6, 8), 2);
-        System.out.println(toList(r1.get(0)) + " " + toList(r1.get(1)));  // [5, 2, 6, 8] [3, 10]
+        Scanner sc = new Scanner(System.in);
+        ListNode head = buildList(parseIntArray(sc.nextLine()));
+        int k = Integer.parseInt(sc.nextLine().trim());
+        List<ListNode> r = new Solution().splitAlternateGroups(head, k);
+        printList(r.get(0));
+        printList(r.get(1));
+    }
 
-        List<ListNode> r2 = new Solution().splitAlternateGroups(fromList(6, 1, 3, 10, 6, 8), 5);
-        System.out.println(toList(r2.get(0)) + " " + toList(r2.get(1)));  // [6, 1, 3, 10, 6] [8]
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+        ListNode head = null;
+        for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+        return head;
+    }
 
-        // Edge cases
-        List<ListNode> r3 = new Solution().splitAlternateGroups(fromList(1), 1);
-        System.out.println(toList(r3.get(0)) + " " + toList(r3.get(1)));  // [1] []
+    static void printList(ListNode head) {         // 1 → 2 → 3 → [1, 2, 3]
+        List<Integer> out = new ArrayList<>();
+        for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+        System.out.println(out);
+    }
 
-        List<ListNode> r4 = new Solution().splitAlternateGroups(fromList(1, 2), 1);
-        System.out.println(toList(r4.get(0)) + " " + toList(r4.get(1)));  // [1] [2]
-
-        List<ListNode> r5 = new Solution().splitAlternateGroups(fromList(1, 2, 3, 4), 4);
-        System.out.println(toList(r5.get(0)) + " " + toList(r5.get(1)));  // [1, 2, 3, 4] []
-
-        List<ListNode> r6 = new Solution().splitAlternateGroups(fromList(1, 2, 3, 4, 5, 6), 3);
-        System.out.println(toList(r6.get(0)) + " " + toList(r6.get(1)));  // [1, 2, 3] [4, 5, 6]
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's head
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

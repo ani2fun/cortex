@@ -4,6 +4,8 @@ summary: "Given a binary array arr, find and return the maximum number of consec
 prereqs:
   - 09-pattern-variable-sliding-window/01-pattern
 difficulty: easy
+kind: problem
+topics: [sliding-window, arrays]
 ---
 
 # Consecutive Ones
@@ -43,6 +45,80 @@ Explanation: The maximum number of consecutive ones is 2 — both the run
 Input:  arr = [0, 0, 0]
 Output: 0
 Explanation: The maximum number of consecutive ones is 0.
+```
+
+```quiz
+{
+  "prompt": "Now your turn!",
+  "input": "arr = [1, 1, 0, 1, 1, 1, 0, 1]",
+  "options": ["1", "2", "3", "6"],
+  "answer": "3"
+}
+```
+
+## Constraints
+
+- `0 ≤ arr.length ≤ 10^5`
+- Each `arr[i]` is either `0` or `1`
+
+```python run viz=array viz-root=arr
+import ast
+from typing import List
+
+class Solution:
+    def consecutive_ones(self, arr: List[int]) -> int:
+        # Your code goes here — track the current run length, reset on each 0,
+        # and remember the longest run (with a final check after the loop).
+        return 0
+
+arr = ast.literal_eval(input())      # the test case's arr
+print(Solution().consecutive_ones(arr))
+```
+
+```java run viz=array viz-root=arr
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int consecutiveOnes(int[] arr) {
+            // Your code goes here — track the current run length, reset on each 0,
+            // and remember the longest run (with a final check after the loop).
+            return 0;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        System.out.println(new Solution().consecutiveOnes(arr));
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's arr
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0]" }, "expected": "4" },
+    { "args": { "arr": "[1, 1, 0, 0, 0, 1, 1, 0, 1, 0]" }, "expected": "2" },
+    { "args": { "arr": "[0, 0, 0]" }, "expected": "0" },
+    { "args": { "arr": "[1, 1, 0, 1, 1, 1, 0, 1]" }, "expected": "3" },
+    { "args": { "arr": "[1, 1, 1, 1]" }, "expected": "4" },
+    { "args": { "arr": "[0, 1, 1]" }, "expected": "2" }
+  ]
+}
 ```
 
 <details>
@@ -86,7 +162,8 @@ The naive approach evaluates every subarray and asks "is it all `1`s?" — O(N²
 
 ### The Solution
 
-```python run viz=array viz-root=arr
+```python solution time=O(N) space=O(1)
+import ast
 from typing import List
 
 class Solution:
@@ -130,20 +207,13 @@ class Solution:
         return max_ones
 
 
-# Examples from the problem statement
-print(Solution().consecutive_ones([1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0]))   # 4
-print(Solution().consecutive_ones([1, 1, 0, 0, 0, 1, 1, 0, 1, 0]))       # 2
-print(Solution().consecutive_ones([0, 0, 0]))                              # 0
-
-# Edge cases
-print(Solution().consecutive_ones([1]))                                    # 1  — single one
-print(Solution().consecutive_ones([0]))                                    # 0  — single zero
-print(Solution().consecutive_ones([1, 0]))                                 # 1  — two elements
-print(Solution().consecutive_ones([1, 1, 1, 1]))                           # 4  — all ones
-print(Solution().consecutive_ones([1, 1, 1, 1, 0, 1]))                    # 4  — ones at end
+arr = ast.literal_eval(input())      # the test case's arr
+print(Solution().consecutive_ones(arr))
 ```
 
-```java run viz=array viz-root=arr
+```java solution
+import java.util.*;
+
 public class Main {
     static class Solution {
         public int consecutiveOnes(int[] arr) {
@@ -191,17 +261,19 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().consecutiveOnes(new int[]{1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0}));   // 4
-        System.out.println(new Solution().consecutiveOnes(new int[]{1, 1, 0, 0, 0, 1, 1, 0, 1, 0}));       // 2
-        System.out.println(new Solution().consecutiveOnes(new int[]{0, 0, 0}));                              // 0
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        System.out.println(new Solution().consecutiveOnes(arr));
+    }
 
-        // Edge cases
-        System.out.println(new Solution().consecutiveOnes(new int[]{1}));                                    // 1  — single one
-        System.out.println(new Solution().consecutiveOnes(new int[]{0}));                                    // 0  — single zero
-        System.out.println(new Solution().consecutiveOnes(new int[]{1, 0}));                                 // 1  — two elements
-        System.out.println(new Solution().consecutiveOnes(new int[]{1, 1, 1, 1}));                           // 4  — all ones
-        System.out.println(new Solution().consecutiveOnes(new int[]{1, 1, 1, 1, 0, 1}));                    // 4  — ones at end
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's arr
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

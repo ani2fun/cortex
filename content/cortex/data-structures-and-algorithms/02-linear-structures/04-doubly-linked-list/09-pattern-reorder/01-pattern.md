@@ -20,15 +20,37 @@ Reorder `1 ⇄ 2 ⇄ 3 ⇄ 4 ⇄ 5` so odd-*position* nodes come first: `1 ⇄ 3
 > ▶ Run it, then click **Visualise** — two chains (odd/even positions) form on the forward links, then a final sweep repairs every backward pointer.
 
 ```python run viz=linked-list viz-root=head viz-kind=list-double
-class Node:
-    def __init__(self, val):
-        self.val = val
-        self.prev = None
-        self.next = None
+import ast
 
-def odd_even(head):
-    if head is None or head.next is None:
-        return head
+class ListNode:
+    def __init__(self, val, prev=None, next=None):
+        self.val = val
+        self.prev = prev
+        self.next = next
+
+def build_list(values):              # [1, 2, 3] → 1 ⇄ 2 ⇄ 3
+    head = tail = None
+    for v in values:
+        node = ListNode(v, prev=tail)
+        if tail is not None:
+            tail.next = node
+        else:
+            head = node
+        tail = node
+    return head
+
+def print_list(head):                # 1 ⇄ 2 ⇄ 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
+
+head = build_list(ast.literal_eval(input()))   # the test case's values
+
+if head is None or head.next is None:
+    print_list(head)
+else:
     odd = head                       # positions 1, 3, 5 …
     even = head.next                 # positions 2, 4 …
     even_head = even
@@ -44,19 +66,77 @@ def odd_even(head):
         node.prev = prev
         prev = node
         node = node.next
-    return head
+    print_list(head)
+```
 
-nodes = [Node(v) for v in (1, 2, 3, 4, 5)]
-for i in range(4):
-    nodes[i].next = nodes[i + 1]; nodes[i + 1].prev = nodes[i]
-head = odd_even(nodes[0])
+```java run viz=linked-list viz-root=head viz-kind=list-double
+import java.util.*;
 
-vals = []
-node = head
-while node:
-    vals.append(node.val)
-    node = node.next
-print(vals)                          # [1, 3, 5, 2, 4]
+public class Main {
+  static class ListNode {
+    int val; ListNode prev, next;
+    ListNode(int val) { this.val = val; }
+  }
+
+  public static void main(String[] args) {
+    ListNode head = buildList(parseIntArray(new Scanner(System.in).nextLine()));
+
+    if (head == null || head.next == null) { printList(head); return; }
+    ListNode odd = head, even = head.next, evenHead = even;
+    while (even != null && even.next != null) {
+      odd.next = even.next; odd = odd.next;
+      even.next = odd.next; even = even.next;
+    }
+    odd.next = evenHead;
+    ListNode prev = null, node = head;      // rebuild prev
+    while (node != null) { node.prev = prev; prev = node; node = node.next; }
+
+    printList(head);
+  }
+
+  static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 ⇄ 2 ⇄ 3
+    ListNode head = null, tail = null;
+    for (int v : values) {
+      ListNode node = new ListNode(v);
+      node.prev = tail;
+      if (tail != null) tail.next = node;
+      else head = node;
+      tail = node;
+    }
+    return head;
+  }
+
+  static void printList(ListNode head) {         // 1 ⇄ 2 ⇄ 3 → [1, 2, 3]
+    List<Integer> out = new ArrayList<>();
+    for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+    System.out.println(out);
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's values
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "values", "label": "values", "type": "int[]", "placeholder": "[1, 2, 3, 4, 5]" }
+  ],
+  "cases": [
+    { "args": { "values": "[1, 2, 3, 4, 5]" }, "expected": "[1, 3, 5, 2, 4]" },
+    { "args": { "values": "[1, 2, 3, 4, 5, 6]" }, "expected": "[1, 3, 5, 2, 4, 6]" },
+    { "args": { "values": "[1, 2]" }, "expected": "[1, 2]" },
+    { "args": { "values": "[1]" }, "expected": "[1]" },
+    { "args": { "values": "[]" }, "expected": "[]" }
+  ]
+}
 ```
 
 ## How It Works
@@ -97,14 +177,123 @@ Because nothing in the reorder phase ever *reads* `prev` — it only follows and
 
 ## Your Turn
 
-The reusable doubly odd/even-position reorder:
+The reusable doubly odd/even-position reorder — `odd_even(head)` returns the new head:
 
 ```python run viz=linked-list viz-root=head viz-kind=list-double
-class Node:
-    def __init__(self, val):
+import ast
+
+class ListNode:
+    def __init__(self, val, prev=None, next=None):
         self.val = val
-        self.prev = None
-        self.next = None
+        self.prev = prev
+        self.next = next
+
+def odd_even(head):
+    # Your code goes here — build odd/even chains on next, concatenate,
+    # then rebuild every prev in one final sweep.
+    pass
+
+def build_list(values):              # [1, 2, 3] → 1 ⇄ 2 ⇄ 3
+    head = tail = None
+    for v in values:
+        node = ListNode(v, prev=tail)
+        if tail is not None:
+            tail.next = node
+        else:
+            head = node
+        tail = node
+    return head
+
+def print_list(head):                # 1 ⇄ 2 ⇄ 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
+
+head = build_list(ast.literal_eval(input()))   # the test case's values
+print_list(odd_even(head))
+```
+
+```java run viz=linked-list viz-root=head viz-kind=list-double
+import java.util.*;
+
+public class Main {
+  static class ListNode {
+    int val; ListNode prev, next;
+    ListNode(int val) { this.val = val; }
+  }
+
+  static ListNode oddEven(ListNode head) {
+    // Your code goes here — build odd/even chains on next, concatenate,
+    // then rebuild every prev in one final sweep.
+    return null;
+  }
+
+  public static void main(String[] args) {
+    ListNode head = buildList(parseIntArray(new Scanner(System.in).nextLine()));
+    printList(oddEven(head));
+  }
+
+  static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 ⇄ 2 ⇄ 3
+    ListNode head = null, tail = null;
+    for (int v : values) {
+      ListNode node = new ListNode(v);
+      node.prev = tail;
+      if (tail != null) tail.next = node;
+      else head = node;
+      tail = node;
+    }
+    return head;
+  }
+
+  static void printList(ListNode head) {         // 1 ⇄ 2 ⇄ 3 → [1, 2, 3]
+    List<Integer> out = new ArrayList<>();
+    for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+    System.out.println(out);
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's values
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "values", "label": "values", "type": "int[]", "placeholder": "[1, 2, 3, 4, 5, 6]" }
+  ],
+  "cases": [
+    { "args": { "values": "[1, 2, 3, 4, 5, 6]" }, "expected": "[1, 3, 5, 2, 4, 6]" },
+    { "args": { "values": "[1, 2, 3, 4, 5]" }, "expected": "[1, 3, 5, 2, 4]" },
+    { "args": { "values": "[1, 2]" }, "expected": "[1, 2]" },
+    { "args": { "values": "[1]" }, "expected": "[1]" },
+    { "args": { "values": "[]" }, "expected": "[]" },
+    { "args": { "values": "[2, 1, 3, 4, 8]" }, "expected": "[2, 3, 8, 1, 4]" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Guard the trivials, then grow odd and even chains simultaneously on the `next` pointer alone — no `prev` is touched during the weave. After concatenating with `odd.next = even_head`, one linear sweep rebuilds every `prev` from scratch. A single write-site for `prev` means the only way `prev` can be wrong is if `next` is wrong — and `next` was set by the same algorithm as the singly version, which you already trust.
+
+```python solution time=O(n) space=O(1)
+import ast
+
+class ListNode:
+    def __init__(self, val, prev=None, next=None):
+        self.val = val
+        self.prev = prev
+        self.next = next
 
 def odd_even(head):
     if head is None or head.next is None:
@@ -123,46 +312,90 @@ def odd_even(head):
         node = node.next
     return head
 
-nodes = [Node(v) for v in (1, 2, 3, 4, 5, 6)]
-for i in range(5):
-    nodes[i].next = nodes[i + 1]; nodes[i + 1].prev = nodes[i]
-out, node = [], odd_even(nodes[0])
-while node:
-    out.append(node.val); node = node.next
-print(out)                           # [1, 3, 5, 2, 4, 6]
+def build_list(values):              # [1, 2, 3] → 1 ⇄ 2 ⇄ 3
+    head = tail = None
+    for v in values:
+        node = ListNode(v, prev=tail)
+        if tail is not None:
+            tail.next = node
+        else:
+            head = node
+        tail = node
+    return head
+
+def print_list(head):                # 1 ⇄ 2 ⇄ 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
+
+head = build_list(ast.literal_eval(input()))   # the test case's values
+print_list(odd_even(head))
 ```
 
-```java run viz=linked-list viz-root=head viz-kind=list-double
-public class Main {
-  static class Node { int val; Node prev, next; Node(int v){ val = v; } }
+```java solution
+import java.util.*;
 
-  static Node oddEven(Node head) {
+public class Main {
+  static class ListNode {
+    int val; ListNode prev, next;
+    ListNode(int val) { this.val = val; }
+  }
+
+  static ListNode oddEven(ListNode head) {
     if (head == null || head.next == null) return head;
-    Node odd = head, even = head.next, evenHead = even;
+    ListNode odd = head, even = head.next, evenHead = even;
     while (even != null && even.next != null) {
       odd.next = even.next; odd = odd.next;
       even.next = odd.next; even = even.next;
     }
     odd.next = evenHead;
-    Node prev = null, node = head;      // rebuild prev
+    ListNode prev = null, node = head;      // rebuild prev
     while (node != null) { node.prev = prev; prev = node; node = node.next; }
     return head;
   }
 
   public static void main(String[] args) {
-    Node[] n = new Node[6];
-    for (int i = 0; i < 6; i++) n[i] = new Node(i + 1);
-    for (int i = 0; i < 5; i++) { n[i].next = n[i + 1]; n[i + 1].prev = n[i]; }
-    StringBuilder sb = new StringBuilder("[");
-    for (Node c = oddEven(n[0]); c != null; c = c.next) sb.append(c.val).append(c.next != null ? ", " : "");
-    System.out.println(sb.append("]"));   // [1, 3, 5, 2, 4, 6]
+    ListNode head = buildList(parseIntArray(new Scanner(System.in).nextLine()));
+    printList(oddEven(head));
+  }
+
+  static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 ⇄ 2 ⇄ 3
+    ListNode head = null, tail = null;
+    for (int v : values) {
+      ListNode node = new ListNode(v);
+      node.prev = tail;
+      if (tail != null) tail.next = node;
+      else head = node;
+      tail = node;
+    }
+    return head;
+  }
+
+  static void printList(ListNode head) {         // 1 ⇄ 2 ⇄ 3 → [1, 2, 3]
+    List<Integer> out = new ArrayList<>();
+    for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+    System.out.println(out);
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's values
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
   }
 }
 ```
 
-Drill the family in **Practice** — [Relocate Node](/cortex/data-structures-and-algorithms/linear-structures/doubly-linked-list/pattern-reorder/problems/relocate-node), [Parity Order](/cortex/data-structures-and-algorithms/linear-structures/doubly-linked-list/pattern-reorder/problems/parity-order), [Value Partition](/cortex/data-structures-and-algorithms/linear-structures/doubly-linked-list/pattern-reorder/problems/value-partition), and [Shuffle List](/cortex/data-structures-and-algorithms/linear-structures/doubly-linked-list/pattern-reorder/problems/shuffle-list).
+</details>
 
 ## Reflect & Connect
+
+Drill the family in **Practice** — [Relocate Node](/cortex/data-structures-and-algorithms/linear-structures/doubly-linked-list/pattern-reorder/problems/relocate-node), [Parity Order](/cortex/data-structures-and-algorithms/linear-structures/doubly-linked-list/pattern-reorder/problems/parity-order), [Value Partition](/cortex/data-structures-and-algorithms/linear-structures/doubly-linked-list/pattern-reorder/problems/value-partition), and [Shuffle List](/cortex/data-structures-and-algorithms/linear-structures/doubly-linked-list/pattern-reorder/problems/shuffle-list).
 
 Reorder on a doubly list is the singly technique plus one disciplined repair pass:
 

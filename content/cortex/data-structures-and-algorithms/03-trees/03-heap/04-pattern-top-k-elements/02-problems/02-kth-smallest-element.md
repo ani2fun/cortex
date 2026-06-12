@@ -1,9 +1,11 @@
 ---
 title: "Kth Smallest Element"
-summary: "Given an array arr and a positive integer k, return the K-th smallest element. Use a heap."
+summary: "Given an integer array and k, return the kth smallest element using a size-k max-heap."
 prereqs:
   - 04-pattern-top-k-elements/01-pattern
 difficulty: easy
+kind: problem
+topics: [top-k-elements, heap]
 ---
 
 # Kth smallest element
@@ -11,6 +13,8 @@ difficulty: easy
 ## Problem Statement
 
 Given an array `arr` and a positive integer `k`, return the K-th smallest element. Use a heap.
+
+## Examples
 
 ### Example 1
 
@@ -27,9 +31,75 @@ Given an array `arr` and a positive integer `k`, return the K-th smallest elemen
 > - **Input:** `arr = [7, 5, 9]`, `k = 3`
 > - **Output:** `9`
 
+## Constraints
+
+- `1 ≤ k ≤ arr.length ≤ 10^4`
+- `-10^4 ≤ arr[i] ≤ 10^4`
+
+```python run
+import ast
+import heapq
+
+class Solution:
+    def kth_smallest_element(self, arr, k):
+        # Your code goes here
+        pass
+
+arr = ast.literal_eval(input())
+k = int(input())
+print(Solution().kth_smallest_element(arr, k))
+```
+
+```java run
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int kthSmallestElement(int[] arr, int k) {
+            // Your code goes here
+            return 0;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().kthSmallestElement(arr, k));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[5, 4, 2, 8]" },
+    { "id": "k", "label": "k", "type": "int", "placeholder": "2" }
+  ],
+  "cases": [
+    { "args": { "arr": "[5, 4, 2, 8]", "k": "2" }, "expected": "4" },
+    { "args": { "arr": "[1, 2, 3, 4, 5]", "k": "5" }, "expected": "5" },
+    { "args": { "arr": "[7, 5, 9]", "k": "3" }, "expected": "9" },
+    { "args": { "arr": "[1]", "k": "1" }, "expected": "1" },
+    { "args": { "arr": "[3, 1]", "k": "1" }, "expected": "1" },
+    { "args": { "arr": "[3, 1]", "k": "2" }, "expected": "3" },
+    { "args": { "arr": "[5, 5, 5, 5]", "k": "2" }, "expected": "5" },
+    { "args": { "arr": "[10, 1, 2, 9, 3]", "k": "3" }, "expected": "3" }
+  ]
+}
+```
+
 <details>
 <summary><h2>The Strategy</h2></summary>
-
 
 The mirror image of the previous problem. To track the K *smallest* values, use a **max-heap** of size K — its top is the largest of the bottom-K, which (after we've seen everything) is the K-th smallest in the array.
 
@@ -37,25 +107,21 @@ The mirror image of the previous problem. To track the K *smallest* values, use 
 <details>
 <summary><h2>The Solution</h2></summary>
 
-
-
-```python run viz=array viz-root=max_heap viz-kind=heap
-from typing import List
+```python solution time=O(n log k) space=O(k)
+import ast
 import heapq
 
 class Solution:
-    def kth_smallest_element(self, arr: List[int], k: int) -> int:
+    def kth_smallest_element(self, arr, k):
 
         # Create a max heap to store the k smallest elements
-        max_heap: List[int] = []
+        max_heap = []
 
         # Populate the max heap with the first k elements
         for i in range(k):
 
             # Push negative numbers to simulate max heap
-            heapq.heappush(
-                max_heap, -arr[i]
-            )
+            heapq.heappush(max_heap, -arr[i])
 
         # Compare the remaining elements with the top of the max heap
         for i in range(k, len(arr)):
@@ -70,21 +136,12 @@ class Solution:
         # The top of the max heap will be the kth smallest element
         return -max_heap[0]
 
-
-# Examples from the problem statement
-print(Solution().kth_smallest_element([5, 4, 2, 8], 2))       # 4
-print(Solution().kth_smallest_element([1, 2, 3, 4, 5], 5))    # 5
-print(Solution().kth_smallest_element([7, 5, 9], 3))           # 9
-
-# Edge cases
-print(Solution().kth_smallest_element([1], 1))                 # 1 — single element
-print(Solution().kth_smallest_element([3, 1], 1))              # 1 — smallest of two
-print(Solution().kth_smallest_element([3, 1], 2))              # 3 — largest of two
-print(Solution().kth_smallest_element([5, 5, 5, 5], 2))        # 5 — all same
-print(Solution().kth_smallest_element([10, 1, 2, 9, 3], 3))    # 3 — sorted: [1,2,3,9,10]
+arr = ast.literal_eval(input())
+k = int(input())
+print(Solution().kth_smallest_element(arr, k))
 ```
 
-```java run viz=array viz-root=maxHeap viz-kind=heap
+```java solution
 import java.util.*;
 
 public class Main {
@@ -119,17 +176,19 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().kthSmallestElement(new int[]{5, 4, 2, 8}, 2));       // 4
-        System.out.println(new Solution().kthSmallestElement(new int[]{1, 2, 3, 4, 5}, 5));    // 5
-        System.out.println(new Solution().kthSmallestElement(new int[]{7, 5, 9}, 3));           // 9
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().kthSmallestElement(arr, k));
+    }
 
-        // Edge cases
-        System.out.println(new Solution().kthSmallestElement(new int[]{1}, 1));                 // 1 — single element
-        System.out.println(new Solution().kthSmallestElement(new int[]{3, 1}, 1));              // 1 — smallest of two
-        System.out.println(new Solution().kthSmallestElement(new int[]{3, 1}, 2));              // 3 — largest of two
-        System.out.println(new Solution().kthSmallestElement(new int[]{5, 5, 5, 5}, 2));        // 5 — all same
-        System.out.println(new Solution().kthSmallestElement(new int[]{10, 1, 2, 9, 3}, 3));    // 3
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

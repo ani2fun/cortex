@@ -4,6 +4,8 @@ summary: "Given a string of letters and [/] brackets, reverse the substring insi
 prereqs:
   - 12-pattern-linear-evaluation/01-pattern
 difficulty: medium
+kind: problem
+topics: [linear-evaluation, stack]
 ---
 
 # Bracketed Reversal
@@ -51,11 +53,76 @@ and the stack joins back to the original string.
 **Example 4**
 ```
 Input:  s = "[[ab]]"
-Output: "ab"
-Explanation: the inner "[ab]" reverses to "ba", then the outer pair
-reverses "ba" back to "ab" — a double reversal cancels out.
+Output: "ba"
+Explanation: the inner "[ab]" pops 'b' then 'a' (append-while-popping
+builds "ba"), giving the token "ba". The outer ']' then pops "ba" as one
+string token, building "ba" as a single unit. Net result: "ba".
 ```
 
+```quiz
+{
+  "prompt": "What does ']' do in the bracketed-reversal stack algorithm?",
+  "input": "stack so far: [ b c d",
+  "options": [
+    "Pushes ']' onto the stack",
+    "Pops characters until '[', appending as it pops, then pushes the reversed substring",
+    "Pops all characters and reverses the whole string",
+    "Discards everything up to '[' without building a result"
+  ],
+  "answer": "Pops characters until '[', appending as it pops, then pushes the reversed substring"
+}
+```
+
+## Constraints
+
+- `1 ≤ s.length ≤ 3000`
+- `s` consists of lowercase English letters and `[`/`]`
+- Brackets are balanced and properly nested
+
+```python run
+class Solution:
+    def bracketed_reversal(self, s: str) -> str:
+        # Your code goes here — push letters and '['; on ']', pop-while-
+        # appending (builds reversed substring), discard '[', push it back.
+        return s
+
+s = input()
+print(Solution().bracketed_reversal(s))
+```
+
+```java run
+import java.util.*;
+public class Main {
+    static class Solution {
+        public String bracketedReversal(String s) {
+            // Your code goes here — push letters and '['; on ']', pop-while-
+            // appending (builds reversed substring), discard '[', push it back.
+            return s;
+        }
+    }
+    public static void main(String[] args) {
+        String s = new Scanner(System.in).nextLine();
+        System.out.println(new Solution().bracketedReversal(s));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "s", "type": "string", "placeholder": "a[bcd]e" }
+  ],
+  "cases": [
+    { "args": { "s": "a[bcd]e" }, "expected": "adcbe" },
+    { "args": { "s": "abcd[ef[gh]i]j" }, "expected": "abcdihgfej" },
+    { "args": { "s": "abcdefghij" }, "expected": "abcdefghij" },
+    { "args": { "s": "[a]" }, "expected": "a" },
+    { "args": { "s": "[ab]" }, "expected": "ba" },
+    { "args": { "s": "[[ab]]" }, "expected": "ba" },
+    { "args": { "s": "x[y[z]]" }, "expected": "xzy" }
+  ]
+}
+```
 
 <details>
 <summary><h2>Intuition</h2></summary>
@@ -125,146 +192,68 @@ flowchart LR
 
 </details>
 <details>
-<summary><h2>Solution</h2></summary>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-
-```python run viz=array viz-root=stack viz-kind=stack
-from typing import List
-
+```python solution time=O(N) space=O(N)
 class Solution:
     def bracketed_reversal(self, s: str) -> str:
-
-        # Stack to store characters and decoded parts
-        stack: List[str] = []
-
-        i: int = 0
+        stack = []
+        i = 0
         while i < len(s):
-
-            # If the character is '[' or a letter, push it as a string
             if s[i] == "[" or s[i].isalpha():
                 stack.append(s[i])
-
-            # If the character is ']', it indicates the end of a
-            # bracketed section
             else:
-
-                # Variable to store the substring inside the brackets
                 reversed_str = ""
-
-                # Pop elements from the stack until we reach '['
                 while stack and stack[-1] != "[":
-
-                    # Build substring in reversed order
                     reversed_str += stack.pop()
-
-                # Remove the '[' from the stack
                 if stack:
                     stack.pop()
-
-                # Push the reversed substring back onto the stack
                 stack.append(reversed_str)
-
             i += 1
-
-        # Return the final decoded string
         return "".join(stack)
 
-
-# Examples from the problem statement
-print(Solution().bracketed_reversal("a[bcd]e"))       # adcbe
-print(Solution().bracketed_reversal("abcd[ef[gh]i]j")) # abcdihgfej
-print(Solution().bracketed_reversal("abcdefghij"))     # abcdefghij
-
-# Edge cases
-print(Solution().bracketed_reversal(""))               # ''
-print(Solution().bracketed_reversal("[a]"))            # a
-print(Solution().bracketed_reversal("[ab]"))           # ba
-print(Solution().bracketed_reversal("[[ab]]"))         # ab — double nesting reverses back
-print(Solution().bracketed_reversal("x[y[z]]"))        # xzy
+s = input()
+print(Solution().bracketed_reversal(s))
 ```
 
-```java run viz=array viz-root=stack viz-kind=stack
+```java solution
 import java.util.*;
-
 public class Main {
     static class Solution {
         public String bracketedReversal(String s) {
-
-            // Stack to store characters and decoded parts
             Stack<String> stack = new Stack<>();
-
             for (int i = 0; i < s.length(); i++) {
-
-                // If the character is '[' or a letter, push it as a string
                 if (s.charAt(i) == '[' || Character.isLetter(s.charAt(i))) {
                     stack.push(String.valueOf(s.charAt(i)));
-                }
-
-                // If the character is ']', it indicates the end of a
-                // bracketed section
-                else {
-
-                    // Variable to store the substring inside the brackets
+                } else {
                     StringBuilder reversedStr = new StringBuilder();
-
-                    // Pop elements from the stack until we reach '['
                     while (!stack.isEmpty() && !stack.peek().equals("[")) {
-
-                        // Build substring in reversed order
                         reversedStr.append(stack.pop());
                     }
-
-                    // Remove the '[' from the stack
                     if (!stack.isEmpty()) {
                         stack.pop();
                     }
-
-                    // Push the reversed substring back onto the stack
                     stack.push(reversedStr.toString());
                 }
             }
-
-            // Collect the final result by popping from the stack
             StringBuilder result = new StringBuilder();
             while (!stack.isEmpty()) {
-
-                // Prepend the elements to the result string
                 result.insert(0, stack.pop());
             }
-
-            // Return the final decoded string
             return result.toString();
         }
     }
-
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().bracketedReversal("a[bcd]e"));        // adcbe
-        System.out.println(new Solution().bracketedReversal("abcd[ef[gh]i]j")); // abcdihgfej
-        System.out.println(new Solution().bracketedReversal("abcdefghij"));      // abcdefghij
-
-        // Edge cases
-        System.out.println(new Solution().bracketedReversal(""));                // ''
-        System.out.println(new Solution().bracketedReversal("[a]"));             // a
-        System.out.println(new Solution().bracketedReversal("[ab]"));            // ba
-        System.out.println(new Solution().bracketedReversal("[[ab]]"));          // ab
-        System.out.println(new Solution().bracketedReversal("x[y[z]]"));         // xzy
+        String s = new Scanner(System.in).nextLine();
+        System.out.println(new Solution().bracketedReversal(s));
     }
 }
 ```
 
-</details>
-<details>
-<summary><h2>Dry Run</h2></summary>
-
-
-Walk Example 1 — `s = "a[bcd]e"`. The stack holds characters and `[`; on `]`, pop-while-appending builds the reversed substring:
+**Dry Run — `s = "a[bcd]e"`**
 
 ```
-s = "a[bcd]e"
-
-'a'  letter → push          → stack (bottom→top): a
+'a'  letter → push          → stack: a
 '['  marker → push          → stack: a [
 'b'  letter → push          → stack: a [ b
 'c'  letter → push          → stack: a [ b c
@@ -276,41 +265,22 @@ s = "a[bcd]e"
 end of input → concatenate → "a" + "dcb" + "e" = "adcbe" ✓
 ```
 
-A trace on `s = "x[y[z]]"` shows nesting — the inner `]` folds before the outer:
-
-```
-'x' push → x ;  '[' push → x [ ;  'y' push → x [ y ;  '[' push → x [ y [ ;  'z' push → x [ y [ z
-']' pop z → "z"; discard '['; push "z"  → stack: x [ y z
-']' pop "z","y" → "zy"; discard '['; push "zy"  → stack: x zy
-
-end of input → "x" + "zy" = "xzy" ✓
-```
-
-</details>
-<details>
-<summary><h2>Complexity Analysis</h2></summary>
-
+**Complexity**
 
 | Measure | Value | Why |
 |---|---|---|
 | Time  | **O(N)** | One pass over `N` characters; each character is pushed once and popped at most once during a fold. |
-| Space | **O(N)** | The stack holds the unfolded prefix; a bracket-free string pushes every character before any fold. |
+| Space | **O(N)** | The stack holds the unfolded prefix; a bracket-free string pushes every character. |
 
-The time is `O(N)` where `N` is the string length: each character is pushed once and contributes to at most one fold when its enclosing `]` arrives, so total push/pop work is linear. The space is `O(N)`: the stack stores every character not yet folded, and a string with no brackets (or one giant group) holds the whole input before the final concatenation. Building each reversed substring reuses characters already on the stack, so it adds no extra order of space.
-
-</details>
-<details>
-<summary><h2>Edge Cases</h2></summary>
-
+**Edge Cases**
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
-| Empty string | `""` | `''` | Nothing to scan; the stack stays empty and joins to the empty string. |
-| Single pair | `[a]` | `a` | One character reverses to itself; the brackets are stripped. |
-| Two-char reversal | `[ab]` | `ba` | `a` then `b` are pushed; `]` pops `b` then `a`, building `ba`. |
-| Double nesting | `[[ab]]` | `ab` | The inner pair reverses `ab` to `ba`, the outer reverses `ba` back to `ab`. |
+| Single pair | `[a]` | `a` | One character reverses to itself; brackets stripped. |
+| Two-char reversal | `[ab]` | `ba` | `a` then `b` pushed; `]` pops `b` then `a`, building `ba`. |
+| Double nesting | `[[ab]]` | `ba` | Inner folds `ab` to `ba` as one string token; outer folds `ba` as a single unit. |
 | Nested with prefix | `x[y[z]]` | `xzy` | `z` folds to `z`, then `y z` folds to `zy`; `x` prefixes it. |
-| No brackets | `abcdefghij` | `abcdefghij` | Every letter pushes and none folds, so the join is the original string. |
+| No brackets | `abcdefghij` | `abcdefghij` | Every letter pushes and none folds; join is the original string. |
 
 </details>
 <details>

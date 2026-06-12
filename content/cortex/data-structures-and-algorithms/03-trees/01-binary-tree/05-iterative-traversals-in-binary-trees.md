@@ -18,15 +18,12 @@ The fix is to notice that **the recursion was always using a stack** — we just
 Preorder and inorder, recursion-free. The whole tree's traversal state is the explicit `stack` list:
 
 ```python run viz=binary-tree viz-root=root
+import json
+from collections import deque
+
 class TreeNode:
     def __init__(self, val=0, left=None, right=None):
         self.val, self.left, self.right = val, left, right
-#        1
-#       / \
-#      2   3
-#     / \
-#    4   5
-root = TreeNode(1, TreeNode(2, TreeNode(4), TreeNode(5)), TreeNode(3))
 
 def preorder_iter(root):
     out, stack = [], ([root] if root else [])
@@ -47,8 +44,28 @@ def inorder_iter(root):
         cur = cur.right                  # then turn into its right subtree
     return out
 
-print("preorder (iterative):", preorder_iter(root))   # [1, 2, 4, 5, 3]
-print("inorder  (iterative):", inorder_iter(root))    # [4, 2, 5, 1, 3]
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
+
+root = build_tree(json.loads(input()))
+
+print("preorder (iterative):", preorder_iter(root))
+print("inorder  (iterative):", inorder_iter(root))
 ```
 
 ```java run viz=binary-tree viz-root=root
@@ -83,11 +100,51 @@ public class Main {
         }
         return out;
     }
+
+    static TreeNode buildTree(Integer[] values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length) { Integer v = values[i++]; if (v != null) { node.left = new TreeNode(v); queue.add(node.left); } }
+            if (i < values.length) { Integer v = values[i++]; if (v != null) { node.right = new TreeNode(v); queue.add(node.right); } }
+        }
+        return root;
+    }
+
+    static Integer[] parseIntegerArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new Integer[0];
+        String[] parts = inner.split(",");
+        Integer[] out = new Integer[parts.length];
+        for (int i = 0; i < parts.length; i++)
+            out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+        return out;
+    }
+
     public static void main(String[] a) {
-        TreeNode root = new TreeNode(1, new TreeNode(2, new TreeNode(4), new TreeNode(5)), new TreeNode(3));
+        Scanner sc = new Scanner(System.in);
+        TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
         System.out.println("preorder (iterative): " + preorderIter(root));
         System.out.println("inorder  (iterative): " + inorderIter(root));
     }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[1, 2, 3, 4, 5]" }
+  ],
+  "cases": [
+    { "args": { "root": "[1, 2, 3, 4, 5]" }, "expected": "preorder (iterative): [1, 2, 4, 5, 3]\ninorder  (iterative): [4, 2, 5, 1, 3]" },
+    { "args": { "root": "[1, 2, 3]" }, "expected": "preorder (iterative): [1, 2, 3]\ninorder  (iterative): [2, 1, 3]" },
+    { "args": { "root": "[1]" }, "expected": "preorder (iterative): [1]\ninorder  (iterative): [1]" },
+    { "args": { "root": "[1, null, 2, null, 3]" }, "expected": "preorder (iterative): [1, 2, 3]\ninorder  (iterative): [1, 2, 3]" }
+  ]
 }
 ```
 
@@ -162,10 +219,12 @@ Postorder (`left, right, visit` — children before parent) is the order that fr
 **Predict:** for the tree `1 → (2 → 4, 5), (3)`, what is the postorder? (It should match the recursive postorder from the previous lesson.)
 
 ```python run viz=binary-tree viz-root=root
+import json
+from collections import deque
+
 class TreeNode:
     def __init__(self, val=0, left=None, right=None):
         self.val, self.left, self.right = val, left, right
-root = TreeNode(1, TreeNode(2, TreeNode(4), TreeNode(5)), TreeNode(3))
 
 def postorder_iter(root):
     if root is None: return []
@@ -179,7 +238,26 @@ def postorder_iter(root):
         out.append(s2.pop().val)
     return out
 
-print("postorder (iterative):", postorder_iter(root))   # [4, 5, 2, 3, 1]
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
+
+root = build_tree(json.loads(input()))
+print("postorder (iterative):", postorder_iter(root))
 ```
 
 ```java run viz=binary-tree viz-root=root
@@ -204,10 +282,50 @@ public class Main {
         while (!s2.isEmpty()) out.add(s2.pop().val); // s2 popped = postorder
         return out;
     }
+
+    static TreeNode buildTree(Integer[] values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length) { Integer v = values[i++]; if (v != null) { node.left = new TreeNode(v); queue.add(node.left); } }
+            if (i < values.length) { Integer v = values[i++]; if (v != null) { node.right = new TreeNode(v); queue.add(node.right); } }
+        }
+        return root;
+    }
+
+    static Integer[] parseIntegerArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new Integer[0];
+        String[] parts = inner.split(",");
+        Integer[] out = new Integer[parts.length];
+        for (int i = 0; i < parts.length; i++)
+            out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+        return out;
+    }
+
     public static void main(String[] a) {
-        TreeNode root = new TreeNode(1, new TreeNode(2, new TreeNode(4), new TreeNode(5)), new TreeNode(3));
+        Scanner sc = new Scanner(System.in);
+        TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
         System.out.println("postorder (iterative): " + postorderIter(root));
     }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[1, 2, 3, 4, 5]" }
+  ],
+  "cases": [
+    { "args": { "root": "[1, 2, 3, 4, 5]" }, "expected": "postorder (iterative): [4, 5, 2, 3, 1]" },
+    { "args": { "root": "[1, 2, 3]" }, "expected": "postorder (iterative): [2, 3, 1]" },
+    { "args": { "root": "[1]" }, "expected": "postorder (iterative): [1]" },
+    { "args": { "root": "[1, null, 2, null, 3]" }, "expected": "postorder (iterative): [3, 2, 1]" }
+  ]
 }
 ```
 

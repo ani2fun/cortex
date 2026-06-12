@@ -20,20 +20,17 @@ The recognition trigger is anything phrased "in sorted order," "k-th smallest/la
 
 ## See It Work
 
-Find the **k-th smallest** key with a lazy in-order walk that stops as soon as it reaches `k`. Run it.
+Find the **k-th smallest** key with a lazy in-order walk that stops as soon as it reaches `k`. Pick a case and **Run** it.
 
 ```python run viz=binary-tree viz-root=root
-class TreeNode:
-    def __init__(self, val):
-        self.val = val
-        self.left = None
-        self.right = None
+import json
+from collections import deque
 
-def insert(root, val):
-    if root is None: return TreeNode(val)
-    if val < root.val: root.left = insert(root.left, val)
-    elif val > root.val: root.right = insert(root.right, val)
-    return root
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
 
 def kth_smallest(root, k):
     stack, node = [], root
@@ -46,12 +43,106 @@ def kth_smallest(root, k):
         if k == 0:                         # reached the k-th → stop early
             return node.val
         node = node.right
-    return None
+    return -1
 
-root = None
-for v in [5, 3, 8, 1, 4, 7, 9]:
-    root = insert(root, v)
-print(kth_smallest(root, 1), kth_smallest(root, 4), kth_smallest(root, 7))   # 1 5 9
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
+
+root = build_tree(json.loads(input()))   # the test case's level-order values
+k = int(input())
+print(kth_smallest(root, k))
+```
+
+```java run viz=binary-tree viz-root=root
+import java.util.*;
+
+public class Main {
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
+  }
+
+  static int kthSmallest(TreeNode root, int k) {
+    Deque<TreeNode> stack = new ArrayDeque<>();
+    TreeNode node = root;
+    while (!stack.isEmpty() || node != null) {
+      while (node != null) { stack.push(node); node = node.left; }
+      node = stack.pop();
+      if (--k == 0) return node.val;
+      node = node.right;
+    }
+    return -1;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+    int k = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(kthSmallest(root, k));
+  }
+
+  static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
+    }
+    return root;
+  }
+
+  // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[5, 3, 8, 1, 4, 7, 9]" },
+    { "id": "k", "label": "k", "type": "int", "placeholder": "1" }
+  ],
+  "cases": [
+    { "args": { "root": "[5, 3, 8, 1, 4, 7, 9]", "k": "1" }, "expected": "1" },
+    { "args": { "root": "[5, 3, 8, 1, 4, 7, 9]", "k": "4" }, "expected": "5" },
+    { "args": { "root": "[5, 3, 8, 1, 4, 7, 9]", "k": "7" }, "expected": "9" },
+    { "args": { "root": "[4, 2, 6, 1, 3, 5, 7]", "k": "3" }, "expected": "3" },
+    { "args": { "root": "[10]", "k": "1" }, "expected": "10" }
+  ]
+}
 ```
 
 ## How It Works
@@ -102,20 +193,153 @@ Because in-order *delivers* the keys already sorted, so the only comparisons tho
 k-th smallest plus validate-BST, both on one in-order walk:
 
 ```python run viz=binary-tree viz-root=root
+import json
+from collections import deque
+
 class TreeNode:
     def __init__(self, val, left=None, right=None):
-        self.val = val; self.left = left; self.right = right
+        self.val = val
+        self.left = left
+        self.right = right
+
+def kth_smallest(root, k):
+    # Your code goes here — iterative in-order (explicit stack); count down to k;
+    # return node.val when k hits 0. Return -1 if tree has fewer than k nodes.
+    return -1
+
+def is_valid_bst(root):
+    # Your code goes here — iterative in-order; track prev value; return False
+    # the moment node.val <= prev. Return True if all pairs pass.
+    return True
+
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
+
+root = build_tree(json.loads(input()))   # the test case's level-order values
+k = int(input())
+print(kth_smallest(root, k))
+print("true" if is_valid_bst(root) else "false")
+```
+
+```java run viz=binary-tree viz-root=root
+import java.util.*;
+
+public class Main {
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
+  }
+
+  static int kthSmallest(TreeNode root, int k) {
+    // Your code goes here — iterative in-order; count down; return val at k==0.
+    return -1;
+  }
+
+  static boolean isValidBST(TreeNode root) {
+    // Your code goes here — iterative in-order; Integer prev = null;
+    // return false if node.val <= prev at any step.
+    return true;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+    int k = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(kthSmallest(root, k));
+    System.out.println(isValidBST(root));
+  }
+
+  static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
+    }
+    return root;
+  }
+
+  // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[5, 3, 8, 1, 4, 7, 9]" },
+    { "id": "k", "label": "k", "type": "int", "placeholder": "2" }
+  ],
+  "cases": [
+    { "args": { "root": "[5, 3, 8, 1, 4, 7, 9]", "k": "2" }, "expected": "3\ntrue" },
+    { "args": { "root": "[5, 3, 8, 1, 4, 7, 9]", "k": "4" }, "expected": "5\ntrue" },
+    { "args": { "root": "[4, 2, 6, 1, 3, 5, 7]", "k": "3" }, "expected": "3\ntrue" },
+    { "args": { "root": "[5, 3, 8, 1, 6, 7, 9]", "k": "1" }, "expected": "1\nfalse" },
+    { "args": { "root": "[10]", "k": "1" }, "expected": "10\ntrue" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Both functions are the same iterative in-order skeleton — descend the left spine onto a stack, pop a node, act, move to the right child. For k-th smallest, decrement k on each pop and return when it hits zero. For validation, keep the previous value and return false the moment the current value is not strictly greater.
+
+```python solution time=O(n) space=O(h)
+import json
+from collections import deque
+
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
 
 def kth_smallest(root, k):
     stack, node = [], root
     while stack or node:
-        while node:
-            stack.append(node); node = node.left
-        node = stack.pop()
+        while node:                        # descend the left spine
+            stack.append(node)
+            node = node.left
+        node = stack.pop()                 # next key in sorted order
         k -= 1
-        if k == 0: return node.val
+        if k == 0:                         # reached the k-th → stop early
+            return node.val
         node = node.right
-    return None
+    return -1
 
 def is_valid_bst(root):
     prev = None
@@ -130,16 +354,50 @@ def is_valid_bst(root):
         node = node.right
     return True
 
-good = TreeNode(5, TreeNode(3, TreeNode(1), TreeNode(4)), TreeNode(8))
-bad  = TreeNode(5, TreeNode(3, TreeNode(1), TreeNode(6)), TreeNode(8))   # 6 > 5 on the left
-print(kth_smallest(good, 2), is_valid_bst(good), is_valid_bst(bad))   # 3 True False
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
+
+root = build_tree(json.loads(input()))   # the test case's level-order values
+k = int(input())
+print(kth_smallest(root, k))
+print("true" if is_valid_bst(root) else "false")
 ```
 
-```java run viz=binary-tree viz-root=root
+```java solution
 import java.util.*;
 
 public class Main {
-  static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } TreeNode(int v, TreeNode l, TreeNode r){ val=v; left=l; right=r; } }
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
+  }
+
+  static int kthSmallest(TreeNode root, int k) {
+    Deque<TreeNode> stack = new ArrayDeque<>();
+    TreeNode node = root;
+    while (!stack.isEmpty() || node != null) {
+      while (node != null) { stack.push(node); node = node.left; }
+      node = stack.pop();
+      if (--k == 0) return node.val;
+      node = node.right;
+    }
+    return -1;
+  }
 
   static boolean isValidBST(TreeNode root) {
     Deque<TreeNode> stack = new ArrayDeque<>();
@@ -153,17 +411,53 @@ public class Main {
     }
     return true;
   }
+
   public static void main(String[] args) {
-    TreeNode good = new TreeNode(5, new TreeNode(3, new TreeNode(1), new TreeNode(4)), new TreeNode(8));
-    TreeNode bad  = new TreeNode(5, new TreeNode(3, new TreeNode(1), new TreeNode(6)), new TreeNode(8));
-    System.out.println(isValidBST(good) + " " + isValidBST(bad));   // true false
+    Scanner sc = new Scanner(System.in);
+    TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+    int k = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(kthSmallest(root, k));
+    System.out.println(isValidBST(root));
+  }
+
+  static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
+    }
+    return root;
+  }
+
+  // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
   }
 }
 ```
 
-Drill the family in **Practice** — [Lowest Absolute Variance](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-sorted-traversal/problems/lowest-absolute-variance), [BST Validator](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-sorted-traversal/problems/bst-validator), [BST to Sorted Array](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-sorted-traversal/problems/bst-to-sorted-array), and [BST to DLL](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-sorted-traversal/problems/bst-to-dll).
+</details>
 
 ## Reflect & Connect
+
+Drill the family in **Practice** — [Lowest Absolute Variance](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-sorted-traversal/problems/lowest-absolute-variance), [BST Validator](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-sorted-traversal/problems/bst-validator), [BST to Sorted Array](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-sorted-traversal/problems/bst-to-sorted-array), and [BST to DLL](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-sorted-traversal/problems/bst-to-dll).
 
 Sorted traversal is the BST's defining superpower made into a pattern:
 

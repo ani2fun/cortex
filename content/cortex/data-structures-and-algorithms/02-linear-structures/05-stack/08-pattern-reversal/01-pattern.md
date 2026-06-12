@@ -15,19 +15,51 @@ A stack solves it without any index arithmetic. Its defining rule is **last-in, 
 
 ## See It Work
 
-Reverse `"hello"` into `"olleh"` by pushing each character, then popping them all. Run it, then **Visualise** the stack fill up and drain.
+Reverse a string by pushing each character, then popping them all. Pick a test case below, **Run** it, then **Visualise** the stack fill up and drain.
 
 > ▶ Run it, then click **Visualise** — characters push on in order; popping them off top-first yields the reverse.
 
 ```python run viz=array viz-root=stack viz-kind=stack
-text = "hello"
+import ast
+
+text = input()                 # the test case's text
 stack = []
-for ch in text:            # push every character — 'o' ends up on top
+for ch in text:                # push every character — last char ends up on top
     stack.append(ch)
 out = []
-while stack:               # pop them off: top (last pushed) comes first
+while stack:                   # pop them off: top (last pushed) comes first
     out.append(stack.pop())
-print("".join(out))        # olleh
+print("".join(out))
+```
+
+```java run viz=array viz-root=stack viz-kind=stack
+import java.util.*;
+
+public class Main {
+  public static void main(String[] args) {
+    String text = new Scanner(System.in).nextLine();  // the test case's text
+
+    List<Character> stack = new ArrayList<>();
+    for (char ch : text.toCharArray()) stack.add(ch);   // push every character
+    StringBuilder out = new StringBuilder();
+    while (!stack.isEmpty())
+      out.append(stack.remove(stack.size() - 1));        // pop top-first
+    System.out.println(out);
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "text", "label": "text", "type": "string", "placeholder": "hello" }
+  ],
+  "cases": [
+    { "args": { "text": "hello" }, "expected": "olleh" },
+    { "args": { "text": "abcde" }, "expected": "edcba" },
+    { "args": { "text": "racecar" }, "expected": "racecar" }
+  ]
+}
 ```
 
 ## How It Works
@@ -72,41 +104,119 @@ The original fourth `l` (pushed later, higher on the stack) pops out *first*, so
 
 ## Your Turn
 
-The reusable stack reversal:
+The reusable stack reversal applied to an integer array — push all elements, pop them back:
 
 ```python run viz=array viz-kind=stack
+import ast
+
 def reverse(seq):
     stack = []
     for x in seq:
-        stack.append(x)        # push
+        stack.append(x)       # push
     out = []
     while stack:
-        out.append(stack.pop())   # pop — LIFO reverses
+        out.append(stack.pop())  # pop — LIFO reverses
     return out
 
-print("".join(reverse("hello")))   # olleh
-print(reverse([1, 2, 3, 4, 5]))    # [5, 4, 3, 2, 1]
+arr = ast.literal_eval(input())     # the test case's arr
+print(reverse(arr))
 ```
 
 ```java run viz=array viz-kind=stack
 import java.util.*;
 
 public class Main {
-  static String reverse(String s) {
-    Deque<Character> stack = new ArrayDeque<>();
-    for (char c : s.toCharArray()) stack.push(c);   // push
-    StringBuilder sb = new StringBuilder();
-    while (!stack.isEmpty()) sb.append(stack.pop()); // pop — LIFO reverses
-    return sb.toString();
+  static List<Integer> reverse(int[] arr) {
+    List<Integer> stack = new ArrayList<>();
+    for (int x : arr) stack.add(x);                       // push
+    List<Integer> out = new ArrayList<>();
+    while (!stack.isEmpty())
+      out.add(stack.remove(stack.size() - 1));             // pop — LIFO reverses
+    return out;
   }
 
   public static void main(String[] args) {
-    System.out.println(reverse("hello"));   // olleh
+    int[] arr = parseIntArray(new Scanner(System.in).nextLine());
+    System.out.println(reverse(arr));
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's arr
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
   }
 }
 ```
 
-Drill the family in **Practice** — [Stack Inversion](/cortex/data-structures-and-algorithms/linear-structures/stack/pattern-reversal/problems/stack-inversion), [Reverse the String](/cortex/data-structures-and-algorithms/linear-structures/stack/pattern-reversal/problems/reverse-the-string), [Reverse an Array](/cortex/data-structures-and-algorithms/linear-structures/stack/pattern-reversal/problems/reverse-an-array), and [Reverse Word Order](/cortex/data-structures-and-algorithms/linear-structures/stack/pattern-reversal/problems/reverse-word-order).
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[1, 2, 3, 4, 5]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[1, 2, 3, 4, 5]" }, "expected": "[5, 4, 3, 2, 1]" },
+    { "args": { "arr": "[1, 2, 3, 4]" }, "expected": "[4, 3, 2, 1]" },
+    { "args": { "arr": "[]" }, "expected": "[]" },
+    { "args": { "arr": "[7]" }, "expected": "[7]" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+The load-then-unload shape: push every element in order (last element lands on top), then pop until empty (top-first pop = last-in-first-out = reversed order). No comparisons, no index arithmetic — LIFO does all the work. `O(n)` time (each element pushed once, popped once), `O(n)` space for the stack.
+
+```python solution time=O(n) space=O(n)
+import ast
+
+def reverse(seq):
+    stack = []
+    for x in seq:
+        stack.append(x)       # push
+    out = []
+    while stack:
+        out.append(stack.pop())  # pop — LIFO reverses
+    return out
+
+arr = ast.literal_eval(input())
+print(reverse(arr))
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+  static List<Integer> reverse(int[] arr) {
+    List<Integer> stack = new ArrayList<>();
+    for (int x : arr) stack.add(x);                       // push
+    List<Integer> out = new ArrayList<>();
+    while (!stack.isEmpty())
+      out.add(stack.remove(stack.size() - 1));             // pop — LIFO reverses
+    return out;
+  }
+
+  public static void main(String[] args) {
+    int[] arr = parseIntArray(new Scanner(System.in).nextLine());
+    System.out.println(reverse(arr));
+  }
+
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+</details>
 
 ## Reflect & Connect
 

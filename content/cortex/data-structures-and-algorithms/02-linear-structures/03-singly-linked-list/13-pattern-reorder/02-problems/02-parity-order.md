@@ -4,6 +4,8 @@ summary: "Group all odd-indexed nodes ahead of all even-indexed nodes in one pas
 prereqs:
   - 13-pattern-reorder/01-pattern
 difficulty: medium
+kind: problem
+topics: [reorder, singly-linked-list]
 ---
 
 # Parity order
@@ -37,8 +39,105 @@ Output: [1, 3, 2, 4]
 Explanation: Odd-indexed values [1, 3] come first, then even-indexed values [2, 4].
 ```
 
+## Constraints
 
----
+- `0 ≤ list length ≤ 10⁵`
+- `-10⁴ ≤ node.val ≤ 10⁴`
+- Reorder **in place** — `O(1)` extra space; node values must not be copied or rewritten
+- Indices are 1-based
+
+```python run viz=linked-list viz-root=head
+import ast
+
+class ListNode:
+    def __init__(self, val, next=None):
+        self.val = val
+        self.next = next
+
+class Solution:
+    def parity_order(self, head):
+        # Your code goes here
+        pass
+
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
+
+def print_list(head):                # 1 → 2 → 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
+
+head = build_list(ast.literal_eval(input()))   # the test case's head
+print_list(Solution().parity_order(head))
+```
+
+```java run viz=linked-list viz-root=head
+import java.util.*;
+
+public class Main {
+    static class ListNode {
+        int val; ListNode next;
+        ListNode(int val) { this.val = val; }
+        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+    }
+
+    static class Solution {
+        ListNode parityOrder(ListNode head) {
+            // Your code goes here
+            return null;
+        }
+    }
+
+    public static void main(String[] args) {
+        ListNode head = buildList(parseIntArray(new Scanner(System.in).nextLine()));
+        printList(new Solution().parityOrder(head));
+    }
+
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+        ListNode head = null;
+        for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+        return head;
+    }
+
+    static void printList(ListNode head) {         // 1 → 2 → 3 → [1, 2, 3]
+        List<Integer> out = new ArrayList<>();
+        for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+        System.out.println(out);
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's head
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "head", "label": "head", "type": "int[]", "placeholder": "[2, 1, 3, 4, 8]" }
+  ],
+  "cases": [
+    { "args": { "head": "[2, 1, 3, 4, 8]" }, "expected": "[2, 3, 8, 1, 4]" },
+    { "args": { "head": "[]" }, "expected": "[]" },
+    { "args": { "head": "[1]" }, "expected": "[1]" },
+    { "args": { "head": "[1, 2]" }, "expected": "[1, 2]" },
+    { "args": { "head": "[1, 2, 3]" }, "expected": "[1, 3, 2]" },
+    { "args": { "head": "[1, 2, 3, 4]" }, "expected": "[1, 3, 2, 4]" },
+    { "args": { "head": "[5, 5, 5, 5, 5]" }, "expected": "[5, 5, 5, 5, 5]" }
+  ]
+}
+```
 
 <details>
 <summary><h2>Intuition</h2></summary>
@@ -75,7 +174,7 @@ Run the reorder pipeline with `f1 = counter % 2` and `f2 = concatenate`.
 4. **Loop while `current` is non-`null`.** Each iteration evaluates `counter % 2`. If the result is `1` (odd index), splice `current` onto `odd_tail` and advance `odd_tail`. Otherwise (even index), splice onto `even_tail` and advance `even_tail`.
 5. **Inside the loop, advance the walk.** After the bucket splice, set `current = current.next` and `counter += 1`. The order matters: the splice rewrites `tail.next`, not `current.next`, so `current.next` still points into the input chain — we read it once more to advance.
 6. **Terminate both buckets.** When the loop exits, set `odd_tail.next = null` and `even_tail.next = null`. Without this step, the buckets would still chain into stale input suffixes — every node's `.next` is still whatever the input had, except for the ones overwritten by splices.
-7. **Concatenate the buckets.** Walk `odd_dummy.next`'s suffix to its tail (the loop's `odd_tail` already holds this reference), then set `odd_tail.next = even_dummy.next`. The merged list now starts at `odd_dummy.next` and ends at the last even-indexed node.
+7. **Concatenate the buckets.** Set `odd_tail.next = even_dummy.next`. The merged list now starts at `odd_dummy.next` and ends at the last even-indexed node.
 8. **Return the head of the merged list.** Skip the throwaway `odd_dummy` and return `odd_dummy.next`.
 
 </details>
@@ -84,39 +183,21 @@ Run the reorder pipeline with `f1 = counter % 2` and `f2 = concatenate`.
 
 ### Solution
 
-```python run viz=linked-list viz-root=head
-from typing import Optional, List
-
+```python solution time=O(n) space=O(1)
+import ast
 
 class ListNode:
-    def __init__(self, val=0, nxt=None):
+    def __init__(self, val, next=None):
         self.val = val
-        self.next = nxt
-
-
-def from_list(values):
-    if not values:
-        return None
-    head = ListNode(values[0])
-    cur = head
-    for v in values[1:]:
-        cur.next = ListNode(v)
-        cur = cur.next
-    return head
-
-
-def to_list(head):
-    out = []
-    while head is not None:
-        out.append(head.val)
-        head = head.next
-    return out
-
+        self.next = next
 
 class Solution:
-    def split_by_parity(
-        self, head: Optional[ListNode]
-    ) -> List[Optional[ListNode]]:
+    def parity_order(self, head):
+
+        # If the list is empty or contains only one node, no splitting is
+        # necessary
+        if head is None or head.next is None:
+            return head
 
         # Initialize head and tail references for the two split lists
         odd_dummy = ListNode(0)
@@ -162,89 +243,45 @@ class Solution:
         # Terminate the even list
         even_tail.next = None
 
-        return [odd_dummy.next, even_dummy.next]
+        # Concatenate: append even list after odd list
+        odd_tail.next = even_dummy.next
+        return odd_dummy.next
 
-    def merge_odd_and_even_lists(
-        self, odd_head: Optional[ListNode], even_head: Optional[ListNode]
-    ) -> Optional[ListNode]:
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
 
-        # If the odd list is empty return the even list
-        if odd_head is None:
-            return even_head
+def print_list(head):                # 1 → 2 → 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
 
-        # If the even list is empty return the odd list
-        if even_head is None:
-            return odd_head
-
-        # Traverse to the end of the odd list
-        current = odd_head
-        while current is not None and current.next is not None:
-            current = current.next
-
-        # Connect the even list at the end of the odd list
-        current.next = even_head
-        return odd_head
-
-    def parity_order(
-        self, head: Optional[ListNode]
-    ) -> Optional[ListNode]:
-
-        # If the list is empty or contains only one node, no splitting is
-        # necessary
-        if head is None or head.next is None:
-            return head
-
-        # Split the list odd and even lists
-        odd_head, even_head = self.split_by_parity(head)
-
-        # Append the even list at the end of the odd list and return
-        # the head of the merged list
-        return self.merge_odd_and_even_lists(odd_head, even_head)
-
-
-# Examples from the problem statement
-print(to_list(Solution().parity_order(from_list([2, 1, 3, 4, 8]))))        # [2, 3, 8, 1, 4]
-print(to_list(Solution().parity_order(None)))                               # []
-
-# Edge cases
-print(to_list(Solution().parity_order(from_list([1]))))                     # [1]
-print(to_list(Solution().parity_order(from_list([1, 2]))))                  # [1, 2]
-print(to_list(Solution().parity_order(from_list([1, 2, 3]))))               # [1, 3, 2]
-print(to_list(Solution().parity_order(from_list([1, 2, 3, 4]))))            # [1, 3, 2, 4]
-print(to_list(Solution().parity_order(from_list([5, 5, 5, 5, 5]))))         # [5, 5, 5, 5, 5]  (all same)
+head = build_list(ast.literal_eval(input()))   # the test case's head
+print_list(Solution().parity_order(head))
 ```
 
-```java run viz=linked-list viz-root=head
+```java solution
 import java.util.*;
 
 public class Main {
     static class ListNode {
-        int val;
-        ListNode next;
-        ListNode() {}
+        int val; ListNode next;
         ListNode(int val) { this.val = val; }
         ListNode(int val, ListNode next) { this.val = val; this.next = next; }
     }
 
-    static ListNode fromList(int... values) {
-        if (values.length == 0) return null;
-        ListNode head = new ListNode(values[0]);
-        ListNode cur = head;
-        for (int i = 1; i < values.length; i++) {
-            cur.next = new ListNode(values[i]);
-            cur = cur.next;
-        }
-        return head;
-    }
-
-    static java.util.List<Integer> toList(ListNode head) {
-        java.util.List<Integer> out = new java.util.ArrayList<>();
-        while (head != null) { out.add(head.val); head = head.next; }
-        return out;
-    }
-
     static class Solution {
-        private List<ListNode> splitByParity(ListNode head) {
+        ListNode parityOrder(ListNode head) {
+
+            // If the list is empty or contains only one node, no splitting
+            // is necessary
+            if (head == null || head.next == null) {
+                return head;
+            }
 
             // Initialize head and tail references for the two split lists
             ListNode oddDummy = new ListNode(0);
@@ -293,69 +330,40 @@ public class Main {
             // Terminate the even list
             evenTail.next = null;
 
-            return Arrays.asList(oddDummy.next, evenDummy.next);
-        }
-
-        private ListNode mergeOddAndEvenLists(
-            ListNode oddHead,
-            ListNode evenHead
-        ) {
-
-            // If the odd list is empty return the even list
-            if (oddHead == null) {
-                return evenHead;
-            }
-
-            // If the even list is empty return the odd list
-            if (evenHead == null) {
-                return oddHead;
-            }
-
-            // Traverse to the end of the odd list
-            ListNode current = oddHead;
-            while (current != null && current.next != null) {
-                current = current.next;
-            }
-
-            // Connect the even list at the end of the odd list
-            current.next = evenHead;
-            return oddHead;
-        }
-
-        public ListNode parityOrder(ListNode head) {
-
-            // If the list is empty or contains only one node, no splitting
-            // is necessary
-            if (head == null || head.next == null) {
-                return head;
-            }
-
-            // Split the list odd and even lists
-            List<ListNode> heads = splitByParity(head);
-            ListNode oddHead = heads.get(0);
-            ListNode evenHead = heads.get(1);
-
-            // Append the even list at the end of the odd list and return
-            // the head of the merged list
-            return mergeOddAndEvenLists(oddHead, evenHead);
+            // Concatenate: append even list after odd list
+            oddTail.next = evenDummy.next;
+            return oddDummy.next;
         }
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(toList(new Solution().parityOrder(fromList(2, 1, 3, 4, 8))));        // [2, 3, 8, 1, 4]
-        System.out.println(toList(new Solution().parityOrder(null)));                            // []
+        ListNode head = buildList(parseIntArray(new Scanner(System.in).nextLine()));
+        printList(new Solution().parityOrder(head));
+    }
 
-        // Edge cases
-        System.out.println(toList(new Solution().parityOrder(fromList(1))));                     // [1]
-        System.out.println(toList(new Solution().parityOrder(fromList(1, 2))));                  // [1, 2]
-        System.out.println(toList(new Solution().parityOrder(fromList(1, 2, 3))));               // [1, 3, 2]
-        System.out.println(toList(new Solution().parityOrder(fromList(1, 2, 3, 4))));            // [1, 3, 2, 4]
-        System.out.println(toList(new Solution().parityOrder(fromList(5, 5, 5, 5, 5))));         // [5, 5, 5, 5, 5]  (all same)
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+        ListNode head = null;
+        for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+        return head;
+    }
+
+    static void printList(ListNode head) {         // 1 → 2 → 3 → [1, 2, 3]
+        List<Integer> out = new ArrayList<>();
+        for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+        System.out.println(out);
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's head
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```
-
 
 ### Dry Run
 
@@ -381,21 +389,17 @@ Iter 6: current == null → exit loop.
 Terminate: odd_tail.next = null, even_tail.next = null.
 odd_head = odd_dummy.next = 2, even_head = even_dummy.next = 1.
 
-Concatenate: walk odd_head to its tail (=8). Set tail.next = even_head (=1).
+Concatenate: odd_tail.next = even_head (=1).
 Output: 2 → 3 → 8 → 1 → 4 → null.
 
-Return odd_head = the first 2. ✓
+Return odd_dummy.next = the first 2. ✓
 ```
-
-### Result Size
-
-The output contains exactly `n` nodes — every input node appears in the output. `ceil(n/2)` of them are in the odd-indexed bucket and `floor(n/2)` in the even-indexed bucket. Only `.next` fields are rewired; no values change.
 
 ### Complexity Analysis
 
 | | Complexity | Reason |
 |---|---|---|
-| **Time** | `O(n)` | The split pass visits every input node once. The concatenation pass walks the odd bucket once more to find its tail — at most `ceil(n/2)` extra steps, dominated by `O(n)`. |
+| **Time** | `O(n)` | The split pass visits every input node once. The concatenation is `O(1)` — `odd_tail` already holds the tail reference. |
 | **Space** | `O(1)` | Two dummy nodes plus a handful of local references regardless of input size. The output reuses the input nodes — no fresh allocations beyond the throwaway dummies. |
 
 ### Edge Cases
@@ -408,7 +412,6 @@ The output contains exactly `n` nodes — every input node appears in the output
 | Three nodes (`head = [1, 2, 3]`) | Odd bucket = `[1, 3]`; even bucket = `[2]`. Concatenate → `[1, 3, 2]`. |
 | Four nodes (`head = [1, 2, 3, 4]`) | Odd bucket = `[1, 3]`; even bucket = `[2, 4]`. Concatenate → `[1, 3, 2, 4]`. |
 | All-equal values (`head = [5, 5, 5, 5, 5]`) | The classifier reads the counter, not the value. Buckets split structurally: odd = `[5, 5, 5]` (positions 1, 3, 5); even = `[5, 5]` (positions 2, 4). Output prints `[5, 5, 5, 5, 5]` — structurally distinct rewiring, identical print. |
-| Odd length list (`head = [a, b, c, d, e]`) | Odd bucket has `ceil(5/2) = 3` nodes; even bucket has `floor(5/2) = 2` nodes. |
 
 </details>
 <details>

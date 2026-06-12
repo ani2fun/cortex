@@ -15,10 +15,14 @@ The brute force compares every pair to see if they overlap — `O(n²)`. But ove
 
 ## See It Work
 
-Sort by start, then sweep: extend the last merged interval when the next one overlaps it, otherwise begin a new one. Run it and watch four intervals collapse to two.
+Sort by start, then sweep: extend the last merged interval when the next one overlaps it, otherwise begin a new one. Pick a test case below, **Run** it, then **Visualise** and watch the intervals collapse. The first line just reads the case's `intervals` from input — the pattern is the sort and the sweep.
+
+> ▶ Run it against a case, then click **Visualise** — watch the sweep extend the last merged interval on overlap and start a new one on a gap.
 
 ```python run viz=array
-intervals = [[1, 3], [2, 6], [8, 10], [9, 12]]
+import ast
+
+intervals = ast.literal_eval(input())    # the test case's intervals
 intervals.sort()                         # sort by start
 merged = [intervals[0]]
 for start, end in intervals[1:]:
@@ -26,7 +30,61 @@ for start, end in intervals[1:]:
         merged[-1][1] = max(merged[-1][1], end)   # yes → extend its end
     else:
         merged.append([start, end])      # no — a gap → start a new interval
-print(merged)                            # [[1, 6], [8, 12]]
+print(merged)
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+  public static void main(String[] args) {
+    int[][] intervals = parseIntMatrix(new Scanner(System.in).nextLine());
+    Arrays.sort(intervals, (a, b) -> Integer.compare(a[0], b[0]));   // sort by start
+    List<List<Integer>> merged = new ArrayList<>();
+    merged.add(new ArrayList<>(List.of(intervals[0][0], intervals[0][1])));
+    for (int i = 1; i < intervals.length; i++) {
+      List<Integer> last = merged.get(merged.size() - 1);
+      if (intervals[i][0] <= last.get(1))            // overlaps the last merged interval?
+        last.set(1, Math.max(last.get(1), intervals[i][1]));   // yes → extend its end
+      else
+        merged.add(new ArrayList<>(List.of(intervals[i][0], intervals[i][1])));   // gap → new interval
+    }
+    System.out.println(merged);
+  }
+
+  // "[[1, 3], [2, 6]]" → {{1, 3}, {2, 6}} — reads the test case's intervals
+  static int[][] parseIntMatrix(String line) {
+    String s = line.trim();
+    if (s.startsWith("[")) s = s.substring(1);
+    if (s.endsWith("]")) s = s.substring(0, s.length() - 1);
+    s = s.trim();
+    if (s.isEmpty()) return new int[0][];
+    String[] rows = s.split("\\]\\s*,\\s*\\[");
+    int[][] out = new int[rows.length][];
+    for (int i = 0; i < rows.length; i++) {
+      String inner = rows[i].replaceAll("[\\[\\]\\s]", "");
+      if (inner.isEmpty()) { out[i] = new int[0]; continue; }
+      String[] parts = inner.split(",");
+      int[] pair = new int[parts.length];
+      for (int j = 0; j < parts.length; j++) pair[j] = Integer.parseInt(parts[j]);
+      out[i] = pair;
+    }
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "intervals", "label": "intervals", "type": "int[][]", "placeholder": "[[1, 3], [2, 6], [8, 10], [9, 12]]" }
+  ],
+  "cases": [
+    { "args": { "intervals": "[[1, 3], [2, 6], [8, 10], [9, 12]]" }, "expected": "[[1, 6], [8, 12]]" },
+    { "args": { "intervals": "[[1, 4], [4, 5]]" }, "expected": "[[1, 5]]" },
+    { "args": { "intervals": "[[1, 2], [3, 4], [5, 6]]" }, "expected": "[[1, 2], [3, 4], [5, 6]]" }
+  ]
+}
 ```
 
 ## How It Works
@@ -71,9 +129,79 @@ No. Everything still to come starts at `8` or later (the array is sorted by star
 
 ## Your Turn
 
-The reusable merge — sort, then sweep:
+Write the reusable `merge` yourself: sort the intervals by start, then sweep once, extending the last merged interval on overlap and appending a new one on a gap.
 
 ```python run viz=array
+import ast
+
+def merge(intervals):
+    # Your code goes here — sort by start, then sweep keeping only the last
+    # merged interval: extend it on overlap, append a new one on a gap.
+    return []
+
+intervals = ast.literal_eval(input())    # the test case's intervals
+print(merge(intervals))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+  static List<List<Integer>> merge(int[][] intervals) {
+    // Your code goes here — sort by start, then sweep keeping only the last
+    // merged interval: extend it on overlap, append a new one on a gap.
+    return new ArrayList<>();
+  }
+
+  public static void main(String[] args) {
+    int[][] intervals = parseIntMatrix(new Scanner(System.in).nextLine());
+    System.out.println(merge(intervals));
+  }
+
+  // "[[1, 3], [2, 6]]" → {{1, 3}, {2, 6}} — reads the test case's intervals
+  static int[][] parseIntMatrix(String line) {
+    String s = line.trim();
+    if (s.startsWith("[")) s = s.substring(1);
+    if (s.endsWith("]")) s = s.substring(0, s.length() - 1);
+    s = s.trim();
+    if (s.isEmpty()) return new int[0][];
+    String[] rows = s.split("\\]\\s*,\\s*\\[");
+    int[][] out = new int[rows.length][];
+    for (int i = 0; i < rows.length; i++) {
+      String inner = rows[i].replaceAll("[\\[\\]\\s]", "");
+      if (inner.isEmpty()) { out[i] = new int[0]; continue; }
+      String[] parts = inner.split(",");
+      int[] pair = new int[parts.length];
+      for (int j = 0; j < parts.length; j++) pair[j] = Integer.parseInt(parts[j]);
+      out[i] = pair;
+    }
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "intervals", "label": "intervals", "type": "int[][]", "placeholder": "[[1, 3], [2, 6], [8, 10], [9, 12]]" }
+  ],
+  "cases": [
+    { "args": { "intervals": "[[1, 3], [2, 6], [8, 10], [9, 12]]" }, "expected": "[[1, 6], [8, 12]]" },
+    { "args": { "intervals": "[[1, 4], [4, 5]]" }, "expected": "[[1, 5]]" },
+    { "args": { "intervals": "[[1, 10], [2, 3], [4, 5]]" }, "expected": "[[1, 10]]" },
+    { "args": { "intervals": "[[1, 2], [3, 4], [5, 6]]" }, "expected": "[[1, 2], [3, 4], [5, 6]]" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Sort by start so the only interval a new one can overlap is the most recent merged block, then sweep once. On each `[start, end]`: if `start ≤ last.end` the two overlap, so extend the last block's end to `max(last.end, end)` (the `max` matters for a fully-nested interval); otherwise there's a gap, so append `[start, end]` as a fresh block. The sort is `O(n log n)` and dominates; the sweep is `O(n)`.
+
+```python solution time=O(n log n) space=O(n)
+import ast
+
 def merge(intervals):
     intervals.sort()                         # by start
     merged = [intervals[0]]
@@ -84,34 +212,60 @@ def merge(intervals):
             merged.append([start, end])
     return merged
 
-print(merge([[1, 3], [2, 6], [8, 10], [9, 12]]))   # [[1, 6], [8, 12]]
+intervals = ast.literal_eval(input())
+print(merge(intervals))
 ```
 
-```java run viz=array
+```java solution
 import java.util.*;
 
 public class Main {
-  static List<int[]> merge(int[][] intervals) {
+  static List<List<Integer>> merge(int[][] intervals) {
     Arrays.sort(intervals, (a, b) -> Integer.compare(a[0], b[0]));   // by start
-    List<int[]> merged = new ArrayList<>();
-    for (int[] iv : intervals) {
-      if (!merged.isEmpty() && iv[0] <= merged.get(merged.size() - 1)[1])
-        merged.get(merged.size() - 1)[1] = Math.max(merged.get(merged.size() - 1)[1], iv[1]);
+    List<List<Integer>> merged = new ArrayList<>();
+    merged.add(new ArrayList<>(List.of(intervals[0][0], intervals[0][1])));
+    for (int i = 1; i < intervals.length; i++) {
+      List<Integer> last = merged.get(merged.size() - 1);
+      if (intervals[i][0] <= last.get(1))
+        last.set(1, Math.max(last.get(1), intervals[i][1]));
       else
-        merged.add(iv);
+        merged.add(new ArrayList<>(List.of(intervals[i][0], intervals[i][1])));
     }
     return merged;
   }
+
   public static void main(String[] args) {
-    for (int[] m : merge(new int[][]{{1, 3}, {2, 6}, {8, 10}, {9, 12}}))
-      System.out.println(Arrays.toString(m));   // [1, 6] then [8, 12]
+    int[][] intervals = parseIntMatrix(new Scanner(System.in).nextLine());
+    System.out.println(merge(intervals));
+  }
+
+  // "[[1, 3], [2, 6]]" → {{1, 3}, {2, 6}} — reads the test case's intervals
+  static int[][] parseIntMatrix(String line) {
+    String s = line.trim();
+    if (s.startsWith("[")) s = s.substring(1);
+    if (s.endsWith("]")) s = s.substring(0, s.length() - 1);
+    s = s.trim();
+    if (s.isEmpty()) return new int[0][];
+    String[] rows = s.split("\\]\\s*,\\s*\\[");
+    int[][] out = new int[rows.length][];
+    for (int i = 0; i < rows.length; i++) {
+      String inner = rows[i].replaceAll("[\\[\\]\\s]", "");
+      if (inner.isEmpty()) { out[i] = new int[0]; continue; }
+      String[] parts = inner.split(",");
+      int[] pair = new int[parts.length];
+      for (int j = 0; j < parts.length; j++) pair[j] = Integer.parseInt(parts[j]);
+      out[i] = pair;
+    }
+    return out;
   }
 }
 ```
 
-Drill the family in **Practice** — [Insert Interval](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-interval-merging/problems/insert-interval) and [Employee Free Time](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-interval-merging/problems/employee-free-time).
+</details>
 
 ## Reflect & Connect
+
+Drill the family in **Practice** — [Insert Interval](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-interval-merging/problems/insert-interval) and [Employee Free Time](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-interval-merging/problems/employee-free-time).
 
 Sort-then-sweep is the master move for almost every interval problem:
 

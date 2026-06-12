@@ -4,6 +4,8 @@ summary: "Given the head of a singly linked list and a non-negative integer k, w
 prereqs:
   - 09-pattern-sliding-window-traversal/01-pattern
 difficulty: medium
+kind: problem
+topics: [sliding-window-traversal, singly-linked-list]
 ---
 
 # K rotations
@@ -35,8 +37,114 @@ Output: [1, 2, 3, 4, 5]
 ```
 Rotating right by the length leaves the list unchanged — `5 % 5 = 0`.
 
+## Constraints
 
----
+- `0 ≤ list length ≤ 10⁵`
+- `-10⁴ ≤ node.val ≤ 10⁴`
+- `0 ≤ k ≤ 10⁹`
+
+```python run viz=linked-list viz-root=head
+import ast
+
+class ListNode:
+    def __init__(self, val, next=None):
+        self.val = val
+        self.next = next
+
+class Solution:
+    def k_rotations(self, head, k):
+        # Your code goes here — normalise k via length, prime a gap of k-1,
+        # slide to the tail; cut at prev_to_kth_from_end, rejoin the tail to
+        # the old head, return kth_from_end as the new head.
+        pass
+
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
+
+def print_list(head):                # 1 → 2 → 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
+
+head_vals = ast.literal_eval(input())   # the test case's head
+k = int(input())                         # the test case's k
+head = build_list(head_vals) if head_vals else None
+print_list(Solution().k_rotations(head, k))
+```
+
+```java run viz=linked-list viz-root=head
+import java.util.*;
+
+public class Main {
+    static class ListNode {
+        int val; ListNode next;
+        ListNode(int val) { this.val = val; }
+        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+    }
+
+    static class Solution {
+        ListNode kRotations(ListNode head, int k) {
+            // Your code goes here — normalise k via length, prime a gap of k-1,
+            // slide to the tail; cut at prev_to_kth_from_end, rejoin the tail to
+            // the old head, return kth_from_end as the new head.
+            return null;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] headVals = parseIntArray(sc.nextLine());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        ListNode head = buildList(headVals);
+        printList(new Solution().kRotations(head, k));
+    }
+
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+        ListNode head = null;
+        for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+        return head;
+    }
+
+    static void printList(ListNode head) {         // 1 → 2 → 3 → [1, 2, 3]
+        List<Integer> out = new ArrayList<>();
+        for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+        System.out.println(out);
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's head
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "head", "label": "head", "type": "int[]", "placeholder": "[1, 2, 3, 4, 5]" },
+    { "id": "k", "label": "k", "type": "int", "placeholder": "2" }
+  ],
+  "cases": [
+    { "args": { "head": "[1, 2, 3, 4, 5]", "k": "2" }, "expected": "[4, 5, 1, 2, 3]" },
+    { "args": { "head": "[0, 1, 2]", "k": "4" }, "expected": "[2, 0, 1]" },
+    { "args": { "head": "[1, 2, 3, 4, 5]", "k": "5" }, "expected": "[1, 2, 3, 4, 5]" },
+    { "args": { "head": "[1, 2, 3, 4, 5]", "k": "1" }, "expected": "[5, 1, 2, 3, 4]" },
+    { "args": { "head": "[1, 2]", "k": "1" }, "expected": "[2, 1]" },
+    { "args": { "head": "[1]", "k": "3" }, "expected": "[1]" },
+    { "args": { "head": "[1, 2, 3, 4, 5]", "k": "0" }, "expected": "[1, 2, 3, 4, 5]" }
+  ]
+}
+```
 
 <details>
 <summary><h2>Intuition</h2></summary>
@@ -99,47 +207,23 @@ Run the lockstep walk with a gap of `k − 1`. Compute the length to normalise `
 
 ### Solution
 
-
-```python run viz=linked-list viz-root=head
-from typing import Optional
-
+```python solution time=O(n) space=O(1)
+import ast
 
 class ListNode:
-    def __init__(self, val=0, nxt=None):
+    def __init__(self, val, next=None):
         self.val = val
-        self.next = nxt
-
-
-def from_list(values):
-    if not values:
-        return None
-    head = ListNode(values[0])
-    cur = head
-    for v in values[1:]:
-        cur.next = ListNode(v)
-        cur = cur.next
-    return head
-
-
-def to_list(head):
-    out = []
-    while head is not None:
-        out.append(head.val)
-        head = head.next
-    return out
-
+        self.next = next
 
 class Solution:
-    def find_length(self, head: Optional[ListNode]) -> int:
+    def find_length(self, head):
         length = 0
         while head is not None:
             length += 1
             head = head.next
         return length
 
-    def k_rotations(
-        self, head: Optional[ListNode], k: int
-    ) -> Optional[ListNode]:
+    def k_rotations(self, head, k):
 
         # If the list is empty or has only one node, no swapping is
         # needed.
@@ -184,46 +268,33 @@ class Solution:
         # list.
         return kth_from_end
 
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
 
-print(to_list(Solution().k_rotations(from_list([1, 2, 3, 4, 5]), 2)))  # [4, 5, 1, 2, 3]
-print(to_list(Solution().k_rotations(from_list([0, 1, 2]), 4)))         # [2, 0, 1]
+def print_list(head):                # 1 → 2 → 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
 
-# Edge cases
-print(to_list(Solution().k_rotations(from_list([1]), 3)))               # [1]
-print(to_list(Solution().k_rotations(from_list([1, 2]), 1)))            # [2, 1]
-print(to_list(Solution().k_rotations(from_list([1, 2, 3]), 3)))         # [1, 2, 3]
-print(to_list(Solution().k_rotations(from_list([1, 2, 3, 4, 5]), 0)))  # [1, 2, 3, 4, 5]
-print(to_list(Solution().k_rotations(from_list([1, 2, 3, 4, 5]), 5)))  # [1, 2, 3, 4, 5]
-print(to_list(Solution().k_rotations(from_list([1, 2, 3, 4, 5]), 1)))  # [5, 1, 2, 3, 4]
+head_vals = ast.literal_eval(input())   # the test case's head
+k = int(input())                         # the test case's k
+head = build_list(head_vals) if head_vals else None
+print_list(Solution().k_rotations(head, k))
 ```
 
-```java run viz=linked-list viz-root=head
+```java solution
 import java.util.*;
 
 public class Main {
     static class ListNode {
-        int val;
-        ListNode next;
-        ListNode() {}
+        int val; ListNode next;
         ListNode(int val) { this.val = val; }
         ListNode(int val, ListNode next) { this.val = val; this.next = next; }
-    }
-
-    static ListNode fromList(int... values) {
-        if (values.length == 0) return null;
-        ListNode head = new ListNode(values[0]);
-        ListNode cur = head;
-        for (int i = 1; i < values.length; i++) {
-            cur.next = new ListNode(values[i]);
-            cur = cur.next;
-        }
-        return head;
-    }
-
-    static java.util.List<Integer> toList(ListNode head) {
-        java.util.List<Integer> out = new java.util.ArrayList<>();
-        while (head != null) { out.add(head.val); head = head.next; }
-        return out;
     }
 
     static class Solution {
@@ -288,16 +359,33 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        System.out.println(toList(new Solution().kRotations(fromList(1, 2, 3, 4, 5), 2)));  // [4, 5, 1, 2, 3]
-        System.out.println(toList(new Solution().kRotations(fromList(0, 1, 2), 4)));         // [2, 0, 1]
+        Scanner sc = new Scanner(System.in);
+        int[] headVals = parseIntArray(sc.nextLine());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        ListNode head = buildList(headVals);
+        printList(new Solution().kRotations(head, k));
+    }
 
-        // Edge cases
-        System.out.println(toList(new Solution().kRotations(fromList(1), 3)));               // [1]
-        System.out.println(toList(new Solution().kRotations(fromList(1, 2), 1)));            // [2, 1]
-        System.out.println(toList(new Solution().kRotations(fromList(1, 2, 3), 3)));         // [1, 2, 3]
-        System.out.println(toList(new Solution().kRotations(fromList(1, 2, 3, 4, 5), 0)));  // [1, 2, 3, 4, 5]
-        System.out.println(toList(new Solution().kRotations(fromList(1, 2, 3, 4, 5), 5)));  // [1, 2, 3, 4, 5]
-        System.out.println(toList(new Solution().kRotations(fromList(1, 2, 3, 4, 5), 1)));  // [5, 1, 2, 3, 4]
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+        ListNode head = null;
+        for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+        return head;
+    }
+
+    static void printList(ListNode head) {         // 1 → 2 → 3 → [1, 2, 3]
+        List<Integer> out = new ArrayList<>();
+        for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+        System.out.println(out);
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's head
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

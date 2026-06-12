@@ -4,6 +4,8 @@ summary: "In-place merge of two sorted arrays — comparison-driven simultaneous
 prereqs:
   - 07-pattern-simultaneous-traversal/01-pattern
 difficulty: easy
+kind: problem
+topics: [two-pointers, arrays]
 ---
 
 # Merge Sorted Arrays
@@ -34,6 +36,94 @@ Output: [1]
 **Example 2** — `arr1 = [1, 2, 5, 0, 0]`, `m = 3`, `arr2 = [3, 4]`, `n = 2` → `[1, 2, 3, 4, 5]`. The two arrays interleave — the largest element `5` came from `arr1`, the next two `(4, 3)` came from `arr2`.
 
 **Example 3** — `arr1 = [1]`, `m = 1`, `arr2 = []`, `n = 0` → `[1]`. `arr2` is empty, so `arr1` is already merged — the algorithm exits immediately.
+
+```quiz
+{
+  "prompt": "Now your turn!",
+  "input": "arr1 = [1, 2, 5, 0, 0], m = 3, arr2 = [3, 4], n = 2",
+  "options": ["[1, 2, 3, 4, 5]", "[1, 2, 5, 3, 4]", "[1, 2, 3, 5, 4]", "[3, 4, 1, 2, 5]"],
+  "answer": "[1, 2, 3, 4, 5]"
+}
+```
+
+## Constraints
+
+- `0 ≤ m, n ≤ 10^4` and `arr1.length == m + n`, `arr2.length == n`
+- `arr1` (first `m`) and `arr2` are each sorted in non-decreasing order
+- `-10^9 ≤ arr1[i], arr2[i] ≤ 10^9`
+
+```python run viz=array viz-root=arr1
+import ast
+from typing import List
+
+class Solution:
+    def merge_sorted_arrays(
+        self, arr_1: List[int], m: int, arr_2: List[int], n: int
+    ) -> None:
+        # Your code goes here — walk i1, i2, i3 from the back; write the
+        # larger of arr_1[i1] / arr_2[i2] into arr_1[i3], then drain arr_2.
+        pass
+
+
+arr1 = ast.literal_eval(input())     # the test case's arr1 (with trailing zeros)
+m = int(input())                     # the test case's m
+arr2 = ast.literal_eval(input())     # the test case's arr2
+n = int(input())                     # the test case's n
+Solution().merge_sorted_arrays(arr1, m, arr2, n)
+print(arr1)
+```
+
+```java run viz=array viz-root=arr1
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public void mergeSortedArrays(int[] arr1, int m, int[] arr2, int n) {
+            // Your code goes here — walk i1, i2, i3 from the back; write the
+            // larger of arr1[i1] / arr2[i2] into arr1[i3], then drain arr2.
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr1 = parseIntArray(sc.nextLine());   // the test case's arr1
+        int m = Integer.parseInt(sc.nextLine().trim());
+        int[] arr2 = parseIntArray(sc.nextLine());   // the test case's arr2
+        int n = Integer.parseInt(sc.nextLine().trim());
+        new Solution().mergeSortedArrays(arr1, m, arr2, n);
+        System.out.println(Arrays.toString(arr1));
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's array
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr1", "label": "arr1 (trailing zeros)", "type": "int[]", "placeholder": "[1, 2, 3, 0, 0]" },
+    { "id": "m", "label": "m", "type": "int", "placeholder": "3" },
+    { "id": "arr2", "label": "arr2", "type": "int[]", "placeholder": "[4, 5]" },
+    { "id": "n", "label": "n", "type": "int", "placeholder": "2" }
+  ],
+  "cases": [
+    { "args": { "arr1": "[1, 2, 3, 0, 0]", "m": "3", "arr2": "[4, 5]", "n": "2" }, "expected": "[1, 2, 3, 4, 5]" },
+    { "args": { "arr1": "[1, 2, 5, 0, 0]", "m": "3", "arr2": "[3, 4]", "n": "2" }, "expected": "[1, 2, 3, 4, 5]" },
+    { "args": { "arr1": "[1]", "m": "1", "arr2": "[]", "n": "0" }, "expected": "[1]" },
+    { "args": { "arr1": "[0]", "m": "0", "arr2": "[5]", "n": "1" }, "expected": "[5]" },
+    { "args": { "arr1": "[3, 4, 0, 0]", "m": "2", "arr2": "[1, 2]", "n": "2" }, "expected": "[1, 2, 3, 4]" },
+    { "args": { "arr1": "[2, 3, 0]", "m": "2", "arr2": "[2]", "n": "1" }, "expected": "[2, 2, 3]" }
+  ]
+}
+```
 
 <details>
 <summary><h2>Intuition &amp; Brute Force</h2></summary>
@@ -153,7 +243,8 @@ flowchart TB
 
 ### The Solution
 
-```python run viz=array viz-root=a1
+```python solution time=O(m+n) space=O(1)
+import ast
 from typing import List
 
 class Solution:
@@ -195,29 +286,16 @@ class Solution:
             index3 -= 1
 
 
-# Examples from the problem statement
-a1 = [1, 2, 3, 0, 0]
-Solution().merge_sorted_arrays(a1, 3, [4, 5], 2); print(a1)  # [1, 2, 3, 4, 5]
-
-a2 = [1, 2, 5, 0, 0]
-Solution().merge_sorted_arrays(a2, 3, [3, 4], 2); print(a2)  # [1, 2, 3, 4, 5]
-
-a3 = [1]
-Solution().merge_sorted_arrays(a3, 1, [], 0); print(a3)       # [1]
-
-# Edge cases
-a4 = [0]
-Solution().merge_sorted_arrays(a4, 0, [5], 1); print(a4)      # [5] — arr1 empty, arr2 has one
-
-a5 = [2, 0]
-Solution().merge_sorted_arrays(a5, 1, [1], 1); print(a5)      # [1, 2] — two elements, swap needed
-
-a6 = [1, 3, 5, 0, 0, 0]
-Solution().merge_sorted_arrays(a6, 3, [2, 4, 6], 3); print(a6) # [1, 2, 3, 4, 5, 6]
+arr1 = ast.literal_eval(input())     # the test case's arr1 (with trailing zeros)
+m = int(input())                     # the test case's m
+arr2 = ast.literal_eval(input())     # the test case's arr2
+n = int(input())                     # the test case's n
+Solution().merge_sorted_arrays(arr1, m, arr2, n)
+print(arr1)
 ```
 
-```java run viz=array viz-root=a1
-import java.util.Arrays;
+```java solution
+import java.util.*;
 
 public class Main {
     static class Solution {
@@ -258,31 +336,23 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        int[] a1 = {1,2,3,0,0};
-        new Solution().mergeSortedArrays(a1, 3, new int[]{4,5}, 2);
-        System.out.println(Arrays.toString(a1));  // [1, 2, 3, 4, 5]
+        Scanner sc = new Scanner(System.in);
+        int[] arr1 = parseIntArray(sc.nextLine());   // the test case's arr1
+        int m = Integer.parseInt(sc.nextLine().trim());
+        int[] arr2 = parseIntArray(sc.nextLine());   // the test case's arr2
+        int n = Integer.parseInt(sc.nextLine().trim());
+        new Solution().mergeSortedArrays(arr1, m, arr2, n);
+        System.out.println(Arrays.toString(arr1));
+    }
 
-        int[] a2 = {1,2,5,0,0};
-        new Solution().mergeSortedArrays(a2, 3, new int[]{3,4}, 2);
-        System.out.println(Arrays.toString(a2));  // [1, 2, 3, 4, 5]
-
-        int[] a3 = {1};
-        new Solution().mergeSortedArrays(a3, 1, new int[]{}, 0);
-        System.out.println(Arrays.toString(a3));  // [1]
-
-        // Edge cases
-        int[] a4 = {0};
-        new Solution().mergeSortedArrays(a4, 0, new int[]{5}, 1);
-        System.out.println(Arrays.toString(a4));  // [5] — arr1 empty, arr2 has one
-
-        int[] a5 = {2, 0};
-        new Solution().mergeSortedArrays(a5, 1, new int[]{1}, 1);
-        System.out.println(Arrays.toString(a5));  // [1, 2] — two elements, swap needed
-
-        int[] a6 = {1,3,5,0,0,0};
-        new Solution().mergeSortedArrays(a6, 3, new int[]{2,4,6}, 3);
-        System.out.println(Arrays.toString(a6));  // [1, 2, 3, 4, 5, 6]
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's array
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

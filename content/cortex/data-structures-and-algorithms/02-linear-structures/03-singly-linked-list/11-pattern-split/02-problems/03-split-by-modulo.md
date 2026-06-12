@@ -4,6 +4,8 @@ summary: "Given the head of a singly linked list and a positive integer k, write
 prereqs:
   - 11-pattern-split/01-pattern
 difficulty: medium
+kind: problem
+topics: [split, singly-linked-list]
 ---
 
 # Split by modulo
@@ -37,8 +39,112 @@ Output: [[0, 0, 0], [], []]
 Explanation: 0 % 3 = 0 for every node — the entire list collapses into bucket 0.
 ```
 
+## Constraints
 
----
+- `0 ≤ list length ≤ 10⁵`
+- `0 ≤ node.val ≤ 10⁴`
+- `1 ≤ k ≤ 10³`
+- Re-link nodes — `O(k)` extra space for dummies; do not allocate new list nodes
+
+```python run viz=linked-list viz-root=head
+import ast
+
+class ListNode:
+    def __init__(self, val, next=None):
+        self.val = val
+        self.next = next
+
+class Solution:
+    def split_by_modulo(self, head, k):
+        # Your code goes here
+        pass
+
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
+
+def print_list(head):                # 1 → 2 → 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
+
+head = build_list(ast.literal_eval(input()))   # the test case's head
+k = int(input())                               # the test case's k
+for p in Solution().split_by_modulo(head, k):
+    print_list(p)
+```
+
+```java run viz=linked-list viz-root=head
+import java.util.*;
+
+public class Main {
+    static class ListNode {
+        int val; ListNode next;
+        ListNode(int val) { this.val = val; }
+        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+    }
+
+    static class Solution {
+        List<ListNode> splitByModulo(ListNode head, int k) {
+            // Your code goes here
+            List<ListNode> result = new ArrayList<>();
+            for (int i = 0; i < k; i++) result.add(null);
+            return result;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] values = parseIntArray(sc.nextLine());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        ListNode head = buildList(values);
+        for (ListNode p : new Solution().splitByModulo(head, k)) printList(p);
+    }
+
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+        ListNode head = null;
+        for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+        return head;
+    }
+
+    static void printList(ListNode head) {         // 1 → 2 → 3 → [1, 2, 3]
+        List<Integer> out = new ArrayList<>();
+        for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+        System.out.println(out);
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's head
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "head", "label": "head", "type": "int[]", "placeholder": "[5, 2, 3, 10, 6, 8]" },
+    { "id": "k", "label": "k", "type": "int", "placeholder": "3" }
+  ],
+  "cases": [
+    { "args": { "head": "[5, 2, 3, 10, 6, 8]", "k": "3" }, "expected": "[3, 6]\n[10]\n[5, 2, 8]" },
+    { "args": { "head": "[4]", "k": "3" }, "expected": "[]\n[4]\n[]" },
+    { "args": { "head": "[0, 0, 0]", "k": "3" }, "expected": "[0, 0, 0]\n[]\n[]" },
+    { "args": { "head": "[1, 2, 3, 4]", "k": "2" }, "expected": "[2, 4]\n[1, 3]" },
+    { "args": { "head": "[1]", "k": "1" }, "expected": "[1]" },
+    { "args": { "head": "[]", "k": "2" }, "expected": "[]\n[]" }
+  ]
+}
+```
 
 <details>
 <summary><h2>Intuition</h2></summary>
@@ -83,43 +189,21 @@ Walk the original list once. Route each node to one of `k` pre-anchored output c
 
 ### Solution
 
-```python run viz=linked-list viz-root=head
-from typing import List, Optional
 
+```python solution time=O(n + k) space=O(k)
+import ast
 
 class ListNode:
-    def __init__(self, val=0, nxt=None):
+    def __init__(self, val, next=None):
         self.val = val
-        self.next = nxt
-
-
-def from_list(values):
-    if not values:
-        return None
-    head = ListNode(values[0])
-    cur = head
-    for v in values[1:]:
-        cur.next = ListNode(v)
-        cur = cur.next
-    return head
-
-
-def to_list(head):
-    out = []
-    while head is not None:
-        out.append(head.val)
-        head = head.next
-    return out
-
+        self.next = next
 
 class Solution:
-    def split_by_modulo(
-        self, head: Optional[ListNode], k: int
-    ) -> List[Optional[ListNode]]:
+    def split_by_modulo(self, head, k):
 
         # Initialize head and tail references for k split lists
-        dummy_heads: List[ListNode] = [ListNode(0) for _ in range(k)]
-        tails: List[ListNode] = dummy_heads[:]
+        dummy_heads = [ListNode(0) for _ in range(k)]
+        tails = dummy_heads[:]
 
         # Create current reference to iterate through the list
         current = head
@@ -144,60 +228,35 @@ class Solution:
             tails[i].next = None
 
         # Collect heads (excluding dummy nodes)
-        result: List[Optional[ListNode]] = []
-        for i in range(k):
-            result.append(dummy_heads[i].next)
+        return [dummy_heads[i].next for i in range(k)]
 
-        return result
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
 
+def print_list(head):                # 1 → 2 → 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
 
-r = Solution().split_by_modulo(from_list([5, 2, 3, 10, 6, 8]), 3)
-print([to_list(x) for x in r])   # [[3, 6], [10], [5, 2, 8]]
-
-r = Solution().split_by_modulo(from_list([4]), 3)
-print([to_list(x) for x in r])   # [[], [4], []]
-
-# Edge cases
-r = Solution().split_by_modulo(None, 2)
-print([to_list(x) for x in r])   # [[], []]
-
-r = Solution().split_by_modulo(from_list([1, 2, 3, 4]), 2)
-print([to_list(x) for x in r])   # [[2, 4], [1, 3]]
-
-r = Solution().split_by_modulo(from_list([0, 0, 0]), 3)
-print([to_list(x) for x in r])   # [[0, 0, 0], [], []]
-
-r = Solution().split_by_modulo(from_list([1]), 1)
-print([to_list(x) for x in r])   # [[1]]
+head = build_list(ast.literal_eval(input()))   # the test case's head
+k = int(input())                               # the test case's k
+for p in Solution().split_by_modulo(head, k):
+    print_list(p)
 ```
 
-```java run viz=linked-list viz-root=head
+```java solution
 import java.util.*;
 
 public class Main {
     static class ListNode {
-        int val;
-        ListNode next;
-        ListNode() {}
+        int val; ListNode next;
         ListNode(int val) { this.val = val; }
         ListNode(int val, ListNode next) { this.val = val; this.next = next; }
-    }
-
-    static ListNode fromList(int... values) {
-        if (values.length == 0) return null;
-        ListNode head = new ListNode(values[0]);
-        ListNode cur = head;
-        for (int i = 1; i < values.length; i++) {
-            cur.next = new ListNode(values[i]);
-            cur = cur.next;
-        }
-        return head;
-    }
-
-    static java.util.List<Integer> toList(ListNode head) {
-        java.util.List<Integer> out = new java.util.ArrayList<>();
-        while (head != null) { out.add(head.val); head = head.next; }
-        return out;
     }
 
     static class Solution {
@@ -250,24 +309,33 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        List<ListNode> r1 = new Solution().splitByModulo(fromList(5, 2, 3, 10, 6, 8), 3);
-        System.out.println(r1.stream().map(Main::toList).toList());  // [[3, 6], [10], [5, 2, 8]]
+        Scanner sc = new Scanner(System.in);
+        int[] values = parseIntArray(sc.nextLine());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        ListNode head = buildList(values);
+        for (ListNode p : new Solution().splitByModulo(head, k)) printList(p);
+    }
 
-        List<ListNode> r2 = new Solution().splitByModulo(fromList(4), 3);
-        System.out.println(r2.stream().map(Main::toList).toList());  // [[], [4], []]
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+        ListNode head = null;
+        for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+        return head;
+    }
 
-        // Edge cases
-        List<ListNode> r3 = new Solution().splitByModulo(null, 2);
-        System.out.println(r3.stream().map(Main::toList).toList());  // [[], []]
+    static void printList(ListNode head) {         // 1 → 2 → 3 → [1, 2, 3]
+        List<Integer> out = new ArrayList<>();
+        for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+        System.out.println(out);
+    }
 
-        List<ListNode> r4 = new Solution().splitByModulo(fromList(1, 2, 3, 4), 2);
-        System.out.println(r4.stream().map(Main::toList).toList());  // [[2, 4], [1, 3]]
-
-        List<ListNode> r5 = new Solution().splitByModulo(fromList(0, 0, 0), 3);
-        System.out.println(r5.stream().map(Main::toList).toList());  // [[0, 0, 0], [], []]
-
-        List<ListNode> r6 = new Solution().splitByModulo(fromList(1), 1);
-        System.out.println(r6.stream().map(Main::toList).toList());  // [[1]]
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's head
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```
@@ -332,7 +400,6 @@ Return [d0.next, d1.next, d2.next] = [[3, 6], [10], [5, 2, 8]]. ✓
 | All values map to the same bucket (`[0, 0, 0], k = 3`) | Every node lands in bucket 0; buckets 1 and 2 stay empty. Return `[[0, 0, 0], [], []]`. |
 | Single node, sparse output (`[4], k = 3`) | One tick routes node `4` to bucket 1 (since `4 % 3 = 1`); buckets 0 and 2 stay empty. Return `[[], [4], []]`. |
 | Even/odd as a special case (`[1, 2, 3, 4], k = 2`) | `value % 2` recovers the even/odd split: evens in bucket 0, odds in bucket 1. Return `[[2, 4], [1, 3]]`. |
-| Negative values | Python and Java disagree on sign of `%` for negatives. <!-- VERIFY: spec assumes non-negative values; if negatives are allowed, normalise with ((v % k) + k) % k --> |
 | Large `k` (`k > n`) | At most `n` buckets fill; the remaining `k - n` buckets stay empty. Time stays `O(n + k)`; space `O(k)`. |
 
 </details>

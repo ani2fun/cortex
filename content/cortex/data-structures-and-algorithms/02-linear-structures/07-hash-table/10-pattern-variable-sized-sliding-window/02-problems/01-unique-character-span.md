@@ -4,6 +4,8 @@ summary: "Given a string s, return the length of the longest substring with dist
 prereqs:
   - 10-pattern-variable-sized-sliding-window/01-pattern
 difficulty: easy
+kind: problem
+topics: [variable-sized-sliding-window, hash-table]
 ---
 
 # Unique character span
@@ -11,15 +13,6 @@ difficulty: easy
 ## Problem Statement
 
 Given a string `s`, return the length of the longest substring with **distinct** characters.
-
-### Example 1
-> -   **Input:** `s = "abcbed"` → **Output:** `4` (`"cbed"`)
-
-### Example 2
-> -   **Input:** `s = "aaaaabc"` → **Output:** `3` (`"abc"`)
-
-### Example 3
-> -   **Input:** `s = "abcdefgh"` → **Output:** `8` (the whole string)
 
 ## Examples
 
@@ -56,134 +49,6 @@ the window to "ab" → length 2.
 ```
 
 <details>
-<summary><h2>Solution</h2></summary>
-
-
-Already implemented above as the canonical example. The core invariant: when the loop body finishes, the window contains only distinct characters.
-
-
-```python run viz=array viz-root=s
-class Solution:
-    def unique_character_span(self, s: str) -> int:
-
-        # Dictionary to store character frequencies
-        frequency = {}
-
-        # To store the maximum length of the substring
-        max_length = 0
-
-        # Sliding window pointers
-        start, end = 0, 0
-
-        while end < len(s):
-
-            # Add the end character to the map
-            end_char = s[end]
-            frequency[end_char] = frequency.get(end_char, 0) + 1
-
-            # If a character appears more than once, shrink the window
-            while frequency.get(end_char, 0) > 1:
-                start_char = s[start]
-                frequency[start_char] -= 1
-
-                # Remove character if count is 0
-                if frequency[start_char] == 0:
-                    del frequency[start_char]
-
-                # Move the start pointer to shrink the window
-                start += 1
-
-            # Update the maximum length of the valid substring
-            max_length = max(max_length, end - start + 1)
-
-            # Expand the window
-            end += 1
-
-        return max_length
-
-
-# Examples from the problem statement
-print(Solution().unique_character_span("abcbed"))    # 4
-print(Solution().unique_character_span("aaaaabc"))   # 3
-print(Solution().unique_character_span("abcdefgh"))  # 8
-
-# Edge cases
-print(Solution().unique_character_span(""))          # 0
-print(Solution().unique_character_span("a"))         # 1
-print(Solution().unique_character_span("aa"))        # 1
-print(Solution().unique_character_span("ab"))        # 2
-print(Solution().unique_character_span("aab"))       # 2
-```
-
-```java run viz=array viz-root=s
-import java.util.*;
-
-public class Main {
-    static class Solution {
-        public int uniqueCharacterSpan(String s) {
-
-            // Map to store character frequencies
-            Map<Character, Integer> frequency = new HashMap<>();
-
-            // To store the maximum length of the substring
-            int maxLength = 0;
-
-            // Sliding window pointers
-            int start = 0;
-            int end = 0;
-
-            while (end < s.length()) {
-
-                // Add the end character to the map
-                char endChar = s.charAt(end);
-                frequency.put(
-                    endChar,
-                    frequency.getOrDefault(endChar, 0) + 1
-                );
-
-                // If a character appears more than once, shrink the window
-                while (frequency.get(endChar) > 1) {
-                    char startChar = s.charAt(start);
-                    frequency.put(startChar, frequency.get(startChar) - 1);
-
-                    // Remove character if count is 0
-                    if (frequency.get(startChar) == 0) {
-                        frequency.remove(startChar);
-                    }
-
-                    // Move the start pointer to shrink the window
-                    start++;
-                }
-
-                // Update the maximum length of the valid substring
-                maxLength = Math.max(maxLength, end - start + 1);
-
-                // Expand the window
-                end++;
-            }
-
-            return maxLength;
-        }
-    }
-
-    public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().uniqueCharacterSpan("abcbed"));    // 4
-        System.out.println(new Solution().uniqueCharacterSpan("aaaaabc"));   // 3
-        System.out.println(new Solution().uniqueCharacterSpan("abcdefgh"));  // 8
-
-        // Edge cases
-        System.out.println(new Solution().uniqueCharacterSpan(""));          // 0
-        System.out.println(new Solution().uniqueCharacterSpan("a"));         // 1
-        System.out.println(new Solution().uniqueCharacterSpan("aa"));        // 1
-        System.out.println(new Solution().uniqueCharacterSpan("ab"));        // 2
-        System.out.println(new Solution().uniqueCharacterSpan("aab"));       // 2
-    }
-}
-```
-
-</details>
-<details>
 <summary><h2>Intuition</h2></summary>
 
 
@@ -217,9 +82,127 @@ The naive approach breaks on cost, not correctness. Restarting the scan from eac
 5. After the loop, return `maxLength`.
 
 </details>
-<details>
-<summary><h2>Dry Run</h2></summary>
 
+```quiz
+{
+  "prompt": "What does unique_character_span(\"abba\") return?",
+  "input": "s = \"abba\"",
+  "options": ["4", "3", "2", "1"],
+  "answer": "2"
+}
+```
+
+## Constraints
+
+- `1 ≤ s.length ≤ 10⁵`
+- `s` consists of lowercase English letters
+
+```python run
+class Solution:
+    def unique_character_span(self, s: str) -> int:
+        # Your code goes here
+        return 0
+
+s = input()
+print(Solution().unique_character_span(s))
+```
+
+```java run
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int uniqueCharacterSpan(String s) {
+            // Your code goes here
+            return 0;
+        }
+    }
+
+    public static void main(String[] args) {
+        String s = new Scanner(System.in).nextLine();
+        System.out.println(new Solution().uniqueCharacterSpan(s));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "s", "type": "string", "placeholder": "abcbed" }
+  ],
+  "cases": [
+    { "args": { "s": "abcbed" }, "expected": "4" },
+    { "args": { "s": "aaaaabc" }, "expected": "3" },
+    { "args": { "s": "abcdefgh" }, "expected": "8" },
+    { "args": { "s": "aab" }, "expected": "2" },
+    { "args": { "s": "a" }, "expected": "1" },
+    { "args": { "s": "aa" }, "expected": "1" },
+    { "args": { "s": "ab" }, "expected": "2" },
+    { "args": { "s": "abba" }, "expected": "2" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Grow the window by incrementing `frequency[s[end]]`; while the count exceeds `1`, evict from the left (decrement and delete-on-zero). After contraction the window is valid — record its length. `O(n)` time, `O(k)` space.
+
+```python solution time=O(n) space=O(k)
+class Solution:
+    def unique_character_span(self, s: str) -> int:
+        frequency = {}
+        max_length = 0
+        start, end = 0, 0
+        while end < len(s):
+            end_char = s[end]
+            frequency[end_char] = frequency.get(end_char, 0) + 1
+            while frequency.get(end_char, 0) > 1:
+                start_char = s[start]
+                frequency[start_char] -= 1
+                if frequency[start_char] == 0:
+                    del frequency[start_char]
+                start += 1
+            max_length = max(max_length, end - start + 1)
+            end += 1
+        return max_length
+
+s = input()
+print(Solution().unique_character_span(s))
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int uniqueCharacterSpan(String s) {
+            Map<Character, Integer> frequency = new HashMap<>();
+            int maxLength = 0, start = 0, end = 0;
+            while (end < s.length()) {
+                char endChar = s.charAt(end);
+                frequency.put(endChar, frequency.getOrDefault(endChar, 0) + 1);
+                while (frequency.get(endChar) > 1) {
+                    char startChar = s.charAt(start);
+                    frequency.put(startChar, frequency.get(startChar) - 1);
+                    if (frequency.get(startChar) == 0) frequency.remove(startChar);
+                    start++;
+                }
+                maxLength = Math.max(maxLength, end - start + 1);
+                end++;
+            }
+            return maxLength;
+        }
+    }
+
+    public static void main(String[] args) {
+        String s = new Scanner(System.in).nextLine();
+        System.out.println(new Solution().uniqueCharacterSpan(s));
+    }
+}
+```
+
+### Dry Run
 
 Walk Example 1: `s = "abcbed"`, expected output `4`. The window is `s[start..end]`; the rule is "no duplicate character":
 
@@ -236,26 +219,17 @@ end=5  add 'd'  freq={b:1,c:1,e:1,d:1}  window "cbed"  len 4  maxLength=4
 return maxLength = 4
 ```
 
-The result `4` matches the expected output — `"cbed"` is the longest substring with no repeated characters.
-
-</details>
-<details>
-<summary><h2>Complexity Analysis</h2></summary>
-
+### Complexity Analysis
 
 | | Cost | Why |
 |---|---|---|
 | **Time** | **O(N)** | `end` advances `N` times; `start` advances at most `N` times. Each character is admitted once and evicted at most once, so the inner `while` is amortised `O(1)`. |
 | **Space** | **O(K)** | The map holds at most one entry per distinct character in the window — `K` is the alphabet size, `O(1)` for a fixed alphabet. |
 
-</details>
-<details>
-<summary><h2>Edge Cases</h2></summary>
-
+### Edge Cases
 
 | Input | Output | Why |
 |---|---|---|
-| `""` | `0` | Empty string — the loop never runs, `maxLength` stays `0`. |
 | `"a"` | `1` | Single character — one valid window of length `1`. |
 | `"aa"` | `1` | The second `'a'` forces an immediate contraction; the window never exceeds length `1`. |
 | `"ab"` | `2` | All distinct — the window spans the whole string. |

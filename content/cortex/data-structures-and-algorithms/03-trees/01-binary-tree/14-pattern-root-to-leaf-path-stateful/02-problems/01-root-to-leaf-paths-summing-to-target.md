@@ -1,119 +1,77 @@
 ---
 title: "Root-to-Leaf Paths Summing to Target"
-summary: "See problem statement below."
+summary: "Return all root-to-leaf paths whose node values sum to a given target using backtracking."
 prereqs:
   - 14-pattern-root-to-leaf-path-stateful/01-pattern
 difficulty: medium
+kind: problem
+topics: [root-to-leaf-path, binary-tree]
 ---
 
 # Problem 1 — Root-to-leaf paths summing to target
 
-> Return *all* root-to-leaf paths whose node values sum to `target`.
+## Problem Statement
+
+Return *all* root-to-leaf paths whose node values sum to `target`.
 
 The accumulator is *the path so far* (push-pop) plus a *countdown of the target* (passed by value). Each call subtracts the current node's value from `target` before recursing; at a leaf the path qualifies when the leaf's own value equals the remaining `target` — i.e. the whole path summed to the original target. Snapshot the path when that holds.
 
-<details>
-<summary><h2>Solution</h2></summary>
+## Examples
 
+**Example 1:**
+```
+Input:  root = [1, 2, 3, 4, null, null, 7], target = 11
+Output: [[1, 3, 7]]
+```
 
+**Example 2:**
+```
+Input:  root = [1, 8, 4, null, null, 2, 4], target = 13
+Output: []
+```
+
+## Constraints
+
+- `0 ≤ number of nodes ≤ 10⁴`
+- `-10⁴ ≤ node.val ≤ 10⁴`
+- `-10⁴ ≤ target ≤ 10⁴`
 
 ```python run viz=binary-tree viz-root=root
-from typing import List, Optional
-
+import json
+from collections import deque
 
 class TreeNode:
-    def __init__(self, val=0, left=None, right=None):
+    def __init__(self, val, left=None, right=None):
         self.val = val
         self.left = left
         self.right = right
 
+class Solution:
+    def root_to_leaf_paths(self, root, target):
+        # Your code goes here — push-pop path discipline, snapshot at leaf when rem == node.val
+        return []
 
-def from_level_order(values):
-    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
     if not values:
         return None
     root = TreeNode(values[0])
-    queue = [root]
+    queue = deque([root])
     i = 1
     while queue and i < len(values):
-        node = queue.pop(0)
-        if i < len(values) and values[i] is not None:
-            node.left = TreeNode(values[i])
-            queue.append(node.left)
-        i += 1
-        if i < len(values) and values[i] is not None:
-            node.right = TreeNode(values[i])
-            queue.append(node.right)
-        i += 1
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
     return root
 
-
-class Solution:
-    def __init__(self):
-
-        # To store the current path as we traverse
-        self.path: List[int] = []
-
-    def root_to_leaf_paths_helper(
-        self,
-        root: Optional[TreeNode],
-        target: int,
-        result: List[List[int]],
-    ) -> None:
-
-        # If the root is null, there is no path, so return
-        if root is None:
-            return
-
-        # Add the current node to the path
-        self.path.append(root.val)
-
-        # If it is a leaf node and the target matches the node value,
-        # add the current path to the result
-        if (
-            root.left is None
-            and root.right is None
-            and root.val == target
-        ):
-            result.append(self.path.copy())
-
-        # Otherwise, subtract the current node's value from target and
-        # continue traversal to left and right subtrees
-        target -= root.val
-
-        # Recursively search in left and right subtrees with updated
-        # target
-        self.root_to_leaf_paths_helper(root.left, target, result)
-        self.root_to_leaf_paths_helper(root.right, target, result)
-
-        # Backtrack by removing the current node from the path
-        self.path.pop()
-
-    def root_to_leaf_paths(
-        self, root: Optional[TreeNode], target: int
-    ) -> List[List[int]]:
-
-        # To store all valid paths
-        result: List[List[int]] = []
-
-        # Start the recursive search from the root node
-        self.root_to_leaf_paths_helper(root, target, result)
-
-        # Return the list of all valid paths
-        return result
-
-
-# Examples from the problem statement
-print(Solution().root_to_leaf_paths(from_level_order([1, 2, 3, 4, None, None, 7]), 11))   # [[1, 3, 7]]
-print(Solution().root_to_leaf_paths(from_level_order([1, 8, 4, None, None, 2, 4]), 13))   # []
-
-# Edge cases
-print(Solution().root_to_leaf_paths(None, 0))                                               # []
-print(Solution().root_to_leaf_paths(from_level_order([5]), 5))                              # [[5]]
-print(Solution().root_to_leaf_paths(from_level_order([5]), 0))                              # []
-print(Solution().root_to_leaf_paths(from_level_order([1, 2, 3]), 3))                        # [[1, 2]]
-print(Solution().root_to_leaf_paths(from_level_order([1, 2, 3]), 4))                        # [[1, 3]]
-print(Solution().root_to_leaf_paths(from_level_order([1, 2, 2]), 3))                        # [[1, 2], [1, 2]] (two identical paths)
+root = build_tree(json.loads(input()))   # the test case's level-order values
+target = int(input())
+print(Solution().root_to_leaf_paths(root, target))
 ```
 
 ```java run viz=binary-tree viz-root=root
@@ -121,103 +79,198 @@ import java.util.*;
 
 public class Main {
     static class TreeNode {
-        int val;
-        TreeNode left;
-        TreeNode right;
-        TreeNode() {}
+        int val; TreeNode left, right;
         TreeNode(int val) { this.val = val; }
     }
 
-    static TreeNode fromLevelOrder(Integer... values) {
+    static class Solution {
+        List<List<Integer>> rootToLeafPaths(TreeNode root, int target) {
+            // Your code goes here — push-pop path discipline, snapshot at leaf when rem == node.val
+            return new ArrayList<>();
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+        int target = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().rootToLeafPaths(root, target));
+    }
+
+    static TreeNode buildTree(Integer[] values) {
         if (values.length == 0 || values[0] == null) return null;
         TreeNode root = new TreeNode(values[0]);
-        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        Deque<TreeNode> queue = new ArrayDeque<>();
         queue.add(root);
         int i = 1;
         while (!queue.isEmpty() && i < values.length) {
             TreeNode node = queue.poll();
-            if (i < values.length && values[i] != null) {
-                node.left = new TreeNode(values[i]);
-                queue.add(node.left);
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
             }
-            i++;
-            if (i < values.length && values[i] != null) {
-                node.right = new TreeNode(values[i]);
-                queue.add(node.right);
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
             }
-            i++;
         }
         return root;
     }
 
-    static class Solution {
+    static Integer[] parseIntegerArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new Integer[0];
+        String[] parts = inner.split(",");
+        Integer[] out = new Integer[parts.length];
+        for (int i = 0; i < parts.length; i++)
+            out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
 
-        // To store the current path as we traverse
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[1, 2, 3, 4, null, null, 7]" },
+    { "id": "target", "label": "target", "type": "int", "placeholder": "11" }
+  ],
+  "cases": [
+    { "args": { "root": "[1, 2, 3, 4, null, null, 7]", "target": "11" }, "expected": "[[1, 3, 7]]" },
+    { "args": { "root": "[1, 8, 4, null, null, 2, 4]", "target": "13" }, "expected": "[]" },
+    { "args": { "root": "[]", "target": "0" }, "expected": "[]" },
+    { "args": { "root": "[5]", "target": "5" }, "expected": "[[5]]" },
+    { "args": { "root": "[5]", "target": "0" }, "expected": "[]" },
+    { "args": { "root": "[1, 2, 3]", "target": "3" }, "expected": "[[1, 2]]" },
+    { "args": { "root": "[1, 2, 3]", "target": "4" }, "expected": "[[1, 3]]" },
+    { "args": { "root": "[1, 2, 2]", "target": "3" }, "expected": "[[1, 2], [1, 2]]" }
+  ]
+}
+```
+
+<details>
+<summary><h2>Solution</h2></summary>
+
+A single top-down recursion carries the path (push-pop) and the running remaining target (passed by value). At each node append to the shared path and subtract from `target`; at a leaf, if the remaining `target` equals the leaf's value the whole path summed to the original target — snapshot a copy. The path argument is never shared across the two recursive calls (the pop undoes each enter), so left and right subtrees can't corrupt each other.
+
+```python solution time=O(n) space=O(h)
+import json
+from collections import deque
+
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+class Solution:
+    def __init__(self):
+        self.path = []
+
+    def root_to_leaf_paths_helper(self, root, target, result):
+        if root is None:
+            return
+        self.path.append(root.val)
+        if root.left is None and root.right is None and root.val == target:
+            result.append(self.path.copy())
+        target -= root.val
+        self.root_to_leaf_paths_helper(root.left, target, result)
+        self.root_to_leaf_paths_helper(root.right, target, result)
+        self.path.pop()
+
+    def root_to_leaf_paths(self, root, target):
+        result = []
+        self.root_to_leaf_paths_helper(root, target, result)
+        return result
+
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
+
+root = build_tree(json.loads(input()))   # the test case's level-order values
+target = int(input())
+print(Solution().root_to_leaf_paths(root, target))
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+    static class TreeNode {
+        int val; TreeNode left, right;
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static class Solution {
         private List<Integer> path = new ArrayList<>();
 
-        private void rootToLeafPathsHelper(
-            TreeNode root,
-            int target,
-            List<List<Integer>> result
-        ) {
-
-            // If the root is null, there is no path, so return
-            if (root == null) {
-                return;
-            }
-
-            // Add the current node to the path
+        private void rootToLeafPathsHelper(TreeNode root, int target, List<List<Integer>> result) {
+            if (root == null) return;
             path.add(root.val);
-
-            // If it is a leaf node and the target matches the node value,
-            // add the current path to the result
-            if (
-                root.left == null && root.right == null && root.val == target
-            ) {
+            if (root.left == null && root.right == null && root.val == target)
                 result.add(new ArrayList<>(path));
-            }
-
-            // Otherwise, subtract the current node's value from target and
-            // continue traversal to left and right subtrees
             target -= root.val;
-
-            // Recursively search in left and right subtrees with updated
-            // target
             rootToLeafPathsHelper(root.left, target, result);
             rootToLeafPathsHelper(root.right, target, result);
-
-            // Backtrack by removing the current node from the path
             path.remove(path.size() - 1);
         }
 
-        public List<List<Integer>> rootToLeafPaths(
-            TreeNode root,
-            int target
-        ) {
-
-            // To store all valid paths
+        List<List<Integer>> rootToLeafPaths(TreeNode root, int target) {
             List<List<Integer>> result = new ArrayList<>();
-
-            // Start the recursive search from the root node
             rootToLeafPathsHelper(root, target, result);
-
-            // Return the list of all valid paths
             return result;
         }
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().rootToLeafPaths(fromLevelOrder(1, 2, 3, 4, null, null, 7), 11));   // [[1, 3, 7]]
-        System.out.println(new Solution().rootToLeafPaths(fromLevelOrder(1, 8, 4, null, null, 2, 4), 13));   // []
+        Scanner sc = new Scanner(System.in);
+        TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+        int target = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().rootToLeafPaths(root, target));
+    }
 
-        // Edge cases
-        System.out.println(new Solution().rootToLeafPaths(null, 0));                                          // []
-        System.out.println(new Solution().rootToLeafPaths(fromLevelOrder(5), 5));                             // [[5]]
-        System.out.println(new Solution().rootToLeafPaths(fromLevelOrder(5), 0));                             // []
-        System.out.println(new Solution().rootToLeafPaths(fromLevelOrder(1, 2, 3), 3));                       // [[1, 2]]
-        System.out.println(new Solution().rootToLeafPaths(fromLevelOrder(1, 2, 3), 4));                       // [[1, 3]]
-        System.out.println(new Solution().rootToLeafPaths(fromLevelOrder(1, 2, 2), 3));                       // [[1, 2], [1, 2]]
+    static TreeNode buildTree(Integer[] values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+            }
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+            }
+        }
+        return root;
+    }
+
+    static Integer[] parseIntegerArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new Integer[0];
+        String[] parts = inner.split(",");
+        Integer[] out = new Integer[parts.length];
+        for (int i = 0; i < parts.length; i++)
+            out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

@@ -15,9 +15,13 @@ Separate chaining resolved collisions in side-lists — but every entry then car
 
 ## See It Work
 
-A capacity-8 table where `1`, `9`, `17` all hash to slot `1` (`% 8`), so they probe to slots 1, 2, 3. Then delete `9` and confirm `17` is still findable — that's what the tombstone protects. Run it.
+A capacity-8 table where `1`, `9`, `17` all hash to slot `1` (`% 8`), so they probe to slots 1, 2, 3. Then delete the middle key and confirm the last is still findable — that's what the tombstone protects. Run it.
+
+> The input is `[k1, k2, k3]` — three keys that all hash to the same slot. The driver inserts them (value = key), deletes `k2`, then looks up `k3` (should be found) and `k2` (should be gone).
 
 ```python run viz=array
+import ast
+
 EMPTY = None
 DELETED = object()                  # tombstone sentinel
 
@@ -54,11 +58,90 @@ class LinearProbing:
                 self.slots[i] = DELETED; return True       # tombstone, NOT empty
         return False
 
+keys = ast.literal_eval(input())            # [1, 9, 17]
+k1, k2, k3 = keys[0], keys[1], keys[2]
 t = LinearProbing(8)
-t.put(1, "a"); t.put(9, "b"); t.put(17, "c")   # collide at slot 1 → probe to 1,2,3
-t.delete(9)                                     # leaves a tombstone at slot 2
-print(t.get(17))                                # c — probe walks PAST the tombstone
-print(t.get(9))                                 # None
+t.put(k1, k1); t.put(k2, k2); t.put(k3, k3)   # value = key
+t.delete(k2)                                    # leaves a tombstone
+r3 = t.get(k3)
+r2 = t.get(k2)
+print(r3 if r3 is not None else "null")         # found by walking past the tombstone
+print(r2 if r2 is not None else "null")         # None → null
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+  static final int[] DELETED = new int[0];   // tombstone sentinel
+
+  static class LinearProbing {
+    int capacity; int[][] slots;
+    LinearProbing(int cap) { capacity = cap; slots = new int[cap][]; }   // null = EMPTY
+    void put(int key, int value) {
+      int start = Math.floorMod(key, capacity), firstDel = -1;
+      for (int step = 0; step < capacity; step++) {
+        int i = (start + step) % capacity;
+        int[] s = slots[i];
+        if (s == null) { slots[firstDel != -1 ? firstDel : i] = new int[]{key, value}; return; }
+        if (s == DELETED) { if (firstDel == -1) firstDel = i; }
+        else if (s[0] == key) { slots[i] = new int[]{key, value}; return; }
+      }
+    }
+    Integer get(int key) {
+      int start = Math.floorMod(key, capacity);
+      for (int step = 0; step < capacity; step++) {
+        int[] s = slots[(start + step) % capacity];
+        if (s == null) return null;
+        if (s != DELETED && s[0] == key) return s[1];
+      }
+      return null;
+    }
+    boolean delete(int key) {
+      int start = Math.floorMod(key, capacity);
+      for (int step = 0; step < capacity; step++) {
+        int i = (start + step) % capacity;
+        int[] s = slots[i];
+        if (s == null) return false;
+        if (s != DELETED && s[0] == key) { slots[i] = DELETED; return true; }
+      }
+      return false;
+    }
+  }
+
+  // "[1, 9, 17]" → {1, 9, 17}
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+
+  public static void main(String[] args) {
+    int[] keys = parseIntArray(new Scanner(System.in).nextLine());
+    int k1 = keys[0], k2 = keys[1], k3 = keys[2];
+    LinearProbing t = new LinearProbing(8);
+    t.put(k1, k1); t.put(k2, k2); t.put(k3, k3);  // value = key
+    t.delete(k2);
+    System.out.println(t.get(k3));   // found by walking past the tombstone
+    System.out.println(t.get(k2));   // null
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "keys", "label": "keys", "type": "int[]", "placeholder": "[1, 9, 17]" }
+  ],
+  "cases": [
+    { "args": { "keys": "[1, 9, 17]" }, "expected": "17\nnull" },
+    { "args": { "keys": "[3, 11, 19]" }, "expected": "19\nnull" },
+    { "args": { "keys": "[2, 10, 18]" }, "expected": "18\nnull" }
+  ]
+}
 ```
 
 ## How It Works
@@ -102,9 +185,67 @@ It hashes to slot `2`, which is taken, so it probes `2 → 3` (both taken) → s
 
 ## Your Turn
 
-The reusable open-addressing table (with tombstone delete):
+The reusable open-addressing table (with tombstone delete). Implement `put`, `get`, and run the driver — it inserts two keys that collide, then looks up both plus a missing key.
 
 ```python run viz=array
+EMPTY = None
+DELETED = object()
+
+class LinearProbing:
+    def __init__(self, capacity=8):
+        self.capacity = capacity
+        self.slots = [EMPTY] * capacity
+    def put(self, key, value):
+        # Your code goes here
+        pass
+    def get(self, key):
+        # Your code goes here
+        return None
+
+t = LinearProbing()
+t.put(2, 20); t.put(10, 100)          # collide at slot 2 → 2, 3
+r2 = t.get(2); r10 = t.get(10); r99 = t.get(99)
+print(str(r2) + " " + str(r10) + " " + ("null" if r99 is None else str(r99)))
+```
+
+```java run viz=array
+public class Main {
+  static final int[] DELETED = new int[0];
+  static class LinearProbing {
+    int capacity; int[][] slots;
+    LinearProbing(int cap) { capacity = cap; slots = new int[cap][]; }
+    void put(int key, int value) {
+      // Your code goes here
+    }
+    Integer get(int key) {
+      // Your code goes here
+      return null;
+    }
+  }
+  public static void main(String[] args) {
+    LinearProbing t = new LinearProbing(8);
+    t.put(2, 20); t.put(10, 100);
+    System.out.println(t.get(2) + " " + t.get(10) + " " + t.get(99));
+  }
+}
+```
+
+```testcases
+{
+  "args": [],
+  "cases": [
+    { "args": {}, "expected": "20 100 null" }
+  ],
+  "verifying": "solution"
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+The `put` loop probes forward from the home slot, reusing the first tombstone it passes, and stops at `EMPTY` (insert) or the matching key (update). The `get` loop walks the same path but stops at `EMPTY` (key absent) or the matching key (found) — skipping tombstones. Tombstones on delete are what keep `get` from prematurely stopping at a gap left by a previous removal.
+
+```python solution time=O(1) space=O(n)
 EMPTY = None
 DELETED = object()
 
@@ -132,11 +273,12 @@ class LinearProbing:
         return None
 
 t = LinearProbing()
-t.put(2, "x"); t.put(10, "y")          # collide at slot 2 → 2, 3
-print(t.get(2), t.get(10), t.get(99))  # x y None
+t.put(2, 20); t.put(10, 100)          # collide at slot 2 → 2, 3
+r2 = t.get(2); r10 = t.get(10); r99 = t.get(99)
+print(str(r2) + " " + str(r10) + " " + ("null" if r99 is None else str(r99)))
 ```
 
-```java run viz=array
+```java solution
 public class Main {
   static final int[] DELETED = new int[0];
   static class LinearProbing {
@@ -164,11 +306,13 @@ public class Main {
   }
   public static void main(String[] args) {
     LinearProbing t = new LinearProbing(8);
-    t.put(2, 20); t.put(10, 100);          // collide at slot 2 → 2, 3
-    System.out.println(t.get(2) + " " + t.get(10) + " " + t.get(99));   // 20 100 null
+    t.put(2, 20); t.put(10, 100);
+    System.out.println(t.get(2) + " " + t.get(10) + " " + t.get(99));
   }
 }
 ```
+
+</details>
 
 ## Reflect & Connect
 

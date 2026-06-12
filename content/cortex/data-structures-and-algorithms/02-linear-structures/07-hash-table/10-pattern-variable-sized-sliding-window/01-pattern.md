@@ -20,7 +20,7 @@ Find the length of the longest substring of `"abcabcbb"` with no repeating chara
 > ▶ Run it, then click **Visualise** — `end` grows the window and adds to the count map; a repeat triggers `start` to shrink from the left until the window is valid again.
 
 ```python run viz=array viz-root=s
-s = "abcabcbb"
+s = input()                           # the test case's string
 count = {}                            # window state: char → count
 start = best = 0
 for end in range(len(s)):
@@ -30,7 +30,43 @@ for end in range(len(s)):
         count[s[start]] -= 1
         start += 1
     best = max(best, end - start + 1) # longest valid window so far
-print(best)                           # 3
+print(best)
+```
+
+```java run viz=array viz-root=s
+import java.util.*;
+
+public class Main {
+  public static void main(String[] args) {
+    String s = new Scanner(System.in).nextLine();   // the test case's string
+    Map<Character, Integer> count = new HashMap<>();
+    int start = 0, best = 0;
+    for (int end = 0; end < s.length(); end++) {
+      char ch = s.charAt(end);
+      count.merge(ch, 1, Integer::sum);             // grow: fold in the entering char
+      while (count.get(ch) > 1) {                  // invalid (a repeat) → shrink
+        count.merge(s.charAt(start), -1, Integer::sum);
+        start++;
+      }
+      best = Math.max(best, end - start + 1);       // longest valid window so far
+    }
+    System.out.println(best);
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "s", "type": "string", "placeholder": "abcabcbb" }
+  ],
+  "cases": [
+    { "args": { "s": "abcabcbb" }, "expected": "3" },
+    { "args": { "s": "pwwkew" }, "expected": "3" },
+    { "args": { "s": "bbbbb" }, "expected": "1" },
+    { "args": { "s": "abcdef" }, "expected": "6" }
+  ]
+}
 ```
 
 ## How It Works
@@ -90,8 +126,8 @@ def longest_unique(s):
         best = max(best, end - start + 1)
     return best
 
-print(longest_unique("pwwkew"))           # 3  ("wke")
-print(longest_unique("bbbbb"))            # 1
+s = input()
+print(longest_unique(s))
 ```
 
 ```java run viz=array
@@ -114,11 +150,77 @@ public class Main {
   }
 
   public static void main(String[] args) {
-    System.out.println(longestUnique("pwwkew"));   // 3
-    System.out.println(longestUnique("bbbbb"));    // 1
+    String s = new Scanner(System.in).nextLine();
+    System.out.println(longestUnique(s));
   }
 }
 ```
+
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "s", "type": "string", "placeholder": "pwwkew" }
+  ],
+  "cases": [
+    { "args": { "s": "pwwkew" }, "expected": "3" },
+    { "args": { "s": "bbbbb" }, "expected": "1" },
+    { "args": { "s": "abcabcbb" }, "expected": "3" },
+    { "args": { "s": "abcdef" }, "expected": "6" },
+    { "args": { "s": "a" }, "expected": "1" },
+    { "args": { "s": "dvdf" }, "expected": "3" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+The grow-right / shrink-left skeleton with a count map as window state: extend `end` every step, folding the new character into `count`; while the newest character's count exceeds `1` (a repeat), evict from the left. After the inner loop the window is valid — every count is ≤ 1. Record `end − start + 1`. Both pointers only move forward, so total work is `≤ 2n` — `O(n)` time, `O(σ)` space.
+
+```python solution time=O(n) space=O(σ)
+def longest_unique(s):
+    count = {}
+    start = best = 0
+    for end in range(len(s)):
+        ch = s[end]
+        count[ch] = count.get(ch, 0) + 1
+        while count[ch] > 1:              # shrink while invalid
+            count[s[start]] -= 1
+            start += 1
+        best = max(best, end - start + 1)
+    return best
+
+s = input()
+print(longest_unique(s))
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+  static int longestUnique(String s) {
+    Map<Character, Integer> count = new HashMap<>();
+    int start = 0, best = 0;
+    for (int end = 0; end < s.length(); end++) {
+      char ch = s.charAt(end);
+      count.merge(ch, 1, Integer::sum);
+      while (count.get(ch) > 1) {         // shrink while invalid
+        count.merge(s.charAt(start), -1, Integer::sum);
+        start++;
+      }
+      best = Math.max(best, end - start + 1);
+    }
+    return best;
+  }
+
+  public static void main(String[] args) {
+    String s = new Scanner(System.in).nextLine();
+    System.out.println(longestUnique(s));
+  }
+}
+```
+
+</details>
 
 Drill the family in **Practice** — [Unique Character Span](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-variable-sized-sliding-window/problems/unique-character-span), [K Characters Span](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-variable-sized-sliding-window/problems/k-characters-span), [Maximal Character Swap](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-variable-sized-sliding-window/problems/maximal-character-swap), [Subarray Sum Equals K](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-variable-sized-sliding-window/problems/subarray-sum-equals-k), and [Twin in Proximity](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-variable-sized-sliding-window/problems/twin-in-proximity).
 

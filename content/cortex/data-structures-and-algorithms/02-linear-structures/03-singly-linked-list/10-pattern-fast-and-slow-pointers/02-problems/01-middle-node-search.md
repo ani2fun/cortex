@@ -4,6 +4,8 @@ summary: "Given the head of a singly linked list, write a function to find and r
 prereqs:
   - 10-pattern-fast-and-slow-pointers/01-pattern
 difficulty: easy
+kind: problem
+topics: [fast-and-slow-pointers, singly-linked-list]
 ---
 
 # Middle node search
@@ -37,8 +39,92 @@ Output: 42
 Explanation: A one-node list — head is both the start and the middle.
 ```
 
+## Constraints
 
----
+- `1 ≤ list length ≤ 10⁵`
+- `-10⁴ ≤ node.val ≤ 10⁴`
+
+```python run viz=linked-list viz-root=head
+import ast
+
+class ListNode:
+    def __init__(self, val, next=None):
+        self.val = val
+        self.next = next
+
+class Solution:
+    def middle_node_search(self, head):
+        # Your code goes here — slow = fast = head, while fast and fast.next,
+        # advance slow by 1 and fast by 2. Return slow.val.
+        pass
+
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
+
+head = build_list(ast.literal_eval(input()))   # the test case's head
+print(Solution().middle_node_search(head))
+```
+
+```java run viz=linked-list viz-root=head
+import java.util.*;
+
+public class Main {
+    static class ListNode {
+        int val; ListNode next;
+        ListNode(int val) { this.val = val; }
+        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+    }
+
+    static class Solution {
+        int middleNodeSearch(ListNode head) {
+            // Your code goes here — slow = fast = head, while fast and fast.next,
+            // advance slow by 1 and fast by 2. Return slow.val.
+            return 0;
+        }
+    }
+
+    public static void main(String[] args) {
+        ListNode head = buildList(parseIntArray(new Scanner(System.in).nextLine()));
+        System.out.println(new Solution().middleNodeSearch(head));
+    }
+
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+        ListNode head = null;
+        for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+        return head;
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's head
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "head", "label": "head", "type": "int[]", "placeholder": "[5, 7, 3, 10, 6]" }
+  ],
+  "cases": [
+    { "args": { "head": "[5, 7, 3, 10, 6]" }, "expected": "3" },
+    { "args": { "head": "[5, 7, 3, 10, 6, 8]" }, "expected": "10" },
+    { "args": { "head": "[42]" }, "expected": "42" },
+    { "args": { "head": "[1, 2]" }, "expected": "2" },
+    { "args": { "head": "[1, 2, 3]" }, "expected": "2" },
+    { "args": { "head": "[1, 2, 3, 4]" }, "expected": "3" },
+    { "args": { "head": "[1, 2, 3, 4, 5, 6, 7]" }, "expected": "4" }
+  ]
+}
+```
 
 <details>
 <summary><h2>Intuition</h2></summary>
@@ -73,7 +159,7 @@ Run the 2:1 two-speed walk from the head until `fast` runs out of room.
 2. **Guard the fast pointer's reach.** Loop while `fast != null` AND `fast.next != null`. The first clause prevents dereferencing a `null` cursor; the second guarantees `fast.next.next` is safe to read on the next line. The order matters — short-circuit evaluation requires `fast != null` first.
 3. **Advance `slow` by one hop.** Set `slow = slow.next`. After tick `t`, `slow` is at index `t`.
 4. **Advance `fast` by two hops.** Set `fast = fast.next.next`. After tick `t`, `fast` is at index `2 * t`.
-5. **Return `slow` when the loop exits.** `fast` has either reached the tail (odd length — guard fails on `fast.next == null`) or stepped one past it (even length — guard fails on `fast == null`). Either way, `slow` is parked at the middle (second middle on even-length lists, by convention).
+5. **Return `slow.val` when the loop exits.** `fast` has either reached the tail (odd length — guard fails on `fast.next == null`) or stepped one past it (even length — guard fails on `fast == null`). Either way, `slow` is parked at the middle (second middle on even-length lists, by convention).
 
 </details>
 <details>
@@ -81,41 +167,16 @@ Run the 2:1 two-speed walk from the head until `fast` runs out of room.
 
 ### Solution
 
-
-
-```python run viz=linked-list viz-root=head
-from typing import Optional
-
+```python solution time=O(n) space=O(1)
+import ast
 
 class ListNode:
-    def __init__(self, val=0, nxt=None):
+    def __init__(self, val, next=None):
         self.val = val
-        self.next = nxt
-
-
-def from_list(values):
-    if not values:
-        return None
-    head = ListNode(values[0])
-    cur = head
-    for v in values[1:]:
-        cur.next = ListNode(v)
-        cur = cur.next
-    return head
-
-
-def to_list(head):
-    out = []
-    while head is not None:
-        out.append(head.val)
-        head = head.next
-    return out
-
+        self.next = next
 
 class Solution:
-    def middle_node_search(
-        self, head: Optional[ListNode]
-    ) -> Optional[ListNode]:
+    def middle_node_search(self, head):
 
         # Initialize slow pointer to the head of the list
         slow = head
@@ -138,45 +199,30 @@ class Solution:
 
         # Return the middle node or the second middle node (in case of
         # even number of nodes)
-        return slow
+        return slow.val
 
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
 
-print(Solution().middle_node_search(from_list([5, 7, 3, 10, 6])).val)      # 3
-print(Solution().middle_node_search(from_list([5, 7, 3, 10, 6, 8])).val)   # 10
-
-# Edge cases
-print(Solution().middle_node_search(from_list([1])).val)                    # 1
-print(Solution().middle_node_search(from_list([1, 2])).val)                 # 2
-print(Solution().middle_node_search(from_list([1, 2, 3])).val)              # 2
-print(Solution().middle_node_search(from_list([1, 2, 3, 4])).val)           # 3
-print(Solution().middle_node_search(from_list([1, 2, 3, 4, 5, 6, 7])).val) # 4
+head = build_list(ast.literal_eval(input()))   # the test case's head
+print(Solution().middle_node_search(head))
 ```
 
-```java run viz=linked-list viz-root=head
+```java solution
 import java.util.*;
 
 public class Main {
     static class ListNode {
-        int val;
-        ListNode next;
-        ListNode() {}
+        int val; ListNode next;
         ListNode(int val) { this.val = val; }
         ListNode(int val, ListNode next) { this.val = val; this.next = next; }
     }
 
-    static ListNode fromList(int... values) {
-        if (values.length == 0) return null;
-        ListNode head = new ListNode(values[0]);
-        ListNode cur = head;
-        for (int i = 1; i < values.length; i++) {
-            cur.next = new ListNode(values[i]);
-            cur = cur.next;
-        }
-        return head;
-    }
-
     static class Solution {
-        public ListNode middleNodeSearch(ListNode head) {
+        int middleNodeSearch(ListNode head) {
 
             // Initialize slow pointer to the head of the list
             ListNode slow = head;
@@ -196,20 +242,29 @@ public class Main {
 
             // Return the middle node or the second middle node (in case of
             // even number of nodes)
-            return slow;
+            return slow.val;
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().middleNodeSearch(fromList(5, 7, 3, 10, 6)).val);      // 3
-        System.out.println(new Solution().middleNodeSearch(fromList(5, 7, 3, 10, 6, 8)).val);   // 10
+        ListNode head = buildList(parseIntArray(new Scanner(System.in).nextLine()));
+        System.out.println(new Solution().middleNodeSearch(head));
+    }
 
-        // Edge cases
-        System.out.println(new Solution().middleNodeSearch(fromList(1)).val);                    // 1
-        System.out.println(new Solution().middleNodeSearch(fromList(1, 2)).val);                 // 2
-        System.out.println(new Solution().middleNodeSearch(fromList(1, 2, 3)).val);              // 2
-        System.out.println(new Solution().middleNodeSearch(fromList(1, 2, 3, 4)).val);           // 3
-        System.out.println(new Solution().middleNodeSearch(fromList(1, 2, 3, 4, 5, 6, 7)).val); // 4
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+        ListNode head = null;
+        for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+        return head;
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's head
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```
@@ -231,7 +286,7 @@ Tick 2: guard — fast=3, fast.next=10 → continue
 
 Tick 3: guard — fast=6, fast.next=null → exit
 
-Return slow = 3. ✓
+Return slow.val = 3. ✓
 ```
 
 ### Complexity Analysis
@@ -245,12 +300,11 @@ Return slow = 3. ✓
 
 | Case | What happens |
 |---|---|
-| Empty list (`head is null`) | Loop guard fails on `fast != null` at tick 0; `slow` is still `null`; return `null`. |
-| Single node (`[42]`) | Loop guard fails on `fast.next != null` at tick 0; `slow` is still `head`; return `head`. |
-| Two nodes (`[1, 2]`) | Tick 1: `slow = 2`, `fast = null`. Guard fails. Return `slow = 2` — the second middle, by convention. |
-| Three nodes (`[1, 2, 3]`) | Tick 1: `slow = 2`, `fast = 3`. Guard fails on `fast.next == null`. Return `slow = 2` — the true middle. |
-| Even length, four nodes (`[1, 2, 3, 4]`) | Tick 1: `slow = 2`, `fast = 3`. Tick 2: `slow = 3`, `fast = null`. Guard fails. Return `slow = 3` — the second middle. |
-| All equal values (`[7, 7, 7, 7, 7]`) | Values are never inspected; the same three ticks run and return the middle node by identity (the third `7`). |
+| Single node (`[42]`) | Loop guard fails on `fast.next != null` at tick 0; `slow` is still `head`; return `head.val`. |
+| Two nodes (`[1, 2]`) | Tick 1: `slow = 2`, `fast = null`. Guard fails. Return `slow.val = 2` — the second middle, by convention. |
+| Three nodes (`[1, 2, 3]`) | Tick 1: `slow = 2`, `fast = 3`. Guard fails on `fast.next == null`. Return `slow.val = 2` — the true middle. |
+| Even length, four nodes (`[1, 2, 3, 4]`) | Tick 1: `slow = 2`, `fast = 3`. Tick 2: `slow = 3`, `fast = null`. Guard fails. Return `slow.val = 3` — the second middle. |
+| All equal values (`[7, 7, 7, 7, 7]`) | Values are never inspected; the same three ticks run and return the middle node's value. |
 
 </details>
 <details>

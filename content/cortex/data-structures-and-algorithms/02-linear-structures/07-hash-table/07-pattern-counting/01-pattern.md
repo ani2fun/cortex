@@ -29,7 +29,41 @@ def first_unique(s):
             return ch
     return None
 
-print(first_unique("leetcode"))               # l
+s = input()                                   # the test case's string
+r = first_unique(s)
+print(r if r is not None else "null")         # 'null' when every character repeats
+```
+
+```java run viz=hashmap viz-root=counts viz-kind=hashmap
+import java.util.*;
+
+public class Main {
+  static Character firstUnique(String s) {
+    Map<Character, Integer> counts = new HashMap<>();
+    for (char ch : s.toCharArray()) counts.merge(ch, 1, Integer::sum);   // tally — O(1) avg
+    for (char ch : s.toCharArray()) if (counts.get(ch) == 1) return ch;  // first count==1
+    return null;
+  }
+
+  public static void main(String[] args) {
+    String s = new Scanner(System.in).nextLine();   // the test case's string
+    System.out.println(firstUnique(s));             // 'null' when every character repeats
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "s", "type": "string", "placeholder": "leetcode" }
+  ],
+  "cases": [
+    { "args": { "s": "leetcode" }, "expected": "l" },
+    { "args": { "s": "loveleetcode" }, "expected": "v" },
+    { "args": { "s": "aabb" }, "expected": "null" },
+    { "args": { "s": "aabbc" }, "expected": "c" }
+  ]
+}
 ```
 
 ## How It Works
@@ -73,7 +107,7 @@ Because the map has **no reliable order** for "first". The question asks for the
 
 ## Your Turn
 
-The reusable frequency-count solution:
+The reusable frequency-count solution — tally in one pass, then scan in input order for the first count-1 character:
 
 ```python run viz=array
 def first_unique(s):
@@ -85,8 +119,9 @@ def first_unique(s):
             return ch
     return None
 
-print(first_unique("loveleetcode"))   # v
-print(first_unique("aabb"))            # None
+s = input()
+r = first_unique(s)
+print(r if r is not None else "null")
 ```
 
 ```java run viz=array
@@ -101,11 +136,65 @@ public class Main {
   }
 
   public static void main(String[] args) {
-    System.out.println(firstUnique("loveleetcode"));   // v
-    System.out.println(firstUnique("aabb"));           // null
+    String s = new Scanner(System.in).nextLine();
+    System.out.println(firstUnique(s));
   }
 }
 ```
+
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "s", "type": "string", "placeholder": "loveleetcode" }
+  ],
+  "cases": [
+    { "args": { "s": "loveleetcode" }, "expected": "v" },
+    { "args": { "s": "aabb" }, "expected": "null" },
+    { "args": { "s": "leetcode" }, "expected": "l" },
+    { "args": { "s": "aabbccdde" }, "expected": "e" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+The two-pass counting shape: pass one builds the `char → count` map (`O(1)` average per update, `O(n)` total); pass two re-walks the *string* — not the map — returning the first character whose count is `1`. Scanning the string, not the map, is what guarantees "first by input position," since a plain hash map has no positional order. `O(n)` time, `O(k)` space for `k` distinct characters. The driver prints `null` (the Java-native spelling) when every character repeats, so Python and Java agree.
+
+```python solution time=O(n) space=O(k)
+def first_unique(s):
+    counts = {}
+    for ch in s:
+        counts[ch] = counts.get(ch, 0) + 1
+    for ch in s:
+        if counts[ch] == 1:
+            return ch
+    return None
+
+s = input()
+r = first_unique(s)
+print(r if r is not None else "null")
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+  static Character firstUnique(String s) {
+    Map<Character, Integer> counts = new HashMap<>();
+    for (char ch : s.toCharArray()) counts.merge(ch, 1, Integer::sum);   // tally
+    for (char ch : s.toCharArray()) if (counts.get(ch) == 1) return ch;  // first count==1
+    return null;
+  }
+
+  public static void main(String[] args) {
+    String s = new Scanner(System.in).nextLine();
+    System.out.println(firstUnique(s));
+  }
+}
+```
+
+</details>
 
 Drill the family in **Practice** — [First Non-Repeating Character](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-counting/problems/first-non-repeating-character), [Constructibility Check](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-counting/problems/constructibility-check), [Anagram Checker](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-counting/problems/anagram-checker), [Build Palindrome](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-counting/problems/build-palindrome), and [Cluster Anagrams](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-counting/problems/cluster-anagrams).
 

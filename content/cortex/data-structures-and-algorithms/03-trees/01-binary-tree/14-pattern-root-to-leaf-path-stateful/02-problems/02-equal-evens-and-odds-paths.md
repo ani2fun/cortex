@@ -1,125 +1,77 @@
 ---
 title: "Equal Evens-and-Odds Paths"
-summary: "See problem statement below."
+summary: "Return all root-to-leaf paths where the count of even-valued nodes equals the count of odd-valued nodes."
 prereqs:
   - 14-pattern-root-to-leaf-path-stateful/01-pattern
 difficulty: medium
+kind: problem
+topics: [root-to-leaf-path, binary-tree]
 ---
 
 # Problem 2 — Equal evens-and-odds paths
 
-> Return all root-to-leaf paths where the number of even-valued nodes equals the number of odd-valued nodes.
+## Problem Statement
 
-Same shape as Problem 1, but the per-path bookkeeping is *two counters* (`evenCount`, `oddCount`) instead of one running sum. At each leaf, snapshot the path if the counts match.
+Return all root-to-leaf paths where the number of even-valued nodes equals the number of odd-valued nodes.
 
-<details>
-<summary><h2>Solution</h2></summary>
+Same shape as Problem 1, but the per-path bookkeeping is *two counters* (`even_count`, `odd_count`) instead of one running sum. At each leaf, snapshot the path if the counts match.
 
+## Examples
 
+**Example 1:**
+```
+Input:  root = [1, 2, 4]
+Output: [[1, 2], [1, 4]]
+```
+
+**Example 2:**
+```
+Input:  root = [1, 8, 4, null, null, 2, 4]
+Output: [[1, 8]]
+```
+
+## Constraints
+
+- `0 ≤ number of nodes ≤ 10⁴`
+- `0 ≤ node.val ≤ 10⁴`
+- A path qualifies when `#even == #odd` at the leaf
 
 ```python run viz=binary-tree viz-root=root
-from typing import List, Optional
-
+import json
+from collections import deque
 
 class TreeNode:
-    def __init__(self, val=0, left=None, right=None):
+    def __init__(self, val, left=None, right=None):
         self.val = val
         self.left = left
         self.right = right
 
+class Solution:
+    def equal_paths(self, root):
+        # Your code goes here — push-pop path, carry even_count/odd_count down as args,
+        # snapshot the path at a leaf when even_count == odd_count
+        return []
 
-def from_level_order(values):
-    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
     if not values:
         return None
     root = TreeNode(values[0])
-    queue = [root]
+    queue = deque([root])
     i = 1
     while queue and i < len(values):
-        node = queue.pop(0)
-        if i < len(values) and values[i] is not None:
-            node.left = TreeNode(values[i])
-            queue.append(node.left)
-        i += 1
-        if i < len(values) and values[i] is not None:
-            node.right = TreeNode(values[i])
-            queue.append(node.right)
-        i += 1
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
     return root
 
-
-class Solution:
-
-    # To store the current path as we traverse
-    def __init__(self):
-        self.path: List[int] = []
-
-    def equal_paths_helper(
-        self,
-        root: Optional[TreeNode],
-        even_count: int,
-        odd_count: int,
-        result: List[List[int]],
-    ) -> None:
-
-        # If the root is null, there is no path, so return
-        if root is None:
-            return
-
-        # Add the current node to the path
-        self.path.append(root.val)
-
-        # If the current node is even, increment even count
-        if root.val % 2 == 0:
-            even_count += 1
-
-        # Else, increment odd count
-        else:
-            odd_count += 1
-
-        # If current node is a leaf, check if even and odd counts are
-        # equal
-        if root.left is None and root.right is None:
-
-            # If the counts are equal, add the current path to the result
-            if even_count == odd_count:
-                result.append(self.path.copy())
-
-        # Recursively traverse left and right subtrees
-        self.equal_paths_helper(
-            root.left, even_count, odd_count, result
-        )
-        self.equal_paths_helper(
-            root.right, even_count, odd_count, result
-        )
-
-        # Backtrack by removing the current node from the path
-        self.path.pop()
-
-    def equal_paths(
-        self, root: Optional[TreeNode]
-    ) -> List[List[int]]:
-
-        # To store all valid paths
-        result: List[List[int]] = []
-
-        # Start the recursive search from the root node with initial even
-        # and odd counts as 0
-        self.equal_paths_helper(root, 0, 0, result)
-        return result
-
-
-# Examples from the problem statement
-print(Solution().equal_paths(from_level_order([1, 2, 4])))                     # [[1, 2], [1, 4]]
-print(Solution().equal_paths(from_level_order([1, 8, 4, None, None, 2, 4])))   # [[1, 8]]
-
-# Edge cases
-print(Solution().equal_paths(None))                                              # []
-print(Solution().equal_paths(from_level_order([1])))                             # [] (odd only, 1 odd 0 even)
-print(Solution().equal_paths(from_level_order([2])))                             # [] (even only)
-print(Solution().equal_paths(from_level_order([1, 2])))                          # [[1, 2]] (1 odd, 1 even)
-print(Solution().equal_paths(from_level_order([1, 2, 3])))                       # [[1, 2]] (1+2: 1 odd 1 even; 1+3: 2 odd 0 even)
-print(Solution().equal_paths(from_level_order([2, 1, 3, None, None, None, 4])))  # [[2, 3, 4]] (2+3+4: 2 even 1 odd; 2+1: 1 each yes; 2+3+4: 2 even 1 odd no)
+root = build_tree(json.loads(input()))   # the test case's level-order values
+print(Solution().equal_paths(root))
 ```
 
 ```java run viz=binary-tree viz-root=root
@@ -127,107 +79,201 @@ import java.util.*;
 
 public class Main {
     static class TreeNode {
-        int val;
-        TreeNode left;
-        TreeNode right;
-        TreeNode() {}
+        int val; TreeNode left, right;
         TreeNode(int val) { this.val = val; }
     }
 
-    static TreeNode fromLevelOrder(Integer... values) {
+    static class Solution {
+        List<List<Integer>> equalPaths(TreeNode root) {
+            // Your code goes here — push-pop path, carry evenCount/oddCount down as args,
+            // snapshot at a leaf when evenCount == oddCount
+            return new ArrayList<>();
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+        System.out.println(new Solution().equalPaths(root));
+    }
+
+    static TreeNode buildTree(Integer[] values) {
         if (values.length == 0 || values[0] == null) return null;
         TreeNode root = new TreeNode(values[0]);
-        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        Deque<TreeNode> queue = new ArrayDeque<>();
         queue.add(root);
         int i = 1;
         while (!queue.isEmpty() && i < values.length) {
             TreeNode node = queue.poll();
-            if (i < values.length && values[i] != null) {
-                node.left = new TreeNode(values[i]);
-                queue.add(node.left);
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
             }
-            i++;
-            if (i < values.length && values[i] != null) {
-                node.right = new TreeNode(values[i]);
-                queue.add(node.right);
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
             }
-            i++;
         }
         return root;
     }
 
-    static class Solution {
+    static Integer[] parseIntegerArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new Integer[0];
+        String[] parts = inner.split(",");
+        Integer[] out = new Integer[parts.length];
+        for (int i = 0; i < parts.length; i++)
+            out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
 
-        // To store the current path as we traverse
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[1, 2, 4]" }
+  ],
+  "cases": [
+    { "args": { "root": "[1, 2, 4]" }, "expected": "[[1, 2], [1, 4]]" },
+    { "args": { "root": "[1, 8, 4, null, null, 2, 4]" }, "expected": "[[1, 8]]" },
+    { "args": { "root": "[]" }, "expected": "[]" },
+    { "args": { "root": "[1]" }, "expected": "[]" },
+    { "args": { "root": "[2]" }, "expected": "[]" },
+    { "args": { "root": "[1, 2]" }, "expected": "[[1, 2]]" },
+    { "args": { "root": "[1, 2, 3]" }, "expected": "[[1, 2]]" }
+  ]
+}
+```
+
+<details>
+<summary><h2>Solution</h2></summary>
+
+The backtracking skeleton is identical to path-sum II, but two counters — `even_count` and `odd_count` — travel down as arguments alongside the shared path. At each node increment the appropriate counter; at a leaf, snapshot the path only when the counts are equal. Because both counters are function arguments, left and right subtrees can't interfere.
+
+```python solution time=O(n) space=O(h)
+import json
+from collections import deque
+
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+class Solution:
+    def __init__(self):
+        self.path = []
+
+    def equal_paths_helper(self, root, even_count, odd_count, result):
+        if root is None:
+            return
+        self.path.append(root.val)
+        if root.val % 2 == 0:
+            even_count += 1
+        else:
+            odd_count += 1
+        if root.left is None and root.right is None:
+            if even_count == odd_count:
+                result.append(self.path.copy())
+        self.equal_paths_helper(root.left, even_count, odd_count, result)
+        self.equal_paths_helper(root.right, even_count, odd_count, result)
+        self.path.pop()
+
+    def equal_paths(self, root):
+        result = []
+        self.equal_paths_helper(root, 0, 0, result)
+        return result
+
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
+
+root = build_tree(json.loads(input()))   # the test case's level-order values
+print(Solution().equal_paths(root))
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+    static class TreeNode {
+        int val; TreeNode left, right;
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static class Solution {
         private List<Integer> path = new ArrayList<>();
 
-        private void equalPathsHelper(
-            TreeNode root,
-            int evenCount,
-            int oddCount,
-            List<List<Integer>> result
-        ) {
-
-            // If the root is null, there is no path, so return
-            if (root == null) {
-                return;
-            }
-
-            // Add the current node to the path
+        private void equalPathsHelper(TreeNode root, int evenCount, int oddCount, List<List<Integer>> result) {
+            if (root == null) return;
             path.add(root.val);
-
-            // If the current node is even, increment even count
-            if (root.val % 2 == 0) {
-                evenCount++;
-            }
-
-            // Else, increment odd count
-            else {
-                oddCount++;
-            }
-
-            // If current node is a leaf, check if even and odd counts are
-            // equal
+            if (root.val % 2 == 0) evenCount++;
+            else oddCount++;
             if (root.left == null && root.right == null) {
-
-                // If the counts are equal, add the current path to the
-                // result
-                if (evenCount == oddCount) {
+                if (evenCount == oddCount)
                     result.add(new ArrayList<>(path));
-                }
             }
-
-            // Recursively traverse left and right subtrees
             equalPathsHelper(root.left, evenCount, oddCount, result);
             equalPathsHelper(root.right, evenCount, oddCount, result);
-
-            // Backtrack by removing the current node from the path
             path.remove(path.size() - 1);
         }
 
-        public List<List<Integer>> equalPaths(TreeNode root) {
-
-            // To store all valid paths
+        List<List<Integer>> equalPaths(TreeNode root) {
             List<List<Integer>> result = new ArrayList<>();
-
-            // Start the recursive search from the root node with initial
-            // even and odd counts as 0
             equalPathsHelper(root, 0, 0, result);
             return result;
         }
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().equalPaths(fromLevelOrder(1, 2, 4)));                     // [[1, 2], [1, 4]]
-        System.out.println(new Solution().equalPaths(fromLevelOrder(1, 8, 4, null, null, 2, 4)));   // [[1, 8]]
+        Scanner sc = new Scanner(System.in);
+        TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+        System.out.println(new Solution().equalPaths(root));
+    }
 
-        // Edge cases
-        System.out.println(new Solution().equalPaths(null));                                         // []
-        System.out.println(new Solution().equalPaths(fromLevelOrder(1)));                            // []
-        System.out.println(new Solution().equalPaths(fromLevelOrder(2)));                            // []
-        System.out.println(new Solution().equalPaths(fromLevelOrder(1, 2)));                         // [[1, 2]]
-        System.out.println(new Solution().equalPaths(fromLevelOrder(1, 2, 3)));                      // [[1, 2]]
+    static TreeNode buildTree(Integer[] values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+            }
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+            }
+        }
+        return root;
+    }
+
+    static Integer[] parseIntegerArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new Integer[0];
+        String[] parts = inner.split(",");
+        Integer[] out = new Integer[parts.length];
+        for (int i = 0; i < parts.length; i++)
+            out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

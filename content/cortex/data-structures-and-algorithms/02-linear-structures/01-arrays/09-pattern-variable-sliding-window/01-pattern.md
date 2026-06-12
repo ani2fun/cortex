@@ -15,13 +15,15 @@ The brute force re-examines every start/end pair — `O(n²)`. But there's struc
 
 ## See It Work
 
-Longest stretch you can make all-ones by flipping at most `k = 1` zero — i.e. the longest window holding at most one `0`. Run it, then **Visualise** the window grow and shrink.
+Longest stretch you can make all-ones by flipping at most `k` zeros — i.e. the longest window holding at most `k` `0`s. Pick a case below, **Run** it, then **Visualise** the window grow and shrink. The first lines just read the case's `arr` and `k` from input — the pattern is the loop.
 
-> ▶ Run it, then click **Visualise** — `end` grows the window; when it holds too many zeros, `start` shrinks it from the left until it's valid again.
+> ▶ Run it against a case, then click **Visualise** — `end` grows the window; when it holds too many zeros, `start` shrinks it from the left until it's valid again.
 
 ```python run viz=array viz-root=arr
-arr = [1, 1, 0, 0, 1, 1, 1, 0]
-k = 1                              # may keep at most one 0 in the window
+import ast
+
+arr = ast.literal_eval(input())    # the test case's arr
+k = int(input())                   # may keep at most k zeros in the window
 start = zeros = best = 0
 for end in range(len(arr)):        # grow the window to the right
     if arr[end] == 0:
@@ -31,7 +33,54 @@ for end in range(len(arr)):        # grow the window to the right
             zeros -= 1
         start += 1
     best = max(best, end - start + 1)
-print(best)                        # 4  (longest run with ≤ 1 zero: indices 3..6)
+print(best)                        # longest run with ≤ k zeros
+```
+
+```java run viz=array viz-root=arr
+import java.util.*;
+
+public class Main {
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());          // the test case's arr
+    int k = Integer.parseInt(sc.nextLine().trim());    // at most k zeros in the window
+    int start = 0, zeros = 0, best = 0;
+    for (int end = 0; end < arr.length; end++) {       // grow the window to the right
+      if (arr[end] == 0) zeros++;
+      while (zeros > k) {                              // too many zeros → shrink from the left
+        if (arr[start] == 0) zeros--;
+        start++;
+      }
+      best = Math.max(best, end - start + 1);
+    }
+    System.out.println(best);                          // longest run with ≤ k zeros
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's arr
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[1, 1, 0, 0, 1, 1, 1, 0]" },
+    { "id": "k", "label": "k", "type": "int", "placeholder": "1" }
+  ],
+  "cases": [
+    { "args": { "arr": "[1, 1, 0, 0, 1, 1, 1, 0]", "k": "1" }, "expected": "4" },
+    { "args": { "arr": "[1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0]", "k": "1" }, "expected": "5" },
+    { "args": { "arr": "[0, 0, 0, 0]", "k": "2" }, "expected": "2" },
+    { "args": { "arr": "[1, 1, 1, 1]", "k": "0" }, "expected": "4" }
+  ]
+}
 ```
 
 ## How It Works
@@ -79,9 +128,75 @@ No — and this is the crux. `start` advanced three steps *here*, but those are 
 
 ## Your Turn
 
-The reusable longest-valid shape — grow, shrink-while-invalid, measure:
+Implement the reusable longest-valid shape yourself — grow on the right, shrink from the left *while invalid*, and measure after each shrink. Return the longest window holding at most `k` zeros.
 
-```python run viz=array
+```python run viz=array viz-root=arr
+import ast
+
+def longest_with_at_most_k_zeros(arr, k):
+    # Your code goes here — grow end, shrink start while zeros > k,
+    # and track the longest valid window length.
+    return 0
+
+arr = ast.literal_eval(input())      # the test case's arr
+k = int(input())                     # the test case's k
+print(longest_with_at_most_k_zeros(arr, k))
+```
+
+```java run viz=array viz-root=arr
+import java.util.*;
+
+public class Main {
+  static int longestWithAtMostKZeros(int[] arr, int k) {
+    // Your code goes here — grow end, shrink start while zeros > k,
+    // and track the longest valid window length.
+    return 0;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());
+    int k = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(longestWithAtMostKZeros(arr, k));
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's arr
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[1, 1, 0, 0, 1, 1, 1, 0]" },
+    { "id": "k", "label": "k", "type": "int", "placeholder": "1" }
+  ],
+  "cases": [
+    { "args": { "arr": "[1, 1, 0, 0, 1, 1, 1, 0]", "k": "1" }, "expected": "4" },
+    { "args": { "arr": "[1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0]", "k": "1" }, "expected": "5" },
+    { "args": { "arr": "[1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 0]", "k": "2" }, "expected": "9" },
+    { "args": { "arr": "[0, 0, 0, 0]", "k": "2" }, "expected": "2" },
+    { "args": { "arr": "[1, 1, 1, 1]", "k": "0" }, "expected": "4" },
+    { "args": { "arr": "[0, 0, 0]", "k": "0" }, "expected": "0" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+The longest-valid shape: `end` grows the window every step and folds `arr[end]` into the zero count; whenever the count exceeds `k` the window is invalid, so the inner `while` advances `start` — decrementing the count each time it steps past a `0` — until the budget holds again. Measure `end - start + 1` *after* the shrink, when the window is guaranteed valid. Both pointers move forward only, so the inner loop is amortized away to `O(n)` time, `O(1)` space.
+
+```python solution time=O(n) space=O(1)
+import ast
+
 def longest_with_at_most_k_zeros(arr, k):
     start = zeros = best = 0
     for end in range(len(arr)):
@@ -94,10 +209,14 @@ def longest_with_at_most_k_zeros(arr, k):
         best = max(best, end - start + 1)
     return best
 
-print(longest_with_at_most_k_zeros([1, 1, 0, 0, 1, 1, 1, 0], 1))   # 4
+arr = ast.literal_eval(input())
+k = int(input())
+print(longest_with_at_most_k_zeros(arr, k))
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
   static int longestWithAtMostKZeros(int[] arr, int k) {
     int start = 0, zeros = 0, best = 0;
@@ -111,15 +230,30 @@ public class Main {
     }
     return best;
   }
+
   public static void main(String[] args) {
-    System.out.println(longestWithAtMostKZeros(new int[]{1, 1, 0, 0, 1, 1, 1, 0}, 1));  // 4
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());
+    int k = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(longestWithAtMostKZeros(arr, k));
+  }
+
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
   }
 }
 ```
 
-Drill the family in **Practice** — [Consecutive Ones With K Flips](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-variable-sliding-window/problems/consecutive-ones-with-k-flips) and [Maximum Subarray Sum](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-variable-sliding-window/problems/maximum-subarray-sum).
+</details>
 
 ## Reflect & Connect
+
+Drill the family in **Practice** — [Consecutive Ones With K Flips](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-variable-sliding-window/problems/consecutive-ones-with-k-flips) and [Maximum Subarray Sum](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-variable-sliding-window/problems/maximum-subarray-sum).
 
 This is one of the highest-leverage interview patterns — once you see "longest/shortest subarray satisfying a condition," it's almost always a variable window:
 

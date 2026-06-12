@@ -15,29 +15,45 @@ The [array representation](/cortex/data-structures-and-algorithms/trees/binary-t
 
 ## See It Work
 
-A node type with three fields, and a tree built by wiring nodes together. You hold only the `root` — every other node is reachable from it by following references.
+A node type with three fields, and a tree built by wiring nodes together. You hold only the `root` — every other node is reachable from it by following references. Pick a tree and **Run** it — `size` and `height` fall straight out of the recursive definition, and reading any node (e.g. `root.left.right.val` for the 5-node tree `[1, 2, 3, 4, 5]`) is just three reference-follows from the root.
 
 ```python run viz=binary-tree viz-root=root
+import json
+from collections import deque
+
 class TreeNode:
     def __init__(self, val=0, left=None, right=None):
         self.val, self.left, self.right = val, left, right
 
-#        1
-#       / \
-#      2   3      <- 3 is a leaf
-#     / \
-#    4   5        <- 4, 5 are leaves
-root = TreeNode(1, TreeNode(2, TreeNode(4), TreeNode(5)), TreeNode(3))
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
 
 def size(n):   return 0 if n is None else 1 + size(n.left) + size(n.right)
 def height(n): return -1 if n is None else 1 + max(height(n.left), height(n.right))
 
-print("size:", size(root))                              # 5 nodes
-print("height:", height(root))                          # 2 edges (1->2->4)
-print("walk root.left.right.val:", root.left.right.val) # 5
+root = build_tree(json.loads(input()))
+print("size:", size(root))
+print("height:", height(root))
 ```
 
 ```java run viz=binary-tree viz-root=root
+import java.util.*;
+
 public class Main {
     static class TreeNode {
         int val; TreeNode left, right;
@@ -46,17 +62,62 @@ public class Main {
     }
     static int size(TreeNode n)   { return n == null ? 0 : 1 + size(n.left) + size(n.right); }
     static int height(TreeNode n) { return n == null ? -1 : 1 + Math.max(height(n.left), height(n.right)); }
+
     public static void main(String[] a) {
-        //                1 -> (2 -> 4, 5), (3)
-        TreeNode root = new TreeNode(1, new TreeNode(2, new TreeNode(4), new TreeNode(5)), new TreeNode(3));
+        Scanner sc = new Scanner(System.in);
+        TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
         System.out.println("size: " + size(root));
         System.out.println("height: " + height(root));
-        System.out.println("walk root.left.right.val: " + root.left.right.val);
+    }
+
+    static TreeNode buildTree(Integer[] values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+            }
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+            }
+        }
+        return root;
+    }
+
+    static Integer[] parseIntegerArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new Integer[0];
+        String[] parts = inner.split(",");
+        Integer[] out = new Integer[parts.length];
+        for (int i = 0; i < parts.length; i++)
+            out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```
 
-Both print `size: 5`, `height: 2`, and `walk root.left.right.val: 5`. There's no backing array and no index math — just five `TreeNode` objects and the `left`/`right` references between them. Reading the `5` is three reference-follows from the root (`1` → `left` `2` → `right` `5`), each `O(1)`; `size` and `height` recurse *down* from the root, bottoming out on `null`.
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[1, 2, 3, 4, 5]" }
+  ],
+  "cases": [
+    { "args": { "root": "[1, 2, 3, 4, 5]" }, "expected": "size: 5\nheight: 2" },
+    { "args": { "root": "[1, 2, 3, 4, 5, 6, 7]" }, "expected": "size: 7\nheight: 2" },
+    { "args": { "root": "[1]" }, "expected": "size: 1\nheight: 0" },
+    { "args": { "root": "[]" }, "expected": "size: 0\nheight: -1" },
+    { "args": { "root": "[1, 2, null, 3]" }, "expected": "size: 3\nheight: 2" }
+  ]
+}
+```
+
+There's no backing array and no index math — just `TreeNode` objects and the `left`/`right` references between them. `size` and `height` recurse *down* from the root, bottoming out on `null`.
 
 ## How It Works
 
@@ -106,26 +167,155 @@ The linked layout uses exactly `n` allocations — `O(N)`, no matter the shape. 
 
 ## Your Turn
 
-The single most-used tree primitive is "recurse on `left` and `right`, stop at `null`." Here it is collecting the **leaves** — the nodes whose *both* child slots are `null`:
+The single most-used tree primitive is "recurse on `left` and `right`, stop at `null`." Here it is collecting the **leaves** — the nodes whose *both* child slots are `null`.
 
-**Predict:** for the tree `1 → (2 → 4, 5), (3)`, which values are leaves, and in what order does a left-before-right recursion emit them?
+**Predict:** for the tree `[1, 2, 3, 4, 5]`, which values are leaves, and in what order does a left-before-right recursion emit them?
 
 ```python run viz=binary-tree viz-root=root
+import json
+from collections import deque
+
 class TreeNode:
     def __init__(self, val=0, left=None, right=None):
         self.val, self.left, self.right = val, left, right
-root = TreeNode(1, TreeNode(2, TreeNode(4), TreeNode(5)), TreeNode(3))
+
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
+
+def leaves(n):
+    # Your code goes here — return [] for None; [n.val] if both children are None;
+    # else recurse left then right and concatenate.
+    pass
+
+root = build_tree(json.loads(input()))
+print("leaves:", leaves(root))
+```
+
+```java run viz=binary-tree viz-root=root
+import java.util.*;
+
+public class Main {
+    static class TreeNode {
+        int val; TreeNode left, right;
+        TreeNode(int val) { this.val = val; }
+        TreeNode(int val, TreeNode left, TreeNode right) { this.val = val; this.left = left; this.right = right; }
+    }
+    static List<Integer> leaves(TreeNode n) {
+        // Your code goes here — return empty list for null; singleton [n.val] at a leaf;
+        // else recurse left then right, addAll both.
+        return new ArrayList<>();
+    }
+    public static void main(String[] a) {
+        Scanner sc = new Scanner(System.in);
+        TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+        System.out.println("leaves: " + leaves(root));
+    }
+
+    static TreeNode buildTree(Integer[] values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+            }
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+            }
+        }
+        return root;
+    }
+
+    static Integer[] parseIntegerArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new Integer[0];
+        String[] parts = inner.split(",");
+        Integer[] out = new Integer[parts.length];
+        for (int i = 0; i < parts.length; i++)
+            out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[1, 2, 3, 4, 5]" }
+  ],
+  "cases": [
+    { "args": { "root": "[1, 2, 3, 4, 5]" }, "expected": "leaves: [4, 5, 3]" },
+    { "args": { "root": "[1, 2, 3, 4, 5, 6, 7]" }, "expected": "leaves: [4, 5, 6, 7]" },
+    { "args": { "root": "[1]" }, "expected": "leaves: [1]" },
+    { "args": { "root": "[]" }, "expected": "leaves: []" },
+    { "args": { "root": "[1, 2, null, 3]" }, "expected": "leaves: [3]" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+The two `null` checks *are* the algorithm: the first handles a `null` child slot (an absent child), the second is the leaf base case that stops the recursion. Every traversal in the next lessons is this same shape — follow `left`/`right` down from the root, bottom out on `null`.
+
+```python solution time=O(n) space=O(h)
+import json
+from collections import deque
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val, self.left, self.right = val, left, right
+
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
 
 def leaves(n):
     if n is None:                          return []        # null child slot: nothing here
     if n.left is None and n.right is None: return [n.val]   # null on BOTH sides: a leaf
     return leaves(n.left) + leaves(n.right)                 # else recurse, left first
 
-print("leaves:", leaves(root))   # [4, 5, 3]
+root = build_tree(json.loads(input()))
+print("leaves:", leaves(root))
 ```
 
-```java run viz=binary-tree viz-root=root
+```java solution
 import java.util.*;
+
 public class Main {
     static class TreeNode {
         int val; TreeNode left, right;
@@ -140,13 +330,44 @@ public class Main {
         return out;
     }
     public static void main(String[] a) {
-        TreeNode root = new TreeNode(1, new TreeNode(2, new TreeNode(4), new TreeNode(5)), new TreeNode(3));
+        Scanner sc = new Scanner(System.in);
+        TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
         System.out.println("leaves: " + leaves(root));
+    }
+
+    static TreeNode buildTree(Integer[] values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+            }
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+            }
+        }
+        return root;
+    }
+
+    static Integer[] parseIntegerArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new Integer[0];
+        String[] parts = inner.split(",");
+        Integer[] out = new Integer[parts.length];
+        for (int i = 0; i < parts.length; i++)
+            out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```
 
-Both print `leaves: [4, 5, 3]`. The two `null` checks *are* the algorithm: the first handles a `null` child slot (an absent child), the second is the leaf base case that stops the recursion. Every traversal in the next lessons is this same shape — follow `left`/`right` down from the root, bottom out on `null`.
+</details>
 
 ## Reflect & Connect
 

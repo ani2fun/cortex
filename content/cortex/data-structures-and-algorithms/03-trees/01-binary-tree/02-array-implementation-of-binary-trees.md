@@ -15,34 +15,61 @@ Number the nodes in **level order** — root is index 0, then its children 1 and
 
 ## See It Work
 
-No `Node` class, no `.left`/`.right` — just an array and three formulas. Here's a complete tree stored flat, navigated by arithmetic:
+No `Node` class, no `.left`/`.right` — just an array and three formulas. Here's a complete tree stored flat, navigated by arithmetic. Pick an array and an index, then **Run** it.
 
-```python run viz=binary-tree viz-root=root
-tree = [1, 2, 3, 4, 5, 6, 7]     # complete binary tree, level order, no pointers
+```python run
+import ast
+tree = ast.literal_eval(input())
+i = int(input())
+
 def left(i):   return 2 * i + 1
 def right(i):  return 2 * i + 2
 def parent(i): return (i - 1) // 2
 
-i = 1                             # node at index 1 (value 2)
 print(f"node at index {i} = {tree[i]}")
 print(f"  left  child: index {left(i)} = {tree[left(i)]}")
 print(f"  right child: index {right(i)} = {tree[right(i)]}")
 print(f"  parent:      index {parent(i)} = {tree[parent(i)]}")
 ```
 
-```java run viz=binary-tree viz-root=root
+```java run
+import java.util.*;
 public class Main {
     static int left(int i)   { return 2 * i + 1; }
     static int right(int i)  { return 2 * i + 2; }
     static int parent(int i) { return (i - 1) / 2; }
     public static void main(String[] x) {
-        int[] tree = {1, 2, 3, 4, 5, 6, 7};     // complete binary tree, level order, no pointers
-        int i = 1;                              // node at index 1 (value 2)
+        Scanner sc = new Scanner(System.in);
+        int[] tree = parseIntArray(sc.nextLine());
+        int i = Integer.parseInt(sc.nextLine().trim());
         System.out.println("node at index " + i + " = " + tree[i]);
         System.out.println("  left  child: index " + left(i) + " = " + tree[left(i)]);
         System.out.println("  right child: index " + right(i) + " = " + tree[right(i)]);
         System.out.println("  parent:      index " + parent(i) + " = " + tree[parent(i)]);
     }
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int j = 0; j < parts.length; j++) out[j] = Integer.parseInt(parts[j]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "tree", "label": "tree (level-order)", "type": "int[]", "placeholder": "[1, 2, 3, 4, 5, 6, 7]" },
+    { "id": "i", "label": "index i", "type": "int", "placeholder": "1" }
+  ],
+  "cases": [
+    { "args": { "tree": "[1, 2, 3, 4, 5, 6, 7]", "i": "1" }, "expected": "node at index 1 = 2\n  left  child: index 3 = 4\n  right child: index 4 = 5\n  parent:      index 0 = 1" },
+    { "args": { "tree": "[1, 2, 3, 4, 5, 6, 7]", "i": "2" }, "expected": "node at index 2 = 3\n  left  child: index 5 = 6\n  right child: index 6 = 7\n  parent:      index 0 = 1" },
+    { "args": { "tree": "[10, 20, 30, 40, 50, 60, 70]", "i": "1" }, "expected": "node at index 1 = 20\n  left  child: index 3 = 40\n  right child: index 4 = 50\n  parent:      index 0 = 10" },
+    { "args": { "tree": "[10, 20, 30, 40, 50, 60, 70]", "i": "2" }, "expected": "node at index 2 = 30\n  left  child: index 5 = 60\n  right child: index 6 = 70\n  parent:      index 0 = 10" }
+  ]
 }
 ```
 
@@ -76,7 +103,7 @@ The "only complete trees" caveat sounds mild until you compute what an incomplet
 
 **Predict before you run:** a complete binary tree of `n` nodes needs an array of `n` slots. A *degenerate* tree — `n` nodes in a right-leaning chain — needs how many slots? Linear in `n`, double `n`, or something far worse?
 
-```python run viz=binary-tree viz-root=root
+```python run
 def complete_slots(n):   return n           # complete tree: exactly n slots, no gaps
 def degenerate_slots(n): return 2 ** n - 1  # right-chain: deepest node at index 2^n - 2 -> array size 2^n - 1
 for n in [4, 10, 20]:
@@ -96,8 +123,9 @@ The array layout makes one operation almost free that's awkward with pointers: *
 
 **Predict:** for a complete tree stored as the array `[10, 20, 30, 40, 50, 60, 70]`, how do you produce a level-order (BFS) traversal — and how do the levels map to index ranges?
 
-```python run viz=binary-tree viz-root=root
-tree = [10, 20, 30, 40, 50, 60, 70]     # complete tree, level order
+```python run
+import ast
+tree = ast.literal_eval(input())
 # level-order (BFS) of a complete tree stored in an array = just read left-to-right
 print("level-order:", list(tree))
 # levels fall on index ranges: level L occupies [2^L - 1 .. 2^(L+1) - 2]
@@ -109,11 +137,12 @@ while start < len(tree):
 print("by level:", levels)
 ```
 
-```java run viz=binary-tree viz-root=root
+```java run
 import java.util.*;
 public class Main {
     public static void main(String[] x) {
-        int[] tree = {10, 20, 30, 40, 50, 60, 70};     // complete tree, level order
+        Scanner sc = new Scanner(System.in);
+        int[] tree = parseIntArray(sc.nextLine());
         System.out.println("level-order: " + Arrays.toString(tree));   // BFS = read left-to-right
         List<List<Integer>> levels = new ArrayList<>();
         int L = 0, start = 0;
@@ -126,6 +155,28 @@ public class Main {
         }
         System.out.println("by level: " + levels);
     }
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int j = 0; j < parts.length; j++) out[j] = Integer.parseInt(parts[j]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "tree", "label": "tree (level-order)", "type": "int[]", "placeholder": "[10, 20, 30, 40, 50, 60, 70]" }
+  ],
+  "cases": [
+    { "args": { "tree": "[10, 20, 30, 40, 50, 60, 70]" }, "expected": "level-order: [10, 20, 30, 40, 50, 60, 70]\nby level: [[10], [20, 30], [40, 50, 60, 70]]" },
+    { "args": { "tree": "[1, 2, 3]" }, "expected": "level-order: [1, 2, 3]\nby level: [[1], [2, 3]]" },
+    { "args": { "tree": "[5]" }, "expected": "level-order: [5]\nby level: [[5]]" },
+    { "args": { "tree": "[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]" }, "expected": "level-order: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]\nby level: [[1], [2, 3], [4, 5, 6, 7], [8, 9, 10, 11, 12, 13, 14, 15]]" }
+  ]
 }
 ```
 

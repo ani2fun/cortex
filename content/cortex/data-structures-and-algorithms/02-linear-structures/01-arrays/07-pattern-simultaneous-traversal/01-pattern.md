@@ -17,13 +17,15 @@ So give each sequence **its own pointer**, and never restart: compare the two fr
 
 ## See It Work
 
-Merge two sorted arrays. One pointer on each; at every step the smaller front wins and its pointer advances. Run it, then **Visualise** the merged result fill.
+Merge two sorted arrays. One pointer on each; at every step the smaller front wins and its pointer advances. Pick a test case below, **Run** it against a case, then **Visualise** the merged result fill. The first lines just read the case's `a` and `b` from input — the pattern is the loop.
 
-> ▶ Run it, then click **Visualise** — `i` walks `a`, `j` walks `b`; the smaller front is appended and only its pointer moves.
+> ▶ Run it against a case, then click **Visualise** — `i` walks `a`, `j` walks `b`; the smaller front is appended and only its pointer moves.
 
 ```python run viz=array viz-root=merged
-a = [1, 4, 7, 10]
-b = [2, 5, 8]
+import ast
+
+a = ast.literal_eval(input())            # the test case's a (sorted)
+b = ast.literal_eval(input())            # the test case's b (sorted)
 i = j = 0
 merged = []
 while i < len(a) and j < len(b):
@@ -32,7 +34,53 @@ while i < len(a) and j < len(b):
     else:
         merged.append(b[j]); j += 1     # b's front is smaller → take it
 merged += a[i:] + b[j:]                  # one array emptied; append the other's tail
-print(merged)                            # [1, 2, 4, 5, 7, 8, 10]
+print(merged)
+```
+
+```java run viz=array viz-root=merged
+import java.util.*;
+
+public class Main {
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] a = parseIntArray(sc.nextLine());   // the test case's a (sorted)
+    int[] b = parseIntArray(sc.nextLine());   // the test case's b (sorted)
+    List<Integer> merged = new ArrayList<>();
+    int i = 0, j = 0;
+    while (i < a.length && j < b.length) {
+      if (a[i] <= b[j]) merged.add(a[i++]);   // a's front is smaller → take it
+      else merged.add(b[j++]);                // b's front is smaller → take it
+    }
+    while (i < a.length) merged.add(a[i++]);  // one array emptied;
+    while (j < b.length) merged.add(b[j++]);  // append the other's tail
+    System.out.println(merged);
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's array
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "a", "label": "a (sorted)", "type": "int[]", "placeholder": "[1, 4, 7, 10]" },
+    { "id": "b", "label": "b (sorted)", "type": "int[]", "placeholder": "[2, 5, 8]" }
+  ],
+  "cases": [
+    { "args": { "a": "[1, 4, 7, 10]", "b": "[2, 5, 8]" }, "expected": "[1, 2, 4, 5, 7, 8, 10]" },
+    { "args": { "a": "[1, 2, 3]", "b": "[4, 5, 6]" }, "expected": "[1, 2, 3, 4, 5, 6]" },
+    { "args": { "a": "[]", "b": "[1, 2, 3]" }, "expected": "[1, 2, 3]" },
+    { "args": { "a": "[1, 1, 2]", "b": "[1, 3]" }, "expected": "[1, 1, 1, 2, 3]" }
+  ]
+}
 ```
 
 ## How It Works
@@ -79,9 +127,74 @@ Just one step — append `a`'s leftover tail `[7]`. The pointers never revisit a
 
 ## Your Turn
 
-The reusable merge — one pointer per array, then drain the tail:
+Implement the reusable merge yourself — one pointer per array, take the smaller front each step, then drain whichever tail is left over.
 
 ```python run viz=array
+import ast
+
+def merge(a, b):
+    # Your code goes here — one pointer per array; take the smaller
+    # front each step, then append whatever tail is left over.
+    return []
+
+a = ast.literal_eval(input())      # the test case's a (sorted)
+b = ast.literal_eval(input())      # the test case's b (sorted)
+print(merge(a, b))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+  static List<Integer> merge(int[] a, int[] b) {
+    // Your code goes here — one pointer per array; take the smaller
+    // front each step, then append whatever tail is left over.
+    return new ArrayList<>();
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] a = parseIntArray(sc.nextLine());
+    int[] b = parseIntArray(sc.nextLine());
+    System.out.println(merge(a, b));
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's array
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "a", "label": "a (sorted)", "type": "int[]", "placeholder": "[1, 4, 7, 10]" },
+    { "id": "b", "label": "b (sorted)", "type": "int[]", "placeholder": "[2, 5, 8]" }
+  ],
+  "cases": [
+    { "args": { "a": "[1, 4, 7, 10]", "b": "[2, 5, 8]" }, "expected": "[1, 2, 4, 5, 7, 8, 10]" },
+    { "args": { "a": "[1, 2, 3]", "b": "[4, 5, 6]" }, "expected": "[1, 2, 3, 4, 5, 6]" },
+    { "args": { "a": "[]", "b": "[]" }, "expected": "[]" },
+    { "args": { "a": "[5]", "b": "[1, 2, 3]" }, "expected": "[1, 2, 3, 5]" },
+    { "args": { "a": "[1, 1, 2]", "b": "[1, 3]" }, "expected": "[1, 1, 1, 2, 3]" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+The merge step in full: one pointer per array, compare the two fronts, append the smaller and advance only its pointer. When either pointer runs off its array, the loop stops and a cleanup step drains whatever's left in the other (it's already sorted and all larger than everything emitted). Each pointer moves forward only and never restarts, so the whole merge is `O(n+m)` time and `O(n+m)` for the output.
+
+```python solution time=O(n+m) space=O(n+m)
+import ast
+
 def merge(a, b):
     out, i, j = [], 0, 0
     while i < len(a) and j < len(b):
@@ -92,10 +205,12 @@ def merge(a, b):
     out += a[i:] + b[j:]
     return out
 
-print(merge([1, 4, 7, 10], [2, 5, 8]))   # [1, 2, 4, 5, 7, 8, 10]
+a = ast.literal_eval(input())      # the test case's a (sorted)
+b = ast.literal_eval(input())      # the test case's b (sorted)
+print(merge(a, b))
 ```
 
-```java run viz=array
+```java solution
 import java.util.*;
 
 public class Main {
@@ -110,15 +225,31 @@ public class Main {
     while (j < b.length) out.add(b[j++]);   // drain b's tail
     return out;
   }
-  public static void main(String[] x) {
-    System.out.println(merge(new int[]{1, 4, 7, 10}, new int[]{2, 5, 8}));  // [1, 2, 4, 5, 7, 8, 10]
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] a = parseIntArray(sc.nextLine());
+    int[] b = parseIntArray(sc.nextLine());
+    System.out.println(merge(a, b));
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's array
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
   }
 }
 ```
 
-Drill the family in **Practice** — [Merge Sorted Arrays](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-simultaneous-traversal/problems/merge-sorted-arrays) and [Subsequence Checker](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-simultaneous-traversal/problems/subsequence-checker).
+</details>
 
 ## Reflect & Connect
+
+Drill the family in **Practice** — [Merge Sorted Arrays](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-simultaneous-traversal/problems/merge-sorted-arrays) and [Subsequence Checker](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-simultaneous-traversal/problems/subsequence-checker).
 
 This pattern is everywhere two ordered things meet:
 

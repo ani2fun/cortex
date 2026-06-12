@@ -17,19 +17,66 @@ So don't recompute — **update**. Keep a running aggregate and, on each slide, 
 
 ## See It Work
 
-Largest sum of `k = 3` consecutive values. The first window is summed once; every slide is a single add-and-subtract. Run it, then **Visualise**.
+Largest sum of `k` consecutive values. The first window is summed once; every slide is a single add-and-subtract. Pick a case below, **Run** it, then **Visualise**. The first lines just read the case's `arr` and `k` — the pattern is the loop.
 
-> ▶ Run it, then click **Visualise** — after the first window, each step adds `arr[i]` (entering) and subtracts `arr[i-k]` (leaving).
+> ▶ Run it against a case, then click **Visualise** — after the first window, each step adds `arr[i]` (entering) and subtracts `arr[i-k]` (leaving).
 
 ```python run viz=array viz-root=arr
-arr = [2, 1, 5, 1, 3, 2]
-k = 3
+import ast
+
+arr = ast.literal_eval(input())     # the test case's arr
+k = int(input())                    # the test case's k
 window = sum(arr[:k])               # first window's sum — computed once
 best = window
 for i in range(k, len(arr)):        # slide one step at a time
     window += arr[i] - arr[i - k]   # + entering element, − leaving element  (O(1))
     best = max(best, window)
-print(best)                         # 9  (the window [5, 1, 3])
+print(best)
+```
+
+```java run viz=array viz-root=arr
+import java.util.*;
+
+public class Main {
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());   // the test case's arr
+    int k = Integer.parseInt(sc.nextLine().trim());  // the test case's k
+    int window = 0;
+    for (int i = 0; i < k; i++) window += arr[i];     // first window's sum — once
+    int best = window;
+    for (int i = k; i < arr.length; i++) {            // slide one step at a time
+      window += arr[i] - arr[i - k];                  // + entering, − leaving  (O(1))
+      best = Math.max(best, window);
+    }
+    System.out.println(best);
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's arr
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[2, 1, 5, 1, 3, 2]" },
+    { "id": "k", "label": "k", "type": "int", "placeholder": "3" }
+  ],
+  "cases": [
+    { "args": { "arr": "[2, 1, 5, 1, 3, 2]", "k": "3" }, "expected": "9" },
+    { "args": { "arr": "[1, 2, 3, 4, 5]", "k": "2" }, "expected": "9" },
+    { "args": { "arr": "[5]", "k": "1" }, "expected": "5" },
+    { "args": { "arr": "[-1, -2, -3, -4]", "k": "2" }, "expected": "-3" }
+  ]
+}
 ```
 
 ## How It Works
@@ -70,9 +117,73 @@ One add and one subtract — not three. After the very first window, *every* lat
 
 ## Your Turn
 
-The reusable shape — slide a fixed window, track the best:
+Implement the reusable shape yourself — `max_window_sum(arr, k)`: sum the first window once, then slide one step at a time, repairing the running sum with `+ entering − leaving`, and track the largest sum seen.
 
-```python run viz=array
+```python run viz=array viz-root=arr
+import ast
+
+def max_window_sum(arr, k):
+    # Your code goes here — sum the first window, then slide:
+    # window += arr[i] - arr[i - k], tracking the best sum.
+    return 0
+
+arr = ast.literal_eval(input())     # the test case's arr
+k = int(input())                    # the test case's k
+print(max_window_sum(arr, k))
+```
+
+```java run viz=array viz-root=arr
+import java.util.*;
+
+public class Main {
+  static int maxWindowSum(int[] arr, int k) {
+    // Your code goes here — sum the first window, then slide:
+    // window += arr[i] - arr[i - k], tracking the best sum.
+    return 0;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());
+    int k = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(maxWindowSum(arr, k));
+  }
+
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[2, 1, 5, 1, 3, 2]" },
+    { "id": "k", "label": "k", "type": "int", "placeholder": "3" }
+  ],
+  "cases": [
+    { "args": { "arr": "[2, 1, 5, 1, 3, 2]", "k": "3" }, "expected": "9" },
+    { "args": { "arr": "[1, 2, 3, 4, 5]", "k": "2" }, "expected": "9" },
+    { "args": { "arr": "[4, 4, 5, 6, 4]", "k": "3" }, "expected": "15" },
+    { "args": { "arr": "[5]", "k": "1" }, "expected": "5" },
+    { "args": { "arr": "[-1, -2, -3, -4]", "k": "2" }, "expected": "-3" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Sum the first `k` elements once to seed `window`, then for each later index slide one step: add the entering element `arr[i]` and subtract the leaving one `arr[i - k]`. Every slide is two `O(1)` operations regardless of `k`, so the whole pass is `O(n)` time, `O(1)` space — and `best` carries the largest window sum seen.
+
+```python solution time=O(n) space=O(1)
+import ast
+
 def max_window_sum(arr, k):
     window = sum(arr[:k])               # first window
     best = window
@@ -81,10 +192,14 @@ def max_window_sum(arr, k):
         best = max(best, window)
     return best
 
-print(max_window_sum([2, 1, 5, 1, 3, 2], 3))   # 9
+arr = ast.literal_eval(input())     # the test case's arr
+k = int(input())                    # the test case's k
+print(max_window_sum(arr, k))
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
   static int maxWindowSum(int[] arr, int k) {
     int window = 0;
@@ -96,15 +211,30 @@ public class Main {
     }
     return best;
   }
+
   public static void main(String[] args) {
-    System.out.println(maxWindowSum(new int[]{2, 1, 5, 1, 3, 2}, 3));   // 9
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());
+    int k = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(maxWindowSum(arr, k));
+  }
+
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
   }
 }
 ```
 
-Drill the family in **Practice** — [Subarray Size Equals K](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-fixed-sliding-window/problems/subarray-size-equals-k) and [Maximum Ones](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-fixed-sliding-window/problems/maximum-ones).
+</details>
 
 ## Reflect & Connect
+
+Drill the family in **Practice** — [Subarray Size Equals K](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-fixed-sliding-window/problems/subarray-size-equals-k) and [Maximum Ones](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-fixed-sliding-window/problems/maximum-ones).
 
 The fixed window is the simplest "stop recomputing, start maintaining" pattern, and it generalizes:
 

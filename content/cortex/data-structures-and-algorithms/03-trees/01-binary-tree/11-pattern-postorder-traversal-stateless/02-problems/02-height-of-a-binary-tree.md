@@ -1,56 +1,172 @@
 ---
 title: "Height of a Binary Tree"
-summary: "See problem statement below."
+summary: "Given the root of a binary tree, compute the height (number of nodes along the longest root-to-leaf path)."
 prereqs:
   - 11-pattern-postorder-traversal-stateless/01-pattern
 difficulty: easy
+kind: problem
+topics: [postorder-traversal, binary-tree]
 ---
 
-# Problem 2 — Height of a binary tree
+# Height of a Binary Tree
 
-> Compute the height of the tree (number of nodes along the longest root-to-leaf path).
+## Problem Statement
+
+Compute the **height** of the tree — the number of nodes along the longest root-to-leaf path.
 
 Base case: empty tree has height 0 (under the *node-counting* convention used in this problem). Each internal node returns `max(height(left), height(right)) + 1`. The root's answer is the tree's height.
 
-> **Note on conventions:** This problem uses the *node-counting* convention (empty = 0, single node = 1). Lesson 1 used the *edge-counting* convention (empty = -1, single node = 0). Both are common; *always read the problem carefully* and pick base cases that make the recurrence consistent.
+> **Note on conventions:** This problem uses the *node-counting* convention (empty = 0, single node = 1). The pattern lesson used the *edge-counting* convention (empty = -1 by some formulations). Both are common; *always read the problem carefully* and pick base cases that make the recurrence consistent.
 
-<details>
-<summary><h2>Solution</h2></summary>
+## Examples
 
+**Example 1:**
+```
+Input:  root = [1, 2, 3, 4, null, null, 7]
+Output: 3
+```
 
+**Example 2:**
+```
+Input:  root = [1, 8, 4, null, null, 2, 7]
+Output: 3
+```
+
+## Constraints
+
+- `0 ≤ number of nodes ≤ 10⁴`
+- `-10⁴ ≤ node.val ≤ 10⁴`
+- `O(n)` time, `O(h)` recursion stack
 
 ```python run viz=binary-tree viz-root=root
-from typing import Optional
+import json
+from collections import deque
 
 class TreeNode:
-    def __init__(self, val=0, left=None, right=None):
+    def __init__(self, val, left=None, right=None):
         self.val = val
         self.left = left
         self.right = right
 
+class Solution:
+    def height_of_binary_tree(self, root):
+        # Your code goes here — base case None → 0;
+        # otherwise max(height(left), height(right)) + 1
+        return 0
 
-def from_level_order(values):
-    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
     if not values:
         return None
     root = TreeNode(values[0])
-    queue = [root]
+    queue = deque([root])
     i = 1
     while queue and i < len(values):
-        node = queue.pop(0)
-        if i < len(values) and values[i] is not None:
-            node.left = TreeNode(values[i])
-            queue.append(node.left)
-        i += 1
-        if i < len(values) and values[i] is not None:
-            node.right = TreeNode(values[i])
-            queue.append(node.right)
-        i += 1
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
     return root
 
+root = build_tree(json.loads(input()))   # the test case's level-order values
+print(Solution().height_of_binary_tree(root))
+```
+
+```java run viz=binary-tree viz-root=root
+import java.util.*;
+
+public class Main {
+    static class TreeNode {
+        int val; TreeNode left, right;
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static class Solution {
+        int heightOfBinaryTree(TreeNode root) {
+            // Your code goes here — base case null → 0;
+            // otherwise Math.max(height(left), height(right)) + 1
+            return 0;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+        System.out.println(new Solution().heightOfBinaryTree(root));
+    }
+
+    static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+            }
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+            }
+        }
+        return root;
+    }
+
+    // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+    static Integer[] parseIntegerArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new Integer[0];
+        String[] parts = inner.split(",");
+        Integer[] out = new Integer[parts.length];
+        for (int i = 0; i < parts.length; i++)
+            out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[1, 2, 3, 4, null, null, 7]" }
+  ],
+  "cases": [
+    { "args": { "root": "[1, 2, 3, 4, null, null, 7]" }, "expected": "3" },
+    { "args": { "root": "[1, 8, 4, null, null, 2, 7]" }, "expected": "3" },
+    { "args": { "root": "[]" }, "expected": "0" },
+    { "args": { "root": "[5]" }, "expected": "1" },
+    { "args": { "root": "[1, 2, null, 3]" }, "expected": "3" },
+    { "args": { "root": "[1, null, 2, null, 3]" }, "expected": "3" },
+    { "args": { "root": "[1, 2, 3, 4, 5, 6, 7]" }, "expected": "3" },
+    { "args": { "root": "[1, 2]" }, "expected": "2" }
+  ]
+}
+```
+
+<details>
+<summary><h2>Solution</h2></summary>
+
+A single bottom-up recursion: the empty tree has height 0; every other node's height is `1 + max(left height, right height)`. Each node's result depends only on its children's return values — nothing shared — so the left and right subtrees are completely independent.
+
+```python solution time=O(n) space=O(h)
+import json
+from collections import deque
+
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
 
 class Solution:
-    def height_of_binary_tree(self, root: Optional[TreeNode]) -> int:
+    def height_of_binary_tree(self, root):
 
         # Empty tree has height 0
         if root is None:
@@ -64,64 +180,46 @@ class Solution:
         # plus 1 for the current node
         return max(left_height, right_height) + 1
 
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
 
-# Examples from the problem statement
-print(Solution().height_of_binary_tree(from_level_order([1, 2, 3, 4, None, None, 7])))  # 3
-print(Solution().height_of_binary_tree(from_level_order([1, 8, 4, None, None, 2, 7])))  # 3
-
-# Edge cases
-print(Solution().height_of_binary_tree(None))                                            # 0
-print(Solution().height_of_binary_tree(from_level_order([5])))                           # 1
-print(Solution().height_of_binary_tree(from_level_order([1, 2, None, 3])))               # 3 (left-skew)
-print(Solution().height_of_binary_tree(from_level_order([1, None, 2, None, 3])))         # 3 (right-skew)
-print(Solution().height_of_binary_tree(from_level_order([1, 2, 3, 4, 5, 6, 7])))        # 3 (balanced)
-print(Solution().height_of_binary_tree(from_level_order([1, 2])))                        # 2
+root = build_tree(json.loads(input()))   # the test case's level-order values
+print(Solution().height_of_binary_tree(root))
 ```
 
-```java run viz=binary-tree viz-root=root
+```java solution
 import java.util.*;
 
 public class Main {
     static class TreeNode {
-        int val;
-        TreeNode left;
-        TreeNode right;
-        TreeNode() {}
+        int val; TreeNode left, right;
         TreeNode(int val) { this.val = val; }
     }
 
-    static TreeNode fromLevelOrder(Integer... values) {
-        if (values.length == 0 || values[0] == null) return null;
-        TreeNode root = new TreeNode(values[0]);
-        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
-        queue.add(root);
-        int i = 1;
-        while (!queue.isEmpty() && i < values.length) {
-            TreeNode node = queue.poll();
-            if (i < values.length && values[i] != null) {
-                node.left = new TreeNode(values[i]);
-                queue.add(node.left);
-            }
-            i++;
-            if (i < values.length && values[i] != null) {
-                node.right = new TreeNode(values[i]);
-                queue.add(node.right);
-            }
-            i++;
-        }
-        return root;
-    }
-
     static class Solution {
-        public int heightOfBinaryTree(TreeNode root) {
+        int heightOfBinaryTree(TreeNode root) {
 
             // Empty tree has height 0
             if (root == null) {
                 return 0;
             }
 
-            // Recursively calculate the height of the left and right
-            // subtrees
+            // Recursively calculate the height of the left and right subtrees
             int leftHeight = heightOfBinaryTree(root.left);
             int rightHeight = heightOfBinaryTree(root.right);
 
@@ -132,17 +230,40 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().heightOfBinaryTree(fromLevelOrder(1, 2, 3, 4, null, null, 7)));  // 3
-        System.out.println(new Solution().heightOfBinaryTree(fromLevelOrder(1, 8, 4, null, null, 2, 7)));  // 3
+        Scanner sc = new Scanner(System.in);
+        TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+        System.out.println(new Solution().heightOfBinaryTree(root));
+    }
 
-        // Edge cases
-        System.out.println(new Solution().heightOfBinaryTree(null));                                        // 0
-        System.out.println(new Solution().heightOfBinaryTree(fromLevelOrder(5)));                           // 1
-        System.out.println(new Solution().heightOfBinaryTree(fromLevelOrder(1, 2, null, 3)));               // 3 (left-skew)
-        System.out.println(new Solution().heightOfBinaryTree(fromLevelOrder(1, null, 2, null, 3)));         // 3 (right-skew)
-        System.out.println(new Solution().heightOfBinaryTree(fromLevelOrder(1, 2, 3, 4, 5, 6, 7)));        // 3 (balanced)
-        System.out.println(new Solution().heightOfBinaryTree(fromLevelOrder(1, 2)));                        // 2
+    static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+            }
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+            }
+        }
+        return root;
+    }
+
+    // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+    static Integer[] parseIntegerArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new Integer[0];
+        String[] parts = inner.split(",");
+        Integer[] out = new Integer[parts.length];
+        for (int i = 0; i < parts.length; i++)
+            out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

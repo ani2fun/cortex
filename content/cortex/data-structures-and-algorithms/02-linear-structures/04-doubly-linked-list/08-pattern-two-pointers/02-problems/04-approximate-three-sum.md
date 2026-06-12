@@ -4,29 +4,15 @@ summary: "Given the head of a doubly linked list sorted in non-decreasing order 
 prereqs:
   - 08-pattern-two-pointers/01-pattern
 difficulty: medium
+kind: problem
+topics: [two-pointers, doubly-linked-list]
 ---
 
 # Approximate Three Sum
 
-## The Problem
+## Problem Statement
 
 Given the **head** of a doubly linked list sorted in non-decreasing order and an integer **target**, find three values whose sum is closest to `target`. Return that sum. Each input has exactly one solution.
-
-```
-Input:  head = [2, 7, 11, 15], target = 3
-Output: 20
-Explanation: 2 + 7 + 11 = 20 is the closest reachable sum to 3.
-
-Input:  head = [-4, -1, 1, 2], target = 1
-Output: 2
-Explanation: -1 + 2 + 1 = 2.
-
-Input:  head = [0, 0, 0], target = 1
-Output: 0
-Explanation: 0 + 0 + 0 = 0.
-```
-
----
 
 ## Examples
 
@@ -34,21 +20,21 @@ Explanation: 0 + 0 + 0 = 0.
 ```
 Input:  head = [2, 7, 11, 15], target = 3
 Output: 20
-Explanation: The minimum reachable sum is 2 + 7 + 11 = 20. Even the smallest three values overshoot the target, but 20 is the closest reachable sum.
+Explanation: 2 + 7 + 11 = 20 is the closest reachable sum to 3.
 ```
 
 **Example 2**
 ```
 Input:  head = [-4, -1, 1, 2], target = 1
 Output: 2
-Explanation: The triple (-1, 1, 2) sums to 2, distance 1 from the target. No other reachable triple lands closer.
+Explanation: -1 + 2 + 1 = 2.
 ```
 
 **Example 3**
 ```
 Input:  head = [0, 0, 0], target = 1
 Output: 0
-Explanation: The only reachable triple is (0, 0, 0); 0 is closest to 1 by definition.
+Explanation: 0 + 0 + 0 = 0.
 ```
 
 **Example 4**
@@ -58,8 +44,125 @@ Output: 6
 Explanation: An exact match exists — the inner two-pointer pass returns the sum the moment `sum == target`, saving the rest of the scan.
 ```
 
+## Constraints
 
----
+- `3 ≤ list length ≤ 10³`
+- `-10³ ≤ node.val ≤ 10³`
+- The list is sorted in non-decreasing order
+- `-10⁴ ≤ target ≤ 10⁴`
+- Exactly one solution exists
+
+```python run viz=linked-list viz-root=head
+import ast
+
+class ListNode:
+    def __init__(self, val, prev=None, next=None):
+        self.val = val
+        self.prev = prev
+        self.next = next
+
+class Solution:
+    def approximate_three_sum(self, head, target):
+        # Your code goes here — for each node as indexNode, run a
+        # two-pointer pass on the remaining sublist and track the
+        # closest sum seen so far.
+        pass
+
+def build_list(values):              # [1, 2, 3] → 1 ⇄ 2 ⇄ 3
+    head = tail = None
+    for v in values:
+        node = ListNode(v, prev=tail)
+        if tail is not None:
+            tail.next = node
+        else:
+            head = node
+        tail = node
+    return head
+
+def print_list(head):                # 1 ⇄ 2 ⇄ 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
+
+head = build_list(ast.literal_eval(input()))   # the test case's head
+target = int(input())
+print(Solution().approximate_three_sum(head, target))
+```
+
+```java run viz=linked-list viz-root=head
+import java.util.*;
+
+public class Main {
+    static class ListNode {
+        int val; ListNode prev, next;
+        ListNode(int val) { this.val = val; }
+    }
+
+    static class Solution {
+        public int approximateThreeSum(ListNode head, int target) {
+            // Your code goes here — for each node as indexNode, run a
+            // two-pointer pass on the remaining sublist and track the
+            // closest sum seen so far.
+            return 0;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        ListNode head = buildList(parseIntArray(sc.nextLine()));
+        int target = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().approximateThreeSum(head, target));
+    }
+
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 ⇄ 2 ⇄ 3
+        ListNode head = null, tail = null;
+        for (int v : values) {
+            ListNode node = new ListNode(v);
+            node.prev = tail;
+            if (tail != null) tail.next = node;
+            else head = node;
+            tail = node;
+        }
+        return head;
+    }
+
+    static void printList(ListNode head) {         // 1 ⇄ 2 ⇄ 3 → [1, 2, 3]
+        List<Integer> out = new ArrayList<>();
+        for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+        System.out.println(out);
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "head", "label": "head", "type": "int[]", "placeholder": "[2, 7, 11, 15]" },
+    { "id": "target", "label": "target", "type": "int", "placeholder": "3" }
+  ],
+  "cases": [
+    { "args": { "head": "[2, 7, 11, 15]", "target": "3" }, "expected": "20" },
+    { "args": { "head": "[-4, -1, 1, 2]", "target": "1" }, "expected": "2" },
+    { "args": { "head": "[0, 0, 0]", "target": "1" }, "expected": "0" },
+    { "args": { "head": "[1, 2, 3]", "target": "6" }, "expected": "6" },
+    { "args": { "head": "[1, 2, 3, 4]", "target": "10" }, "expected": "9" },
+    { "args": { "head": "[-1, 0, 1, 2]", "target": "0" }, "expected": "0" },
+    { "args": { "head": "[0, 1, 1, 1]", "target": "3" }, "expected": "3" },
+    { "args": { "head": "[5, 10, 15, 20]", "target": "40" }, "expected": "40" }
+  ]
+}
+```
 
 <details>
 <summary><h2>Intuition</h2></summary>
@@ -143,44 +246,23 @@ flowchart TB
 <details>
 <summary><h2>Solution &amp; Analysis</h2></summary>
 
-### The Solution
+### Solution
 
-```python run viz=linked-list viz-root=head
-from typing import List, Optional
+```python solution time=O(n²) space=O(1)
+import ast
+from typing import Optional
 
 class ListNode:
-    def __init__(self, val=0, prev=None, nxt=None):
+    def __init__(self, val, prev=None, next=None):
         self.val = val
         self.prev = prev
-        self.next = nxt
-
-
-def from_list(values):
-    if not values:
-        return None
-    head = ListNode(values[0])
-    cur = head
-    for v in values[1:]:
-        node = ListNode(v, prev=cur)
-        cur.next = node
-        cur = node
-    return head
-
-
-def get_tail(head):
-    if head is None:
-        return None
-    cur = head
-    while cur.next is not None:
-        cur = cur.next
-    return cur
-
+        self.next = next
 
 class Solution:
     def closestTwoSum(
         self,
-        index_node: Optional[ListNode],
-        tail: Optional[ListNode],
+        index_node: Optional['ListNode'],
+        tail: Optional['ListNode'],
         target: int,
     ) -> int:
         left = index_node.next
@@ -191,18 +273,18 @@ class Solution:
         while left and right and left != right and left.prev != right:
 
             # Compute the sum of the three numbers
-            sum = index_node.val + left.val + right.val
+            total = index_node.val + left.val + right.val
 
             # Update closest_sum if necessary
-            if abs(sum - target) < abs(closest_sum - target):
-                closest_sum = sum
+            if abs(total - target) < abs(closest_sum - target):
+                closest_sum = total
 
             # If the sum equals target, return the sum
-            if sum == target:
-                return sum
+            if total == target:
+                return total
 
             # Move the left pointer to increase the sum
-            elif sum < target:
+            elif total < target:
                 left = left.next
 
             # Move the right pointer to decrease the sum
@@ -211,17 +293,21 @@ class Solution:
 
         return closest_sum
 
-    def approximateThreeSum(
+    def approximate_three_sum(
         self,
-        head: Optional[ListNode],
-        tail: Optional[ListNode],
+        head: Optional['ListNode'],
         target: int,
     ) -> int:
+
+        # Find the tail
+        tail = head
+        while tail and tail.next:
+            tail = tail.next
+
         closest_sum = float("inf")
         current_node = head
 
-        # Traverse each node in the list and calculate the closest
-        # two-sum
+        # Traverse each node in the list and calculate the closest two-sum
         while current_node and current_node.next:
             current_sum = self.closestTwoSum(current_node, tail, target)
 
@@ -232,64 +318,36 @@ class Solution:
 
         return closest_sum
 
+def build_list(values):              # [1, 2, 3] → 1 ⇄ 2 ⇄ 3
+    head = tail = None
+    for v in values:
+        node = ListNode(v, prev=tail)
+        if tail is not None:
+            tail.next = node
+        else:
+            head = node
+        tail = node
+    return head
 
-# Examples from the problem statement
-h = from_list([2, 7, 11, 15])
-print(Solution().approximateThreeSum(h, get_tail(h), 3))    # 20
+def print_list(head):                # 1 ⇄ 2 ⇄ 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
 
-h = from_list([-4, -1, 1, 2])
-print(Solution().approximateThreeSum(h, get_tail(h), 1))    # 2
-
-h = from_list([0, 0, 0])
-print(Solution().approximateThreeSum(h, get_tail(h), 1))    # 0
-
-# Edge cases
-h = from_list([1, 2, 3])
-print(Solution().approximateThreeSum(h, get_tail(h), 6))    # 6
-
-h = from_list([1, 2, 3, 4])
-print(Solution().approximateThreeSum(h, get_tail(h), 10))   # 9
-
-h = from_list([-1, 0, 1, 2])
-print(Solution().approximateThreeSum(h, get_tail(h), 0))    # 0
-
-h = from_list([1, 1, 1, 0])
-print(Solution().approximateThreeSum(h, get_tail(h), 3))    # 3
-
-h = from_list([5, 10, 15, 20])
-print(Solution().approximateThreeSum(h, get_tail(h), 40))   # 45
+head = build_list(ast.literal_eval(input()))   # the test case's head
+target = int(input())
+print(Solution().approximate_three_sum(head, target))
 ```
 
-```java run viz=linked-list viz-root=head
+```java solution
 import java.util.*;
 
 public class Main {
     static class ListNode {
-        int val;
-        ListNode prev;
-        ListNode next;
-        ListNode() {}
+        int val; ListNode prev, next;
         ListNode(int val) { this.val = val; }
-    }
-
-    static ListNode fromList(int... values) {
-        if (values.length == 0) return null;
-        ListNode head = new ListNode(values[0]);
-        ListNode cur = head;
-        for (int i = 1; i < values.length; i++) {
-            ListNode node = new ListNode(values[i]);
-            node.prev = cur;
-            cur.next = node;
-            cur = node;
-        }
-        return head;
-    }
-
-    static ListNode getTail(ListNode head) {
-        if (head == null) return null;
-        ListNode cur = head;
-        while (cur.next != null) cur = cur.next;
-        return cur;
     }
 
     static class Solution {
@@ -300,7 +358,9 @@ public class Main {
         ) {
             ListNode left = indexNode.next;
             ListNode right = tail;
-            int closestSum = Integer.MAX_VALUE;
+            // Use a large-but-safe sentinel (avoids Math.abs overflow with Integer.MAX_VALUE)
+            int closestSum = target > 0 ? target - 100000 : target + 100000;
+            boolean init = false;
 
             // Use a while loop to traverse the list with two pointers
             while (
@@ -314,8 +374,9 @@ public class Main {
                 int sum = indexNode.val + left.val + right.val;
 
                 // Update closestSum if necessary
-                if (Math.abs(sum - target) < Math.abs(closestSum - target)) {
+                if (!init || Math.abs(sum - target) < Math.abs(closestSum - target)) {
                     closestSum = sum;
+                    init = true;
                 }
 
                 // If the sum equals target, return the sum
@@ -337,25 +398,24 @@ public class Main {
             return closestSum;
         }
 
-        public int approximateThreeSum(
-            ListNode head,
-            ListNode tail,
-            int target
-        ) {
-            int closestSum = Integer.MAX_VALUE;
+        public int approximateThreeSum(ListNode head, int target) {
+
+            // Find the tail
+            ListNode tail = head;
+            while (tail != null && tail.next != null) tail = tail.next;
+
+            int closestSum = 0;
+            boolean init = false;
             ListNode currentNode = head;
 
-            // Traverse each node in the list and calculate the closest
-            // two-sum
+            // Traverse each node in the list and calculate the closest two-sum
             while (currentNode != null && currentNode.next != null) {
                 int currentSum = closestTwoSum(currentNode, tail, target);
 
                 // Update closestSum if a closer sum is found
-                if (
-                    Math.abs(currentSum - target) <
-                    Math.abs(closestSum - target)
-                ) {
+                if (!init || Math.abs(currentSum - target) < Math.abs(closestSum - target)) {
                     closestSum = currentSum;
+                    init = true;
                 }
                 currentNode = currentNode.next;
             }
@@ -365,33 +425,37 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        ListNode h;
+        Scanner sc = new Scanner(System.in);
+        ListNode head = buildList(parseIntArray(sc.nextLine()));
+        int target = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().approximateThreeSum(head, target));
+    }
 
-        // Examples from the problem statement
-        h = fromList(2, 7, 11, 15);
-        System.out.println(new Solution().approximateThreeSum(h, getTail(h), 3));    // 20
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 ⇄ 2 ⇄ 3
+        ListNode head = null, tail = null;
+        for (int v : values) {
+            ListNode node = new ListNode(v);
+            node.prev = tail;
+            if (tail != null) tail.next = node;
+            else head = node;
+            tail = node;
+        }
+        return head;
+    }
 
-        h = fromList(-4, -1, 1, 2);
-        System.out.println(new Solution().approximateThreeSum(h, getTail(h), 1));    // 2
+    static void printList(ListNode head) {         // 1 ⇄ 2 ⇄ 3 → [1, 2, 3]
+        List<Integer> out = new ArrayList<>();
+        for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+        System.out.println(out);
+    }
 
-        h = fromList(0, 0, 0);
-        System.out.println(new Solution().approximateThreeSum(h, getTail(h), 1));    // 0
-
-        // Edge cases
-        h = fromList(1, 2, 3);
-        System.out.println(new Solution().approximateThreeSum(h, getTail(h), 6));    // 6
-
-        h = fromList(1, 2, 3, 4);
-        System.out.println(new Solution().approximateThreeSum(h, getTail(h), 10));   // 9
-
-        h = fromList(-1, 0, 1, 2);
-        System.out.println(new Solution().approximateThreeSum(h, getTail(h), 0));    // 0
-
-        h = fromList(0, 1, 1, 1);
-        System.out.println(new Solution().approximateThreeSum(h, getTail(h), 3));    // 3
-
-        h = fromList(5, 10, 15, 20);
-        System.out.println(new Solution().approximateThreeSum(h, getTail(h), 40));   // 45
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```
@@ -403,15 +467,15 @@ public class Main {
 ```
 arr = [-4, -1, 1, 2] (already sorted), target = 1, closest_sum = +∞
 
-Outer i=0 (arr[i] = -4) → closest_two_sum:
-  left=1 (-1), right=3 (2) → sum=-3, |dist|=4 → closest_sum=-3
+Outer indexNode=-4 → closest_two_sum:
+  left=-1, right=2 → sum=-3, |dist|=4 → closest_sum=-3
   sum < 1 → left++
-  left=2 (1), right=3 (2) → sum=-1, |dist|=2 → closest_sum=-1
-  sum < 1 → left++; left < right false → returns -1
-Outer i=1 (arr[i] = -1) → closest_two_sum:
-  left=2 (1), right=3 (2) → sum=2, |dist|=1 → closest_sum=2
-  sum > 1 → right--; left < right false → returns 2
-Outer i=2, i=3 → left starts past right → returns +∞ (no improvement)
+  left=1, right=2 → sum=-1, |dist|=2 → closest_sum=-1
+  sum < 1 → left++; left.prev == right → exits → returns -1
+Outer indexNode=-1 → closest_two_sum:
+  left=1, right=2 → sum=2, |dist|=1 → closest_sum=2
+  sum > 1 → right--; left.prev == right → exits → returns 2
+Global: |2 - 1| = 1 < |-1 - 1| = 2 → closestSum = 2
 Done. Result: 2 ✓
 ```
 

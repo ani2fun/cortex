@@ -17,7 +17,11 @@ Separate chaining's answer is the simplest one: make each slot a **chain** — a
 
 A table of capacity 4 with integer keys. Keys `1` and `5` both hash to slot `1` (`1 % 4 == 5 % 4 == 1`), so they share a chain. Run it and watch the collision land in one bucket.
 
+> The input is a list of `[key, value]` pairs (integer key, single-char value). The driver inserts them into a capacity-4 table, prints the full buckets array, then looks up the last key inserted.
+
 ```python run viz=array
+import ast
+
 class HashTable:
     def __init__(self, capacity=4):
         self.capacity = capacity
@@ -40,10 +44,99 @@ class HashTable:
                 return v
         return None
 
+pairs = ast.literal_eval(input())           # [[1,"a"],[5,"b"],[2,"c"]]
 t = HashTable(4)
-t.put(1, "a"); t.put(5, "b"); t.put(2, "c")   # 1 and 5 collide at slot 1
-print(t.buckets)        # [[], [(1, 'a'), (5, 'b')], [(2, 'c')], []]
-print(t.get(5))         # b  — found by walking slot 1's chain
+for k, v in pairs:
+    t.put(k, v)
+# build Python list-of-list-of-tuple repr byte-for-byte
+parts = []
+for bucket in t.buckets:
+    if not bucket:
+        parts.append("[]")
+    else:
+        inner = ", ".join(f"({k}, '{v}')" for k, v in bucket)
+        parts.append(f"[{inner}]")
+print("[" + ", ".join(parts) + "]")        # [[], [(1, 'a'), (5, 'b')], [(2, 'c')], []]
+print(t.get(pairs[-1][0]))                 # look up the last key inserted
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+  static class HashTable {
+    int capacity;
+    List<int[]>[] buckets;          // each int[] is {key, charValue}
+    @SuppressWarnings("unchecked")
+    HashTable(int cap) {
+      capacity = cap;
+      buckets = new List[cap];
+      for (int i = 0; i < cap; i++) buckets[i] = new ArrayList<>();
+    }
+    int index(int key) { return Math.floorMod(key, capacity); }
+    void put(int key, char value) {
+      List<int[]> b = buckets[index(key)];
+      for (int[] e : b) if (e[0] == key) { e[1] = value; return; }
+      b.add(new int[]{key, value});
+    }
+    String get(int key) {
+      for (int[] e : buckets[index(key)]) if (e[0] == key) return String.valueOf((char) e[1]);
+      return "None";
+    }
+  }
+
+  public static void main(String[] args) {
+    String line = new Scanner(System.in).nextLine().trim();
+    // parse [[1,"a"],[5,"b"],[2,"c"]]
+    line = line.substring(1, line.length() - 1).trim();   // strip outer []
+    String[] tokens = line.split("\\],\\s*\\[");
+    List<Integer> keys = new ArrayList<>();
+    List<Character> vals = new ArrayList<>();
+    for (String tok : tokens) {
+      tok = tok.replaceAll("[\\[\\]\"\\s]", "");           // e.g. "1,a"
+      String[] kv = tok.split(",");
+      keys.add(Integer.parseInt(kv[0]));
+      vals.add(kv[1].charAt(0));
+    }
+
+    HashTable t = new HashTable(4);
+    for (int i = 0; i < keys.size(); i++) t.put(keys.get(i), vals.get(i));
+
+    // build Python-style repr: [[], [(1, 'a'), (5, 'b')], [(2, 'c')], []]
+    StringBuilder sb = new StringBuilder("[");
+    for (int bi = 0; bi < t.capacity; bi++) {
+      if (bi > 0) sb.append(", ");
+      List<int[]> bucket = t.buckets[bi];
+      if (bucket.isEmpty()) {
+        sb.append("[]");
+      } else {
+        sb.append("[");
+        for (int j = 0; j < bucket.size(); j++) {
+          if (j > 0) sb.append(", ");
+          sb.append("(").append(bucket.get(j)[0]).append(", '")
+            .append((char) bucket.get(j)[1]).append("')");
+        }
+        sb.append("]");
+      }
+    }
+    sb.append("]");
+    System.out.println(sb);
+    System.out.println(t.get(keys.get(keys.size() - 1)));  // look up last key
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "pairs", "label": "pairs", "type": "string", "placeholder": "[[1,\"a\"],[5,\"b\"],[2,\"c\"]]" }
+  ],
+  "cases": [
+    { "args": { "pairs": "[[1,\"a\"],[5,\"b\"],[2,\"c\"]]" }, "expected": "[[], [(1, 'a'), (5, 'b')], [(2, 'c')], []]\nc" },
+    { "args": { "pairs": "[[2,\"x\"],[6,\"y\"],[3,\"z\"]]" }, "expected": "[[], [], [(2, 'x'), (6, 'y')], [(3, 'z')]]\nz" },
+    { "args": { "pairs": "[[4,\"m\"],[8,\"n\"]]" }, "expected": "[[(4, 'm'), (8, 'n')], [], [], []]\nn" }
+  ]
+}
 ```
 
 ## How It Works
@@ -86,9 +179,75 @@ All four hash to slot `1`, so that one chain holds every key while the other thr
 
 ## Your Turn
 
-The reusable chained hash table (with delete):
+The reusable chained hash table (with delete). Implement `put`, `get`, and `delete`, then run the driver — it inserts two keys that collide, does a get, a delete, and another get.
 
 ```python run viz=array
+class HashTable:
+    def __init__(self, capacity=8):
+        self.capacity = capacity
+        self.buckets = [[] for _ in range(capacity)]
+    def _index(self, key):
+        return key % self.capacity
+    def put(self, key, value):
+        # Your code goes here
+        pass
+    def get(self, key):
+        # Your code goes here
+        return None
+    def delete(self, key):
+        # Your code goes here
+        return False
+
+t = HashTable()
+t.put(10, 100); t.put(18, 180)               # 10 and 18 collide at slot 2 (cap 8)
+print(str(t.get(18)) + " " + ("true" if t.delete(10) else "false") + " " + ("null" if t.get(10) is None else str(t.get(10))))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+  static class HashTable {
+    int capacity; List<int[]>[] buckets;
+    @SuppressWarnings("unchecked")
+    HashTable(int cap) { capacity = cap; buckets = new List[cap]; for (int i = 0; i < cap; i++) buckets[i] = new ArrayList<>(); }
+    int index(int key) { return Math.floorMod(key, capacity); }
+    void put(int key, int value) {
+      // Your code goes here
+    }
+    Integer get(int key) {
+      // Your code goes here
+      return null;
+    }
+    boolean delete(int key) {
+      // Your code goes here
+      return false;
+    }
+  }
+  public static void main(String[] args) {
+    HashTable t = new HashTable(8);
+    t.put(10, 100); t.put(18, 180);          // collide at slot 2
+    System.out.println(t.get(18) + " " + t.delete(10) + " " + t.get(10));
+  }
+}
+```
+
+```testcases
+{
+  "args": [],
+  "cases": [
+    { "args": {}, "expected": "180 true null" }
+  ],
+  "verifying": "solution"
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Walk the chain to find the key. `put` updates in place if the key exists, appends otherwise. `get` returns the value or `None`/`null`. `delete` removes by index — just `pop`/`remove` from the chain, no tombstoning needed (unlike open addressing). That's the whole structure.
+
+```python solution time=O(1+α) space=O(n)
 class HashTable:
     def __init__(self, capacity=8):
         self.capacity = capacity
@@ -114,11 +273,11 @@ class HashTable:
         return False
 
 t = HashTable()
-t.put(10, "x"); t.put(18, "y")               # 10 and 18 collide at slot 2 (cap 8)
-print(t.get(18), t.delete(10), t.get(10))    # y True None
+t.put(10, 100); t.put(18, 180)               # 10 and 18 collide at slot 2 (cap 8)
+print(str(t.get(18)) + " " + ("true" if t.delete(10) else "false") + " " + ("null" if t.get(10) is None else str(t.get(10))))
 ```
 
-```java run viz=array
+```java solution
 import java.util.*;
 
 public class Main {
@@ -126,7 +285,7 @@ public class Main {
     int capacity; List<int[]>[] buckets;
     @SuppressWarnings("unchecked")
     HashTable(int cap) { capacity = cap; buckets = new List[cap]; for (int i = 0; i < cap; i++) buckets[i] = new ArrayList<>(); }
-    int index(int key) { return key % capacity; }
+    int index(int key) { return Math.floorMod(key, capacity); }
     void put(int key, int value) {
       List<int[]> b = buckets[index(key)];
       for (int[] e : b) if (e[0] == key) { e[1] = value; return; }
@@ -142,10 +301,12 @@ public class Main {
   public static void main(String[] args) {
     HashTable t = new HashTable(8);
     t.put(10, 100); t.put(18, 180);          // collide at slot 2
-    System.out.println(t.get(18) + " " + t.delete(10) + " " + t.get(10));   // 180 true null
+    System.out.println(t.get(18) + " " + t.delete(10) + " " + t.get(10));
   }
 }
 ```
+
+</details>
 
 ## Reflect & Connect
 

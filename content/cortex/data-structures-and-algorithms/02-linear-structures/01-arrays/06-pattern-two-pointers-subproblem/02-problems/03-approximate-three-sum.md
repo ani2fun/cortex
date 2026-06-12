@@ -4,6 +4,8 @@ summary: "Given an integer array arr and an integer target, find three integers 
 prereqs:
   - 06-pattern-two-pointers-subproblem/01-pattern
 difficulty: medium
+kind: problem
+topics: [two-pointers, arrays]
 ---
 
 # Approximate Three Sum
@@ -40,6 +42,84 @@ Explanation: -1 + 2 + 1 = 2 is the closest sum to 1.
 Input:  arr = [0, 0, 0],  target = 1
 Output: 0
 Explanation: 0 + 0 + 0 = 0 is the closest sum to 1.
+```
+
+```quiz
+{
+  "prompt": "Now your turn!",
+  "input": "arr = [-1, 2, 1, -4], target = 1",
+  "options": ["2", "1", "-1", "0"],
+  "answer": "2"
+}
+```
+
+## Constraints
+
+- `3 ≤ arr.length ≤ 500`
+- `-10^4 ≤ arr[i] ≤ 10^4`, `-10^4 ≤ target ≤ 10^4`
+- Exactly one solution exists
+
+```python run viz=array viz-root=arr
+import ast
+from typing import List
+
+class Solution:
+    def approximate_three_sum(self, arr: List[int], target: int) -> int:
+        # Your code goes here — sort, then for each fixed arr[i] run an inner
+        # two-pointer sweep tracking the sum with the smallest |sum - target|.
+        return 0
+
+arr = ast.literal_eval(input())      # the test case's arr
+target = int(input())                # the test case's target
+print(Solution().approximate_three_sum(arr, target))
+```
+
+```java run viz=array viz-root=arr
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int approximateThreeSum(int[] arr, int target) {
+            // Your code goes here — sort, then for each fixed arr[i] run an inner
+            // two-pointer sweep tracking the sum with the smallest |sum - target|.
+            return 0;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int target = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().approximateThreeSum(arr, target));
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's arr
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[2, 7, 11, 15]" },
+    { "id": "target", "label": "target", "type": "int", "placeholder": "3" }
+  ],
+  "cases": [
+    { "args": { "arr": "[2, 7, 11, 15]", "target": "3" }, "expected": "20" },
+    { "args": { "arr": "[-1, 2, 1, -4]", "target": "1" }, "expected": "2" },
+    { "args": { "arr": "[-4, -1, 1, 2]", "target": "-1" }, "expected": "-1" },
+    { "args": { "arr": "[1, 2, 3, 4]", "target": "6" }, "expected": "6" },
+    { "args": { "arr": "[0, 0, 0]", "target": "1" }, "expected": "0" },
+    { "args": { "arr": "[1, 1, 1]", "target": "10" }, "expected": "3" }
+  ]
+}
 ```
 
 <details>
@@ -156,7 +236,8 @@ Five numbered steps. No code; the next section is the implementation.
 
 ### Solution
 
-```python run viz=array viz-root=arr
+```python solution time=O(n^2) space=O(1)
+import ast
 from typing import List
 
 class Solution:
@@ -207,19 +288,12 @@ class Solution:
         return closest_sum
 
 
-# Examples from the problem statement
-print(Solution().approximate_three_sum([2, 7, 11, 15], 3))   # 20
-print(Solution().approximate_three_sum([-1, 2, 1, -4], 1))   # 2
-print(Solution().approximate_three_sum([0, 0, 0], 1))         # 0
-
-# Edge cases
-print(Solution().approximate_three_sum([1, 1, 1], 10))        # 3 — only one triplet
-print(Solution().approximate_three_sum([-1, 0, 1], 0))        # 0 — exact hit
-print(Solution().approximate_three_sum([1, 2, 3, 4], 6))      # 6 — exact hit: 1+2+3
-print(Solution().approximate_three_sum([-4, -1, 1, 2], -1))   # -1 — negative target
+arr = ast.literal_eval(input())      # the test case's arr
+target = int(input())                # the test case's target
+print(Solution().approximate_three_sum(arr, target))
 ```
 
-```java run viz=array viz-root=arr
+```java solution
 import java.util.*;
 
 public class Main {
@@ -235,8 +309,10 @@ public class Main {
                 // Compute the sum of the three numbers
                 int sum = arr[index] + arr[left] + arr[right];
 
-                // Update closestSum if necessary
-                if (Math.abs(sum - target) < Math.abs(closestSum - target)) {
+                // Update closestSum if necessary (long distance: closestSum
+                // starts at Integer.MAX_VALUE, and MAX_VALUE - target overflows
+                // int for negative targets)
+                if (Math.abs((long) sum - target) < Math.abs((long) closestSum - target)) {
                     closestSum = sum;
                 }
 
@@ -269,8 +345,8 @@ public class Main {
             for (int i = 0; i < arr.length; i++) {
                 int currentSum = closestTwoSum(arr, i, target);
                 if (
-                    Math.abs(currentSum - target) <
-                    Math.abs(closestSum - target)
+                    Math.abs((long) currentSum - target) <
+                    Math.abs((long) closestSum - target)
                 ) {
                     closestSum = currentSum;
                 }
@@ -281,16 +357,19 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().approximateThreeSum(new int[]{2,7,11,15}, 3));   // 20
-        System.out.println(new Solution().approximateThreeSum(new int[]{-1,2,1,-4}, 1));   // 2
-        System.out.println(new Solution().approximateThreeSum(new int[]{0,0,0}, 1));        // 0
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int target = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().approximateThreeSum(arr, target));
+    }
 
-        // Edge cases
-        System.out.println(new Solution().approximateThreeSum(new int[]{1,1,1}, 10));       // 3 — only one triplet
-        System.out.println(new Solution().approximateThreeSum(new int[]{-1,0,1}, 0));       // 0 — exact hit
-        System.out.println(new Solution().approximateThreeSum(new int[]{1,2,3,4}, 6));      // 6 — exact hit: 1+2+3
-        System.out.println(new Solution().approximateThreeSum(new int[]{-4,-1,1,2}, -1));   // -1 — negative target
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

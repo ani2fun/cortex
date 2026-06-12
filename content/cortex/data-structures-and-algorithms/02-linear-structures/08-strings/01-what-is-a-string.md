@@ -17,14 +17,40 @@ You already have a structure that holds a run of same-typed things in order, rea
 
 ## See It Work
 
-A string is laid out exactly like an array — one character per slot, indexed from `0`. Run this and click **Visualise**.
+A string is laid out exactly like an array — one character per slot, indexed from `0`. Run it, then click **Visualise**.
 
 > ▶ Run it, then click **Visualise** — the characters sit in a row of cells; `s[i]` jumps straight to one, just like an array.
 
 ```python run viz=array viz-root=s
-s = list("HELLO")          # a string is laid out as an array of characters
+s = input()                  # the test case's string
 for i in range(len(s)):
-    print(i, s[i])         # index any character in O(1) — exactly like an array
+    print(i, s[i])           # index any character in O(1) — exactly like an array
+```
+
+```java run viz=array viz-root=s
+import java.util.*;
+
+public class Main {
+  public static void main(String[] args) {
+    String s = new Scanner(System.in).nextLine();   // the test case's string
+    for (int i = 0; i < s.length(); i++)
+      System.out.println(i + " " + s.charAt(i));   // O(1) per index — just like an array
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "s", "type": "string", "placeholder": "HELLO" }
+  ],
+  "cases": [
+    { "args": { "s": "HELLO" }, "expected": "0 H\n1 E\n2 L\n3 L\n4 O" },
+    { "args": { "s": "HI" },    "expected": "0 H\n1 I" },
+    { "args": { "s": "data" },  "expected": "0 d\n1 a\n2 t\n3 a" },
+    { "args": { "s": "abc" },   "expected": "0 a\n1 b\n2 c" }
+  ]
+}
 ```
 
 ## How It Works
@@ -79,26 +105,75 @@ About a *trillion* character-copies — each of the million edits rebuilds the w
 The right way to build a string — collect the pieces, join once:
 
 ```python run viz=array
-# Strings are immutable, so build with a list + join (O(n)), never += in a loop.
-parts = []
-for word in ["data", "structures", "rock"]:
-    parts.append(word.capitalize())
-print(" ".join(parts))     # Data Structures Rock
+s = input()
+words = s.split()
+parts = [w.capitalize() for w in words]
+print(" ".join(parts))
 ```
 
 ```java run viz=array
+import java.util.*;
+
 public class Main {
   public static void main(String[] args) {
-    // Java strings are immutable too — build with a StringBuilder for O(n).
+    String s = new Scanner(System.in).nextLine();
+    String[] words = s.split(" ");
     StringBuilder sb = new StringBuilder();
-    for (String word : new String[]{"data", "structures", "rock"}) {
+    for (String w : words) {
       if (sb.length() > 0) sb.append(" ");
-      sb.append(Character.toUpperCase(word.charAt(0))).append(word.substring(1));
+      sb.append(Character.toUpperCase(w.charAt(0))).append(w.substring(1));
     }
-    System.out.println(sb);   // Data Structures Rock
+    System.out.println(sb);
   }
 }
 ```
+
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "s", "type": "string", "placeholder": "data structures rock" }
+  ],
+  "cases": [
+    { "args": { "s": "data structures rock" }, "expected": "Data Structures Rock" },
+    { "args": { "s": "hello world" },          "expected": "Hello World" },
+    { "args": { "s": "a b c" },                "expected": "A B C" },
+    { "args": { "s": "one two three four" },   "expected": "One Two Three Four" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Collect capitalized words into a list (Python) or `StringBuilder` (Java) and join/build once — `O(n)`. The starter stub already does this; the key insight is that `+=` in a loop copies the growing string each time, turning `O(n)` work into `O(n²)`. The `split` + `capitalize` + `join` idiom avoids that entirely. Both languages agree because the output is a plain string with no ordering ambiguity.
+
+```python solution time=O(n) space=O(n)
+s = input()
+words = s.split()
+parts = [w.capitalize() for w in words]
+print(" ".join(parts))
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+  public static void main(String[] args) {
+    String s = new Scanner(System.in).nextLine();
+    String[] words = s.split(" ");
+    StringBuilder sb = new StringBuilder();
+    for (String w : words) {
+      if (sb.length() > 0) sb.append(" ");
+      sb.append(Character.toUpperCase(w.charAt(0))).append(w.substring(1));
+    }
+    System.out.println(sb);
+  }
+}
+```
+
+</details>
+
+Want the two collision strategies in full? [Separate Chaining](/cortex/data-structures-and-algorithms/linear-structures/hash-table/separate-chaining) builds the linked-list-per-bucket version from scratch; the probing lessons cover open addressing.
 
 ## Reflect & Connect
 

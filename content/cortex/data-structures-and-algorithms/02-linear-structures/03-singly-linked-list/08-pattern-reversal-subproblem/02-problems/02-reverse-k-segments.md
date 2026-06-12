@@ -4,6 +4,8 @@ summary: "Given the head of a singly linked list and a positive integer k, write
 prereqs:
   - 08-pattern-reversal-subproblem/01-pattern
 difficulty: medium
+kind: problem
+topics: [reversal-subproblem, singly-linked-list]
 ---
 
 # Reverse K-segments
@@ -13,8 +15,6 @@ difficulty: medium
 Given the **head** of a singly linked list and a positive integer **k**, write a function to reverse the list in groups of k and return the head of the reversed list.
 
 If, at the end, the length of the remaining list is less than k, do not reverse that part of the list.
-
----
 
 ## Examples
 
@@ -44,6 +44,112 @@ Explanation: The full list is shorter than k, so no chunk is reversed and the in
 Input:  head = [1, 2, 3, 4, 5, 6], k = 6
 Output: [6, 5, 4, 3, 2, 1]
 Explanation: Exactly one full chunk of size 6 spans the whole list; the inner reversal flips the entire list once.
+```
+
+## Constraints
+
+- `0 ≤ list length ≤ 10⁵`
+- `-10⁴ ≤ node.val ≤ 10⁴`
+- `1 ≤ k ≤ list length` (or `k` may exceed list length — leave untouched)
+- Reverse **in place** — `O(1)` extra space
+
+```python run viz=linked-list viz-root=head
+import ast
+
+class ListNode:
+    def __init__(self, val, next=None):
+        self.val = val
+        self.next = next
+
+class Solution:
+    def reverse_k_segments(self, head, k):
+        # Your code goes here — precompute length // k, use reverse(start, end)
+        # per chunk, stitch two seams each time. Return new head.
+        pass
+
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
+
+def print_list(head):                # 1 → 2 → 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
+
+head = build_list(ast.literal_eval(input()))   # the test case's head
+k = int(input())
+print_list(Solution().reverse_k_segments(head, k))
+```
+
+```java run viz=linked-list viz-root=head
+import java.util.*;
+
+public class Main {
+    static class ListNode {
+        int val; ListNode next;
+        ListNode(int val) { this.val = val; }
+        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+    }
+
+    static class Solution {
+        ListNode reverseKSegments(ListNode head, int k) {
+            // Your code goes here — precompute length / k, use reverse(start, end)
+            // per chunk, stitch two seams each time. Return new head.
+            return null;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        ListNode head = buildList(parseIntArray(sc.nextLine()));
+        int k = Integer.parseInt(sc.nextLine().trim());
+        printList(new Solution().reverseKSegments(head, k));
+    }
+
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+        ListNode head = null;
+        for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+        return head;
+    }
+
+    static void printList(ListNode head) {         // 1 → 2 → 3 → [1, 2, 3]
+        List<Integer> out = new ArrayList<>();
+        for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+        System.out.println(out);
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's head
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "head", "label": "head", "type": "int[]", "placeholder": "[5, 7, 3, 10, 6, 8]" },
+    { "id": "k", "label": "k", "type": "int", "placeholder": "3" }
+  ],
+  "cases": [
+    { "args": { "head": "[5, 7, 3, 10, 6, 8]", "k": "3" }, "expected": "[3, 7, 5, 8, 6, 10]" },
+    { "args": { "head": "[5, 7, 3, 10, 6]", "k": "2" }, "expected": "[7, 5, 10, 3, 6]" },
+    { "args": { "head": "[5, 7, 3, 10, 6]", "k": "8" }, "expected": "[5, 7, 3, 10, 6]" },
+    { "args": { "head": "[1, 2, 3, 4, 5, 6]", "k": "6" }, "expected": "[6, 5, 4, 3, 2, 1]" },
+    { "args": { "head": "[1, 2, 3, 4, 5, 6]", "k": "2" }, "expected": "[2, 1, 4, 3, 6, 5]" },
+    { "args": { "head": "[1]", "k": "1" }, "expected": "[1]" },
+    { "args": { "head": "[]", "k": "2" }, "expected": "[]" }
+  ]
+}
 ```
 
 <details>
@@ -87,57 +193,32 @@ Six numbered steps. No code; the next section is the implementation.
 
 ### Solution
 
-```python run viz=linked-list viz-root=head
-from typing import Optional
-
+```python solution time=O(n) space=O(1)
+import ast
 
 class ListNode:
-    def __init__(self, val=0, nxt=None):
+    def __init__(self, val, next=None):
         self.val = val
-        self.next = nxt
-
-
-def from_list(values):
-    if not values:
-        return None
-    head = ListNode(values[0])
-    cur = head
-    for v in values[1:]:
-        cur.next = ListNode(v)
-        cur = cur.next
-    return head
-
-
-def to_list(head):
-    out = []
-    while head is not None:
-        out.append(head.val)
-        head = head.next
-    return out
-
+        self.next = next
 
 class Solution:
-    def find_length(self, head: Optional[ListNode]) -> int:
+    def find_length(self, head):
         length = 0
         while head is not None:
             length += 1
             head = head.next
         return length
 
-    def get_node_at_position(
-        self, head: ListNode, position: int
-    ) -> ListNode:
+    def get_node_at_position(self, head, position):
         current = head
         for _ in range(1, position):
             current = current.next
         return current
 
-    def reverse(
-        self, start: Optional[ListNode], end: Optional[ListNode]
-    ) -> Optional[ListNode]:
-        current: Optional[ListNode] = start
-        right_bound: Optional[ListNode] = end.next
-        previous: Optional[ListNode] = right_bound
+    def reverse(self, start, end):
+        current = start
+        right_bound = end.next
+        previous = right_bound
 
         while current != right_bound:
             next_node = current.next
@@ -147,9 +228,7 @@ class Solution:
 
         return previous
 
-    def reverse_k_segments(
-        self, head: Optional[ListNode], k: int
-    ) -> Optional[ListNode]:
+    def reverse_k_segments(self, head, k):
 
         # If the list is empty, has only one node, or k is 1, no need to
         # reverse segments
@@ -197,47 +276,32 @@ class Solution:
         # Return the head of the modified list
         return head
 
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
 
-# Examples from the problem statement
-print(to_list(Solution().reverse_k_segments(from_list([5, 7, 3, 10, 6, 8]), 3)))  # [3, 7, 5, 8, 6, 10]
-print(to_list(Solution().reverse_k_segments(from_list([5, 7, 3, 10, 6]), 2)))     # [7, 5, 10, 3, 6]
-print(to_list(Solution().reverse_k_segments(from_list([5, 7, 3, 10, 6]), 8)))     # [5, 7, 3, 10, 6]
+def print_list(head):                # 1 → 2 → 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
 
-# Edge cases
-print(to_list(Solution().reverse_k_segments(None, 2)))                             # []
-print(to_list(Solution().reverse_k_segments(from_list([1]), 1)))                   # [1]
-print(to_list(Solution().reverse_k_segments(from_list([1, 2]), 1)))                # [1, 2]
-print(to_list(Solution().reverse_k_segments(from_list([1, 2, 3, 4, 5, 6]), 2)))   # [2, 1, 4, 3, 6, 5]
-print(to_list(Solution().reverse_k_segments(from_list([1, 2, 3, 4, 5, 6]), 6)))   # [6, 5, 4, 3, 2, 1]
+head = build_list(ast.literal_eval(input()))   # the test case's head
+k = int(input())
+print_list(Solution().reverse_k_segments(head, k))
 ```
 
-```java run viz=linked-list viz-root=head
+```java solution
 import java.util.*;
 
 public class Main {
     static class ListNode {
-        int val;
-        ListNode next;
-        ListNode() {}
+        int val; ListNode next;
         ListNode(int val) { this.val = val; }
         ListNode(int val, ListNode next) { this.val = val; this.next = next; }
-    }
-
-    static ListNode fromList(int... values) {
-        if (values.length == 0) return null;
-        ListNode head = new ListNode(values[0]);
-        ListNode cur = head;
-        for (int i = 1; i < values.length; i++) {
-            cur.next = new ListNode(values[i]);
-            cur = cur.next;
-        }
-        return head;
-    }
-
-    static List<Integer> toList(ListNode head) {
-        List<Integer> out = new ArrayList<>();
-        while (head != null) { out.add(head.val); head = head.next; }
-        return out;
     }
 
     static class Solution {
@@ -328,17 +392,32 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(toList(new Solution().reverseKSegments(fromList(5, 7, 3, 10, 6, 8), 3))); // [3, 7, 5, 8, 6, 10]
-        System.out.println(toList(new Solution().reverseKSegments(fromList(5, 7, 3, 10, 6), 2)));    // [7, 5, 10, 3, 6]
-        System.out.println(toList(new Solution().reverseKSegments(fromList(5, 7, 3, 10, 6), 8)));    // [5, 7, 3, 10, 6]
+        Scanner sc = new Scanner(System.in);
+        ListNode head = buildList(parseIntArray(sc.nextLine()));
+        int k = Integer.parseInt(sc.nextLine().trim());
+        printList(new Solution().reverseKSegments(head, k));
+    }
 
-        // Edge cases
-        System.out.println(toList(new Solution().reverseKSegments(null, 2)));                          // []
-        System.out.println(toList(new Solution().reverseKSegments(fromList(1), 1)));                   // [1]
-        System.out.println(toList(new Solution().reverseKSegments(fromList(1, 2), 1)));                // [1, 2]
-        System.out.println(toList(new Solution().reverseKSegments(fromList(1, 2, 3, 4, 5, 6), 2)));   // [2, 1, 4, 3, 6, 5]
-        System.out.println(toList(new Solution().reverseKSegments(fromList(1, 2, 3, 4, 5, 6), 6)));   // [6, 5, 4, 3, 2, 1]
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+        ListNode head = null;
+        for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+        return head;
+    }
+
+    static void printList(ListNode head) {         // 1 → 2 → 3 → [1, 2, 3]
+        List<Integer> out = new ArrayList<>();
+        for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+        System.out.println(out);
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's head
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

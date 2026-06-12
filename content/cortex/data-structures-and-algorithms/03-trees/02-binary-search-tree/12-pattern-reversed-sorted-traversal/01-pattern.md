@@ -15,20 +15,17 @@ The accumulator insight is what makes this pattern more than "sorted traversal b
 
 ## See It Work
 
-Find the **k-th largest** key with a reversed in-order walk that stops at `k`. Run it.
+Find the **k-th largest** key with a reversed in-order walk that stops at `k`. Pick a case and **Run** it.
 
 ```python run viz=binary-tree viz-root=root
-class TreeNode:
-    def __init__(self, val):
-        self.val = val
-        self.left = None
-        self.right = None
+import json
+from collections import deque
 
-def insert(root, val):
-    if root is None: return TreeNode(val)
-    if val < root.val: root.left = insert(root.left, val)
-    elif val > root.val: root.right = insert(root.right, val)
-    return root
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
 
 def kth_largest(root, k):
     stack, node = [], root
@@ -41,11 +38,107 @@ def kth_largest(root, k):
         if k == 0:
             return node.val
         node = node.left
+    return 0
 
-root = None
-for v in [5, 3, 8, 1, 4, 7, 9]:
-    root = insert(root, v)
-print(kth_largest(root, 1), kth_largest(root, 3), kth_largest(root, 7))   # 9 7 1
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
+
+root = build_tree(json.loads(input()))   # the test case's level-order values
+k = int(input())
+print(kth_largest(root, k))
+```
+
+```java run viz=binary-tree viz-root=root
+import java.util.*;
+
+public class Main {
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
+  }
+
+  static int kthLargest(TreeNode root, int k) {
+    Deque<TreeNode> stack = new ArrayDeque<>();
+    TreeNode node = root;
+    while (!stack.isEmpty() || node != null) {
+      while (node != null) { stack.push(node); node = node.right; }
+      node = stack.pop();
+      if (--k == 0) return node.val;
+      node = node.left;
+    }
+    return 0;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+    int k = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(kthLargest(root, k));
+  }
+
+  static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
+    }
+    return root;
+  }
+
+  // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[5, 3, 8, 1, 4, 7, 9]" },
+    { "id": "k", "label": "k", "type": "int", "placeholder": "3" }
+  ],
+  "cases": [
+    { "args": { "root": "[5, 3, 8, 1, 4, 7, 9]", "k": "1" }, "expected": "9" },
+    { "args": { "root": "[5, 3, 8, 1, 4, 7, 9]", "k": "3" }, "expected": "7" },
+    { "args": { "root": "[5, 3, 8, 1, 4, 7, 9]", "k": "7" }, "expected": "1" },
+    { "args": { "root": "[4, 2, 5, 1, 3, null, 6]", "k": "3" }, "expected": "4" },
+    { "args": { "root": "[7]", "k": "1" }, "expected": "7" },
+    { "args": { "root": "[7]", "k": "2" }, "expected": "0" }
+  ]
+}
 ```
 
 ## How It Works
@@ -88,61 +181,181 @@ Because descending order visits keys in exactly the sequence "largest, then next
 
 ## Your Turn
 
-k-th largest plus the greater-sum tree, both on one reversed in-order walk:
+k-th largest (reversed in-order + count to `k`). Implement it from scratch.
 
 ```python run viz=binary-tree viz-root=root
-class TreeNode:
-    def __init__(self, val):
-        self.val = val; self.left = None; self.right = None
+import json
+from collections import deque
 
-def insert(root, val):
-    if root is None: return TreeNode(val)
-    if val < root.val: root.left = insert(root.left, val)
-    elif val > root.val: root.right = insert(root.right, val)
-    return root
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
 
 def kth_largest(root, k):
-    stack, node = [], root
-    while stack or node:
-        while node:
-            stack.append(node); node = node.right
-        node = stack.pop(); k -= 1
-        if k == 0: return node.val
-        node = node.left
+    # Your code goes here — reversed in-order (right → node → left),
+    # count visits, stop and return node.val when count reaches k.
+    # Return 0 if k exceeds the tree size.
+    pass
 
-def greater_sum_tree(root):
-    total = 0
-    stack, node = [], root
-    while stack or node:
-        while node:
-            stack.append(node); node = node.right    # descending
-        node = stack.pop()
-        total += node.val                            # all larger keys already added
-        node.val = total
-        node = node.left
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
     return root
 
-def inorder(n): return inorder(n.left) + [n.val] + inorder(n.right) if n else []
-
-root = None
-for v in [5, 3, 8, 1, 4, 7, 9]:
-    root = insert(root, v)
-print(kth_largest(root, 2))                          # 8
-print(inorder(greater_sum_tree(root)))               # [37, 36, 33, 29, 24, 17, 9]
+root = build_tree(json.loads(input()))   # the test case's level-order values
+k = int(input())
+print(kth_largest(root, k))
 ```
 
 ```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {
-  static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } }
-  static TreeNode insert(TreeNode r, int v) {
-    if (r == null) return new TreeNode(v);
-    if (v < r.val) r.left = insert(r.left, v);
-    else if (v > r.val) r.right = insert(r.right, v);
-    return r;
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
   }
-  static Integer kthLargest(TreeNode root, int k) {
+
+  static int kthLargest(TreeNode root, int k) {
+    // Your code goes here — reversed in-order (right → node → left),
+    // count visits, stop and return node.val when count reaches k.
+    // Return 0 if k exceeds the tree size.
+    return 0;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+    int k = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(kthLargest(root, k));
+  }
+
+  static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
+    }
+    return root;
+  }
+
+  // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[5, 3, 8, 1, 4, 7, 9]" },
+    { "id": "k", "label": "k", "type": "int", "placeholder": "2" }
+  ],
+  "cases": [
+    { "args": { "root": "[5, 3, 8, 1, 4, 7, 9]", "k": "1" }, "expected": "9" },
+    { "args": { "root": "[5, 3, 8, 1, 4, 7, 9]", "k": "2" }, "expected": "8" },
+    { "args": { "root": "[5, 3, 8, 1, 4, 7, 9]", "k": "7" }, "expected": "1" },
+    { "args": { "root": "[4, 2, 5, 1, 3, null, 6]", "k": "3" }, "expected": "4" },
+    { "args": { "root": "[7]", "k": "1" }, "expected": "7" },
+    { "args": { "root": "[7]", "k": "2" }, "expected": "0" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+The reversed in-order iterative walk uses an explicit stack. Descend the right spine first (pushing nodes), then pop the top (next-largest key), decrement `k`, and return if `k` reaches zero. Otherwise step left and continue. If the loop ends without returning, `k` exceeded the tree size — return `0`.
+
+```python solution time=O(k+h) space=O(h)
+import json
+from collections import deque
+
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+def kth_largest(root, k):
+    stack, node = [], root
+    while stack or node:
+        while node:                        # descend the RIGHT spine (largest first)
+            stack.append(node)
+            node = node.right
+        node = stack.pop()                 # next key in DESCENDING order
+        k -= 1
+        if k == 0:
+            return node.val
+        node = node.left
+    return 0
+
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
+
+root = build_tree(json.loads(input()))   # the test case's level-order values
+k = int(input())
+print(kth_largest(root, k))
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
+  }
+
+  static int kthLargest(TreeNode root, int k) {
     Deque<TreeNode> stack = new ArrayDeque<>();
     TreeNode node = root;
     while (!stack.isEmpty() || node != null) {
@@ -151,19 +364,54 @@ public class Main {
       if (--k == 0) return node.val;
       node = node.left;
     }
-    return null;
+    return 0;
   }
+
   public static void main(String[] args) {
-    TreeNode root = null;
-    for (int v : new int[]{5, 3, 8, 1, 4, 7, 9}) root = insert(root, v);
-    System.out.println(kthLargest(root, 1) + " " + kthLargest(root, 3));   // 9 7
+    Scanner sc = new Scanner(System.in);
+    TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+    int k = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(kthLargest(root, k));
+  }
+
+  static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
+    }
+    return root;
+  }
+
+  // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
   }
 }
 ```
 
-Drill the family in **Practice** — [Rank Nodes](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-reversed-sorted-traversal/problems/rank-nodes), [Kth Largest Element](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-reversed-sorted-traversal/problems/kth-largest-element), [Enriched Sum Tree](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-reversed-sorted-traversal/problems/enriched-sum-tree), and [Multiple Replacement](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-reversed-sorted-traversal/problems/multiple-replacement).
+</details>
 
 ## Reflect & Connect
+
+Drill the family in **Practice** — [Rank Nodes](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-reversed-sorted-traversal/problems/rank-nodes), [Kth Largest Element](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-reversed-sorted-traversal/problems/kth-largest-element), [Enriched Sum Tree](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-reversed-sorted-traversal/problems/enriched-sum-tree), and [Multiple Replacement](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-reversed-sorted-traversal/problems/multiple-replacement).
 
 Reversed traversal is sorted traversal's mirror, plus the accumulator twist:
 

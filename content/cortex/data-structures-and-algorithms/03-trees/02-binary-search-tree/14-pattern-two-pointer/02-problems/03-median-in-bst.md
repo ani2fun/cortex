@@ -1,178 +1,81 @@
 ---
 title: "Median in BST"
-summary: "Given the root of a BST, return the median value, rounded down to the nearest integer."
+summary: "Given the root of a BST, return the median value of the in-order sequence. If the count is even, return the floor of the average of the two middle values."
 prereqs:
   - 14-pattern-two-pointer/01-pattern
 difficulty: hard
+kind: problem
+topics: [two-pointer, binary-search-tree]
 ---
 
 # Median in BST
 
 ## Problem Statement
 
-Given the **root** of a BST, return the **median** value, rounded down to the nearest integer.
+Given the **root** of a BST, return the **median** value of the sorted in-order sequence.
 
-> The median is the middle value of the sorted in-order sequence. If the count is odd, it's the single middle value. If even, it's the average of the two middle values, rounded down (integer division).
+> If the count is odd, the median is the single middle value. If even, it is the floor of the average of the two middle values (integer division).
 
-### Example 1
+## Examples
 
-> - **Input:** `root = [5, 4, 6, 2, null, null, 7]`
-> - **Output:** `5`
-> - **Explanation:** Sorted: `[2, 4, 5, 6, 7]`. Middle: `5`.
+**Example 1:**
+```
+Input:  root = [5, 4, 6, 2, null, null, 7]
+Output: 5
+Explanation: Sorted: [2, 4, 5, 6, 7]. Middle: 5.
+```
 
-### Example 2
+**Example 2:**
+```
+Input:  root = [10, 8, 14, 5, null, 13, 17]
+Output: 11
+Explanation: Sorted: [5, 8, 10, 13, 14, 17]. Middle pair: (10, 13). Floor((10+13)/2) = 11.
+```
 
-> - **Input:** `root = [10, 8, 14, 5, null, 13, 17]`
-> - **Output:** `11`
-> - **Explanation:** Sorted: `[5, 8, 10, 13, 14, 17]`. Middle pair: `(10, 13)`. Average: `11`.
+## Constraints
 
-<details>
-<summary><h2>The Strategy</h2></summary>
-
-
-The two-pointer pattern *naturally* finds the median: walk both iterators forward step-by-step. If the count is odd, eventually `leftNode == rightNode` — that single node's value is the median. If even, the loop ends when the two pointers cross, with `leftNode` and `rightNode` straddling the middle — the most recent pair's *average* is the median (rounded down).
-
-</details>
-<details>
-<summary><h2>The Solution</h2></summary>
-
-
+- `1 ≤ number of nodes ≤ 10⁴`
+- `-10⁵ ≤ node.val ≤ 10⁵`
+- All node values are unique (BST property)
+- Return `-1` for an empty tree
 
 ```python run viz=binary-tree viz-root=root
-from typing import Optional, List
+import json
+from collections import deque
 
 class TreeNode:
-    def __init__(self, val=0, left=None, right=None):
+    def __init__(self, val, left=None, right=None):
         self.val = val
         self.left = left
         self.right = right
 
+class Solution:
+    def median_in_bst(self, root):
+        # Your code goes here — advance both iterators step-by-step;
+        # if they meet at the same node (odd count) return that node's value;
+        # if they cross (even count) return floor((last_left + last_right) / 2).
+        return -1
 
-def from_level_order(values):
-    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
     if not values:
         return None
     root = TreeNode(values[0])
-    queue = [root]
+    queue = deque([root])
     i = 1
     while queue and i < len(values):
-        node = queue.pop(0)
-        if i < len(values) and values[i] is not None:
-            node.left = TreeNode(values[i])
-            queue.append(node.left)
-        i += 1
-        if i < len(values) and values[i] is not None:
-            node.right = TreeNode(values[i])
-            queue.append(node.right)
-        i += 1
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
     return root
 
-
-class ForwardBstIterator:
-    def __init__(self, root: Optional[TreeNode]):
-        self.stack: List[TreeNode] = []
-        self.push_all_left(root)
-
-    def push_all_left(self, node: Optional[TreeNode]) -> None:
-        while node:
-            self.stack.append(node)
-            node = node.left
-
-    def has_next(self) -> bool:
-        return bool(self.stack)
-
-    def next(self) -> Optional[TreeNode]:
-        if not self.has_next():
-            return None
-
-        node = self.stack.pop()
-        self.push_all_left(node.right)
-        return node
-
-class ReverseBstIterator:
-    def __init__(self, root: Optional[TreeNode]):
-        self.stack: List[TreeNode] = []
-        self.push_all_right(root)
-
-    def push_all_right(self, node: Optional[TreeNode]) -> None:
-        while node:
-            self.stack.append(node)
-            node = node.right
-
-    def has_next(self) -> bool:
-        return bool(self.stack)
-
-    def next(self) -> Optional[TreeNode]:
-        if not self.has_next():
-            return None
-
-        node = self.stack.pop()
-        self.push_all_right(node.left)
-        return node
-
-class Solution:
-    def median_in_bst(self, root: Optional[TreeNode]) -> int:
-        if not root:
-            return -1
-
-        # Initialize the left and right iterators
-        left_iterator: ForwardBstIterator = ForwardBstIterator(root)
-        right_iterator: ReverseBstIterator = ReverseBstIterator(root)
-
-        left_node: Optional[TreeNode] = left_iterator.next()
-        right_node: Optional[TreeNode] = right_iterator.next()
-
-        # Variable to store the median value
-        median = -1
-
-        while (
-            left_node is not None
-            and right_node is not None
-            and left_node.val < right_node.val
-        ):
-
-            # Update the median with the average of the two nodes, if the
-            # tree has an even number of nodes, the median will be the
-            # average of the two middle nodes before exiting the loop
-            median = (left_node.val + right_node.val) // 2
-
-            # Move to the left node to the next node in in-order
-            left_node = left_iterator.next()
-
-            # Move the right node to the next node in reverse in-order
-            right_node = right_iterator.next()
-
-        # If both iterators meet at the same node, it means the tree has
-        # an odd number of nodes
-        if left_node == right_node:
-            return left_node.val
-
-        # If the tree has an even number of nodes, return the last
-        # computed median
-        return median
-
-
-# Examples from the problem statement
-t1 = from_level_order([5, 4, 6, 2, None, None, 7])
-print(Solution().median_in_bst(t1))  # 5  — odd count, middle node
-
-t2 = from_level_order([10, 8, 14, 5, None, 13, 17])
-print(Solution().median_in_bst(t2))  # 11 — even count, floor((10+13)/2)
-
-# Edge cases
-print(Solution().median_in_bst(None))                 # -1 — empty tree
-
-t3 = from_level_order([7])
-print(Solution().median_in_bst(t3))                   # 7  — single node
-
-t4 = from_level_order([3, 1, 5])
-print(Solution().median_in_bst(t4))                   # 3  — odd, three nodes
-
-t5 = from_level_order([4, 2, 6, 1, 3])
-print(Solution().median_in_bst(t5))                   # 3  — odd, five nodes, sorted [1,2,3,4,6]
-
-t6 = from_level_order([4, 2, 6, 1, 3, 5, 7])
-print(Solution().median_in_bst(t6))                   # 4  — odd, seven nodes, middle
+root = build_tree(json.loads(input()))   # the test case's level-order values
+print(Solution().median_in_bst(root))
 ```
 
 ```java run viz=binary-tree viz-root=root
@@ -180,60 +83,184 @@ import java.util.*;
 
 public class Main {
     static class TreeNode {
-        int val;
-        TreeNode left;
-        TreeNode right;
-        TreeNode() {}
+        int val; TreeNode left, right;
         TreeNode(int val) { this.val = val; }
     }
 
-    static TreeNode fromLevelOrder(Integer... values) {
+    static class Solution {
+        int medianInBst(TreeNode root) {
+            // Your code goes here — advance both iterators step-by-step;
+            // if they meet at the same node (odd count) return that node's value;
+            // if they cross (even count) return (lastLeft + lastRight) / 2.
+            return -1;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+        System.out.println(new Solution().medianInBst(root));
+    }
+
+    static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
         if (values.length == 0 || values[0] == null) return null;
         TreeNode root = new TreeNode(values[0]);
-        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        Deque<TreeNode> queue = new ArrayDeque<>();
         queue.add(root);
         int i = 1;
         while (!queue.isEmpty() && i < values.length) {
             TreeNode node = queue.poll();
-            if (i < values.length && values[i] != null) {
-                node.left = new TreeNode(values[i]);
-                queue.add(node.left);
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
             }
-            i++;
-            if (i < values.length && values[i] != null) {
-                node.right = new TreeNode(values[i]);
-                queue.add(node.right);
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
             }
-            i++;
         }
         return root;
     }
 
+    // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+    static Integer[] parseIntegerArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new Integer[0];
+        String[] parts = inner.split(",");
+        Integer[] out = new Integer[parts.length];
+        for (int i = 0; i < parts.length; i++)
+            out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[5, 4, 6, 2, null, null, 7]" }
+  ],
+  "cases": [
+    { "args": { "root": "[5, 4, 6, 2, null, null, 7]" }, "expected": "5" },
+    { "args": { "root": "[10, 8, 14, 5, null, 13, 17]" }, "expected": "11" },
+    { "args": { "root": "[7]" }, "expected": "7" },
+    { "args": { "root": "[3, 1, 5]" }, "expected": "3" },
+    { "args": { "root": "[4, 2, 6, 1, 3]" }, "expected": "3" },
+    { "args": { "root": "[4, 2, 6, 1, 3, 5, 7]" }, "expected": "4" }
+  ]
+}
+```
+
+<details>
+<summary><h2>Solution</h2></summary>
+
+The two-pointer pattern *naturally* finds the median: walk both iterators forward step-by-step, always advancing both. Track the last `(left_node, right_node)` pair. If the count is odd, eventually `left_node == right_node` — that single node's value is the median. If even, the loop exits when the two pointers cross, and the last recorded `(left_node.val + right_node.val) // 2` is the answer.
+
+Both Python (`//`) and Java (int `/` int) truncate toward zero identically for non-negative values, so the output is always an integer and byte-equal across both languages.
+
+```python solution time=O(n) space=O(h)
+import json
+from collections import deque
+
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+class ForwardBstIterator:
+    def __init__(self, root):
+        self.stack = []
+        self._push_all_left(root)
+
+    def _push_all_left(self, node):
+        while node:
+            self.stack.append(node)
+            node = node.left
+
+    def has_next(self):
+        return bool(self.stack)
+
+    def next(self):
+        node = self.stack.pop()
+        self._push_all_left(node.right)
+        return node
+
+class ReverseBstIterator:
+    def __init__(self, root):
+        self.stack = []
+        self._push_all_right(root)
+
+    def _push_all_right(self, node):
+        while node:
+            self.stack.append(node)
+            node = node.right
+
+    def has_next(self):
+        return bool(self.stack)
+
+    def next(self):
+        node = self.stack.pop()
+        self._push_all_right(node.left)
+        return node
+
+class Solution:
+    def median_in_bst(self, root):
+        if not root:
+            return -1
+        left_iterator = ForwardBstIterator(root)
+        right_iterator = ReverseBstIterator(root)
+        left_node = left_iterator.next()
+        right_node = right_iterator.next()
+        median = -1
+        while (left_node is not None and right_node is not None
+               and left_node.val < right_node.val):
+            median = (left_node.val + right_node.val) // 2
+            left_node = left_iterator.next()
+            right_node = right_iterator.next()
+        if left_node == right_node:
+            return left_node.val
+        return median
+
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
+
+root = build_tree(json.loads(input()))   # the test case's level-order values
+print(Solution().median_in_bst(root))
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+    static class TreeNode {
+        int val; TreeNode left, right;
+        TreeNode(int val) { this.val = val; }
+    }
+
     static class ForwardBstIterator {
-
-        private Stack<TreeNode> stack;
-
-        public ForwardBstIterator(TreeNode root) {
-            stack = new Stack<>();
-            pushAllLeft(root);
-        }
-
+        private Deque<TreeNode> stack = new ArrayDeque<>();
+        ForwardBstIterator(TreeNode root) { pushAllLeft(root); }
         private void pushAllLeft(TreeNode node) {
-            while (node != null) {
-                stack.push(node);
-                node = node.left;
-            }
+            while (node != null) { stack.push(node); node = node.left; }
         }
-
-        public boolean hasNext() {
-            return !stack.empty();
-        }
-
-        public TreeNode next() {
-            if (!hasNext()) {
-                return null;
-            }
-
+        boolean hasNext() { return !stack.isEmpty(); }
+        TreeNode next() {
             TreeNode node = stack.pop();
             pushAllLeft(node.right);
             return node;
@@ -241,30 +268,13 @@ public class Main {
     }
 
     static class ReverseBstIterator {
-
-        private Stack<TreeNode> stack;
-
-        public ReverseBstIterator(TreeNode root) {
-            stack = new Stack<>();
-            pushAllRight(root);
-        }
-
+        private Deque<TreeNode> stack = new ArrayDeque<>();
+        ReverseBstIterator(TreeNode root) { pushAllRight(root); }
         private void pushAllRight(TreeNode node) {
-            while (node != null) {
-                stack.push(node);
-                node = node.right;
-            }
+            while (node != null) { stack.push(node); node = node.right; }
         }
-
-        public boolean hasNext() {
-            return !stack.empty();
-        }
-
-        public TreeNode next() {
-            if (!hasNext()) {
-                return null;
-            }
-
+        boolean hasNext() { return !stack.isEmpty(); }
+        TreeNode next() {
             TreeNode node = stack.pop();
             pushAllRight(node.left);
             return node;
@@ -272,78 +282,61 @@ public class Main {
     }
 
     static class Solution {
-        public int medianInBst(TreeNode root) {
-            if (root == null) {
-                return -1;
-            }
-
-            // Initialize the left and right iterators
+        int medianInBst(TreeNode root) {
+            if (root == null) return -1;
             ForwardBstIterator leftIterator = new ForwardBstIterator(root);
             ReverseBstIterator rightIterator = new ReverseBstIterator(root);
-
             TreeNode leftNode = leftIterator.next();
             TreeNode rightNode = rightIterator.next();
-
-            // Variable to store the median value
             int median = -1;
-
-            while (
-                leftNode != null &&
-                rightNode != null &&
-                leftNode.val < rightNode.val
-            ) {
-
-                // Update the median with the average of the two nodes, if
-                // the tree has an even number of nodes, the median will be
-                // the average of the two middle nodes before exiting the
-                // loop
+            while (leftNode != null && rightNode != null && leftNode.val < rightNode.val) {
                 median = (leftNode.val + rightNode.val) / 2;
-
-                // Move to the left node to the next node in in-order
                 leftNode = leftIterator.next();
-
-                // Move the right node to the next node in reverse in-order
                 rightNode = rightIterator.next();
             }
-
-            // If both iterators meet at the same node, it means the tree has
-            // an odd number of nodes
-            if (leftNode == rightNode) {
-                return leftNode.val;
-            }
-
-            // If the tree has an even number of nodes, return the last
-            // computed median
+            if (leftNode == rightNode) return leftNode.val;
             return median;
         }
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        TreeNode t1 = fromLevelOrder(5, 4, 6, 2, null, null, 7);
-        System.out.println(new Solution().medianInBst(t1));  // 5  — odd count, middle node
+        Scanner sc = new Scanner(System.in);
+        TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+        System.out.println(new Solution().medianInBst(root));
+    }
 
-        TreeNode t2 = fromLevelOrder(10, 8, 14, 5, null, 13, 17);
-        System.out.println(new Solution().medianInBst(t2));  // 11 — even count, floor((10+13)/2)
+    static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+            }
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+            }
+        }
+        return root;
+    }
 
-        // Edge cases
-        System.out.println(new Solution().medianInBst(null));                  // -1 — empty tree
-
-        TreeNode t3 = fromLevelOrder(7);
-        System.out.println(new Solution().medianInBst(t3));                    // 7  — single node
-
-        TreeNode t4 = fromLevelOrder(3, 1, 5);
-        System.out.println(new Solution().medianInBst(t4));                    // 3  — odd, three nodes
-
-        TreeNode t5 = fromLevelOrder(4, 2, 6, 1, 3);
-        System.out.println(new Solution().medianInBst(t5));                    // 3  — odd, five nodes
-
-        TreeNode t6 = fromLevelOrder(4, 2, 6, 1, 3, 5, 7);
-        System.out.println(new Solution().medianInBst(t6));                    // 4  — odd, seven nodes
+    // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+    static Integer[] parseIntegerArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new Integer[0];
+        String[] parts = inner.split(",");
+        Integer[] out = new Integer[parts.length];
+        for (int i = 0; i < parts.length; i++)
+            out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```
-
 
 <details>
 <summary><strong>Trace — root = [10, 8, 14, 5, null, 13, 17]</strong></summary>

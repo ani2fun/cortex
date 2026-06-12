@@ -4,6 +4,8 @@ summary: "Given the head of a singly-linked list, return an array where result[i
 prereqs:
   - 10-pattern-next-closest-occurrence/01-pattern
 difficulty: medium
+kind: problem
+topics: [next-closest-occurrence, stack]
 ---
 
 # Succeeding superior nodes
@@ -50,6 +52,110 @@ Output: [0, 0, 0, 0]
 Explanation: A strictly decreasing list — no node has a greater value after it.
 ```
 
+```quiz
+{
+  "prompt": "head = [3, 1, 2]. What does succeeding_superior_nodes return?",
+  "options": ["[0, 2, 0]", "[0, 2, 3]", "[0, 0, 0]", "[1, 2, 0]"],
+  "answer": "[0, 2, 0]"
+}
+```
+
+## Constraints
+
+- `0 ≤ number of nodes ≤ 10 000`
+- `0 ≤ node.val ≤ 10 000`
+
+```python run
+import ast
+from typing import Optional, List
+
+class ListNode:
+    def __init__(self, val, next=None):
+        self.val = val
+        self.next = next
+
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
+
+def print_list(head):                # 1 → 2 → 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
+
+class Solution:
+    def succeeding_superior_nodes(
+        self, head: Optional[ListNode]
+    ) -> List[int]:
+        # Your code goes here — walk the list once with a (index, value)
+        # stack; retroactively resolve dominated nodes as larger values appear.
+        return []
+
+head = build_list(ast.literal_eval(input()))
+print(Solution().succeeding_superior_nodes(head))
+```
+
+```java run
+import java.util.*;
+
+public class Main {
+    static class ListNode {
+        int val; ListNode next;
+        ListNode(int val) { this.val = val; }
+        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+    }
+
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+        ListNode head = null;
+        for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+        return head;
+    }
+
+    static class Solution {
+        public List<Integer> succeedingSuperiorNodes(ListNode head) {
+            // Your code goes here — walk the list once with a (index, value)
+            // stack; retroactively resolve dominated nodes as larger values appear.
+            return new ArrayList<>();
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        ListNode head = buildList(parseIntArray(sc.nextLine()));
+        System.out.println(new Solution().succeedingSuperiorNodes(head));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "head", "label": "head", "type": "int[]", "placeholder": "[2, 1, 5]" }
+  ],
+  "cases": [
+    { "args": { "head": "[2, 1, 5]" }, "expected": "[5, 5, 0]" },
+    { "args": { "head": "[2, 7, 4, 3, 5]" }, "expected": "[7, 0, 5, 5, 0]" },
+    { "args": { "head": "[1, 2, 3, 4]" }, "expected": "[2, 3, 4, 0]" },
+    { "args": { "head": "[4, 3, 2, 1]" }, "expected": "[0, 0, 0, 0]" },
+    { "args": { "head": "[1]" }, "expected": "[0]" },
+    { "args": { "head": "[1, 2]" }, "expected": "[2, 0]" },
+    { "args": { "head": "[2, 1]" }, "expected": "[0, 0]" }
+  ]
+}
+```
 
 <details>
 <summary><h2>Intuition</h2></summary>
@@ -75,13 +181,6 @@ The naive approach re-walks the tail for every node and breaks the time budget. 
 
 </details>
 <details>
-<summary><h2>Approach</h2></summary>
-
-
-Same algorithm — but the data source is a linked list, so we walk it once with a pointer, tracking each node's index. Stack stores `(index, value)` pairs; on each new value, pop and resolve as before.
-
-</details>
-<details>
 <summary><h2>Approach in Words</h2></summary>
 
 
@@ -95,30 +194,22 @@ Walk the list once with a pointer, resolving stacked nodes retroactively as larg
 
 </details>
 <details>
-<summary><h2>Solution</h2></summary>
+<summary><h2>Solution & Analysis</h2></summary>
 
-
-
-```python run viz=array viz-root=stack viz-kind=stack
+```python solution time=O(N) space=O(N)
+import ast
 from typing import Optional, List
 
-
 class ListNode:
-    def __init__(self, val):
+    def __init__(self, val, next=None):
         self.val = val
-        self.next = None
+        self.next = next
 
-
-def from_list(values):
-    if not values:
-        return None
-    head = ListNode(values[0])
-    cur = head
-    for v in values[1:]:
-        cur.next = ListNode(v)
-        cur = cur.next
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
     return head
-
 
 # Struct to store index and value of each node
 class NodeInfo:
@@ -167,39 +258,23 @@ class Solution:
         # Return the list containing the next larger elements
         return result
 
-
-# Examples from the problem statement
-print(Solution().succeeding_superior_nodes(from_list([2, 1, 5])))       # [5, 5, 0]
-print(Solution().succeeding_superior_nodes(from_list([2, 7, 4, 3, 5]))) # [7, 0, 5, 5, 0]
-
-# Edge cases
-print(Solution().succeeding_superior_nodes(None))                       # []
-print(Solution().succeeding_superior_nodes(from_list([1])))             # [0]
-print(Solution().succeeding_superior_nodes(from_list([1, 2])))          # [2, 0]
-print(Solution().succeeding_superior_nodes(from_list([2, 1])))          # [0, 0]
-print(Solution().succeeding_superior_nodes(from_list([1, 2, 3, 4])))    # [2, 3, 4, 0]
-print(Solution().succeeding_superior_nodes(from_list([4, 3, 2, 1])))    # [0, 0, 0, 0]
+head = build_list(ast.literal_eval(input()))
+print(Solution().succeeding_superior_nodes(head))
 ```
 
-```java run viz=array viz-root=stack viz-kind=stack
+```java solution
 import java.util.*;
 
 public class Main {
     static class ListNode {
-        int val;
-        ListNode next;
-        ListNode() {}
+        int val; ListNode next;
         ListNode(int val) { this.val = val; }
+        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
     }
 
-    static ListNode fromList(int... values) {
-        if (values.length == 0) return null;
-        ListNode head = new ListNode(values[0]);
-        ListNode cur = head;
-        for (int i = 1; i < values.length; i++) {
-            cur.next = new ListNode(values[i]);
-            cur = cur.next;
-        }
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+        ListNode head = null;
+        for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
         return head;
     }
 
@@ -256,17 +331,18 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().succeedingSuperiorNodes(fromList(2, 1, 5)));       // [5, 5, 0]
-        System.out.println(new Solution().succeedingSuperiorNodes(fromList(2, 7, 4, 3, 5))); // [7, 0, 5, 5, 0]
+        Scanner sc = new Scanner(System.in);
+        ListNode head = buildList(parseIntArray(sc.nextLine()));
+        System.out.println(new Solution().succeedingSuperiorNodes(head));
+    }
 
-        // Edge cases
-        System.out.println(new Solution().succeedingSuperiorNodes(null));                    // []
-        System.out.println(new Solution().succeedingSuperiorNodes(fromList(1)));             // [0]
-        System.out.println(new Solution().succeedingSuperiorNodes(fromList(1, 2)));          // [2, 0]
-        System.out.println(new Solution().succeedingSuperiorNodes(fromList(2, 1)));          // [0, 0]
-        System.out.println(new Solution().succeedingSuperiorNodes(fromList(1, 2, 3, 4)));    // [2, 3, 4, 0]
-        System.out.println(new Solution().succeedingSuperiorNodes(fromList(4, 3, 2, 1)));    // [0, 0, 0, 0]
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

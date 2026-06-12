@@ -1,16 +1,18 @@
 ---
 title: "Equal Halves"
-summary: "Given the head of a singly linked list, write a function that returns true if the sum of the nodes of the first half of the linked list is equal to the sum of the nodes of the second half. Return fals"
+summary: "Given the head of a singly linked list, write a function that returns true if the sum of the nodes of the first half of the linked list is equal to the sum of the nodes of the second half. Return fals"
 prereqs:
   - 10-pattern-fast-and-slow-pointers/01-pattern
 difficulty: medium
+kind: problem
+topics: [fast-and-slow-pointers, singly-linked-list]
 ---
 
 # Equal halves
 
 ## Problem Statement
 
-Given the **head** of a singly linked list, write a function that returns `true` if the sum of the nodes of the first half of the linked list is equal to the sum of the nodes of the second half. Return `false` otherwise.
+Given the **head** of a singly linked list, write a function that returns `true` if the sum of the nodes of the first half of the linked list is equal to the sum of the nodes of the second half. Return `false` otherwise.
 
 ```d2
 direction: right
@@ -74,12 +76,96 @@ Explanation: Even length — first half (2) ≠ second half (0).
 **Example 3:**
 ```
 Input:  head = [1, 2, 3]
-Output: false
-Explanation: Odd length — middle node (2) stays with the first half. First half (1 + 2 = 3) ≠ second half (3).
+Output: true
+Explanation: Odd length — middle node (2) stays with the first half. First half (1 + 2 = 3) equals second half (3).
 ```
 
+## Constraints
 
----
+- `0 ≤ list length ≤ 10⁵`
+- `-10⁴ ≤ node.val ≤ 10⁴`
+
+```python run viz=linked-list viz-root=head
+import ast
+
+class ListNode:
+    def __init__(self, val, next=None):
+        self.val = val
+        self.next = next
+
+class Solution:
+    def equal_halves(self, head):
+        # Your code goes here — 2:1 walk to find boundary, then sum each half.
+        pass
+
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
+
+head = build_list(ast.literal_eval(input()))   # the test case's head
+result = Solution().equal_halves(head)
+print("true" if result else "false")
+```
+
+```java run viz=linked-list viz-root=head
+import java.util.*;
+
+public class Main {
+    static class ListNode {
+        int val; ListNode next;
+        ListNode(int val) { this.val = val; }
+        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+    }
+
+    static class Solution {
+        boolean equalHalves(ListNode head) {
+            // Your code goes here — 2:1 walk to find boundary, then sum each half.
+            return false;
+        }
+    }
+
+    public static void main(String[] args) {
+        ListNode head = buildList(parseIntArray(new Scanner(System.in).nextLine()));
+        System.out.println(new Solution().equalHalves(head));
+    }
+
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+        ListNode head = null;
+        for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+        return head;
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's head
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "head", "label": "head", "type": "int[]", "placeholder": "[1, 9, 2, 8]" }
+  ],
+  "cases": [
+    { "args": { "head": "[1, 9, 2, 8]" }, "expected": "true" },
+    { "args": { "head": "[2, 0]" }, "expected": "false" },
+    { "args": { "head": "[1, 2, 3]" }, "expected": "true" },
+    { "args": { "head": "[1, 2, 4]" }, "expected": "false" },
+    { "args": { "head": "[5, 5]" }, "expected": "true" },
+    { "args": { "head": "[3, 3, 3, 3]" }, "expected": "true" },
+    { "args": { "head": "[1, 2, 3, 4, 5, 5]" }, "expected": "false" },
+    { "args": { "head": "[0, 0, 0, 0]" }, "expected": "true" }
+  ]
+}
+```
 
 <details>
 <summary><h2>Intuition</h2></summary>
@@ -124,33 +210,16 @@ Find the boundary with the 2:1 walk, then sum each half and compare.
 
 ### Solution
 
-
-
-```python run viz=linked-list viz-root=head
-from typing import Optional
-
+```python solution time=O(n) space=O(1)
+import ast
 
 class ListNode:
-    def __init__(self, val=0, nxt=None):
+    def __init__(self, val, next=None):
         self.val = val
-        self.next = nxt
-
-
-def from_list(values):
-    if not values:
-        return None
-    head = ListNode(values[0])
-    cur = head
-    for v in values[1:]:
-        cur.next = ListNode(v)
-        cur = cur.next
-    return head
-
+        self.next = next
 
 class Solution:
-    def sum_of_list(
-        self, start: Optional[ListNode], end: Optional[ListNode]
-    ) -> int:
+    def sum_of_list(self, start, end):
         sum_val = 0
         current = start
         while current != end:
@@ -158,15 +227,15 @@ class Solution:
             current = current.next
         return sum_val
 
-    def equal_halves(self, head: Optional[ListNode]) -> bool:
+    def equal_halves(self, head):
         if head is None or head.next is None:
             return True
 
         # Initialize slow pointer
-        slow: Optional[ListNode] = head
+        slow = head
 
         # Initialize fast pointer
-        fast: Optional[ListNode] = head
+        fast = head
 
         # Find the midpoint of the list using the slow and fast pointer
         # technique
@@ -177,8 +246,6 @@ class Solution:
 
             # Move the fast pointer by two steps
             fast = fast.next.next
-
-        second_half_start: Optional[ListNode]
 
         # Odd number of nodes, middle node goes to first half
         if fast is not None:
@@ -196,40 +263,25 @@ class Solution:
 
         return first_half_sum == second_half_sum
 
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
 
-print(Solution().equal_halves(from_list([1, 9, 2, 8])))         # True
-print(Solution().equal_halves(from_list([2, 0])))                # False
-
-# Edge cases
-print(Solution().equal_halves(from_list([1])))                   # True
-print(Solution().equal_halves(from_list([5, 5])))                # True
-print(Solution().equal_halves(from_list([1, 2, 3])))             # False (1+2 vs 3)
-print(Solution().equal_halves(from_list([3, 3, 3, 3])))          # True
-print(Solution().equal_halves(from_list([1, 2, 3, 4, 5, 5])))   # True (1+2+3 vs 4+5+5 — False)
-print(Solution().equal_halves(from_list([0, 0, 0, 0])))          # True
+head = build_list(ast.literal_eval(input()))   # the test case's head
+result = Solution().equal_halves(head)
+print("true" if result else "false")
 ```
 
-```java run viz=linked-list viz-root=head
+```java solution
 import java.util.*;
 
 public class Main {
     static class ListNode {
-        int val;
-        ListNode next;
-        ListNode() {}
+        int val; ListNode next;
         ListNode(int val) { this.val = val; }
         ListNode(int val, ListNode next) { this.val = val; this.next = next; }
-    }
-
-    static ListNode fromList(int... values) {
-        if (values.length == 0) return null;
-        ListNode head = new ListNode(values[0]);
-        ListNode cur = head;
-        for (int i = 1; i < values.length; i++) {
-            cur.next = new ListNode(values[i]);
-            cur = cur.next;
-        }
-        return head;
     }
 
     static class Solution {
@@ -265,7 +317,7 @@ public class Main {
                 fast = fast.next.next;
             }
 
-            ListNode secondHalfStart = null;
+            ListNode secondHalfStart;
 
             // Odd number of nodes, middle node goes to first half
             if (fast != null) {
@@ -288,16 +340,24 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().equalHalves(fromList(1, 9, 2, 8)));         // true
-        System.out.println(new Solution().equalHalves(fromList(2, 0)));                // false
+        ListNode head = buildList(parseIntArray(new Scanner(System.in).nextLine()));
+        System.out.println(new Solution().equalHalves(head));
+    }
 
-        // Edge cases
-        System.out.println(new Solution().equalHalves(fromList(1)));                   // true
-        System.out.println(new Solution().equalHalves(fromList(5, 5)));                // true
-        System.out.println(new Solution().equalHalves(fromList(1, 2, 3)));             // false
-        System.out.println(new Solution().equalHalves(fromList(3, 3, 3, 3)));          // true
-        System.out.println(new Solution().equalHalves(fromList(1, 2, 3, 4, 5, 5)));   // false
-        System.out.println(new Solution().equalHalves(fromList(0, 0, 0, 0)));          // true
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+        ListNode head = null;
+        for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+        return head;
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's head
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```
@@ -328,7 +388,7 @@ Sum first half (head=1 up to but not including 2):
 Sum second half (from 2 to null):
   walk 2 → 8 →   sum = 2 + 8 = 10
 
-Compare: 10 == 10 → True ✓
+Compare: 10 == 10 → true ✓
 ```
 
 ### Complexity Analysis
@@ -347,7 +407,7 @@ Compare: 10 == 10 → True ✓
 | Two equal nodes (`[5, 5]`) | Even length. Boundary: `slow = 5` (second node). First sum = 5; second sum = 5. Return `true`. |
 | Three nodes, sums match (`[1, 2, 3]`) | Odd length. Boundary: `slow = 2`, `fast` not `null`. Second half starts at `slow.next = 3`. First sum = 1 + 2 = 3; second sum = 3. Return `true`. |
 | Negative values that cancel (`[5, -5, 10, -10]`) | Even length. First sum = 0; second sum = 0. Return `true` — sums comparison handles negatives transparently. |
-| Overflow risk on large lists | Sums are integer-typed; for very long lists with large values the sum may overflow 32-bit signed range. Use 64-bit accumulators in production. <!-- VERIFY: confirm the Java reference uses `int` or `long` for sum accumulators --> |
+| Overflow risk on large lists | Sums are integer-typed; for very long lists with large values the sum may overflow 32-bit signed range. Use 64-bit accumulators in production. |
 
 </details>
 <details>

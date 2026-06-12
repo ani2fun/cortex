@@ -4,6 +4,8 @@ summary: "Circular variant — arr is treated as a ring; for each element find t
 prereqs:
   - 10-pattern-next-closest-occurrence/01-pattern
 difficulty: medium
+kind: problem
+topics: [next-closest-occurrence, stack]
 ---
 
 # Succeeding superior element II
@@ -50,6 +52,81 @@ Output: [-1, -1, -1]
 Explanation: Equal values are never strictly greater, so the pop test removes them all.
 ```
 
+```quiz
+{
+  "prompt": "For arr = [1, 3, 2], what is the circular next-greater result?",
+  "options": ["[3, -1, 3]", "[3, -1, -1]", "[-1, -1, 3]", "[3, 3, 3]"],
+  "answer": "[3, -1, 3]"
+}
+```
+
+## Constraints
+
+- `1 ≤ arr.length ≤ 10000`
+- `-10^9 ≤ arr[i] ≤ 10^9`
+
+```python run
+import ast
+from typing import List
+
+class Solution:
+    def succeeding_superior_element_ii(self, arr: List[int]) -> List[int]:
+        # Your code goes here — iterate 2n times in reverse using i % n,
+        # maintain a decreasing stack (pop while top <= num), record the
+        # surviving top (or -1), always push num.
+        return [-1] * len(arr)
+
+arr = ast.literal_eval(input())
+print(Solution().succeeding_superior_element_ii(arr))
+```
+
+```java run
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int[] succeedingSuperiorElementII(int[] arr) {
+            // Your code goes here — iterate 2n times in reverse using i % n,
+            // maintain a decreasing stack (pop while top <= num), record the
+            // surviving top (or -1), always push num.
+            int[] result = new int[arr.length];
+            Arrays.fill(result, -1);
+            return result;
+        }
+    }
+
+    public static void main(String[] args) {
+        int[] arr = parseIntArray(new Scanner(System.in).nextLine());
+        System.out.println(Arrays.toString(new Solution().succeedingSuperiorElementII(arr)));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[2, 5, 1, 6, 10, 3]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[2, 5, 1, 6, 10, 3]" }, "expected": "[5, 6, 6, 10, -1, 5]" },
+    { "args": { "arr": "[6, 7, 8, 9, 8]" }, "expected": "[7, 8, 9, -1, 9]" },
+    { "args": { "arr": "[3, 2, 1]" }, "expected": "[-1, 3, 3]" },
+    { "args": { "arr": "[5, 5, 5]" }, "expected": "[-1, -1, -1]" },
+    { "args": { "arr": "[1, 2]" }, "expected": "[2, -1]" },
+    { "args": { "arr": "[1, 2, 3]" }, "expected": "[2, 3, -1]" },
+    { "args": { "arr": "[5]" }, "expected": "[-1]" }
+  ]
+}
+```
 
 <details>
 <summary><h2>Intuition</h2></summary>
@@ -75,13 +152,6 @@ The naive circular approach breaks the time budget badly. For each index you wou
 
 </details>
 <details>
-<summary><h2>Approach</h2></summary>
-
-
-Same doubled-array trick from the previous lesson — iterate `2n` indices using `i % n`. Each element gets two passes; the second one resolves answers that depend on wrap-around.
-
-</details>
-<details>
 <summary><h2>Approach in Words</h2></summary>
 
 
@@ -96,11 +166,10 @@ Run the reverse next-greater scan over a doubled index range, so each value gets
 
 </details>
 <details>
-<summary><h2>Solution</h2></summary>
+<summary><h2>Solution & Analysis</h2></summary>
 
-
-
-```python run viz=array viz-root=stack viz-kind=stack
+```python solution time=O(N) space=O(N)
+import ast
 from typing import List
 
 class Solution:
@@ -136,21 +205,11 @@ class Solution:
 
         return result
 
-
-# Examples from the problem statement
-print(Solution().succeeding_superior_element_ii([2, 5, 1, 6, 10, 3]))  # [5, 6, 6, 10, -1, 5]
-print(Solution().succeeding_superior_element_ii([6, 7, 8, 9, 8]))      # [7, 8, 9, -1, 9]
-
-# Edge cases
-print(Solution().succeeding_superior_element_ii([]))                    # []
-print(Solution().succeeding_superior_element_ii([5]))                   # [-1]
-print(Solution().succeeding_superior_element_ii([1, 2]))                # [2, -1]
-print(Solution().succeeding_superior_element_ii([1, 2, 3]))             # [2, 3, -1]
-print(Solution().succeeding_superior_element_ii([3, 2, 1]))             # [-1, 3, 3]
-print(Solution().succeeding_superior_element_ii([5, 5, 5]))             # [-1, -1, -1]
+arr = ast.literal_eval(input())
+print(Solution().succeeding_superior_element_ii(arr))
 ```
 
-```java run viz=array viz-root=stack viz-kind=stack
+```java solution
 import java.util.*;
 
 public class Main {
@@ -196,17 +255,17 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(Arrays.toString(new Solution().succeedingSuperiorElementII(new int[]{2, 5, 1, 6, 10, 3})));  // [5, 6, 6, 10, -1, 5]
-        System.out.println(Arrays.toString(new Solution().succeedingSuperiorElementII(new int[]{6, 7, 8, 9, 8})));      // [7, 8, 9, -1, 9]
+        int[] arr = parseIntArray(new Scanner(System.in).nextLine());
+        System.out.println(Arrays.toString(new Solution().succeedingSuperiorElementII(arr)));
+    }
 
-        // Edge cases
-        System.out.println(Arrays.toString(new Solution().succeedingSuperiorElementII(new int[]{})));                   // []
-        System.out.println(Arrays.toString(new Solution().succeedingSuperiorElementII(new int[]{5})));                  // [-1]
-        System.out.println(Arrays.toString(new Solution().succeedingSuperiorElementII(new int[]{1, 2})));               // [2, -1]
-        System.out.println(Arrays.toString(new Solution().succeedingSuperiorElementII(new int[]{1, 2, 3})));            // [2, 3, -1]
-        System.out.println(Arrays.toString(new Solution().succeedingSuperiorElementII(new int[]{3, 2, 1})));            // [-1, 3, 3]
-        System.out.println(Arrays.toString(new Solution().succeedingSuperiorElementII(new int[]{5, 5, 5})));            // [-1, -1, -1]
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```
@@ -256,7 +315,6 @@ Doubling the iteration count multiplies the work by a constant `2`, which `O(N)`
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
-| Empty array | `arr = []` | `[]` | No elements, no answers. |
 | Single element | `arr = [5]` | `[-1]` | One element wrapping onto itself still has no strictly-greater successor. |
 | Two ascending | `arr = [1, 2]` | `[2, -1]` | `1` sees `2`; `2` is the maximum → -1. |
 | Wrap-dependent | `arr = [3, 2, 1]` | `[-1, 3, 3]` | `3` is the global maximum → -1; `2` and `1` both wrap to `3`. |

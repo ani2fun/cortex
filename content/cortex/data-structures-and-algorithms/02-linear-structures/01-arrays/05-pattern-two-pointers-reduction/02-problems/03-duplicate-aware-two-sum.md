@@ -4,6 +4,8 @@ summary: "Given an integer array arr and a target, find all unique pairs of elem
 prereqs:
   - 05-pattern-two-pointers-reduction/01-pattern
 difficulty: medium
+kind: problem
+topics: [two-pointers, arrays]
 ---
 
 # Duplicate Aware Two Sum
@@ -44,6 +46,83 @@ Explanation: Only 1+2=3 is valid. Multiple 2s don't produce multiple [1,2] pairs
 Input:  arr = [2],  target = 2
 Output: []
 Explanation: Can't form a pair from one element.
+```
+
+```quiz
+{
+  "prompt": "Now your turn!",
+  "input": "arr = [1, 1, 2, 3, 3], target = 4",
+  "options": ["[[1, 3]]", "[[1, 3], [1, 3]]", "[[1, 3], [2, 2]]", "[[1, 3], [3, 1]]"],
+  "answer": "[[1, 3]]"
+}
+```
+
+## Constraints
+
+- `0 ≤ arr.length ≤ 10^4`
+- `-10^9 ≤ arr[i] ≤ 10^9`, and the same bound on `target`
+
+```python run viz=array viz-root=arr
+import ast
+from typing import List
+
+class Solution:
+    def duplicate_aware_two_sum(self, arr: List[int], target: int) -> List[List[int]]:
+        # Your code goes here — sort, converge; on a match record the pair, then
+        # skip past every consecutive copy of arr[left] and arr[right].
+        return []
+
+arr = ast.literal_eval(input())      # the test case's arr
+target = int(input())                # the test case's target
+print(Solution().duplicate_aware_two_sum(arr, target))
+```
+
+```java run viz=array viz-root=arr
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public List<List<Integer>> duplicateAwareTwoSum(int[] arr, int target) {
+            // Your code goes here — sort, converge; on a match record the pair,
+            // then skip past every consecutive copy of arr[left] and arr[right].
+            return new ArrayList<>();
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int target = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().duplicateAwareTwoSum(arr, target));
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's arr
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[1, 2, 2, 3, 4, 5]" },
+    { "id": "target", "label": "target", "type": "int", "placeholder": "6" }
+  ],
+  "cases": [
+    { "args": { "arr": "[1, 2, 2, 3, 4, 5]", "target": "6" }, "expected": "[[1, 5], [2, 4]]" },
+    { "args": { "arr": "[1, 1, 2, 3, 3]", "target": "4" }, "expected": "[[1, 3]]" },
+    { "args": { "arr": "[2, 2, 2, 2]", "target": "4" }, "expected": "[[2, 2]]" },
+    { "args": { "arr": "[-1, 0, 1, 2]", "target": "1" }, "expected": "[[-1, 2], [0, 1]]" },
+    { "args": { "arr": "[1, 2]", "target": "5" }, "expected": "[]" },
+    { "args": { "arr": "[1, 3, 5]", "target": "10" }, "expected": "[]" }
+  ]
+}
 ```
 
 <details>
@@ -141,7 +220,8 @@ flowchart TB
 
 ### Solution
 
-```python run viz=array viz-root=arr
+```python solution time=O(n log n) space=O(k)
+import ast
 from typing import List
 
 class Solution:
@@ -206,20 +286,12 @@ class Solution:
         return result
 
 
-# Examples from the problem statement
-print(Solution().duplicate_aware_two_sum([1, 2, 2, 3, 4, 5], 6))  # [[1, 5], [2, 4]]
-print(Solution().duplicate_aware_two_sum([1, 2, 2, 2, 2], 3))     # [[1, 2]]
-print(Solution().duplicate_aware_two_sum([2], 2))                   # []
-
-# Edge cases
-print(Solution().duplicate_aware_two_sum([], 5))                    # []
-print(Solution().duplicate_aware_two_sum([1, 2], 3))               # [[1, 2]]
-print(Solution().duplicate_aware_two_sum([1, 2], 5))               # []
-print(Solution().duplicate_aware_two_sum([2, 2, 2, 2], 4))         # [[2, 2]] — all duplicates
-print(Solution().duplicate_aware_two_sum([-1, 0, 1, 2], 1))        # [[-1, 2], [0, 1]]
+arr = ast.literal_eval(input())      # the test case's arr
+target = int(input())                # the test case's target
+print(Solution().duplicate_aware_two_sum(arr, target))
 ```
 
-```java run viz=array viz-root=arr
+```java solution
 import java.util.*;
 
 public class Main {
@@ -292,17 +364,19 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().duplicateAwareTwoSum(new int[]{1,2,2,3,4,5}, 6));  // [[1, 5], [2, 4]]
-        System.out.println(new Solution().duplicateAwareTwoSum(new int[]{1,2,2,2,2}, 3));     // [[1, 2]]
-        System.out.println(new Solution().duplicateAwareTwoSum(new int[]{2}, 2));              // []
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int target = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().duplicateAwareTwoSum(arr, target));
+    }
 
-        // Edge cases
-        System.out.println(new Solution().duplicateAwareTwoSum(new int[]{}, 5));               // []
-        System.out.println(new Solution().duplicateAwareTwoSum(new int[]{1,2}, 3));            // [[1, 2]]
-        System.out.println(new Solution().duplicateAwareTwoSum(new int[]{1,2}, 5));            // []
-        System.out.println(new Solution().duplicateAwareTwoSum(new int[]{2,2,2,2}, 4));        // [[2, 2]] — all duplicates
-        System.out.println(new Solution().duplicateAwareTwoSum(new int[]{-1,0,1,2}, 1));       // [[-1, 2], [0, 1]]
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

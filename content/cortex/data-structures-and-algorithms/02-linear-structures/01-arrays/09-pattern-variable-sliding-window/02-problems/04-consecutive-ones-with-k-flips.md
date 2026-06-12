@@ -4,6 +4,8 @@ summary: "Given a binary array arr and a non-negative integer k, find and return
 prereqs:
   - 09-pattern-variable-sliding-window/01-pattern
 difficulty: hard
+kind: problem
+topics: [sliding-window, arrays]
 ---
 
 # Consecutive Ones with K Flips
@@ -44,6 +46,84 @@ Input:  arr = [0, 0, 0, 0], k = 2
 Output: 2
 Explanation: The maximum number of consecutive 1s is 2 if we flip any 2
              consecutive 0s.
+```
+
+```quiz
+{
+  "prompt": "Now your turn!",
+  "input": "arr = [1, 0, 1, 1, 0, 1], k = 1",
+  "options": ["3", "4", "5", "6"],
+  "answer": "4"
+}
+```
+
+## Constraints
+
+- `0 ≤ arr.length ≤ 10^5`
+- Each `arr[i]` is either `0` or `1`
+- `0 ≤ k ≤ arr.length`
+
+```python run viz=array viz-root=arr
+import ast
+from typing import List
+
+class Solution:
+    def consecutive_ones_with_k_flips(self, arr: List[int], k: int) -> int:
+        # Your code goes here — grow the window, shrink from the left while it
+        # holds more than k zeros, and track the longest valid window length.
+        return 0
+
+arr = ast.literal_eval(input())      # the test case's arr
+k = int(input())                     # the test case's k
+print(Solution().consecutive_ones_with_k_flips(arr, k))
+```
+
+```java run viz=array viz-root=arr
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int consecutiveOnesWithKFlips(int[] arr, int k) {
+            // Your code goes here — grow the window, shrink from the left while it
+            // holds more than k zeros, and track the longest valid window length.
+            return 0;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().consecutiveOnesWithKFlips(arr, k));
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's arr
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0]" },
+    { "id": "k", "label": "k", "type": "int", "placeholder": "1" }
+  ],
+  "cases": [
+    { "args": { "arr": "[1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0]", "k": "1" }, "expected": "5" },
+    { "args": { "arr": "[1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 0]", "k": "2" }, "expected": "9" },
+    { "args": { "arr": "[0, 0, 0, 0]", "k": "2" }, "expected": "2" },
+    { "args": { "arr": "[1, 0, 1, 1, 0, 1]", "k": "1" }, "expected": "4" },
+    { "args": { "arr": "[1, 0, 1]", "k": "0" }, "expected": "1" },
+    { "args": { "arr": "[0, 0, 0]", "k": "3" }, "expected": "3" }
+  ]
+}
 ```
 
 <details>
@@ -87,7 +167,8 @@ The naive approach evaluates every subarray, counts its zeros, and asks whether 
 
 ### The Solution
 
-```python run viz=array viz-root=arr
+```python solution time=O(N) space=O(1)
+import ast
 from typing import List
 
 class Solution:
@@ -139,20 +220,14 @@ class Solution:
         return max_ones
 
 
-# Examples from the problem statement
-print(Solution().consecutive_ones_with_k_flips([1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0], 1))   # 5
-print(Solution().consecutive_ones_with_k_flips([1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 0], 2))   # 9
-print(Solution().consecutive_ones_with_k_flips([0, 0, 0, 0], 2))                          # 2
-
-# Edge cases
-print(Solution().consecutive_ones_with_k_flips([1], 0))                                    # 1  — single one, k=0
-print(Solution().consecutive_ones_with_k_flips([0], 1))                                    # 1  — single zero flipped
-print(Solution().consecutive_ones_with_k_flips([1, 0], 1))                                 # 2  — two elements, flip one
-print(Solution().consecutive_ones_with_k_flips([1, 1, 1, 1], 0))                           # 4  — all ones, no flips needed
-print(Solution().consecutive_ones_with_k_flips([0, 0, 0], 0))                              # 0  — all zeros, no flips
+arr = ast.literal_eval(input())      # the test case's arr
+k = int(input())                     # the test case's k
+print(Solution().consecutive_ones_with_k_flips(arr, k))
 ```
 
-```java run viz=array viz-root=arr
+```java solution
+import java.util.*;
+
 public class Main {
     static class Solution {
         public int consecutiveOnesWithKFlips(int[] arr, int k) {
@@ -207,17 +282,20 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().consecutiveOnesWithKFlips(new int[]{1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0}, 1));   // 5
-        System.out.println(new Solution().consecutiveOnesWithKFlips(new int[]{1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 0}, 2));   // 9
-        System.out.println(new Solution().consecutiveOnesWithKFlips(new int[]{0, 0, 0, 0}, 2));                          // 2
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().consecutiveOnesWithKFlips(arr, k));
+    }
 
-        // Edge cases
-        System.out.println(new Solution().consecutiveOnesWithKFlips(new int[]{1}, 0));                                    // 1  — single one, k=0
-        System.out.println(new Solution().consecutiveOnesWithKFlips(new int[]{0}, 1));                                    // 1  — single zero flipped
-        System.out.println(new Solution().consecutiveOnesWithKFlips(new int[]{1, 0}, 1));                                 // 2  — two elements, flip one
-        System.out.println(new Solution().consecutiveOnesWithKFlips(new int[]{1, 1, 1, 1}, 0));                           // 4  — all ones, no flips needed
-        System.out.println(new Solution().consecutiveOnesWithKFlips(new int[]{0, 0, 0}, 0));                              // 0  — all zeros, no flips
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's arr
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

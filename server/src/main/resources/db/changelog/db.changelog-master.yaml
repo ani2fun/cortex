@@ -2,3 +2,6 @@ databaseChangeLog:
   - include:
       file: changes/v1-init.sql
       relativeToChangelogFile: true
+  - include:
+      file: changes/v2-submissions.sql
+      relativeToChangelogFile: true

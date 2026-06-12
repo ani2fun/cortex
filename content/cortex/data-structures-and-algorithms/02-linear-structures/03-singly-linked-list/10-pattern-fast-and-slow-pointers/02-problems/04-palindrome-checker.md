@@ -1,16 +1,18 @@
 ---
 title: "Palindrome Checker"
-summary: "Given the head of a singly linked list, write a function to check if the given list is a palindrome or not. Your function should return true if it is a palindrome and false if it's not."
+summary: "Given the head of a singly linked list, write a function to check if the given list is a palindrome or not. Your function should return true if it is a palindrome and false if it's not."
 prereqs:
   - 10-pattern-fast-and-slow-pointers/01-pattern
 difficulty: medium
+kind: problem
+topics: [fast-and-slow-pointers, singly-linked-list]
 ---
 
 # Palindrome checker
 
 ## Problem Statement
 
-Given the **head** of a singly linked list, write a function to check if the given list is a palindrome or not. Your function should return `true` if it is a palindrome and `false` if it's not. 
+Given the **head** of a singly linked list, write a function to check if the given list is a palindrome or not. Your function should return `true` if it is a palindrome and `false` if it's not. 
 
 ## Examples
 
@@ -35,8 +37,93 @@ Output: true
 Explanation: Odd-length palindrome — the middle node (3) is its own mirror; the surrounding pairs (1↔1, 2↔2) match.
 ```
 
+## Constraints
 
----
+- `0 ≤ list length ≤ 10⁵`
+- `-10⁴ ≤ node.val ≤ 10⁴`
+
+```python run viz=linked-list viz-root=head
+import ast
+
+class ListNode:
+    def __init__(self, val, next=None):
+        self.val = val
+        self.next = next
+
+class Solution:
+    def palindrome_checker(self, head):
+        # Your code goes here — find middle, reverse back half, compare
+        # front and reversed-back in parallel. Return true/false.
+        pass
+
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
+
+head = build_list(ast.literal_eval(input()))   # the test case's head
+result = Solution().palindrome_checker(head)
+print("true" if result else "false")
+```
+
+```java run viz=linked-list viz-root=head
+import java.util.*;
+
+public class Main {
+    static class ListNode {
+        int val; ListNode next;
+        ListNode(int val) { this.val = val; }
+        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+    }
+
+    static class Solution {
+        boolean palindromeChecker(ListNode head) {
+            // Your code goes here — find middle, reverse back half, compare
+            // front and reversed-back in parallel. Return true/false.
+            return false;
+        }
+    }
+
+    public static void main(String[] args) {
+        ListNode head = buildList(parseIntArray(new Scanner(System.in).nextLine()));
+        System.out.println(new Solution().palindromeChecker(head));
+    }
+
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+        ListNode head = null;
+        for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+        return head;
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's head
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "head", "label": "head", "type": "int[]", "placeholder": "[1, 2, 2, 1]" }
+  ],
+  "cases": [
+    { "args": { "head": "[1, 2, 2, 1]" }, "expected": "true" },
+    { "args": { "head": "[1, 2]" }, "expected": "false" },
+    { "args": { "head": "[1, 2, 3, 2, 1]" }, "expected": "true" },
+    { "args": { "head": "[1, 2, 3, 4, 5]" }, "expected": "false" },
+    { "args": { "head": "[1]" }, "expected": "true" },
+    { "args": { "head": "[1, 1]" }, "expected": "true" },
+    { "args": { "head": "[1, 2, 1]" }, "expected": "true" }
+  ]
+}
+```
 
 <details>
 <summary><h2>Intuition</h2></summary>
@@ -81,33 +168,18 @@ The loop stops on `head_b == null` (not `head_a`) so that on odd-length lists, t
 
 ### Solution
 
-
-
-```python run viz=linked-list viz-root=head
-from typing import Optional
-
+```python solution time=O(n) space=O(1)
+import ast
 
 class ListNode:
-    def __init__(self, val=0, nxt=None):
+    def __init__(self, val, next=None):
         self.val = val
-        self.next = nxt
-
-
-def from_list(values):
-    if not values:
-        return None
-    head = ListNode(values[0])
-    cur = head
-    for v in values[1:]:
-        cur.next = ListNode(v)
-        cur = cur.next
-    return head
-
+        self.next = next
 
 class Solution:
-    def reverse(self, head: Optional[ListNode]) -> Optional[ListNode]:
-        current: Optional[ListNode] = head
-        previous: Optional[ListNode] = None
+    def reverse(self, head):
+        current = head
+        previous = None
 
         while current is not None:
             next_node = current.next
@@ -117,9 +189,7 @@ class Solution:
 
         return previous
 
-    def find_middle_node(
-        self, head: Optional[ListNode]
-    ) -> Optional[ListNode]:
+    def find_middle_node(self, head):
         slow = head
         fast = head
         while fast is not None and fast.next is not None:
@@ -128,9 +198,7 @@ class Solution:
 
         return slow
 
-    def is_palindrome(
-        self, head_a: Optional[ListNode], head_b: Optional[ListNode]
-    ) -> bool:
+    def is_palindrome(self, head_a, head_b):
         while head_b is not None:
             if head_a.val != head_b.val:
                 return False
@@ -138,7 +206,7 @@ class Solution:
             head_b = head_b.next
         return True
 
-    def palindrome_checker(self, head: Optional[ListNode]) -> bool:
+    def palindrome_checker(self, head):
         if head is None or head.next is None:
             return True
 
@@ -152,40 +220,25 @@ class Solution:
         # half
         return self.is_palindrome(head, reversed_second_half)
 
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
 
-print(Solution().palindrome_checker(from_list([1, 2, 2, 1])))        # True
-print(Solution().palindrome_checker(from_list([1, 2])))               # False
-
-# Edge cases
-print(Solution().palindrome_checker(None))                            # True
-print(Solution().palindrome_checker(from_list([1])))                  # True
-print(Solution().palindrome_checker(from_list([1, 1])))               # True
-print(Solution().palindrome_checker(from_list([1, 2, 1])))            # True
-print(Solution().palindrome_checker(from_list([1, 2, 3, 2, 1])))     # True
-print(Solution().palindrome_checker(from_list([1, 2, 3, 4, 5])))     # False
+head = build_list(ast.literal_eval(input()))   # the test case's head
+result = Solution().palindrome_checker(head)
+print("true" if result else "false")
 ```
 
-```java run viz=linked-list viz-root=head
+```java solution
 import java.util.*;
 
 public class Main {
     static class ListNode {
-        int val;
-        ListNode next;
-        ListNode() {}
+        int val; ListNode next;
         ListNode(int val) { this.val = val; }
         ListNode(int val, ListNode next) { this.val = val; this.next = next; }
-    }
-
-    static ListNode fromList(int... values) {
-        if (values.length == 0) return null;
-        ListNode head = new ListNode(values[0]);
-        ListNode cur = head;
-        for (int i = 1; i < values.length; i++) {
-            cur.next = new ListNode(values[i]);
-            cur = cur.next;
-        }
-        return head;
     }
 
     static class Solution {
@@ -243,16 +296,24 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().palindromeChecker(fromList(1, 2, 2, 1)));        // true
-        System.out.println(new Solution().palindromeChecker(fromList(1, 2)));               // false
+        ListNode head = buildList(parseIntArray(new Scanner(System.in).nextLine()));
+        System.out.println(new Solution().palindromeChecker(head));
+    }
 
-        // Edge cases
-        System.out.println(new Solution().palindromeChecker(null));                         // true
-        System.out.println(new Solution().palindromeChecker(fromList(1)));                  // true
-        System.out.println(new Solution().palindromeChecker(fromList(1, 1)));               // true
-        System.out.println(new Solution().palindromeChecker(fromList(1, 2, 1)));            // true
-        System.out.println(new Solution().palindromeChecker(fromList(1, 2, 3, 2, 1)));     // true
-        System.out.println(new Solution().palindromeChecker(fromList(1, 2, 3, 4, 5)));     // false
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+        ListNode head = null;
+        for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+        return head;
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's head
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```
@@ -282,7 +343,7 @@ Step 3 — Walk front and reversed-back in parallel:
           head_b = null.
   Loop exits — no mismatch found.
 
-Return True. ✓
+Return true. ✓
 ```
 
 ### Complexity Analysis
@@ -346,4 +407,3 @@ When you next see "find the middle", "split in half", "palindrome check", "reord
 > </details>
 
 </details>
-

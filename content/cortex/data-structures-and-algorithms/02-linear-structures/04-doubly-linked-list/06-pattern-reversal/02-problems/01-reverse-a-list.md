@@ -4,6 +4,8 @@ summary: "Walk every node, swap its prev and next pointers in one stroke, and re
 prereqs:
   - 06-pattern-reversal/01-pattern
 difficulty: easy
+kind: problem
+topics: [reversal, doubly-linked-list]
 ---
 
 # Reverse a list
@@ -34,8 +36,125 @@ Input:  head = []
 Output: []
 ```
 
+```quiz
+{
+  "prompt": "Now your turn!",
+  "input": "head = [2, 4, 6, 8]",
+  "options": ["[2, 4, 6, 8]", "[8, 6, 4, 2]", "[4, 2, 8, 6]", "[8, 4, 6, 2]"],
+  "answer": "[8, 6, 4, 2]"
+}
+```
 
----
+## Constraints
+
+- `0 ≤ list length ≤ 10⁵`
+- `-10⁴ ≤ node.val ≤ 10⁴`
+- Reverse **in place** — `O(1)` extra space; node values must not be copied or rewritten
+
+```python run viz=linked-list viz-root=head
+import ast
+
+class ListNode:
+    def __init__(self, val, prev=None, next=None):
+        self.val = val
+        self.prev = prev
+        self.next = next
+
+class Solution:
+    def reverse_a_list(self, head):
+        # Your code goes here — swap each node's prev and next, walk via the
+        # old next (now in prev), and return the old tail as the new head.
+        pass
+
+def build_list(values):              # [1, 2, 3] → 1 ⇄ 2 ⇄ 3
+    head = tail = None
+    for v in values:
+        node = ListNode(v, prev=tail)
+        if tail is not None:
+            tail.next = node
+        else:
+            head = node
+        tail = node
+    return head
+
+def print_list(head):                # 1 ⇄ 2 ⇄ 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
+
+head = build_list(ast.literal_eval(input()))   # the test case's head
+print_list(Solution().reverse_a_list(head))
+```
+
+```java run viz=linked-list viz-root=head
+import java.util.*;
+
+public class Main {
+    static class ListNode {
+        int val; ListNode prev, next;
+        ListNode(int val) { this.val = val; }
+    }
+
+    static class Solution {
+        ListNode reverseAList(ListNode head) {
+            // Your code goes here — swap each node's prev and next, walk via the
+            // old next (now in prev), and return the old tail as the new head.
+            return null;
+        }
+    }
+
+    public static void main(String[] args) {
+        ListNode head = buildList(parseIntArray(new Scanner(System.in).nextLine()));
+        printList(new Solution().reverseAList(head));
+    }
+
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 ⇄ 2 ⇄ 3
+        ListNode head = null, tail = null;
+        for (int v : values) {
+            ListNode node = new ListNode(v);
+            node.prev = tail;
+            if (tail != null) tail.next = node;
+            else head = node;
+            tail = node;
+        }
+        return head;
+    }
+
+    static void printList(ListNode head) {         // 1 ⇄ 2 ⇄ 3 → [1, 2, 3]
+        List<Integer> out = new ArrayList<>();
+        for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+        System.out.println(out);
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's head
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "head", "label": "head", "type": "int[]", "placeholder": "[5, 7, 3, 10, 3]" }
+  ],
+  "cases": [
+    { "args": { "head": "[5, 7, 3, 10, 3]" }, "expected": "[3, 10, 3, 7, 5]" },
+    { "args": { "head": "[1]" }, "expected": "[1]" },
+    { "args": { "head": "[]" }, "expected": "[]" },
+    { "args": { "head": "[1, 2]" }, "expected": "[2, 1]" },
+    { "args": { "head": "[1, 2, 3, 4]" }, "expected": "[4, 3, 2, 1]" },
+    { "args": { "head": "[5, 5, 5]" }, "expected": "[5, 5, 5]" }
+  ]
+}
+```
 
 <details>
 <summary><h2>Intuition</h2></summary>
@@ -96,41 +215,19 @@ Run the per-node swap loop from the head until `current` becomes `null`.
 ### Solution
 
 
-```python run viz=linked-list viz-root=head
-from typing import Optional
+```python solution time=O(n) space=O(1)
+import ast
 
 
 class ListNode:
-    def __init__(self, val=0, prev=None, nxt=None):
+    def __init__(self, val, prev=None, next=None):
         self.val = val
         self.prev = prev
-        self.next = nxt
-
-
-def from_list(values):
-    if not values:
-        return None
-    head = ListNode(values[0])
-    cur = head
-    for v in values[1:]:
-        node = ListNode(v, prev=cur)
-        cur.next = node
-        cur = node
-    return head
-
-
-def to_list(head):
-    out = []
-    while head is not None:
-        out.append(head.val)
-        head = head.next
-    return out
+        self.next = next
 
 
 class Solution:
-    def reverse_a_list(
-        self, head: Optional[ListNode]
-    ) -> Optional[ListNode]:
+    def reverse_a_list(self, head):
 
         # If the head is null or if it's the only node in the list,
         # return the head as it is
@@ -162,51 +259,41 @@ class Solution:
         return previous
 
 
-# Examples from the problem statement
-print(to_list(Solution().reverse_a_list(from_list([5, 7, 3, 10, 3]))))   # [3, 10, 3, 7, 5]
+def build_list(values):              # [1, 2, 3] → 1 ⇄ 2 ⇄ 3
+    head = tail = None
+    for v in values:
+        node = ListNode(v, prev=tail)
+        if tail is not None:
+            tail.next = node
+        else:
+            head = node
+        tail = node
+    return head
 
-# Edge cases
-print(to_list(Solution().reverse_a_list(None)))                            # []
-print(to_list(Solution().reverse_a_list(from_list([42]))))                 # [42]
-print(to_list(Solution().reverse_a_list(from_list([1, 2]))))               # [2, 1]
-print(to_list(Solution().reverse_a_list(from_list([1, 2, 3, 4]))))        # [4, 3, 2, 1]
-print(to_list(Solution().reverse_a_list(from_list([5, 5, 5]))))           # [5, 5, 5]
-print(to_list(Solution().reverse_a_list(from_list([1, 2, 3, 2, 1]))))    # [1, 2, 3, 2, 1]
+
+def print_list(head):                # 1 ⇄ 2 ⇄ 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
+
+
+head = build_list(ast.literal_eval(input()))   # the test case's head
+print_list(Solution().reverse_a_list(head))
 ```
 
-```java run viz=linked-list viz-root=head
+```java solution
 import java.util.*;
 
 public class Main {
     static class ListNode {
-        int val;
-        ListNode prev;
-        ListNode next;
-        ListNode() {}
+        int val; ListNode prev, next;
         ListNode(int val) { this.val = val; }
     }
 
-    static ListNode fromList(int... values) {
-        if (values.length == 0) return null;
-        ListNode head = new ListNode(values[0]);
-        ListNode cur = head;
-        for (int i = 1; i < values.length; i++) {
-            ListNode node = new ListNode(values[i]);
-            node.prev = cur;
-            cur.next = node;
-            cur = node;
-        }
-        return head;
-    }
-
-    static java.util.List<Integer> toList(ListNode head) {
-        java.util.List<Integer> out = new java.util.ArrayList<>();
-        while (head != null) { out.add(head.val); head = head.next; }
-        return out;
-    }
-
     static class Solution {
-        public ListNode reverseAList(ListNode head) {
+        ListNode reverseAList(ListNode head) {
 
             // If the head is null or if it's the only node in the list,
             // return the head as it is
@@ -244,16 +331,36 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(toList(new Solution().reverseAList(fromList(5, 7, 3, 10, 3))));   // [3, 10, 3, 7, 5]
+        ListNode head = buildList(parseIntArray(new Scanner(System.in).nextLine()));
+        printList(new Solution().reverseAList(head));
+    }
 
-        // Edge cases
-        System.out.println(toList(new Solution().reverseAList(null)));                         // []
-        System.out.println(toList(new Solution().reverseAList(fromList(42))));                 // [42]
-        System.out.println(toList(new Solution().reverseAList(fromList(1, 2))));               // [2, 1]
-        System.out.println(toList(new Solution().reverseAList(fromList(1, 2, 3, 4))));        // [4, 3, 2, 1]
-        System.out.println(toList(new Solution().reverseAList(fromList(5, 5, 5))));           // [5, 5, 5]
-        System.out.println(toList(new Solution().reverseAList(fromList(1, 2, 3, 2, 1))));    // [1, 2, 3, 2, 1]
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 ⇄ 2 ⇄ 3
+        ListNode head = null, tail = null;
+        for (int v : values) {
+            ListNode node = new ListNode(v);
+            node.prev = tail;
+            if (tail != null) tail.next = node;
+            else head = node;
+            tail = node;
+        }
+        return head;
+    }
+
+    static void printList(ListNode head) {         // 1 ⇄ 2 ⇄ 3 → [1, 2, 3]
+        List<Integer> out = new ArrayList<>();
+        for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+        System.out.println(out);
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's head
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

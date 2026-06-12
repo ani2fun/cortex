@@ -4,6 +4,8 @@ summary: "Given a string s of ( and ) only, return the minimum number of inserti
 prereqs:
   - 11-pattern-sequence-validation/01-pattern
 difficulty: medium
+kind: problem
+topics: [sequence-validation, stack]
 ---
 
 # Minimum edits
@@ -11,15 +13,6 @@ difficulty: medium
 ## Problem Statement
 
 Given a string `s` of `(` and `)` only, return the minimum number of insertions or deletions needed to make the sequence valid.
-
-### Example 1
-> -   **Input:** `s = "())"` → **Output:** `1`
-
-### Example 2
-> -   **Input:** `s = "))"` → **Output:** `2`
-
-### Example 3
-> -   **Input:** `s = "(((())))"` → **Output:** `0`
 
 ## Examples
 
@@ -55,6 +48,67 @@ Explanation: the leading ')' is unmatched (+1 edit), then "()" cancels,
 then the trailing '(' is left on the stack (+1). Total 2.
 ```
 
+```quiz
+{
+  "prompt": "How many edits does ')()(' need?",
+  "input": "s = \")()( \"",
+  "options": ["0", "1", "2", "4"],
+  "answer": "2"
+}
+```
+
+## Constraints
+
+- `1 ≤ s.length ≤ 10⁴`
+- `s` consists only of `(` and `)`
+
+```python run
+class Solution:
+    def minimum_edits(self, s: str) -> int:
+        # Your code goes here — push '(' onto a stack; for each ')' with
+        # a '(' on top pop it (matched); otherwise count one edit.
+        # At the end, return len(stack) + edits.
+        return 0
+
+s = input()
+print(Solution().minimum_edits(s))
+```
+
+```java run
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int minimumEdits(String s) {
+            // Your code goes here — push '(' onto a stack; for each ')' with
+            // a '(' on top pop it (matched); otherwise count one edit.
+            // At the end, return stack.size() + edits.
+            return 0;
+        }
+    }
+
+    public static void main(String[] args) {
+        String s = new Scanner(System.in).nextLine();
+        System.out.println(new Solution().minimumEdits(s));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "s", "type": "string", "placeholder": "())" }
+  ],
+  "cases": [
+    { "args": { "s": "())" }, "expected": "1" },
+    { "args": { "s": "))" }, "expected": "2" },
+    { "args": { "s": "(((())))" }, "expected": "0" },
+    { "args": { "s": ")()(" }, "expected": "2" },
+    { "args": { "s": "()" }, "expected": "0" },
+    { "args": { "s": "((" }, "expected": "2" }
+  ]
+}
+```
 
 <details>
 <summary><h2>Intuition</h2></summary>
@@ -80,7 +134,7 @@ A counting shortcut that tracks only a single balance fails on order-sensitive i
 
 </details>
 <details>
-<summary><h2>Approach in Words</h2></summary>
+<summary><h2>Approach</h2></summary>
 
 
 Match what you can in one pass; count what is left over.
@@ -94,23 +148,9 @@ Match what you can in one pass; count what is left over.
 
 </details>
 <details>
-<summary><h2>Approach</h2></summary>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-Walk the string with a stack of `(`s. For each `)`:
-
-- If the stack has a `(`, **pop** (matched).
-- If the stack is empty, this `)` is unmatched — **count it** as one edit (insert a `(` before it, or delete this `)` — same cost).
-
-At end of input, the stack holds every unmatched `(`. Each one needs an edit (insert a `)` after it or delete it). **Total edits = unmatched `(` left on stack + unmatched `)` counted on the fly.**
-
-</details>
-<details>
-<summary><h2>Solution</h2></summary>
-
-
-
-```python run viz=array viz-root=stack viz-kind=stack
+```python solution time=O(n) space=O(n)
 from typing import List
 
 class Solution:
@@ -148,22 +188,11 @@ class Solution:
         # plus the edits we made for unmatched ')'
         return len(stack) + edits
 
-
-# Examples from the problem statement
-print(Solution().minimum_edits("())"))       # 1
-print(Solution().minimum_edits("))"))        # 2
-print(Solution().minimum_edits("(((())))"))  # 0
-
-# Edge cases
-print(Solution().minimum_edits(""))          # 0 — empty string is already valid
-print(Solution().minimum_edits("("))         # 1 — one unmatched open
-print(Solution().minimum_edits(")"))         # 1 — one unmatched close
-print(Solution().minimum_edits("()"))        # 0
-print(Solution().minimum_edits("(("))        # 2
-print(Solution().minimum_edits(")()("))      # 2
+s = input()
+print(Solution().minimum_edits(s))
 ```
 
-```java run viz=array viz-root=stack viz-kind=stack
+```java solution
 import java.util.*;
 
 public class Main {
@@ -210,28 +239,13 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().minimumEdits("())"));       // 1
-        System.out.println(new Solution().minimumEdits("))"));        // 2
-        System.out.println(new Solution().minimumEdits("(((())))"));  // 0
-
-        // Edge cases
-        System.out.println(new Solution().minimumEdits(""));          // 0
-        System.out.println(new Solution().minimumEdits("("));         // 1
-        System.out.println(new Solution().minimumEdits(")"));         // 1
-        System.out.println(new Solution().minimumEdits("()"));        // 0
-        System.out.println(new Solution().minimumEdits("(("));        // 2
-        System.out.println(new Solution().minimumEdits(")()("));      // 2
+        String s = new Scanner(System.in).nextLine();
+        System.out.println(new Solution().minimumEdits(s));
     }
 }
 ```
 
-</details>
-<details>
-<summary><h2>Dry Run</h2></summary>
-
-
-Walk Example 1 — `s = "())"`. The stack tracks unmatched `(`; `edits` counts orphaned `)`:
+### Dry Run — `s = "())"` 
 
 ```
 s = "())"          stack=[]  edits=0
@@ -256,26 +270,17 @@ s = ")()("         stack=[]  edits=0
 end of input: len(stack)=1, edits=1 → return 1 + 1 = 2 ✓
 ```
 
-</details>
-<details>
-<summary><h2>Complexity Analysis</h2></summary>
-
+### Complexity Analysis
 
 | Measure | Value | Why |
 |---|---|---|
 | Time  | **O(N)** | One pass over `N` characters; each does `O(1)` push, pop, or counter bump. |
 | Space | **O(N)** worst, **O(1)** best | All-opener input (`"((("`) pushes every character; all-closer input pushes nothing. |
 
-The runtime is `O(N)` time: a single left-to-right pass with constant work per character, and no second scan. The space is `O(N)` in the worst case — a string of only `(` pushes all `N` and never pops — and `O(1)` in the best case, where a string of only `)` pushes nothing and only increments `edits`.
-
-</details>
-<details>
-<summary><h2>Edge Cases</h2></summary>
-
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
-| Empty string | `s = ""` | `0` | Already valid; no unmatched brackets. |
 | Single opener | `s = "("` | `1` | One `(` left on the stack at the end → one edit. |
 | Single closer | `s = ")"` | `1` | One orphaned `)` counted on the fly → one edit. |
 | Already valid | `s = "()"` | `0` | The pair cancels; stack empty and no orphans. |

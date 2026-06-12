@@ -3500,8 +3500,8 @@
     /* ─── Inline diagram (Phase C / D / E — KnownLayouts dispatch) ────
        Host block for `d3 widget=<layoutKind>` fences that route through
        InlineDiagramBlock. The TS renderWidget writes its SVG directly into
-       .inline-diagram__canvas; the "Show JSON" <details> below is a native
-       browser toggle requiring no React state. */
+       .inline-diagram__canvas; multi-step payloads get a playback control bar
+       (.inline-diagram__controls) below it. */
     .inline-diagram {
         @apply my-6 rounded-lg border border-border bg-card p-4;
     }
@@ -3510,16 +3510,26 @@
            vertical space; the TS renderer overrides this with its SVG height. */
         @apply min-h-32 w-full;
     }
-    .inline-diagram__json {
-        @apply mt-4 border-t border-border pt-3;
+
+    /* Playback controls — only rendered for multi-step diagrams (InlineDiagramBlock
+       drives the D3 controller via Stepper.hook; single-step diagrams omit this). */
+    .inline-diagram__controls {
+        @apply mt-3 flex items-center gap-1.5 border-t border-border pt-3;
     }
-    .inline-diagram__json summary {
-        @apply cursor-pointer select-none text-xs font-medium text-muted-foreground;
+    .inline-diagram__ctrl {
+        @apply inline-flex h-7 w-7 items-center justify-center rounded-md border border-border
+               text-muted-foreground transition-colors hover:bg-accent hover:text-foreground
+               disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent;
     }
-    .inline-diagram__json pre {
-        @apply mt-2 overflow-x-auto rounded bg-muted p-3 font-mono text-xs text-foreground;
-        white-space: pre-wrap;
-        word-break: break-all;
+    .inline-diagram__ctrl--play {
+        @apply border-transparent bg-primary text-primary-foreground
+               hover:bg-primary/90 hover:text-primary-foreground;
+    }
+    .inline-diagram__ctrl-icon {
+        @apply h-3.5 w-3.5;
+    }
+    .inline-diagram__step {
+        @apply ml-1 font-mono text-xs text-muted-foreground;
     }
 
 }

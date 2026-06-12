@@ -164,5 +164,132 @@ object BlocksSpec extends ZIOSpecDefault:
         val r = Blocks.decodeLikeC4(None, Some("520"), Some("Foo"))
         assertTrue(r == Left(BlockDecodeError.MissingAttribute("likec4-iframe", "data-src")))
       }
+    ),
+    suite("workbench decoders")(
+      test("decodeWorkbenchInline — tabs + spec round-trip") {
+        val r = Blocks.decodeWorkbenchInline(
+          List(RawTab(Some("python"), Some("Python"), Some("print(1)"), Some(true), viz = Some("array"))),
+          Some(rawSpec)
+        )
+        assertTrue(
+          r == Right(
+            Block.WorkbenchInline(
+              List(Block.Tab("python", "Python", "print(1)", true, viz = Some("array"))),
+              expectedSpec
+            )
+          )
+        )
+      },
+      test("decodeWorkbenchInline — missing spec → MissingAttribute(data-spec)") {
+        val r = Blocks.decodeWorkbenchInline(
+          List(RawTab(Some("python"), Some("Python"), Some("x"), None)),
+          None
+        )
+        assertTrue(r == Left(BlockDecodeError.MissingAttribute("workbench-inline", "data-spec")))
+      },
+      test("spec validation — arg without id → MalformedSpec") {
+        val bad = rawSpec.copy(args = List(Blocks.RawArgSpec(None, Some("arr"), Some("int[]"), None)))
+        val r   = Blocks.decodeWorkbenchInline(tabOnly, Some(bad))
+        assertTrue(r == Left(BlockDecodeError.MalformedSpec("workbench-inline", "arg 0 is missing an id")))
+      },
+      test("spec validation — label falls back to id, empty placeholder collapses to None") {
+        val raw = rawSpec.copy(args = List(Blocks.RawArgSpec(Some("n"), None, Some("int"), Some(""))))
+        val r = Blocks.decodeWorkbenchInline(
+          tabOnly,
+          Some(raw.copy(cases = List(Blocks.RawTestCase(Map("n" -> "6"), None))))
+        )
+        assertTrue(
+          r.map(_.spec.args) == Right(List(Block.ArgSpec("n", "n", "int", None)))
+        )
+      },
+      test("spec validation — case referencing an unknown arg → MalformedSpec") {
+        val bad = rawSpec.copy(cases = List(Blocks.RawTestCase(Map("nope" -> "1"), None)))
+        val r   = Blocks.decodeWorkbenchInline(tabOnly, Some(bad))
+        assertTrue(
+          r == Left(BlockDecodeError.MalformedSpec(
+            "workbench-inline",
+            "case 0 references unknown arg `nope`"
+          ))
+        )
+      },
+      test("spec validation — empty args / empty cases → EmptyContent") {
+        val noArgs  = Blocks.decodeWorkbenchInline(tabOnly, Some(rawSpec.copy(args = Nil)))
+        val noCases = Blocks.decodeWorkbenchInline(tabOnly, Some(rawSpec.copy(cases = Nil)))
+        assertTrue(
+          noArgs == Left(BlockDecodeError.EmptyContent("workbench-inline", "spec args")),
+          noCases == Left(BlockDecodeError.EmptyContent("workbench-inline", "spec cases"))
+        )
+      },
+      test("decodeYourTurn — title falls back, empty blurb collapses, empty editorial allowed") {
+        val r = Blocks.decodeYourTurn(Some(""), Some(""), "<p>statement</p>", "", tabOnly, Some(rawSpec))
+        assertTrue(
+          r.map(yt => (yt.title, yt.blurb, yt.editorialHtml)) == Right(("Your Turn", None, ""))
+        )
+      },
+      test("decodeYourTurn — blank statement → EmptyContent(statement)") {
+        val r = Blocks.decodeYourTurn(Some("T"), None, "  \n ", "<p>ed</p>", tabOnly, Some(rawSpec))
+        assertTrue(r == Left(BlockDecodeError.EmptyContent("your-turn", "statement")))
+      },
+      test("decodeProblemWorkbench — sections map to EdSection in order") {
+        val r = Blocks.decodeProblemWorkbench(
+          "<p>desc</p>",
+          List("Intuition" -> "<p>a</p>", "Approach" -> "<p>b</p>"),
+          tabOnly,
+          Some(rawSpec)
+        )
+        assertTrue(
+          r.map(_.sections) == Right(
+            List(Block.EdSection("Intuition", "<p>a</p>"), Block.EdSection("Approach", "<p>b</p>"))
+          )
+        )
+      },
+      test("decodeProblemWorkbench — blank description → EmptyContent(description)") {
+        val r = Blocks.decodeProblemWorkbench("  ", Nil, tabOnly, Some(rawSpec))
+        assertTrue(r == Left(BlockDecodeError.EmptyContent("problem-workbench", "description")))
+      },
+      test("decodeQuiz — happy path") {
+        val r = Blocks.decodeQuiz(None, Some("n = 20"), List("19", "8"), Some("8"))
+        assertTrue(r == Right(Block.Quiz(None, "n = 20", List("19", "8"), "8")))
+      },
+      test("decodeQuiz — answer not among options → MalformedSpec") {
+        val r = Blocks.decodeQuiz(None, Some("n"), List("1", "2"), Some("3"))
+        assertTrue(r == Left(BlockDecodeError.MalformedSpec("quiz-block", "answer is not among the options")))
+      },
+      test("decodeQuiz — fewer than two options → EmptyContent(options)") {
+        val r = Blocks.decodeQuiz(None, Some("n"), List("1"), Some("1"))
+        assertTrue(r == Left(BlockDecodeError.EmptyContent("quiz-block", "options")))
+      },
+      test("decodeSolutionViewer — happy path, empty meta collapses to None") {
+        val r = Blocks.decodeSolutionViewer(tabOnly, Some("O(n)"), Some(""))
+        assertTrue(
+          r == Right(
+            Block.SolutionViewer(List(Block.Tab("python", "Python", "x", true)), Some("O(n)"), None)
+          )
+        )
+      },
+      test("decodeSolutionViewer — empty tabs → EmptyContent(tabs)") {
+        val r = Blocks.decodeSolutionViewer(Nil, None, None)
+        assertTrue(r == Left(BlockDecodeError.EmptyContent("workbench-solution", "tabs")))
+      }
+    )
+  )
+
+  /** One valid tab — the tabs leg of workbench decoders is shared with `runnable-group`, tested above. */
+  private val tabOnly = List(RawTab(Some("python"), Some("Python"), Some("x"), None))
+
+  private val rawSpec = Blocks.RawTestSpec(
+    args = List(Blocks.RawArgSpec(Some("arr"), Some("arr"), Some("int[]"), Some("[1, 2]"))),
+    cases = List(
+      Blocks.RawTestCase(Map("arr" -> "[1, 2]"), Some("[2, 1]")),
+      Blocks.RawTestCase(Map("arr" -> "[]"), Some(""))
+    )
+  )
+
+  private val expectedSpec = Block.TestSpec(
+    args = List(Block.ArgSpec("arr", "arr", "int[]", Some("[1, 2]"))),
+    cases = List(
+      Block.TestCase(Map("arr" -> "[1, 2]"), Some("[2, 1]")),
+      // Empty expected collapses to None — "run and show output, no verdict".
+      Block.TestCase(Map("arr" -> "[]"), None)
     )
   )

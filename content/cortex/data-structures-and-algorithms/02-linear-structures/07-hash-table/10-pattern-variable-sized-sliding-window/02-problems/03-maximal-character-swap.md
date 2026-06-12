@@ -4,6 +4,8 @@ summary: "Given an uppercase string s and integer k, you may replace at most k c
 prereqs:
   - 10-pattern-variable-sized-sliding-window/01-pattern
 difficulty: medium
+kind: problem
+topics: [variable-sized-sliding-window, hash-table]
 ---
 
 # Maximal character swap
@@ -11,15 +13,6 @@ difficulty: medium
 ## Problem Statement
 
 Given an uppercase string `s` and integer `k`, you may replace at most `k` characters with any uppercase letters of your choice. Return the length of the longest substring of equal letters achievable.
-
-### Example 1
-> -   **Input:** `s = "ABAB", k = 2` → **Output:** `4` (replace either `A`s with `B`s)
-
-### Example 2
-> -   **Input:** `s = "ABCDEF", k = 4` → **Output:** `5` (pick a letter, replace 4 others)
-
-### Example 3
-> -   **Input:** `s = "A", k = 5` → **Output:** `1`
 
 ## Examples
 
@@ -87,145 +80,6 @@ w -> calc -> ok
 
 </details>
 <details>
-<summary><h2>Solution</h2></summary>
-
-
-
-```python run viz=array viz-root=s
-from collections import defaultdict
-
-class Solution:
-    def maximal_character_swap(self, s: str, k: int) -> int:
-
-        # Initialize the frequency map to track the count of characters
-        # in the window
-        frequency = defaultdict(int)
-
-        # The start and end pointers for the window
-        start, end = 0, 0
-
-        # Tracks the frequency and length of the most common character in
-        # the window
-        max_freq = 0
-        max_length = 0
-
-        # Traverse the string using the while loop
-        while end < len(s):
-
-            # Add the current character to the frequency map
-            char_end = s[end]
-            frequency[char_end] += 1
-
-            # Update maxFreq, the frequency of the most frequent
-            # character in the window
-            max_freq = max(max_freq, frequency[char_end])
-
-            # If the current window size minus the frequency of the most
-            # frequent character is greater than k. It means we have more
-            # than k characters to replace, so we shrink the window
-            while end - start + 1 - max_freq > k:
-                char_start = s[start]
-                frequency[char_start] -= 1
-
-                # Shrink the window from the left
-                start += 1
-
-            # Update maxLength to the current window size
-            max_length = max(max_length, end - start + 1)
-
-            # Move the end pointer to expand the window
-            end += 1
-
-        return max_length
-
-
-# Examples from the problem statement
-print(Solution().maximal_character_swap("ABAB", 2))    # 4
-print(Solution().maximal_character_swap("ABCDEF", 4))  # 5
-print(Solution().maximal_character_swap("A", 5))       # 1
-
-# Edge cases
-print(Solution().maximal_character_swap("", 2))        # 0
-print(Solution().maximal_character_swap("AA", 0))      # 2
-print(Solution().maximal_character_swap("AB", 0))      # 1
-print(Solution().maximal_character_swap("AABB", 1))    # 3
-print(Solution().maximal_character_swap("AAAA", 2))    # 4
-```
-
-```java run viz=array viz-root=s
-import java.util.*;
-
-public class Main {
-    static class Solution {
-        public int maximalCharacterSwap(String s, int k) {
-
-            // Initialize the frequency map to track the count of characters
-            // in the window
-            Map<Character, Integer> frequency = new HashMap<>();
-
-            // The start and end pointers for the window
-            int start = 0;
-            int end = 0;
-
-            // Tracks the frequency and length of the most common character
-            // in the window
-            int maxFreq = 0;
-            int maxLength = 0;
-
-            // Traverse the string using the while loop
-            while (end < s.length()) {
-
-                // Add the current character to the frequency map
-                char endChar = s.charAt(end);
-                frequency.put(
-                    endChar,
-                    frequency.getOrDefault(endChar, 0) + 1
-                );
-
-                // Update maxFreq, the frequency of the most frequent
-                // character in the window
-                maxFreq = Math.max(maxFreq, frequency.get(endChar));
-
-                // If the current window size minus the frequency of the most
-                // frequent character is greater than k It means we have more
-                // than k characters to replace, so we shrink the window
-                while (end - start + 1 - maxFreq > k) {
-                    char startChar = s.charAt(start);
-                    frequency.put(startChar, frequency.get(startChar) - 1);
-
-                    // Shrink the window from the left
-                    start++;
-                }
-
-                // Update maxLength to the current window size
-                maxLength = Math.max(maxLength, end - start + 1);
-
-                // Move the end pointer to expand the window
-                end++;
-            }
-
-            return maxLength;
-        }
-    }
-
-    public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().maximalCharacterSwap("ABAB", 2));    // 4
-        System.out.println(new Solution().maximalCharacterSwap("ABCDEF", 4));  // 5
-        System.out.println(new Solution().maximalCharacterSwap("A", 5));       // 1
-
-        // Edge cases
-        System.out.println(new Solution().maximalCharacterSwap("", 2));        // 0
-        System.out.println(new Solution().maximalCharacterSwap("AA", 0));      // 2
-        System.out.println(new Solution().maximalCharacterSwap("AB", 0));      // 1
-        System.out.println(new Solution().maximalCharacterSwap("AABB", 1));    // 3
-        System.out.println(new Solution().maximalCharacterSwap("AAAA", 2));    // 4
-    }
-}
-```
-
-</details>
-<details>
 <summary><h2>Intuition</h2></summary>
 
 
@@ -259,9 +113,136 @@ The naive approach is correct but quadratic. Trying every window and counting it
 5. After the loop, return `maxLength`.
 
 </details>
-<details>
-<summary><h2>Dry Run</h2></summary>
 
+```quiz
+{
+  "prompt": "What does maximal_character_swap(\"AABB\", 1) return?",
+  "input": "s = \"AABB\", k = 1",
+  "options": ["4", "3", "2", "1"],
+  "answer": "3"
+}
+```
+
+## Constraints
+
+- `1 ≤ s.length ≤ 10⁵`
+- `s` consists of uppercase English letters
+- `0 ≤ k ≤ s.length`
+
+```python run
+s = input()
+k = int(input())
+
+class Solution:
+    def maximal_character_swap(self, s: str, k: int) -> int:
+        # Your code goes here
+        return 0
+
+print(Solution().maximal_character_swap(s, k))
+```
+
+```java run
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int maximalCharacterSwap(String s, int k) {
+            // Your code goes here
+            return 0;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String s = sc.nextLine();
+        int k = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().maximalCharacterSwap(s, k));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "s", "type": "string", "placeholder": "ABAB" },
+    { "id": "k", "label": "k", "type": "number", "placeholder": "2" }
+  ],
+  "cases": [
+    { "args": { "s": "ABAB", "k": "2" }, "expected": "4" },
+    { "args": { "s": "ABCDEF", "k": "4" }, "expected": "5" },
+    { "args": { "s": "A", "k": "5" }, "expected": "1" },
+    { "args": { "s": "AABB", "k": "1" }, "expected": "3" },
+    { "args": { "s": "AA", "k": "0" }, "expected": "2" },
+    { "args": { "s": "AB", "k": "0" }, "expected": "1" },
+    { "args": { "s": "AAAA", "k": "2" }, "expected": "4" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Expand `end`, update `frequency[s[end]]` and `maxFreq`. Contract while `(end − start + 1) − maxFreq > k`, decrementing `frequency[s[start]]` but leaving `maxFreq` stale — a safe lower bound that only grows when a genuinely better window appears. Record `end − start + 1`. `O(n)` time, `O(1)` space (26-letter alphabet).
+
+```python solution time=O(n) space=O(1)
+from collections import defaultdict
+
+class Solution:
+    def maximal_character_swap(self, s: str, k: int) -> int:
+        frequency = defaultdict(int)
+        start, end = 0, 0
+        max_freq = 0
+        max_length = 0
+        while end < len(s):
+            char_end = s[end]
+            frequency[char_end] += 1
+            max_freq = max(max_freq, frequency[char_end])
+            while end - start + 1 - max_freq > k:
+                frequency[s[start]] -= 1
+                start += 1
+            max_length = max(max_length, end - start + 1)
+            end += 1
+        return max_length
+
+s = input()
+k = int(input())
+print(Solution().maximal_character_swap(s, k))
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int maximalCharacterSwap(String s, int k) {
+            Map<Character, Integer> frequency = new HashMap<>();
+            int start = 0, end = 0, maxFreq = 0, maxLength = 0;
+            while (end < s.length()) {
+                char endChar = s.charAt(end);
+                frequency.put(endChar, frequency.getOrDefault(endChar, 0) + 1);
+                maxFreq = Math.max(maxFreq, frequency.get(endChar));
+                while (end - start + 1 - maxFreq > k) {
+                    char startChar = s.charAt(start);
+                    frequency.put(startChar, frequency.get(startChar) - 1);
+                    start++;
+                }
+                maxLength = Math.max(maxLength, end - start + 1);
+                end++;
+            }
+            return maxLength;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String s = sc.nextLine();
+        int k = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().maximalCharacterSwap(s, k));
+    }
+}
+```
+
+### Dry Run
 
 Walk Example 1: `s = "ABAB"`, `k = 2`, expected output `4`. The rule is `(width − maxFreq) ≤ k`:
 
@@ -274,26 +255,17 @@ end=3  add 'B'  freq={A:2,B:2}    maxFreq=2  width 4, 4−2=2 ≤ 2   len 4  max
 return maxLength = 4
 ```
 
-The result `4` matches the expected output — the window never violates the rule, so replacing the two `B`s yields `"AAAA"`.
-
-</details>
-<details>
-<summary><h2>Complexity Analysis</h2></summary>
-
+### Complexity Analysis
 
 | | Cost | Why |
 |---|---|---|
 | **Time** | **O(N)** | `end` advances `N` times; `start` advances at most `N` times. Each character enters and leaves the map once, so the inner `while` is amortised `O(1)`. |
-| **Space** | **O(K)** | The map holds at most one entry per distinct character — bounded by the alphabet (26 uppercase letters here), so effectively `O(1)`. |
+| **Space** | **O(1)** | The map holds at most one entry per distinct character — bounded by the 26-letter alphabet. |
 
-</details>
-<details>
-<summary><h2>Edge Cases</h2></summary>
-
+### Edge Cases
 
 | Input | Output | Why |
 |---|---|---|
-| `s = "", k = 2` | `0` | Empty string — the loop never runs. |
 | `s = "AA", k = 0` | `2` | Already uniform — zero replacements needed; the window spans both. |
 | `s = "AB", k = 0` | `1` | With no budget, the window can hold only one matching letter at a time. |
 | `s = "AABB", k = 1` | `3` | A 3-wide window has a dominant letter with count `2`; one swap suffices. |

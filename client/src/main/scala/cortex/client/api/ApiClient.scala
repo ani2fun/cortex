@@ -8,10 +8,14 @@ import cortex.shared.api.Endpoints.{
   BlogPostPayload,
   ChapterPayload,
   CortexIndex,
+  DeleteSubmissionsResponse,
   Greeting,
+  ListSubmissionsResponse,
   RecentCalls,
   RunRequest,
   RunResponse,
+  SubmitRequest,
+  SubmitResponse,
   UserInfo
 }
 import sttp.client3.{FetchBackend, SttpBackend}
@@ -94,6 +98,17 @@ object ApiClient:
   private val meRequestFn =
     SttpClientInterpreter().toSecureRequestThrowDecodeFailures(Endpoints.getMe, baseUri)
 
+  // /api/submissions (POST) is secured the same way.
+  private val submitRequestFn =
+    SttpClientInterpreter().toSecureRequestThrowDecodeFailures(Endpoints.submitSolution, baseUri)
+
+  // /api/submissions (GET) + /api/submissions/{id} (DELETE) — both bearer-secured.
+  private val listSubmissionsRequestFn =
+    SttpClientInterpreter().toSecureRequestThrowDecodeFailures(Endpoints.listMySubmissions, baseUri)
+
+  private val deleteOneSubmissionRequestFn =
+    SttpClientInterpreter().toSecureRequestThrowDecodeFailures(Endpoints.deleteOneSubmission, baseUri)
+
   private val cortexIndexCall =
     callable(Endpoints.getCortexIndex, apiError)(_ => "Failed to fetch Cortex index")
 
@@ -129,6 +144,39 @@ object ApiClient:
       res.body match
         case Right(value) => Future.successful(value)
         case Left(error)  => Future.failed(RuntimeException(apiError("Run failed")(res.code, error)))
+    }
+
+  /**
+   * Submit a solution against ALL of a problem's test cases (server-side) and save it. Requires a signed-in
+   * user; the server additionally allow-lists who may save. Error messages keep the server's `hint` too — for
+   * a 403 that's the request-access instructions, which the workbench surfaces verbatim.
+   */
+  def submitSolution(token: String, req: SubmitRequest): Future[SubmitResponse] =
+    backend.send(submitRequestFn(token)(req)).flatMap { res =>
+      res.body match
+        case Right(value) => Future.successful(value)
+        case Left(error) =>
+          val detail = error.detail.filter(_.nonEmpty).map(d => s" $d").getOrElse("")
+          val hint   = error.hint.filter(_.nonEmpty).map(h => s" $h").getOrElse("")
+          Future.failed(RuntimeException(s"${error.error}.$detail$hint"))
+    }
+
+  /** List the signed-in user's stored submissions for one problem, newest first. */
+  def listMySubmissions(token: String, book: String, chapter: String): Future[ListSubmissionsResponse] =
+    backend.send(listSubmissionsRequestFn(token)((book, chapter))).flatMap { res =>
+      res.body match
+        case Right(value) => Future.successful(value)
+        case Left(error) =>
+          Future.failed(RuntimeException(apiError("Failed to load submissions")(res.code, error)))
+    }
+
+  /** Delete one of the signed-in user's own submissions (the Submissions tab trash). */
+  def deleteOneSubmission(token: String, id: Long): Future[DeleteSubmissionsResponse] =
+    backend.send(deleteOneSubmissionRequestFn(token)(id)).flatMap { res =>
+      res.body match
+        case Right(value) => Future.successful(value)
+        case Left(error) =>
+          Future.failed(RuntimeException(apiError("Failed to delete submission")(res.code, error)))
     }
 
   // ---- Auth ----------------------------------------------------------------

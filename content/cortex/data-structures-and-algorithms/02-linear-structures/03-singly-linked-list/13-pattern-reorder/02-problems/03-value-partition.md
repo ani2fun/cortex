@@ -4,6 +4,8 @@ summary: "Stable-partition a singly linked list around a pivot X with the split-
 prereqs:
   - 13-pattern-reorder/01-pattern
 difficulty: medium
+kind: problem
+topics: [reorder, singly-linked-list]
 ---
 
 # Value partition
@@ -35,8 +37,110 @@ Output: [1, 2, 5, 3, 4]
 Explanation: Less-than bucket = [1, 2]; greater-or-equal bucket = [5, 3, 4]. Concatenate to get [1, 2, 5, 3, 4].
 ```
 
+## Constraints
 
----
+- `0 ≤ list length ≤ 10⁵`
+- `-10⁴ ≤ node.val ≤ 10⁴`
+- `-10⁴ ≤ X ≤ 10⁴`
+- Reorder **in place** — `O(1)` extra space; node values must not be copied or rewritten
+- Relative order within each partition must be preserved (stable partition)
+
+```python run viz=linked-list viz-root=head
+import ast
+
+class ListNode:
+    def __init__(self, val, next=None):
+        self.val = val
+        self.next = next
+
+class Solution:
+    def value_partition(self, head, X):
+        # Your code goes here
+        pass
+
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
+
+def print_list(head):                # 1 → 2 → 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
+
+head = build_list(ast.literal_eval(input()))   # the test case's head
+X = int(input())                               # the test case's X
+print_list(Solution().value_partition(head, X))
+```
+
+```java run viz=linked-list viz-root=head
+import java.util.*;
+
+public class Main {
+    static class ListNode {
+        int val; ListNode next;
+        ListNode(int val) { this.val = val; }
+        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+    }
+
+    static class Solution {
+        ListNode valuePartition(ListNode head, int X) {
+            // Your code goes here
+            return null;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        ListNode head = buildList(parseIntArray(sc.nextLine()));
+        int X = Integer.parseInt(sc.nextLine().trim());
+        printList(new Solution().valuePartition(head, X));
+    }
+
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+        ListNode head = null;
+        for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+        return head;
+    }
+
+    static void printList(ListNode head) {         // 1 → 2 → 3 → [1, 2, 3]
+        List<Integer> out = new ArrayList<>();
+        for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+        System.out.println(out);
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's head
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "head", "label": "head", "type": "int[]", "placeholder": "[1, 4, 3, 2, 5, 2]" },
+    { "id": "X", "label": "X", "type": "int", "placeholder": "3" }
+  ],
+  "cases": [
+    { "args": { "head": "[1, 4, 3, 2, 5, 2]", "X": "3" }, "expected": "[1, 2, 2, 4, 3, 5]" },
+    { "args": { "head": "[2, 1]", "X": "2" }, "expected": "[1, 2]" },
+    { "args": { "head": "[5, 1, 3, 2, 4]", "X": "3" }, "expected": "[1, 2, 5, 3, 4]" },
+    { "args": { "head": "[]", "X": "5" }, "expected": "[]" },
+    { "args": { "head": "[1, 2, 2]", "X": "3" }, "expected": "[1, 2, 2]" },
+    { "args": { "head": "[3, 3, 3]", "X": "3" }, "expected": "[3, 3, 3]" },
+    { "args": { "head": "[1]", "X": "3" }, "expected": "[1]" }
+  ]
+}
+```
 
 <details>
 <summary><h2>Intuition</h2></summary>
@@ -73,8 +177,7 @@ Run the reorder pipeline with `f1 = (val < X)` and `f2 = concatenate`.
 4. **Inside the loop, splice into the chosen bucket.** If the value is less than `X`, set `less_tail.next = current` and advance `less_tail = less_tail.next`. Otherwise, set `greater_tail.next = current` and advance `greater_tail = greater_tail.next`. The append-to-tail discipline preserves the input's relative order within each bucket.
 5. **Advance the walk.** After the bucket splice, set `current = current.next`. The splice rewrote `tail.next`, not `current.next`, so the next-pointer link to the rest of the input is still intact for the read.
 6. **Terminate both buckets.** When the loop exits, set `less_tail.next = null` and `greater_tail.next = null`. Without this, the last node in each bucket would still chain into stale input suffixes.
-7. **Concatenate the buckets.** Set `less_tail.next = greater_head.next` (the real head of the greater bucket). Handle the two edge cases inline: if `less_head.next` is `null`, return `greater_head.next`; if `greater_head.next` is `null`, return `less_head.next`.
-8. **Return the head of the merged list.** Skip the throwaway `less_head` and return `less_head.next`.
+7. **Concatenate the buckets.** Set `less_tail.next = greater_head.next` (the real head of the greater bucket). Return `less_head.next`.
 
 </details>
 <details>
@@ -82,39 +185,20 @@ Run the reorder pipeline with `f1 = (val < X)` and `f2 = concatenate`.
 
 ### Solution
 
-```python run viz=linked-list viz-root=head
-from typing import Optional, List
-
+```python solution time=O(n) space=O(1)
+import ast
 
 class ListNode:
-    def __init__(self, val=0, nxt=None):
+    def __init__(self, val, next=None):
         self.val = val
-        self.next = nxt
-
-
-def from_list(values):
-    if not values:
-        return None
-    head = ListNode(values[0])
-    cur = head
-    for v in values[1:]:
-        cur.next = ListNode(v)
-        cur = cur.next
-    return head
-
-
-def to_list(head):
-    out = []
-    while head is not None:
-        out.append(head.val)
-        head = head.next
-    return out
-
+        self.next = next
 
 class Solution:
-    def split_list_by_value(
-        self, head: Optional[ListNode], X: int
-    ) -> List[Optional[ListNode]]:
+    def value_partition(self, head, X):
+
+        # Return the head if the list is empty or has only one node.
+        if head is None or head.next is None:
+            return head
 
         # Create dummy nodes to initialize the heads of two separate
         # lists. List for nodes with values less than X.
@@ -160,95 +244,45 @@ class Solution:
         less_tail.next = None
         greater_tail.next = None
 
-        # Return heads of both lists, excluding dummy nodes.
-        return [less_head.next, greater_head.next]
-
-    def merge_less_and_greater_lists(
-        self,
-        less_head: Optional[ListNode],
-        greater_head: Optional[ListNode],
-    ) -> Optional[ListNode]:
-
-        # If the first list (less_head) is empty, return greater_head as
-        # the concatenated list.
-        if less_head is None:
-            return greater_head
-
-        # If the second list (greater_head) is empty, return less_head as
-        # the concatenated list.
-        if greater_head is None:
-            return less_head
-
-        # Find the end of the first list (less_head) to append
-        # greater_head.
-        current = less_head
-        while current is not None and current.next is not None:
-            current = current.next
-
         # Append greater_head to the end of less_head.
-        current.next = greater_head
-        return less_head
+        less_tail.next = greater_head.next
+        return less_head.next
 
-    def value_partition(
-        self, head: Optional[ListNode], X: int
-    ) -> Optional[ListNode]:
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
 
-        # Return the head if the list is empty or has only one node.
-        if head is None or head.next is None:
-            return head
+def print_list(head):                # 1 → 2 → 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
 
-        # Split the original list into two lists: nodes < X and nodes >=
-        # X.
-        less_head, greater_head = self.split_list_by_value(head, X)
-
-        # Merge both lists and return the head of the combined list.
-        return self.merge_less_and_greater_lists(less_head, greater_head)
-
-
-# Examples from the problem statement
-print(to_list(Solution().value_partition(from_list([1, 4, 3, 2, 5, 2]), 3)))  # [1, 2, 2, 4, 3, 5]
-print(to_list(Solution().value_partition(from_list([2, 1]), 2)))               # [1, 2]
-
-# Edge cases
-print(to_list(Solution().value_partition(None, 5)))                            # []
-print(to_list(Solution().value_partition(from_list([3]), 3)))                  # [3]  (single node >= X)
-print(to_list(Solution().value_partition(from_list([1]), 3)))                  # [1]  (single node < X)
-print(to_list(Solution().value_partition(from_list([3, 3, 3]), 3)))            # [3, 3, 3]  (all >= X)
-print(to_list(Solution().value_partition(from_list([1, 2, 2]), 3)))            # [1, 2, 2]  (all < X)
-print(to_list(Solution().value_partition(from_list([5, 1, 3, 2, 4]), 3)))      # [1, 2, 5, 3, 4]
+head = build_list(ast.literal_eval(input()))   # the test case's head
+X = int(input())                               # the test case's X
+print_list(Solution().value_partition(head, X))
 ```
 
-```java run viz=linked-list viz-root=head
+```java solution
 import java.util.*;
 
 public class Main {
     static class ListNode {
-        int val;
-        ListNode next;
-        ListNode() {}
+        int val; ListNode next;
         ListNode(int val) { this.val = val; }
         ListNode(int val, ListNode next) { this.val = val; this.next = next; }
     }
 
-    static ListNode fromList(int... values) {
-        if (values.length == 0) return null;
-        ListNode head = new ListNode(values[0]);
-        ListNode cur = head;
-        for (int i = 1; i < values.length; i++) {
-            cur.next = new ListNode(values[i]);
-            cur = cur.next;
-        }
-        return head;
-    }
-
-    static java.util.List<Integer> toList(ListNode head) {
-        java.util.List<Integer> out = new java.util.ArrayList<>();
-        while (head != null) { out.add(head.val); head = head.next; }
-        return out;
-    }
-
     static class Solution {
-        private List<ListNode> splitListByValue(ListNode head, int X) {
+        ListNode valuePartition(ListNode head, int X) {
+
+            // Return the head if the list is empty or has only one node.
+            if (head == null || head.next == null) {
+                return head;
+            }
 
             // Create dummy nodes to initialize the heads of two separate
             // lists. List for nodes with values less than X.
@@ -297,77 +331,42 @@ public class Main {
             lessTail.next = null;
             greaterTail.next = null;
 
-            // Return heads of both lists, excluding dummy nodes.
-            return Arrays.asList(lessHead.next, greaterHead.next);
-        }
-
-        private ListNode mergeLessAndGreaterLists(
-            ListNode lessHead,
-            ListNode greaterHead
-        ) {
-
-            // If the first list (lessHead) is empty, return greaterHead as
-            // the concatenated list.
-            if (lessHead == null) {
-                return greaterHead;
-            }
-
-            // If the second list (greaterHead) is empty, return lessHead as
-            // the concatenated list.
-            if (greaterHead == null) {
-                return lessHead;
-            }
-
-            // Find the end of the first list (lessHead) to append
-            // greaterHead.
-            ListNode current = lessHead;
-            while (current != null && current.next != null) {
-                current = current.next;
-            }
-
             // Append greaterHead to the end of lessHead.
-            current.next = greaterHead;
-            return lessHead;
-        }
-
-        public ListNode valuePartition(ListNode head, int X) {
-
-            // Return the head if the list is empty or has only one node.
-            if (head == null || head.next == null) {
-                return head;
-            }
-
-            // Split the original list into two lists: nodes < X and nodes >=
-            // X.
-            List<ListNode> heads = splitListByValue(head, X);
-
-            // Head of list with nodes < X.
-            ListNode lessHead = heads.get(0);
-
-            // Head of list with nodes >= X.
-            ListNode greaterHead = heads.get(1);
-
-            // Merge both lists and return the head of the combined list.
-            return mergeLessAndGreaterLists(lessHead, greaterHead);
+            lessTail.next = greaterHead.next;
+            return lessHead.next;
         }
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(toList(new Solution().valuePartition(fromList(1, 4, 3, 2, 5, 2), 3)));  // [1, 2, 2, 4, 3, 5]
-        System.out.println(toList(new Solution().valuePartition(fromList(2, 1), 2)));               // [1, 2]
+        Scanner sc = new Scanner(System.in);
+        ListNode head = buildList(parseIntArray(sc.nextLine()));
+        int X = Integer.parseInt(sc.nextLine().trim());
+        printList(new Solution().valuePartition(head, X));
+    }
 
-        // Edge cases
-        System.out.println(toList(new Solution().valuePartition(null, 5)));                         // []
-        System.out.println(toList(new Solution().valuePartition(fromList(3), 3)));                  // [3]  (single node >= X)
-        System.out.println(toList(new Solution().valuePartition(fromList(1), 3)));                  // [1]  (single node < X)
-        System.out.println(toList(new Solution().valuePartition(fromList(3, 3, 3), 3)));            // [3, 3, 3]  (all >= X)
-        System.out.println(toList(new Solution().valuePartition(fromList(1, 2, 2), 3)));            // [1, 2, 2]  (all < X)
-        System.out.println(toList(new Solution().valuePartition(fromList(5, 1, 3, 2, 4), 3)));      // [1, 2, 5, 3, 4]
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+        ListNode head = null;
+        for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+        return head;
+    }
+
+    static void printList(ListNode head) {         // 1 → 2 → 3 → [1, 2, 3]
+        List<Integer> out = new ArrayList<>();
+        for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+        System.out.println(out);
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's head
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```
-
 
 ### Dry Run
 
@@ -391,18 +390,14 @@ less_head_real = 1, greater_head_real = 4.
 Concatenate: less_tail.next = greater_head_real (=4).
 Output: 1 → 2 → 2 → 4 → 3 → 5 → null.
 
-Return less_head_real = the first 1. ✓
+Return less_head.next = the first 1. ✓
 ```
-
-### Result Size
-
-The output contains exactly `n` nodes — every input node appears in the output. The less-than bucket holds `k` nodes (where `k` is the count of values `< X`) and the greater-or-equal bucket holds `n - k`. Only `.next` fields are rewired; no values change.
 
 ### Complexity Analysis
 
 | | Complexity | Reason |
 |---|---|---|
-| **Time** | `O(n)` | The split pass visits every node once. The concatenation pass walks the less-than bucket once more to find its tail — at most `k` extra steps, dominated by `O(n)`. |
+| **Time** | `O(n)` | The split pass visits every node once. The concatenation is `O(1)` — `less_tail` already holds the tail reference. |
 | **Space** | `O(1)` | Two dummy nodes plus a handful of local references regardless of input size. The output reuses the input nodes — no fresh allocations beyond the throwaway dummies. |
 
 ### Edge Cases
@@ -412,9 +407,8 @@ The output contains exactly `n` nodes — every input node appears in the output
 | Empty list (`head = null`) | Guard `if head is None` returns `null` immediately. |
 | Single node `< X` (`head = [1], X = 3`) | Guard `if head.next is None` returns `head` unchanged. Trivially partitioned. |
 | Single node `>= X` (`head = [3], X = 3`) | Same guard returns `head` unchanged. Trivially partitioned. |
-| All nodes `< X` (`head = [1, 2, 2], X = 3`) | Less bucket = `[1, 2, 2]`, greater bucket is empty. Concatenation handles `greater_head = null` by returning the less bucket unchanged. Output `[1, 2, 2]`. |
-| All nodes `>= X` (`head = [3, 3, 3], X = 3`) | Less bucket is empty, greater bucket = `[3, 3, 3]`. Concatenation handles `less_head = null` by returning the greater bucket. Output `[3, 3, 3]`. |
-| Pivot equals every value (`head = [3, 3, 3], X = 3`) | Same as above — `val < X` is false for every node, so all land in the greater bucket. Output `[3, 3, 3]`. |
+| All nodes `< X` (`head = [1, 2, 2], X = 3`) | Less bucket = `[1, 2, 2]`, greater bucket is empty (`greater_head.next = null`). `less_tail.next = null` leaves the less bucket as-is. Output `[1, 2, 2]`. |
+| All nodes `>= X` (`head = [3, 3, 3], X = 3`) | Less bucket is empty. `less_head.next = null`, so return `greater_head.next = [3, 3, 3]`. Output `[3, 3, 3]`. |
 | Mixed with stability test (`head = [5, 1, 3, 2, 4], X = 3`) | Less = `[1, 2]` (in input order); greater = `[5, 3, 4]` (in input order). Concatenate → `[1, 2, 5, 3, 4]`. The relative order within each bucket matches the input. |
 
 </details>

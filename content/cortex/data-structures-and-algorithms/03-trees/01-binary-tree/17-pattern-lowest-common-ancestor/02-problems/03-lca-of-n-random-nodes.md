@@ -1,135 +1,83 @@
 ---
 title: "LCA of N Random Nodes"
-summary: "See problem statement below."
+summary: "Find the lowest common ancestor of an arbitrary list of nodes, all guaranteed to exist in the tree."
 prereqs:
   - 17-pattern-lowest-common-ancestor/01-pattern
 difficulty: medium
+kind: problem
+topics: [lowest-common-ancestor, binary-tree]
 ---
 
-# Problem 3 — LCA of N random nodes
+# LCA of N Random Nodes
 
-> Given a list of nodes (possibly more than two), find the LCA of *all* of them.
+## Problem Statement
 
-Generalise the algorithm: instead of "is this node `A` or `B`?", check "is this node *in the set of targets*?". Use a hash set for O(1) lookup. The combine logic stays exactly the same.
+Given the **root** of a binary tree and a list of node **values** (all guaranteed to exist in the tree), return the **value** of the lowest common ancestor of all nodes in the list.
 
-<details>
-<summary><h2>Solution</h2></summary>
+Generalise the two-node LCA: instead of "is this node `A` or `B`?", check "is this node's value *in the target set*?". Use a hash set for O(1) lookup. The combine logic stays exactly the same.
 
+## Examples
 
+**Example 1:**
+```
+Input:  root = [1, 2, 3, 4, null, null, 7], nodes = [2, 4, 7]
+Output: 1
+```
+`2` and `4` are in the left subtree, `7` in the right — they split at root `1`.
+
+**Example 2:**
+```
+Input:  root = [1, 8, 4, null, null, 2, 7], nodes = [2, 7]
+Output: 4
+```
+Both `2` and `7` are children of `4`.
+
+## Constraints
+
+- `0 ≤ number of nodes ≤ 10⁴`
+- `-10⁴ ≤ node.val ≤ 10⁴`; all values are **distinct**
+- `1 ≤ len(nodes) ≤ number of nodes`; all listed values exist in the tree
+- O(N) time, O(N) space (hash set)
 
 ```python run viz=binary-tree viz-root=root
-from typing import Optional, List
-
+import json, ast
+from collections import deque
 
 class TreeNode:
-    def __init__(self, val=0, left=None, right=None):
+    def __init__(self, val, left=None, right=None):
         self.val = val
         self.left = left
         self.right = right
 
+class Solution:
+    def lca_n_nodes(self, root, node_vals):
+        # Your code goes here — build a set from node_vals, then run LCA:
+        # if node.val in the set, return node; recurse both sides;
+        # if both non-None, this is the LCA; else bubble up.
+        return None
 
-def from_level_order(values):
-    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
     if not values:
         return None
     root = TreeNode(values[0])
-    queue = [root]
+    queue = deque([root])
     i = 1
     while queue and i < len(values):
-        node = queue.pop(0)
-        if i < len(values) and values[i] is not None:
-            node.left = TreeNode(values[i])
-            queue.append(node.left)
-        i += 1
-        if i < len(values) and values[i] is not None:
-            node.right = TreeNode(values[i])
-            queue.append(node.right)
-        i += 1
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
     return root
 
-
-def find(root, val):
-    """Locate a node by value."""
-    if root is None:
-        return None
-    if root.val == val:
-        return root
-    return find(root.left, val) or find(root.right, val)
-
-
-class Solution:
-    def lowest_common_ancestor(
-        self, root: Optional[TreeNode], nodes: set
-    ) -> Optional[TreeNode]:
-
-        # If the root is null, return null
-        if not root:
-            return None
-
-        # If the current node is part of the nodes set, return it
-        if root in nodes:
-            return root
-
-        # Recursively search in the left and right subtrees
-        left_lca = self.lowest_common_ancestor(root.left, nodes)
-        right_lca = self.lowest_common_ancestor(root.right, nodes)
-
-        # If both subtrees return a non-null value
-        # the current node is the lowest common ancestor
-        if left_lca and right_lca:
-            return root
-
-        # If only one subtree returns a non-null value, return that value
-        return left_lca if left_lca else right_lca
-
-    def random_lowest_common_ancestor(
-        self, root: Optional[TreeNode], nodes: List[Optional[TreeNode]]
-    ) -> Optional[TreeNode]:
-
-        # Convert the list to a set for faster lookup
-        nodeSet = set(nodes)
-
-        # Find and return the lowest common ancestor
-        return self.lowest_common_ancestor(root, nodeSet)
-
-
-# Examples from the problem statement
-root1 = from_level_order([1, 2, 3, 4, None, None, 7])
-lca1 = Solution().random_lowest_common_ancestor(
-    root1, [find(root1, 2), find(root1, 4), find(root1, 7)]
-)
-print(lca1.val)   # 1
-
-root2 = from_level_order([1, 8, 4, None, None, 2, 7])
-lca2 = Solution().random_lowest_common_ancestor(
-    root2, [find(root2, 2), find(root2, 7)]
-)
-print(lca2.val)   # 4
-
-# Edge cases
-print(Solution().random_lowest_common_ancestor(None, []))              # None
-
-root3 = from_level_order([1, 2, 3, 4, None, None, 7])                 # single node in list
-lca3 = Solution().random_lowest_common_ancestor(root3, [find(root3, 4)])
-print(lca3.val)   # 4
-
-root4 = from_level_order([1, 2, 3, 4, None, None, 7])                 # all leaf nodes → LCA is root
-lca4 = Solution().random_lowest_common_ancestor(
-    root4, [find(root4, 4), find(root4, 7)]
-)
-print(lca4.val)   # 1
-
-root5 = from_level_order([1, 8, 4, None, None, 2, 7])                 # three nodes, deep LCA
-lca5 = Solution().random_lowest_common_ancestor(
-    root5, [find(root5, 8), find(root5, 2), find(root5, 7)]
-)
-print(lca5.val)   # 1
-
-root6 = from_level_order([1, 2, 3])
-lca6 = Solution().random_lowest_common_ancestor(
-    root6, [find(root6, 2), find(root6, 3)]
-)
-print(lca6.val)   # 1 (root)
+root = build_tree(json.loads(input()))   # the test case's level-order values
+node_vals = ast.literal_eval(input())    # list of target node values
+result = Solution().lca_n_nodes(root, node_vals)
+print(result.val if result is not None else "null")
 ```
 
 ```java run viz=binary-tree viz-root=root
@@ -137,121 +85,214 @@ import java.util.*;
 
 public class Main {
     static class TreeNode {
-        int val;
-        TreeNode left;
-        TreeNode right;
-        TreeNode() {}
+        int val; TreeNode left, right;
         TreeNode(int val) { this.val = val; }
     }
 
-    static TreeNode fromLevelOrder(Integer... values) {
-        if (values.length == 0 || values[0] == null) return null;
-        TreeNode root = new TreeNode(values[0]);
-        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
-        queue.add(root);
-        int i = 1;
-        while (!queue.isEmpty() && i < values.length) {
-            TreeNode node = queue.poll();
-            if (i < values.length && values[i] != null) {
-                node.left = new TreeNode(values[i]);
-                queue.add(node.left);
-            }
-            i++;
-            if (i < values.length && values[i] != null) {
-                node.right = new TreeNode(values[i]);
-                queue.add(node.right);
-            }
-            i++;
-        }
-        return root;
-    }
-
-    static TreeNode find(TreeNode root, int val) {
-        if (root == null) return null;
-        if (root.val == val) return root;
-        TreeNode left = find(root.left, val);
-        return left != null ? left : find(root.right, val);
-    }
-
     static class Solution {
-        private TreeNode lowestCommonAncestor(
-            TreeNode root,
-            Set<TreeNode> nodes
-        ) {
-
-            // If the root is null, return null
-            if (root == null) {
-                return null;
-            }
-
-            // If the current node is part of the nodes set, return it
-            if (nodes.contains(root)) {
-                return root;
-            }
-
-            // Recursively search in the left and right subtrees
-            TreeNode leftLCA = lowestCommonAncestor(root.left, nodes);
-            TreeNode rightLCA = lowestCommonAncestor(root.right, nodes);
-
-            // If both subtrees return a non-null value
-            // the current node is the lowest common ancestor
-            if (leftLCA != null && rightLCA != null) {
-                return root;
-            }
-
-            // If only one subtree returns a non-null value, return that
-            // value
-            if (leftLCA != null) {
-                return leftLCA;
-            }
-
-            return rightLCA;
-        }
-
-        public TreeNode randomLowestCommonAncestor(
-            TreeNode root,
-            List<TreeNode> nodes
-        ) {
-
-            // Convert the array to a HashSet for faster lookup
-            Set<TreeNode> nodeSet = new HashSet<>();
-            for (TreeNode node : nodes) {
-                nodeSet.add(node);
-            }
-
-            // Find and return the lowest common ancestor
-            return lowestCommonAncestor(root, nodeSet);
+        TreeNode lcaNNodes(TreeNode root, Set<Integer> nodeVals) {
+            // Your code goes here — if nodeVals.contains(root.val), return root;
+            // recurse both sides; if both non-null, this is the LCA; else bubble up.
+            return null;
         }
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        TreeNode root1 = fromLevelOrder(1, 2, 3, 4, null, null, 7);
-        System.out.println(new Solution().randomLowestCommonAncestor(
-            root1, Arrays.asList(find(root1, 2), find(root1, 4), find(root1, 7))).val);  // 1
+        Scanner sc = new Scanner(System.in);
+        TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+        int[] vals = parseIntArray(sc.nextLine());
+        Set<Integer> nodeVals = new HashSet<>();
+        for (int v : vals) nodeVals.add(v);
+        TreeNode result = new Solution().lcaNNodes(root, nodeVals);
+        System.out.println(result == null ? "null" : result.val);
+    }
 
-        TreeNode root2 = fromLevelOrder(1, 8, 4, null, null, 2, 7);
-        System.out.println(new Solution().randomLowestCommonAncestor(
-            root2, Arrays.asList(find(root2, 2), find(root2, 7))).val);  // 4
+    static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+            }
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+            }
+        }
+        return root;
+    }
 
-        // Edge cases
-        System.out.println(new Solution().randomLowestCommonAncestor(null, new ArrayList<>()));  // null
+    // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+    static Integer[] parseIntegerArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new Integer[0];
+        String[] parts = inner.split(",");
+        Integer[] out = new Integer[parts.length];
+        for (int i = 0; i < parts.length; i++)
+            out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+        return out;
+    }
 
-        TreeNode root3 = fromLevelOrder(1, 2, 3, 4, null, null, 7);                             // single node
-        System.out.println(new Solution().randomLowestCommonAncestor(
-            root3, Arrays.asList(find(root3, 4))).val);  // 4
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i].trim());
+        return out;
+    }
+}
+```
 
-        TreeNode root4 = fromLevelOrder(1, 2, 3, 4, null, null, 7);                             // leaf nodes
-        System.out.println(new Solution().randomLowestCommonAncestor(
-            root4, Arrays.asList(find(root4, 4), find(root4, 7))).val);  // 1
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[1, 2, 3, 4, null, null, 7]" },
+    { "id": "node_vals", "label": "nodes", "type": "int[]", "placeholder": "[2, 4, 7]" }
+  ],
+  "cases": [
+    { "args": { "root": "[1, 2, 3, 4, null, null, 7]", "node_vals": "[2, 4, 7]" }, "expected": "1" },
+    { "args": { "root": "[1, 8, 4, null, null, 2, 7]", "node_vals": "[2, 7]" }, "expected": "4" },
+    { "args": { "root": "[1, 2, 3, 4, null, null, 7]", "node_vals": "[4]" }, "expected": "4" },
+    { "args": { "root": "[1, 2, 3, 4, null, null, 7]", "node_vals": "[4, 7]" }, "expected": "1" },
+    { "args": { "root": "[1, 8, 4, null, null, 2, 7]", "node_vals": "[8, 2, 7]" }, "expected": "1" },
+    { "args": { "root": "[1, 2, 3]", "node_vals": "[2, 3]" }, "expected": "1" }
+  ]
+}
+```
 
-        TreeNode root5 = fromLevelOrder(1, 8, 4, null, null, 2, 7);                             // three nodes
-        System.out.println(new Solution().randomLowestCommonAncestor(
-            root5, Arrays.asList(find(root5, 8), find(root5, 2), find(root5, 7))).val);  // 1
+<details>
+<summary><h2>Solution</h2></summary>
 
-        TreeNode root6 = fromLevelOrder(1, 2, 3);
-        System.out.println(new Solution().randomLowestCommonAncestor(
-            root6, Arrays.asList(find(root6, 2), find(root6, 3))).val);  // 1
+Build a hash set from the list of target values. Run a postorder recursion identical to the two-node LCA but using `root.val in node_vals` for the base-case check. The combine logic is unchanged: if both children return a node, the current node is the split point — the LCA; otherwise bubble up whichever side found something.
+
+```python solution time=O(n) space=O(n)
+import json, ast
+from collections import deque
+
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+class Solution:
+    def _lca(self, root, node_vals):
+        if root is None:
+            return None
+        if root.val in node_vals:
+            return root
+        left_lca = self._lca(root.left, node_vals)
+        right_lca = self._lca(root.right, node_vals)
+        if left_lca and right_lca:
+            return root
+        return left_lca if left_lca else right_lca
+
+    def lca_n_nodes(self, root, node_vals):
+        node_set = set(node_vals)
+        return self._lca(root, node_set)
+
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
+
+root = build_tree(json.loads(input()))   # the test case's level-order values
+node_vals = ast.literal_eval(input())    # list of target node values
+result = Solution().lca_n_nodes(root, node_vals)
+print(result.val if result is not None else "null")
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+    static class TreeNode {
+        int val; TreeNode left, right;
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static class Solution {
+        private TreeNode _lca(TreeNode root, Set<Integer> nodeVals) {
+            if (root == null) return null;
+            if (nodeVals.contains(root.val)) return root;
+            TreeNode leftLCA = _lca(root.left, nodeVals);
+            TreeNode rightLCA = _lca(root.right, nodeVals);
+            if (leftLCA != null && rightLCA != null) return root;
+            return leftLCA != null ? leftLCA : rightLCA;
+        }
+
+        TreeNode lcaNNodes(TreeNode root, Set<Integer> nodeVals) {
+            return _lca(root, nodeVals);
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+        int[] vals = parseIntArray(sc.nextLine());
+        Set<Integer> nodeVals = new HashSet<>();
+        for (int v : vals) nodeVals.add(v);
+        TreeNode result = new Solution().lcaNNodes(root, nodeVals);
+        System.out.println(result == null ? "null" : result.val);
+    }
+
+    static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+            }
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+            }
+        }
+        return root;
+    }
+
+    // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+    static Integer[] parseIntegerArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new Integer[0];
+        String[] parts = inner.split(",");
+        Integer[] out = new Integer[parts.length];
+        for (int i = 0; i < parts.length; i++)
+            out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+        return out;
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i].trim());
+        return out;
     }
 }
 ```

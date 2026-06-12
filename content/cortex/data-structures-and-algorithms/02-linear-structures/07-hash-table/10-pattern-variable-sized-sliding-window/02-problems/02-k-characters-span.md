@@ -4,6 +4,8 @@ summary: "Given a string s and integer k, return the length of the longest subst
 prereqs:
   - 10-pattern-variable-sized-sliding-window/01-pattern
 difficulty: medium
+kind: problem
+topics: [variable-sized-sliding-window, hash-table]
 ---
 
 # K characters span
@@ -11,15 +13,6 @@ difficulty: medium
 ## Problem Statement
 
 Given a string `s` and integer `k`, return the length of the longest substring with **at most K distinct** characters.
-
-### Example 1
-> -   **Input:** `s = "abcbed", k = 2` → **Output:** `3` (`"bcb"`)
-
-### Example 2
-> -   **Input:** `s = "aaaaabc", k = 3` → **Output:** `7` (whole string)
-
-### Example 3
-> -   **Input:** `s = "abcdefgh", k = 3` → **Output:** `3` (`"abc"`, `"bcd"`, etc.)
 
 ## Examples
 
@@ -56,143 +49,6 @@ character forces immediate contraction → length 0.
 ```
 
 <details>
-<summary><h2>Approach</h2></summary>
-
-
-Same skeleton; the **rule** is now "at most K distinct characters in the window", which is exactly `len(freq_map) ≤ k`. Expand `end` greedily; when the map has more than K keys, contract from the left until it doesn't.
-
-> *Observation* — `len(freq_map)` is the distinct-count *only if* you delete keys whose frequency drops to zero. The boundary work is the same as in the fixed-window pattern; only the rule changed.
-
-</details>
-<details>
-<summary><h2>Solution</h2></summary>
-
-
-
-```python run viz=array viz-root=s
-class Solution:
-    def k_characters_span(self, s: str, k: int) -> int:
-
-        # Dictionary to store character frequencies
-        frequency = {}
-
-        # To store the maximum length of the substring
-        max_length = 0
-
-        # Sliding window pointers
-        start, end = 0, 0
-
-        while end < len(s):
-
-            # Add the end character to the dictionary
-            end_char = s[end]
-            frequency[end_char] = frequency.get(end_char, 0) + 1
-
-            # If the number of distinct characters exceeds k, shrink the
-            # window
-            while len(frequency) > k:
-                start_char = s[start]
-                frequency[start_char] -= 1
-
-                # Remove character if count is 0
-                if frequency[start_char] == 0:
-                    del frequency[start_char]
-
-                # Move the start pointer to shrink the window
-                start += 1
-
-            # Update the maximum length of the valid substring
-            max_length = max(max_length, end - start + 1)
-
-            # Expand the window
-            end += 1
-
-        return max_length
-
-
-# Examples from the problem statement
-print(Solution().k_characters_span("abcbed", 2))    # 3
-print(Solution().k_characters_span("aaaaabc", 3))   # 7
-print(Solution().k_characters_span("abcdefgh", 3))  # 3
-
-# Edge cases
-print(Solution().k_characters_span("", 2))          # 0
-print(Solution().k_characters_span("a", 1))         # 1
-print(Solution().k_characters_span("aaa", 1))       # 3
-print(Solution().k_characters_span("abc", 0))       # 0
-print(Solution().k_characters_span("aab", 2))       # 3
-```
-
-```java run viz=array viz-root=s
-import java.util.*;
-
-public class Main {
-    static class Solution {
-        public int kCharactersSpan(String s, int k) {
-
-            // Map to store character frequencies
-            Map<Character, Integer> frequency = new HashMap<>();
-
-            // To store the maximum length of the substring
-            int maxLength = 0;
-
-            // Sliding window pointers
-            int start = 0;
-            int end = 0;
-
-            while (end < s.length()) {
-
-                // Add the end character to the map
-                char endChar = s.charAt(end);
-                frequency.put(
-                    endChar,
-                    frequency.getOrDefault(endChar, 0) + 1
-                );
-
-                // If the number of distinct characters exceeds k, shrink the
-                // window
-                while (frequency.size() > k) {
-                    char startChar = s.charAt(start);
-                    frequency.put(startChar, frequency.get(startChar) - 1);
-
-                    // Remove character if count is 0
-                    if (frequency.get(startChar) == 0) {
-                        frequency.remove(startChar);
-                    }
-
-                    // Move the start pointer to shrink the window
-                    start++;
-                }
-
-                // Update the maximum length of the valid substring
-                maxLength = Math.max(maxLength, end - start + 1);
-
-                // Expand the window
-                end++;
-            }
-
-            return maxLength;
-        }
-    }
-
-    public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().kCharactersSpan("abcbed", 2));    // 3
-        System.out.println(new Solution().kCharactersSpan("aaaaabc", 3));   // 7
-        System.out.println(new Solution().kCharactersSpan("abcdefgh", 3));  // 3
-
-        // Edge cases
-        System.out.println(new Solution().kCharactersSpan("", 2));          // 0
-        System.out.println(new Solution().kCharactersSpan("a", 1));         // 1
-        System.out.println(new Solution().kCharactersSpan("aaa", 1));       // 3
-        System.out.println(new Solution().kCharactersSpan("abc", 0));       // 0
-        System.out.println(new Solution().kCharactersSpan("aab", 2));       // 3
-    }
-}
-```
-
-</details>
-<details>
 <summary><h2>Intuition</h2></summary>
 
 
@@ -226,9 +82,136 @@ The naive approach is correct but quadratic. Fixing a start and re-scanning forw
 5. After the loop, return `maxLength`.
 
 </details>
-<details>
-<summary><h2>Dry Run</h2></summary>
 
+```quiz
+{
+  "prompt": "What does k_characters_span(\"aab\", 2) return?",
+  "input": "s = \"aab\", k = 2",
+  "options": ["1", "2", "3", "0"],
+  "answer": "3"
+}
+```
+
+## Constraints
+
+- `1 ≤ s.length ≤ 10⁵`
+- `s` consists of lowercase English letters
+- `0 ≤ k ≤ 26`
+
+```python run
+s = input()
+k = int(input())
+
+class Solution:
+    def k_characters_span(self, s: str, k: int) -> int:
+        # Your code goes here
+        return 0
+
+print(Solution().k_characters_span(s, k))
+```
+
+```java run
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int kCharactersSpan(String s, int k) {
+            // Your code goes here
+            return 0;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String s = sc.nextLine();
+        int k = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().kCharactersSpan(s, k));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "s", "type": "string", "placeholder": "abcbed" },
+    { "id": "k", "label": "k", "type": "number", "placeholder": "2" }
+  ],
+  "cases": [
+    { "args": { "s": "abcbed", "k": "2" }, "expected": "3" },
+    { "args": { "s": "aaaaabc", "k": "3" }, "expected": "7" },
+    { "args": { "s": "abcdefgh", "k": "3" }, "expected": "3" },
+    { "args": { "s": "abc", "k": "0" }, "expected": "0" },
+    { "args": { "s": "a", "k": "1" }, "expected": "1" },
+    { "args": { "s": "aaa", "k": "1" }, "expected": "3" },
+    { "args": { "s": "aab", "k": "2" }, "expected": "3" },
+    { "args": { "s": "abaccc", "k": "2" }, "expected": "4" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Same skeleton as unique-character-span; the only change is the rule: contract while `len(frequency) > k` instead of while a single count exceeds `1`. Delete map keys on count-zero so `len(map)` equals the exact distinct-count. `O(n)` time, `O(k)` space.
+
+```python solution time=O(n) space=O(k)
+class Solution:
+    def k_characters_span(self, s: str, k: int) -> int:
+        frequency = {}
+        max_length = 0
+        start, end = 0, 0
+        while end < len(s):
+            end_char = s[end]
+            frequency[end_char] = frequency.get(end_char, 0) + 1
+            while len(frequency) > k:
+                start_char = s[start]
+                frequency[start_char] -= 1
+                if frequency[start_char] == 0:
+                    del frequency[start_char]
+                start += 1
+            max_length = max(max_length, end - start + 1)
+            end += 1
+        return max_length
+
+s = input()
+k = int(input())
+print(Solution().k_characters_span(s, k))
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int kCharactersSpan(String s, int k) {
+            Map<Character, Integer> frequency = new HashMap<>();
+            int maxLength = 0, start = 0, end = 0;
+            while (end < s.length()) {
+                char endChar = s.charAt(end);
+                frequency.put(endChar, frequency.getOrDefault(endChar, 0) + 1);
+                while (frequency.size() > k) {
+                    char startChar = s.charAt(start);
+                    frequency.put(startChar, frequency.get(startChar) - 1);
+                    if (frequency.get(startChar) == 0) frequency.remove(startChar);
+                    start++;
+                }
+                maxLength = Math.max(maxLength, end - start + 1);
+                end++;
+            }
+            return maxLength;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String s = sc.nextLine();
+        int k = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().kCharactersSpan(s, k));
+    }
+}
+```
+
+### Dry Run
 
 Walk Example 1: `s = "abcbed"`, `k = 2`, expected output `3`. The rule is `len(freq) ≤ 2`:
 
@@ -247,26 +230,17 @@ end=5  add 'd'  freq={b:1,e:1,d:1}    distinct 3 > 2
 return maxLength = 3
 ```
 
-The result `3` matches the expected output — `"bcb"` is the longest substring with at most `2` distinct characters.
-
-</details>
-<details>
-<summary><h2>Complexity Analysis</h2></summary>
-
+### Complexity Analysis
 
 | | Cost | Why |
 |---|---|---|
 | **Time** | **O(N)** | `end` advances `N` times; `start` advances at most `N` times. Each character enters and leaves the map once, so the inner `while` is amortised `O(1)`. |
-| **Space** | **O(K)** | The map holds at most `k + 1` entries during a contraction — bounded by the alphabet size, `O(1)` for a fixed alphabet. |
+| **Space** | **O(K)** | The map holds at most `k + 1` entries during a contraction — bounded by the alphabet size. |
 
-</details>
-<details>
-<summary><h2>Edge Cases</h2></summary>
-
+### Edge Cases
 
 | Input | Output | Why |
 |---|---|---|
-| `s = "", k = 2` | `0` | Empty string — the loop never runs. |
 | `s = "a", k = 1` | `1` | One character, one distinct — the window spans it. |
 | `s = "aaa", k = 1` | `3` | A single distinct character — never exceeds `k`, window covers all. |
 | `s = "abc", k = 0` | `0` | Zero distinct allowed — every character forces immediate contraction. |

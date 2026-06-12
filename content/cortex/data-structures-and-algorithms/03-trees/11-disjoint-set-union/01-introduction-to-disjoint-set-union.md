@@ -171,9 +171,11 @@ It's correct because **`find` never changes which root a node belongs to — onl
 
 ## Your Turn
 
-DSU with path compression + union by rank in both languages — union edges, then query connectivity and component count:
+DSU with path compression + union by rank in both languages. Input: `n` (number of elements), a list of union pairs `[[u,v],...]`, a list of connectivity queries `[[x,y],...]`. Output: component count followed by `true`/`false` for each query, space-separated on one line.
 
-```python run viz=array viz-root=parent viz-kind=union-find
+```python run
+import ast
+
 class DSU:
     def __init__(self, n):
         self.parent = list(range(n)); self.rank = [0]*n; self.num_sets = n
@@ -189,12 +191,20 @@ class DSU:
         self.num_sets -= 1; return True
     def same_set(self, x, y): return self.find(x) == self.find(y)
 
-dsu = DSU(6)
-for u, v in [(0,1), (2,3), (3,4)]: dsu.union(u, v)
-print(dsu.num_sets, dsu.same_set(2,4), dsu.same_set(0,5))   # 3 True False
+n = int(input())
+unions = ast.literal_eval(input())
+queries = ast.literal_eval(input())
+
+dsu = DSU(n)
+for u, v in unions: dsu.union(u, v)
+parts = [str(dsu.num_sets)]
+for q in queries:
+    parts.append("true" if dsu.same_set(q[0], q[1]) else "false")
+print(" ".join(parts))
 ```
 
-```java run viz=array viz-root=parent viz-kind=union-find
+```java run
+import java.util.*;
 public class Main {
   static int[] parent, rnk;
   static int find(int x) { if (parent[x] != x) parent[x] = find(parent[x]); return parent[x]; }
@@ -206,14 +216,60 @@ public class Main {
     if (rnk[rx] == rnk[ry]) rnk[rx]++;
     return true;
   }
-  public static void main(String[] a) {
-    int n = 6; parent = new int[n]; rnk = new int[n];
-    for (int i = 0; i < n; i++) parent[i] = i;
-    int[][] edges = {{0,1}, {2,3}, {3,4}};
-    int comps = n;
-    for (int[] e : edges) if (union(e[0], e[1])) comps--;
-    System.out.println(comps + " " + (find(2) == find(4)) + " " + (find(0) == find(5)));  // 3 true false
+  static int[][] parseIntMatrix(String line) {
+    line = line.trim().substring(1, line.trim().length()-1).trim();
+    if (line.isEmpty()) return new int[0][];
+    String[] pairs = line.split("],\\s*\\[");
+    int[][] out = new int[pairs.length][];
+    for (int i = 0; i < pairs.length; i++) {
+      String p = pairs[i].replaceAll("[\\[\\]]", "").trim();
+      String[] ns = p.split(",\\s*");
+      out[i] = new int[]{Integer.parseInt(ns[0].trim()), Integer.parseInt(ns[1].trim())};
+    }
+    return out;
   }
+  public static void main(String[] a) {
+    Scanner sc = new Scanner(System.in);
+    int n = Integer.parseInt(sc.nextLine().trim());
+    int[][] unions = parseIntMatrix(sc.nextLine());
+    int[][] queries = parseIntMatrix(sc.nextLine());
+    parent = new int[n]; rnk = new int[n];
+    for (int i = 0; i < n; i++) parent[i] = i;
+    int comps = n;
+    for (int[] e : unions) if (union(e[0], e[1])) comps--;
+    StringBuilder sb = new StringBuilder();
+    sb.append(comps);
+    for (int[] q : queries) sb.append(" ").append(find(q[0]) == find(q[1]) ? "true" : "false");
+    System.out.println(sb);
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "n",       "label": "n (elements)",   "type": "integer", "placeholder": "6" },
+    { "id": "unions",  "label": "union pairs",    "type": "string",  "placeholder": "[[0,1],[2,3],[3,4]]" },
+    { "id": "queries", "label": "query pairs",    "type": "string",  "placeholder": "[[2,4],[0,5]]" }
+  ],
+  "cases": [
+    {
+      "args": { "n": "6", "unions": "[[0,1],[2,3],[3,4]]", "queries": "[[2,4],[0,5]]" },
+      "expected": "3 true false"
+    },
+    {
+      "args": { "n": "10", "unions": "[[0,1],[1,2],[3,4],[5,6],[6,7]]", "queries": "[[0,2],[0,3]]" },
+      "expected": "5 true false"
+    },
+    {
+      "args": { "n": "4", "unions": "[]", "queries": "[[0,1],[2,3]]" },
+      "expected": "4 false false"
+    },
+    {
+      "args": { "n": "5", "unions": "[[0,1],[1,2],[2,3],[3,4]]", "queries": "[[0,4],[1,3]]" },
+      "expected": "1 true true"
+    }
+  ]
 }
 ```
 

@@ -15,9 +15,12 @@ The stateless approach threads the accumulated value **down as an argument** (ex
 
 ## See It Work
 
-Sum every root-to-leaf **number**. For `1 → 2` and `1 → 3` that's `12 + 13 = 25`. The number builds downward; leaf values sum upward. Run it.
+Sum every root-to-leaf **number**. For `1 → 2` and `1 → 3` that's `12 + 13 = 25`. The number builds downward; leaf values sum upward. Pick a case and **Run** it.
 
 ```python run viz=binary-tree viz-root=root
+import json
+from collections import deque
+
 class TreeNode:
     def __init__(self, val, left=None, right=None):
         self.val = val
@@ -32,8 +35,97 @@ def sum_numbers(node, cur=0):
         return cur                             # leaf: this path's complete number
     return sum_numbers(node.left, cur) + sum_numbers(node.right, cur)   # aggregate UP
 
-root = TreeNode(1, TreeNode(2), TreeNode(3))
-print(sum_numbers(root))     # 25   (12 + 13)
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
+
+root = build_tree(json.loads(input()))   # the test case's level-order values
+print(sum_numbers(root))
+```
+
+```java run viz=binary-tree viz-root=root
+import java.util.*;
+
+public class Main {
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
+  }
+
+  static int sumNumbers(TreeNode node, int cur) {
+    if (node == null) return 0;
+    cur = cur * 10 + node.val;                  // extend the path number going DOWN
+    if (node.left == null && node.right == null) return cur;   // leaf: complete number
+    return sumNumbers(node.left, cur) + sumNumbers(node.right, cur);   // aggregate UP
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+    System.out.println(sumNumbers(root, 0));
+  }
+
+  static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
+    }
+    return root;
+  }
+
+  // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[1, 2, 3]" }
+  ],
+  "cases": [
+    { "args": { "root": "[1, 2, 3]" }, "expected": "25" },
+    { "args": { "root": "[4, 9, 0, 5, 1]" }, "expected": "1026" },
+    { "args": { "root": "[1]" }, "expected": "1" },
+    { "args": { "root": "[]" }, "expected": "0" },
+    { "args": { "root": "[1, 2, null, 3]" }, "expected": "123" },
+    { "args": { "root": "[1, null, 2]" }, "expected": "12" }
+  ]
+}
 ```
 
 ## How It Works
@@ -77,52 +169,220 @@ Use **stateless** when you only need a *summary* of the paths — their sum, whe
 
 ## Your Turn
 
-Sum-of-numbers plus a root-to-leaf sum check, both carrying state down:
+Implement `sum_numbers(node, cur=0)` — extend the path number going down, finalize at leaves, aggregate up with `+`.
 
 ```python run viz=binary-tree viz-root=root
+import json
+from collections import deque
+
 class TreeNode:
     def __init__(self, val, left=None, right=None):
-        self.val = val; self.left = left; self.right = right
+        self.val = val
+        self.left = left
+        self.right = right
 
 def sum_numbers(node, cur=0):
-    if node is None: return 0
-    cur = cur * 10 + node.val
-    if node.left is None and node.right is None:
-        return cur
-    return sum_numbers(node.left, cur) + sum_numbers(node.right, cur)
+    # Your code goes here — base case None → 0; extend cur = cur*10 + node.val;
+    # at a leaf return cur; at internal nodes return sum of both children.
+    pass
 
-def has_path_sum(node, target):
-    if node is None: return False
-    if node.left is None and node.right is None:
-        return node.val == target
-    rem = target - node.val
-    return has_path_sum(node.left, rem) or has_path_sum(node.right, rem)
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
 
-root = TreeNode(4, TreeNode(9, TreeNode(5), TreeNode(1)), TreeNode(0))
-print(sum_numbers(root))            # 1026  (495 + 491 + 40)
-print(has_path_sum(root, 18))       # True   (4 + 9 + 5)
+root = build_tree(json.loads(input()))   # the test case's level-order values
+print(sum_numbers(root))
 ```
 
 ```java run viz=binary-tree viz-root=root
+import java.util.*;
+
 public class Main {
-  static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } TreeNode(int v, TreeNode l, TreeNode r){ val=v; left=l; right=r; } }
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
+  }
 
   static int sumNumbers(TreeNode node, int cur) {
-    if (node == null) return 0;
-    cur = cur * 10 + node.val;
-    if (node.left == null && node.right == null) return cur;
-    return sumNumbers(node.left, cur) + sumNumbers(node.right, cur);
+    // Your code goes here — base case null → 0; extend cur = cur*10 + node.val;
+    // at a leaf return cur; at internal nodes return sum of both children.
+    return 0;
   }
+
   public static void main(String[] args) {
-    TreeNode root = new TreeNode(4, new TreeNode(9, new TreeNode(5), new TreeNode(1)), new TreeNode(0));
-    System.out.println(sumNumbers(root, 0));   // 1026
+    Scanner sc = new Scanner(System.in);
+    TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+    System.out.println(sumNumbers(root, 0));
+  }
+
+  static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
+    }
+    return root;
+  }
+
+  // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
   }
 }
 ```
 
-Drill the family in **Practice** — [Root-to-Leaf Path Sum Check](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-root-to-leaf-path-stateless/problems/root-to-leaf-path-sum-check), [Binary Summation of Tree](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-root-to-leaf-path-stateless/problems/binary-summation-of-tree), [Even Path](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-root-to-leaf-path-stateless/problems/even-path), and [Odd Count](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-root-to-leaf-path-stateless/problems/odd-count).
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[1, 2, 3]" }
+  ],
+  "cases": [
+    { "args": { "root": "[1, 2, 3]" }, "expected": "25" },
+    { "args": { "root": "[4, 9, 0, 5, 1]" }, "expected": "1026" },
+    { "args": { "root": "[1]" }, "expected": "1" },
+    { "args": { "root": "[]" }, "expected": "0" },
+    { "args": { "root": "[1, 2, null, 3]" }, "expected": "123" },
+    { "args": { "root": "[1, null, 2]" }, "expected": "12" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+The template is exactly the See-It-Work walk, packaged to return a result. Base case `None → 0` handles both an empty tree and a missing child (internal nodes with one child will recurse into `None` on the missing side — returning 0 is the correct identity for `+`). Extending `cur = cur*10 + node.val` shifts the running decimal number left and appends the current digit. At a leaf, the path is complete: return `cur`. At an internal node, sum both children's results — the left and right subtrees each complete their own paths independently.
+
+```python solution time=O(n) space=O(h)
+import json
+from collections import deque
+
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+def sum_numbers(node, cur=0):
+    if node is None:
+        return 0
+    cur = cur * 10 + node.val                  # extend the path number going DOWN
+    if node.left is None and node.right is None:
+        return cur                             # leaf: this path's complete number
+    return sum_numbers(node.left, cur) + sum_numbers(node.right, cur)   # aggregate UP
+
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
+
+root = build_tree(json.loads(input()))   # the test case's level-order values
+print(sum_numbers(root))
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
+  }
+
+  static int sumNumbers(TreeNode node, int cur) {
+    if (node == null) return 0;
+    cur = cur * 10 + node.val;                  // extend the path number going DOWN
+    if (node.left == null && node.right == null) return cur;   // leaf: complete number
+    return sumNumbers(node.left, cur) + sumNumbers(node.right, cur);   // aggregate UP
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+    System.out.println(sumNumbers(root, 0));
+  }
+
+  static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
+    }
+    return root;
+  }
+
+  // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+</details>
 
 ## Reflect & Connect
+
+Drill the family in **Practice** — [Root-to-Leaf Path Sum Check](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-root-to-leaf-path-stateless/problems/root-to-leaf-path-sum-check), [Binary Summation of Tree](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-root-to-leaf-path-stateless/problems/binary-summation-of-tree), [Even Path](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-root-to-leaf-path-stateless/problems/even-path), and [Odd Count](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-root-to-leaf-path-stateless/problems/odd-count).
 
 Root-to-leaf-stateless is "summarize the paths without storing them":
 

@@ -20,13 +20,28 @@ Reverse the list in groups of `k = 2` — a pairwise swap. `1→2→3→4→5` b
 > ▶ Run it, then click **Visualise** — each full group of `k` flips in place, then the seams reconnect; the short tail is left untouched.
 
 ```python run viz=linked-list viz-root=head viz-kind=list-single
+import ast
+
 class ListNode:
     def __init__(self, val, next=None):
         self.val = val
         self.next = next
 
-head = ListNode(1, ListNode(2, ListNode(3, ListNode(4, ListNode(5)))))   # 1 → 2 → 3 → 4 → 5
-k = 2
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
+
+def print_list(head):                # 1 → 2 → 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
+
+head = build_list(ast.literal_eval(input()))   # the test case's head
+k = int(input())                               # group size
 
 n, node = 0, head
 while node:                          # count nodes so we only reverse FULL groups
@@ -49,12 +64,82 @@ while n >= k:
     n -= k
 head = dummy.next
 
-vals = []
-node = head
-while node:
-    vals.append(node.val)
-    node = node.next
-print(vals)                          # [2, 1, 4, 3, 5]
+print_list(head)
+```
+
+```java run viz=linked-list viz-root=head viz-kind=list-single
+import java.util.*;
+
+public class Main {
+  static class ListNode {
+    int val; ListNode next;
+    ListNode(int val) { this.val = val; }
+    ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    ListNode head = buildList(parseIntArray(sc.nextLine()));
+    int k = Integer.parseInt(sc.nextLine().trim());
+
+    int n = 0;
+    for (ListNode x = head; x != null; x = x.next) n++;
+
+    ListNode dummy = new ListNode(0, head);   // uniform predecessor
+    ListNode groupPrev = dummy;
+    while (n >= k) {
+      ListNode prev = null, cur = groupPrev.next;
+      for (int i = 0; i < k; i++) {          // reverse exactly k nodes
+        ListNode nxt = cur.next; cur.next = prev; prev = cur; cur = nxt;
+      }
+      ListNode tail = groupPrev.next;         // old first = new tail
+      groupPrev.next = prev;                  // seam 1: before → new head
+      tail.next = cur;                        // seam 2: new tail → next group
+      groupPrev = tail;
+      n -= k;
+    }
+    head = dummy.next;
+    printList(head);
+  }
+
+  static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+    ListNode head = null;
+    for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+    return head;
+  }
+
+  static void printList(ListNode head) {         // 1 → 2 → 3 → [1, 2, 3]
+    List<Integer> out = new ArrayList<>();
+    for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+    System.out.println(out);
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's values
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "values", "label": "values", "type": "int[]", "placeholder": "[1, 2, 3, 4, 5]" },
+    { "id": "k", "label": "k", "type": "int", "placeholder": "2" }
+  ],
+  "cases": [
+    { "args": { "values": "[1, 2, 3, 4, 5]", "k": "2" }, "expected": "[2, 1, 4, 3, 5]" },
+    { "args": { "values": "[1, 2, 3, 4]", "k": "2" }, "expected": "[2, 1, 4, 3]" },
+    { "args": { "values": "[1, 2, 3, 4, 5, 6]", "k": "3" }, "expected": "[3, 2, 1, 6, 5, 4]" },
+    { "args": { "values": "[1]", "k": "2" }, "expected": "[1]" },
+    { "args": { "values": "[]", "k": "2" }, "expected": "[]" }
+  ]
+}
 ```
 
 ## How It Works
@@ -102,6 +187,109 @@ The guard `while n >= k` is exactly it: a chunk is only reversed when a *full* `
 The reusable reverse-in-groups-of-`k` (with `k = 2`, it's a pairwise swap):
 
 ```python run viz=linked-list viz-root=head viz-kind=list-single
+import ast
+
+class ListNode:
+    def __init__(self, val, next=None):
+        self.val = val
+        self.next = next
+
+def reverse_k_group(head, k):
+    # Your code goes here — count n, use a dummy node, bounded three-pointer
+    # loop per group, stitch two seams, advance group_prev. Return dummy.next.
+    pass
+
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
+
+def print_list(head):                # 1 → 2 → 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
+
+head = build_list(ast.literal_eval(input()))   # the test case's head
+k = int(input())
+print_list(reverse_k_group(head, k))
+```
+
+```java run viz=linked-list viz-root=head viz-kind=list-single
+import java.util.*;
+
+public class Main {
+  static class ListNode {
+    int val; ListNode next;
+    ListNode(int val) { this.val = val; }
+    ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+  }
+
+  static ListNode reverseKGroup(ListNode head, int k) {
+    // Your code goes here — count n, dummy node, bounded loop per group,
+    // stitch two seams, advance groupPrev. Return dummy.next.
+    return null;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    ListNode head = buildList(parseIntArray(sc.nextLine()));
+    int k = Integer.parseInt(sc.nextLine().trim());
+    printList(reverseKGroup(head, k));
+  }
+
+  static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+    ListNode head = null;
+    for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+    return head;
+  }
+
+  static void printList(ListNode head) {         // 1 → 2 → 3 → [1, 2, 3]
+    List<Integer> out = new ArrayList<>();
+    for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+    System.out.println(out);
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's values
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "values", "label": "values", "type": "int[]", "placeholder": "[1, 2, 3, 4, 5]" },
+    { "id": "k", "label": "k", "type": "int", "placeholder": "2" }
+  ],
+  "cases": [
+    { "args": { "values": "[1, 2, 3, 4, 5]", "k": "2" }, "expected": "[2, 1, 4, 3, 5]" },
+    { "args": { "values": "[1, 2, 3, 4]", "k": "2" }, "expected": "[2, 1, 4, 3]" },
+    { "args": { "values": "[1, 2, 3]", "k": "3" }, "expected": "[3, 2, 1]" },
+    { "args": { "values": "[1, 2, 3, 4, 5]", "k": "3" }, "expected": "[3, 2, 1, 4, 5]" },
+    { "args": { "values": "[1]", "k": "2" }, "expected": "[1]" },
+    { "args": { "values": "[]", "k": "2" }, "expected": "[]" },
+    { "args": { "values": "[1, 2, 3, 4, 5, 6]", "k": "3" }, "expected": "[3, 2, 1, 6, 5, 4]" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Count the list length, use a dummy predecessor, then loop while `n ≥ k`: bounded three-pointer flip for `k` nodes, save `tail = group_prev.next` before the flip, then stitch `group_prev.next = prev` (before-seam) and `tail.next = cur` (after-seam), advance `group_prev = tail`. Return `dummy.next`.
+
+```python solution time=O(n) space=O(1)
+import ast
+
 class ListNode:
     def __init__(self, val, next=None):
         self.val = val
@@ -125,16 +313,33 @@ def reverse_k_group(head, k):
         n -= k
     return dummy.next
 
-head = ListNode(1, ListNode(2, ListNode(3, ListNode(4, ListNode(5)))))
-out, node = [], reverse_k_group(head, 3)
-while node:
-    out.append(node.val); node = node.next
-print(out)                           # [3, 2, 1, 4, 5]
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
+
+def print_list(head):                # 1 → 2 → 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
+
+head = build_list(ast.literal_eval(input()))   # the test case's head
+k = int(input())
+print_list(reverse_k_group(head, k))
 ```
 
-```java run viz=linked-list viz-root=head viz-kind=list-single
+```java solution
+import java.util.*;
+
 public class Main {
-  static class ListNode { int val; ListNode next; ListNode(int v){ val = v; } ListNode(int v, ListNode n){ val = v; next = n; } }
+  static class ListNode {
+    int val; ListNode next;
+    ListNode(int val) { this.val = val; }
+    ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+  }
 
   static ListNode reverseKGroup(ListNode head, int k) {
     int n = 0;
@@ -153,17 +358,41 @@ public class Main {
   }
 
   public static void main(String[] args) {
-    ListNode head = new ListNode(1, new ListNode(2, new ListNode(3, new ListNode(4, new ListNode(5)))));
-    StringBuilder sb = new StringBuilder("[");
-    for (ListNode c = reverseKGroup(head, 3); c != null; c = c.next) sb.append(c.val).append(c.next != null ? ", " : "");
-    System.out.println(sb.append("]"));   // [3, 2, 1, 4, 5]
+    Scanner sc = new Scanner(System.in);
+    ListNode head = buildList(parseIntArray(sc.nextLine()));
+    int k = Integer.parseInt(sc.nextLine().trim());
+    printList(reverseKGroup(head, k));
+  }
+
+  static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+    ListNode head = null;
+    for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+    return head;
+  }
+
+  static void printList(ListNode head) {         // 1 → 2 → 3 → [1, 2, 3]
+    List<Integer> out = new ArrayList<>();
+    for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+    System.out.println(out);
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's values
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
   }
 }
 ```
 
-Drill the family in **Practice** — [Pairwise Swap](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-reversal-subproblem/problems/pairwise-swap), [Reverse K Segments](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-reversal-subproblem/problems/reverse-k-segments), [Reverse Increasing Groups](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-reversal-subproblem/problems/reverse-increasing-groups), and [Reverse Alternate Segments](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-reversal-subproblem/problems/reverse-alternate-segments).
+</details>
 
 ## Reflect & Connect
+
+Drill the family in **Practice** — [Pairwise Swap](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-reversal-subproblem/problems/pairwise-swap), [Reverse K Segments](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-reversal-subproblem/problems/reverse-k-segments), [Reverse Increasing Groups](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-reversal-subproblem/problems/reverse-increasing-groups), and [Reverse Alternate Segments](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-reversal-subproblem/problems/reverse-alternate-segments).
 
 Once reversal is a callable subroutine, a whole family opens up — they differ only in *how the chunks are chosen*:
 
@@ -215,4 +444,4 @@ Once reversal is a callable subroutine, a whole family opens up — they differ 
 
 - **CLRS**, *Introduction to Algorithms*, 4th ed., §10.2 — linked-list pointer manipulation; the dummy-node (sentinel) simplification.
 - **Sedgewick & Wayne**, *Algorithms*, 4th ed., §1.3 — linked structures and in-place restructuring.
-- Reverse-nodes-in-`k`-group is a standard interview problem; both runnable blocks are verified by running (outputs `[2, 1, 4, 3, 5]` and `[3, 2, 1, 4, 5]`).
+- Reverse-nodes-in-`k`-group is a standard interview problem; both runnable blocks are verified by running against their test cases.

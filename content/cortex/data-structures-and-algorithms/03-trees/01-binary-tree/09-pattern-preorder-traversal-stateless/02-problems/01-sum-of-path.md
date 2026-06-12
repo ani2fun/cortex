@@ -1,16 +1,28 @@
 ---
 title: "Sum of Path"
-summary: "See problem statement below."
+summary: "Given the root of a binary tree, add to each node's value the sum of all node values on the path from the root down to that node."
 prereqs:
   - 09-pattern-preorder-traversal-stateless/01-pattern
 difficulty: medium
+kind: problem
+topics: [preorder-traversal, binary-tree]
 ---
 
-# Problem 1 — Sum of path
+# Sum of path
 
-> Given the root of a binary tree, update each node's value by adding the sum of all node values on the path from the root to that node.
->
-> **Example:** Input `[1, 2, 3, 4, null, null, 7]` → output `[1, 3, 4, 7, null, null, 11]`.
+## Problem Statement
+
+Given the **root** of a binary tree, update each node's value by adding the sum of all node values on the path from the root to that node (including the node itself). Return the modified tree.
+
+The accumulator here is the **path sum so far** (excluding the current node). At each node: write `acc + node.val` into the node, then descend with that same value as the new accumulator for both children. This is the top-down, stateless shape — the context travels down as a function argument.
+
+## Examples
+
+**Example 1:**
+```
+Input:  root = [1, 2, 3, 4, null, null, 7]
+Output: [1, 3, 4, 7, null, null, 11]
+```
 
 ```mermaid
 ---
@@ -38,66 +50,189 @@ flowchart TB
 
 <p align="center"><strong>Sum-of-path output — each node holds the sum of all values from the root down to itself, including itself.</strong></p>
 
-The accumulator here is the **path sum so far** (excluding the current node). At each node: write `acc + node.val` into the node, then descend with `acc + node.val` (the same value) as the new accumulator for both children.
+**Example 2:**
+```
+Input:  root = [1, 8, 4, null, null, 2, 7]
+Output: [1, 9, 5, null, null, 7, 12]
+```
 
-<details>
-<summary><h2>Solution</h2></summary>
+```quiz
+{
+  "prompt": "Now your turn!",
+  "input": "root = [2, 1, 3]",
+  "options": ["[2, 1, 3]", "[2, 3, 5]", "[2, 3, 4]", "[5, 3, 2]"],
+  "answer": "[2, 3, 5]"
+}
+```
 
+## Constraints
 
+- `0 ≤ number of nodes ≤ 10⁴`
+- `-10⁴ ≤ node.val ≤ 10⁴`
+- Update values in place via a single top-down pass — `O(n)` time, `O(h)` recursion stack
 
 ```python run viz=binary-tree viz-root=root
-from typing import Optional, List
+import json
 from collections import deque
 
 class TreeNode:
-    def __init__(self, val=0, left=None, right=None):
+    def __init__(self, val, left=None, right=None):
         self.val = val
         self.left = left
         self.right = right
 
+class Solution:
+    def sum_of_path(self, root):
+        # Your code goes here — carry the running path sum DOWN as an argument:
+        # write acc + node.val into the node, then recurse into both children
+        # with that updated sum. Return the (mutated) root.
+        return root
 
-def from_level_order(values):
-    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
     if not values:
         return None
     root = TreeNode(values[0])
-    queue = [root]
+    queue = deque([root])
     i = 1
     while queue and i < len(values):
-        node = queue.pop(0)
-        if i < len(values) and values[i] is not None:
-            node.left = TreeNode(values[i])
-            queue.append(node.left)
-        i += 1
-        if i < len(values) and values[i] is not None:
-            node.right = TreeNode(values[i])
-            queue.append(node.right)
-        i += 1
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
     return root
 
-
-def to_level_order(root):
-    if not root:
-        return []
-    result, queue = [], deque([root])
+def print_tree(root):                # root → [1, 2, 3, null, 4], trailing nulls trimmed
+    out, queue = [], deque([root])
     while queue:
         node = queue.popleft()
-        if node:
-            result.append(node.val)
+        if node is None:
+            out.append(None)
+        else:
+            out.append(node.val)
             queue.append(node.left)
             queue.append(node.right)
-        else:
-            result.append(None)
-    while result and result[-1] is None:
-        result.pop()
-    return result
+    while out and out[-1] is None:
+        out.pop()
+    print(json.dumps(out))
 
+root = build_tree(json.loads(input()))   # the test case's level-order values
+print_tree(Solution().sum_of_path(root))
+```
+
+```java run viz=binary-tree viz-root=root
+import java.util.*;
+
+public class Main {
+    static class TreeNode {
+        int val; TreeNode left, right;
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static class Solution {
+        TreeNode sumOfPath(TreeNode root) {
+            // Your code goes here — carry the running path sum DOWN as an argument:
+            // write acc + node.val into the node, then recurse into both children
+            // with that updated sum. Return the (mutated) root.
+            return root;
+        }
+    }
+
+    public static void main(String[] args) {
+        TreeNode root = buildTree(parseIntegerArray(new Scanner(System.in).nextLine()));
+        printTree(new Solution().sumOfPath(root));
+    }
+
+    static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+            }
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+            }
+        }
+        return root;
+    }
+
+    static void printTree(TreeNode root) {          // root → [1, 2, 3, null, 4], trailing nulls trimmed
+        List<String> out = new ArrayList<>();
+        Deque<TreeNode> queue = new LinkedList<>();
+        queue.add(root);
+        while (!queue.isEmpty()) {
+            TreeNode node = queue.poll();
+            if (node == null) {
+                out.add("null");
+            } else {
+                out.add(String.valueOf(node.val));
+                queue.add(node.left);
+                queue.add(node.right);
+            }
+        }
+        while (!out.isEmpty() && out.get(out.size() - 1).equals("null"))
+            out.remove(out.size() - 1);
+        System.out.println("[" + String.join(", ", out) + "]");
+    }
+
+    // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+    static Integer[] parseIntegerArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new Integer[0];
+        String[] parts = inner.split(",");
+        Integer[] out = new Integer[parts.length];
+        for (int i = 0; i < parts.length; i++)
+            out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[1, 2, 3, 4, null, null, 7]" }
+  ],
+  "cases": [
+    { "args": { "root": "[1, 2, 3, 4, null, null, 7]" }, "expected": "[1, 3, 4, 7, null, null, 11]" },
+    { "args": { "root": "[1, 8, 4, null, null, 2, 7]" }, "expected": "[1, 9, 5, null, null, 7, 12]" },
+    { "args": { "root": "[]" }, "expected": "[]" },
+    { "args": { "root": "[5]" }, "expected": "[5]" },
+    { "args": { "root": "[1, 2, null, 3]" }, "expected": "[1, 3, null, 6]" },
+    { "args": { "root": "[1, null, 2, null, 3]" }, "expected": "[1, null, 3, null, 6]" },
+    { "args": { "root": "[3, 1, 4, 1, 5, 9, 2]" }, "expected": "[3, 4, 7, 5, 9, 16, 9]" }
+  ]
+}
+```
+
+<details>
+<summary><h2>Solution</h2></summary>
+
+A single top-down recursion carries the path sum so far (excluding the current node) down as an argument. At each node: compute `new_sum = acc + node.val`, write it into the node, then recurse into both children with `new_sum`. The base case (`None`) does nothing. Because the accumulator travels purely as a function argument, the left subtree's descent can't corrupt the right's — no shared mutable state to reset.
+
+```python solution time=O(n) space=O(h)
+import json
+from collections import deque
+
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
 
 class Solution:
-    def sum_of_path_helper(
-        self, root: Optional[TreeNode], path_sum: int
-    ) -> None:
-
+    def sum_of_path_helper(self, root, path_sum):
         # Base case: if the current node is null, do nothing
         if root is None:
             return
@@ -108,100 +243,63 @@ class Solution:
         # Update the current node's value to the new path sum
         root.val = new_path_sum
 
-        # Recursively process the left and right children,
-        # passing the updated path sum
+        # Recurse into both children, passing the updated path sum down
         self.sum_of_path_helper(root.left, new_path_sum)
         self.sum_of_path_helper(root.right, new_path_sum)
 
-    def sum_of_path(self, root: Optional[TreeNode]) -> None:
+    def sum_of_path(self, root):
         self.sum_of_path_helper(root, 0)
+        return root
 
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
 
-# Examples from the problem statement
-t1 = from_level_order([1, 2, 3, 4, None, None, 7])
-Solution().sum_of_path(t1); print(to_level_order(t1))   # [1, 3, 4, 7, 11]
+def print_tree(root):                # root → [1, 2, 3, null, 4], trailing nulls trimmed
+    out, queue = [], deque([root])
+    while queue:
+        node = queue.popleft()
+        if node is None:
+            out.append(None)
+        else:
+            out.append(node.val)
+            queue.append(node.left)
+            queue.append(node.right)
+    while out and out[-1] is None:
+        out.pop()
+    print(json.dumps(out))
 
-t2 = from_level_order([1, 8, 4, None, None, 2, 7])
-Solution().sum_of_path(t2); print(to_level_order(t2))   # [1, 9, 5, 7, 12]
-
-# Edge cases
-t3 = from_level_order([])
-Solution().sum_of_path(t3); print(to_level_order(t3))   # []
-
-t4 = from_level_order([5])
-Solution().sum_of_path(t4); print(to_level_order(t4))   # [5]
-
-t5 = from_level_order([1, 2, None, 3])                  # left-skew
-Solution().sum_of_path(t5); print(to_level_order(t5))   # [1, 3, 6]
-
-t6 = from_level_order([1, None, 2, None, 3])            # right-skew
-Solution().sum_of_path(t6); print(to_level_order(t6))   # [1, 3, 6]
-
-t7 = from_level_order([3, 1, 4, 1, 5, 9, 2])
-Solution().sum_of_path(t7); print(to_level_order(t7))   # [3, 4, 7, 5, 9, 16, 9]
+root = build_tree(json.loads(input()))   # the test case's level-order values
+print_tree(Solution().sum_of_path(root))
 ```
 
-```java run viz=binary-tree viz-root=root
+```java solution
 import java.util.*;
 
 public class Main {
     static class TreeNode {
-        int val;
-        TreeNode left;
-        TreeNode right;
-        TreeNode() {}
+        int val; TreeNode left, right;
         TreeNode(int val) { this.val = val; }
-    }
-
-    static TreeNode fromLevelOrder(Integer... values) {
-        if (values.length == 0 || values[0] == null) return null;
-        TreeNode root = new TreeNode(values[0]);
-        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
-        queue.add(root);
-        int i = 1;
-        while (!queue.isEmpty() && i < values.length) {
-            TreeNode node = queue.poll();
-            if (i < values.length && values[i] != null) {
-                node.left = new TreeNode(values[i]);
-                queue.add(node.left);
-            }
-            i++;
-            if (i < values.length && values[i] != null) {
-                node.right = new TreeNode(values[i]);
-                queue.add(node.right);
-            }
-            i++;
-        }
-        return root;
-    }
-
-    static List<Integer> toLevelOrder(TreeNode root) {
-        if (root == null) return new ArrayList<>();
-        List<Integer> result = new ArrayList<>();
-        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
-        queue.add(root);
-        while (!queue.isEmpty()) {
-            TreeNode node = queue.poll();
-            if (node != null) {
-                result.add(node.val);
-                queue.add(node.left);
-                queue.add(node.right);
-            } else {
-                result.add(null);
-            }
-        }
-        while (!result.isEmpty() && result.get(result.size() - 1) == null)
-            result.remove(result.size() - 1);
-        return result;
     }
 
     static class Solution {
         private void sumOfPathHelper(TreeNode root, int pathSum) {
-
             // Base case: if the current node is null, do nothing
-            if (root == null) {
-                return;
-            }
+            if (root == null) return;
 
             // Calculate the new path sum by adding the current node's value
             int newPathSum = pathSum + root.val;
@@ -209,47 +307,70 @@ public class Main {
             // Update the current node's value to the new path sum
             root.val = newPathSum;
 
-            // Recursively process the left and right children,
-            // passing the updated path sum
+            // Recurse into both children, passing the updated path sum down
             sumOfPathHelper(root.left, newPathSum);
             sumOfPathHelper(root.right, newPathSum);
         }
 
-        public void sumOfPath(TreeNode root) {
+        TreeNode sumOfPath(TreeNode root) {
             sumOfPathHelper(root, 0);
+            return root;
         }
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        TreeNode t1 = fromLevelOrder(1, 2, 3, 4, null, null, 7);
-        new Solution().sumOfPath(t1);
-        System.out.println(toLevelOrder(t1));   // [1, 3, 4, 7, 11]
+        TreeNode root = buildTree(parseIntegerArray(new Scanner(System.in).nextLine()));
+        printTree(new Solution().sumOfPath(root));
+    }
 
-        TreeNode t2 = fromLevelOrder(1, 8, 4, null, null, 2, 7);
-        new Solution().sumOfPath(t2);
-        System.out.println(toLevelOrder(t2));   // [1, 9, 5, 7, 12]
+    static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+            }
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+            }
+        }
+        return root;
+    }
 
-        // Edge cases
-        TreeNode t3 = fromLevelOrder();
-        new Solution().sumOfPath(t3);
-        System.out.println(toLevelOrder(t3));   // []
+    static void printTree(TreeNode root) {          // root → [1, 2, 3, null, 4], trailing nulls trimmed
+        List<String> out = new ArrayList<>();
+        Deque<TreeNode> queue = new LinkedList<>();
+        queue.add(root);
+        while (!queue.isEmpty()) {
+            TreeNode node = queue.poll();
+            if (node == null) {
+                out.add("null");
+            } else {
+                out.add(String.valueOf(node.val));
+                queue.add(node.left);
+                queue.add(node.right);
+            }
+        }
+        while (!out.isEmpty() && out.get(out.size() - 1).equals("null"))
+            out.remove(out.size() - 1);
+        System.out.println("[" + String.join(", ", out) + "]");
+    }
 
-        TreeNode t4 = fromLevelOrder(5);
-        new Solution().sumOfPath(t4);
-        System.out.println(toLevelOrder(t4));   // [5]
-
-        TreeNode t5 = fromLevelOrder(1, 2, null, 3);   // left-skew
-        new Solution().sumOfPath(t5);
-        System.out.println(toLevelOrder(t5));   // [1, 3, 6]
-
-        TreeNode t6 = fromLevelOrder(1, null, 2, null, 3);  // right-skew
-        new Solution().sumOfPath(t6);
-        System.out.println(toLevelOrder(t6));   // [1, 3, 6]
-
-        TreeNode t7 = fromLevelOrder(3, 1, 4, 1, 5, 9, 2);
-        new Solution().sumOfPath(t7);
-        System.out.println(toLevelOrder(t7));   // [3, 4, 7, 5, 9, 16, 9]
+    // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+    static Integer[] parseIntegerArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new Integer[0];
+        String[] parts = inner.split(",");
+        Integer[] out = new Integer[parts.length];
+        for (int i = 0; i < parts.length; i++)
+            out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

@@ -1,96 +1,80 @@
 ---
 title: "Even Path"
-summary: "See problem statement below."
+summary: "Return true if there is at least one root-to-leaf path where every node value is even."
 prereqs:
   - 13-pattern-root-to-leaf-path-stateless/01-pattern
 difficulty: medium
+kind: problem
+topics: [root-to-leaf-path, binary-tree]
 ---
 
 # Problem 3 — Even path
 
-> Return `true` if there's at least one root-to-leaf path where *every* value is even.
+## Problem Statement
 
-The accumulator is a *boolean*: "has the path so far been all-even?". Update at each node: `still_even = previously_even AND (current is even)`. At a leaf, return `still_even`. Combine with OR.
+Return `true` if there is at least one root-to-leaf path where **every** node value is even.
 
-<details>
-<summary><h2>Solution</h2></summary>
+The accumulator is a boolean: "has the path so far been all-even?" Update at each node: `still_even = previously_even AND (current is even)`. At a leaf, return `still_even`. Combine with OR.
 
+## Examples
 
+**Example 1:**
+```
+Input:  root = [2, 4, 6, 8, null, null, 9]
+Output: true
+```
+Path `2→4→8` is all-even.
+
+**Example 2:**
+```
+Input:  root = [1, 8, 4, null, null, 2, 7]
+Output: false
+```
+The root is odd, so no root-to-leaf path can be all-even.
+
+## Constraints
+
+- `0 ≤ number of nodes ≤ 10⁴`
+- `-10⁴ ≤ node.val ≤ 10⁴`
+- `O(n)` time, `O(h)` recursion stack
 
 ```python run viz=binary-tree viz-root=root
-from typing import Optional
-
+import json
+from collections import deque
 
 class TreeNode:
-    def __init__(self, val=0, left=None, right=None):
+    def __init__(self, val, left=None, right=None):
         self.val = val
         self.left = left
         self.right = right
 
+class Solution:
+    def even_path(self, root):
+        # Your code goes here — carry a boolean "still even so far" DOWN as an argument;
+        # update at each node: still_even = still_even AND (node.val % 2 == 0);
+        # at a leaf return still_even; combine children with OR.
+        return False
 
-def from_level_order(values):
-    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
     if not values:
         return None
     root = TreeNode(values[0])
-    queue = [root]
+    queue = deque([root])
     i = 1
     while queue and i < len(values):
-        node = queue.pop(0)
-        if i < len(values) and values[i] is not None:
-            node.left = TreeNode(values[i])
-            queue.append(node.left)
-        i += 1
-        if i < len(values) and values[i] is not None:
-            node.right = TreeNode(values[i])
-            queue.append(node.right)
-        i += 1
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
     return root
 
-
-class Solution:
-    def even_path_helper(
-        self, root: Optional[TreeNode], even_so_far: int
-    ) -> bool:
-
-        # Base case: if the current node is null, return false
-        if root is None:
-            return False
-
-        # Update current path status: 1 if path so far is all even and
-        # current node is even
-        current_status = even_so_far and (root.val % 2 == 0)
-
-        # If this is a leaf, check if current path is valid
-        if root.left is None and root.right is None:
-            return current_status
-
-        # Check left and right subtrees for valid paths
-        left_path = self.even_path_helper(root.left, current_status)
-        right_path = self.even_path_helper(root.right, current_status)
-
-        return left_path or right_path
-
-    def even_path(self, root: Optional[TreeNode]) -> bool:
-        if root is None:
-            return False
-
-        # Root path is valid if root is even
-        return self.even_path_helper(root, 1)
-
-
-# Examples from the problem statement
-print(Solution().even_path(from_level_order([2, 4, 6, 8, None, None, 9])))   # True
-print(Solution().even_path(from_level_order([1, 8, 4, None, None, 2, 7])))   # False
-
-# Edge cases
-print(Solution().even_path(None))                                              # False
-print(Solution().even_path(from_level_order([2])))                             # True (single even leaf)
-print(Solution().even_path(from_level_order([1])))                             # False (single odd leaf)
-print(Solution().even_path(from_level_order([2, 2, 2])))                       # True (balanced all-even)
-print(Solution().even_path(from_level_order([2, 4, None, 6])))                 # True (only-left all-even)
-print(Solution().even_path(from_level_order([2, 3, 4])))                       # True (right path is 2->4)
-print(Solution().even_path(from_level_order([2, 3, 5])))                       # False (both leaves via odd intermediary)
+root = build_tree(json.loads(input()))   # the test case's level-order values
+print("true" if Solution().even_path(root) else "false")
 ```
 
 ```java run viz=binary-tree viz-root=root
@@ -98,82 +82,187 @@ import java.util.*;
 
 public class Main {
     static class TreeNode {
-        int val;
-        TreeNode left;
-        TreeNode right;
-        TreeNode() {}
+        int val; TreeNode left, right;
         TreeNode(int val) { this.val = val; }
     }
 
-    static TreeNode fromLevelOrder(Integer... values) {
-        if (values.length == 0 || values[0] == null) return null;
-        TreeNode root = new TreeNode(values[0]);
-        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
-        queue.add(root);
-        int i = 1;
-        while (!queue.isEmpty() && i < values.length) {
-            TreeNode node = queue.poll();
-            if (i < values.length && values[i] != null) {
-                node.left = new TreeNode(values[i]);
-                queue.add(node.left);
-            }
-            i++;
-            if (i < values.length && values[i] != null) {
-                node.right = new TreeNode(values[i]);
-                queue.add(node.right);
-            }
-            i++;
-        }
-        return root;
-    }
-
     static class Solution {
-        private boolean evenPathHelper(TreeNode root, int evenSoFar) {
-
-            // Base case: if the current node is null, return false
-            if (root == null) {
-                return false;
-            }
-
-            // Update current path status: 1 if path so far is all even and
-            // current node is even
-            int currentStatus = evenSoFar & (root.val % 2 == 0 ? 1 : 0);
-
-            // If this is a leaf, check if current path is valid
-            if (root.left == null && root.right == null) {
-                return currentStatus == 1;
-            }
-
-            // Check left and right subtrees for valid paths
-            boolean leftPath = evenPathHelper(root.left, currentStatus);
-            boolean rightPath = evenPathHelper(root.right, currentStatus);
-
-            return leftPath || rightPath;
-        }
-
-        public boolean evenPath(TreeNode root) {
-            if (root == null) {
-                return false;
-            }
-
-            // Root path is valid if root is even
-            return evenPathHelper(root, 1);
+        boolean evenPath(TreeNode root) {
+            // Your code goes here — carry a boolean "still even so far" DOWN as an argument;
+            // update at each node: stillEven = stillEven && (node.val % 2 == 0);
+            // at a leaf return stillEven; combine children with ||.
+            return false;
         }
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().evenPath(fromLevelOrder(2, 4, 6, 8, null, null, 9)));   // true
-        System.out.println(new Solution().evenPath(fromLevelOrder(1, 8, 4, null, null, 2, 7)));   // false
+        TreeNode root = buildTree(parseIntegerArray(new Scanner(System.in).nextLine()));
+        System.out.println(new Solution().evenPath(root));
+    }
 
-        // Edge cases
-        System.out.println(new Solution().evenPath(null));                                          // false
-        System.out.println(new Solution().evenPath(fromLevelOrder(2)));                             // true
-        System.out.println(new Solution().evenPath(fromLevelOrder(1)));                             // false
-        System.out.println(new Solution().evenPath(fromLevelOrder(2, 2, 2)));                       // true
-        System.out.println(new Solution().evenPath(fromLevelOrder(2, 4, null, 6)));                 // true
-        System.out.println(new Solution().evenPath(fromLevelOrder(2, 3, 4)));                       // true
-        System.out.println(new Solution().evenPath(fromLevelOrder(2, 3, 5)));                       // false
+    static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+            }
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+            }
+        }
+        return root;
+    }
+
+    // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+    static Integer[] parseIntegerArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new Integer[0];
+        String[] parts = inner.split(",");
+        Integer[] out = new Integer[parts.length];
+        for (int i = 0; i < parts.length; i++)
+            out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[2, 4, 6, 8, null, null, 9]" }
+  ],
+  "cases": [
+    { "args": { "root": "[2, 4, 6, 8, null, null, 9]" }, "expected": "true" },
+    { "args": { "root": "[1, 8, 4, null, null, 2, 7]" }, "expected": "false" },
+    { "args": { "root": "[]" }, "expected": "false" },
+    { "args": { "root": "[2]" }, "expected": "true" },
+    { "args": { "root": "[1]" }, "expected": "false" },
+    { "args": { "root": "[2, 2, 2]" }, "expected": "true" },
+    { "args": { "root": "[2, 3, 4]" }, "expected": "true" },
+    { "args": { "root": "[2, 3, 5]" }, "expected": "false" }
+  ]
+}
+```
+
+<details>
+<summary><h2>Solution</h2></summary>
+
+A top-down recursion carries a `still_even` boolean as an argument. At each node: `still_even = still_even AND (node.val % 2 == 0)`. At a leaf, return `still_even` — that path is valid only if every node including this one was even. At an internal node, return the OR of both children. The base case (`None`) returns `False` — a missing child does not constitute a path.
+
+```python solution time=O(n) space=O(h)
+import json
+from collections import deque
+
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+class Solution:
+    def even_path_helper(self, root, even_so_far):
+        if root is None:
+            return False
+        current_status = even_so_far and (root.val % 2 == 0)
+        if root.left is None and root.right is None:
+            return current_status
+        left_path = self.even_path_helper(root.left, current_status)
+        right_path = self.even_path_helper(root.right, current_status)
+        return left_path or right_path
+
+    def even_path(self, root):
+        if root is None:
+            return False
+        return self.even_path_helper(root, True)
+
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
+
+root = build_tree(json.loads(input()))   # the test case's level-order values
+print("true" if Solution().even_path(root) else "false")
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+    static class TreeNode {
+        int val; TreeNode left, right;
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static class Solution {
+        private boolean evenPathHelper(TreeNode root, boolean evenSoFar) {
+            if (root == null) return false;
+            boolean currentStatus = evenSoFar && (root.val % 2 == 0);
+            if (root.left == null && root.right == null) return currentStatus;
+            boolean leftPath = evenPathHelper(root.left, currentStatus);
+            boolean rightPath = evenPathHelper(root.right, currentStatus);
+            return leftPath || rightPath;
+        }
+
+        public boolean evenPath(TreeNode root) {
+            if (root == null) return false;
+            return evenPathHelper(root, true);
+        }
+    }
+
+    public static void main(String[] args) {
+        TreeNode root = buildTree(parseIntegerArray(new Scanner(System.in).nextLine()));
+        System.out.println(new Solution().evenPath(root));
+    }
+
+    static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+            }
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+            }
+        }
+        return root;
+    }
+
+    // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+    static Integer[] parseIntegerArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new Integer[0];
+        String[] parts = inner.split(",");
+        Integer[] out = new Integer[parts.length];
+        for (int i = 0; i < parts.length; i++)
+            out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

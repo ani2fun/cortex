@@ -4,13 +4,13 @@
 
 ## Chapters
 
-- [URL shortener (capstone)](/cortex/system-design/capstones/url-shortener)
-- [News feed / timeline (capstone)](/cortex/system-design/capstones/news-feed)
-- [Chat system (capstone)](/cortex/system-design/capstones/chat-system)
-- [Video streaming (capstone)](/cortex/system-design/capstones/video-streaming)
-- [Ride-sharing dispatch (capstone)](/cortex/system-design/capstones/ride-sharing-dispatch)
-- [Search autocomplete (capstone)](/cortex/system-design/capstones/search-autocomplete)
-- [Distributed file storage (capstone)](/cortex/system-design/capstones/distributed-file-storage)
-- [Payment system (capstone)](/cortex/system-design/capstones/payment-system)
-- [Online multiplayer game backend (capstone)](/cortex/system-design/capstones/multiplayer-game-backend)
-- [Recommendation system serving layer (capstone)](/cortex/system-design/capstones/recommendation-serving)
+- [37. URL shortener (capstone)](/cortex/system-design/capstones/url-shortener)
+- [38. News feed / timeline (capstone)](/cortex/system-design/capstones/news-feed)
+- [39. Chat system (capstone)](/cortex/system-design/capstones/chat-system)
+- [40. Video streaming (capstone)](/cortex/system-design/capstones/video-streaming)
+- [41. Ride-sharing dispatch (capstone)](/cortex/system-design/capstones/ride-sharing-dispatch)
+- [42. Search autocomplete (capstone)](/cortex/system-design/capstones/search-autocomplete)
+- [43. Distributed file storage (capstone)](/cortex/system-design/capstones/distributed-file-storage)
+- [44. Payment system (capstone)](/cortex/system-design/capstones/payment-system)
+- [45. Online multiplayer game backend (capstone)](/cortex/system-design/capstones/multiplayer-game-backend)
+- [46. Recommendation system serving layer (capstone)](/cortex/system-design/capstones/recommendation-serving)

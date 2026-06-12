@@ -4,6 +4,8 @@ summary: "Given the head of a singly linked list, write a function to swap every
 prereqs:
   - 08-pattern-reversal-subproblem/01-pattern
 difficulty: easy
+kind: problem
+topics: [reversal-subproblem, singly-linked-list]
 ---
 
 # Pairwise swap
@@ -13,8 +15,6 @@ difficulty: easy
 Given the **head** of a singly linked list, write a function to **swap every two adjacent nodes** of this list and return the head of the reordered list.
 
 The problem needs to be solved without modifying the values in the list's nodes. The nodes should be reordered by updating links.
-
----
 
 ## Examples
 
@@ -46,8 +46,119 @@ Output: []
 Explanation: An empty list trivially produces an empty list.
 ```
 
+```quiz
+{
+  "prompt": "What does pairwise swap on [1, 2, 3, 4, 5, 6] produce?",
+  "input": "head = [1, 2, 3, 4, 5, 6]",
+  "options": ["[2, 1, 4, 3, 6, 5]", "[1, 2, 3, 4, 5, 6]", "[6, 5, 4, 3, 2, 1]", "[2, 1, 3, 4, 6, 5]"],
+  "answer": "[2, 1, 4, 3, 6, 5]"
+}
+```
+
+## Constraints
+
+- `0 ≤ list length ≤ 10⁵`
+- `-10⁴ ≤ node.val ≤ 10⁴`
+- Reorder by updating **links**, not by swapping values
+
+```python run viz=linked-list viz-root=head
+import ast
+
+class ListNode:
+    def __init__(self, val, next=None):
+        self.val = val
+        self.next = next
+
+class Solution:
+    def pairwise_swap(self, head):
+        # Your code goes here — reverse every pair of adjacent nodes using
+        # the bounded reverse helper and seam stitching. Return new head.
+        pass
+
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
+
+def print_list(head):                # 1 → 2 → 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
+
+head = build_list(ast.literal_eval(input()))   # the test case's head
+print_list(Solution().pairwise_swap(head))
+```
+
+```java run viz=linked-list viz-root=head
+import java.util.*;
+
+public class Main {
+    static class ListNode {
+        int val; ListNode next;
+        ListNode(int val) { this.val = val; }
+        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+    }
+
+    static class Solution {
+        ListNode pairwiseSwap(ListNode head) {
+            // Your code goes here — reverse every pair of adjacent nodes using
+            // the bounded reverse helper and seam stitching. Return new head.
+            return null;
+        }
+    }
+
+    public static void main(String[] args) {
+        ListNode head = buildList(parseIntArray(new Scanner(System.in).nextLine()));
+        printList(new Solution().pairwiseSwap(head));
+    }
+
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+        ListNode head = null;
+        for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+        return head;
+    }
+
+    static void printList(ListNode head) {         // 1 → 2 → 3 → [1, 2, 3]
+        List<Integer> out = new ArrayList<>();
+        for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+        System.out.println(out);
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's head
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "head", "label": "head", "type": "int[]", "placeholder": "[1, 2, 3, 4]" }
+  ],
+  "cases": [
+    { "args": { "head": "[1, 2, 3, 4]" }, "expected": "[2, 1, 4, 3]" },
+    { "args": { "head": "[1, 2, 3, 4, 5]" }, "expected": "[2, 1, 4, 3, 5]" },
+    { "args": { "head": "[1, 2]" }, "expected": "[2, 1]" },
+    { "args": { "head": "[1, 2, 3]" }, "expected": "[2, 1, 3]" },
+    { "args": { "head": "[1]" }, "expected": "[1]" },
+    { "args": { "head": "[]" }, "expected": "[]" },
+    { "args": { "head": "[1, 2, 3, 4, 5, 6]" }, "expected": "[2, 1, 4, 3, 6, 5]" }
+  ]
+}
+```
+
 <details>
 <summary><h2>Intuition</h2></summary>
+
 
 The **structural property** is that pairwise swap is reverse-k-segments with `k = 2` hard-coded. Every adjacent pair is its own subproblem: a two-node reversal that swaps `(a, b) → (b, a)`. The list decomposes into `⌊n / 2⌋` independent two-node chunks plus an optional trailing singleton. That makes the problem the simplest concrete instance of the reversal-subproblem pattern — a worked example of the family without the complication of a variable chunk size or a conditional reversal flag.
 
@@ -86,39 +197,16 @@ Five numbered steps. No code; the next section is the implementation.
 
 ### Solution
 
-```python run viz=linked-list viz-root=head
-from typing import Optional
-
+```python solution time=O(n) space=O(1)
+import ast
 
 class ListNode:
-    def __init__(self, val=0, nxt=None):
+    def __init__(self, val, next=None):
         self.val = val
-        self.next = nxt
-
-
-def from_list(values):
-    if not values:
-        return None
-    head = ListNode(values[0])
-    cur = head
-    for v in values[1:]:
-        cur.next = ListNode(v)
-        cur = cur.next
-    return head
-
-
-def to_list(head):
-    out = []
-    while head is not None:
-        out.append(head.val)
-        head = head.next
-    return out
-
+        self.next = next
 
 class Solution:
-    def reverse(
-        self, start: Optional[ListNode], end: Optional[ListNode]
-    ) -> Optional[ListNode]:
+    def reverse(self, start, end):
         current = start
         right_bound = end.next
         previous = right_bound
@@ -131,9 +219,7 @@ class Solution:
 
         return previous
 
-    def pairwise_swap(
-        self, head: Optional[ListNode]
-    ) -> Optional[ListNode]:
+    def pairwise_swap(self, head):
 
         # If the list is empty or has only one element, no reversal
         # needed.
@@ -180,47 +266,31 @@ class Solution:
         # Return the head of the modified list
         return head
 
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
 
-# Examples from the problem statement
-print(to_list(Solution().pairwise_swap(from_list([1, 2, 3, 4]))))        # [2, 1, 4, 3]
+def print_list(head):                # 1 → 2 → 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
 
-# Edge cases
-print(to_list(Solution().pairwise_swap(None)))                            # []
-print(to_list(Solution().pairwise_swap(from_list([1]))))                  # [1]
-print(to_list(Solution().pairwise_swap(from_list([1, 2]))))               # [2, 1]
-print(to_list(Solution().pairwise_swap(from_list([1, 2, 3]))))            # [2, 1, 3]
-print(to_list(Solution().pairwise_swap(from_list([1, 2, 3, 4, 5]))))     # [2, 1, 4, 3, 5]
-print(to_list(Solution().pairwise_swap(from_list([1, 2, 3, 4, 5, 6])))) # [2, 1, 4, 3, 6, 5]
-print(to_list(Solution().pairwise_swap(from_list([5, 5, 5, 5]))))        # [5, 5, 5, 5]
+head = build_list(ast.literal_eval(input()))   # the test case's head
+print_list(Solution().pairwise_swap(head))
 ```
 
-```java run viz=linked-list viz-root=head
+```java solution
 import java.util.*;
 
 public class Main {
     static class ListNode {
-        int val;
-        ListNode next;
-        ListNode() {}
+        int val; ListNode next;
         ListNode(int val) { this.val = val; }
         ListNode(int val, ListNode next) { this.val = val; this.next = next; }
-    }
-
-    static ListNode fromList(int... values) {
-        if (values.length == 0) return null;
-        ListNode head = new ListNode(values[0]);
-        ListNode cur = head;
-        for (int i = 1; i < values.length; i++) {
-            cur.next = new ListNode(values[i]);
-            cur = cur.next;
-        }
-        return head;
-    }
-
-    static List<Integer> toList(ListNode head) {
-        List<Integer> out = new ArrayList<>();
-        while (head != null) { out.add(head.val); head = head.next; }
-        return out;
     }
 
     static class Solution {
@@ -293,17 +363,30 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(toList(new Solution().pairwiseSwap(fromList(1, 2, 3, 4))));        // [2, 1, 4, 3]
+        ListNode head = buildList(parseIntArray(new Scanner(System.in).nextLine()));
+        printList(new Solution().pairwiseSwap(head));
+    }
 
-        // Edge cases
-        System.out.println(toList(new Solution().pairwiseSwap(null)));                         // []
-        System.out.println(toList(new Solution().pairwiseSwap(fromList(1))));                  // [1]
-        System.out.println(toList(new Solution().pairwiseSwap(fromList(1, 2))));               // [2, 1]
-        System.out.println(toList(new Solution().pairwiseSwap(fromList(1, 2, 3))));            // [2, 1, 3]
-        System.out.println(toList(new Solution().pairwiseSwap(fromList(1, 2, 3, 4, 5))));     // [2, 1, 4, 3, 5]
-        System.out.println(toList(new Solution().pairwiseSwap(fromList(1, 2, 3, 4, 5, 6)))); // [2, 1, 4, 3, 6, 5]
-        System.out.println(toList(new Solution().pairwiseSwap(fromList(5, 5, 5, 5))));        // [5, 5, 5, 5]
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+        ListNode head = null;
+        for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+        return head;
+    }
+
+    static void printList(ListNode head) {         // 1 → 2 → 3 → [1, 2, 3]
+        List<Integer> out = new ArrayList<>();
+        for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+        System.out.println(out);
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's head
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

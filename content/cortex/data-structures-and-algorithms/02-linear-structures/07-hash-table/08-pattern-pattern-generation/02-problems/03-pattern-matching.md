@@ -4,6 +4,8 @@ summary: "Given a pattern string and a string s of space-separated words, return
 prereqs:
   - 08-pattern-pattern-generation/01-pattern
 difficulty: medium
+kind: problem
+topics: [pattern-generation, hash-table]
 ---
 
 # Pattern matching
@@ -51,7 +53,138 @@ Output: true
 Explanation: pattern "aab" keys to "0,0,1,"; words [x, x, y] key to "0,0,1,". Equal.
 ```
 
+## Constraints
 
+- `1 ≤ pattern.length ≤ 300`
+- `pattern` contains only lower-case English letters.
+- `1 ≤ s.length ≤ 3000`
+- `s` contains only lower-case English letters and spaces, with no leading or trailing spaces, no two consecutive spaces.
+
+```python run
+pattern = input()
+s = input()
+
+from typing import List
+
+class Solution:
+    def pattern_matching(self, pattern: str, s: str) -> bool:
+        # Your code goes here
+        pass
+
+r = Solution().pattern_matching(pattern, s)
+print("true" if r else "false")
+```
+
+```java run
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public boolean patternMatching(String pattern, String s) {
+            // Your code goes here
+            return false;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String pattern = sc.nextLine();
+        String s = sc.nextLine();
+        System.out.println(new Solution().patternMatching(pattern, s));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "pattern", "label": "pattern", "type": "string", "placeholder": "mom" },
+    { "id": "s", "label": "s", "type": "string", "placeholder": "hello world hello" }
+  ],
+  "cases": [
+    { "args": { "pattern": "mom", "s": "hello world hello" }, "expected": "true" },
+    { "args": { "pattern": "abc", "s": "hello my name" }, "expected": "true" },
+    { "args": { "pattern": "abc", "s": "hello my my" }, "expected": "false" },
+    { "args": { "pattern": "a", "s": "hello" }, "expected": "true" },
+    { "args": { "pattern": "aa", "s": "hello world" }, "expected": "false" },
+    { "args": { "pattern": "ab", "s": "hello hello" }, "expected": "false" },
+    { "args": { "pattern": "aab", "s": "x x y" }, "expected": "true" },
+    { "args": { "pattern": "abc", "s": "a b c" }, "expected": "true" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+The first-occurrence-index key generator works on *any* iterable, so treat `pattern` as a list of single characters and `s` as a list of words. Key each independently; the sequences match iff the keys are byte-identical. Reject on count mismatch before keying. The bijection requirement is enforced for free: two distinct items never share an index. `O(N)` time where `N` is the total input size; `O(W + P)` space for the two maps. Print `true`/`false` lowercase for consistent py/java output.
+
+```python solution time=O(N) space=O(W+P)
+pattern = input()
+s = input()
+
+from typing import List
+
+class Solution:
+    def generate_pattern(self, words: List[str]) -> str:
+        word_to_index = {}
+        pat = ""
+        index = 0
+        for word in words:
+            if word not in word_to_index:
+                word_to_index[word] = index
+                index += 1
+            pat += str(word_to_index[word]) + ","
+        return pat
+
+    def pattern_matching(self, pattern: str, s: str) -> bool:
+        words = s.split(" ")
+        if len(pattern) != len(words): return False
+        return self.generate_pattern(list(pattern)) == self.generate_pattern(words)
+
+r = Solution().pattern_matching(pattern, s)
+print("true" if r else "false")
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        private List<String> stringToList(String s) {
+            List<String> result = new ArrayList<>();
+            for (char c : s.toCharArray()) result.add(String.valueOf(c));
+            return result;
+        }
+
+        private String generatePattern(List<String> words) {
+            Map<String, Integer> wordToIndex = new HashMap<>();
+            StringBuilder pattern = new StringBuilder();
+            int index = 0;
+            for (String word : words) {
+                if (!wordToIndex.containsKey(word)) wordToIndex.put(word, index++);
+                pattern.append(wordToIndex.get(word)).append(",");
+            }
+            return pattern.toString();
+        }
+
+        public boolean patternMatching(String pattern, String s) {
+            List<String> words = List.of(s.split(" "));
+            if (pattern.length() != words.size()) return false;
+            return generatePattern(stringToList(pattern)).equals(generatePattern(words));
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String pattern = sc.nextLine();
+        String s = sc.nextLine();
+        System.out.println(new Solution().patternMatching(pattern, s));
+    }
+}
+```
+
+</details>
 <details>
 <summary><h2>Intuition</h2></summary>
 
@@ -59,29 +192,6 @@ Explanation: pattern "aab" keys to "0,0,1,"; words [x, x, y] key to "0,0,1,". Eq
 The structural property that makes this a **key-generation** problem is that "following a pattern" is a statement about *shared repeat structure* between two sequences of different element types. The `pattern` is a sequence of characters; `s` is a sequence of words. They match exactly when both sequences have the same shape — the same arrangement of firsts and repeats. That shape is the key.
 
 The key generator works on *any* iterable, so the element type does not matter. Treat `pattern` as a list of single characters and `s` as a list of words; run the identical first-occurrence-index scan on each. Position in one key lines up with position in the other, so `s` follows `pattern` if and only if the two keys are byte-identical. A length mismatch — more words than pattern letters or vice versa — is an instant `false`.
-
-The bijection requirement is what would make a naive approach fiddly: no two pattern letters may map to the same word, *and* no two words may map to the same letter. The first-occurrence-index encoding enforces both directions for free. If two different items would ever need the same token, they don't get it — each new item earns a fresh index — so any difference in distinct-item count shows up as a key mismatch.
-
-</details>
-<details>
-<summary><h2>Applying the Diagnostic Questions</h2></summary>
-
-
-| Check | Answer for Pattern Matching |
-|---|---|
-| **Q1.** Does the answer depend on a *canonical form* of each input? | **Yes** — both the letter sequence and the word sequence reduce to first-occurrence-index keys; matching is key-equality. |
-| **Q2.** Can you define equivalence as a function from input to bytes? | **Yes** — `generate_pattern` maps each sequence to a byte string regardless of element type. |
-| **Q3.** Is each input keyed independently in a single pass? | **Yes** — the letters and the words are each scanned once, then the two keys are compared. |
-| **Q4.** Is the per-item work `O(1)`? | **Yes** — each character or word is one map lookup and one append, both `O(1)` amortised. |
-
-</details>
-<details>
-<summary><h2>Approach</h2></summary>
-
-
-The key generator works on *any* iterable. Treat `pattern` as a sequence of characters and `s` as a sequence of words; generate a first-occurrence-index pattern for each. The strings match iff the keys are equal.
-
-The bijection requirement is a real constraint: no two pattern letters can map to the same word, *and* no two words can map to the same pattern letter. The first-occurrence-index encoding handles both directions: if it would assign two different items the same index, it doesn't — each gets a fresh index. So if `s` has more distinct words than `pattern` has distinct letters (or vice versa), the keys differ.
 
 </details>
 <details>
@@ -95,124 +205,6 @@ Split `s` into words, then key both sequences and compare.
 3. **Key the pattern letters.** Treat `pattern` as a list of single characters and run the first-occurrence-index scan.
 4. **Key the words.** Run the identical scan over the word list.
 5. **Compare the keys.** Return whether the two pattern strings are byte-identical.
-
-</details>
-<details>
-<summary><h2>Solution</h2></summary>
-
-
-
-```python run viz=graph viz-root=words
-from typing import List
-
-class Solution:
-    def generate_pattern(self, words: List[str]) -> str:
-        word_to_index = {}
-        pattern = ""
-        index = 0
-
-        # Create a mapped value based on the first occurrence of each
-        # word
-        for word in words:
-            if word not in word_to_index:
-                word_to_index[word] = index
-                index += 1
-            pattern += str(word_to_index[word]) + ","
-
-        return pattern
-
-    def pattern_matching(self, pattern: str, s: str) -> bool:
-
-        # Split the string s into an array of words
-        words = s.split(" ")
-
-        # If the length of pattern and words are different, return false
-        if len(pattern) != len(words):
-            return False
-
-        # If the generated patterns are the same, return true
-        return self.generate_pattern(
-            list(pattern)
-        ) == self.generate_pattern(words)
-
-
-# Examples from the problem statement
-print(Solution().pattern_matching("mom", "hello world hello"))  # True
-print(Solution().pattern_matching("abc", "hello my name"))      # True
-print(Solution().pattern_matching("abc", "hello my my"))        # False
-
-# Edge cases
-print(Solution().pattern_matching("a", "hello"))                # True
-print(Solution().pattern_matching("aa", "hello world"))         # False
-print(Solution().pattern_matching("ab", "hello hello"))         # False
-print(Solution().pattern_matching("aab", "x x y"))              # True
-print(Solution().pattern_matching("abc", "a b c"))              # True
-```
-
-```java run viz=graph viz-root=words
-import java.util.*;
-
-public class Main {
-    static class Solution {
-        private List<String> stringToList(String s) {
-
-            // Convert pattern string into a list of single-character strings
-            List<String> result = new ArrayList<>();
-            for (char c : s.toCharArray()) {
-                result.add(String.valueOf(c));
-            }
-            return result;
-        }
-
-        private String generatePattern(List<String> words) {
-            Map<String, Integer> wordToIndex = new HashMap<>();
-            StringBuilder pattern = new StringBuilder();
-            int index = 0;
-
-            // Create a mapped value based on the first occurrence of each
-            // word
-            for (String word : words) {
-                if (!wordToIndex.containsKey(word)) {
-                    wordToIndex.put(word, index++);
-                }
-                pattern.append(wordToIndex.get(word)).append(",");
-            }
-
-            return pattern.toString();
-        }
-
-        public boolean patternMatching(String pattern, String s) {
-
-            // Split the string s into an array of words
-            List<String> words = List.of(s.split(" "));
-
-            // If the length of pattern and words are different, return false
-            if (pattern.length() != words.size()) {
-                return false;
-            }
-
-            // If the generated patterns are the same, return true
-            return generatePattern(stringToList(pattern)).equals(
-                generatePattern(words)
-            );
-        }
-    }
-
-    public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().patternMatching("mom", "hello world hello")); // true
-        System.out.println(new Solution().patternMatching("abc", "hello my name"));     // true
-        System.out.println(new Solution().patternMatching("abc", "hello my my"));       // false
-
-        // Edge cases
-        System.out.println(new Solution().patternMatching("a", "hello"));               // true
-        System.out.println(new Solution().patternMatching("aa", "hello world"));        // false
-        System.out.println(new Solution().patternMatching("ab", "hello hello"));        // false
-        System.out.println(new Solution().patternMatching("aab", "x x y"));             // true
-        System.out.println(new Solution().patternMatching("abc", "a b c"));             // true
-    }
-}
-```
 
 </details>
 <details>
@@ -232,10 +224,8 @@ key(words) over [hello, world, hello]
   "world"  new → index 1   map={hello:0,world:1}    pattern="0,1,"
   "hello"  seen → reuse 0                            pattern="0,1,0,"
 
-key(pattern) = "0,1,0,"  ==  key(words) = "0,1,0,"  →  return True
+key(pattern) = "0,1,0,"  ==  key(words) = "0,1,0,"  →  return true
 ```
-
-The result `true` matches the expected output.
 
 </details>
 <details>
@@ -246,8 +236,6 @@ The result `true` matches the expected output.
 |---|---|---|
 | Time  | **O(N)** | `N` is the total character length of `s`; splitting, keying, and the final comparison are each linear. |
 | Space | **O(W + P)** | The word map holds up to `W` distinct words and the letter map up to `P` distinct letters, plus the key strings. |
-
-Keying a word costs work proportional to that word's length for the map lookup, so the whole pass is linear in the total input size rather than the word count alone.
 
 </details>
 <details>

@@ -238,6 +238,130 @@ paths:
         '503':
           $ref: '#/components/responses/ServiceUnavailable'
 
+  /api/submissions:
+    get:
+      operationId: listMySubmissions
+      summary: |
+        List the bearer-token holder's stored submissions for one problem
+        chapter, newest first. Addressed like GET /api/cortex/{book}/chapter —
+        book slug + hierarchical chapter path, both passed as query params.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: book
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: chapter
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The caller's submissions for this problem, newest first.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListSubmissionsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      operationId: submitSolution
+      summary: |
+        Run the caller's solution against ALL of a problem chapter's test
+        cases server-side and save the submission.
+
+        **Allow-listed feature (homelab).** Saving is restricted to GitHub
+        usernames on the submission allowlist — this is a personal homelab
+        deployment, not a scalable service, and stored data carries no
+        durability guarantee. To request access, email
+        cortex.kakde.eu@gmail.com with your GitHub username; access is
+        granted selectively. Anyone can instead self-host the whole stack —
+        instructions are in the cortex GitHub repository. Saved data can be
+        wiped at any time by the owner via DELETE /api/submissions (the
+        seed of the eventual GDPR right-to-erasure story).
+
+        The server re-derives the test cases from the chapter's
+        ```` ```testcases ```` fence (the client never supplies them), runs
+        every case through the code-execution backend, and persists the
+        attempt with its verdict. Metered against the caller's hourly
+        authenticated bucket, plus a hard cap of 100 stored submissions per
+        user per problem (429 once reached; DELETE /api/submissions resets
+        it) — an abuse guard that applies to allowlisted users too.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitRequest'
+      responses:
+        '200':
+          description: All cases executed; submission stored.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubmitResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+    delete:
+      operationId: deleteMySubmissions
+      summary: |
+        Delete every submission stored for the bearer-token holder
+        (self-service data erasure). Returns the number of rows removed;
+        callers with nothing stored get `deleted: 0`.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Caller's submissions removed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteSubmissionsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/submissions/{id}:
+    delete:
+      operationId: deleteOneSubmission
+      summary: |
+        Delete a single stored submission the caller owns (the Submissions tab's
+        per-row trash). Scoped to the bearer-token holder, so one user can never
+        delete another's row. Idempotent: `deleted` is 1 if a row was removed, 0
+        if it was already gone (or never the caller's).
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Submission removed if it was the caller's.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteSubmissionsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
 components:
   securitySchemes:
     bearerAuth:
@@ -282,6 +406,15 @@ components:
             $ref: '#/components/schemas/ApiError'
     NotFound:
       description: Requested resource was not found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    Forbidden:
+      description: |
+        Authenticated, but not authorised for this operation (e.g. the
+        GitHub username is not on the submission allowlist). The error
+        detail explains how to request access.
       content:
         application/json:
           schema:
@@ -553,6 +686,31 @@ components:
             means inherit from the nearest enclosing section's
             `_section.json#defaultStatus`, falling through to the book-level
             default (`true`).
+        kind:
+          type: string
+          nullable: true
+          description: |
+            Chapter layout selector. `problem` renders the chapter as the
+            two-pane problem workbench (Description/Editorial/Coach tabs +
+            editor with test cases) instead of the prose reader. Absent means
+            a normal prose chapter.
+        difficulty:
+          type: string
+          nullable: true
+          description: |
+            Problem difficulty badge shown in the workbench Description tab
+            (`easy` | `medium` | `hard`). Only meaningful when `kind` is
+            `problem`.
+        topics:
+          type: array
+          items:
+            type: string
+          nullable: true
+          description: |
+            Topic tag pills shown next to the title in the workbench
+            Description tab. Authored as a flow-style YAML list
+            (`topics: [two-pointers, arrays]`) — the lenient frontmatter
+            parser does not support block-style lists.
 
     ChapterPayload:
       type: object
@@ -776,3 +934,116 @@ components:
           example: "a.r.kakde@gmail.com"
         quota:
           $ref: '#/components/schemas/Quota'
+
+    SubmitRequest:
+      type: object
+      required: [book, chapter, language, source]
+      description: |
+        A solution submitted against a problem chapter. The chapter is
+        addressed exactly like GET /api/cortex/{book}/chapter — book slug +
+        hierarchical chapter path. Test cases are NOT part of the request;
+        the server re-reads them from the chapter's testcases fence so a
+        saved "Accepted" can be trusted.
+      properties:
+        book:
+          type: string
+          example: "data-structures-and-algorithms"
+        chapter:
+          type: string
+          example: "linear-structures/arrays/pattern-two-pointers/problems/flip-characters"
+        language:
+          type: string
+          example: "python"
+        source:
+          type: string
+
+    SubmissionCaseResult:
+      type: object
+      required: [caseIndex, passed, statusDescription, stdout]
+      description: One test case's outcome, in spec order (0-based).
+      properties:
+        caseIndex:
+          type: integer
+        passed:
+          type: boolean
+        statusDescription:
+          type: string
+          example: "Accepted"
+        stdout:
+          type: string
+        expected:
+          type: string
+          nullable: true
+        time:
+          type: string
+          nullable: true
+          description: Execution time in seconds, as reported by the backend.
+        memory:
+          type: integer
+          format: int64
+          nullable: true
+          description: Peak memory in KB.
+
+    SubmitResponse:
+      type: object
+      required: [accepted, saved, results]
+      properties:
+        accepted:
+          type: boolean
+          description: True when every test case passed.
+        saved:
+          type: boolean
+          description: True when the attempt was persisted (caller is allow-listed).
+        submissionId:
+          type: integer
+          format: int64
+          nullable: true
+          description: Database id of the stored attempt, when saved.
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubmissionCaseResult'
+
+    DeleteSubmissionsResponse:
+      type: object
+      required: [deleted]
+      properties:
+        deleted:
+          type: integer
+          description: Number of stored submissions removed for the caller.
+
+    SubmissionSummary:
+      type: object
+      required: [id, language, accepted, passedCases, totalCases, source, createdAtEpochMs]
+      description: One stored submission, projected for the Submissions tab.
+      properties:
+        id:
+          type: integer
+          format: int64
+        language:
+          type: string
+          example: "python"
+        accepted:
+          type: boolean
+          description: True when every test case passed.
+        passedCases:
+          type: integer
+        totalCases:
+          type: integer
+        source:
+          type: string
+          description: The submitted code, for the read-only "view code" panel.
+        createdAtEpochMs:
+          type: integer
+          format: int64
+          description: Submission timestamp, epoch milliseconds (UTC).
+
+    ListSubmissionsResponse:
+      type: object
+      required: [submissions]
+      properties:
+        submissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubmissionSummary'
+          description: The caller's submissions for one problem, newest first.

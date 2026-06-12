@@ -18,19 +18,28 @@ The naive route ignores the gift you were given: dump every value into an array,
 Merge `1→3→5` with `2→4→6`. At each step, take the smaller of the two heads. Run it.
 
 ```python run viz=linked-list viz-root=head viz-kind=list-single
+import ast
+
 class ListNode:
     def __init__(self, val, next=None):
         self.val = val
         self.next = next
 
-def to_list(node):
-    out = []
-    while node:
-        out.append(node.val); node = node.next
-    return out
+def build_list(values):              # [1, 3, 5] → 1 → 3 → 5 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
 
-a = ListNode(1, ListNode(3, ListNode(5)))   # 1 → 3 → 5
-b = ListNode(2, ListNode(4, ListNode(6)))   # 2 → 4 → 6
+def print_list(head):                # 1 → 2 → 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
+
+a = build_list(ast.literal_eval(input()))
+b = build_list(ast.literal_eval(input()))
 
 dummy = ListNode(0)                          # a stand-in head — no special case for the first pick
 tail = dummy
@@ -42,7 +51,74 @@ while a and b:
     tail = tail.next                         # extend the output
 tail.next = a if a else b                    # one list is empty; attach the other's leftover wholesale
 
-print(to_list(dummy.next))                   # [1, 2, 3, 4, 5, 6]
+print_list(dummy.next)
+```
+
+```java run viz=linked-list viz-root=head viz-kind=list-single
+import java.util.*;
+
+public class Main {
+  static class ListNode {
+    int val; ListNode next;
+    ListNode(int val) { this.val = val; }
+    ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    ListNode a = buildList(parseIntArray(sc.nextLine()));
+    ListNode b = buildList(parseIntArray(sc.nextLine()));
+
+    ListNode dummy = new ListNode(0);        // a stand-in head — no special case for the first pick
+    ListNode tail = dummy;
+    while (a != null && b != null) {
+      if (a.val <= b.val) { tail.next = a; a = a.next; }
+      else                { tail.next = b; b = b.next; }
+      tail = tail.next;                      // extend the output
+    }
+    tail.next = (a != null) ? a : b;         // one list is empty; attach the other's leftover wholesale
+
+    printList(dummy.next);
+  }
+
+  static ListNode buildList(int[] values) {      // {1, 3, 5} → 1 → 3 → 5 → null
+    ListNode head = null;
+    for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+    return head;
+  }
+
+  static void printList(ListNode head) {         // 1 → 2 → 3 → [1, 2, 3]
+    List<Integer> out = new ArrayList<>();
+    for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+    System.out.println(out);
+  }
+
+  // "[1, 3, 5]" → {1, 3, 5} — reads the test case's values
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "a", "label": "a", "type": "int[]", "placeholder": "[1, 3, 5]" },
+    { "id": "b", "label": "b", "type": "int[]", "placeholder": "[2, 4, 6]" }
+  ],
+  "cases": [
+    { "args": { "a": "[1, 3, 5]", "b": "[2, 4, 6]" }, "expected": "[1, 2, 3, 4, 5, 6]" },
+    { "args": { "a": "[1, 2, 7, 8]", "b": "[3, 4]" }, "expected": "[1, 2, 3, 4, 7, 8]" },
+    { "args": { "a": "[]", "b": "[1, 2, 3]" }, "expected": "[1, 2, 3]" },
+    { "args": { "a": "[1, 2, 3]", "b": "[]" }, "expected": "[1, 2, 3]" },
+    { "args": { "a": "[1]", "b": "[1]" }, "expected": "[1, 1]" }
+  ]
+}
 ```
 
 ## How It Works
@@ -91,6 +167,108 @@ Because `b` is sorted and every node still in it is `≥` everything already pla
 The reusable merge of two sorted lists:
 
 ```python run viz=linked-list viz-root=head viz-kind=list-single
+import ast
+
+class ListNode:
+    def __init__(self, val, next=None):
+        self.val = val
+        self.next = next
+
+def merge_two(a, b):
+    # Your code goes here — dummy head, splice the smaller head each tick,
+    # advance that cursor, then drain the remainder. Return dummy.next.
+    pass
+
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
+
+def print_list(head):                # 1 → 2 → 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
+
+a = build_list(ast.literal_eval(input()))
+b = build_list(ast.literal_eval(input()))
+print_list(merge_two(a, b))
+```
+
+```java run viz=linked-list viz-root=head viz-kind=list-single
+import java.util.*;
+
+public class Main {
+  static class ListNode {
+    int val; ListNode next;
+    ListNode(int val) { this.val = val; }
+    ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+  }
+
+  static ListNode mergeTwo(ListNode a, ListNode b) {
+    // Your code goes here — dummy head, splice the smaller head each tick,
+    // advance that cursor, then drain the remainder. Return dummy.next.
+    return null;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    ListNode a = buildList(parseIntArray(sc.nextLine()));
+    ListNode b = buildList(parseIntArray(sc.nextLine()));
+    printList(mergeTwo(a, b));
+  }
+
+  static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+    ListNode head = null;
+    for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+    return head;
+  }
+
+  static void printList(ListNode head) {         // 1 → 2 → 3 → [1, 2, 3]
+    List<Integer> out = new ArrayList<>();
+    for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+    System.out.println(out);
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's values
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "a", "label": "a", "type": "int[]", "placeholder": "[1, 2, 7, 8]" },
+    { "id": "b", "label": "b", "type": "int[]", "placeholder": "[3, 4]" }
+  ],
+  "cases": [
+    { "args": { "a": "[1, 2, 7, 8]", "b": "[3, 4]" }, "expected": "[1, 2, 3, 4, 7, 8]" },
+    { "args": { "a": "[1, 3, 5]", "b": "[2, 4, 6]" }, "expected": "[1, 2, 3, 4, 5, 6]" },
+    { "args": { "a": "[]", "b": "[1, 2, 3]" }, "expected": "[1, 2, 3]" },
+    { "args": { "a": "[1, 2, 3]", "b": "[]" }, "expected": "[1, 2, 3]" },
+    { "args": { "a": "[1]", "b": "[1]" }, "expected": "[1, 1]" },
+    { "args": { "a": "[1, 3]", "b": "[2, 4]" }, "expected": "[1, 2, 3, 4]" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+The loop is exactly the See-It-Work walk, packaged as a reusable function: `dummy` and `tail` anchor the output, and each tick compares the two heads, splices the smaller (`<=` for stability), advances that cursor, then advances `tail`. When one list empties the other's remaining tail is sorted and ≥ everything placed — one pointer assignment drains it. Empty inputs never enter the loop and correctly pass through to the drain step.
+
+```python solution time=O(m+n) space=O(1)
+import ast
+
 class ListNode:
     def __init__(self, val, next=None):
         self.val = val
@@ -108,20 +286,33 @@ def merge_two(a, b):
     tail.next = a if a else b        # attach the remaining tail
     return dummy.next
 
-def to_list(node):
-    out = []
-    while node:
-        out.append(node.val); node = node.next
-    return out
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
 
-a = ListNode(1, ListNode(2, ListNode(7, ListNode(8))))
-b = ListNode(3, ListNode(4))
-print(to_list(merge_two(a, b)))      # [1, 2, 3, 4, 7, 8]
+def print_list(head):                # 1 → 2 → 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
+
+a = build_list(ast.literal_eval(input()))
+b = build_list(ast.literal_eval(input()))
+print_list(merge_two(a, b))
 ```
 
-```java run viz=linked-list viz-root=head viz-kind=list-single
+```java solution
+import java.util.*;
+
 public class Main {
-  static class ListNode { int val; ListNode next; ListNode(int v){ val = v; } ListNode(int v, ListNode n){ val = v; next = n; } }
+  static class ListNode {
+    int val; ListNode next;
+    ListNode(int val) { this.val = val; }
+    ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+  }
 
   static ListNode mergeTwo(ListNode a, ListNode b) {
     ListNode dummy = new ListNode(0), tail = dummy;
@@ -135,18 +326,41 @@ public class Main {
   }
 
   public static void main(String[] args) {
-    ListNode a = new ListNode(1, new ListNode(2, new ListNode(7, new ListNode(8))));
-    ListNode b = new ListNode(3, new ListNode(4));
-    StringBuilder sb = new StringBuilder("[");
-    for (ListNode c = mergeTwo(a, b); c != null; c = c.next) sb.append(c.val).append(c.next != null ? ", " : "");
-    System.out.println(sb.append("]"));   // [1, 2, 3, 4, 7, 8]
+    Scanner sc = new Scanner(System.in);
+    ListNode a = buildList(parseIntArray(sc.nextLine()));
+    ListNode b = buildList(parseIntArray(sc.nextLine()));
+    printList(mergeTwo(a, b));
+  }
+
+  static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+    ListNode head = null;
+    for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+    return head;
+  }
+
+  static void printList(ListNode head) {         // 1 → 2 → 3 → [1, 2, 3]
+    List<Integer> out = new ArrayList<>();
+    for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+    System.out.println(out);
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's values
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
   }
 }
 ```
 
-Drill the family in **Practice** — [Alternate Node Fusion](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-merge/problems/alternate-node-fusion), [Merge Sorted Lists](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-merge/problems/merge-sorted-lists), [Merge Sorted Lists II](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-merge/problems/merge-sorted-lists-ii), and [List Addition](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-merge/problems/list-addition).
+</details>
 
 ## Reflect & Connect
+
+Drill the family in **Practice** — [Alternate Node Fusion](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-merge/problems/alternate-node-fusion), [Merge Sorted Lists](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-merge/problems/merge-sorted-lists), [Merge Sorted Lists II](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-merge/problems/merge-sorted-lists-ii), and [List Addition](/cortex/data-structures-and-algorithms/linear-structures/singly-linked-list/pattern-merge/problems/list-addition).
 
 The dummy-head + tail-splice skeleton is the reusable core; the variants only change the *selector*:
 
@@ -197,4 +411,4 @@ The dummy-head + tail-splice skeleton is the reusable core; the variants only ch
 
 - **CLRS**, *Introduction to Algorithms*, 4th ed., §2.3.1 — the `MERGE` procedure (the combine step of merge sort) and its `O(m+n)` bound.
 - **Sedgewick & Wayne**, *Algorithms*, 4th ed., §2.2 — merging and merge sort; stability.
-- "Merge two sorted lists" with a dummy head and splice selector is the standard result; both runnable blocks are verified by running (`[1,2,3,4,5,6]` and `[1,2,3,4,7,8]`).
+- "Merge two sorted lists" with a dummy head and splice selector is the standard result; both runnable blocks are verified by running against their test cases.

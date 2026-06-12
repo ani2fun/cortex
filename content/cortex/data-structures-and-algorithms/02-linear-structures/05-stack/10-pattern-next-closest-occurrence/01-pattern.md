@@ -20,7 +20,9 @@ For each element of `[2, 5, 3, 7, 1]`, find the nearest larger value to its **ri
 > ▶ Run it, then click **Visualise** — scanning from the right, each element pops the smaller values; the surviving top is its next-greater.
 
 ```python run viz=array viz-root=stack viz-kind=stack
-arr = [2, 5, 3, 7, 1]
+import ast
+
+arr = ast.literal_eval(input())
 stack = []                                  # holds elements already seen — all to the RIGHT
 result = [None] * len(arr)
 for i in range(len(arr) - 1, -1, -1):       # scan right to left
@@ -29,7 +31,51 @@ for i in range(len(arr) - 1, -1, -1):       # scan right to left
         stack.pop()
     result[i] = stack[-1] if stack else None    # nearest taller to the right
     stack.append(x)
-print(result)                               # [5, 7, 7, None, None]
+print(str(result).replace("None", "null"))
+```
+
+```java run viz=array viz-root=stack viz-kind=stack
+import java.util.*;
+
+public class Main {
+  public static void main(String[] args) {
+    int[] arr = parseIntArray(new Scanner(System.in).nextLine());
+
+    List<Integer> stack = new ArrayList<>();      // holds elements to the RIGHT
+    Integer[] result = new Integer[arr.length];
+    for (int i = arr.length - 1; i >= 0; i--) {  // scan right to left
+      int x = arr[i];
+      while (!stack.isEmpty() && stack.get(stack.size() - 1) <= x)
+        stack.remove(stack.size() - 1);           // pop dominated elements
+      result[i] = stack.isEmpty() ? null : stack.get(stack.size() - 1);
+      stack.add(x);
+    }
+    System.out.println(Arrays.toString(result));
+  }
+
+  // "[2, 5, 3, 7, 1]" → {2, 5, 3, 7, 1} — reads the test case's arr
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[2, 5, 3, 7, 1]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[2, 5, 3, 7, 1]" }, "expected": "[5, 7, 7, null, null]" },
+    { "args": { "arr": "[1, 2, 3, 4]" }, "expected": "[2, 3, 4, null]" },
+    { "args": { "arr": "[4, 3, 2, 1]" }, "expected": "[null, null, null, null]" }
+  ]
+}
 ```
 
 ## How It Works
@@ -77,6 +123,66 @@ Because once `7` is pushed, it stays on the stack as long as nothing larger arri
 The reusable next-greater (flip the comparison for next-smaller):
 
 ```python run viz=array viz-kind=stack
+import ast
+
+def next_greater(arr):
+    # Your code goes here — scan right to left, maintain a decreasing stack;
+    # pop while top <= x, record the surviving top (or None), then push x.
+    return [None] * len(arr)
+
+arr = ast.literal_eval(input())
+print(str(next_greater(arr)).replace("None", "null"))
+```
+
+```java run viz=array viz-kind=stack
+import java.util.*;
+
+public class Main {
+  static Integer[] nextGreater(int[] arr) {
+    // Your code goes here — scan right to left, maintain a decreasing stack;
+    // pop while top <= x, record the surviving top (or null), then push x.
+    Integer[] result = new Integer[arr.length];
+    return result;
+  }
+
+  public static void main(String[] args) {
+    int[] arr = parseIntArray(new Scanner(System.in).nextLine());
+    System.out.println(Arrays.toString(nextGreater(arr)));
+  }
+
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[2, 5, 3, 7, 1]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[2, 5, 3, 7, 1]" }, "expected": "[5, 7, 7, null, null]" },
+    { "args": { "arr": "[1, 2, 3, 4]" }, "expected": "[2, 3, 4, null]" },
+    { "args": { "arr": "[4, 3, 2, 1]" }, "expected": "[null, null, null, null]" },
+    { "args": { "arr": "[3, 1, 2]" }, "expected": "[null, 2, null]" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Scan right to left, keeping a strictly decreasing stack of values already seen (all to the current element's right). For each `x`: pop while the top is `≤ x` (those smaller values are shadowed and will never be an answer for anything to the left); the surviving top is `x`'s next-greater (or `None`); push `x`. Flip the pop condition to `≥ x` to get next-smaller. Each element is pushed and popped at most once → `O(n)` time, `O(n)` space.
+
+```python solution time=O(n) space=O(n)
+import ast
+
 def next_greater(arr):
     stack, result = [], [None] * len(arr)
     for i in range(len(arr) - 1, -1, -1):
@@ -87,31 +193,44 @@ def next_greater(arr):
         stack.append(x)
     return result
 
-print(next_greater([2, 5, 3, 7, 1]))           # [5, 7, 7, None, None]
-print(next_greater([1, 2, 3, 4]))              # [2, 3, 4, None]
+arr = ast.literal_eval(input())
+print(str(next_greater(arr)).replace("None", "null"))
 ```
 
-```java run viz=array viz-kind=stack
+```java solution
 import java.util.*;
 
 public class Main {
   static Integer[] nextGreater(int[] arr) {
-    Deque<Integer> stack = new ArrayDeque<>();
+    List<Integer> stack = new ArrayList<>();
     Integer[] result = new Integer[arr.length];
     for (int i = arr.length - 1; i >= 0; i--) {
       int x = arr[i];
-      while (!stack.isEmpty() && stack.peek() <= x) stack.pop();   // >= x → next-smaller
-      result[i] = stack.isEmpty() ? null : stack.peek();
-      stack.push(x);
+      while (!stack.isEmpty() && stack.get(stack.size() - 1) <= x)   // >= x → next-smaller
+        stack.remove(stack.size() - 1);
+      result[i] = stack.isEmpty() ? null : stack.get(stack.size() - 1);
+      stack.add(x);
     }
     return result;
   }
 
   public static void main(String[] args) {
-    System.out.println(Arrays.toString(nextGreater(new int[]{2, 5, 3, 7, 1})));   // [5, 7, 7, null, null]
+    int[] arr = parseIntArray(new Scanner(System.in).nextLine());
+    System.out.println(Arrays.toString(nextGreater(arr)));
+  }
+
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
   }
 }
 ```
+
+</details>
 
 Drill the family in **Practice** — [Succeeding Superior Element](/cortex/data-structures-and-algorithms/linear-structures/stack/pattern-next-closest-occurrence/problems/succeeding-superior-element), [Succeeding Inferior Element](/cortex/data-structures-and-algorithms/linear-structures/stack/pattern-next-closest-occurrence/problems/succeeding-inferior-element), [Retained Rainwater](/cortex/data-structures-and-algorithms/linear-structures/stack/pattern-next-closest-occurrence/problems/retained-rainwater), and [Largest Rectangle Area](/cortex/data-structures-and-algorithms/linear-structures/stack/pattern-next-closest-occurrence/problems/largest-rectangle-area).
 
@@ -167,4 +286,4 @@ This pattern completes the monotonic-stack matrix and unlocks its famous applica
 
 - **CLRS**, *Introduction to Algorithms*, 4th ed., §10.1 and §17 — stacks and amortized analysis.
 - **Sedgewick & Wayne**, *Algorithms*, 4th ed., §1.3–1.4 — stacks and amortized cost.
-- The next-greater monotonic-stack technique (and its histogram / rain-water applications) is standard; both runnable blocks are verified by running (`[5, 7, 7, None, None]` and `[2, 3, 4, None]`).
+- The next-greater monotonic-stack technique (and its histogram / rain-water applications) is standard; both runnable blocks are verified by running (`[5, 7, 7, null, null]` and `[2, 3, 4, null]`).

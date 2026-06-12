@@ -1,18 +1,34 @@
 ---
 title: "Increasing Path"
-summary: "See problem statement below."
+summary: "Given the root of a binary tree, update each node's value to 1 if all values from the root to that node are strictly increasing, and 0 otherwise."
 prereqs:
   - 09-pattern-preorder-traversal-stateless/01-pattern
 difficulty: hard
+kind: problem
+topics: [preorder-traversal, binary-tree]
 ---
 
-# Problem 4 — Increasing path
+# Increasing path
 
-> Given the root of a binary tree, update each node's value to `1` if all values from the root to that node are strictly increasing, and `0` otherwise.
->
-> **Example:** Input `[1, 8, 4, null, null, 2, 7]` → output `[1, 1, 1, null, null, 0, 1]`.
+## Problem Statement
 
-This needs **two pieces** of accumulator: (a) whether the path so far is still strictly increasing (a boolean), and (b) the previous node's *original* value so we can compare against the current. Note: we have to compare against the *original* value, not the value we're about to overwrite — which is why the implementation reads the current value *before* writing the result.
+Given the **root** of a binary tree, update each node's value to `1` if all values from the root to that node are **strictly increasing**, and `0` otherwise. The root always gets `1`. Return the modified tree.
+
+This needs **two pieces** of accumulator: (a) whether the path so far is still strictly increasing, and (b) the previous node's *original* value so we can compare against the current. The implementation reads the current value *before* overwriting it — because the children need the original for comparison.
+
+## Examples
+
+**Example 1:**
+```
+Input:  root = [1, 2, 3, 4, null, null, 7]
+Output: [1, 1, 1, 1, null, null, 1]
+```
+
+**Example 2:**
+```
+Input:  root = [1, 8, 4, null, null, 2, 7]
+Output: [1, 1, 1, null, null, 0, 1]
+```
 
 ```mermaid
 ---
@@ -40,81 +56,185 @@ flowchart TB
 
 <p align="center"><strong>Increasing path — node 2 breaks the strictly-increasing chain (its parent 4 is bigger), so it gets <code>0</code>; node 7's parent is 4 and 4&lt;7, so the chain continues with <code>1</code>. The decision at each node depends only on the previous value and the current value.</strong></p>
 
-<details>
-<summary><h2>Solution</h2></summary>
+## Constraints
 
-
+- `0 ≤ number of nodes ≤ 10⁴`
+- `-10⁴ ≤ node.val ≤ 10⁴`
+- Update values in place via a single top-down pass — `O(n)` time, `O(h)` recursion stack
 
 ```python run viz=binary-tree viz-root=root
-from typing import Optional
+import json
 from collections import deque
 
 class TreeNode:
-    def __init__(self, val=0, left=None, right=None):
+    def __init__(self, val, left=None, right=None):
         self.val = val
         self.left = left
         self.right = right
 
+class Solution:
+    def increasing_path(self, root):
+        # Your code goes here — carry (parent_val, parent_status) DOWN as arguments.
+        # Read the node's original value BEFORE overwriting it (children need it).
+        # Root is always 1. Return the (mutated) root.
+        return root
 
-def from_level_order(values):
-    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
     if not values:
         return None
     root = TreeNode(values[0])
-    queue = [root]
+    queue = deque([root])
     i = 1
     while queue and i < len(values):
-        node = queue.pop(0)
-        if i < len(values) and values[i] is not None:
-            node.left = TreeNode(values[i])
-            queue.append(node.left)
-        i += 1
-        if i < len(values) and values[i] is not None:
-            node.right = TreeNode(values[i])
-            queue.append(node.right)
-        i += 1
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
     return root
 
-
-def to_level_order(root):
-    if not root:
-        return []
-    result, queue = [], deque([root])
+def print_tree(root):                # root → [1, 2, 3, null, 4], trailing nulls trimmed
+    out, queue = [], deque([root])
     while queue:
         node = queue.popleft()
-        if node:
-            result.append(node.val)
+        if node is None:
+            out.append(None)
+        else:
+            out.append(node.val)
             queue.append(node.left)
             queue.append(node.right)
-        else:
-            result.append(None)
-    while result and result[-1] is None:
-        result.pop()
-    return result
+    while out and out[-1] is None:
+        out.pop()
+    print(json.dumps(out))
 
+root = build_tree(json.loads(input()))   # the test case's level-order values
+print_tree(Solution().increasing_path(root))
+```
+
+```java run viz=binary-tree viz-root=root
+import java.util.*;
+
+public class Main {
+    static class TreeNode {
+        int val; TreeNode left, right;
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static class Solution {
+        TreeNode increasingPath(TreeNode root) {
+            // Your code goes here — carry (parentVal, parentStatus) DOWN as arguments.
+            // Read the node's original value BEFORE overwriting it (children need it).
+            // Root is always 1. Return the (mutated) root.
+            return root;
+        }
+    }
+
+    public static void main(String[] args) {
+        TreeNode root = buildTree(parseIntegerArray(new Scanner(System.in).nextLine()));
+        printTree(new Solution().increasingPath(root));
+    }
+
+    static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+            }
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+            }
+        }
+        return root;
+    }
+
+    static void printTree(TreeNode root) {          // root → [1, 2, 3, null, 4], trailing nulls trimmed
+        List<String> out = new ArrayList<>();
+        Deque<TreeNode> queue = new LinkedList<>();
+        queue.add(root);
+        while (!queue.isEmpty()) {
+            TreeNode node = queue.poll();
+            if (node == null) {
+                out.add("null");
+            } else {
+                out.add(String.valueOf(node.val));
+                queue.add(node.left);
+                queue.add(node.right);
+            }
+        }
+        while (!out.isEmpty() && out.get(out.size() - 1).equals("null"))
+            out.remove(out.size() - 1);
+        System.out.println("[" + String.join(", ", out) + "]");
+    }
+
+    // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+    static Integer[] parseIntegerArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new Integer[0];
+        String[] parts = inner.split(",");
+        Integer[] out = new Integer[parts.length];
+        for (int i = 0; i < parts.length; i++)
+            out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[1, 8, 4, null, null, 2, 7]" }
+  ],
+  "cases": [
+    { "args": { "root": "[1, 2, 3, 4, null, null, 7]" }, "expected": "[1, 1, 1, 1, null, null, 1]" },
+    { "args": { "root": "[1, 8, 4, null, null, 2, 7]" }, "expected": "[1, 1, 1, null, null, 0, 1]" },
+    { "args": { "root": "[]" }, "expected": "[]" },
+    { "args": { "root": "[5]" }, "expected": "[1]" },
+    { "args": { "root": "[5, 3, 8]" }, "expected": "[1, 0, 1]" },
+    { "args": { "root": "[1, 2, null, 3]" }, "expected": "[1, 1, null, 1]" },
+    { "args": { "root": "[3, 3, 3]" }, "expected": "[1, 0, 0]" }
+  ]
+}
+```
+
+<details>
+<summary><h2>Solution</h2></summary>
+
+A single top-down recursion carries two accumulators down: the previous node's original value and whether the path so far was strictly increasing. At each node: read `original_val` before overwriting (children need it for comparison), then set `node.val = 1` if `parent_status == 1 and parent_val < original_val`, else `0`. The root is always `1`. Because both values travel purely as function arguments, neither subtree can corrupt the other's state.
+
+```python solution time=O(n) space=O(h)
+import json
+from collections import deque
+
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
 
 class Solution:
-    def increasing_path_helper(
-        self,
-        root: Optional[TreeNode],
-        parent_val: int,
-        parent_status: int,
-    ) -> None:
-
+    def increasing_path_helper(self, root, parent_val, parent_status):
         # Base case: if the current node is null, do nothing
         if root is None:
             return
 
         # Store the node's original value before we overwrite it
-        # We need the original value to pass down to children for
-        # comparison
+        # We need the original value to pass down to children for comparison
         original_val = root.val
 
         # Check if the path from root to this node is strictly increasing
         if parent_status == 1 and parent_val < original_val:
             root.val = 1
-
-        # Path is not strictly increasing, mark as 0
         else:
             root.val = 0
 
@@ -123,9 +243,9 @@ class Solution:
         self.increasing_path_helper(root.left, original_val, root.val)
         self.increasing_path_helper(root.right, original_val, root.val)
 
-    def increasing_path(self, root: Optional[TreeNode]) -> None:
+    def increasing_path(self, root):
         if root is None:
-            return
+            return root
 
         # Store the original value of the root
         original_val = root.val
@@ -139,109 +259,66 @@ class Solution:
         # Recurse for the right subtree
         self.increasing_path_helper(root.right, original_val, 1)
 
+        return root
 
-# Examples from the problem statement
-t1 = from_level_order([1, 2, 3, 4, None, None, 7])
-Solution().increasing_path(t1); print(to_level_order(t1))   # [1, 1, 1, 1, 1]
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
 
-t2 = from_level_order([1, 8, 4, None, None, 2, 7])
-Solution().increasing_path(t2); print(to_level_order(t2))   # [1, 1, 1, 0, 1]
+def print_tree(root):                # root → [1, 2, 3, null, 4], trailing nulls trimmed
+    out, queue = [], deque([root])
+    while queue:
+        node = queue.popleft()
+        if node is None:
+            out.append(None)
+        else:
+            out.append(node.val)
+            queue.append(node.left)
+            queue.append(node.right)
+    while out and out[-1] is None:
+        out.pop()
+    print(json.dumps(out))
 
-# Edge cases
-t3 = from_level_order([])
-Solution().increasing_path(t3); print(to_level_order(t3))   # []
-
-t4 = from_level_order([5])
-Solution().increasing_path(t4); print(to_level_order(t4))   # [1]
-
-t5 = from_level_order([5, 3, 8])                             # left child less, right greater
-Solution().increasing_path(t5); print(to_level_order(t5))   # [1, 0, 1]
-
-t6 = from_level_order([1, 2, None, 3])                       # left-skew strictly increasing
-Solution().increasing_path(t6); print(to_level_order(t6))   # [1, 1, 1]
-
-t7 = from_level_order([3, 3, 3])                              # equal values — not strictly increasing
-Solution().increasing_path(t7); print(to_level_order(t7))   # [1, 0, 0]
+root = build_tree(json.loads(input()))   # the test case's level-order values
+print_tree(Solution().increasing_path(root))
 ```
 
-```java run viz=binary-tree viz-root=root
+```java solution
 import java.util.*;
 
 public class Main {
     static class TreeNode {
-        int val;
-        TreeNode left;
-        TreeNode right;
-        TreeNode() {}
+        int val; TreeNode left, right;
         TreeNode(int val) { this.val = val; }
     }
 
-    static TreeNode fromLevelOrder(Integer... values) {
-        if (values.length == 0 || values[0] == null) return null;
-        TreeNode root = new TreeNode(values[0]);
-        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
-        queue.add(root);
-        int i = 1;
-        while (!queue.isEmpty() && i < values.length) {
-            TreeNode node = queue.poll();
-            if (i < values.length && values[i] != null) {
-                node.left = new TreeNode(values[i]);
-                queue.add(node.left);
-            }
-            i++;
-            if (i < values.length && values[i] != null) {
-                node.right = new TreeNode(values[i]);
-                queue.add(node.right);
-            }
-            i++;
-        }
-        return root;
-    }
-
-    static List<Integer> toLevelOrder(TreeNode root) {
-        if (root == null) return new ArrayList<>();
-        List<Integer> result = new ArrayList<>();
-        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
-        queue.add(root);
-        while (!queue.isEmpty()) {
-            TreeNode node = queue.poll();
-            if (node != null) {
-                result.add(node.val);
-                queue.add(node.left);
-                queue.add(node.right);
-            } else {
-                result.add(null);
-            }
-        }
-        while (!result.isEmpty() && result.get(result.size() - 1) == null)
-            result.remove(result.size() - 1);
-        return result;
-    }
-
     static class Solution {
-        public void increasingPathHelper(
-            TreeNode root,
-            int parentVal,
-            int parentStatus
-        ) {
-
+        public void increasingPathHelper(TreeNode root, int parentVal, int parentStatus) {
             // Base case: if the current node is null, do nothing
-            if (root == null) {
-                return;
-            }
+            if (root == null) return;
 
             // Store the node's original value before we overwrite it
-            // We need the original value to pass down to children for
-            // comparison
+            // We need the original value to pass down to children for comparison
             int originalVal = root.val;
 
             // Check if the path from root to this node is strictly increasing
             if (parentStatus == 1 && parentVal < originalVal) {
                 root.val = 1;
-            }
-
-            // Path is not strictly increasing, mark as 0
-            else {
+            } else {
                 root.val = 0;
             }
 
@@ -251,10 +328,8 @@ public class Main {
             increasingPathHelper(root.right, originalVal, root.val);
         }
 
-        public void increasingPath(TreeNode root) {
-            if (root == null) {
-                return;
-            }
+        TreeNode increasingPath(TreeNode root) {
+            if (root == null) return root;
 
             // Store the original value of the root
             int originalVal = root.val;
@@ -267,39 +342,64 @@ public class Main {
 
             // Recurse for the right subtree
             increasingPathHelper(root.right, originalVal, 1);
+
+            return root;
         }
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        TreeNode t1 = fromLevelOrder(1, 2, 3, 4, null, null, 7);
-        new Solution().increasingPath(t1);
-        System.out.println(toLevelOrder(t1));   // [1, 1, 1, 1, 1]
+        TreeNode root = buildTree(parseIntegerArray(new Scanner(System.in).nextLine()));
+        printTree(new Solution().increasingPath(root));
+    }
 
-        TreeNode t2 = fromLevelOrder(1, 8, 4, null, null, 2, 7);
-        new Solution().increasingPath(t2);
-        System.out.println(toLevelOrder(t2));   // [1, 1, 1, 0, 1]
+    static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+            }
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+            }
+        }
+        return root;
+    }
 
-        // Edge cases
-        TreeNode t3 = fromLevelOrder();
-        new Solution().increasingPath(t3);
-        System.out.println(toLevelOrder(t3));   // []
+    static void printTree(TreeNode root) {          // root → [1, 2, 3, null, 4], trailing nulls trimmed
+        List<String> out = new ArrayList<>();
+        Deque<TreeNode> queue = new LinkedList<>();
+        queue.add(root);
+        while (!queue.isEmpty()) {
+            TreeNode node = queue.poll();
+            if (node == null) {
+                out.add("null");
+            } else {
+                out.add(String.valueOf(node.val));
+                queue.add(node.left);
+                queue.add(node.right);
+            }
+        }
+        while (!out.isEmpty() && out.get(out.size() - 1).equals("null"))
+            out.remove(out.size() - 1);
+        System.out.println("[" + String.join(", ", out) + "]");
+    }
 
-        TreeNode t4 = fromLevelOrder(5);
-        new Solution().increasingPath(t4);
-        System.out.println(toLevelOrder(t4));   // [1]
-
-        TreeNode t5 = fromLevelOrder(5, 3, 8);   // left child less, right greater
-        new Solution().increasingPath(t5);
-        System.out.println(toLevelOrder(t5));   // [1, 0, 1]
-
-        TreeNode t6 = fromLevelOrder(1, 2, null, 3);   // left-skew strictly increasing
-        new Solution().increasingPath(t6);
-        System.out.println(toLevelOrder(t6));   // [1, 1, 1]
-
-        TreeNode t7 = fromLevelOrder(3, 3, 3);   // equal values — not strictly increasing
-        new Solution().increasingPath(t7);
-        System.out.println(toLevelOrder(t7));   // [1, 0, 0]
+    // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+    static Integer[] parseIntegerArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new Integer[0];
+        String[] parts = inner.split(",");
+        Integer[] out = new Integer[parts.length];
+        for (int i = 0; i < parts.length; i++)
+            out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

@@ -19,18 +19,60 @@ That's the **two-pointer** pattern. Once you see it, you'll spot it everywhere: 
 
 ## See It Work
 
-Two markers, `left` and `right`, swap and step inward until they meet. Run it, then **Visualise** and watch them converge.
+Two markers, `left` and `right`, swap and step inward until they meet. Pick a test case below, **Run** it, then **Visualise** and watch them converge. The first lines just read the case's `arr` from input — the pattern is the loop.
 
-> ▶ Run it, then click **Visualise** — watch `left` and `right` swap and step inward until they meet.
+> ▶ Run it against a case, then click **Visualise** — watch `left` and `right` swap and step inward until they meet.
 
 ```python run viz=array viz-root=arr
-arr = [1, 2, 3, 4, 5]
+import ast
+
+arr = ast.literal_eval(input())                      # the test case's arr
 left, right = 0, len(arr) - 1
 while left < right:
     arr[left], arr[right] = arr[right], arr[left]   # swap the two ends
     left += 1                                        # step inward
     right -= 1
-print(arr)   # [5, 4, 3, 2, 1]
+print(arr)
+```
+
+```java run viz=array viz-root=arr
+import java.util.*;
+
+public class Main {
+  public static void main(String[] args) {
+    int[] arr = parseIntArray(new Scanner(System.in).nextLine());
+    int left = 0, right = arr.length - 1;
+    while (left < right) {
+      int t = arr[left];                             // swap the two ends
+      arr[left++] = arr[right];                      // step inward
+      arr[right--] = t;
+    }
+    System.out.println(Arrays.toString(arr));
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's arr
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[1, 2, 3, 4, 5]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[1, 2, 3, 4, 5]" }, "expected": "[5, 4, 3, 2, 1]" },
+    { "args": { "arr": "[1, 2, 3, 4]" }, "expected": "[4, 3, 2, 1]" },
+    { "args": { "arr": "[]" }, "expected": "[]" }
+  ]
+}
 ```
 
 ## How It Works
@@ -85,9 +127,53 @@ That lone middle element is also why the loop test is `left < right`, not `left 
 
 ## Your Turn
 
-Here's a second member of the family — checking a palindrome is the same converging walk, comparing instead of swapping:
+Here's a second member of the family — checking a palindrome is the same converging walk, **comparing instead of swapping**. Implement `is_palindrome` yourself: two pointers from both ends, return `false` the moment they disagree, `true` if they meet without a mismatch.
 
-```python run viz=array
+```python run viz=array viz-root=s
+def is_palindrome(s):
+    # Your code goes here — walk left and right inward,
+    # comparing s[left] to s[right].
+    return False
+
+s = list(input())                # the test case's s, as a list of characters
+print("true" if is_palindrome(s) else "false")
+```
+
+```java run viz=array viz-root=s
+public class Main {
+  static boolean isPalindrome(char[] s) {
+    // Your code goes here — walk left and right inward,
+    // comparing s[left] to s[right].
+    return false;
+  }
+
+  public static void main(String[] args) {
+    char[] s = new java.util.Scanner(System.in).nextLine().toCharArray();
+    System.out.println(isPalindrome(s));
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "s", "type": "string", "placeholder": "racecar" }
+  ],
+  "cases": [
+    { "args": { "s": "racecar" }, "expected": "true" },
+    { "args": { "s": "hello" }, "expected": "false" },
+    { "args": { "s": "a" }, "expected": "true" },
+    { "args": { "s": "ab" }, "expected": "false" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+The comparison variant of the converging walk: instead of swapping `s[left]` and `s[right]`, compare them. Any mismatch proves the string is not a palindrome; the pointers meeting in the middle proves it is. Same `O(n)` time, `O(1)` space, same `left < right` stop condition — the middle character of an odd-length string is its own mirror and never needs checking.
+
+```python solution time=O(n) space=O(1)
 def is_palindrome(s):
     left, right = 0, len(s) - 1
     while left < right:
@@ -97,31 +183,34 @@ def is_palindrome(s):
         right -= 1
     return True
 
-print(is_palindrome("racecar"))  # True
-print(is_palindrome("hello"))    # False
+s = list(input())
+print("true" if is_palindrome(s) else "false")
 ```
 
-```java run viz=array
+```java solution
 public class Main {
-  static boolean isPalindrome(String s) {
-    int left = 0, right = s.length() - 1;
+  static boolean isPalindrome(char[] s) {
+    int left = 0, right = s.length - 1;
     while (left < right) {
-      if (s.charAt(left) != s.charAt(right)) return false;
+      if (s[left] != s[right]) return false;
       left++;
       right--;
     }
     return true;
   }
+
   public static void main(String[] args) {
-    System.out.println(isPalindrome("racecar"));  // true
-    System.out.println(isPalindrome("hello"));    // false
+    char[] s = new java.util.Scanner(System.in).nextLine().toCharArray();
+    System.out.println(isPalindrome(s));
   }
 }
 ```
 
-Now make it your own with the problems in this section — start with [Flip Characters](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers/problems/flip-characters) and [Palindrome Checker](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers/problems/palindrome-checker), then work down the **Practice** list.
+</details>
 
 ## Reflect & Connect
+
+Make the pattern your own with the problems in this section — start with [Flip Characters](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers/problems/flip-characters) and [Palindrome Checker](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers/problems/palindrome-checker), then work down the **Practice** list.
 
 Two pointers is your first pattern, and the rest of this chapter is variations on it. They come in three flavors, easiest first:
 

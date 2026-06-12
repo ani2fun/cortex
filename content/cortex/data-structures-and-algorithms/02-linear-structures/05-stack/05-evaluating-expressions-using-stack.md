@@ -54,6 +54,15 @@ public class Main {
 }
 ```
 
+```testcases
+{
+  "args": [],
+  "cases": [
+    { "args": {}, "expected": "evaluating postfix: 5 1 2 + 4 * + 3 -\n  token 5 -> stack [5]\n  token 1 -> stack [5, 1]\n  token 2 -> stack [5, 1, 2]\n  token + -> stack [5, 3]\n  token 4 -> stack [5, 3, 4]\n  token * -> stack [5, 12]\n  token + -> stack [17]\n  token 3 -> stack [17, 3]\n  token - -> stack [14]\nresult: 14" }
+  ]
+}
+```
+
 Both trace the same nine steps and print `result: 14`. Watch the stack: operands pile up (`[5]`, `[5, 1]`, `[5, 1, 2]`) until an operator collapses the top two — `+` turns `[5, 1, 2]` into `[5, 3]`, then `4` and `*` give `[5, 12]`, the next `+` gives `[17]`, and `3 -` finishes at `[14]`. The stack never holds more than the operands awaiting their operator, and the single value left at the end is the answer. No precedence logic appears anywhere — the postfix order already encoded it.
 
 ## How It Works
@@ -101,6 +110,36 @@ print("'8 2 /'  correct:", eval_postfix("8 2 /"),  "| swapped:", eval_postfix("8
 print("'10 3 -' correct:", eval_postfix("10 3 -"), "| swapped:", eval_postfix("10 3 -", swap=True))
 ```
 
+```java run viz=array viz-kind=stack
+import java.util.*;
+public class Main {
+    static int evalPostfix(String expr, boolean swap) {
+        List<Integer> st = new ArrayList<>();
+        for (String t : expr.split(" ")) {
+            if (t.length() == 1 && "+-*/".contains(t)) {
+                int x = st.remove(st.size() - 1), y = st.remove(st.size() - 1);  // x = top (right), y = left
+                int a = swap ? x : y, b = swap ? y : x;                           // correct: a = left, b = right
+                st.add(switch (t) { case "+" -> a + b; case "-" -> a - b; case "*" -> a * b; default -> (int) ((double) a / b); });
+            } else st.add(Integer.parseInt(t));
+        }
+        return st.get(st.size() - 1);
+    }
+    public static void main(String[] x) {
+        System.out.println("'8 2 /'  correct: " + evalPostfix("8 2 /", false) + " | swapped: " + evalPostfix("8 2 /", true));
+        System.out.println("'10 3 -' correct: " + evalPostfix("10 3 -", false) + " | swapped: " + evalPostfix("10 3 -", true));
+    }
+}
+```
+
+```testcases
+{
+  "args": [],
+  "cases": [
+    { "args": {}, "expected": "'8 2 /'  correct: 4 | swapped: 0\n'10 3 -' correct: 7 | swapped: -7" }
+  ]
+}
+```
+
 <details>
 <summary><strong>Reveal</strong></summary>
 
@@ -110,11 +149,54 @@ print("'10 3 -' correct:", eval_postfix("10 3 -"), "| swapped:", eval_postfix("1
 
 ## Your Turn
 
-Real expressions have multi-digit numbers and all four operators. Tokenizing on whitespace (not character-by-character) handles multi-digit operands for free — each token is a whole number or a single operator.
-
-**Predict:** evaluate the postfix `15 7 1 1 + - / 3 *`. It encodes `(15 / (7 − (1 + 1))) * 3`. What's the result?
+Real expressions have multi-digit numbers and all four operators. Tokenizing on whitespace (not character-by-character) handles multi-digit operands for free — each token is a whole number or a single operator. Implement `eval_rpn(tokens)` that evaluates a postfix (RPN) expression.
 
 ```python run viz=array viz-kind=stack
+def eval_rpn(tokens):
+    # Your code goes here — push operands; on an operator pop two (top = right),
+    # apply, push the result; return the lone survivor.
+    pass
+
+tokens = input().split()
+print(eval_rpn(tokens))
+```
+
+```java run viz=array viz-kind=stack
+import java.util.*;
+public class Main {
+    static int evalRpn(String[] tokens) {
+        // Your code goes here — push operands; on an operator pop two (top = right),
+        // apply, push the result; return the lone survivor.
+        return 0;
+    }
+    public static void main(String[] x) {
+        String[] tokens = new Scanner(System.in).nextLine().split(" ");
+        System.out.println(evalRpn(tokens));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "expr", "label": "postfix expression", "type": "string", "placeholder": "15 7 1 1 + - / 3 *" }
+  ],
+  "cases": [
+    { "args": { "expr": "15 7 1 1 + - / 3 *" }, "expected": "9" },
+    { "args": { "expr": "5 1 2 + 4 * + 3 -" }, "expected": "14" },
+    { "args": { "expr": "2 3 +" }, "expected": "5" },
+    { "args": { "expr": "8 2 /" }, "expected": "4" },
+    { "args": { "expr": "10 3 -" }, "expected": "7" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Tokenize on whitespace so multi-digit operands (like `15`) arrive as a single string token. Push operands; on an operator, the first pop is the **right** operand (it was pushed most recently), the second pop is the **left** — compute `a OP b` and push the result. Integer division truncates toward zero. After the last token exactly one value remains — that's the answer.
+
+```python solution time=O(n) space=O(n)
 def eval_rpn(tokens):
     st = []
     for t in tokens:
@@ -125,10 +207,11 @@ def eval_rpn(tokens):
             st.append(int(t))                          # whole token -> multi-digit operand
     return st[-1]
 
-print("'15 7 1 1 + - / 3 *' =", eval_rpn("15 7 1 1 + - / 3 *".split()))
+tokens = input().split()
+print(eval_rpn(tokens))
 ```
 
-```java run viz=array viz-kind=stack
+```java solution
 import java.util.*;
 public class Main {
     static int evalRpn(String[] tokens) {
@@ -142,12 +225,13 @@ public class Main {
         return st.peek();
     }
     public static void main(String[] x) {
-        System.out.println("'15 7 1 1 + - / 3 *' = " + evalRpn("15 7 1 1 + - / 3 *".split(" ")));
+        String[] tokens = new Scanner(System.in).nextLine().split(" ");
+        System.out.println(evalRpn(tokens));
     }
 }
 ```
 
-Both print `9`. Step through it: `1 1 +` makes `2`, then `7 ... -` makes `7 − 2 = 5`, then `15 ... /` makes `15 / 5 = 3`, then `... 3 *` makes `3 × 3 = 9`. The multi-digit `15` is handled with no extra work because we tokenized on whitespace — the operand is the whole string `"15"`, not the characters `'1'` and `'5'`. This is LeetCode's "Evaluate Reverse Polish Notation" exactly, and the same `O(N)` one-pass machine scales from a four-token expression to a thousand-token one. (Edge cases a production evaluator adds: division by zero, a leftover stack of size ≠ 1 meaning a malformed expression, and unary minus — but the core loop is unchanged.)
+</details>
 
 ## Reflect & Connect
 

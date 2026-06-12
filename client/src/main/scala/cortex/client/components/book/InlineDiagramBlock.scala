@@ -1,5 +1,7 @@
 package cortex.client.components.book
 
+import cortex.client.components.book.widgets.Stepper
+import cortex.client.components.icons.LucideIcons
 import japgolly.scalajs.react.*
 import japgolly.scalajs.react.vdom.html_<^.*
 
@@ -13,15 +15,14 @@ import scala.util.{Failure, Success, Try}
  *
  * The component wraps the raw fence payload (a `VizGraph` `{steps:[...]}` object) into the `VizCases`
  * structure that `renderWidget` in `@d3/index` expects, injects `layoutHint = widget` so the TS renderer
- * selects the right layout, then mounts the D3 diagram into a host div.
+ * selects the right layout, then mounts the D3 diagram into a host div. `renderWidget` draws a STATIC diagram
+ * and returns a controller; [[cortex.client.components.book.widgets.Stepper]] owns the play loop and pushes
+ * each step index into it, with a compact control bar (reset / prev / play / next / "k / n") shown only for
+ * multi-step payloads.
  *
  * **Error guards (Slice 22 / ADR-0023).** Malformed JSON, payloads that don't match the layout's schema, and
  * exceptions thrown inside `renderWidget` all surface as an inline `<.d3-widget__error>` block (uniform with
- * [[D3WidgetBlock]]'s unknown-widget fallback) instead of crashing the whole chapter render. The raw payload
- * remains visible in the "Show JSON" toggle so the author can see what they wrote next to the error.
- *
- * A native `<details>` "Show JSON" toggle below the canvas lets chapter authors inspect the raw payload
- * without any extra React state.
+ * [[D3WidgetBlock]]'s unknown-widget fallback) instead of crashing the whole chapter render.
  */
 object InlineDiagramBlock:
 
@@ -91,16 +92,28 @@ object InlineDiagramBlock:
         js.JSON.stringify(js.Dynamic.literal(cases = js.Array(raw)))
     }.toEither.left.map(e => Option(e.getMessage).getOrElse(e.toString))
 
+  // Per-step dwell while playing. Matches the modal's pacing closely enough that an inline diagram
+  // and its full-screen Visualise counterpart feel like the same animation.
+  private val StepDelayMs: Double = 1100.0
+
   // ─── Component ──────────────────────────────────────────────────────────────
   val Component = ScalaFnComponent
     .withHooks[Props]
     .useRefBy(_ => nextHostId())                   // hostIdRef     (1)
     .useRefBy(_ => Option.empty[WidgetController]) // controllerRef (2)
     .useState(Option.empty[String])                // errorS        (3)
-    .useEffectOnMountBy { (props, hostIdRef, controllerRef, errorS) =>
+    // Step count is only known once renderWidget has parsed the payload; 0 until mounted, which keeps
+    // the control bar hidden (Stepper treats ≤ 1 as "nothing to scrub").
+    .useState(0) // stepCountS    (4)
+    // renderWidget draws a STATIC diagram and hands back a controller — the play loop is the caller's
+    // (see @d3/index.ts). Stepper.hook owns the index + play/pause machinery; Effect (7) pushes each
+    // index change into the controller. Without this, every multi-step inline diagram froze on step 0.
+    .customBy((_, _, _, _, stepCountS) =>
+      Stepper.hook(Stepper.Input(stepCountS.value, StepDelayMs))
+    ) // stepper (5)
+    .useEffectOnMountBy { (props, hostIdRef, controllerRef, errorS, stepCountS, _) =>
       // Mount the D3 renderer into the host div once on component mount. Failures land in
-      // `errorS` so the next render swaps the host div for the inline error placeholder; the
-      // raw JSON toggle remains so authors can see what they wrote next to the error.
+      // `errorS` so the next render swaps the host div for the inline error placeholder.
       Callback {
         wrapPayload(props.widget, props.payload) match
           case Left(msg) =>
@@ -111,6 +124,7 @@ object InlineDiagramBlock:
             ) match
               case Success(Some(ctrl)) =>
                 controllerRef.value = Some(ctrl)
+                stepCountS.setState(ctrl.getStepCount()).runNow()
               case Success(None) =>
                 errorS
                   .setState(
@@ -124,7 +138,12 @@ object InlineDiagramBlock:
                 errorS.setState(Some(s"renderWidget threw: $msg")).runNow()
       }
     }
-    .render { (props, hostIdRef, _, errorS) =>
+    // Effect (7): fan the Stepper's current index into the D3 controller (play / prev / next / reset).
+    .useEffectWithDepsBy((_, _, _, _, _, stepper) => stepper.index) {
+      (_, _, controllerRef, _, _, _) => idx =>
+        Callback(controllerRef.value.foreach(_.setStep(idx, animate = true)))
+    }
+    .render { (props, hostIdRef, _, errorS, stepCountS, stepper) =>
       val canvasOrError: VdomNode = errorS.value match
         case Some(message) =>
           <.div(
@@ -138,16 +157,53 @@ object InlineDiagramBlock:
         case None =>
           <.div(^.id := hostIdRef.value, ^.className := "inline-diagram__canvas")
 
+      // Playback controls — only for multi-step diagrams that rendered cleanly. A single-step (or
+      // errored) diagram renders exactly as before: canvas + Show JSON, no chrome.
+      val controls: VdomNode =
+        if errorS.value.isEmpty && stepCountS.value > 1 then
+          val playIcon = if stepper.isPlaying then LucideIcons.Pause else LucideIcons.Play
+          <.div(
+            ^.className := "inline-diagram__controls",
+            <.button(
+              ^.tpe       := "button",
+              ^.className := "inline-diagram__ctrl",
+              ^.title     := "Reset to first step",
+              ^.onClick --> stepper.reset,
+              LucideIcons.RotateCcw(LucideIcons.withClass("inline-diagram__ctrl-icon"))
+            ),
+            <.button(
+              ^.tpe       := "button",
+              ^.className := "inline-diagram__ctrl",
+              ^.title     := "Previous step",
+              ^.disabled  := stepper.atStart,
+              ^.onClick --> stepper.previous,
+              LucideIcons.ChevronLeft(LucideIcons.withClass("inline-diagram__ctrl-icon"))
+            ),
+            <.button(
+              ^.tpe       := "button",
+              ^.className := "inline-diagram__ctrl inline-diagram__ctrl--play",
+              ^.title     := (if stepper.isPlaying then "Pause" else "Play"),
+              ^.onClick --> stepper.togglePlay,
+              playIcon(LucideIcons.withClass("inline-diagram__ctrl-icon"))
+            ),
+            <.button(
+              ^.tpe       := "button",
+              ^.className := "inline-diagram__ctrl",
+              ^.title     := "Next step",
+              ^.disabled  := stepper.atEnd,
+              ^.onClick --> stepper.next,
+              LucideIcons.ChevronRight(LucideIcons.withClass("inline-diagram__ctrl-icon"))
+            ),
+            <.span(
+              ^.className := "inline-diagram__step",
+              s"${stepper.index + 1} / ${stepCountS.value}"
+            )
+          )
+        else EmptyVdom
+
       <.div(
         ^.className := "inline-diagram",
         canvasOrError,
-        // Native <details> toggle — open/closed state managed by the browser,
-        // no React state needed. Always rendered so authors can compare their
-        // payload against an error message above.
-        <.details(
-          ^.className := "inline-diagram__json",
-          <.summary("Show JSON"),
-          <.pre(props.payload)
-        )
+        controls
       )
     }

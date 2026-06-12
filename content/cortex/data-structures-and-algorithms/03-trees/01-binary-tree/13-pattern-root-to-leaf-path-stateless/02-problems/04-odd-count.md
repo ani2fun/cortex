@@ -1,16 +1,28 @@
 ---
 title: "Odd Count"
-summary: "See problem statement below."
+summary: "Count the number of root-to-leaf paths whose length (number of nodes) is odd."
 prereqs:
   - 13-pattern-root-to-leaf-path-stateless/01-pattern
 difficulty: medium
+kind: problem
+topics: [root-to-leaf-path, binary-tree]
 ---
 
 # Problem 4 — Odd count
 
-> Count the number of root-to-leaf paths whose **length** (number of nodes) is odd.
+## Problem Statement
 
-Accumulator: current path length (just an integer counter). At a leaf, verdict is `1` if length is odd, `0` otherwise. Combine via `+` to count across all paths.
+Count the number of root-to-leaf paths whose **length** (number of nodes) is odd.
+
+Accumulator: current path length (an integer counter). At a leaf, the verdict is `1` if length is odd, `0` otherwise. Combine via `+` to count across all paths.
+
+## Examples
+
+**Example 1:**
+```
+Input:  root = [1, 2, 3, 4, null, null, 7]
+Output: 2
+```
 
 ```mermaid
 ---
@@ -40,89 +52,55 @@ flowchart TB
 
 <p align="center"><strong>Odd count — both leaves are at depth 3 (path length 3, which is odd), so the answer is <strong>2</strong>. Each leaf's verdict is bubbled up via <code>+</code>.</strong></p>
 
-<details>
-<summary><h2>Solution</h2></summary>
+**Example 2:**
+```
+Input:  root = [1, 8, 4, null, null, 2, 7]
+Output: 2
+```
 
+## Constraints
 
+- `0 ≤ number of nodes ≤ 10⁴`
+- `-10⁴ ≤ node.val ≤ 10⁴`
+- `O(n)` time, `O(h)` recursion stack
 
 ```python run viz=binary-tree viz-root=root
-from typing import Optional
-
+import json
+from collections import deque
 
 class TreeNode:
-    def __init__(self, val=0, left=None, right=None):
+    def __init__(self, val, left=None, right=None):
         self.val = val
         self.left = left
         self.right = right
 
+class Solution:
+    def odd_count(self, root):
+        # Your code goes here — carry the path length DOWN as an argument;
+        # at a leaf return 1 if path_len is odd, else 0;
+        # at internal nodes return sum of both children.
+        return 0
 
-def from_level_order(values):
-    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
     if not values:
         return None
     root = TreeNode(values[0])
-    queue = [root]
+    queue = deque([root])
     i = 1
     while queue and i < len(values):
-        node = queue.pop(0)
-        if i < len(values) and values[i] is not None:
-            node.left = TreeNode(values[i])
-            queue.append(node.left)
-        i += 1
-        if i < len(values) and values[i] is not None:
-            node.right = TreeNode(values[i])
-            queue.append(node.right)
-        i += 1
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
     return root
 
-
-class Solution:
-    def odd_count_helper(
-        self, root: Optional[TreeNode], path_len: int
-    ) -> int:
-
-        # Base case: if the current node is null, return 0
-        if root is None:
-            return 0
-
-        # Include current node in path length
-        path_len += 1
-
-        # If this is a leaf, check if path length is odd
-        if root.left is None and root.right is None:
-
-            # Return 1 if path length is odd
-            if path_len % 2 == 1:
-                return 1
-
-            # Return 0 if path length is even
-            else:
-                return 0
-
-        # Recurse separately into left and right subtrees
-        left_count = self.odd_count_helper(root.left, path_len)
-        right_count = self.odd_count_helper(root.right, path_len)
-
-        # Return total count of odd-length paths from both subtrees
-        return left_count + right_count
-
-    def odd_count(self, root: Optional[TreeNode]) -> int:
-
-        # Start odd_count_helper with path_len = 0
-        return self.odd_count_helper(root, 0)
-
-
-# Examples from the problem statement
-print(Solution().odd_count(from_level_order([1, 2, 3, 4, None, None, 7])))   # 2
-print(Solution().odd_count(from_level_order([1, 8, 4, None, None, 2, 7])))   # 2
-
-# Edge cases
-print(Solution().odd_count(None))                                              # 0
-print(Solution().odd_count(from_level_order([1])))                             # 1 (single node, length=1 odd)
-print(Solution().odd_count(from_level_order([1, 2])))                          # 0 (length=2 even)
-print(Solution().odd_count(from_level_order([1, 2, 3])))                       # 0 (both paths length=2)
-print(Solution().odd_count(from_level_order([1, 2, None, 3])))                 # 1 (path 1->2->3 length=3 odd)
-print(Solution().odd_count(from_level_order([1, 2, 3, 4, 5, 6, 7])))          # 4 (all leaves at depth 3, odd)
+root = build_tree(json.loads(input()))   # the test case's level-order values
+print(Solution().odd_count(root))
 ```
 
 ```java run viz=binary-tree viz-root=root
@@ -130,87 +108,186 @@ import java.util.*;
 
 public class Main {
     static class TreeNode {
-        int val;
-        TreeNode left;
-        TreeNode right;
-        TreeNode() {}
+        int val; TreeNode left, right;
         TreeNode(int val) { this.val = val; }
     }
 
-    static TreeNode fromLevelOrder(Integer... values) {
+    static class Solution {
+        int oddCount(TreeNode root) {
+            // Your code goes here — carry the path length DOWN as an argument;
+            // at a leaf return 1 if pathLen is odd, else 0;
+            // at internal nodes return sum of both children.
+            return 0;
+        }
+    }
+
+    public static void main(String[] args) {
+        TreeNode root = buildTree(parseIntegerArray(new Scanner(System.in).nextLine()));
+        System.out.println(new Solution().oddCount(root));
+    }
+
+    static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
         if (values.length == 0 || values[0] == null) return null;
         TreeNode root = new TreeNode(values[0]);
-        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        Deque<TreeNode> queue = new ArrayDeque<>();
         queue.add(root);
         int i = 1;
         while (!queue.isEmpty() && i < values.length) {
             TreeNode node = queue.poll();
-            if (i < values.length && values[i] != null) {
-                node.left = new TreeNode(values[i]);
-                queue.add(node.left);
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
             }
-            i++;
-            if (i < values.length && values[i] != null) {
-                node.right = new TreeNode(values[i]);
-                queue.add(node.right);
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
             }
-            i++;
         }
         return root;
     }
 
+    // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+    static Integer[] parseIntegerArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new Integer[0];
+        String[] parts = inner.split(",");
+        Integer[] out = new Integer[parts.length];
+        for (int i = 0; i < parts.length; i++)
+            out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[1, 2, 3, 4, null, null, 7]" }
+  ],
+  "cases": [
+    { "args": { "root": "[1, 2, 3, 4, null, null, 7]" }, "expected": "2" },
+    { "args": { "root": "[1, 8, 4, null, null, 2, 7]" }, "expected": "2" },
+    { "args": { "root": "[]" }, "expected": "0" },
+    { "args": { "root": "[1]" }, "expected": "1" },
+    { "args": { "root": "[1, 2]" }, "expected": "0" },
+    { "args": { "root": "[1, 2, 3]" }, "expected": "0" },
+    { "args": { "root": "[1, 2, null, 3]" }, "expected": "1" },
+    { "args": { "root": "[1, 2, 3, 4, 5, 6, 7]" }, "expected": "4" }
+  ]
+}
+```
+
+<details>
+<summary><h2>Solution</h2></summary>
+
+A top-down recursion carries the path length as an argument, incrementing by 1 at each node. At a leaf, return `1` if the length is odd, else `0`. At an internal node, return the sum of both children's counts. The base case (`None`) returns `0` — a missing child does not constitute a path.
+
+```python solution time=O(n) space=O(h)
+import json
+from collections import deque
+
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+class Solution:
+    def odd_count_helper(self, root, path_len):
+        if root is None:
+            return 0
+        path_len += 1
+        if root.left is None and root.right is None:
+            return 1 if path_len % 2 == 1 else 0
+        left_count = self.odd_count_helper(root.left, path_len)
+        right_count = self.odd_count_helper(root.right, path_len)
+        return left_count + right_count
+
+    def odd_count(self, root):
+        return self.odd_count_helper(root, 0)
+
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
+
+root = build_tree(json.loads(input()))   # the test case's level-order values
+print(Solution().odd_count(root))
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+    static class TreeNode {
+        int val; TreeNode left, right;
+        TreeNode(int val) { this.val = val; }
+    }
+
     static class Solution {
         private int oddCountHelper(TreeNode root, int pathLen) {
-
-            // Base case: if the current node is null, return 0
-            if (root == null) {
-                return 0;
-            }
-
-            // Include current node in path length
+            if (root == null) return 0;
             pathLen++;
-
-            // If this is a leaf, check if path length is odd
             if (root.left == null && root.right == null) {
-
-                // Return 1 if path length is odd
-                if (pathLen % 2 == 1) {
-                    return 1;
-                }
-
-                // Return 0 if path length is even
-                else {
-                    return 0;
-                }
+                return pathLen % 2 == 1 ? 1 : 0;
             }
-
-            // Recurse separately into left and right subtrees
             int leftCount = oddCountHelper(root.left, pathLen);
             int rightCount = oddCountHelper(root.right, pathLen);
-
-            // Return total count of odd-length paths from both subtrees
             return leftCount + rightCount;
         }
 
         public int oddCount(TreeNode root) {
-
-            // Start oddCountHelper with pathLen = 0
             return oddCountHelper(root, 0);
         }
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().oddCount(fromLevelOrder(1, 2, 3, 4, null, null, 7)));   // 2
-        System.out.println(new Solution().oddCount(fromLevelOrder(1, 8, 4, null, null, 2, 7)));   // 2
+        TreeNode root = buildTree(parseIntegerArray(new Scanner(System.in).nextLine()));
+        System.out.println(new Solution().oddCount(root));
+    }
 
-        // Edge cases
-        System.out.println(new Solution().oddCount(null));                                          // 0
-        System.out.println(new Solution().oddCount(fromLevelOrder(1)));                             // 1
-        System.out.println(new Solution().oddCount(fromLevelOrder(1, 2)));                          // 0
-        System.out.println(new Solution().oddCount(fromLevelOrder(1, 2, 3)));                       // 0
-        System.out.println(new Solution().oddCount(fromLevelOrder(1, 2, null, 3)));                 // 1
-        System.out.println(new Solution().oddCount(fromLevelOrder(1, 2, 3, 4, 5, 6, 7)));          // 4
+    static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+            }
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+            }
+        }
+        return root;
+    }
+
+    // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+    static Integer[] parseIntegerArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new Integer[0];
+        String[] parts = inner.split(",");
+        Integer[] out = new Integer[parts.length];
+        for (int i = 0; i < parts.length; i++)
+            out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```
@@ -218,7 +295,6 @@ public class Main {
 </details>
 <details>
 <summary><h2>Key Takeaway</h2></summary>
-
 
 The stateless root-to-leaf path pattern fuses preorder and postorder mechanics: **descend with an accumulator, decide at leaves, combine on the way back up**. Three things to walk away with:
 

@@ -9,14 +9,19 @@
 //
 // This module itself is tiny — safe to keep eagerly loaded.
 
-import type { RenderResult } from "./render";
+import type { RenderOptions, RenderResult } from "./render";
 
-let cachedRender: Promise<(source: string) => Promise<RenderResult>> | null = null;
+type RenderChapterFn = (
+  source: string,
+  opts?: RenderOptions,
+) => Promise<RenderResult>;
+
+let cachedRender: Promise<RenderChapterFn> | null = null;
 
 /** Lazily load the markdown render module on first call. The returned
  *  function is cached so subsequent chapter renders skip the chunk fetch.
  */
-export function loadRenderChapter(): Promise<(source: string) => Promise<RenderResult>> {
+export function loadRenderChapter(): Promise<RenderChapterFn> {
   if (!cachedRender) {
     cachedRender = import("./render").then((m) => m.renderChapter);
   }

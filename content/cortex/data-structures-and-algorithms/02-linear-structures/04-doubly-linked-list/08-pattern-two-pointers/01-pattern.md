@@ -20,31 +20,126 @@ On a **sorted** doubly list `1 ⇄ 2 ⇄ 4 ⇄ 7 ⇄ 11 ⇄ 15`, find two values
 > ▶ Run it, then click **Visualise** — `left` starts at the head, `right` at the tail; too-small a sum advances `left`, too-large retreats `right` (one `prev` hop).
 
 ```python run viz=linked-list viz-root=head viz-kind=list-double
-class Node:
-    def __init__(self, val):
-        self.val = val
-        self.prev = None
-        self.next = None
+import ast
 
-vals = [1, 2, 4, 7, 11, 15]                  # sorted doubly list
-nodes = [Node(v) for v in vals]
-for i in range(len(nodes) - 1):
-    nodes[i].next = nodes[i + 1]; nodes[i + 1].prev = nodes[i]
-head = nodes[0]
+class ListNode:
+    def __init__(self, val, prev=None, next=None):
+        self.val = val
+        self.prev = prev
+        self.next = next
+
+def build_list(values):              # [1, 2, 3] → 1 ⇄ 2 ⇄ 3
+    head = tail = None
+    for v in values:
+        node = ListNode(v, prev=tail)
+        if tail is not None:
+            tail.next = node
+        else:
+            head = node
+        tail = node
+    return head
+
+def print_list(head):                # 1 ⇄ 2 ⇄ 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
+
+head = build_list(ast.literal_eval(input()))   # the test case's values
 
 left = head
-right = nodes[-1]                            # the tail
-target = 15
+right = head
+while right.next:                    # find the tail
+    right = right.next
+target = int(input())
+
 answer = None
 while left is not right:
     s = left.val + right.val
     if s == target:
-        answer = (left.val, right.val); break
+        answer = [left.val, right.val]; break
     elif s < target:
-        left = left.next                     # need a bigger sum → move left rightward
+        left = left.next             # need a bigger sum → move left rightward
     else:
-        right = right.prev                   # need a smaller sum → move right leftward (O(1))
-print(answer)                                # (4, 11)
+        right = right.prev           # need a smaller sum → move right leftward (O(1))
+print(answer)
+```
+
+```java run viz=linked-list viz-root=head viz-kind=list-double
+import java.util.*;
+
+public class Main {
+  static class ListNode {
+    int val; ListNode prev, next;
+    ListNode(int val) { this.val = val; }
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    ListNode head = buildList(parseIntArray(sc.nextLine()));
+    int target = Integer.parseInt(sc.nextLine().trim());
+
+    ListNode left = head, right = head;
+    while (right.next != null) right = right.next;   // find the tail
+
+    List<Integer> answer = null;
+    while (left != right) {
+      int s = left.val + right.val;
+      if (s == target) {
+        answer = Arrays.asList(left.val, right.val); break;
+      } else if (s < target) {
+        left = left.next;                            // need a bigger sum
+      } else {
+        right = right.prev;                          // need a smaller sum (O(1))
+      }
+    }
+    System.out.println(answer);
+  }
+
+  static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 ⇄ 2 ⇄ 3
+    ListNode head = null, tail = null;
+    for (int v : values) {
+      ListNode node = new ListNode(v);
+      node.prev = tail;
+      if (tail != null) tail.next = node;
+      else head = node;
+      tail = node;
+    }
+    return head;
+  }
+
+  static void printList(ListNode head) {         // 1 ⇄ 2 ⇄ 3 → [1, 2, 3]
+    List<Integer> out = new ArrayList<>();
+    for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+    System.out.println(out);
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's values
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "values", "label": "values", "type": "int[]", "placeholder": "[1, 2, 4, 7, 11, 15]" },
+    { "id": "target", "label": "target", "type": "int", "placeholder": "15" }
+  ],
+  "cases": [
+    { "args": { "values": "[1, 2, 4, 7, 11, 15]", "target": "15" }, "expected": "[4, 11]" },
+    { "args": { "values": "[1, 2, 4, 7, 11, 15]", "target": "3" }, "expected": "[1, 2]" },
+    { "args": { "values": "[1, 2, 4, 7, 11, 15]", "target": "26" }, "expected": "[11, 15]" },
+    { "args": { "values": "[1, 3, 5, 7]", "target": "8" }, "expected": "[1, 7]" }
+  ]
+}
 ```
 
 ## How It Works
@@ -94,14 +189,129 @@ On a singly list there's no `prev`, so finding the node before `15` means walkin
 
 ## Your Turn
 
-The reusable sorted two-sum on a doubly list:
+The reusable sorted two-sum on a doubly list — `two_sum(head, target)` returns the first matching pair as a list, or `None` / `null` if none exists:
 
 ```python run viz=linked-list viz-root=head viz-kind=list-double
-class Node:
-    def __init__(self, val):
+import ast
+
+class ListNode:
+    def __init__(self, val, prev=None, next=None):
         self.val = val
-        self.prev = None
-        self.next = None
+        self.prev = prev
+        self.next = next
+
+def two_sum(head, target):
+    # Your code goes here — find the tail, then converge left from head
+    # and right from tail: advance left if sum < target, retreat right if
+    # sum > target, return [left.val, right.val] on a match.
+    pass
+
+def build_list(values):              # [1, 2, 3] → 1 ⇄ 2 ⇄ 3
+    head = tail = None
+    for v in values:
+        node = ListNode(v, prev=tail)
+        if tail is not None:
+            tail.next = node
+        else:
+            head = node
+        tail = node
+    return head
+
+def print_list(head):                # 1 ⇄ 2 ⇄ 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
+
+head = build_list(ast.literal_eval(input()))   # the test case's values
+target = int(input())
+print(two_sum(head, target))
+```
+
+```java run viz=linked-list viz-root=head viz-kind=list-double
+import java.util.*;
+
+public class Main {
+  static class ListNode {
+    int val; ListNode prev, next;
+    ListNode(int val) { this.val = val; }
+  }
+
+  static List<Integer> twoSum(ListNode head, int target) {
+    // Your code goes here — find the tail, then converge left from head
+    // and right from tail: advance left if sum < target, retreat right if
+    // sum > target, return Arrays.asList(left.val, right.val) on a match.
+    return null;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    ListNode head = buildList(parseIntArray(sc.nextLine()));
+    int target = Integer.parseInt(sc.nextLine().trim());
+    List<Integer> result = twoSum(head, target);
+    System.out.println(result == null ? "None" : result);
+  }
+
+  static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 ⇄ 2 ⇄ 3
+    ListNode head = null, tail = null;
+    for (int v : values) {
+      ListNode node = new ListNode(v);
+      node.prev = tail;
+      if (tail != null) tail.next = node;
+      else head = node;
+      tail = node;
+    }
+    return head;
+  }
+
+  static void printList(ListNode head) {         // 1 ⇄ 2 ⇄ 3 → [1, 2, 3]
+    List<Integer> out = new ArrayList<>();
+    for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+    System.out.println(out);
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's values
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "values", "label": "values", "type": "int[]", "placeholder": "[1, 2, 4, 7, 11, 15]" },
+    { "id": "target", "label": "target", "type": "int", "placeholder": "15" }
+  ],
+  "cases": [
+    { "args": { "values": "[1, 2, 4, 7, 11, 15]", "target": "15" }, "expected": "[4, 11]" },
+    { "args": { "values": "[1, 2, 4, 7, 11, 15]", "target": "3" }, "expected": "[1, 2]" },
+    { "args": { "values": "[1, 2, 4, 7, 11, 15]", "target": "26" }, "expected": "[11, 15]" },
+    { "args": { "values": "[1, 3, 5, 7]", "target": "8" }, "expected": "[1, 7]" },
+    { "args": { "values": "[1, 3, 5, 7]", "target": "100" }, "expected": "None" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Find the tail first (one forward walk), then place `left` at the head and `right` at the tail and converge: a too-small sum advances `left` rightward; a too-large sum retreats `right` leftward via the `O(1)` `prev` step. When the sum matches the target, return the pair immediately. If the pointers meet without a match, no such pair exists — return `None` / `null`.
+
+```python solution time=O(n) space=O(1)
+import ast
+
+class ListNode:
+    def __init__(self, val, prev=None, next=None):
+        self.val = val
+        self.prev = prev
+        self.next = next
 
 def two_sum(head, target):
     left = head
@@ -111,30 +321,51 @@ def two_sum(head, target):
     while left is not right:
         s = left.val + right.val
         if s == target:
-            return (left.val, right.val)
+            return [left.val, right.val]
         elif s < target:
             left = left.next
         else:
             right = right.prev       # O(1) backward step
     return None
 
-vals = [1, 2, 4, 7, 11, 15]
-nodes = [Node(v) for v in vals]
-for i in range(len(nodes) - 1):
-    nodes[i].next = nodes[i + 1]; nodes[i + 1].prev = nodes[i]
-print(two_sum(nodes[0], 15))         # (4, 11)
+def build_list(values):              # [1, 2, 3] → 1 ⇄ 2 ⇄ 3
+    head = tail = None
+    for v in values:
+        node = ListNode(v, prev=tail)
+        if tail is not None:
+            tail.next = node
+        else:
+            head = node
+        tail = node
+    return head
+
+def print_list(head):                # 1 ⇄ 2 ⇄ 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
+
+head = build_list(ast.literal_eval(input()))   # the test case's values
+target = int(input())
+print(two_sum(head, target))
 ```
 
-```java run viz=linked-list viz-root=head viz-kind=list-double
-public class Main {
-  static class Node { int val; Node prev, next; Node(int v){ val = v; } }
+```java solution
+import java.util.*;
 
-  static int[] twoSum(Node head, int target) {
-    Node left = head, right = head;
+public class Main {
+  static class ListNode {
+    int val; ListNode prev, next;
+    ListNode(int val) { this.val = val; }
+  }
+
+  static List<Integer> twoSum(ListNode head, int target) {
+    ListNode left = head, right = head;
     while (right.next != null) right = right.next;   // find the tail
     while (left != right) {
       int s = left.val + right.val;
-      if (s == target) return new int[]{left.val, right.val};
+      if (s == target) return Arrays.asList(left.val, right.val);
       else if (s < target) left = left.next;
       else right = right.prev;                       // O(1) backward step
     }
@@ -142,19 +373,48 @@ public class Main {
   }
 
   public static void main(String[] args) {
-    int[] vals = {1, 2, 4, 7, 11, 15};
-    Node[] n = new Node[vals.length];
-    for (int i = 0; i < vals.length; i++) n[i] = new Node(vals[i]);
-    for (int i = 0; i < vals.length - 1; i++) { n[i].next = n[i + 1]; n[i + 1].prev = n[i]; }
-    int[] r = twoSum(n[0], 15);
-    System.out.println(r == null ? "none" : "(" + r[0] + ", " + r[1] + ")");   // (4, 11)
+    Scanner sc = new Scanner(System.in);
+    ListNode head = buildList(parseIntArray(sc.nextLine()));
+    int target = Integer.parseInt(sc.nextLine().trim());
+    List<Integer> result = twoSum(head, target);
+    System.out.println(result == null ? "None" : result);
+  }
+
+  static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 ⇄ 2 ⇄ 3
+    ListNode head = null, tail = null;
+    for (int v : values) {
+      ListNode node = new ListNode(v);
+      node.prev = tail;
+      if (tail != null) tail.next = node;
+      else head = node;
+      tail = node;
+    }
+    return head;
+  }
+
+  static void printList(ListNode head) {         // 1 ⇄ 2 ⇄ 3 → [1, 2, 3]
+    List<Integer> out = new ArrayList<>();
+    for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+    System.out.println(out);
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's values
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
   }
 }
 ```
 
-Drill the family in **Practice** — [Palindrome Number](/cortex/data-structures-and-algorithms/linear-structures/doubly-linked-list/pattern-two-pointers/problems/palindrome-number), [Two Sum](/cortex/data-structures-and-algorithms/linear-structures/doubly-linked-list/pattern-two-pointers/problems/two-sum), [Duplicate-Aware Two Sum](/cortex/data-structures-and-algorithms/linear-structures/doubly-linked-list/pattern-two-pointers/problems/duplicate-aware-two-sum), and [Approximate Three Sum](/cortex/data-structures-and-algorithms/linear-structures/doubly-linked-list/pattern-two-pointers/problems/approximate-three-sum).
+</details>
 
 ## Reflect & Connect
+
+Drill the family in **Practice** — [Palindrome Number](/cortex/data-structures-and-algorithms/linear-structures/doubly-linked-list/pattern-two-pointers/problems/palindrome-number), [Two Sum](/cortex/data-structures-and-algorithms/linear-structures/doubly-linked-list/pattern-two-pointers/problems/two-sum), [Duplicate-Aware Two Sum](/cortex/data-structures-and-algorithms/linear-structures/doubly-linked-list/pattern-two-pointers/problems/duplicate-aware-two-sum), and [Approximate Three Sum](/cortex/data-structures-and-algorithms/linear-structures/doubly-linked-list/pattern-two-pointers/problems/approximate-three-sum).
 
 The converging scan transfers directly once you have `O(1)` backward movement:
 
@@ -206,4 +466,4 @@ The converging scan transfers directly once you have `O(1)` backward movement:
 
 - **CLRS**, *Introduction to Algorithms*, 4th ed., §10.2 — doubly linked lists and bidirectional traversal.
 - **Sedgewick & Wayne**, *Algorithms*, 4th ed., §1.3 — linked structures; the two-pointer technique on ordered data.
-- The sorted two-sum / converging-pointer scan is standard; both runnable blocks are verified by running (output `(4, 11)`; the `16 ⇒ (1,15)` and no-pair cases checked).
+- The sorted two-sum / converging-pointer scan is standard; both runnable blocks are verified by running (output `[4, 11]` for the default case).

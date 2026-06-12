@@ -15,9 +15,11 @@ That "recurse into one child, never both" is the whole reason search is `O(h)` a
 
 ## See It Work
 
-Search for a present key (`7`) and an absent one (`6`), and find the min and max — all by recursive descent. Run it.
+Search for a key in a BST built from an insertion sequence — prints the found node's value, or `null` if absent. Run it.
 
 ```python run viz=binary-tree viz-root=root
+import ast
+
 class TreeNode:
     def __init__(self, val):
         self.val = val
@@ -38,12 +40,66 @@ def search(root, val):
         return search(root.left, val)        # smaller → recurse left only
     return search(root.right, val)           # larger → recurse right only
 
+values = ast.literal_eval(input())
+key = int(input())
 root = None
-for v in [5, 3, 8, 1, 4, 7, 9]:
+for v in values:
     root = insert(root, v)
+result = search(root, key)
+print(result.val if result else "null")
+```
 
-print(search(root, 7).val if search(root, 7) else None)   # 7  (found)
-print(search(root, 6))                                     # None (absent)
+```java run viz=binary-tree viz-root=root
+import java.util.*;
+public class Main {
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } }
+
+    static TreeNode insert(TreeNode root, int val) {
+        if (root == null) return new TreeNode(val);
+        if (val < root.val) root.left = insert(root.left, val);
+        else if (val > root.val) root.right = insert(root.right, val);
+        return root;
+    }
+
+    static TreeNode search(TreeNode root, int val) {
+        if (root == null || root.val == val) return root;
+        return val < root.val ? search(root.left, val) : search(root.right, val);
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+
+    public static void main(String[] a) {
+        Scanner sc = new Scanner(System.in);
+        int[] values = parseIntArray(sc.nextLine());
+        int key = Integer.parseInt(sc.nextLine().trim());
+        TreeNode root = null;
+        for (int v : values) root = insert(root, v);
+        TreeNode result = search(root, key);
+        System.out.println(result != null ? result.val : "null");
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "values", "label": "insert sequence", "type": "array", "placeholder": "[5, 3, 8, 1, 4, 7, 9]" },
+    { "id": "key", "label": "search key", "type": "number", "placeholder": "7" }
+  ],
+  "cases": [
+    { "args": { "values": "[5, 3, 8, 1, 4, 7, 9]", "key": "7" }, "expected": "7" },
+    { "args": { "values": "[5, 3, 8, 1, 4, 7, 9]", "key": "6" }, "expected": "null" },
+    { "args": { "values": "[4, 2, 6, 1, 3, 5, 7]", "key": "1" }, "expected": "1" },
+    { "args": { "values": "[4, 2, 6, 1, 3, 5, 7]", "key": "8" }, "expected": "null" }
+  ]
+}
 ```
 
 ## How It Works
@@ -91,9 +147,11 @@ Because of **how many children each call recurses into**. Traversal recurses int
 
 ## Your Turn
 
-The reusable recursive search, plus min and max:
+The reusable recursive search, plus min and max. Input: values array (line 1) and a search key (line 2). Output: `true`/`false` for found (line 1), min value (line 2), max value (line 3).
 
 ```python run viz=binary-tree viz-root=root
+import ast
+
 class TreeNode:
     def __init__(self, val):
         self.val = val
@@ -117,35 +175,70 @@ def find_min(root):
 def find_max(root):
     return root if root is None or root.right is None else find_max(root.right)
 
+values = ast.literal_eval(input())
+key = int(input())
 root = None
-for v in [5, 3, 8, 1, 4, 7, 9]:
+for v in values:
     root = insert(root, v)
-print(bool(search(root, 4)), bool(search(root, 6)))   # True False
-print(find_min(root).val, find_max(root).val)          # 1 9
+print("true" if search(root, key) else "false")
+print(find_min(root).val)
+print(find_max(root).val)
 ```
 
 ```java run viz=binary-tree viz-root=root
+import java.util.*;
 public class Main {
-  static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } }
-  static TreeNode insert(TreeNode r, int v) {
-    if (r == null) return new TreeNode(v);
-    if (v < r.val) r.left = insert(r.left, v);
-    else if (v > r.val) r.right = insert(r.right, v);
-    return r;
-  }
-  static TreeNode search(TreeNode root, int val) {
-    if (root == null || root.val == val) return root;
-    return val < root.val ? search(root.left, val) : search(root.right, val);
-  }
-  static TreeNode findMin(TreeNode r) { return (r == null || r.left == null) ? r : findMin(r.left); }
-  static TreeNode findMax(TreeNode r) { return (r == null || r.right == null) ? r : findMax(r.right); }
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } }
 
-  public static void main(String[] args) {
-    TreeNode root = null;
-    for (int v : new int[]{5, 3, 8, 1, 4, 7, 9}) root = insert(root, v);
-    System.out.println((search(root, 4) != null) + " " + (search(root, 6) != null));   // true false
-    System.out.println(findMin(root).val + " " + findMax(root).val);                    // 1 9
-  }
+    static TreeNode insert(TreeNode r, int v) {
+        if (r == null) return new TreeNode(v);
+        if (v < r.val) r.left = insert(r.left, v);
+        else if (v > r.val) r.right = insert(r.right, v);
+        return r;
+    }
+
+    static TreeNode search(TreeNode root, int val) {
+        if (root == null || root.val == val) return root;
+        return val < root.val ? search(root.left, val) : search(root.right, val);
+    }
+
+    static TreeNode findMin(TreeNode r) { return (r == null || r.left == null) ? r : findMin(r.left); }
+    static TreeNode findMax(TreeNode r) { return (r == null || r.right == null) ? r : findMax(r.right); }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] values = parseIntArray(sc.nextLine());
+        int key = Integer.parseInt(sc.nextLine().trim());
+        TreeNode root = null;
+        for (int v : values) root = insert(root, v);
+        System.out.println(search(root, key) != null);
+        System.out.println(findMin(root).val);
+        System.out.println(findMax(root).val);
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "values", "label": "insert sequence", "type": "array", "placeholder": "[5, 3, 8, 1, 4, 7, 9]" },
+    { "id": "key", "label": "search key", "type": "number", "placeholder": "4" }
+  ],
+  "cases": [
+    { "args": { "values": "[5, 3, 8, 1, 4, 7, 9]", "key": "4" }, "expected": "true\n1\n9" },
+    { "args": { "values": "[5, 3, 8, 1, 4, 7, 9]", "key": "6" }, "expected": "false\n1\n9" },
+    { "args": { "values": "[4, 2, 6, 1, 3, 5, 7]", "key": "7" }, "expected": "true\n1\n7" },
+    { "args": { "values": "[3, 1, 5]", "key": "2" }, "expected": "false\n1\n5" }
+  ]
 }
 ```
 
@@ -203,4 +296,4 @@ Recursive search is the template every other BST operation extends:
 
 - **CLRS**, *Introduction to Algorithms*, 4th ed., §12.2 — `TREE-SEARCH`, `TREE-MINIMUM`, `TREE-MAXIMUM`.
 - **Sedgewick & Wayne**, *Algorithms*, 4th ed., §3.2 — recursive BST search and ordered operations.
-- The recursive search and min/max descents are standard; both runnable blocks are verified by running (search `4 ⇒ True`, `6 ⇒ False`; min `1`, max `9`).
+- The recursive search and min/max descents are standard; both runnable blocks are verified by running (search `4 ⇒ true`, `6 ⇒ false`; min `1`, max `9`).

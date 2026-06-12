@@ -10,8 +10,8 @@ import scala.jdk.CollectionConverters.*
  * Build-time validator for `d3 widget=linked-list` payloads across every chapter markdown file under
  * `content/cortex/` (recursive walk).
  *
- * Hard-rejects the same canon the [[cortex.client.components.book.widgets.LinkedList]] widget enforces
- * at runtime (see ADR-0016): marker names ∈ `{head, tail, previous, current, next, slow, fast, dummy, start,
+ * Hard-rejects the same canon the [[cortex.client.components.book.widgets.LinkedList]] widget enforces at
+ * runtime (see ADR-0016): marker names ∈ `{head, tail, previous, current, next, slow, fast, dummy, start,
  * end, headA, headB, tailA, tailB}`, no `color` on payload markers, node `style` ∈ `{new, removed,
  * highlight}`, `sections[]` startIdx strictly increasing and in bounds. Runtime enforcement catches drift the
  * instant the author saves a chapter under `bin/dev`; this validator catches drift in CI for chapters nobody

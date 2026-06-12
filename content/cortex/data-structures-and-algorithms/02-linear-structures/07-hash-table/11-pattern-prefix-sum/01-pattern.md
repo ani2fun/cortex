@@ -15,9 +15,13 @@ That reframes the search. Instead of trying every start, keep a **running prefix
 
 ## See It Work
 
-Count the subarrays of `[1, 1, 1]` that sum to `k = 2` (there are two: indices `0..1` and `1..2`). Run it.
+Count the subarrays of `nums` that sum to `k`. Run it.
+
+> ▶ Run it — one pass carries a running prefix sum; at each step look up `running − k` in the map of seen prefixes, then record the current prefix.
 
 ```python run viz=array
+import ast
+
 def subarray_sum_count(nums, k):
     count = {0: 1}        # one "empty" prefix of sum 0 (see the trace for why)
     running = 0
@@ -28,7 +32,59 @@ def subarray_sum_count(nums, k):
         count[running] = count.get(running, 0) + 1
     return total
 
-print(subarray_sum_count([1, 1, 1], 2))      # 2
+nums = ast.literal_eval(input())             # the test case's array
+k = int(input())                             # the target sum
+print(subarray_sum_count(nums, k))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+  static int subarraySumCount(int[] nums, int k) {
+    Map<Integer, Integer> count = new HashMap<>();
+    count.put(0, 1);                              // empty prefix of sum 0
+    int running = 0, total = 0;
+    for (int x : nums) {
+      running += x;
+      total += count.getOrDefault(running - k, 0);  // earlier prefixes gap = k
+      count.merge(running, 1, Integer::sum);
+    }
+    return total;
+  }
+
+  static int[] parseIntArray(String s) {
+    s = s.trim().replaceAll("[\\[\\]\\s]", "");
+    if (s.isEmpty()) return new int[0];
+    String[] t = s.split(",");
+    int[] a = new int[t.length];
+    for (int i = 0; i < t.length; i++) a[i] = Integer.parseInt(t[i].trim());
+    return a;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] nums = parseIntArray(sc.nextLine());     // the test case's array
+    int k = Integer.parseInt(sc.nextLine().trim()); // the target sum
+    System.out.println(subarraySumCount(nums, k));
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "nums", "label": "nums", "type": "int[]", "placeholder": "[1, 1, 1]" },
+    { "id": "k",    "label": "k",    "type": "int",   "placeholder": "2" }
+  ],
+  "cases": [
+    { "args": { "nums": "[1, 1, 1]",      "k": "2" }, "expected": "2" },
+    { "args": { "nums": "[1, 2, 3]",      "k": "3" }, "expected": "2" },
+    { "args": { "nums": "[1, -1, 0]",     "k": "0" }, "expected": "3" },
+    { "args": { "nums": "[-1, -1, 1]",    "k": "0" }, "expected": "1" },
+    { "args": { "nums": "[3, 4, 7, 2, -3, 1, 4, 2]", "k": "7" }, "expected": "4" }
+  ]
+}
 ```
 
 ## How It Works
@@ -76,6 +132,8 @@ It represents the subarray `[1, 1]` covering indices `0..1` — the *whole prefi
 The reusable count-subarrays-summing-to-`k`:
 
 ```python run viz=array
+import ast
+
 def subarray_sum_count(nums, k):
     count = {0: 1}
     running = 0
@@ -86,8 +144,9 @@ def subarray_sum_count(nums, k):
         count[running] = count.get(running, 0) + 1
     return total
 
-print(subarray_sum_count([1, 2, 3], 3))      # 2  ([1,2] and [3])
-print(subarray_sum_count([1, -1, 0], 0))     # 3  (handles negatives)
+nums = ast.literal_eval(input())
+k = int(input())
+print(subarray_sum_count(nums, k))
 ```
 
 ```java run viz=array
@@ -106,12 +165,97 @@ public class Main {
     return total;
   }
 
+  static int[] parseIntArray(String s) {
+    s = s.trim().replaceAll("[\\[\\]\\s]", "");
+    if (s.isEmpty()) return new int[0];
+    String[] t = s.split(",");
+    int[] a = new int[t.length];
+    for (int i = 0; i < t.length; i++) a[i] = Integer.parseInt(t[i].trim());
+    return a;
+  }
+
   public static void main(String[] args) {
-    System.out.println(subarraySumCount(new int[]{1, 2, 3}, 3));    // 2
-    System.out.println(subarraySumCount(new int[]{1, -1, 0}, 0));   // 3
+    Scanner sc = new Scanner(System.in);
+    int[] nums = parseIntArray(sc.nextLine());
+    int k = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(subarraySumCount(nums, k));
   }
 }
 ```
+
+```testcases
+{
+  "args": [
+    { "id": "nums", "label": "nums", "type": "int[]", "placeholder": "[1, 2, 3]" },
+    { "id": "k",    "label": "k",    "type": "int",   "placeholder": "3" }
+  ],
+  "cases": [
+    { "args": { "nums": "[1, 2, 3]",      "k": "3" }, "expected": "2" },
+    { "args": { "nums": "[1, -1, 0]",     "k": "0" }, "expected": "3" },
+    { "args": { "nums": "[1, 1, 1]",      "k": "2" }, "expected": "2" },
+    { "args": { "nums": "[3, 4, 7, 2, -3, 1, 4, 2]", "k": "7" }, "expected": "4" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Three steps per element: `running += x`, look up `count[running − k]` for the number of earlier prefixes that gap to `k`, then record `count[running] += 1`. Seed the map with `{0: 1}` so subarrays that start at index 0 are counted. `O(n)` time, `O(n)` space. The map stores prefix frequencies (the counting pattern), and the prefix-difference identity is what replaces the nested loop. Works with negatives because it makes no monotonicity assumption.
+
+```python solution time=O(n) space=O(n)
+import ast
+
+def subarray_sum_count(nums, k):
+    count = {0: 1}
+    running = 0
+    total = 0
+    for x in nums:
+        running += x
+        total += count.get(running - k, 0)
+        count[running] = count.get(running, 0) + 1
+    return total
+
+nums = ast.literal_eval(input())
+k = int(input())
+print(subarray_sum_count(nums, k))
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+  static int subarraySumCount(int[] nums, int k) {
+    Map<Integer, Integer> count = new HashMap<>();
+    count.put(0, 1);
+    int running = 0, total = 0;
+    for (int x : nums) {
+      running += x;
+      total += count.getOrDefault(running - k, 0);
+      count.merge(running, 1, Integer::sum);
+    }
+    return total;
+  }
+
+  static int[] parseIntArray(String s) {
+    s = s.trim().replaceAll("[\\[\\]\\s]", "");
+    if (s.isEmpty()) return new int[0];
+    String[] t = s.split(",");
+    int[] a = new int[t.length];
+    for (int i = 0; i < t.length; i++) a[i] = Integer.parseInt(t[i].trim());
+    return a;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] nums = parseIntArray(sc.nextLine());
+    int k = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(subarraySumCount(nums, k));
+  }
+}
+```
+
+</details>
 
 Drill the family in **Practice** — [First Equilibrium Point](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-prefix-sum/problems/first-equilibrium-point), [Self-Excluded Array Product](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-prefix-sum/problems/self-excluded-array-product), [Balanced Binary Subarray](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-prefix-sum/problems/balanced-binary-subarray), and [Zero-Sum Subarrays](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-prefix-sum/problems/zero-sum-subarrays).
 

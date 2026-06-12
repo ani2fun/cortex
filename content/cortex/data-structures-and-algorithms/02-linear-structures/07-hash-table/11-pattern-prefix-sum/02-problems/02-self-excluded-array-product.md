@@ -4,6 +4,8 @@ summary: "Given arr, return an array product where product[i] equals the product
 prereqs:
   - 11-pattern-prefix-sum/01-pattern
 difficulty: medium
+kind: problem
+topics: [prefix-sum, hash-table]
 ---
 
 # Self excluded array product
@@ -54,86 +56,93 @@ Explanation: the three 1s leave the product of the others unchanged, so every sl
 except index 0 picks up the 5.
 ```
 
-<details>
-<summary><h2>Approach</h2></summary>
+## Constraints
 
+- `2 ≤ arr.length ≤ 10^5`
+- `-30 ≤ arr[i] ≤ 30`
+- The product of any prefix or suffix of `arr` fits in a 32-bit signed integer.
 
-This is the prefix-sum trick generalised to **prefix products**. Build two arrays:
+```python run
+import ast
 
-- `prefix[i] = arr[0] * arr[1] * ... * arr[i-1]` (product of everything strictly before `i`).
-- `suffix[i] = arr[i+1] * arr[i+2] * ... * arr[n-1]` (product of everything strictly after `i`).
+class Solution:
+    def self_excluded_array_product(self, arr):
+        # Your code goes here — build a prefix_product and suffix_product
+        # array, then combine them pointwise. No division allowed.
+        return []
 
-Then `product[i] = prefix[i] * suffix[i]`. Two passes (one left-to-right, one right-to-left), no division, O(N) time and O(N) space (which can be optimised to O(1) extra by computing one direction in-place).
+arr = ast.literal_eval(input())
+print(Solution().self_excluded_array_product(arr))
+```
 
-```d2
-direction: right
+```java run
+import java.util.*;
 
-arr: "arr" {
-  grid-columns: 4
-  grid-gap: 0
-  a0: "1"
-  a1: "2"
-  a2: "3"
-  a3: "4"
-}
+public class Main {
+  static class Solution {
+    public int[] selfExcludedArrayProduct(int[] arr) {
+      // Your code goes here — build prefix and suffix product arrays,
+      // then combine them pointwise. No division allowed.
+      return new int[arr.length];
+    }
+  }
 
-prefix: "prefix (product of arr[0..i-1])" {
-  grid-columns: 4
-  grid-gap: 0
-  p0: "1"
-  p1: "1"
-  p2: "2"
-  p3: "6"
-}
+  static int[] parseIntArray(String s) {
+    s = s.trim().replaceAll("[\\[\\]\\s]", "");
+    if (s.isEmpty()) return new int[0];
+    String[] t = s.split(",");
+    int[] a = new int[t.length];
+    for (int i = 0; i < t.length; i++) a[i] = Integer.parseInt(t[i].trim());
+    return a;
+  }
 
-suffix: "suffix (product of arr[i+1..n-1])" {
-  grid-columns: 4
-  grid-gap: 0
-  s0: "24"
-  s1: "12"
-  s2: "4"
-  s3: "1"
-}
-
-product: "product = prefix * suffix" {
-  grid-columns: 4
-  grid-gap: 0
-  r0: "24" {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
-  r1: "12" {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
-  r2: "8" {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
-  r3: "6" {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
+  public static void main(String[] args) {
+    int[] arr = parseIntArray(new Scanner(System.in).nextLine());
+    System.out.println(Arrays.toString(new Solution().selfExcludedArrayProduct(arr)));
+  }
 }
 ```
 
-<p align="center"><strong>Self-excluded product — prefix product holds "everything before me", suffix product holds "everything after me", and their pointwise product is the answer. The technique is prefix-sum's multiplicative cousin.</strong></p>
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[1, 2, 3, 4]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[1, 2, 3, 4]" },  "expected": "[24, 12, 8, 6]" },
+    { "args": { "arr": "[2, 3, 0]" },     "expected": "[0, 0, 6]" },
+    { "args": { "arr": "[3, 4]" },        "expected": "[4, 3]" },
+    { "args": { "arr": "[1, 1]" },        "expected": "[1, 1]" },
+    { "args": { "arr": "[1, 2, 3]" },     "expected": "[6, 3, 2]" },
+    { "args": { "arr": "[0, 0]" },        "expected": "[0, 0]" },
+    { "args": { "arr": "[5, 1, 1, 1]" },  "expected": "[1, 5, 5, 5]" }
+  ]
+}
+```
 
-</details>
 <details>
-<summary><h2>Solution</h2></summary>
+<summary>Editorial</summary>
 
+The prefix-sum idea generalised to multiplication. Build `prefix_product[i]` = product of `arr[0..i]` and `suffix_product[i]` = product of `arr[i..n-1]`. Then `result[i] = prefix_product[i-1] * suffix_product[i+1]`, with `result[0] = suffix_product[1]` and `result[n-1] = prefix_product[n-2]`. Two passes, no division, `O(N)` time, `O(N)` space. Works correctly with zeros — the division shortcut would break on zero inputs.
 
-
-```python run viz=array viz-root=prefix_product
-from typing import List
+```python solution time=O(n) space=O(n)
+import ast
 
 class Solution:
-    def self_excluded_array_product(self, arr: List[int]) -> List[int]:
-        n: int = len(arr)
-        prefix_product: List[int] = [0] * n
-        suffix_product: List[int] = [0] * n
-        result: List[int] = [0] * n
+    def self_excluded_array_product(self, arr):
+        n = len(arr)
+        prefix_product = [0] * n
+        suffix_product = [0] * n
+        result = [0] * n
 
-        # Prefix product
         prefix_product[0] = arr[0]
         for i in range(1, n):
             prefix_product[i] = prefix_product[i - 1] * arr[i]
 
-        # Suffix product
         suffix_product[n - 1] = arr[n - 1]
         for i in range(n - 2, -1, -1):
             suffix_product[i] = suffix_product[i + 1] * arr[i]
 
-        # Result calculation
         result[0] = suffix_product[1]
         result[n - 1] = prefix_product[n - 2]
         for i in range(1, n - 1):
@@ -141,74 +150,52 @@ class Solution:
 
         return result
 
-
-# Examples from the problem statement
-print(Solution().self_excluded_array_product([1, 2, 3, 4]))  # [24, 12, 8, 6]
-print(Solution().self_excluded_array_product([2, 3, 0]))     # [0, 0, 6]
-print(Solution().self_excluded_array_product([3, 4]))        # [4, 3]
-
-# Edge cases
-print(Solution().self_excluded_array_product([1, 1]))        # [1, 1]
-print(Solution().self_excluded_array_product([2, 2]))        # [2, 2]
-print(Solution().self_excluded_array_product([1, 2, 3]))     # [6, 3, 2]
-print(Solution().self_excluded_array_product([0, 0]))        # [0, 0]
-print(Solution().self_excluded_array_product([5, 1, 1, 1]))  # [1, 5, 5, 5]
+arr = ast.literal_eval(input())
+print(Solution().self_excluded_array_product(arr))
 ```
 
-```java run viz=array viz-root=prefix_product
-import java.util.Arrays;
+```java solution
+import java.util.*;
 
 public class Main {
-    static class Solution {
-        public int[] selfExcludedArrayProduct(int[] arr) {
-            int n = arr.length;
-            int[] prefixProduct = new int[n];
-            int[] suffixProduct = new int[n];
-            int[] result = new int[n];
+  static class Solution {
+    public int[] selfExcludedArrayProduct(int[] arr) {
+      int n = arr.length;
+      int[] pre = new int[n], suf = new int[n], res = new int[n];
 
-            // Prefix product
-            prefixProduct[0] = arr[0];
-            for (int i = 1; i < n; i++) {
-                prefixProduct[i] = prefixProduct[i - 1] * arr[i];
-            }
+      pre[0] = arr[0];
+      for (int i = 1; i < n; i++) pre[i] = pre[i - 1] * arr[i];
 
-            // Suffix product
-            suffixProduct[n - 1] = arr[n - 1];
-            for (int i = n - 2; i >= 0; i--) {
-                suffixProduct[i] = suffixProduct[i + 1] * arr[i];
-            }
+      suf[n - 1] = arr[n - 1];
+      for (int i = n - 2; i >= 0; i--) suf[i] = suf[i + 1] * arr[i];
 
-            // Result calculation
-            result[0] = suffixProduct[1];
-            result[n - 1] = prefixProduct[n - 2];
-            for (int i = 1; i < n - 1; i++) {
-                result[i] = prefixProduct[i - 1] * suffixProduct[i + 1];
-            }
+      res[0] = suf[1];
+      res[n - 1] = pre[n - 2];
+      for (int i = 1; i < n - 1; i++) res[i] = pre[i - 1] * suf[i + 1];
 
-            return result;
-        }
+      return res;
     }
+  }
 
-    public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(Arrays.toString(new Solution().selfExcludedArrayProduct(new int[]{1, 2, 3, 4})));  // [24, 12, 8, 6]
-        System.out.println(Arrays.toString(new Solution().selfExcludedArrayProduct(new int[]{2, 3, 0})));     // [0, 0, 6]
-        System.out.println(Arrays.toString(new Solution().selfExcludedArrayProduct(new int[]{3, 4})));        // [4, 3]
+  static int[] parseIntArray(String s) {
+    s = s.trim().replaceAll("[\\[\\]\\s]", "");
+    if (s.isEmpty()) return new int[0];
+    String[] t = s.split(",");
+    int[] a = new int[t.length];
+    for (int i = 0; i < t.length; i++) a[i] = Integer.parseInt(t[i].trim());
+    return a;
+  }
 
-        // Edge cases
-        System.out.println(Arrays.toString(new Solution().selfExcludedArrayProduct(new int[]{1, 1})));        // [1, 1]
-        System.out.println(Arrays.toString(new Solution().selfExcludedArrayProduct(new int[]{2, 2})));        // [2, 2]
-        System.out.println(Arrays.toString(new Solution().selfExcludedArrayProduct(new int[]{1, 2, 3})));     // [6, 3, 2]
-        System.out.println(Arrays.toString(new Solution().selfExcludedArrayProduct(new int[]{0, 0})));        // [0, 0]
-        System.out.println(Arrays.toString(new Solution().selfExcludedArrayProduct(new int[]{5, 1, 1, 1}))); // [1, 5, 5, 5]
-    }
+  public static void main(String[] args) {
+    int[] arr = parseIntArray(new Scanner(System.in).nextLine());
+    System.out.println(Arrays.toString(new Solution().selfExcludedArrayProduct(arr)));
+  }
 }
 ```
 
 </details>
 <details>
 <summary><h2>Intuition</h2></summary>
-
 
 Each output slot needs the product of every element *except* the one at that index. The brute-force read is a double loop: for each index, multiply all the others. That is `O(N²)` time. The tempting shortcut — multiply everything once, then divide out `arr[i]` per slot — is `O(N)` but illegal here (division is banned) and broken anyway, because a single `0` makes the total product `0` and division by the other zeros is undefined.
 
@@ -219,7 +206,6 @@ This is the multiplicative cousin of prefix sums, and it needs no hash map — t
 </details>
 <details>
 <summary><h2>Applying the Diagnostic Questions</h2></summary>
-
 
 | Check | Answer for Self Excluded Array Product |
 |---|---|
@@ -232,7 +218,6 @@ This is the multiplicative cousin of prefix sums, and it needs no hash map — t
 <details>
 <summary><h2>Approach</h2></summary>
 
-
 1. Allocate `prefix_product`, `suffix_product`, and `result`, each of length `n`.
 2. Fill `prefix_product` left to right: `prefix_product[0] = arr[0]`, then `prefix_product[i] = prefix_product[i - 1] · arr[i]` — the product of `arr[0..i]`.
 3. Fill `suffix_product` right to left: `suffix_product[n - 1] = arr[n - 1]`, then `suffix_product[i] = suffix_product[i + 1] · arr[i]` — the product of `arr[i..n-1]`.
@@ -243,7 +228,6 @@ This is the multiplicative cousin of prefix sums, and it needs no hash map — t
 </details>
 <details>
 <summary><h2>Dry Run</h2></summary>
-
 
 Walk Example 1: `arr = [1, 2, 3, 4]`, expected output `[24, 12, 8, 6]`. Build both running-product arrays, then combine:
 
@@ -265,7 +249,6 @@ The result `[24, 12, 8, 6]` matches the expected output — each slot is the pro
 <details>
 <summary><h2>Complexity Analysis</h2></summary>
 
-
 | | Cost | Why |
 |---|---|---|
 | **Time** | **O(N)** | Two linear passes build the product arrays, one more combines them; each step is `O(1)`. |
@@ -274,7 +257,6 @@ The result `[24, 12, 8, 6]` matches the expected output — each slot is the pro
 </details>
 <details>
 <summary><h2>Edge Cases</h2></summary>
-
 
 | Input | Output | Why |
 |---|---|---|
@@ -288,7 +270,6 @@ The result `[24, 12, 8, 6]` matches the expected output — each slot is the pro
 </details>
 <details>
 <summary><h2>Key Takeaway</h2></summary>
-
 
 The prefix-sum idea is not limited to sums — split each answer into a prefix aggregate and a suffix aggregate, and "the product of all other elements" falls out in `O(N)` without division, correct even when the array holds zeros.
 

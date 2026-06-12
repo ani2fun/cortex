@@ -15,11 +15,13 @@ The **binary search tree** recovers ordered, *dynamic* operations. It's a binary
 
 ## See It Work
 
-Insert `[5, 3, 8, 1, 4, 7, 9]` into a BST, then read it back in order. Run it, then **Visualise** the shape — note the in-order walk comes out sorted.
+Insert values into a BST one by one, then read them back in order via in-order traversal. Run it, then **Visualise** the shape — note the in-order walk comes out sorted.
 
 > ▶ Run it, then click **Visualise** — each value drops left or right by comparison until it finds an empty spot; the in-order traversal emerges sorted.
 
 ```python run viz=binary-tree viz-root=root
+import ast
+
 class TreeNode:
     def __init__(self, val):
         self.val = val
@@ -38,11 +40,66 @@ def insert(root, val):
 def inorder(node):
     return inorder(node.left) + [node.val] + inorder(node.right) if node else []
 
+values = ast.literal_eval(input())
 root = None
-for v in [5, 3, 8, 1, 4, 7, 9]:
+for v in values:
     root = insert(root, v)
-print(inorder(root))                     # [1, 3, 4, 5, 7, 8, 9] — sorted!
+print(inorder(root))
 ```
+
+```java run viz=binary-tree viz-root=root
+import java.util.*;
+public class Main {
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } }
+
+    static TreeNode insert(TreeNode root, int val) {
+        if (root == null) return new TreeNode(val);
+        if (val < root.val) root.left = insert(root.left, val);
+        else if (val > root.val) root.right = insert(root.right, val);
+        return root;
+    }
+
+    static List<Integer> inorder(TreeNode n) {
+        List<Integer> out = new ArrayList<>();
+        if (n == null) return out;
+        out.addAll(inorder(n.left)); out.add(n.val); out.addAll(inorder(n.right));
+        return out;
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+
+    public static void main(String[] a) {
+        Scanner sc = new Scanner(System.in);
+        int[] values = parseIntArray(sc.nextLine());
+        TreeNode root = null;
+        for (int v : values) root = insert(root, v);
+        System.out.println(inorder(root));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "values", "label": "insert sequence", "type": "array", "placeholder": "[5, 3, 8, 1, 4, 7, 9]" }
+  ],
+  "cases": [
+    { "args": { "values": "[5, 3, 8, 1, 4, 7, 9]" }, "expected": "[1, 3, 4, 5, 7, 8, 9]" },
+    { "args": { "values": "[4, 2, 6, 1, 3, 5, 7]" }, "expected": "[1, 2, 3, 4, 5, 6, 7]" },
+    { "args": { "values": "[1, 2, 3, 4]" }, "expected": "[1, 2, 3, 4]" },
+    { "args": { "values": "[5]" }, "expected": "[5]" }
+  ]
+}
+```
+
+Both print `[1, 3, 4, 5, 7, 8, 9]` — sorted. The insert order was `[5, 3, 8, 1, 4, 7, 9]` — random — but in-order traversal always reads a BST sorted.
 
 ## How It Works
 
@@ -88,9 +145,11 @@ It would become a completely **right-leaning chain** — `1 → 3 → 4 → 5 �
 
 ## Your Turn
 
-The reusable BST — insert, search, in-order:
+The reusable BST — insert, search, in-order. Input: a values array (line 1) and a key to search for (line 2). Output: the in-order traversal, then the search result.
 
 ```python run viz=binary-tree viz-root=root
+import ast
+
 class TreeNode:
     def __init__(self, val):
         self.val = val
@@ -116,42 +175,75 @@ def search(root, val):
 def inorder(node):
     return inorder(node.left) + [node.val] + inorder(node.right) if node else []
 
+values = ast.literal_eval(input())
+key = int(input())
 root = None
-for v in [5, 3, 8, 1, 4, 7, 9]:
+for v in values:
     root = insert(root, v)
-print(inorder(root))                 # [1, 3, 4, 5, 7, 8, 9]
-print(search(root, 7), search(root, 6))   # True False
+print(inorder(root))
+print("true" if search(root, key) else "false")
 ```
 
 ```java run viz=binary-tree viz-root=root
+import java.util.*;
 public class Main {
-  static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } }
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } }
 
-  static TreeNode insert(TreeNode root, int val) {
-    if (root == null) return new TreeNode(val);
-    if (val < root.val) root.left = insert(root.left, val);
-    else if (val > root.val) root.right = insert(root.right, val);
-    return root;
-  }
-  static boolean search(TreeNode root, int val) {
-    while (root != null) {
-      if (val == root.val) return true;
-      root = val < root.val ? root.left : root.right;
+    static TreeNode insert(TreeNode root, int val) {
+        if (root == null) return new TreeNode(val);
+        if (val < root.val) root.left = insert(root.left, val);
+        else if (val > root.val) root.right = insert(root.right, val);
+        return root;
     }
-    return false;
-  }
-  static void inorder(TreeNode n, java.util.List<Integer> out) {
-    if (n == null) return;
-    inorder(n.left, out); out.add(n.val); inorder(n.right, out);
-  }
-  public static void main(String[] args) {
-    TreeNode root = null;
-    for (int v : new int[]{5, 3, 8, 1, 4, 7, 9}) root = insert(root, v);
-    java.util.List<Integer> out = new java.util.ArrayList<>();
-    inorder(root, out);
-    System.out.println(out + " " + search(root, 7) + " " + search(root, 6));
-    // [1, 3, 4, 5, 7, 8, 9] true false
-  }
+
+    static boolean search(TreeNode root, int val) {
+        while (root != null) {
+            if (val == root.val) return true;
+            root = val < root.val ? root.left : root.right;
+        }
+        return false;
+    }
+
+    static List<Integer> inorder(TreeNode n) {
+        List<Integer> out = new ArrayList<>();
+        if (n == null) return out;
+        out.addAll(inorder(n.left)); out.add(n.val); out.addAll(inorder(n.right));
+        return out;
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+
+    public static void main(String[] a) {
+        Scanner sc = new Scanner(System.in);
+        int[] values = parseIntArray(sc.nextLine());
+        int key = Integer.parseInt(sc.nextLine().trim());
+        TreeNode root = null;
+        for (int v : values) root = insert(root, v);
+        System.out.println(inorder(root));
+        System.out.println(search(root, key));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "values", "label": "insert sequence", "type": "array", "placeholder": "[5, 3, 8, 1, 4, 7, 9]" },
+    { "id": "key", "label": "search key", "type": "number", "placeholder": "7" }
+  ],
+  "cases": [
+    { "args": { "values": "[5, 3, 8, 1, 4, 7, 9]", "key": "7" }, "expected": "[1, 3, 4, 5, 7, 8, 9]\ntrue" },
+    { "args": { "values": "[5, 3, 8, 1, 4, 7, 9]", "key": "6" }, "expected": "[1, 3, 4, 5, 7, 8, 9]\nfalse" },
+    { "args": { "values": "[4, 2, 6, 1, 3, 5, 7]", "key": "5" }, "expected": "[1, 2, 3, 4, 5, 6, 7]\ntrue" },
+    { "args": { "values": "[3, 1, 5]", "key": "1" }, "expected": "[1, 3, 5]\ntrue" }
+  ]
 }
 ```
 
@@ -209,4 +301,4 @@ The BST is the canonical *ordered, dynamic* container:
 
 - **CLRS**, *Introduction to Algorithms*, 4th ed., §12 — binary search trees, the BST property, and `O(h)` operations.
 - **Sedgewick & Wayne**, *Algorithms*, 4th ed., §3.2 — BSTs, in-order traversal, and the balance problem.
-- The BST invariant, `O(h)` operations, and in-order-sorted property are standard; both runnable blocks are verified by running (in-order `⇒ [1,3,4,5,7,8,9]`, search `7 ⇒ True, 6 ⇒ False`).
+- The BST invariant, `O(h)` operations, and in-order-sorted property are standard; both runnable blocks are verified by running (in-order `⇒ [1,3,4,5,7,8,9]`, search `7 ⇒ true, 6 ⇒ false`).

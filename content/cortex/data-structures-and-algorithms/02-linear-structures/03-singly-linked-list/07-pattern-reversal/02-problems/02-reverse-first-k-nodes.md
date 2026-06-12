@@ -4,6 +4,8 @@ summary: "Given the head of a singly linked list and a non-negative integer k, w
 prereqs:
   - 08-pattern-reversal/01-pattern
 difficulty: easy
+kind: problem
+topics: [reversal, singly-linked-list]
 ---
 
 # Reverse first K nodes
@@ -34,8 +36,113 @@ Input:  head = [1, 2, 3, 4, 5], k = 0
 Output: [1, 2, 3, 4, 5]
 ```
 
+## Constraints
 
----
+- `0 ≤ list length ≤ 10⁵`
+- `-10⁴ ≤ node.val ≤ 10⁴`
+- `0 ≤ k`
+- If `k` exceeds the list length, reverse the entire list
+- Reverse **in place** — `O(1)` extra space; node values must not be copied or rewritten
+
+```python run viz=linked-list viz-root=head
+import ast
+
+class ListNode:
+    def __init__(self, val, next=None):
+        self.val = val
+        self.next = next
+
+class Solution:
+    def reverse_first_k_nodes(self, head, k):
+        # Your code goes here — run the full-list three-pointer loop but
+        # add a count < k guard; stitch head.next = current after the loop.
+        pass
+
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
+
+def print_list(head):                # 1 → 2 → 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
+
+head = build_list(ast.literal_eval(input()))   # the test case's head
+k = int(input())
+print_list(Solution().reverse_first_k_nodes(head, k))
+```
+
+```java run viz=linked-list viz-root=head
+import java.util.*;
+
+public class Main {
+    static class ListNode {
+        int val; ListNode next;
+        ListNode(int val) { this.val = val; }
+        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+    }
+
+    static class Solution {
+        ListNode reverseFirstKNodes(ListNode head, int k) {
+            // Your code goes here — run the full-list three-pointer loop but
+            // add a count < k guard; stitch head.next = current after the loop.
+            return null;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        ListNode head = buildList(parseIntArray(sc.nextLine()));
+        int k = Integer.parseInt(sc.nextLine().trim());
+        printList(new Solution().reverseFirstKNodes(head, k));
+    }
+
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+        ListNode head = null;
+        for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+        return head;
+    }
+
+    static void printList(ListNode head) {         // 1 → 2 → 3 → [1, 2, 3]
+        List<Integer> out = new ArrayList<>();
+        for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+        System.out.println(out);
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's head
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "head", "label": "head", "type": "int[]", "placeholder": "[5, 7, 3, 10]" },
+    { "id": "k", "label": "k", "type": "int", "placeholder": "2" }
+  ],
+  "cases": [
+    { "args": { "head": "[5, 7, 3, 10]", "k": "2" }, "expected": "[7, 5, 3, 10]" },
+    { "args": { "head": "[1, 2, 3, 4, 5]", "k": "5" }, "expected": "[5, 4, 3, 2, 1]" },
+    { "args": { "head": "[1, 2, 3, 4, 5]", "k": "0" }, "expected": "[1, 2, 3, 4, 5]" },
+    { "args": { "head": "[]", "k": "3" }, "expected": "[]" },
+    { "args": { "head": "[1]", "k": "1" }, "expected": "[1]" },
+    { "args": { "head": "[1, 2]", "k": "2" }, "expected": "[2, 1]" },
+    { "args": { "head": "[1, 2, 3, 4, 5]", "k": "3" }, "expected": "[3, 2, 1, 4, 5]" },
+    { "args": { "head": "[1, 2, 3, 4, 5]", "k": "7" }, "expected": "[5, 4, 3, 2, 1]" }
+  ]
+}
+```
 
 <details>
 <summary><h2>Intuition</h2></summary>
@@ -95,47 +202,24 @@ Run the prefix-bounded three-pointer loop, then stitch.
 ### Solution
 
 
-```python run viz=linked-list viz-root=head
-from typing import Optional
-
+```python solution time=O(n) space=O(1)
+import ast
 
 class ListNode:
-    def __init__(self, val=0, nxt=None):
+    def __init__(self, val, next=None):
         self.val = val
-        self.next = nxt
-
-
-def from_list(values):
-    if not values:
-        return None
-    head = ListNode(values[0])
-    cur = head
-    for v in values[1:]:
-        cur.next = ListNode(v)
-        cur = cur.next
-    return head
-
-
-def to_list(head):
-    out = []
-    while head is not None:
-        out.append(head.val)
-        head = head.next
-    return out
-
+        self.next = next
 
 class Solution:
-    def reverse_first_k_nodes(
-        self, head: Optional[ListNode], k: int
-    ) -> Optional[ListNode]:
+    def reverse_first_k_nodes(self, head, k):
 
         # if K is less than or equal to 0, return the original head
         if k <= 0:
             return head
 
         # Initialize pointers current and previous
-        current: Optional[ListNode] = head
-        previous: Optional[ListNode] = None
+        current = head
+        previous = None
         count = 0
 
         while current is not None and count < k:
@@ -161,52 +245,36 @@ class Solution:
 
         return previous
 
+def build_list(values):              # [1, 2, 3] → 1 → 2 → 3 → null
+    head = None
+    for v in reversed(values):
+        head = ListNode(v, head)
+    return head
 
-# Examples from the problem statement
-print(to_list(Solution().reverse_first_k_nodes(from_list([5, 7, 3, 10]), 2)))  # [7, 5, 3, 10]
+def print_list(head):                # 1 → 2 → 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
 
-# Edge cases
-print(to_list(Solution().reverse_first_k_nodes(None, 3)))                       # []
-print(to_list(Solution().reverse_first_k_nodes(from_list([1]), 1)))             # [1]
-print(to_list(Solution().reverse_first_k_nodes(from_list([1, 2]), 2)))          # [2, 1]
-print(to_list(Solution().reverse_first_k_nodes(from_list([1, 2, 3, 4, 5]), 0))) # [1, 2, 3, 4, 5]
-print(to_list(Solution().reverse_first_k_nodes(from_list([1, 2, 3, 4, 5]), 1))) # [1, 2, 3, 4, 5]
-print(to_list(Solution().reverse_first_k_nodes(from_list([1, 2, 3, 4, 5]), 5))) # [5, 4, 3, 2, 1]
-print(to_list(Solution().reverse_first_k_nodes(from_list([1, 2, 3, 4, 5]), 3))) # [3, 2, 1, 4, 5]
-print(to_list(Solution().reverse_first_k_nodes(from_list([1, 2, 3, 4, 5]), 7))) # [5, 4, 3, 2, 1]
+head = build_list(ast.literal_eval(input()))   # the test case's head
+k = int(input())
+print_list(Solution().reverse_first_k_nodes(head, k))
 ```
 
-```java run viz=linked-list viz-root=head
+```java solution
 import java.util.*;
 
 public class Main {
     static class ListNode {
-        int val;
-        ListNode next;
-        ListNode() {}
+        int val; ListNode next;
         ListNode(int val) { this.val = val; }
         ListNode(int val, ListNode next) { this.val = val; this.next = next; }
     }
 
-    static ListNode fromList(int... values) {
-        if (values.length == 0) return null;
-        ListNode head = new ListNode(values[0]);
-        ListNode cur = head;
-        for (int i = 1; i < values.length; i++) {
-            cur.next = new ListNode(values[i]);
-            cur = cur.next;
-        }
-        return head;
-    }
-
-    static List<Integer> toList(ListNode head) {
-        List<Integer> out = new ArrayList<>();
-        while (head != null) { out.add(head.val); head = head.next; }
-        return out;
-    }
-
     static class Solution {
-        public ListNode reverseFirstKNodes(ListNode head, int k) {
+        ListNode reverseFirstKNodes(ListNode head, int k) {
 
             // if K is less than or equal to 0, return the original head
             if (k <= 0) {
@@ -246,18 +314,32 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(toList(new Solution().reverseFirstKNodes(fromList(5, 7, 3, 10), 2)));  // [7, 5, 3, 10]
+        Scanner sc = new Scanner(System.in);
+        ListNode head = buildList(parseIntArray(sc.nextLine()));
+        int k = Integer.parseInt(sc.nextLine().trim());
+        printList(new Solution().reverseFirstKNodes(head, k));
+    }
 
-        // Edge cases
-        System.out.println(toList(new Solution().reverseFirstKNodes(null, 3)));                    // []
-        System.out.println(toList(new Solution().reverseFirstKNodes(fromList(1), 1)));             // [1]
-        System.out.println(toList(new Solution().reverseFirstKNodes(fromList(1, 2), 2)));          // [2, 1]
-        System.out.println(toList(new Solution().reverseFirstKNodes(fromList(1, 2, 3, 4, 5), 0))); // [1, 2, 3, 4, 5]
-        System.out.println(toList(new Solution().reverseFirstKNodes(fromList(1, 2, 3, 4, 5), 1))); // [1, 2, 3, 4, 5]
-        System.out.println(toList(new Solution().reverseFirstKNodes(fromList(1, 2, 3, 4, 5), 5))); // [5, 4, 3, 2, 1]
-        System.out.println(toList(new Solution().reverseFirstKNodes(fromList(1, 2, 3, 4, 5), 3))); // [3, 2, 1, 4, 5]
-        System.out.println(toList(new Solution().reverseFirstKNodes(fromList(1, 2, 3, 4, 5), 7))); // [5, 4, 3, 2, 1]
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 → 2 → 3 → null
+        ListNode head = null;
+        for (int i = values.length - 1; i >= 0; i--) head = new ListNode(values[i], head);
+        return head;
+    }
+
+    static void printList(ListNode head) {         // 1 → 2 → 3 → [1, 2, 3]
+        List<Integer> out = new ArrayList<>();
+        for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+        System.out.println(out);
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's head
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

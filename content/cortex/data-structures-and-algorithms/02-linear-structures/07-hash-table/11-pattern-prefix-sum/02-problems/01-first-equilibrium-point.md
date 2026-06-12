@@ -4,6 +4,8 @@ summary: "Given an array arr, return the first index i such that sum(arr[0..i-1]
 prereqs:
   - 11-pattern-prefix-sum/01-pattern
 difficulty: easy
+kind: problem
+topics: [prefix-sum, hash-table]
 ---
 
 # First equilibrium point
@@ -54,111 +56,128 @@ Explanation: a single element has empty sides — both sum to 0 — so index 0 i
 equilibrium point.
 ```
 
-<details>
-<summary><h2>Approach</h2></summary>
+## Constraints
 
+- `1 ≤ arr.length ≤ 10^5`
+- `-10^4 ≤ arr[i] ≤ 10^4`
 
-Build a `prefix_sum` array where `prefix_sum[i]` holds the sum of the first `i` elements (so `prefix_sum[0] = 0`). With it, any range sum is a constant-time subtraction. For candidate index `i − 1`, the elements strictly to the left sum to `prefix_sum[i] − arr[i - 1]`, and the elements strictly to the right sum to `prefix_sum[n] − prefix_sum[i]`. Walk the array and return the first index where those two equal. One warm-up pass to fill `prefix_sum`, one pass to scan — **O(N)**.
-
-</details>
-<details>
-<summary><h2>Solution</h2></summary>
-
-
-
-```python run viz=array viz-root=prefix_sum
-from typing import List
+```python run
+import ast
 
 class Solution:
-    def first_equilibrium_point(self, arr: List[int]) -> int:
+    def first_equilibrium_point(self, arr):
+        # Your code goes here — build a prefix-sum array, then for each index
+        # check whether left_sum == right_sum using O(1) lookups.
+        return -1
 
-        # calculate the prefix sum of the array
+arr = ast.literal_eval(input())
+print(Solution().first_equilibrium_point(arr))
+```
+
+```java run
+import java.util.*;
+
+public class Main {
+  static class Solution {
+    public int firstEquilibriumPoint(int[] arr) {
+      // Your code goes here — build a prefix-sum array, then for each index
+      // check whether leftSum == rightSum using O(1) lookups.
+      return -1;
+    }
+  }
+
+  static int[] parseIntArray(String s) {
+    s = s.trim().replaceAll("[\\[\\]\\s]", "");
+    if (s.isEmpty()) return new int[0];
+    String[] t = s.split(",");
+    int[] a = new int[t.length];
+    for (int i = 0; i < t.length; i++) a[i] = Integer.parseInt(t[i].trim());
+    return a;
+  }
+
+  public static void main(String[] args) {
+    int[] arr = parseIntArray(new Scanner(System.in).nextLine());
+    System.out.println(new Solution().firstEquilibriumPoint(arr));
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[1, 3, 5, 2, 2]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[1, 3, 5, 2, 2]" }, "expected": "2" },
+    { "args": { "arr": "[5, 5, 5, 5, 5]" }, "expected": "2" },
+    { "args": { "arr": "[1, 3, 5, 10]" },   "expected": "-1" },
+    { "args": { "arr": "[1]" },             "expected": "0" },
+    { "args": { "arr": "[2, 1, 2]" },       "expected": "1" },
+    { "args": { "arr": "[0, 0, 0]" },       "expected": "0" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Build `prefix_sum` where `prefix_sum[i]` holds the sum of the first `i` elements (`prefix_sum[0] = 0`). For candidate index `i − 1`, the left side is `prefix_sum[i] − arr[i-1]` and the right side is `prefix_sum[n] − prefix_sum[i]`. Walk and return the first `i − 1` where those are equal. Two passes — `O(N)` time, `O(N)` space (reducible to `O(1)` with running sums). The prefix array turns each `O(N)` side-sum into an `O(1)` subtraction.
+
+```python solution time=O(n) space=O(n)
+import ast
+
+class Solution:
+    def first_equilibrium_point(self, arr):
         prefix_sum = [0] * (len(arr) + 1)
         for i in range(1, len(arr) + 1):
             prefix_sum[i] = prefix_sum[i - 1] + arr[i - 1]
-
-        # check for equilibrium point
         for i in range(1, len(arr) + 1):
-
-            # calculate sum of elements before and after the current
-            # index
             left_sum = prefix_sum[i] - arr[i - 1]
             right_sum = prefix_sum[len(arr)] - prefix_sum[i]
-
-            # if both sums are equal, return the current index as
-            # equilibrium point
             if left_sum == right_sum:
                 return i - 1
-
-        # no equilibrium point found
         return -1
 
-
-# Examples from the problem statement
-print(Solution().first_equilibrium_point([1, 3, 5, 2, 2]))  # 2
-print(Solution().first_equilibrium_point([5, 5, 5, 5, 5]))  # 2
-print(Solution().first_equilibrium_point([1, 3, 5, 10]))    # -1
-
-# Edge cases
-print(Solution().first_equilibrium_point([1]))               # 0
-print(Solution().first_equilibrium_point([0, 0, 0]))         # 0
-print(Solution().first_equilibrium_point([1, 2, 3]))         # -1
-print(Solution().first_equilibrium_point([2, 1, 2]))         # 1
-print(Solution().first_equilibrium_point([0]))               # 0
+arr = ast.literal_eval(input())
+print(Solution().first_equilibrium_point(arr))
 ```
 
-```java run viz=array viz-root=prefix_sum
+```java solution
+import java.util.*;
+
 public class Main {
-    static class Solution {
-        public int firstEquilibriumPoint(int[] arr) {
-
-            // calculate the prefix sum of the array
-            int[] prefixSum = new int[arr.length + 1];
-            prefixSum[0] = 0;
-            for (int i = 1; i <= arr.length; i++) {
-                prefixSum[i] = prefixSum[i - 1] + arr[i - 1];
-            }
-
-            // check for equilibrium point
-            for (int i = 1; i <= arr.length; i++) {
-
-                // calculate sum of elements before and after the current
-                // index
-                int leftSum = prefixSum[i] - arr[i - 1];
-                int rightSum = prefixSum[arr.length] - prefixSum[i];
-
-                // if both sums are equal, return the current index as
-                // equilibrium point
-                if (leftSum == rightSum) {
-                    return i - 1;
-                }
-            }
-
-            // no equilibrium point found
-            return -1;
-        }
+  static class Solution {
+    public int firstEquilibriumPoint(int[] arr) {
+      int[] ps = new int[arr.length + 1];
+      for (int i = 1; i <= arr.length; i++) ps[i] = ps[i - 1] + arr[i - 1];
+      for (int i = 1; i <= arr.length; i++) {
+        int leftSum = ps[i] - arr[i - 1];
+        int rightSum = ps[arr.length] - ps[i];
+        if (leftSum == rightSum) return i - 1;
+      }
+      return -1;
     }
+  }
 
-    public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().firstEquilibriumPoint(new int[]{1, 3, 5, 2, 2}));  // 2
-        System.out.println(new Solution().firstEquilibriumPoint(new int[]{5, 5, 5, 5, 5}));  // 2
-        System.out.println(new Solution().firstEquilibriumPoint(new int[]{1, 3, 5, 10}));    // -1
+  static int[] parseIntArray(String s) {
+    s = s.trim().replaceAll("[\\[\\]\\s]", "");
+    if (s.isEmpty()) return new int[0];
+    String[] t = s.split(",");
+    int[] a = new int[t.length];
+    for (int i = 0; i < t.length; i++) a[i] = Integer.parseInt(t[i].trim());
+    return a;
+  }
 
-        // Edge cases
-        System.out.println(new Solution().firstEquilibriumPoint(new int[]{1}));               // 0
-        System.out.println(new Solution().firstEquilibriumPoint(new int[]{0, 0, 0}));         // 0
-        System.out.println(new Solution().firstEquilibriumPoint(new int[]{1, 2, 3}));         // -1
-        System.out.println(new Solution().firstEquilibriumPoint(new int[]{2, 1, 2}));         // 1
-        System.out.println(new Solution().firstEquilibriumPoint(new int[]{0}));               // 0
-    }
+  public static void main(String[] args) {
+    int[] arr = parseIntArray(new Scanner(System.in).nextLine());
+    System.out.println(new Solution().firstEquilibriumPoint(arr));
+  }
 }
 ```
 
 </details>
 <details>
 <summary><h2>Intuition</h2></summary>
-
 
 An equilibrium point splits the array so the elements strictly to its left sum to the same value as the elements strictly to its right. The brute-force read of that definition is a double loop: for each candidate index, sum everything to its left and everything to its right, then compare. Each candidate costs an `O(N)` re-sum, and there are `N` candidates, so the work is `O(N²)` time — and most of it re-adds the same elements the previous candidate already summed.
 
@@ -169,7 +188,6 @@ This is the no-map flavour of prefix sums: a precomputed prefix *array*, not a h
 </details>
 <details>
 <summary><h2>Applying the Diagnostic Questions</h2></summary>
-
 
 | Check | Answer for First Equilibrium Point |
 |---|---|
@@ -182,7 +200,6 @@ This is the no-map flavour of prefix sums: a precomputed prefix *array*, not a h
 <details>
 <summary><h2>Approach</h2></summary>
 
-
 1. Allocate `prefix_sum` of length `n + 1` and set `prefix_sum[0] = 0`.
 2. Fill it left to right so `prefix_sum[i] = prefix_sum[i - 1] + arr[i - 1]` — the total of the first `i` elements.
 3. Scan `i` from `1` to `n`. For each, compute `left_sum = prefix_sum[i] − arr[i - 1]` (elements strictly before the candidate) and `right_sum = prefix_sum[n] − prefix_sum[i]` (elements strictly after it).
@@ -192,7 +209,6 @@ This is the no-map flavour of prefix sums: a precomputed prefix *array*, not a h
 </details>
 <details>
 <summary><h2>Dry Run</h2></summary>
-
 
 Walk Example 1: `arr = [1, 3, 5, 2, 2]`, expected output `2`. First the prefix array, then the scan:
 
@@ -213,7 +229,6 @@ The result `2` matches the expected output — at index `2` the left side `[1, 3
 <details>
 <summary><h2>Complexity Analysis</h2></summary>
 
-
 | | Cost | Why |
 |---|---|---|
 | **Time** | **O(N)** | One pass builds `prefix_sum`, a second scans for the split; each step is `O(1)`. |
@@ -222,7 +237,6 @@ The result `2` matches the expected output — at index `2` the left side `[1, 3
 </details>
 <details>
 <summary><h2>Edge Cases</h2></summary>
-
 
 | Input | Output | Why |
 |---|---|---|
@@ -236,7 +250,6 @@ The result `2` matches the expected output — at index `2` the left side `[1, 3
 </details>
 <details>
 <summary><h2>Key Takeaway</h2></summary>
-
 
 When a problem compares a left-of-index total to a right-of-index total, a precomputed prefix-sum array turns each `O(N)` side-sum into an `O(1)` subtraction, collapsing the whole scan from `O(N²)` to `O(N)`.
 

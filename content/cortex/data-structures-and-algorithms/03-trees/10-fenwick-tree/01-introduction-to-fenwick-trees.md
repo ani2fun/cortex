@@ -154,9 +154,11 @@ Before you read on: that asymmetry looks like a quirk — why not make both walk
 
 ## Your Turn
 
-Fenwick build, range sum, and point update in both languages:
+Fenwick build, range sum, and point update in both languages. Input: 1-indexed array, then a range query `l r`, then a point update `i delta`, then another range query `l r`. Output: the two range-sum results.
 
-```python run viz=array viz-root=tree viz-kind=fenwick
+```python run
+import ast
+
 class Fenwick:
     def __init__(self, n):
         self.n = n; self.bit = [0]*(n+1)
@@ -168,26 +170,74 @@ class Fenwick:
         return s
     def range_sum(self, l, r): return self.prefix_sum(r) - self.prefix_sum(l-1)
 
-bit = Fenwick(8)
-for i, v in enumerate([1,2,3,4,5,6,7,8], start=1): bit.update(i, v)
-print(bit.range_sum(1,8), bit.range_sum(3,6))     # 36 18
-bit.update(5, 100)
-print(bit.range_sum(1,8), bit.range_sum(3,6))     # 136 118
+arr = ast.literal_eval(input())
+l1, r1 = map(int, input().split())
+ui, ud = map(int, input().split())
+l2, r2 = map(int, input().split())
+
+bit = Fenwick(len(arr))
+for i, v in enumerate(arr, start=1): bit.update(i, v)
+print(bit.range_sum(l1, r1))
+bit.update(ui, ud)
+print(bit.range_sum(l2, r2))
 ```
 
-```java run viz=array viz-root=tree viz-kind=fenwick
+```java run
+import java.util.*;
 public class Main {
   static int n; static long[] bit;
   static void update(int i, long d) { while (i <= n) { bit[i] += d; i += i & -i; } }
   static long prefixSum(int i) { long s = 0; while (i > 0) { s += bit[i]; i -= i & -i; } return s; }
   static long rangeSum(int l, int r) { return prefixSum(r) - prefixSum(l - 1); }
-  public static void main(String[] a) {
-    int[] arr = {1,2,3,4,5,6,7,8}; n = arr.length; bit = new long[n + 1];
-    for (int i = 1; i <= n; i++) update(i, arr[i - 1]);
-    System.out.println(rangeSum(1, 8) + " " + rangeSum(3, 6));   // 36 18
-    update(5, 100);
-    System.out.println(rangeSum(1, 8) + " " + rangeSum(3, 6));   // 136 118
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
   }
+  public static void main(String[] a) {
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());
+    int l1 = sc.nextInt(), r1 = sc.nextInt();
+    int ui = sc.nextInt(); long ud = sc.nextLong();
+    int l2 = sc.nextInt(), r2 = sc.nextInt();
+    n = arr.length; bit = new long[n + 1];
+    for (int i = 1; i <= n; i++) update(i, arr[i - 1]);
+    System.out.println(rangeSum(l1, r1));
+    update(ui, ud);
+    System.out.println(rangeSum(l2, r2));
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr",   "label": "array (1-indexed values)", "type": "array",  "placeholder": "[1, 2, 3, 4, 5, 6, 7, 8]" },
+    { "id": "q1",    "label": "range query l r",           "type": "string", "placeholder": "1 8" },
+    { "id": "upd",   "label": "update i delta",            "type": "string", "placeholder": "5 100" },
+    { "id": "q2",    "label": "range query l r",           "type": "string", "placeholder": "3 6" }
+  ],
+  "cases": [
+    {
+      "args": { "arr": "[1, 2, 3, 4, 5, 6, 7, 8]", "q1": "1 8", "upd": "5 100", "q2": "3 6" },
+      "expected": "36\n118"
+    },
+    {
+      "args": { "arr": "[1, 3, 5, 7]", "q1": "1 4", "upd": "2 5", "q2": "1 4" },
+      "expected": "16\n21"
+    },
+    {
+      "args": { "arr": "[5, 10, 15]", "q1": "1 3", "upd": "1 3", "q2": "1 3" },
+      "expected": "30\n33"
+    },
+    {
+      "args": { "arr": "[10]", "q1": "1 1", "upd": "1 5", "q2": "1 1" },
+      "expected": "10\n15"
+    }
+  ]
 }
 ```
 

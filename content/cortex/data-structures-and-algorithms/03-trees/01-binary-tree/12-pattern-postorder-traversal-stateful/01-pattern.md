@@ -18,6 +18,9 @@ So you split the two roles. The recursion **returns** the single-branch contribu
 The **diameter**: the longest root-to-root path measured in edges. At each node, the path *through* it is `left_height + right_height`; track the max of that while returning height upward. Run it.
 
 ```python run viz=binary-tree viz-root=root
+import json
+from collections import deque
+
 class TreeNode:
     def __init__(self, val, left=None, right=None):
         self.val = val
@@ -37,8 +40,101 @@ def diameter(root):
     height(root)
     return best
 
-root = TreeNode(1, TreeNode(2, TreeNode(4), TreeNode(5)), TreeNode(3, None, TreeNode(6)))
-print(diameter(root))     # 4   (the path 4 → 2 → 1 → 3 → 6)
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
+
+root = build_tree(json.loads(input()))   # the test case's level-order values
+print(diameter(root))
+```
+
+```java run viz=binary-tree viz-root=root
+import java.util.*;
+
+public class Main {
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
+  }
+
+  static int best;
+
+  static int height(TreeNode n) {
+    if (n == null) return 0;
+    int lh = height(n.left), rh = height(n.right);
+    best = Math.max(best, lh + rh);          // through-node (both branches)
+    return 1 + Math.max(lh, rh);             // single-branch up
+  }
+
+  static int diameter(TreeNode root) { best = 0; height(root); return best; }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+    System.out.println(diameter(root));
+  }
+
+  static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
+    }
+    return root;
+  }
+
+  // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[1, 2, 3, 4, 5, null, 6]" }
+  ],
+  "cases": [
+    { "args": { "root": "[1, 2, 3, 4, 5, null, 6]" }, "expected": "4" },
+    { "args": { "root": "[-10, 9, 20, null, null, 15, 7]" }, "expected": "3" },
+    { "args": { "root": "[1]" }, "expected": "0" },
+    { "args": { "root": "[]" }, "expected": "0" },
+    { "args": { "root": "[1, 2]" }, "expected": "1" },
+    { "args": { "root": "[1, 2, 3, 4, 5]" }, "expected": "3" }
+  ]
+}
 ```
 
 ## How It Works
@@ -83,62 +179,238 @@ Because the two numbers answer two different questions. `lh + rh = 4` is "the lo
 
 ## Your Turn
 
-Diameter plus the maximum path sum (same shape, clamp negatives):
+Write the stateful postorder template: `diameter(root)` tracks `best` in an outer variable, and `height(node)` returns the single-branch height while updating `best` with `lh + rh`.
 
 ```python run viz=binary-tree viz-root=root
+import json
+from collections import deque
+
 class TreeNode:
     def __init__(self, val, left=None, right=None):
-        self.val = val; self.left = left; self.right = right
+        self.val = val
+        self.left = left
+        self.right = right
 
 def diameter(root):
     best = 0
     def height(node):
         nonlocal best
-        if node is None: return 0
-        lh, rh = height(node.left), height(node.right)
-        best = max(best, lh + rh)
-        return 1 + max(lh, rh)
+        # Your code goes here — base case None → 0; recurse both children;
+        # update best with lh + rh (path through this node); return 1 + max(lh, rh).
+        return 0
     height(root)
     return best
 
-def max_path_sum(root):
-    best = float('-inf')
-    def gain(node):
-        nonlocal best
-        if node is None: return 0
-        lg = max(gain(node.left), 0)        # drop negative branches
-        rg = max(gain(node.right), 0)
-        best = max(best, node.val + lg + rg)  # through this node
-        return node.val + max(lg, rg)         # extendable one-branch gain
-    gain(root)
-    return best
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
 
-root = TreeNode(-10, TreeNode(9), TreeNode(20, TreeNode(15), TreeNode(7)))
-print(diameter(root), max_path_sum(root))   # 3 42
+root = build_tree(json.loads(input()))   # the test case's level-order values
+print(diameter(root))
 ```
 
 ```java run viz=binary-tree viz-root=root
+import java.util.*;
+
 public class Main {
-  static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } TreeNode(int v, TreeNode l, TreeNode r){ val=v; left=l; right=r; } }
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
+  }
+
   static int best;
+
+  static int height(TreeNode n) {
+    // Your code goes here — base case null → 0; recurse both children;
+    // update best with lh + rh (path through this node); return 1 + max(lh, rh).
+    return 0;
+  }
+
+  static int diameter(TreeNode root) { best = 0; height(root); return best; }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+    System.out.println(diameter(root));
+  }
+
+  static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
+    }
+    return root;
+  }
+
+  // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[1, 2, 3, 4, 5, null, 6]" }
+  ],
+  "cases": [
+    { "args": { "root": "[1, 2, 3, 4, 5, null, 6]" }, "expected": "4" },
+    { "args": { "root": "[-10, 9, 20, null, null, 15, 7]" }, "expected": "3" },
+    { "args": { "root": "[1]" }, "expected": "0" },
+    { "args": { "root": "[]" }, "expected": "0" },
+    { "args": { "root": "[1, 2]" }, "expected": "1" },
+    { "args": { "root": "[1, 2, 3, 4, 5]" }, "expected": "3" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+At each node, both children's heights are gathered first (postorder). The through-this-node diameter candidate is `lh + rh` — a two-branch path that bends at this node and can never be extended further, so it updates the outer `best`. The return value is `1 + max(lh, rh)` — the longest one-branch extension the parent can attach to.
+
+```python solution time=O(n) space=O(h)
+import json
+from collections import deque
+
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+def diameter(root):
+    best = 0
+    def height(node):
+        nonlocal best
+        if node is None:
+            return 0
+        lh = height(node.left)
+        rh = height(node.right)
+        best = max(best, lh + rh)        # path THROUGH this node (uses BOTH children)
+        return 1 + max(lh, rh)            # height returned UP (parent extends ONE side)
+    height(root)
+    return best
+
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
+
+root = build_tree(json.loads(input()))   # the test case's level-order values
+print(diameter(root))
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
+  }
+
+  static int best;
+
   static int height(TreeNode n) {
     if (n == null) return 0;
     int lh = height(n.left), rh = height(n.right);
     best = Math.max(best, lh + rh);          // through-node (both branches)
     return 1 + Math.max(lh, rh);             // single-branch up
   }
+
   static int diameter(TreeNode root) { best = 0; height(root); return best; }
+
   public static void main(String[] args) {
-    TreeNode root = new TreeNode(1, new TreeNode(2, new TreeNode(4), new TreeNode(5)),
-                                    new TreeNode(3, null, new TreeNode(6)));
-    System.out.println(diameter(root));   // 4
+    Scanner sc = new Scanner(System.in);
+    TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+    System.out.println(diameter(root));
+  }
+
+  static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
+    }
+    return root;
+  }
+
+  // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
   }
 }
 ```
 
-Drill the family in **Practice** — [Diameter of Tree](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-postorder-traversal-stateful/problems/diameter-of-tree), [Descendants Sum Count](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-postorder-traversal-stateful/problems/descendants-sum-count), [Distribute Coins](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-postorder-traversal-stateful/problems/distribute-coins), and [Longest Monotonic Path](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-postorder-traversal-stateful/problems/longest-monotonic-path).
+</details>
 
 ## Reflect & Connect
+
+Drill the family in **Practice** — [Diameter of Tree](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-postorder-traversal-stateful/problems/diameter-of-tree), [Descendants Sum Count](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-postorder-traversal-stateful/problems/descendants-sum-count), [Distribute Coins](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-postorder-traversal-stateful/problems/distribute-coins), and [Longest Monotonic Path](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-postorder-traversal-stateful/problems/longest-monotonic-path).
 
 Stateful postorder is bottom-up recursion where the answer and the return value diverge:
 

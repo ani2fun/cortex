@@ -4,6 +4,8 @@ summary: "Given two strings s1 and s2, return true if s1 can be constructed usin
 prereqs:
   - 07-pattern-counting/01-pattern
 difficulty: easy
+kind: problem
+topics: [counting, hash-table]
 ---
 
 # Constructibility check
@@ -11,18 +13,6 @@ difficulty: easy
 ## Problem Statement
 
 Given two strings `s1` and `s2`, return `true` if `s1` can be constructed using the letters from `s2` (each letter usable at most once). Return `false` otherwise.
-
-### Example 1
-> -   **Input:** `s1 = "somenote", s2 = "enetomoselse"`
-> -   **Output:** `true`
-
-### Example 2
-> -   **Input:** `s1 = "thief", s2 = "hifacqet"`
-> -   **Output:** `true`
-
-### Example 3
-> -   **Input:** `s1 = "alpha", s2 = "beta"`
-> -   **Output:** `false`
 
 ## Examples
 
@@ -53,7 +43,6 @@ Input:  s1 = "aa", s2 = "a"
 Output: false
 Explanation: s1 needs two 'a's but s2 supplies only one → not buildable.
 ```
-
 
 <details>
 <summary><h2>Intuition</h2></summary>
@@ -119,115 +108,119 @@ Count the supply, then spend it as you walk the demand.
 5. **Succeed if `s1` finishes.** Reaching the end of `s1` means every demand was met — return `true`.
 
 </details>
-<details>
-<summary><h2>Solution</h2></summary>
 
-
-
-```python run viz=array
-from collections import defaultdict
-from typing import Dict
-
-class Solution:
-    def count_frequency(self, s: str) -> Dict[str, int]:
-        frequency = defaultdict(int)
-        for ch in s:
-            frequency[ch] += 1
-
-        return frequency
-
-    def constructibility_check(self, s1: str, s2: str) -> bool:
-
-        # Create a map to store the frequency of each character in s2
-        s2_frequency = self.count_frequency(s2)
-
-        # Iterate over the characters in s1
-        for ch in s1:
-
-            # If the frequency of the character is zero, return False
-            if s2_frequency.get(ch, 0) == 0:
-                return False
-
-            # Decrement the frequency of the character in the map
-            s2_frequency[ch] -= 1
-
-        # If all characters in s1 can be constructed from s2, return True
-        return True
-
-
-# Examples from the problem statement
-print(Solution().constructibility_check("somenote", "enetomoselse"))  # True
-print(Solution().constructibility_check("thief", "hifacqet"))         # True
-print(Solution().constructibility_check("alpha", "beta"))             # False
-
-# Edge cases
-print(Solution().constructibility_check("", "abc"))                   # True
-print(Solution().constructibility_check("a", ""))                     # False
-print(Solution().constructibility_check("aa", "a"))                   # False
-print(Solution().constructibility_check("a", "a"))                    # True
-print(Solution().constructibility_check("abc", "abc"))                # True
+```quiz
+{
+  "prompt": "Can \"note\" be constructed from \"tnoee\"?",
+  "input": "s1 = \"note\"\ns2 = \"tnoee\"",
+  "options": ["true", "false"],
+  "answer": "true"
+}
 ```
 
-```java run viz=array
+## Constraints
+
+- `1 ≤ s1.length, s2.length ≤ 10⁵`
+- `s1` and `s2` consist of lowercase English letters
+
+```python run
+class Solution:
+    def constructibility_check(self, s1: str, s2: str) -> bool:
+        # Your code goes here — count s2, then consume from the pool as you walk s1.
+        return False
+
+s1 = input()
+s2 = input()
+print("true" if Solution().constructibility_check(s1, s2) else "false")
+```
+
+```java run
 import java.util.*;
 
 public class Main {
     static class Solution {
-        private Map<Character, Integer> countFrequency(String s) {
-            Map<Character, Integer> frequency = new HashMap<>();
-            for (char ch : s.toCharArray()) {
-                frequency.put(ch, frequency.getOrDefault(ch, 0) + 1);
-            }
-
-            return frequency;
-        }
-
         public boolean constructibilityCheck(String s1, String s2) {
+            // Your code goes here — count s2, then consume from the pool as you walk s1.
+            return false;
+        }
+    }
 
-            // Create a map to store the frequency of each character in s2
-            Map<Character, Integer> s2Frequency = countFrequency(s2);
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String s1 = sc.nextLine();
+        String s2 = sc.nextLine();
+        System.out.println(new Solution().constructibilityCheck(s1, s2));
+    }
+}
+```
 
-            // Iterate over the characters in s1
+```testcases
+{
+  "args": [
+    { "id": "s1", "label": "s1", "type": "string", "placeholder": "somenote" },
+    { "id": "s2", "label": "s2", "type": "string", "placeholder": "enetomoselse" }
+  ],
+  "cases": [
+    { "args": { "s1": "somenote", "s2": "enetomoselse" }, "expected": "true" },
+    { "args": { "s1": "thief", "s2": "hifacqet" }, "expected": "true" },
+    { "args": { "s1": "alpha", "s2": "beta" }, "expected": "false" },
+    { "args": { "s1": "aa", "s2": "a" }, "expected": "false" },
+    { "args": { "s1": "a", "s2": "a" }, "expected": "true" },
+    { "args": { "s1": "abc", "s2": "abc" }, "expected": "true" },
+    { "args": { "s1": "abc", "s2": "xyz" }, "expected": "false" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Count the supply (`s2`), then decrement while walking the demand (`s1`), failing the instant a needed letter is exhausted.
+
+```python solution time=O(|s1|+|s2|) space=O(k)
+class Solution:
+    def constructibility_check(self, s1: str, s2: str) -> bool:
+        s2_frequency = {}
+        for ch in s2:
+            s2_frequency[ch] = s2_frequency.get(ch, 0) + 1
+        for ch in s1:
+            if s2_frequency.get(ch, 0) == 0:
+                return False
+            s2_frequency[ch] -= 1
+        return True
+
+s1 = input()
+s2 = input()
+print("true" if Solution().constructibility_check(s1, s2) else "false")
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public boolean constructibilityCheck(String s1, String s2) {
+            Map<Character, Integer> s2Frequency = new HashMap<>();
+            for (char ch : s2.toCharArray())
+                s2Frequency.put(ch, s2Frequency.getOrDefault(ch, 0) + 1);
             for (char ch : s1.toCharArray()) {
-
-                // If the frequency of the character is zero, return false
-                if (s2Frequency.getOrDefault(ch, 0) == 0) {
-                    return false;
-                }
-
-                // Decrement the frequency of the character in the map
+                if (s2Frequency.getOrDefault(ch, 0) == 0) return false;
                 s2Frequency.put(ch, s2Frequency.get(ch) - 1);
             }
-
-            // If all characters in s1 can be constructed from s2, return
-            // true
             return true;
         }
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().constructibilityCheck("somenote", "enetomoselse")); // true
-        System.out.println(new Solution().constructibilityCheck("thief", "hifacqet"));        // true
-        System.out.println(new Solution().constructibilityCheck("alpha", "beta"));            // false
-
-        // Edge cases
-        System.out.println(new Solution().constructibilityCheck("", "abc"));                  // true
-        System.out.println(new Solution().constructibilityCheck("a", ""));                    // false
-        System.out.println(new Solution().constructibilityCheck("aa", "a"));                  // false
-        System.out.println(new Solution().constructibilityCheck("a", "a"));                   // true
-        System.out.println(new Solution().constructibilityCheck("abc", "abc"));               // true
+        Scanner sc = new Scanner(System.in);
+        String s1 = sc.nextLine();
+        String s2 = sc.nextLine();
+        System.out.println(new Solution().constructibilityCheck(s1, s2));
     }
 }
 ```
 
-
-**Complexity:** O(|s1| + |s2|) time, O(unique chars in s2) space.
-
-</details>
-<details>
-<summary><h2>Dry Run</h2></summary>
-
+### Dry Run
 
 Walk Example 1 — `s1 = "somenote"`, `s2 = "enetomoselse"`. Build the `s2` pool, then consume one copy per `s1` character:
 
@@ -248,30 +241,19 @@ consume s1 = "somenote"
 every character consumed without shortage → return true
 ```
 
-The result `true` matches the expected output — `s2` supplies every letter `s1` needs.
-
-</details>
-<details>
-<summary><h2>Complexity Analysis</h2></summary>
-
+### Complexity Analysis
 
 | Measure | Value | Why |
 |---|---|---|
 | Time  | **O(\|s1\| + \|s2\|)** | One pass to count `s2`, one pass to consume over `s1`; each step is amortised `O(1)`. |
 | Space | **O(k)** | The pool holds `k` distinct characters of `s2` — `O(1)` for a fixed alphabet, `O(\|s2\|)` in general. |
 
-</details>
-<details>
-<summary><h2>Edge Cases</h2></summary>
-
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
-| Empty `s1` | `s1 = "", s2 = "abc"` | `true` | Nothing to build, so any pool suffices. |
-| Empty `s2` | `s1 = "a", s2 = ""` | `false` | An empty pool can supply nothing. |
 | Not enough copies | `s1 = "aa", s2 = "a"` | `false` | `s1` needs two `'a'`s; the pool has one. |
 | Exact match | `s1 = "abc", s2 = "abc"` | `true` | Every letter present with exactly enough copies. |
-| Surplus pool | `s1 = "a", s2 = "aaa"` | `true` | Extra copies are fine — only shortage fails. |
 | Missing letter | `s1 = "alpha", s2 = "beta"` | `false` | `'l'` and `'p'` never appear in the pool. |
 
 </details>

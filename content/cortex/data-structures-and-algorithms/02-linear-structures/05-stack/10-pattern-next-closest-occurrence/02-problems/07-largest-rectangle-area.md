@@ -4,6 +4,8 @@ summary: "Given an array histogram of positive integers (heights of bars of unit
 prereqs:
   - 10-pattern-next-closest-occurrence/01-pattern
 difficulty: hard
+kind: problem
+topics: [next-closest-occurrence, stack]
 ---
 
 # Largest rectangle area
@@ -46,6 +48,80 @@ Output: 5
 Explanation: A single bar is a rectangle of its own height and width 1.
 ```
 
+```quiz
+{
+  "prompt": "histogram = [2, 1, 2]. What is the largest rectangle area?",
+  "options": ["2", "3", "4", "5"],
+  "answer": "3"
+}
+```
+
+## Constraints
+
+- `0 ≤ histogram.length ≤ 10 000`
+- `0 ≤ histogram[i] ≤ 10 000`
+
+```python run
+import ast
+from typing import List
+
+class Solution:
+    def largest_rectangle_area(self, histogram: List[int]) -> int:
+        # Your code goes here — sweep left to right with an increasing stack
+        # of bar indices; pop on each shorter bar and score the rectangle.
+        # Flush the remaining bars after the loop with a virtual zero bar.
+        return 0
+
+histogram = ast.literal_eval(input())
+print(Solution().largest_rectangle_area(histogram))
+```
+
+```java run
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int largestRectangleArea(int[] histogram) {
+            // Your code goes here — sweep left to right with an increasing stack
+            // of bar indices; pop on each shorter bar and score the rectangle.
+            // Flush the remaining bars after the loop with a virtual zero bar.
+            return 0;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] histogram = parseIntArray(sc.nextLine());
+        System.out.println(new Solution().largestRectangleArea(histogram));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "histogram", "label": "histogram", "type": "int[]", "placeholder": "[2, 4, 3, 3, 5, 2, 4, 3, 2]" }
+  ],
+  "cases": [
+    { "args": { "histogram": "[2, 4, 3, 3, 5, 2, 4, 3, 2]" }, "expected": "18" },
+    { "args": { "histogram": "[1, 100, 1]" }, "expected": "100" },
+    { "args": { "histogram": "[3, 3, 3, 3]" }, "expected": "12" },
+    { "args": { "histogram": "[5]" }, "expected": "5" },
+    { "args": { "histogram": "[2, 2]" }, "expected": "4" },
+    { "args": { "histogram": "[1, 2, 3, 4, 5]" }, "expected": "9" },
+    { "args": { "histogram": "[5, 4, 3, 2, 1]" }, "expected": "9" }
+  ]
+}
+```
 
 <details>
 <summary><h2>Intuition</h2></summary>
@@ -119,11 +195,10 @@ Sweep left to right with an increasing stack of bar indices, scoring one candida
 
 </details>
 <details>
-<summary><h2>Solution</h2></summary>
+<summary><h2>Solution & Analysis</h2></summary>
 
-
-
-```python run viz=array viz-root=stack viz-kind=stack
+```python solution time=O(N) space=O(N)
+import ast
 from typing import List
 
 class Solution:
@@ -165,21 +240,11 @@ class Solution:
 
         return max_area
 
-
-# Example from the problem statement
-print(Solution().largest_rectangle_area([2, 4, 3, 3, 5, 2, 4, 3, 2]))  # 18
-
-# Edge cases
-print(Solution().largest_rectangle_area([]))                            # 0
-print(Solution().largest_rectangle_area([5]))                           # 5
-print(Solution().largest_rectangle_area([2, 2]))                        # 4
-print(Solution().largest_rectangle_area([1, 2, 3, 4, 5]))              # 9
-print(Solution().largest_rectangle_area([5, 4, 3, 2, 1]))              # 9
-print(Solution().largest_rectangle_area([3, 3, 3, 3]))                 # 12
-print(Solution().largest_rectangle_area([1, 100, 1]))                  # 100
+histogram = ast.literal_eval(input())
+print(Solution().largest_rectangle_area(histogram))
 ```
 
-```java run viz=array viz-root=stack viz-kind=stack
+```java solution
 import java.util.*;
 
 public class Main {
@@ -231,33 +296,21 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Example from the problem statement
-        System.out.println(new Solution().largestRectangleArea(new int[]{2, 4, 3, 3, 5, 2, 4, 3, 2}));  // 18
+        Scanner sc = new Scanner(System.in);
+        int[] histogram = parseIntArray(sc.nextLine());
+        System.out.println(new Solution().largestRectangleArea(histogram));
+    }
 
-        // Edge cases
-        System.out.println(new Solution().largestRectangleArea(new int[]{}));                           // 0
-        System.out.println(new Solution().largestRectangleArea(new int[]{5}));                          // 5
-        System.out.println(new Solution().largestRectangleArea(new int[]{2, 2}));                       // 4
-        System.out.println(new Solution().largestRectangleArea(new int[]{1, 2, 3, 4, 5}));             // 9
-        System.out.println(new Solution().largestRectangleArea(new int[]{5, 4, 3, 2, 1}));             // 9
-        System.out.println(new Solution().largestRectangleArea(new int[]{3, 3, 3, 3}));                // 12
-        System.out.println(new Solution().largestRectangleArea(new int[]{1, 100, 1}));                 // 100
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```
-
-</details>
-<details>
-<summary><h2>Key Takeaway</h2></summary>
-
-
-Three lessons:
-
-1. **Left-to-right with retroactive resolution is the idiomatic style.** When a new element arrives and dominates indices on the stack, *those* indices' answers are *the new element*. The algorithm fills in the answer table as it goes; anything left on the stack at end-of-input has no answer.
-2. **Indices, not values, on the stack.** Storing indices lets you compute widths (rainwater, histogram), look up arbitrary fields of the original record, and resolve answers retroactively.
-3. **The same monotonic-stack skeleton powers a vast family of problems.** Next-greater, next-smaller, daily temperatures, stock span, trapping rain water, histogram rectangles, sum-of-subarray-minimums, score-of-parentheses — all variations on "pop while dominated, resolve answers, push current index". Recognise the family and the implementation almost writes itself.
-
-> *Coming up — **sequence validation**. The next pattern uses a stack as a "matching memory" — push opening symbols, pop on closing ones, and check that everything pairs up. The canonical applications are bracket matching, palindrome checking, and a few delightful permutation-validation puzzles.*
 
 </details>
 <details>
@@ -308,7 +361,6 @@ Each pop scores one rectangle in `O(1)`. The forward loop and the flush together
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
-| Empty histogram | `histogram = []` | `0` | No bars, no rectangle. |
 | Single bar | `histogram = [5]` | `5` | One bar is a rectangle of height 5, width 1. |
 | Two equal bars | `histogram = [2, 2]` | `4` | A flat run of width 2 at height 2 → 4. |
 | Monotonic increasing | `histogram = [1, 2, 3, 4, 5]` | `9` | The best rectangle is height 3 across the last three bars → 3 × 3 = 9. |
@@ -321,6 +373,12 @@ Each pop scores one rectangle in `O(1)`. The forward loop and the flush together
 <summary><h2>Key Takeaway</h2></summary>
 
 
-What is new here is the **flush** after the main loop: bars still on the stack at the end have no shorter bar to their right, so they extend all the way to index `n`. Like rainwater, this is area aggregation on a monotonic stack — but the stack is *increasing* (next-smaller) and each pop computes `height × width` rather than a trapped strip.
+Three lessons:
+
+1. **Left-to-right with retroactive resolution is the idiomatic style.** When a new element arrives and dominates indices on the stack, *those* indices' answers are *the new element*. The algorithm fills in the answer table as it goes; anything left on the stack at end-of-input has no answer.
+2. **Indices, not values, on the stack.** Storing indices lets you compute widths (rainwater, histogram), look up arbitrary fields of the original record, and resolve answers retroactively.
+3. **The same monotonic-stack skeleton powers a vast family of problems.** Next-greater, next-smaller, daily temperatures, stock span, trapping rain water, histogram rectangles, sum-of-subarray-minimums, score-of-parentheses — all variations on "pop while dominated, resolve answers, push current index". Recognise the family and the implementation almost writes itself.
+
+> *Coming up — **sequence validation**. The next pattern uses a stack as a "matching memory" — push opening symbols, pop on closing ones, and check that everything pairs up. The canonical applications are bracket matching, palindrome checking, and a few delightful permutation-validation puzzles.*
 
 </details>

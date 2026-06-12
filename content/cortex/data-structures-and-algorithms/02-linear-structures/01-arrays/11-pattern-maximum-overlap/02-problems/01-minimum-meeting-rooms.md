@@ -4,6 +4,8 @@ summary: "Given an array of meetings consisting of start and end times [[s1, e1]
 prereqs:
   - 11-pattern-maximum-overlap/01-pattern
 difficulty: medium
+kind: problem
+topics: [intervals, arrays]
 ---
 
 # Minimum Meeting Rooms
@@ -43,6 +45,88 @@ Input:  meetings = [[1, 15], [15, 17], [17, 18]]
 Output: 1
 Explanation: One meeting room is enough for all the meetings to take
              place (the touching ends never compete for the room).
+```
+
+```quiz
+{
+  "prompt": "Now your turn!",
+  "input": "meetings = [[0, 30], [5, 10], [15, 20]]",
+  "options": ["1", "2", "3", "4"],
+  "answer": "2"
+}
+```
+
+## Constraints
+
+- `0 ≤ meetings.length ≤ 10^4`
+- `meetings[i] = [start, end]` with `0 ≤ start < end ≤ 10^9`
+- A room freed at time `t` is reusable at time `t` (touching meetings share a room)
+
+```python run viz=array viz-root=meetings
+import ast
+from typing import List
+
+class Solution:
+    def minimum_meeting_rooms(self, meetings: List[List[int]]) -> int:
+        # Your code goes here — split each meeting into +1/−1 events,
+        # sort (end before start at a tie), sweep, return the peak.
+        return 0
+
+
+meetings = ast.literal_eval(input())     # the test case's meetings
+print(Solution().minimum_meeting_rooms(meetings))
+```
+
+```java run viz=array viz-root=meetings
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int minimumMeetingRooms(int[][] meetings) {
+            // Your code goes here — split each meeting into +1/−1 events,
+            // sort (end before start at a tie), sweep, return the peak.
+            return 0;
+        }
+    }
+
+    public static void main(String[] args) {
+        int[][] meetings = parseIntMatrix(new Scanner(System.in).nextLine());
+        System.out.println(new Solution().minimumMeetingRooms(meetings));
+    }
+
+    // "[[1, 4], [2, 5]]" → {{1, 4}, {2, 5}} — reads the test case's meetings
+    static int[][] parseIntMatrix(String line) {
+        String inner = line.trim().replaceAll("^\\[|\\]$", "").trim();
+        if (inner.isEmpty()) return new int[0][];
+        String[] rows = inner.split("\\]\\s*,\\s*\\[");
+        int[][] out = new int[rows.length][];
+        for (int i = 0; i < rows.length; i++) {
+            String r = rows[i].replaceAll("[\\[\\]\\s]", "");
+            if (r.isEmpty()) { out[i] = new int[0]; continue; }
+            String[] parts = r.split(",");
+            int[] pair = new int[parts.length];
+            for (int j = 0; j < parts.length; j++) pair[j] = Integer.parseInt(parts[j]);
+            out[i] = pair;
+        }
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "meetings", "label": "meetings", "type": "int[][]", "placeholder": "[[1, 20], [10, 30], [30, 40], [1, 5]]" }
+  ],
+  "cases": [
+    { "args": { "meetings": "[[1, 20], [10, 30], [30, 40], [1, 5]]" }, "expected": "2" },
+    { "args": { "meetings": "[[1, 10], [1, 10], [1, 10]]" }, "expected": "3" },
+    { "args": { "meetings": "[[1, 15], [15, 17], [17, 18]]" }, "expected": "1" },
+    { "args": { "meetings": "[[0, 30], [5, 10], [15, 20]]" }, "expected": "2" },
+    { "args": { "meetings": "[[9, 10]]" }, "expected": "1" },
+    { "args": { "meetings": "[]" }, "expected": "0" }
+  ]
+}
 ```
 
 <details>
@@ -176,7 +260,8 @@ flowchart TB
 
 ### The Solution
 
-```python run viz=array viz-root=meetings
+```python solution time=O(N log N) space=O(N)
+import ast
 from typing import List
 
 # Define a class to store the time and type ('s' or 'e')
@@ -227,20 +312,11 @@ class Solution:
         return min_rooms
 
 
-# Examples from the problem statement
-print(Solution().minimum_meeting_rooms([[1, 20], [10, 30], [30, 40], [1, 5]]))   # 2
-print(Solution().minimum_meeting_rooms([[1, 10], [1, 10], [1, 10]]))             # 3
-print(Solution().minimum_meeting_rooms([[1, 15], [15, 17], [17, 18]]))           # 1
-
-# Edge cases
-print(Solution().minimum_meeting_rooms([[1, 2]]))                                 # 1  — single meeting
-print(Solution().minimum_meeting_rooms([[1, 5], [6, 10]]))                        # 1  — sequential meetings
-print(Solution().minimum_meeting_rooms([[1, 5], [2, 6], [3, 7]]))                # 3  — all overlapping
-print(Solution().minimum_meeting_rooms([[1, 3], [3, 5], [5, 7]]))                # 1  — touching endpoints
-print(Solution().minimum_meeting_rooms([[1, 4], [2, 3], [5, 6]]))                # 2  — partial overlap
+meetings = ast.literal_eval(input())     # the test case's meetings
+print(Solution().minimum_meeting_rooms(meetings))
 ```
 
-```java run viz=array viz-root=meetings
+```java solution
 import java.util.*;
 
 public class Main {
@@ -309,17 +385,25 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().minimumMeetingRooms(new int[][]{{1, 20}, {10, 30}, {30, 40}, {1, 5}}));   // 2
-        System.out.println(new Solution().minimumMeetingRooms(new int[][]{{1, 10}, {1, 10}, {1, 10}}));             // 3
-        System.out.println(new Solution().minimumMeetingRooms(new int[][]{{1, 15}, {15, 17}, {17, 18}}));           // 1
+        int[][] meetings = parseIntMatrix(new Scanner(System.in).nextLine());
+        System.out.println(new Solution().minimumMeetingRooms(meetings));
+    }
 
-        // Edge cases
-        System.out.println(new Solution().minimumMeetingRooms(new int[][]{{1, 2}}));                                 // 1  — single meeting
-        System.out.println(new Solution().minimumMeetingRooms(new int[][]{{1, 5}, {6, 10}}));                        // 1  — sequential meetings
-        System.out.println(new Solution().minimumMeetingRooms(new int[][]{{1, 5}, {2, 6}, {3, 7}}));                // 3  — all overlapping
-        System.out.println(new Solution().minimumMeetingRooms(new int[][]{{1, 3}, {3, 5}, {5, 7}}));                // 1  — touching endpoints
-        System.out.println(new Solution().minimumMeetingRooms(new int[][]{{1, 4}, {2, 3}, {5, 6}}));                // 2  — partial overlap
+    // "[[1, 4], [2, 5]]" → {{1, 4}, {2, 5}} — reads the test case's meetings
+    static int[][] parseIntMatrix(String line) {
+        String inner = line.trim().replaceAll("^\\[|\\]$", "").trim();
+        if (inner.isEmpty()) return new int[0][];
+        String[] rows = inner.split("\\]\\s*,\\s*\\[");
+        int[][] out = new int[rows.length][];
+        for (int i = 0; i < rows.length; i++) {
+            String r = rows[i].replaceAll("[\\[\\]\\s]", "");
+            if (r.isEmpty()) { out[i] = new int[0]; continue; }
+            String[] parts = r.split(",");
+            int[] pair = new int[parts.length];
+            for (int j = 0; j < parts.length; j++) pair[j] = Integer.parseInt(parts[j]);
+            out[i] = pair;
+        }
+        return out;
     }
 }
 ```

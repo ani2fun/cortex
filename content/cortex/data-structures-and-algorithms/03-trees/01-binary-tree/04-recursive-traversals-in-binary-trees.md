@@ -18,23 +18,40 @@ Every recursive traversal does the same three things at each node: **visit** thi
 Three traversals over the same tree. Watch how only the placement of `[n.val]` differs between the three functions:
 
 ```python run viz=binary-tree viz-root=root
+import json
+from collections import deque
+
 class TreeNode:
     def __init__(self, val=0, left=None, right=None):
         self.val, self.left, self.right = val, left, right
-#        1
-#       / \
-#      2   3
-#     / \
-#    4   5
-root = TreeNode(1, TreeNode(2, TreeNode(4), TreeNode(5)), TreeNode(3))
 
 def preorder(n):  return [] if n is None else [n.val] + preorder(n.left) + preorder(n.right)  # visit, L, R
 def inorder(n):   return [] if n is None else inorder(n.left) + [n.val] + inorder(n.right)     # L, visit, R
 def postorder(n): return [] if n is None else postorder(n.left) + postorder(n.right) + [n.val] # L, R, visit
 
-print("preorder :", preorder(root))    # [1, 2, 4, 5, 3]
-print("inorder  :", inorder(root))     # [4, 2, 5, 1, 3]
-print("postorder:", postorder(root))   # [4, 5, 2, 3, 1]
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
+
+root = build_tree(json.loads(input()))
+
+print("preorder :", preorder(root))
+print("inorder  :", inorder(root))
+print("postorder:", postorder(root))
 ```
 
 ```java run viz=binary-tree viz-root=root
@@ -48,12 +65,52 @@ public class Main {
     static List<Integer> preorder(TreeNode n)  { List<Integer> o=new ArrayList<>(); if(n==null) return o; o.add(n.val); o.addAll(preorder(n.left)); o.addAll(preorder(n.right)); return o; }
     static List<Integer> inorder(TreeNode n)   { List<Integer> o=new ArrayList<>(); if(n==null) return o; o.addAll(inorder(n.left)); o.add(n.val); o.addAll(inorder(n.right)); return o; }
     static List<Integer> postorder(TreeNode n) { List<Integer> o=new ArrayList<>(); if(n==null) return o; o.addAll(postorder(n.left)); o.addAll(postorder(n.right)); o.add(n.val); return o; }
+
+    static TreeNode buildTree(Integer[] values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length) { Integer v = values[i++]; if (v != null) { node.left = new TreeNode(v); queue.add(node.left); } }
+            if (i < values.length) { Integer v = values[i++]; if (v != null) { node.right = new TreeNode(v); queue.add(node.right); } }
+        }
+        return root;
+    }
+
+    static Integer[] parseIntegerArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new Integer[0];
+        String[] parts = inner.split(",");
+        Integer[] out = new Integer[parts.length];
+        for (int i = 0; i < parts.length; i++)
+            out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+        return out;
+    }
+
     public static void main(String[] a) {
-        TreeNode root = new TreeNode(1, new TreeNode(2, new TreeNode(4), new TreeNode(5)), new TreeNode(3));
+        Scanner sc = new Scanner(System.in);
+        TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
         System.out.println("preorder : " + preorder(root));
         System.out.println("inorder  : " + inorder(root));
         System.out.println("postorder: " + postorder(root));
     }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[1, 2, 3, 4, 5]" }
+  ],
+  "cases": [
+    { "args": { "root": "[1, 2, 3, 4, 5]" }, "expected": "preorder : [1, 2, 4, 5, 3]\ninorder  : [4, 2, 5, 1, 3]\npostorder: [4, 5, 2, 3, 1]" },
+    { "args": { "root": "[1, 2, 3]" }, "expected": "preorder : [1, 2, 3]\ninorder  : [2, 1, 3]\npostorder: [2, 3, 1]" },
+    { "args": { "root": "[1]" }, "expected": "preorder : [1]\ninorder  : [1]\npostorder: [1]" },
+    { "args": { "root": "[1, null, 2, null, 3]" }, "expected": "preorder : [1, 2, 3]\ninorder  : [1, 2, 3]\npostorder: [3, 2, 1]" }
+  ]
 }
 ```
 
@@ -138,25 +195,40 @@ These are exactly the three notations from the [stack expression lessons](/corte
 
 The one order with a near-magical property is **inorder on a binary search tree** — a tree where every node's left subtree holds smaller values and its right subtree larger. Inorder reads them out *sorted*, for free.
 
-**Predict:** for this BST, what does inorder (`left, visit, right`) print?
+**Predict:** for a BST, what does inorder (`left, visit, right`) print?
 
 ```python run viz=binary-tree viz-root=root
+import json
+from collections import deque
+
 class TreeNode:
     def __init__(self, val=0, left=None, right=None):
         self.val, self.left, self.right = val, left, right
-# a binary SEARCH tree: left < node < right everywhere
-#        5
-#       / \
-#      3   8
-#     / \   \
-#    1   4   9
-root = TreeNode(5, TreeNode(3, TreeNode(1), TreeNode(4)), TreeNode(8, None, TreeNode(9)))
 
 def inorder(n):
     if n is None: return []
     return inorder(n.left) + [n.val] + inorder(n.right)   # left, visit, right
 
-print("inorder:", inorder(root))   # [1, 3, 4, 5, 8, 9] — sorted!
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
+
+root = build_tree(json.loads(input()))
+print("inorder:", inorder(root))
 ```
 
 ```java run viz=binary-tree viz-root=root
@@ -173,11 +245,50 @@ public class Main {
         out.addAll(inorder(n.left)); out.add(n.val); out.addAll(inorder(n.right));   // left, visit, right
         return out;
     }
+
+    static TreeNode buildTree(Integer[] values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length) { Integer v = values[i++]; if (v != null) { node.left = new TreeNode(v); queue.add(node.left); } }
+            if (i < values.length) { Integer v = values[i++]; if (v != null) { node.right = new TreeNode(v); queue.add(node.right); } }
+        }
+        return root;
+    }
+
+    static Integer[] parseIntegerArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new Integer[0];
+        String[] parts = inner.split(",");
+        Integer[] out = new Integer[parts.length];
+        for (int i = 0; i < parts.length; i++)
+            out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+        return out;
+    }
+
     public static void main(String[] a) {
-        TreeNode root = new TreeNode(5, new TreeNode(3, new TreeNode(1), new TreeNode(4)),
-                                        new TreeNode(8, null, new TreeNode(9)));
+        Scanner sc = new Scanner(System.in);
+        TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
         System.out.println("inorder: " + inorder(root));
     }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root (BST)", "type": "tree", "placeholder": "[5, 3, 8, 1, 4, null, 9]" }
+  ],
+  "cases": [
+    { "args": { "root": "[5, 3, 8, 1, 4, null, 9]" }, "expected": "inorder: [1, 3, 4, 5, 8, 9]" },
+    { "args": { "root": "[3, 1, 5]" }, "expected": "inorder: [1, 3, 5]" },
+    { "args": { "root": "[1]" }, "expected": "inorder: [1]" },
+    { "args": { "root": "[4, 2, 6, 1, 3, 5, 7]" }, "expected": "inorder: [1, 2, 3, 4, 5, 6, 7]" }
+  ]
 }
 ```
 

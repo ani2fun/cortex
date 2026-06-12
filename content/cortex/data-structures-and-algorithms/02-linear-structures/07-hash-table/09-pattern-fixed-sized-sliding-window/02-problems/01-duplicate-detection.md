@@ -4,6 +4,8 @@ summary: "Given an integer array arr and a positive integer k, return true if an
 prereqs:
   - 09-pattern-fixed-sized-sliding-window/01-pattern
 difficulty: easy
+kind: problem
+topics: [fixed-sized-sliding-window, hash-table]
 ---
 
 # Duplicate detection
@@ -52,6 +54,67 @@ Explanation: k exceeds the array, so the only window is the whole array [1, 2, 1
 which holds two 1s → a duplicate exists.
 ```
 
+## Constraints
+
+- `1 <= k <= n` (where `n = len(arr)`)
+- Array values are integers (may include duplicates)
+
+```python run
+import ast
+
+def duplicate_detection(arr, k):
+    # Your code goes here
+    pass
+
+arr = ast.literal_eval(input())
+k = int(input())
+r = duplicate_detection(arr, k)
+print("true" if r else "false")
+```
+
+```java run
+import java.util.*;
+
+public class Main {
+  static int[] parseIntArray(String s) {
+    s = s.trim().replaceAll("[\\[\\]\\s]", "");
+    if (s.isEmpty()) return new int[]{};
+    String[] parts = s.split(",");
+    int[] a = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) a[i] = Integer.parseInt(parts[i].trim());
+    return a;
+  }
+
+  static boolean duplicateDetection(int[] arr, int k) {
+    // Your code goes here
+    return false;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());
+    int k = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(duplicateDetection(arr, k));
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "array", "placeholder": "[2, 1, 2, 3, 2, 1, 4, 5]" },
+    { "id": "k",   "label": "k",   "type": "number", "placeholder": "5" }
+  ],
+  "cases": [
+    { "args": { "arr": "[2, 1, 2, 3, 2, 1, 4, 5]", "k": "5" }, "expected": "true" },
+    { "args": { "arr": "[1, 1, 2, 4]",              "k": "3" }, "expected": "true" },
+    { "args": { "arr": "[1, 2, 3, 4]",              "k": "2" }, "expected": "false" },
+    { "args": { "arr": "[1, 1]",                    "k": "2" }, "expected": "true" },
+    { "args": { "arr": "[1, 2, 1]",                 "k": "5" }, "expected": "true" },
+    { "args": { "arr": "[1, 2]",                    "k": "1" }, "expected": "false" }
+  ]
+}
+```
 
 <details>
 <summary><h2>Intuition</h2></summary>
@@ -92,128 +155,74 @@ Slide a window of size `k` while maintaining a frequency map, and short-circuit 
 
 </details>
 <details>
-<summary><h2>Solution</h2></summary>
+<summary>Editorial</summary>
 
+Slide a window of size `k` with a frequency map. Increment the entering element's count; when the window exceeds `k`, evict the left element (decrement, delete at zero). Short-circuit to `true` the instant the entering count exceeds `1` — that element already appeared in this window. `O(n)` time, `O(k)` space.
 
-
-```python run viz=array
+```python solution time=O(n) space=O(k)
+import ast
 from collections import defaultdict
-from typing import List
 
-class Solution:
-    def duplicate_detection(self, arr: List[int], k: int) -> bool:
+def duplicate_detection(arr, k):
+    frequency = defaultdict(int)
+    start, end = 0, 0
+    while end < len(arr):
+        end_element = arr[end]
+        frequency[end_element] += 1
+        if end - start >= k:
+            start_element = arr[start]
+            frequency[start_element] -= 1
+            if frequency[start_element] == 0:
+                del frequency[start_element]
+            start += 1
+        if frequency[end_element] > 1:
+            return True
+        end += 1
+    return False
 
-        # Map to store elements within the window and their counts
-        frequency = defaultdict(int)
-
-        # The start and end pointers for the window
-        start, end = 0, 0
-
-        while end < len(arr):
-
-            # Add the current element to the window
-            end_element = arr[end]
-            frequency[end_element] += 1
-
-            # Adjust the window size if it exceeds k
-            if end - start >= k:
-                start_element = arr[start]
-                frequency[start_element] -= 1
-
-                # Erase the current element from the window if its
-                # frequency becomes 0
-                if frequency[start_element] == 0:
-                    del frequency[start_element]
-                start += 1
-
-            # Check if there's a duplicate in the window
-            if frequency[end_element] > 1:
-                return True
-
-            # Move the end pointer to expand the window
-            end += 1
-
-        return False
-
-
-# Examples from the problem statement
-print(Solution().duplicate_detection([2, 1, 2, 3, 2, 1, 4, 5], 5))  # True
-print(Solution().duplicate_detection([1, 1, 2, 4], 3))               # True
-print(Solution().duplicate_detection([1, 2, 3, 4], 2))               # False
-
-# Edge cases
-print(Solution().duplicate_detection([], 3))                          # False
-print(Solution().duplicate_detection([1], 1))                         # False
-print(Solution().duplicate_detection([1, 2], 1))                      # False
-print(Solution().duplicate_detection([1, 1], 2))                      # True
-print(Solution().duplicate_detection([1, 2, 1], 5))                   # True
+arr = ast.literal_eval(input())
+k = int(input())
+r = duplicate_detection(arr, k)
+print("true" if r else "false")
 ```
 
-```java run viz=array
+```java solution
 import java.util.*;
 
 public class Main {
-    static class Solution {
-        public boolean duplicateDetection(int[] arr, int k) {
+  static int[] parseIntArray(String s) {
+    s = s.trim().replaceAll("[\\[\\]\\s]", "");
+    if (s.isEmpty()) return new int[]{};
+    String[] parts = s.split(",");
+    int[] a = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) a[i] = Integer.parseInt(parts[i].trim());
+    return a;
+  }
 
-            // Map to store elements within the window and their counts
-            Map<Integer, Integer> frequency = new HashMap<>();
-
-            // The start and end pointers for the window
-            int start = 0;
-            int end = 0;
-
-            while (end < arr.length) {
-
-                // Add the current element to the window
-                int endElement = arr[end];
-                frequency.put(
-                    endElement,
-                    frequency.getOrDefault(endElement, 0) + 1
-                );
-
-                // Adjust the window size if it exceeds k
-                if (end - start >= k) {
-                    int startElement = arr[start];
-                    frequency.put(
-                        startElement,
-                        frequency.get(startElement) - 1
-                    );
-
-                    // Erase the current element from the window if its
-                    // frequency becomes 0
-                    if (frequency.get(startElement) == 0) {
-                        frequency.remove(startElement);
-                    }
-                    start++;
-                }
-
-                // Check if there's a duplicate in the window
-                if (frequency.get(endElement) > 1) {
-                    return true;
-                }
-
-                // Move the end pointer to expand the window
-                end++;
-            }
-
-            return false;
-        }
+  static boolean duplicateDetection(int[] arr, int k) {
+    Map<Integer, Integer> frequency = new HashMap<>();
+    int start = 0, end = 0;
+    while (end < arr.length) {
+      int endElement = arr[end];
+      frequency.put(endElement, frequency.getOrDefault(endElement, 0) + 1);
+      if (end - start >= k) {
+        int startElement = arr[start];
+        frequency.put(startElement, frequency.get(startElement) - 1);
+        if (frequency.get(startElement) == 0) frequency.remove(startElement);
+        start++;
+      }
+      if (frequency.get(endElement) > 1) return true;
+      end++;
     }
+    return false;
+  }
 
-    public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().duplicateDetection(new int[]{2, 1, 2, 3, 2, 1, 4, 5}, 5)); // true
-        System.out.println(new Solution().duplicateDetection(new int[]{1, 1, 2, 4}, 3));              // true
-        System.out.println(new Solution().duplicateDetection(new int[]{1, 2, 3, 4}, 2));              // false
-
-        // Edge cases
-        System.out.println(new Solution().duplicateDetection(new int[]{}, 3));                        // false
-        System.out.println(new Solution().duplicateDetection(new int[]{1}, 1));                       // false
-        System.out.println(new Solution().duplicateDetection(new int[]{1, 2}, 1));                    // false
-        System.out.println(new Solution().duplicateDetection(new int[]{1, 1}, 2));                    // true
-        System.out.println(new Solution().duplicateDetection(new int[]{1, 2, 1}, 5));                 // true
-    }
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());
+    int k = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(duplicateDetection(arr, k));
+  }
 }
 ```
 

@@ -10,8 +10,8 @@ import scala.scalajs.js
 /**
  * The GitHub sign-in modal — the moment "Edit" turns into a runnable thing.
  *
- * Rendered once, at the app root (by [[cortex.client.Main]]). It subscribes to [[AuthStore]] and shows
- * itself only while `modalOpen` is true, so deep components (`RunnableCodeBlock`) trigger it with a plain
+ * Rendered once, at the app root (by [[cortex.client.Main]]). It subscribes to [[AuthStore]] and shows itself
+ * only while `modalOpen` is true, so deep components (`RunnableCodeBlock`) trigger it with a plain
  * `AuthStore.openSignIn()` and never have to thread modal state through props.
  *
  * Copy is editorial, ported verbatim from the Claude Design `Cortex Auth` artboard — italic-serif title, mono

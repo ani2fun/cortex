@@ -1,9 +1,11 @@
 ---
 title: "Redundant Parentheses"
-summary: "Given a balanced expression s (containing operators, operands, and parentheses), return true if there exists a redundant pair of parentheses — a pair that wraps either nothing or a single operand, con"
+summary: "Given a balanced expression s (containing operators, operands, and parentheses), return true if there exists a redundant pair of parentheses — a pair that wraps either nothing or a single operand, contributing no precedence value."
 prereqs:
   - 11-pattern-sequence-validation/01-pattern
 difficulty: medium
+kind: problem
+topics: [sequence-validation, stack]
 ---
 
 # Redundant parentheses
@@ -11,15 +13,6 @@ difficulty: medium
 ## Problem Statement
 
 Given a balanced expression `s` (containing operators, operands, and parentheses), return `true` if there exists a redundant pair of parentheses — a pair that wraps **either nothing or a single operand**, contributing no precedence value.
-
-### Example 1
-> -   **Input:** `s = "((2+3))+7"` → **Output:** `true` (the outer parens around `(2+3)` are redundant)
-
-### Example 2
-> -   **Input:** `s = "(2+3)"` → **Output:** `false` (single pair around an operation; not redundant)
-
-### Example 3
-> -   **Input:** `s = "((2+3)+7)"` → **Output:** `false`
 
 ## Examples
 
@@ -56,6 +49,72 @@ Explanation: the inner "()" wraps nothing at all. When its ')' arrives,
 the top is '(' immediately → redundant empty pair.
 ```
 
+```quiz
+{
+  "prompt": "What makes a pair of parentheses redundant?",
+  "input": "s = \"((2+3))\"",
+  "options": [
+    "No operator between its ( and )",
+    "It contains nested parentheses",
+    "It appears at the end of the string",
+    "The count of ( exceeds )"
+  ],
+  "answer": "No operator between its ( and )"
+}
+```
+
+## Constraints
+
+- `1 ≤ s.length ≤ 10⁴`
+- `s` is a balanced expression containing letters, digits, `+`, `-`, `*`, `/`, `(`, `)`
+
+```python run
+class Solution:
+    def redundant_parentheses(self, s: str) -> bool:
+        # Your code goes here — push every character except ')' onto a stack.
+        # On ')', if the top is '(' immediately, the pair is redundant.
+        # Otherwise pop to the matching '(' and discard that group.
+        return False
+
+s = input()
+print("true" if Solution().redundant_parentheses(s) else "false")
+```
+
+```java run
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public boolean redundantParentheses(String s) {
+            // Your code goes here — push every character except ')' onto a stack.
+            // On ')', if the top is '(' immediately, the pair is redundant.
+            // Otherwise pop to the matching '(' and discard that group.
+            return false;
+        }
+    }
+
+    public static void main(String[] args) {
+        String s = new Scanner(System.in).nextLine();
+        System.out.println(new Solution().redundantParentheses(s));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "s", "type": "string", "placeholder": "((2+3))+7" }
+  ],
+  "cases": [
+    { "args": { "s": "((2+3))+7" }, "expected": "true" },
+    { "args": { "s": "(())" }, "expected": "true" },
+    { "args": { "s": "((a+b))" }, "expected": "true" },
+    { "args": { "s": "(2+3)" }, "expected": "false" },
+    { "args": { "s": "((2+3)+7)" }, "expected": "false" },
+    { "args": { "s": "(a+(b+c))" }, "expected": "false" }
+  ]
+}
+```
 
 <details>
 <summary><h2>Intuition</h2></summary>
@@ -81,7 +140,7 @@ A naive approach re-parses each parenthesised span to recount its operators, re-
 
 </details>
 <details>
-<summary><h2>Approach in Words</h2></summary>
+<summary><h2>Approach</h2></summary>
 
 
 Push everything except `)`; on `)`, ask whether the pair wrapped anything meaningful.
@@ -95,22 +154,9 @@ Push everything except `)`; on `)`, ask whether the pair wrapped anything meanin
 
 </details>
 <details>
-<summary><h2>Approach</h2></summary>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-Push every character except `)`. When you hit `)`, look at what was pushed *between* the most recent `(` and now. **If only operands and no operators are inside, the parens are redundant.** Equivalently: if the top of the stack is `(` *immediately* (i.e. zero operators between this `)` and its `(`), the pair is redundant.
-
-But we should also detect `(((expr)))` — wrapping an already-parenthesised expression in *another* pair. To catch that, we should pop characters until we hit `(`. If the top *was* `(` immediately, redundant. Otherwise, check whether at least one operator was popped — if not, even though there were operands, no operator means redundant.
-
-The simpler formulation that's used in the canonical solution: when `)` arrives, **if the top of the stack is `(`, redundant**. Otherwise pop until matching `(`, also pop the `(`. (This works because operators pushed between `(` and `)` keep the stack from being `(` directly.)
-
-</details>
-<details>
-<summary><h2>Solution</h2></summary>
-
-
-
-```python run viz=array viz-root=stack viz-kind=stack
+```python solution time=O(n) space=O(n)
 from typing import List
 
 class Solution:
@@ -149,21 +195,11 @@ class Solution:
         # No redundant parentheses found
         return False
 
-
-# Examples from the problem statement
-print(Solution().redundant_parentheses("((2+3))+7"))   # True
-print(Solution().redundant_parentheses("(2+3)"))       # False
-print(Solution().redundant_parentheses("((2+3)+7)"))   # False
-
-# Edge cases
-print(Solution().redundant_parentheses("()"))          # False — edge case handled explicitly
-print(Solution().redundant_parentheses("(())"))        # True — empty inner parens
-print(Solution().redundant_parentheses("(a+b)"))       # False
-print(Solution().redundant_parentheses("((a+b))"))     # True
-print(Solution().redundant_parentheses("(a+(b+c))"))   # False
+s = input()
+print("true" if Solution().redundant_parentheses(s) else "false")
 ```
 
-```java run viz=array viz-root=stack viz-kind=stack
+```java solution
 import java.util.*;
 
 public class Main {
@@ -212,27 +248,13 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().redundantParentheses("((2+3))+7"));   // true
-        System.out.println(new Solution().redundantParentheses("(2+3)"));       // false
-        System.out.println(new Solution().redundantParentheses("((2+3)+7)"));   // false
-
-        // Edge cases
-        System.out.println(new Solution().redundantParentheses("()"));          // false
-        System.out.println(new Solution().redundantParentheses("(())"));        // true
-        System.out.println(new Solution().redundantParentheses("(a+b)"));       // false
-        System.out.println(new Solution().redundantParentheses("((a+b))"));     // true
-        System.out.println(new Solution().redundantParentheses("(a+(b+c))"));   // false
+        String s = new Scanner(System.in).nextLine();
+        System.out.println(new Solution().redundantParentheses(s));
     }
 }
 ```
 
-</details>
-<details>
-<summary><h2>Dry Run</h2></summary>
-
-
-Walk Example 1 — `s = "((2+3))+7"`. Push everything except `)`; on `)`, a `(` directly on top means redundant:
+### Dry Run — `s = "((2+3))+7"`
 
 ```
 s = "((2+3))+7"
@@ -248,26 +270,17 @@ s = "((2+3))+7"
 
 The first `)` clears a meaningful group (`2+3` had operators between the parens). The second `)` finds `(` already on top — the outer pair wrapped only the already-grouped inner expression, so it is redundant.
 
-</details>
-<details>
-<summary><h2>Complexity Analysis</h2></summary>
-
+### Complexity Analysis
 
 | Measure | Value | Why |
 |---|---|---|
 | Time  | **O(N)** | Each character is pushed once and popped at most once across the whole pass — `2N` stack operations. |
 | Space | **O(N)** | The stack can hold the full expression before a `)` triggers any popping (e.g. `"(((((..."`). |
 
-The runtime is `O(N)` time amortised: the inner `while` that pops to the matching `(` looks nested, but each character is pushed exactly once and popped exactly once over the entire scan, capping total stack operations at `2N`. The space is `O(N)`: a deeply nested or operator-heavy prefix pushes every character before the first closer pops anything.
-
-</details>
-<details>
-<summary><h2>Edge Cases</h2></summary>
-
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
-| Single pair | `s = "()"` | `false` | Handled up front; a lone pair around nothing is treated as non-redundant by the explicit guard. |
 | Empty inner pair | `s = "(())"` | `true` | The inner `()` wraps nothing — its `)` finds `(` directly on top. |
 | Meaningful single pair | `s = "(a+b)"` | `false` | Operators sit between the parens, so the pair groups a real expression. |
 | Double-wrapped expression | `s = "((a+b))"` | `true` | The outer pair adds nothing the inner pair had not grouped. |

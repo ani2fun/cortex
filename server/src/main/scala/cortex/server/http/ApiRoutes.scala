@@ -6,6 +6,7 @@ import cortex.server.codeRunPipeline.CodeRunPipeline
 import cortex.server.config.AppConfig
 import cortex.server.cortexPipeline.CortexPipeline
 import cortex.server.helloPipeline.HelloPipeline
+import cortex.server.submissionPipeline.SubmissionPipeline
 import cortex.shared.api.Endpoints
 import cortex.shared.api.Endpoints.{
   ApiError,
@@ -14,11 +15,15 @@ import cortex.shared.api.Endpoints.{
   BlogPostPayload,
   ChapterPayload,
   CortexIndex,
+  DeleteSubmissionsResponse,
   Greeting,
+  ListSubmissionsResponse,
   Quota,
   RecentCalls,
   RunRequest,
   RunResponse,
+  SubmitRequest,
+  SubmitResponse,
   UserInfo
 }
 import cortex.shared.api.EndpointsJsonSerdes.*
@@ -52,10 +57,11 @@ object ApiRoutes:
       cortex: CortexPipeline,
       blog: BlogPipeline,
       auth: Auth,
-      rateLimiter: RateLimiter
+      rateLimiter: RateLimiter,
+      submissions: SubmissionPipeline
   ): Routes[Any, Response] =
     val endpoints =
-      serverEndpoints(appConfig, helloPipeline, codeRun, cortex, blog, auth, rateLimiter)
+      serverEndpoints(appConfig, helloPipeline, codeRun, cortex, blog, auth, rateLimiter, submissions)
     val swaggerEndpoints =
       SwaggerInterpreter()
         .fromServerEndpoints[Task](endpoints, "Cortex API", "0.1.0")
@@ -106,7 +112,8 @@ object ApiRoutes:
       cortex: CortexPipeline,
       blog: BlogPipeline,
       auth: Auth,
-      rateLimiter: RateLimiter
+      rateLimiter: RateLimiter,
+      submissions: SubmissionPipeline
   ): List[ZServerEndpoint[Any, Any]] =
 
     // Endpoints are defined here rather than reusing the generated `Endpoints.*` values directly so the
@@ -149,6 +156,21 @@ object ApiRoutes:
             bearerToken(authHeader) match
               case None        => ZIO.fail(AuthFailure.MissingToken)
               case Some(token) => auth.verify(token).flatMap(logic)
+          effect.mapError(toResponse)
+        }
+
+    /** Like [[authedEndpoint]], for endpoints that also carry a request input (e.g. a JSON body). */
+    def authedInputEndpoint[I, O](
+        base: PublicEndpoint[I, Unit, O, Any]
+    )(logic: (VerifiedClaims, I) => IO[ApiErrors.HandlerFailure, O]): ZServerEndpoint[Any, Any] =
+      base
+        .in(header[Option[String]](AuthorizationHeader))
+        .errorOut(apiErrorOut)
+        .zServerLogic { case (input, authHeader) =>
+          val effect: IO[ApiErrors.HandlerFailure, O] =
+            bearerToken(authHeader) match
+              case None        => ZIO.fail(AuthFailure.MissingToken)
+              case Some(token) => auth.verify(token).flatMap(claims => logic(claims, input))
           effect.mapError(toResponse)
         }
 
@@ -232,6 +254,45 @@ object ApiRoutes:
       endpoint.get.in("api" / "blogs" / path[String]("slug")).out(jsonBody[BlogPostPayload])
     )(slug => blog.post(slug))
 
+    // /api/submissions — auth required; the allowlist gate lives inside the pipeline (403 with
+    // request-access instructions). One submit = N executor runs, so it consumes the caller's
+    // authenticated hourly bucket like a single /api/run would.
+    val submitEndpoint = authedInputEndpoint(
+      endpoint.post.in("api" / "submissions").in(jsonBody[SubmitRequest]).out(jsonBody[SubmitResponse])
+    ) { (claims, req) =>
+      rateLimiter.consumeAuthenticated(claims.sub) *> submissions.submit(claims, req)
+    }
+
+    // Self-service erasure: any authenticated caller may wipe their own stored submissions.
+    val deleteSubmissionsEndpoint = authedEndpoint(
+      endpoint.delete.in("api" / "submissions").out(jsonBody[DeleteSubmissionsResponse])
+    )(claims => submissions.deleteAll(claims))
+
+    // List the caller's submissions for one problem — book + hierarchical chapter as query params,
+    // same addressing as GET /api/cortex/{book}/chapter. Powers the workbench Submissions tab.
+    // Wired inline rather than via authedInputEndpoint: two query inputs + the auth header flatten to a
+    // 3-tuple (tapir's ParamConcat), which the (input, authHeader) helper can't destructure.
+    val listSubmissionsEndpoint: ZServerEndpoint[Any, Any] =
+      endpoint.get
+        .in("api" / "submissions")
+        .in(query[String]("book"))
+        .in(query[String]("chapter"))
+        .in(header[Option[String]](AuthorizationHeader))
+        .out(jsonBody[ListSubmissionsResponse])
+        .errorOut(apiErrorOut)
+        .zServerLogic { case (book, chapter, authHeader) =>
+          val effect: IO[ApiErrors.HandlerFailure, ListSubmissionsResponse] =
+            bearerToken(authHeader) match
+              case None        => ZIO.fail(AuthFailure.MissingToken)
+              case Some(token) => auth.verify(token).flatMap(c => submissions.list(c, book, chapter))
+          effect.mapError(toResponse)
+        }
+
+    // Per-row erasure — delete one of the caller's own submissions (the Submissions tab trash).
+    val deleteOneSubmissionEndpoint = authedInputEndpoint(
+      endpoint.delete.in("api" / "submissions" / path[Long]("id")).out(jsonBody[DeleteSubmissionsResponse])
+    )((claims, id) => submissions.deleteOne(claims, id))
+
     List(
       helloEndpoint,
       recentEndpoint,
@@ -242,5 +303,9 @@ object ApiRoutes:
       cortexIndexEndpoint,
       cortexChapterEndpoint,
       blogIndexEndpoint,
-      blogPostEndpoint
+      blogPostEndpoint,
+      submitEndpoint,
+      deleteSubmissionsEndpoint,
+      listSubmissionsEndpoint,
+      deleteOneSubmissionEndpoint
     )

@@ -4,6 +4,8 @@ summary: "Given a string s of ( and ), return the length of the longest valid (b
 prereqs:
   - 11-pattern-sequence-validation/01-pattern
 difficulty: medium
+kind: problem
+topics: [sequence-validation, stack]
 ---
 
 # Balanced span
@@ -12,20 +14,11 @@ difficulty: medium
 
 Given a string `s` of `(` and `)`, return the length of the **longest valid (balanced) parentheses substring**.
 
-### Example 1
-> -   **Input:** `s = "((()()"` → **Output:** `4` (`"()()"`)
-
-### Example 2
-> -   **Input:** `s = "(()())(()"` → **Output:** `6` (`"(()())"`)
-
-### Example 3
-> -   **Input:** `s = "(((("` → **Output:** `0`
-
 ## Examples
 
 **Example 1**
 ```
-Input:  s = "((()()"
+Input:  s = "((()()"`
 Output: 4
 Explanation: the longest valid run is "()()" — positions 2..5. The two
 leading '(' are never closed, so the run starts after them.
@@ -33,7 +26,7 @@ leading '(' are never closed, so the run starts after them.
 
 **Example 2**
 ```
-Input:  s = "(()())(()"
+Input:  s = "(()())(()"`
 Output: 6
 Explanation: "(()())" spans positions 0..5 — a fully balanced block.
 The trailing "(()" is incomplete and cannot extend the answer.
@@ -54,6 +47,72 @@ Explanation: the leading ')' resets the sentinel; "()" at positions 1..2
 is the longest valid run; the trailing '(' is unmatched.
 ```
 
+```quiz
+{
+  "prompt": "Why does the stack store indices instead of characters?",
+  "input": "s = \"(()\"",
+  "options": [
+    "Indices let you measure the span length with i − stack.top()",
+    "Characters cannot be stored on a stack",
+    "Indices are smaller than characters",
+    "To avoid comparing ( and ) directly"
+  ],
+  "answer": "Indices let you measure the span length with i − stack.top()"
+}
+```
+
+## Constraints
+
+- `1 ≤ s.length ≤ 3 × 10⁴`
+- `s` consists only of `(` and `)`
+
+```python run
+class Solution:
+    def balanced_span(self, s: str) -> int:
+        # Your code goes here — push indices on '('; on ')' pop, then if the
+        # stack is empty push i as a new sentinel, otherwise measure the run
+        # as i - stack[-1] and update the max.
+        return 0
+
+s = input()
+print(Solution().balanced_span(s))
+```
+
+```java run
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int balancedSpan(String s) {
+            // Your code goes here — push indices on '('; on ')' pop, then if the
+            // stack is empty push i as a new sentinel, otherwise measure the run
+            // as i - stack.peek() and update the max.
+            return 0;
+        }
+    }
+
+    public static void main(String[] args) {
+        String s = new Scanner(System.in).nextLine();
+        System.out.println(new Solution().balancedSpan(s));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "s", "type": "string", "placeholder": "((()(" }
+  ],
+  "cases": [
+    { "args": { "s": "((()(" }, "expected": "2" },
+    { "args": { "s": "((()()"},  "expected": "4" },
+    { "args": { "s": "(()())(()"},  "expected": "6" },
+    { "args": { "s": "((((" }, "expected": "0" },
+    { "args": { "s": ")()(" }, "expected": "2" },
+    { "args": { "s": "()()" }, "expected": "4" }
+  ]
+}
+```
 
 <details>
 <summary><h2>Intuition</h2></summary>
@@ -79,7 +138,7 @@ The naive approach checks every substring for balance — `O(N³)` time across a
 
 </details>
 <details>
-<summary><h2>Approach in Words</h2></summary>
+<summary><h2>Approach</h2></summary>
 
 
 Push indices, seed a sentinel, and measure each valid run against the boundary on top.
@@ -92,12 +151,7 @@ Push indices, seed a sentinel, and measure each valid run against the boundary o
 6. **Otherwise measure the run.** Set `maxLength = max(maxLength, i − stack.top())`, where the top is one index before the current valid run.
 7. **After the pass, return `maxLength`** — the length of the longest valid substring.
 
-</details>
-<details>
-<summary><h2>Approach — index stack with sentinel</h2></summary>
-
-
-The trick is to push **indices** (not characters), starting with a sentinel `-1` at the bottom. The top of the stack always represents *the index just before the current valid substring started*. When we hit `(`: push its index. When we hit `)`: pop. If the stack is now empty (we popped the sentinel), push the current index as a *new sentinel* (no valid substring can include it). Otherwise, the new top is "one before the current valid run", so the current run length is `i − stack.top()`.
+The trick is to push **indices** (not characters), starting with a sentinel `-1` at the bottom. The top of the stack always represents *the index just before the current valid substring started*.
 
 ```mermaid
 ---
@@ -126,11 +180,9 @@ flowchart LR
 
 </details>
 <details>
-<summary><h2>Solution</h2></summary>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-
-```python run viz=array viz-root=stack viz-kind=stack
+```python solution time=O(n) space=O(n)
 from typing import List
 
 class Solution:
@@ -166,22 +218,11 @@ class Solution:
 
         return max_length
 
-
-# Examples from the problem statement
-print(Solution().balanced_span("((()()"))    # 4
-print(Solution().balanced_span("(()())(()")) # 6
-print(Solution().balanced_span("(((("))      # 0
-
-# Edge cases
-print(Solution().balanced_span(""))          # 0 — empty string
-print(Solution().balanced_span("()"))        # 2
-print(Solution().balanced_span(")()"))       # 2
-print(Solution().balanced_span("(()"))       # 2
-print(Solution().balanced_span("()()"))      # 4
-print(Solution().balanced_span("))))"))      # 0
+s = input()
+print(Solution().balanced_span(s))
 ```
 
-```java run viz=array viz-root=stack viz-kind=stack
+```java solution
 import java.util.*;
 
 public class Main {
@@ -226,44 +267,16 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().balancedSpan("((()()"));    // 4
-        System.out.println(new Solution().balancedSpan("(()())(()"));  // 6
-        System.out.println(new Solution().balancedSpan("(((("));       // 0
-
-        // Edge cases
-        System.out.println(new Solution().balancedSpan(""));           // 0
-        System.out.println(new Solution().balancedSpan("()"));         // 2
-        System.out.println(new Solution().balancedSpan(")()"));        // 2
-        System.out.println(new Solution().balancedSpan("(()"));        // 2
-        System.out.println(new Solution().balancedSpan("()()"));       // 4
-        System.out.println(new Solution().balancedSpan("))))"));       // 0
+        String s = new Scanner(System.in).nextLine();
+        System.out.println(new Solution().balancedSpan(s));
     }
 }
 ```
 
-</details>
-<details>
-<summary><h2>Key Takeaway</h2></summary>
-
-
-Three lessons:
-
-1. **A stack is a matching memory.** Push openers, pop on closers, demand empty at the end. It's the simplest correct way to validate any LIFO-paired sequence — brackets, HTML tags, JSON nesting, function-call frames.
-2. **Indices, not characters, when length matters.** Storing indices on the stack lets you measure spans (balanced-span), compute widths (histogram), and resolve answers retroactively (next-greater).
-3. **A sentinel `-1` makes the boundary case disappear.** Pre-pushing `-1` on the balanced-span stack means *every* `i − stack.top()` calculation works even at the start of input, with no special-casing.
-
-> *Coming up — the **linear evaluation** pattern. The last problem-solving pattern in this section. It's the umbrella term for stack-based algorithms that build up an *answer* one element at a time by repeatedly popping until a condition is met, then pushing. Score-of-parentheses, decode-string, simplified-Unix-paths, and the asteroid collision problem all fall here.*
-
-</details>
-<details>
-<summary><h2>Dry Run</h2></summary>
-
-
-Walk Example 1 — `s = "((()()"`. The stack stores indices, seeded with sentinel `-1`; the top is always "one before the current valid run":
+### Dry Run — `s = "((()()"`
 
 ```
-s = "((()()"        stack=[-1]  max=0
+s = "((()()"`        stack=[-1]  max=0
      012345
 
 i=0 '('  push 0          → stack: [-1, 0]
@@ -278,26 +291,17 @@ return max = 4 ✓
 
 The two leading `(` at indices `0` and `1` are never closed, so they stay on the stack as the run boundary. The valid run `"()()"` spans indices `2..5`, measured as `5 − 1 = 4`.
 
-</details>
-<details>
-<summary><h2>Complexity Analysis</h2></summary>
-
+### Complexity Analysis
 
 | Measure | Value | Why |
 |---|---|---|
 | Time  | **O(N)** | One pass over `N` characters; each index is pushed once and popped at most once. |
 | Space | **O(N)** | The stack holds the sentinel plus every unmatched opener index — up to `N + 1` for an all-opener string. |
 
-The runtime is `O(N)` time: a single index-walk with `O(1)` push, pop, and span arithmetic per character. The space is `O(N)`: an all-opener input (`"(((("`) pushes every index on top of the sentinel, so the stack grows to `N + 1`. There is no second pass and no substring re-checking.
-
-</details>
-<details>
-<summary><h2>Edge Cases</h2></summary>
-
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
-| Empty string | `s = ""` | `0` | No characters, so no valid run; `maxLength` stays `0`. |
 | All openers | `s = "(((("` | `0` | No closer ever arrives, so no pair is matched. |
 | All closers | `s = "))))"` | `0` | Each `)` empties the stack and re-seeds a sentinel; no run forms. |
 | Leading closer | `s = ")()"` | `2` | The first `)` resets the sentinel; `"()"` at indices `1..2` gives length `2`. |

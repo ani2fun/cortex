@@ -15,20 +15,17 @@ The ordering lets you **prune entire subtrees**. If a node's value is `< low`, t
 
 ## See It Work
 
-Sum the keys of the BST that lie in `[3, 7]`. The subtrees holding `1` and `8, 9` are pruned, not visited. Run it.
+Sum the keys of the BST that lie in `[3, 7]`. The subtrees holding `1` and `8, 9` are pruned, not visited. Pick a case and **Run** it.
 
 ```python run viz=binary-tree viz-root=root
-class TreeNode:
-    def __init__(self, val):
-        self.val = val
-        self.left = None
-        self.right = None
+import json
+from collections import deque
 
-def insert(root, val):
-    if root is None: return TreeNode(val)
-    if val < root.val: root.left = insert(root.left, val)
-    elif val > root.val: root.right = insert(root.right, val)
-    return root
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
 
 def range_sum(root, lo, hi):
     if root is None:
@@ -39,10 +36,103 @@ def range_sum(root, lo, hi):
         return range_sum(root.left, lo, hi)     # → only the left can be in range
     return root.val + range_sum(root.left, lo, hi) + range_sum(root.right, lo, hi)
 
-root = None
-for v in [5, 3, 8, 1, 4, 7, 9]:
-    root = insert(root, v)
-print(range_sum(root, 3, 7))                # 19  (3 + 4 + 5 + 7)
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
+
+root = build_tree(json.loads(input()))   # the test case's level-order values
+lo = int(input())                        # lower bound of the range
+hi = int(input())                        # upper bound of the range
+print(range_sum(root, lo, hi))
+```
+
+```java run viz=binary-tree viz-root=root
+import java.util.*;
+
+public class Main {
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
+  }
+
+  static int rangeSum(TreeNode root, int lo, int hi) {
+    if (root == null) return 0;
+    if (root.val < lo) return rangeSum(root.right, lo, hi);   // prune left
+    if (root.val > hi) return rangeSum(root.left, lo, hi);    // prune right
+    return root.val + rangeSum(root.left, lo, hi) + rangeSum(root.right, lo, hi);
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+    int lo = Integer.parseInt(sc.nextLine().trim());
+    int hi = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(rangeSum(root, lo, hi));
+  }
+
+  static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
+    }
+    return root;
+  }
+
+  // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[5, 3, 8, 1, 4, 7, 9]" },
+    { "id": "lo", "label": "lo", "type": "int", "placeholder": "3" },
+    { "id": "hi", "label": "hi", "type": "int", "placeholder": "7" }
+  ],
+  "cases": [
+    { "args": { "root": "[5, 3, 8, 1, 4, 7, 9]", "lo": "3", "hi": "7" }, "expected": "19" },
+    { "args": { "root": "[5, 3, 8, 1, 4, 7, 9]", "lo": "1", "hi": "9" }, "expected": "37" },
+    { "args": { "root": "[5, 3, 8, 1, 4, 7, 9]", "lo": "5", "hi": "5" }, "expected": "5" },
+    { "args": { "root": "[5, 3, 8, 1, 4, 7, 9]", "lo": "10", "hi": "20" }, "expected": "0" },
+    { "args": { "root": "[5]", "lo": "1", "hi": "10" }, "expected": "5" },
+    { "args": { "root": "[]", "lo": "1", "hi": "10" }, "expected": "0" }
+  ]
+}
 ```
 
 ## How It Works
@@ -91,23 +181,185 @@ Because in a BST, **everything in `8`'s right subtree is `> 8`**, hence `> 7 = h
 
 ## Your Turn
 
-Range-sum plus trim-to-range (postorder):
+Range-sum plus trim-to-range (postorder). Implement both stubs — `range_sum` prunes and sums; `trim` prunes and rebuilds.
 
 ```python run viz=binary-tree viz-root=root
-class TreeNode:
-    def __init__(self, val):
-        self.val = val; self.left = None; self.right = None
+import json
+from collections import deque
 
-def insert(root, val):
-    if root is None: return TreeNode(val)
-    if val < root.val: root.left = insert(root.left, val)
-    elif val > root.val: root.right = insert(root.right, val)
-    return root
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
 
 def range_sum(root, lo, hi):
-    if root is None: return 0
-    if root.val < lo: return range_sum(root.right, lo, hi)
-    if root.val > hi: return range_sum(root.left, lo, hi)
+    # Your code goes here — prune out-of-range subtrees; sum the in-range nodes.
+    pass
+
+def trim(root, lo, hi):
+    # Your code goes here — postorder: fix children, then return node or surviving child.
+    pass
+
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
+
+def print_tree(root):                # root → [1, 2, 3, null, 4], trailing nulls trimmed
+    out, queue = [], deque([root])
+    while queue:
+        node = queue.popleft()
+        if node is None:
+            out.append(None)
+        else:
+            out.append(node.val)
+            queue.append(node.left)
+            queue.append(node.right)
+    while out and out[-1] is None:
+        out.pop()
+    print(json.dumps(out))
+
+root = build_tree(json.loads(input()))   # the test case's level-order values
+lo = int(input())                        # lower bound of the range
+hi = int(input())                        # upper bound of the range
+print(range_sum(root, lo, hi))
+print_tree(trim(root, lo, hi))
+```
+
+```java run viz=binary-tree viz-root=root
+import java.util.*;
+
+public class Main {
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
+  }
+
+  static int rangeSum(TreeNode root, int lo, int hi) {
+    // Your code goes here — prune out-of-range subtrees; sum the in-range nodes.
+    return 0;
+  }
+
+  static TreeNode trim(TreeNode root, int lo, int hi) {
+    // Your code goes here — postorder: fix children, then return node or surviving child.
+    return root;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+    int lo = Integer.parseInt(sc.nextLine().trim());
+    int hi = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(rangeSum(root, lo, hi));
+    printTree(trim(root, lo, hi));
+  }
+
+  static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
+    }
+    return root;
+  }
+
+  static void printTree(TreeNode root) {          // root → [1, 2, 3, null, 4], trailing nulls trimmed
+    List<String> out = new ArrayList<>();
+    Deque<TreeNode> queue = new LinkedList<>();    // LinkedList: print BFS enqueues null children
+    queue.add(root);
+    while (!queue.isEmpty()) {
+      TreeNode node = queue.poll();
+      if (node == null) {
+        out.add("null");
+      } else {
+        out.add(String.valueOf(node.val));
+        queue.add(node.left);
+        queue.add(node.right);
+      }
+    }
+    while (!out.isEmpty() && out.get(out.size() - 1).equals("null"))
+      out.remove(out.size() - 1);
+    System.out.println("[" + String.join(", ", out) + "]");
+  }
+
+  // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[5, 3, 8, 1, 4, 7, 9]" },
+    { "id": "lo", "label": "lo", "type": "int", "placeholder": "3" },
+    { "id": "hi", "label": "hi", "type": "int", "placeholder": "7" }
+  ],
+  "cases": [
+    { "args": { "root": "[5, 3, 8, 1, 4, 7, 9]", "lo": "3", "hi": "7" }, "expected": "19\n[5, 3, 7, null, 4]" },
+    { "args": { "root": "[5, 3, 8, 1, 4, 7, 9]", "lo": "1", "hi": "9" }, "expected": "37\n[5, 3, 8, 1, 4, 7, 9]" },
+    { "args": { "root": "[5, 3, 8, 1, 4, 7, 9]", "lo": "5", "hi": "5" }, "expected": "5\n[5]" },
+    { "args": { "root": "[5, 3, 8, 1, 4, 7, 9]", "lo": "10", "hi": "20" }, "expected": "0\n[]" },
+    { "args": { "root": "[5]", "lo": "1", "hi": "10" }, "expected": "5\n[5]" },
+    { "args": { "root": "[]", "lo": "1", "hi": "10" }, "expected": "0\n[]" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+`range_sum` prunes the subtree that can't contribute: if `node.val < lo`, skip left (recurse right only); if `> hi`, skip right (recurse left only). For an in-range node, add its value to the combined left + right sums. `trim` uses the same pruning in postorder: a node below `lo` is replaced by its trimmed right child; above `hi` by its trimmed left child; in-range nodes have their children recursively trimmed and are returned intact. Nothing is shared across calls — each returns the new root of *its* subtree.
+
+```python solution time=O(n) space=O(h)
+import json
+from collections import deque
+
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+def range_sum(root, lo, hi):
+    if root is None:
+        return 0
+    if root.val < lo:                       # node (and its whole LEFT subtree) too small
+        return range_sum(root.right, lo, hi)
+    if root.val > hi:                       # node (and its whole RIGHT subtree) too big
+        return range_sum(root.left, lo, hi)
     return root.val + range_sum(root.left, lo, hi) + range_sum(root.right, lo, hi)
 
 def trim(root, lo, hi):                      # postorder: fix children, then return node
@@ -118,41 +370,136 @@ def trim(root, lo, hi):                      # postorder: fix children, then ret
     root.right = trim(root.right, lo, hi)
     return root
 
-def inorder(n): return inorder(n.left) + [n.val] + inorder(n.right) if n else []
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
 
-root = None
-for v in [5, 3, 8, 1, 4, 7, 9]:
-    root = insert(root, v)
-print(range_sum(root, 3, 7))                 # 19
-print(inorder(trim(root, 3, 7)))             # [3, 4, 5, 7]
+def print_tree(root):                # root → [1, 2, 3, null, 4], trailing nulls trimmed
+    out, queue = [], deque([root])
+    while queue:
+        node = queue.popleft()
+        if node is None:
+            out.append(None)
+        else:
+            out.append(node.val)
+            queue.append(node.left)
+            queue.append(node.right)
+    while out and out[-1] is None:
+        out.pop()
+    print(json.dumps(out))
+
+root = build_tree(json.loads(input()))   # the test case's level-order values
+lo = int(input())                        # lower bound of the range
+hi = int(input())                        # upper bound of the range
+print(range_sum(root, lo, hi))
+print_tree(trim(root, lo, hi))
 ```
 
-```java run viz=binary-tree viz-root=root
+```java solution
+import java.util.*;
+
 public class Main {
-  static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } }
-  static TreeNode insert(TreeNode r, int v) {
-    if (r == null) return new TreeNode(v);
-    if (v < r.val) r.left = insert(r.left, v);
-    else if (v > r.val) r.right = insert(r.right, v);
-    return r;
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
   }
+
   static int rangeSum(TreeNode root, int lo, int hi) {
     if (root == null) return 0;
-    if (root.val < lo) return rangeSum(root.right, lo, hi);
-    if (root.val > hi) return rangeSum(root.left, lo, hi);
+    if (root.val < lo) return rangeSum(root.right, lo, hi);   // prune left
+    if (root.val > hi) return rangeSum(root.left, lo, hi);    // prune right
     return root.val + rangeSum(root.left, lo, hi) + rangeSum(root.right, lo, hi);
   }
+
+  static TreeNode trim(TreeNode root, int lo, int hi) {       // postorder: fix children, return node
+    if (root == null) return null;
+    if (root.val < lo) return trim(root.right, lo, hi);       // drop node + left, keep right
+    if (root.val > hi) return trim(root.left, lo, hi);        // drop node + right, keep left
+    root.left = trim(root.left, lo, hi);
+    root.right = trim(root.right, lo, hi);
+    return root;
+  }
+
   public static void main(String[] args) {
-    TreeNode root = null;
-    for (int v : new int[]{5, 3, 8, 1, 4, 7, 9}) root = insert(root, v);
-    System.out.println(rangeSum(root, 3, 7));   // 19
+    Scanner sc = new Scanner(System.in);
+    TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+    int lo = Integer.parseInt(sc.nextLine().trim());
+    int hi = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(rangeSum(root, lo, hi));
+    printTree(trim(root, lo, hi));
+  }
+
+  static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
+    }
+    return root;
+  }
+
+  static void printTree(TreeNode root) {          // root → [1, 2, 3, null, 4], trailing nulls trimmed
+    List<String> out = new ArrayList<>();
+    Deque<TreeNode> queue = new LinkedList<>();    // LinkedList: print BFS enqueues null children
+    queue.add(root);
+    while (!queue.isEmpty()) {
+      TreeNode node = queue.poll();
+      if (node == null) {
+        out.add("null");
+      } else {
+        out.add(String.valueOf(node.val));
+        queue.add(node.left);
+        queue.add(node.right);
+      }
+    }
+    while (!out.isEmpty() && out.get(out.size() - 1).equals("null"))
+      out.remove(out.size() - 1);
+    System.out.println("[" + String.join(", ", out) + "]");
+  }
+
+  // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
   }
 }
 ```
 
-Drill the family in **Practice** — [Range Summation](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-range-postorder/problems/range-summation), [Range Diameter](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-range-postorder/problems/range-diameter), [Range Leaves](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-range-postorder/problems/range-leaves), and [Range Exclusive Trim](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-range-postorder/problems/range-exclusive-trim).
+</details>
 
 ## Reflect & Connect
+
+Drill the family in **Practice** — [Range Summation](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-range-postorder/problems/range-summation), [Range Diameter](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-range-postorder/problems/range-diameter), [Range Leaves](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-range-postorder/problems/range-leaves), and [Range Exclusive Trim](/cortex/data-structures-and-algorithms/trees/binary-search-tree/pattern-range-postorder/problems/range-exclusive-trim).
 
 Range-postorder is "let the ordering prune your traversal":
 
@@ -204,4 +551,4 @@ Range-postorder is "let the ordering prune your traversal":
 
 - **CLRS**, *Introduction to Algorithms*, 4th ed., §12 — BST ordering; range queries via the search property.
 - **Sedgewick & Wayne**, *Algorithms*, 4th ed., §3.2 — range search / range count on BSTs.
-- Range pruning and postorder trim (LeetCode "Range Sum of BST", "Trim a BST") are standard; both runnable blocks are verified by running (`range_sum[3,7] = 19`; `trim[3,7] ⇒ [3,4,5,7]`).
+- Range pruning and postorder trim (LeetCode "Range Sum of BST", "Trim a BST") are standard; both runnable blocks are verified by running (`range_sum[3,7] = 19`; `trim[3,7] ⇒ [5, 3, 7, null, 4]`).

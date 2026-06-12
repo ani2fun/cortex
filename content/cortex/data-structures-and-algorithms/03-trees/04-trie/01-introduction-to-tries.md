@@ -21,6 +21,8 @@ The **trie** (pronounced "try," from re*trie*val) makes a prefix query cost only
 A trie over `apple, app, apt, ant, ants, and`. `search` asks "is this a *stored word*?"; `starts_with` asks "is this a *prefix* of one?"; `words_with_prefix` is autocomplete. Run it.
 
 ```python run viz=trie viz-root=root viz-kind=trie
+import json
+
 class TrieNode:
     __slots__ = ("children", "is_end")
     def __init__(self):
@@ -67,14 +69,122 @@ class Trie:
         dfs(node, list(prefix))
         return out
 
+words = json.loads(input())   # e.g. ["apple","app","apt","ant","ants","and"]
+search_word = input()
+prefix = input()
+wwp_prefix = input()
+
 t = Trie()
-for w in ["apple", "app", "apt", "ant", "ants", "and"]:
+for w in words:
     t.insert(w)
-print("search('app')     ->", t.search("app"))            # True
-print("search('ap')      ->", t.search("ap"))             # False — a prefix, not a word
-print("starts_with('ap') ->", t.starts_with("ap"))        # True
-print("words 'an'        ->", sorted(t.words_with_prefix("an")))   # ['and', 'ant', 'ants']
+print("search('" + search_word + "')     ->", "true" if t.search(search_word) else "false")
+print("search('" + prefix + "')      ->", "true" if t.search(prefix) else "false")
+print("starts_with('" + prefix + "') ->", "true" if t.starts_with(prefix) else "false")
+print("words '" + wwp_prefix + "'        ->", sorted(t.words_with_prefix(wwp_prefix)))
 ```
+
+```java run viz=trie viz-root=root viz-kind=trie
+import java.util.*;
+public class Main {
+  static class TrieNode {
+    Map<Character, TrieNode> children = new HashMap<>();
+    boolean isEnd = false;
+  }
+  static class Trie {
+    TrieNode root = new TrieNode();
+    void insert(String word) {
+      TrieNode node = root;
+      for (char ch : word.toCharArray())
+        node = node.children.computeIfAbsent(ch, k -> new TrieNode());
+      node.isEnd = true;
+    }
+    TrieNode walk(String s) {
+      TrieNode node = root;
+      for (char ch : s.toCharArray()) {
+        node = node.children.get(ch);
+        if (node == null) return null;
+      }
+      return node;
+    }
+    boolean search(String word) { TrieNode n = walk(word); return n != null && n.isEnd; }
+    boolean startsWith(String prefix) { return walk(prefix) != null; }
+    List<String> wordsWithPrefix(String prefix) {
+      TrieNode node = walk(prefix);
+      List<String> out = new ArrayList<>();
+      if (node == null) return out;
+      dfs(node, new StringBuilder(prefix), out);
+      return out;
+    }
+    void dfs(TrieNode n, StringBuilder path, List<String> out) {
+      if (n.isEnd) out.add(path.toString());
+      List<Character> chars = new ArrayList<>(n.children.keySet());
+      Collections.sort(chars);
+      for (char ch : chars) {
+        path.append(ch);
+        dfs(n.children.get(ch), path, out);
+        path.deleteCharAt(path.length() - 1);
+      }
+    }
+  }
+  static String[] parseStringArray(String line) {
+    String inner = line.trim().replaceAll("^\\[|\\]$", "").trim();
+    if (inner.isEmpty()) return new String[0];
+    String[] parts = inner.split(",");
+    for (int i = 0; i < parts.length; i++) parts[i] = parts[i].trim().replaceAll("^\"|\"$", "");
+    return parts;
+  }
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    String[] words = parseStringArray(sc.nextLine());
+    String searchWord = sc.nextLine().trim();
+    String prefix = sc.nextLine().trim();
+    String wwpPrefix = sc.nextLine().trim();
+
+    Trie t = new Trie();
+    for (String w : words) t.insert(w);
+
+    System.out.println("search('" + searchWord + "')     -> " + t.search(searchWord));
+    System.out.println("search('" + prefix + "')      -> " + t.search(prefix));
+    System.out.println("starts_with('" + prefix + "') -> " + t.startsWith(prefix));
+    List<String> wwp = t.wordsWithPrefix(wwpPrefix);
+    Collections.sort(wwp);
+    StringBuilder sb = new StringBuilder("[");
+    for (int i = 0; i < wwp.size(); i++) {
+      if (i > 0) sb.append(", ");
+      sb.append("'").append(wwp.get(i)).append("'");
+    }
+    sb.append("]");
+    System.out.println("words '" + wwpPrefix + "'        -> " + sb);
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "words", "label": "words", "type": "array", "placeholder": "[\"apple\",\"app\",\"apt\",\"ant\",\"ants\",\"and\"]" },
+    { "id": "search_word", "label": "search word", "type": "string", "placeholder": "app" },
+    { "id": "prefix", "label": "prefix", "type": "string", "placeholder": "ap" },
+    { "id": "wwp_prefix", "label": "words with prefix", "type": "string", "placeholder": "an" }
+  ],
+  "cases": [
+    {
+      "args": { "words": "[\"apple\",\"app\",\"apt\",\"ant\",\"ants\",\"and\"]", "search_word": "app", "prefix": "ap", "wwp_prefix": "an" },
+      "expected": "search('app')     -> true\nsearch('ap')      -> false\nstarts_with('ap') -> true\nwords 'an'        -> ['and', 'ant', 'ants']"
+    },
+    {
+      "args": { "words": "[\"cat\",\"car\",\"card\",\"care\",\"bat\"]", "search_word": "car", "prefix": "ca", "wwp_prefix": "car" },
+      "expected": "search('car')     -> true\nsearch('ca')      -> false\nstarts_with('ca') -> true\nwords 'car'        -> ['car', 'card', 'care']"
+    },
+    {
+      "args": { "words": "[\"hello\",\"world\"]", "search_word": "hell", "prefix": "he", "wwp_prefix": "he" },
+      "expected": "search('hell')     -> false\nsearch('he')      -> false\nstarts_with('he') -> true\nwords 'he'        -> ['hello']"
+    }
+  ]
+}
+```
+
+Both print `search('app') -> true`, `search('ap') -> false`, `starts_with('ap') -> true`, `words 'an' -> ['and', 'ant', 'ants']`. Three different orderings of the same five nodes — the `is_end` flag is the one bit that separates a *stored word* from a mere prefix path.
 
 ## How It Works
 
@@ -115,17 +225,19 @@ A trie stores the shared prefix structure of its strings as a tree: root = empty
 
 ## Trace It
 
-From the run above: `search("ap")` returns **`False`**, but `starts_with("ap")` returns **`True`** — for the *same* string on the *same* trie.
+From the run above: `search("ap")` returns **`false`**, but `starts_with("ap")` returns **`true`** — for the *same* string on the *same* trie.
 
 Before you read on: the walk for both reaches the exact same node (the one spelling `"ap"`). The only thing that differs is whether the code consults `is_end`. So picture deleting the `is_end` field entirely — every node treated as "present." What does `search` collapse into, and why does that make the trie unable to tell `app` from `apple`?
 
-`search` would collapse into `starts_with` — it could no longer distinguish **"this string is a stored word"** from **"this string is merely a prefix of one."** Walk `"ap"`: the node exists because it's on the path to `app`, `apple`, `apt`. With `is_end`, `search("ap")` sees the node is *not* flagged and correctly returns `False` — `ap` was never inserted as a word. Without `is_end`, "the node exists" is the only signal, so `search("ap")` returns `True` — wrong. The same erasure makes `app` and `apple` indistinguishable: both are just paths from the root, and nothing records that `app` is a complete dictionary entry while the node spelling `ap` is not. The `is_end` marker is the one bit that separates the *path* a string traces from the *fact* that the string was stored. It's why a trie needs a boolean per node and not just the edges — and why "forgot the end-of-word marker" is the classic first-trie bug, turning a dictionary into a mere prefix set. (The flip side: `starts_with` deliberately ignores `is_end`, because a prefix query only cares that the path exists.)
+`search` would collapse into `starts_with` — it could no longer distinguish **"this string is a stored word"** from **"this string is merely a prefix of one."** Walk `"ap"`: the node exists because it's on the path to `app`, `apple`, `apt`. With `is_end`, `search("ap")` sees the node is *not* flagged and correctly returns `false` — `ap` was never inserted as a word. Without `is_end`, "the node exists" is the only signal, so `search("ap")` returns `true` — wrong. The same erasure makes `app` and `apple` indistinguishable: both are just paths from the root, and nothing records that `app` is a complete dictionary entry while the node spelling `ap` is not. The `is_end` marker is the one bit that separates the *path* a string traces from the *fact* that the string was stored. It's why a trie needs a boolean per node and not just the edges — and why "forgot the end-of-word marker" is the classic first-trie bug, turning a dictionary into a mere prefix set. (The flip side: `starts_with` deliberately ignores `is_end`, because a prefix query only cares that the path exists.)
 
 ## Your Turn
 
 The trie in both languages — `insert` / `search` / `starts_with`, the LeetCode-208 core:
 
 ```python run viz=trie viz-root=root viz-kind=trie
+import json
+
 class TrieNode:
     __slots__ = ("children", "is_end")
     def __init__(self):
@@ -150,9 +262,16 @@ class Trie:
     def starts_with(self, prefix):
         return self._walk(prefix) is not None
 
+words = json.loads(input())
+search_word = input()
+prefix = input()
+
 t = Trie()
-for w in ["apple", "app", "apt"]: t.insert(w)
-print(t.search("app"), t.search("ap"), t.starts_with("ap"))   # True False True
+for w in words: t.insert(w)
+s = t.search(search_word)
+sw = t.search(prefix)
+st = t.starts_with(prefix)
+print(("true" if s else "false") + " " + ("true" if sw else "false") + " " + ("true" if st else "false"))
 ```
 
 ```java run viz=trie viz-root=root viz-kind=trie
@@ -181,11 +300,51 @@ public class Main {
     boolean search(String word) { TrieNode n = walk(word); return n != null && n.isEnd; }
     boolean startsWith(String prefix) { return walk(prefix) != null; }
   }
-  public static void main(String[] args) {
-    Trie t = new Trie();
-    for (String w : new String[]{"apple", "app", "apt"}) t.insert(w);
-    System.out.println(t.search("app") + " " + t.search("ap") + " " + t.startsWith("ap"));  // true false true
+  static String[] parseStringArray(String line) {
+    String inner = line.trim().replaceAll("^\\[|\\]$", "").trim();
+    if (inner.isEmpty()) return new String[0];
+    String[] parts = inner.split(",");
+    for (int i = 0; i < parts.length; i++) parts[i] = parts[i].trim().replaceAll("^\"|\"$", "");
+    return parts;
   }
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    String[] words = parseStringArray(sc.nextLine());
+    String searchWord = sc.nextLine().trim();
+    String prefix = sc.nextLine().trim();
+
+    Trie t = new Trie();
+    for (String w : words) t.insert(w);
+    System.out.println(t.search(searchWord) + " " + t.search(prefix) + " " + t.startsWith(prefix));
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "words", "label": "words", "type": "array", "placeholder": "[\"apple\",\"app\",\"apt\"]" },
+    { "id": "search_word", "label": "search", "type": "string", "placeholder": "app" },
+    { "id": "prefix", "label": "prefix", "type": "string", "placeholder": "ap" }
+  ],
+  "cases": [
+    {
+      "args": { "words": "[\"apple\",\"app\",\"apt\"]", "search_word": "app", "prefix": "ap" },
+      "expected": "true false true"
+    },
+    {
+      "args": { "words": "[\"apple\",\"app\",\"apt\"]", "search_word": "apple", "prefix": "apt" },
+      "expected": "true true true"
+    },
+    {
+      "args": { "words": "[\"cat\",\"car\",\"card\"]", "search_word": "cat", "prefix": "ca" },
+      "expected": "true false true"
+    },
+    {
+      "args": { "words": "[\"cat\",\"car\",\"card\"]", "search_word": "dog", "prefix": "do" },
+      "expected": "false false false"
+    }
+  ]
 }
 ```
 
@@ -266,4 +425,4 @@ flowchart LR
 
 - **Sedgewick & Wayne**, *Algorithms*, 4th ed., §5.2 — R-way tries and ternary search tries; the canonical treatment.
 - **CLRS**, *Introduction to Algorithms*, 4th ed., §12 / Problem 12-2 — radix/prefix trees on strings.
-- Leis et al., *The Adaptive Radix Tree* (ICDE 2013) — the ART layout used by DuckDB/HyPer; very readable. Implement Trie is [LeetCode 208](https://leetcode.com/problems/implement-trie-prefix-tree/). Both runnable blocks are verified by running (`search('app') ⇒ True`, `search('ap') ⇒ False`, `starts_with('ap') ⇒ True`, `words_with_prefix('an') ⇒ ['and','ant','ants']`).
+- Leis et al., *The Adaptive Radix Tree* (ICDE 2013) — the ART layout used by DuckDB/HyPer; very readable. Implement Trie is [LeetCode 208](https://leetcode.com/problems/implement-trie-prefix-tree/). Both runnable blocks are verified by running (`search('app') ⇒ true`, `search('ap') ⇒ false`, `starts_with('ap') ⇒ true`, `words_with_prefix('an') ⇒ ['and','ant','ants']`).

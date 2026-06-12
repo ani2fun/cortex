@@ -4,7 +4,11 @@ summary: "Implement a DoublyLinkedList class that exposes prepend, append, inser
 prereqs:
   - 02-linear-structures/04-doubly-linked-list/01-doubly-linked-lists
 difficulty: hard
+kind: problem
+topics: [doubly-linked-list, design]
 ---
+
+# Design a Doubly Linked List
 
 A working **`DoublyLinkedList` class** is the object behind Python's `collections.deque`, Java's `LinkedList`, every LRU cache, every undo stack, and every browser history list. Its eight operations are recombinations of three primitives you already own — **traversal, insertion, deletion** — and the whole challenge is keeping the bookkeeping correct at every boundary. The discipline throughout: **save before clobber, mirror every link, update size last**.
 
@@ -17,37 +21,227 @@ Given the skeleton of a **`DoublyLinkedList`** class, complete this class by imp
 > -   **`empty()`** — returns `true` if the list is empty and `false` if it is not.
 > -   **`prepend(val)`** — inserts a node with the given value at the beginning of the list.
 > -   **`append(val)`** — inserts a node with the given value at the end of the list.
-> -   **`insert(position, val)`** — inserts a node with the given value at the given position in the list. Positions are indexed from 0, meaning the first node is at position 0.
+> -   **`insert(position, val)`** — inserts a node with the given value at the given position in the list. Positions are indexed from 0, meaning the first node is at position 0. If `position ≤ 0`, prepend; if `position` exceeds the current length, append.
 > -   **`remove(val)`** — removes the first node whose value matches the given value. Returns `true` if the node was removed; otherwise, returns `false`.
 > -   **`search(val)`** — returns `true` if a node with the given value exists in the linked list; returns `false` otherwise.
 
-> The input should adhere to the following rules:
->
-> 1. The input contains two arrays of the same size.
-> 2. The first array contains the list of operations; the second contains the corresponding operands for those operations.
-> 3. The first index in the first array contains `DoublyLinkedList`, and the first index in the second array contains an empty array. This initialises the `DoublyLinkedList`.
-> 4. For each index in the first array containing **prepend**, **append**, **remove**, or **search**, the corresponding index in the second array contains the value to insert / remove / search.
-> 5. For each index containing the **insert** operation, the corresponding second-array index contains a pair `[position, val]`.
-> 6. For **size** or **empty**, the corresponding second-array index contains an empty array.
-
 ```
-Input:  [DoublyLinkedList, prepend, prepend, append, size, search, insert, remove, empty]
-        [[],               [2],     [3],     [1],    [],   [5],    [1, 8], [2],    []]
-Output: [null, null, null, null, 3, false, null, true, false]
+Input:
+  ops  = [DoublyLinkedList, prepend, prepend, append, size, search, insert, remove, empty]
+  args = [[],               [2],     [3],     [1],    [],   [5],    [1, 8], [2],    []]
 
-Trace:
-  list = new DoublyLinkedList()  → []
-  list.prepend(2)                → [2]
-  list.prepend(3)                → [3, 2]
-  list.append(1)                 → [3, 2, 1]
-  list.size()                    → 3
-  list.search(5)                 → false
-  list.insert(1, 8)              → [3, 8, 2, 1]
-  list.remove(2)                 → [3, 8, 1], returns true
-  list.empty()                   → false
+Output:
+  [null, null, null, null, 3, false, null, true, false]
+
+Step-by-step:
+  DoublyLinkedList()    → list = []
+  prepend(2)            → list = [2]
+  prepend(3)            → list = [3, 2]
+  append(1)             → list = [3, 2, 1]
+  size()                → 3
+  search(5)             → false
+  insert(1, 8)          → list = [3, 8, 2, 1]
+  remove(2)             → list = [3, 8, 1],  returns true
+  empty()               → false
 ```
 
----
+```quiz
+{
+  "prompt": "Now your turn!",
+  "input": "prepend(1), prepend(2), append(3), insert(1, 9) on an empty list",
+  "options": ["[2, 9, 1, 3]", "[1, 2, 9, 3]", "[9, 2, 1, 3]", "[2, 1, 9, 3]"],
+  "answer": "[2, 9, 1, 3]"
+}
+```
+
+## Constraints
+
+- `0 ≤ total operations ≤ 1000`, `-10^9 ≤ val ≤ 10^9`
+- `insert` clamps: `position ≤ 0` means prepend, `position > length` means append
+- `remove` deletes only the **first** match
+- `size()` and `empty()` must run in **O(1)**
+
+The workbench drives your class through every operation: it prepends the `prepends` values in order, appends the `appends` values, then performs one `insert`, one `remove`, and one `search` — and prints the final list plus what the queries returned. Implement all seven methods, keeping every link mirrored (`a.next.prev == a`).
+
+```python run viz=linked-list viz-root=head
+import ast
+
+class ListNode:
+    def __init__(self, val, prev=None, next=None):
+        self.val = val
+        self.prev = prev
+        self.next = next
+
+class DoublyLinkedList:
+    def __init__(self):
+        self.head = None          # pointer to the front node
+        self.tail = None          # pointer to the last node
+        self.current_size = 0     # cached element count
+
+    def empty(self):
+        # Your code goes here — one null check.
+        return True
+
+    def size(self):
+        # Your code goes here — O(1), use the cached counter.
+        return 0
+
+    def prepend(self, val):
+        # Your code goes here — new node at the front; mirror head.prev;
+        # set tail too when the list was empty.
+        pass
+
+    def append(self, val):
+        # Your code goes here — new node at the back via tail; mirror links;
+        # set head too when the list was empty.
+        pass
+
+    def insert(self, position, val):
+        # Your code goes here — clamp position ≤ 0 to prepend, ≥ size to
+        # append; else walk to position and splice before, mirroring 4 links.
+        pass
+
+    def remove(self, val):
+        # Your code goes here — scan for val; branch head / tail / middle;
+        # return True/False.
+        return False
+
+    def search(self, val):
+        # Your code goes here — linear scan.
+        return False
+
+dll = DoublyLinkedList()
+prepends = ast.literal_eval(input())     # values to prepend, in order
+appends = ast.literal_eval(input())      # values to append, in order
+pos = int(input())                       # insert position
+insert_val = int(input())                # insert value
+remove_val = int(input())                # value to remove
+search_val = int(input())                # value to search for
+
+for v in prepends:
+    dll.prepend(v)
+for v in appends:
+    dll.append(v)
+dll.insert(pos, insert_val)
+removed = dll.remove(remove_val)
+found = dll.search(search_val)
+
+out = []
+node = dll.head
+while node:                              # traverse to collect the values in order
+    out.append(node.val)
+    node = node.next
+print(out)
+print("removed =", "true" if removed else "false")
+print("found =", "true" if found else "false")
+print("size =", dll.size(), "empty =", "true" if dll.empty() else "false")
+```
+
+```java run viz=linked-list viz-root=head
+import java.util.*;
+
+public class Main {
+    static class ListNode {
+        int val; ListNode prev, next;
+        ListNode(int val) { this.val = val; }
+    }
+
+    static class DoublyLinkedList {
+        ListNode head = null;     // pointer to the front node
+        ListNode tail = null;     // pointer to the last node
+        int currentSize = 0;      // cached element count
+
+        boolean empty() {
+            // Your code goes here — one null check.
+            return true;
+        }
+
+        int size() {
+            // Your code goes here — O(1), use the cached counter.
+            return 0;
+        }
+
+        void prepend(int val) {
+            // Your code goes here — new node at the front; mirror head.prev;
+            // set tail too when the list was empty.
+        }
+
+        void append(int val) {
+            // Your code goes here — new node at the back via tail; mirror
+            // links; set head too when the list was empty.
+        }
+
+        void insert(int position, int val) {
+            // Your code goes here — clamp position ≤ 0 to prepend, ≥ size to
+            // append; else walk to position and splice before, mirroring 4 links.
+        }
+
+        boolean remove(int val) {
+            // Your code goes here — scan for val; branch head / tail / middle.
+            return false;
+        }
+
+        boolean search(int val) {
+            // Your code goes here — linear scan.
+            return false;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        DoublyLinkedList dll = new DoublyLinkedList();
+        int[] prepends = parseIntArray(sc.nextLine());           // values to prepend, in order
+        int[] appends = parseIntArray(sc.nextLine());            // values to append, in order
+        int pos = Integer.parseInt(sc.nextLine().trim());        // insert position
+        int insertVal = Integer.parseInt(sc.nextLine().trim());  // insert value
+        int removeVal = Integer.parseInt(sc.nextLine().trim());  // value to remove
+        int searchVal = Integer.parseInt(sc.nextLine().trim());  // value to search for
+
+        for (int v : prepends) dll.prepend(v);
+        for (int v : appends) dll.append(v);
+        dll.insert(pos, insertVal);
+        boolean removed = dll.remove(removeVal);
+        boolean found = dll.search(searchVal);
+
+        List<Integer> out = new ArrayList<>();
+        for (ListNode node = dll.head; node != null; node = node.next) out.add(node.val);
+        System.out.println(out);
+        System.out.println("removed = " + removed);
+        System.out.println("found = " + found);
+        System.out.println("size = " + dll.size() + " empty = " + dll.empty());
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads a test-case list
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "prepends", "label": "prepends", "type": "int[]", "placeholder": "[2, 3]" },
+    { "id": "appends", "label": "appends", "type": "int[]", "placeholder": "[1]" },
+    { "id": "pos", "label": "pos", "type": "int", "placeholder": "1" },
+    { "id": "insertVal", "label": "insertVal", "type": "int", "placeholder": "8" },
+    { "id": "removeVal", "label": "removeVal", "type": "int", "placeholder": "2" },
+    { "id": "searchVal", "label": "searchVal", "type": "int", "placeholder": "5" }
+  ],
+  "cases": [
+    { "args": { "prepends": "[2, 3]", "appends": "[1]", "pos": "1", "insertVal": "8", "removeVal": "2", "searchVal": "5" }, "expected": "[3, 8, 1]\nremoved = true\nfound = false\nsize = 3 empty = false" },
+    { "args": { "prepends": "[]", "appends": "[]", "pos": "0", "insertVal": "7", "removeVal": "7", "searchVal": "7" }, "expected": "[]\nremoved = true\nfound = false\nsize = 0 empty = true" },
+    { "args": { "prepends": "[]", "appends": "[1, 2, 3]", "pos": "100", "insertVal": "9", "removeVal": "99", "searchVal": "2" }, "expected": "[1, 2, 3, 9]\nremoved = false\nfound = true\nsize = 4 empty = false" },
+    { "args": { "prepends": "[5]", "appends": "[]", "pos": "-5", "insertVal": "9", "removeVal": "5", "searchVal": "9" }, "expected": "[9]\nremoved = true\nfound = true\nsize = 1 empty = false" },
+    { "args": { "prepends": "[]", "appends": "[1, 2, 2, 3]", "pos": "2", "insertVal": "2", "removeVal": "2", "searchVal": "4" }, "expected": "[1, 2, 2, 3]\nremoved = true\nfound = false\nsize = 4 empty = false" }
+  ]
+}
+```
 
 <details>
 <summary><h2>The Architecture</h2></summary>
@@ -120,43 +314,35 @@ The implementation below mirrors the algorithms from lessons 02-04 — traversal
 - **Head / tail / middle branching in `remove`** — the same three-way split as deletion-by-data in lesson 04. Each branch updates a different pair of pointers.
 
 
-```python run viz=linked-list viz-root=head
-from typing import Optional
+```python solution time=O(n) space=O(1)
+import ast
 
 class ListNode:
-    def __init__(self, val=0, prev=None, nxt=None):
+    def __init__(self, val, prev=None, next=None):
         self.val = val
         self.prev = prev
-        self.next = nxt
-
-
-def to_list(head):
-    out = []
-    while head is not None:
-        out.append(head.val)
-        head = head.next
-    return out
+        self.next = next
 
 
 class DoublyLinkedList:
     def __init__(self):
 
         # Pointer to the front node of the list
-        self.head: Optional[ListNode] = None
+        self.head = None
 
         # Pointer to the last node of the list
-        self.tail: Optional[ListNode] = None
+        self.tail = None
 
         # Current number of elements in the list
-        self.currentSize: int = 0
+        self.current_size = 0
 
-    def empty(self) -> bool:
+    def empty(self):
         return self.head is None
 
-    def size(self) -> int:
-        return self.currentSize
+    def size(self):
+        return self.current_size
 
-    def prepend(self, val: int) -> None:
+    def prepend(self, val):
         newNode = ListNode(val)
 
         # If the list is empty, set the new node as both head and tail
@@ -168,9 +354,9 @@ class DoublyLinkedList:
             self.head.prev = newNode
             self.head = newNode
 
-        self.currentSize += 1
+        self.current_size += 1
 
-    def append(self, val: int) -> None:
+    def append(self, val):
         newNode = ListNode(val)
 
         # If the list is empty, set the new node as both head and tail
@@ -182,9 +368,9 @@ class DoublyLinkedList:
             self.tail.next = newNode
             self.tail = newNode
 
-        self.currentSize += 1
+        self.current_size += 1
 
-    def insert(self, position: int, val: int) -> None:
+    def insert(self, position, val):
 
         # If the position is less than or equal to 0, prepend the new
         # node
@@ -194,7 +380,7 @@ class DoublyLinkedList:
 
         # If the position is greater than or equal to the current size,
         # append the new node
-        if position >= self.currentSize:
+        if position >= self.current_size:
             self.append(val)
             return
 
@@ -213,9 +399,9 @@ class DoublyLinkedList:
         current.prev.next = newNode
         current.prev = newNode
 
-        self.currentSize += 1
+        self.current_size += 1
 
-    def remove(self, val: int) -> bool:
+    def remove(self, val):
 
         # If the list is empty, no removal is possible
         if self.empty():
@@ -248,14 +434,14 @@ class DoublyLinkedList:
                     current.prev.next = current.next
                     current.next.prev = current.prev
 
-                self.currentSize -= 1
+                self.current_size -= 1
                 return True
 
             current = current.next
 
         return False
 
-    def search(self, val: int) -> bool:
+    def search(self, val):
         current = self.head
         while current:
 
@@ -268,75 +454,62 @@ class DoublyLinkedList:
         return False
 
 
-# Example from the problem statement
 dll = DoublyLinkedList()
-dll.prepend(2); print(to_list(dll.head))   # [2]
-dll.prepend(3); print(to_list(dll.head))   # [3, 2]
-dll.append(1);  print(to_list(dll.head))   # [3, 2, 1]
-print(dll.size())                          # 3
-print(dll.search(5))                       # False
-dll.insert(1, 8); print(to_list(dll.head)) # [3, 8, 2, 1]
-print(dll.remove(2))                       # True
-print(to_list(dll.head))                   # [3, 8, 1]
-print(dll.empty())                         # False
+prepends = ast.literal_eval(input())     # values to prepend, in order
+appends = ast.literal_eval(input())      # values to append, in order
+pos = int(input())                       # insert position
+insert_val = int(input())                # insert value
+remove_val = int(input())                # value to remove
+search_val = int(input())                # value to search for
 
-# Edge cases
-dll2 = DoublyLinkedList()
-print(dll2.empty())                        # True
-print(dll2.size())                         # 0
-print(dll2.remove(5))                      # False
-dll2.append(10); dll2.append(20); dll2.append(30)
-print(to_list(dll2.head))                  # [10, 20, 30]
-print(dll2.search(20))                     # True
-print(dll2.search(99))                     # False
-print(dll2.remove(10)); print(to_list(dll2.head))  # True, [20, 30]
-print(dll2.remove(30)); print(to_list(dll2.head))  # True, [20]
+for v in prepends:
+    dll.prepend(v)
+for v in appends:
+    dll.append(v)
+dll.insert(pos, insert_val)
+removed = dll.remove(remove_val)
+found = dll.search(search_val)
+
+out = []
+node = dll.head
+while node:                              # traverse to collect the values in order
+    out.append(node.val)
+    node = node.next
+print(out)
+print("removed =", "true" if removed else "false")
+print("found =", "true" if found else "false")
+print("size =", dll.size(), "empty =", "true" if dll.empty() else "false")
 ```
 
-```java run viz=linked-list viz-root=head
+```java solution
 import java.util.*;
 
 public class Main {
     static class ListNode {
-        int val;
-        ListNode prev;
-        ListNode next;
-        ListNode() {}
+        int val; ListNode prev, next;
         ListNode(int val) { this.val = val; }
-    }
-
-    static java.util.List<Integer> toList(ListNode head) {
-        java.util.List<Integer> out = new java.util.ArrayList<>();
-        while (head != null) { out.add(head.val); head = head.next; }
-        return out;
     }
 
     static class DoublyLinkedList {
 
         // Pointer to the front node of the list
-        private ListNode head;
+        ListNode head = null;
 
         // Pointer to the last node of the list
-        private ListNode tail;
+        ListNode tail = null;
 
         // Current number of elements in the list
-        private int currentSize;
+        int currentSize = 0;
 
-        public DoublyLinkedList() {
-            this.head = null;
-            this.tail = null;
-            this.currentSize = 0;
-        }
-
-        public boolean empty() {
+        boolean empty() {
             return head == null;
         }
 
-        public int size() {
+        int size() {
             return currentSize;
         }
 
-        public void prepend(int val) {
+        void prepend(int val) {
             ListNode newNode = new ListNode(val);
 
             // If the list is empty, set the new node as both head and tail
@@ -355,7 +528,7 @@ public class Main {
             currentSize++;
         }
 
-        public void append(int val) {
+        void append(int val) {
             ListNode newNode = new ListNode(val);
 
             // If the list is empty, set the new node as both head and tail
@@ -374,7 +547,7 @@ public class Main {
             currentSize++;
         }
 
-        public void insert(int position, int val) {
+        void insert(int position, int val) {
 
             // If the position is less than or equal to 0, prepend the new
             // node
@@ -411,7 +584,7 @@ public class Main {
             currentSize++;
         }
 
-        public boolean remove(int val) {
+        boolean remove(int val) {
 
             // If the list is empty, no removal is possible
             if (empty()) {
@@ -462,7 +635,7 @@ public class Main {
             return false;
         }
 
-        public boolean search(int val) {
+        boolean search(int val) {
             ListNode current = head;
             while (current != null) {
 
@@ -476,41 +649,47 @@ public class Main {
             // If the val is not found, return false
             return false;
         }
-
-        public ListNode getHead() { return head; }
     }
 
     public static void main(String[] args) {
-        // Example from the problem statement
+        Scanner sc = new Scanner(System.in);
         DoublyLinkedList dll = new DoublyLinkedList();
-        dll.prepend(2); System.out.println(toList(dll.getHead()));   // [2]
-        dll.prepend(3); System.out.println(toList(dll.getHead()));   // [3, 2]
-        dll.append(1);  System.out.println(toList(dll.getHead()));   // [3, 2, 1]
-        System.out.println(dll.size());                              // 3
-        System.out.println(dll.search(5));                           // false
-        dll.insert(1, 8); System.out.println(toList(dll.getHead())); // [3, 8, 2, 1]
-        System.out.println(dll.remove(2));                           // true
-        System.out.println(toList(dll.getHead()));                   // [3, 8, 1]
-        System.out.println(dll.empty());                             // false
+        int[] prepends = parseIntArray(sc.nextLine());           // values to prepend, in order
+        int[] appends = parseIntArray(sc.nextLine());            // values to append, in order
+        int pos = Integer.parseInt(sc.nextLine().trim());        // insert position
+        int insertVal = Integer.parseInt(sc.nextLine().trim());  // insert value
+        int removeVal = Integer.parseInt(sc.nextLine().trim());  // value to remove
+        int searchVal = Integer.parseInt(sc.nextLine().trim());  // value to search for
 
-        // Edge cases
-        DoublyLinkedList dll2 = new DoublyLinkedList();
-        System.out.println(dll2.empty());                            // true
-        System.out.println(dll2.size());                             // 0
-        System.out.println(dll2.remove(5));                          // false
-        dll2.append(10); dll2.append(20); dll2.append(30);
-        System.out.println(toList(dll2.getHead()));                  // [10, 20, 30]
-        System.out.println(dll2.search(20));                         // true
-        System.out.println(dll2.search(99));                         // false
-        System.out.println(dll2.remove(10)); System.out.println(toList(dll2.getHead())); // true, [20, 30]
-        System.out.println(dll2.remove(30)); System.out.println(toList(dll2.getHead())); // true, [20]
+        for (int v : prepends) dll.prepend(v);
+        for (int v : appends) dll.append(v);
+        dll.insert(pos, insertVal);
+        boolean removed = dll.remove(removeVal);
+        boolean found = dll.search(searchVal);
+
+        List<Integer> out = new ArrayList<>();
+        for (ListNode node = dll.head; node != null; node = node.next) out.add(node.val);
+        System.out.println(out);
+        System.out.println("removed = " + removed);
+        System.out.println("found = " + found);
+        System.out.println("size = " + dll.size() + " empty = " + dll.empty());
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads a test-case list
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```
 
 
 <details>
-<summary><strong>Trace — operations from the example input</strong></summary>
+<summary><strong>Trace — the workbench's fixed operation sequence (case 1)</strong></summary>
 
 ```
 Op                            │ list state         │ size │ return
@@ -519,11 +698,10 @@ new DoublyLinkedList()        │ []                 │ 0    │ —
 prepend(2)                    │ [2]                │ 1    │ —
 prepend(3)                    │ [3, 2]             │ 2    │ —
 append(1)                     │ [3, 2, 1]          │ 3    │ —
-size()                        │ [3, 2, 1]          │ 3    │ 3
-search(5)                     │ [3, 2, 1]          │ 3    │ false
 insert(1, 8)                  │ [3, 8, 2, 1]       │ 4    │ —      (clamp not triggered, walk to idx 1, splice before)
 remove(2)                     │ [3, 8, 1]          │ 3    │ true   (target is interior — middle case)
-empty()                       │ [3, 8, 1]          │ 3    │ false
+search(5)                     │ [3, 8, 1]          │ 3    │ false
+size() / empty()              │ [3, 8, 1]          │ 3    │ 3 / false
 ```
 
 Two rows are worth pausing on. `insert(1, 8)` walks to the node currently at position 1 (the `2`), then splices the new `8` before it — the "insert before the given node" primitive from lesson 03, with the target located by index instead of reference. `remove(2)` follows the "delete by value" primitive from lesson 04 and hits the middle-node branch — neither head nor tail moves, only two interior pointers flip.
@@ -576,6 +754,7 @@ The `DoublyLinkedList` you built is the literal foundation of:
 Whenever you see "constant-time insertion and removal at known positions, with bidirectional iteration" in a system design question, the answer starts with a doubly linked list.
 
 </details>
+
 ## Key Takeaway
 
 Every method is a recombination of three primitives — **walk, wire, unwire** — held together by one discipline: **save before clobber, mirror every link, update size last**. Before compiling any mutating method, answer the six-question design checklist:

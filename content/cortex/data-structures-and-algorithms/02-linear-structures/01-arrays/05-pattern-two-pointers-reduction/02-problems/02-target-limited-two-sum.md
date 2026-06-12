@@ -4,6 +4,8 @@ summary: "Given an array of non-negative integers and a target, find the largest
 prereqs:
   - 05-pattern-two-pointers-reduction/01-pattern
 difficulty: medium
+kind: problem
+topics: [two-pointers, arrays]
 ---
 
 # Target Limited Two Sum
@@ -45,6 +47,83 @@ Explanation: 34 + 1 = 35 < 36.
 Input:  arr = [10, 20, 30],  target = 15
 Output: -1
 Explanation: All pairs sum to ≥ 30, which is ≥ 15.
+```
+
+```quiz
+{
+  "prompt": "Now your turn!",
+  "input": "arr = [2, 5, 9, 14], target = 16",
+  "options": ["14", "16", "11", "-1"],
+  "answer": "14"
+}
+```
+
+## Constraints
+
+- `0 ≤ arr.length ≤ 10^4`
+- `0 ≤ arr[i] ≤ 10^9`, `0 ≤ target ≤ 10^9`
+
+```python run viz=array viz-root=arr
+import ast
+from typing import List
+
+class Solution:
+    def target_limited_two_sum(self, arr: List[int], target: int) -> int:
+        # Your code goes here — sort, then converge: on a valid pair (sum <
+        # target) record the max and advance left; otherwise retreat right.
+        return -1
+
+arr = ast.literal_eval(input())      # the test case's arr
+target = int(input())                # the test case's target
+print(Solution().target_limited_two_sum(arr, target))
+```
+
+```java run viz=array viz-root=arr
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int targetLimitedTwoSum(int[] arr, int target) {
+            // Your code goes here — sort, then converge: on a valid pair (sum <
+            // target) record the max and advance left; otherwise retreat right.
+            return -1;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int target = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().targetLimitedTwoSum(arr, target));
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's arr
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[34, 23, 1, 24, 75, 33, 54, 8]" },
+    { "id": "target", "label": "target", "type": "int", "placeholder": "60" }
+  ],
+  "cases": [
+    { "args": { "arr": "[34, 23, 1, 24, 75, 33, 54, 8]", "target": "60" }, "expected": "58" },
+    { "args": { "arr": "[2, 5, 9, 14]", "target": "16" }, "expected": "14" },
+    { "args": { "arr": "[10, 20, 30]", "target": "15" }, "expected": "-1" },
+    { "args": { "arr": "[1, 2]", "target": "4" }, "expected": "3" },
+    { "args": { "arr": "[1, 2]", "target": "3" }, "expected": "-1" },
+    { "args": { "arr": "[5, 5]", "target": "11" }, "expected": "10" }
+  ]
+}
 ```
 
 <details>
@@ -132,7 +211,8 @@ flowchart TB
 
 ### Solution
 
-```python run viz=array viz-root=arr
+```python solution time=O(n log n) space=O(1)
+import ast
 from typing import List
 
 class Solution:
@@ -162,20 +242,12 @@ class Solution:
         return maxSum
 
 
-# Examples from the problem statement
-print(Solution().target_limited_two_sum([34, 23, 1, 24, 75, 33, 54, 8], 60)) # 58
-print(Solution().target_limited_two_sum([34, 23, 1, 24, 75, 33, 54, 8], 36)) # 35
-print(Solution().target_limited_two_sum([10, 20, 30], 15))                    # -1
-
-# Edge cases
-print(Solution().target_limited_two_sum([1, 2], 4))   # 3 — two elements, sum < target
-print(Solution().target_limited_two_sum([1, 2], 3))   # -1 — sum equals target, not strictly less
-print(Solution().target_limited_two_sum([0, 0], 1))   # 0 — zero sum
-print(Solution().target_limited_two_sum([5, 5], 11))  # 10 — duplicate elements
-print(Solution().target_limited_two_sum([1, 100], 5)) # -1 — smallest pair exceeds target
+arr = ast.literal_eval(input())      # the test case's arr
+target = int(input())                # the test case's target
+print(Solution().target_limited_two_sum(arr, target))
 ```
 
-```java run viz=array viz-root=arr
+```java solution
 import java.util.*;
 
 public class Main {
@@ -210,17 +282,19 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().targetLimitedTwoSum(new int[]{34,23,1,24,75,33,54,8}, 60)); // 58
-        System.out.println(new Solution().targetLimitedTwoSum(new int[]{34,23,1,24,75,33,54,8}, 36)); // 35
-        System.out.println(new Solution().targetLimitedTwoSum(new int[]{10,20,30}, 15));               // -1
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int target = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().targetLimitedTwoSum(arr, target));
+    }
 
-        // Edge cases
-        System.out.println(new Solution().targetLimitedTwoSum(new int[]{1,2}, 4));   // 3 — two elements, sum < target
-        System.out.println(new Solution().targetLimitedTwoSum(new int[]{1,2}, 3));   // -1 — sum equals target, not strictly less
-        System.out.println(new Solution().targetLimitedTwoSum(new int[]{0,0}, 1));   // 0 — zero sum
-        System.out.println(new Solution().targetLimitedTwoSum(new int[]{5,5}, 11));  // 10 — duplicate elements
-        System.out.println(new Solution().targetLimitedTwoSum(new int[]{1,100}, 5)); // -1 — smallest pair exceeds target
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

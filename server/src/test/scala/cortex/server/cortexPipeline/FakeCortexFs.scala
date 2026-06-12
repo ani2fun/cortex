@@ -11,8 +11,8 @@ import java.util.concurrent.atomic.AtomicReference
  * filesystem.
  *
  * Because the seam returns a raw [[CortexEntry]] tree rather than a pre-built `CortexState`, every test that
- * uses this fake also exercises the real [[cortex.shared.book.CortexIndexWalker]] — the walker
- * integration is on the pipeline side of the seam, not faked away.
+ * uses this fake also exercises the real [[cortex.shared.book.CortexIndexWalker]] — the walker integration is
+ * on the pipeline side of the seam, not faked away.
  *
  * `loadRootsCalls` records how often `loadRoots` was invoked so cache-hit and auto-reload assertions can be
  * sharp ("rebuilt exactly twice, then served from cache").

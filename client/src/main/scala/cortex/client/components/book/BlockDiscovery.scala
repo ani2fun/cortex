@@ -60,7 +60,21 @@ object BlockDiscovery:
     def decode(node: dom.HTMLElement): Either[BlockDecodeError, Block]
 
   private val Discoverers: List[Discoverer] =
-    List(RunnableCode, RunnableGroup, Mermaid, D2Slides, D2Inline, D3Widget, TracedCode, LikeC4)
+    List(
+      RunnableCode,
+      RunnableGroup,
+      WorkbenchInline,
+      YourTurn,
+      ProblemWorkbench,
+      QuizBlock,
+      SolutionViewer,
+      Mermaid,
+      D2Slides,
+      D2Inline,
+      D3Widget,
+      TracedCode,
+      LikeC4
+    )
 
   private object RunnableCode extends Discoverer:
     override val className: String = "runnable-code"
@@ -79,33 +93,75 @@ object BlockDiscovery:
     override val className: String = "runnable-group"
 
     override def decode(node: dom.HTMLElement): Either[BlockDecodeError, Block] =
-      val raw  = nonEmpty(node.getAttribute("data-tabs"))
-      val tabs = raw.flatMap(uriDecode).map(parseRawTabs).getOrElse(Nil)
-      Blocks.decodeRunnableGroup(tabs)
+      Blocks.decodeRunnableGroup(tabsAttr(node))
 
-    // Defensive JSON → List[RawTab]. Anything that throws (malformed JSON, non-array root)
-    // collapses to an empty list, which `Blocks.decodeRunnableGroup` then rejects as
-    // `EmptyContent` — same observable outcome as the pre-extraction code's "skip the group".
-    private def parseRawTabs(decoded: String): List[Blocks.RawTab] =
-      Try {
-        val parsed = js.JSON.parse(decoded).asInstanceOf[js.Array[js.Dynamic]]
-        parsed.toList.map { obj =>
-          Blocks.RawTab(
-            language = obj.language.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty),
-            languageLabel = obj.languageLabel.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty),
-            source = obj.source.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty),
-            runnable = obj.runnable.asInstanceOf[js.UndefOr[Boolean]].toOption,
-            viz = obj.viz.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty),
-            vizRoot = obj.vizRoot.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty),
-            vizCase = obj.vizCase.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty),
-            vizKind = obj.vizKind.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty)
-          )
-        }
-      } match
-        case Success(v) => v
-        case Failure(t) =>
-          dom.console.warn(s"chapter: skipping runnable-group — malformed data-tabs JSON: ${t.getMessage}")
-          Nil
+  private object WorkbenchInline extends Discoverer:
+    override val className: String = "workbench-inline"
+
+    override def decode(node: dom.HTMLElement): Either[BlockDecodeError, Block] =
+      Blocks.decodeWorkbenchInline(tabsAttr(node), specAttr(node))
+
+  private object YourTurn extends Discoverer:
+    override val className: String = "your-turn"
+
+    override def decode(node: dom.HTMLElement): Either[BlockDecodeError, Block] =
+      Blocks.decodeYourTurn(
+        title = nonEmpty(node.getAttribute("data-title")),
+        blurb = nonEmpty(node.getAttribute("data-blurb")),
+        statementHtml = templateHtml(node, "statement").getOrElse(""),
+        editorialHtml = templateHtml(node, "editorial").getOrElse(""),
+        rawTabs = tabsAttr(node),
+        rawSpec = specAttr(node)
+      )
+
+  private object ProblemWorkbench extends Discoverer:
+    override val className: String = "problem-workbench"
+
+    override def decode(node: dom.HTMLElement): Either[BlockDecodeError, Block] =
+      val sections = templates(node).collect {
+        case tpl if tpl.getAttribute("data-wb") == "ed-section" =>
+          Option(tpl.getAttribute("data-wb-title")).getOrElse("Notes") -> tpl.innerHTML
+      }
+      Blocks.decodeProblemWorkbench(
+        descriptionHtml = templateHtml(node, "description").getOrElse(""),
+        sections = sections,
+        rawTabs = tabsAttr(node),
+        rawSpec = specAttr(node)
+      )
+
+  private object QuizBlock extends Discoverer:
+    override val className: String = "quiz-block"
+
+    override def decode(node: dom.HTMLElement): Either[BlockDecodeError, Block] =
+      nonEmpty(node.getAttribute("data-quiz")).flatMap(uriDecode) match
+        case None => Left(BlockDecodeError.MissingAttribute("quiz-block", "data-quiz"))
+        case Some(json) =>
+          Try {
+            val obj = js.JSON.parse(json)
+            (
+              obj.prompt.asInstanceOf[js.UndefOr[String]].toOption,
+              obj.input.asInstanceOf[js.UndefOr[String]].toOption,
+              obj.options.asInstanceOf[js.UndefOr[js.Array[String]]].toOption
+                .map(_.toList)
+                .getOrElse(Nil),
+              obj.answer.asInstanceOf[js.UndefOr[String]].toOption
+            )
+          } match
+            case Success((prompt, input, options, answer)) =>
+              Blocks.decodeQuiz(prompt, input, options, answer)
+            case Failure(t) =>
+              dom.console.warn(s"chapter: skipping quiz-block — malformed data-quiz JSON: ${t.getMessage}")
+              Left(BlockDecodeError.MissingAttribute("quiz-block", "data-quiz"))
+
+  private object SolutionViewer extends Discoverer:
+    override val className: String = "workbench-solution"
+
+    override def decode(node: dom.HTMLElement): Either[BlockDecodeError, Block] =
+      Blocks.decodeSolutionViewer(
+        rawTabs = tabsAttr(node),
+        time = nonEmpty(node.getAttribute("data-time")),
+        space = nonEmpty(node.getAttribute("data-space"))
+      )
 
   private object Mermaid extends Discoverer:
     override val className: String = "mermaid-block"
@@ -182,6 +238,83 @@ object BlockDiscovery:
   // Shims
   // ---------------------------------------------------------------------------
 
+  /**
+   * URI-decode + JSON-parse a `data-tabs` attribute into RawTabs (shared by group + workbench + solution).
+   */
+  private def tabsAttr(node: dom.HTMLElement): List[Blocks.RawTab] =
+    nonEmpty(node.getAttribute("data-tabs")).flatMap(uriDecode).map(parseRawTabs).getOrElse(Nil)
+
+  /** URI-decode + JSON-parse a `data-spec` attribute into a RawTestSpec. */
+  private def specAttr(node: dom.HTMLElement): Option[Blocks.RawTestSpec] =
+    nonEmpty(node.getAttribute("data-spec")).flatMap(uriDecode).flatMap(parseRawSpec)
+
+  // Defensive JSON → List[RawTab]. Anything that throws (malformed JSON, non-array root)
+  // collapses to an empty list, which the shared decoders then reject as
+  // `EmptyContent` — same observable outcome as the pre-extraction code's "skip the group".
+  private def parseRawTabs(decoded: String): List[Blocks.RawTab] =
+    Try {
+      val parsed = js.JSON.parse(decoded).asInstanceOf[js.Array[js.Dynamic]]
+      parsed.toList.map { obj =>
+        Blocks.RawTab(
+          language = obj.language.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty),
+          languageLabel = obj.languageLabel.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty),
+          source = obj.source.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty),
+          runnable = obj.runnable.asInstanceOf[js.UndefOr[Boolean]].toOption,
+          viz = obj.viz.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty),
+          vizRoot = obj.vizRoot.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty),
+          vizCase = obj.vizCase.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty),
+          vizKind = obj.vizKind.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty)
+        )
+      }
+    } match
+      case Success(v) => v
+      case Failure(t) =>
+        dom.console.warn(s"chapter: malformed data-tabs JSON: ${t.getMessage}")
+        Nil
+
+  // Defensive JSON → RawTestSpec. `type` is a Scala keyword, hence selectDynamic.
+  private def parseRawSpec(decoded: String): Option[Blocks.RawTestSpec] =
+    Try {
+      val obj = js.JSON.parse(decoded)
+      val args = obj.args.asInstanceOf[js.Array[js.Dynamic]].toList.map { a =>
+        Blocks.RawArgSpec(
+          id = a.id.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty),
+          label = a.label.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty),
+          tpe = a.selectDynamic("type").asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty),
+          placeholder = a.placeholder.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty)
+        )
+      }
+      val cases = obj.cases.asInstanceOf[js.Array[js.Dynamic]].toList.map { c =>
+        val argMap = c.args.asInstanceOf[js.UndefOr[js.Dictionary[String]]].toOption
+          .map(_.toMap)
+          .getOrElse(Map.empty[String, String])
+        Blocks.RawTestCase(
+          args = argMap,
+          expected = c.expected.asInstanceOf[js.UndefOr[String]].toOption
+        )
+      }
+      Blocks.RawTestSpec(args, cases)
+    } match
+      case Success(v) => Some(v)
+      case Failure(t) =>
+        dom.console.warn(s"chapter: malformed data-spec JSON: ${t.getMessage}")
+        None
+
+  /** Direct `<template data-wb=…>` children of a workbench placeholder, in document order. */
+  private def templates(node: dom.HTMLElement): List[dom.HTMLElement] =
+    (0 until node.children.length).iterator
+      .map(node.children.item(_).asInstanceOf[dom.HTMLElement])
+      .filter(c => c.tagName.equalsIgnoreCase("template") && c.hasAttribute("data-wb"))
+      .toList
+
+  /**
+   * Inner HTML of the `<template data-wb="<kind>">` child. `innerHTML` on a template serializes its inert
+   * content `DocumentFragment` — the packaged sub-tree never rendered, and `querySelectorAll` above never
+   * descended into it (that's the whole anti-double-mount trick).
+   */
+  private def templateHtml(node: dom.HTMLElement, kind: String): Option[String] =
+    templates(node).find(_.getAttribute("data-wb") == kind).map(_.innerHTML)
+
   private def nonEmpty(s: String): Option[String] =
     Option(s).filter(_.nonEmpty)
 
@@ -202,3 +335,5 @@ object BlockDiscovery:
       dom.console.warn(s"chapter: skipping $blockKind — empty $what")
     case BlockDecodeError.MalformedTab(i, missing) =>
       dom.console.warn(s"chapter: skipping $blockKind — tab $i missing $missing")
+    case BlockDecodeError.MalformedSpec(_, what) =>
+      dom.console.warn(s"chapter: skipping $blockKind — $what")

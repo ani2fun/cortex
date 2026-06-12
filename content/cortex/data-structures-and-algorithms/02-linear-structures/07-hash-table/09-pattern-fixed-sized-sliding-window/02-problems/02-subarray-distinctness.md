@@ -4,6 +4,8 @@ summary: "Given arr and a positive integer k, return an array containing the cou
 prereqs:
   - 09-pattern-fixed-sized-sliding-window/01-pattern
 difficulty: medium
+kind: problem
+topics: [fixed-sized-sliding-window, hash-table]
 ---
 
 # Subarray distinctness
@@ -52,6 +54,66 @@ Output: [1]
 Explanation: the only window [5,5,5] holds one distinct value → [1].
 ```
 
+## Constraints
+
+- `1 <= k <= n` (where `n = len(arr)`)
+- Array values are integers
+
+```python run
+import ast
+
+def subarray_distinctness(arr, k):
+    # Your code goes here
+    pass
+
+arr = ast.literal_eval(input())
+k = int(input())
+print(subarray_distinctness(arr, k))
+```
+
+```java run
+import java.util.*;
+
+public class Main {
+  static int[] parseIntArray(String s) {
+    s = s.trim().replaceAll("[\\[\\]\\s]", "");
+    if (s.isEmpty()) return new int[]{};
+    String[] parts = s.split(",");
+    int[] a = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) a[i] = Integer.parseInt(parts[i].trim());
+    return a;
+  }
+
+  static List<Integer> subarrayDistinctness(int[] arr, int k) {
+    // Your code goes here
+    return new ArrayList<>();
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());
+    int k = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(subarrayDistinctness(arr, k));
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "array",  "placeholder": "[2, 1, 2, 3, 2, 1, 4, 5]" },
+    { "id": "k",   "label": "k",   "type": "number", "placeholder": "5" }
+  ],
+  "cases": [
+    { "args": { "arr": "[2, 1, 2, 3, 2, 1, 4, 5]", "k": "5" }, "expected": "[3, 3, 4, 5]" },
+    { "args": { "arr": "[1, 1, 2, 4]",              "k": "3" }, "expected": "[2, 3]" },
+    { "args": { "arr": "[1, 2, 3, 4]",              "k": "1" }, "expected": "[1, 1, 1, 1]" },
+    { "args": { "arr": "[5, 5, 5]",                 "k": "3" }, "expected": "[1]" },
+    { "args": { "arr": "[1, 2, 3, 4]",              "k": "4" }, "expected": "[4]" },
+    { "args": { "arr": "[1, 1, 1, 1]",              "k": "2" }, "expected": "[1, 1, 1]" }
+  ]
+}
+```
 
 <details>
 <summary><h2>Intuition</h2></summary>
@@ -126,132 +188,71 @@ m -> d
 
 </details>
 <details>
-<summary><h2>Solution</h2></summary>
+<summary>Editorial</summary>
 
+Slide a window of size `k`. When the window is full (`end - start + 1 == k`), append `len(frequency)` — the distinct count — then evict the left element (decrement, delete at zero) before advancing `start`. Deleting zero-count keys is what keeps `len(map)` honest as a distinct count. `O(n)` time, `O(k)` space.
 
-
-```python run viz=array viz-root=result
+```python solution time=O(n) space=O(k)
+import ast
 from collections import defaultdict
-from typing import List
 
-class Solution:
-    def subarray_distinctness(self, arr: List[int], k: int) -> List[int]:
+def subarray_distinctness(arr, k):
+    frequency = defaultdict(int)
+    start, end = 0, 0
+    result = []
+    while end < len(arr):
+        frequency[arr[end]] += 1
+        if end - start + 1 == k:
+            result.append(len(frequency))
+            frequency[arr[start]] -= 1
+            if frequency[arr[start]] == 0:
+                del frequency[arr[start]]
+            start += 1
+        end += 1
+    return result
 
-        # Initialize a dictionary to keep track of the count of elements
-        # in the current window
-        frequency = defaultdict(int)
-
-        # Initialize the start and end indices of the window
-        start, end = 0, 0
-
-        # Initialize the result list to hold the count of distinct
-        # elements in every subarray
-        result = []
-
-        # Loop through the array
-        while end < len(arr):
-
-            # Add the current element to the count dictionary
-            frequency[arr[end]] += 1
-
-            # If the current window size is equal to k, calculate the
-            # count of distinct elements
-            if end - start + 1 == k:
-                result.append(len(frequency))
-
-                # Remove the leftmost element from the count dictionary
-                frequency[arr[start]] -= 1
-                if frequency[arr[start]] == 0:
-                    del frequency[arr[start]]
-
-                # Contract the window
-                start += 1
-
-            # Expand the window to the right
-            end += 1
-
-        return result
-
-
-# Examples from the problem statement
-print(Solution().subarray_distinctness([2, 1, 2, 3, 2, 1, 4, 5], 5))  # [3, 3, 4, 5]
-print(Solution().subarray_distinctness([1, 1, 2, 4], 3))               # [2, 3]
-print(Solution().subarray_distinctness([1, 2, 3, 4], 1))               # [1, 1, 1, 1]
-
-# Edge cases
-print(Solution().subarray_distinctness([1], 1))                         # [1]
-print(Solution().subarray_distinctness([1, 1, 1, 1], 2))               # [1, 1, 1]
-print(Solution().subarray_distinctness([1, 2, 3, 4], 4))               # [4]
-print(Solution().subarray_distinctness([5, 5, 5], 3))                  # [1]
+arr = ast.literal_eval(input())
+k = int(input())
+print(subarray_distinctness(arr, k))
 ```
 
-```java run viz=array viz-root=result
+```java solution
 import java.util.*;
 
 public class Main {
-    static class Solution {
-        public List<Integer> subarrayDistinctness(int[] arr, int k) {
+  static int[] parseIntArray(String s) {
+    s = s.trim().replaceAll("[\\[\\]\\s]", "");
+    if (s.isEmpty()) return new int[]{};
+    String[] parts = s.split(",");
+    int[] a = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) a[i] = Integer.parseInt(parts[i].trim());
+    return a;
+  }
 
-            // Initialize a map to keep track of the count of elements in the
-            // current window
-            Map<Integer, Integer> frequency = new HashMap<>();
-
-            // Initialize the start and end indices of the window
-            int start = 0;
-            int end = 0;
-
-            // Initialize the result list to hold the count of distinct
-            // elements in every subarray
-            List<Integer> result = new ArrayList<>();
-
-            // Loop through the array
-            while (end < arr.length) {
-
-                // Add the current element to the count map
-                frequency.put(
-                    arr[end],
-                    frequency.getOrDefault(arr[end], 0) + 1
-                );
-
-                // If the current window size is equal to k, calculate the
-                // count of distinct elements
-                if (end - start + 1 == k) {
-                    result.add(frequency.size());
-
-                    // Remove the leftmost element from the count map
-                    int startElement = arr[start];
-                    frequency.put(
-                        startElement,
-                        frequency.get(startElement) - 1
-                    );
-                    if (frequency.get(startElement) == 0) {
-                        frequency.remove(startElement);
-                    }
-
-                    // Contract the window
-                    start++;
-                }
-
-                // Expand the window to the right
-                end++;
-            }
-
-            return result;
-        }
+  static List<Integer> subarrayDistinctness(int[] arr, int k) {
+    Map<Integer, Integer> frequency = new HashMap<>();
+    int start = 0, end = 0;
+    List<Integer> result = new ArrayList<>();
+    while (end < arr.length) {
+      frequency.put(arr[end], frequency.getOrDefault(arr[end], 0) + 1);
+      if (end - start + 1 == k) {
+        result.add(frequency.size());
+        int startElement = arr[start];
+        frequency.put(startElement, frequency.get(startElement) - 1);
+        if (frequency.get(startElement) == 0) frequency.remove(startElement);
+        start++;
+      }
+      end++;
     }
+    return result;
+  }
 
-    public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().subarrayDistinctness(new int[]{2, 1, 2, 3, 2, 1, 4, 5}, 5)); // [3, 3, 4, 5]
-        System.out.println(new Solution().subarrayDistinctness(new int[]{1, 1, 2, 4}, 3));              // [2, 3]
-        System.out.println(new Solution().subarrayDistinctness(new int[]{1, 2, 3, 4}, 1));              // [1, 1, 1, 1]
-
-        // Edge cases
-        System.out.println(new Solution().subarrayDistinctness(new int[]{1}, 1));                       // [1]
-        System.out.println(new Solution().subarrayDistinctness(new int[]{1, 1, 1, 1}, 2));              // [1, 1, 1]
-        System.out.println(new Solution().subarrayDistinctness(new int[]{1, 2, 3, 4}, 4));              // [4]
-        System.out.println(new Solution().subarrayDistinctness(new int[]{5, 5, 5}, 3));                 // [1]
-    }
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());
+    int k = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(subarrayDistinctness(arr, k));
+  }
 }
 ```
 

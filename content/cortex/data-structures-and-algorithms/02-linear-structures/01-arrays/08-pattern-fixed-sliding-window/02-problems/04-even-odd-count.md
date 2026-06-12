@@ -4,6 +4,8 @@ summary: "Given an integer array arr and a positive integer k, return the count 
 prereqs:
   - 08-pattern-fixed-sliding-window/01-pattern
 difficulty: medium
+kind: problem
+topics: [sliding-window, arrays]
 ---
 
 # Even Odd Count
@@ -47,6 +49,83 @@ Output: [[1, 3]]
 Explanation: One window — the whole array — has 1 even (2) and 3 odd (1, 3, 5).
 ```
 
+```quiz
+{
+  "prompt": "Now your turn!",
+  "input": "arr = [2, 4, 5, 7, 8], k = 3",
+  "options": ["[[2, 1], [1, 2], [1, 2]]", "[[2, 1], [2, 1], [1, 2]]", "[[1, 2], [1, 2], [2, 1]]", "[[2, 1], [1, 2], [2, 1]]"],
+  "answer": "[[2, 1], [1, 2], [1, 2]]"
+}
+```
+
+## Constraints
+
+- `0 ≤ arr.length ≤ 10^5`
+- `1 ≤ k ≤ 10^5`
+- `-10^9 ≤ arr[i] ≤ 10^9`
+
+```python run viz=array viz-root=result
+import ast
+from typing import List
+
+class Solution:
+    def even_odd_count(self, arr: List[int], k: int) -> List[List[int]]:
+        # Your code goes here — slide a fixed window of size k and append
+        # [even_count, odd_count] for each full window to the result list.
+        return []
+
+arr = ast.literal_eval(input())      # the test case's arr
+k = int(input())                     # the test case's k
+print(Solution().even_odd_count(arr, k))
+```
+
+```java run viz=array viz-root=result
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public List<List<Integer>> evenOddCount(int[] arr, int k) {
+            // Your code goes here — slide a fixed window of size k and append
+            // [evenCount, oddCount] for each full window to the result list.
+            return new ArrayList<>();
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().evenOddCount(arr, k));
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's arr
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[4, 4, 5, 1, 4]" },
+    { "id": "k", "label": "k", "type": "int", "placeholder": "3" }
+  ],
+  "cases": [
+    { "args": { "arr": "[4, 4, 5, 1, 4]", "k": "3" }, "expected": "[[2, 1], [1, 2], [1, 2]]" },
+    { "args": { "arr": "[2, 4, 5, 7, 8]", "k": "3" }, "expected": "[[2, 1], [1, 2], [1, 2]]" },
+    { "args": { "arr": "[1, 2, 3, 5]", "k": "1" }, "expected": "[[0, 1], [1, 0], [0, 1], [0, 1]]" },
+    { "args": { "arr": "[1, 2, 3, 5]", "k": "4" }, "expected": "[[1, 3]]" },
+    { "args": { "arr": "[1, 3, 5]", "k": "2" }, "expected": "[[0, 2], [0, 2]]" },
+    { "args": { "arr": "[2]", "k": "1" }, "expected": "[[1, 0]]" }
+  ]
+}
+```
 
 <details>
 <summary><h2>Applying the Diagnostic Questions</h2></summary>
@@ -118,19 +197,18 @@ flowchart TB
 2. **Loop while `end < len(arr)` and apply the four-step template.**
 3. **Step 3.1 — Expand.** If `arr[end] % 2 == 0`, increment `even_count`; otherwise increment `odd_count`. Exactly one counter changes per entering element.
 4. **Step 3.2 — Contract if oversized.** If `end − start + 1 > k`, check `arr[start]`'s parity and decrement the matching counter. Then advance `start` by one.
-5. **Step 3.3 — Process if full.** If `end − start + 1 == k`, append the tuple `(even_count, odd_count)` to `result`.
+5. **Step 3.3 — Process if full.** If `end − start + 1 == k`, append the pair `[even_count, odd_count]` to `result`.
 6. **Step 3.4 — Advance.** Increment `end` by one and continue.
 7. **Return the result.** After the loop, `result` holds exactly `n − k + 1` parity pairs — one per window position, in left-to-right order.
 
 ### Solution
 
-```python run viz=array viz-root=result
-from typing import List, Tuple
+```python solution time=O(N) space=O(N)
+import ast
+from typing import List
 
 class Solution:
-    def even_odd_count(
-        self, arr: List[int], k: int
-    ) -> List[Tuple[int, int]]:
+    def even_odd_count(self, arr: List[int], k: int) -> List[List[int]]:
 
         # To store the starting index of the subarray
         start = 0
@@ -145,7 +223,7 @@ class Solution:
         odd_count = 0
 
         # To store the result as pairs {evenCount, oddCount}
-        result: List[Tuple[int, int]] = []
+        result: List[List[int]] = []
 
         # Loop through the array
         while end < len(arr):
@@ -172,7 +250,7 @@ class Solution:
             # If the current subarray has exactly k elements
             # then add the counts to the result
             if end - start + 1 == k:
-                result.append((even_count, odd_count))
+                result.append([even_count, odd_count])
 
             # Move the end pointer forward
             end += 1
@@ -180,20 +258,12 @@ class Solution:
         return result
 
 
-# Examples from the problem statement
-print(Solution().even_odd_count([4, 4, 5, 1, 4], 3))    # [(2, 1), (1, 2), (1, 2)]
-print(Solution().even_odd_count([1, 2, 3, 5], 1))        # [(0, 1), (1, 0), (0, 1), (0, 1)]
-print(Solution().even_odd_count([1, 2, 3, 5], 4))        # [(1, 3)]
-
-# Edge cases
-print(Solution().even_odd_count([2], 1))                  # [(1, 0)]  — single even
-print(Solution().even_odd_count([1], 1))                  # [(0, 1)]  — single odd
-print(Solution().even_odd_count([2, 4], 2))               # [(2, 0)]  — all even
-print(Solution().even_odd_count([1, 3, 5], 2))            # [(0, 2), (0, 2)]  — all odd
-print(Solution().even_odd_count([2, 2, 2, 2], 3))         # [(3, 0), (3, 0)]  — all same even
+arr = ast.literal_eval(input())      # the test case's arr
+k = int(input())                     # the test case's k
+print(Solution().even_odd_count(arr, k))
 ```
 
-```java run viz=array viz-root=result
+```java solution
 import java.util.*;
 
 public class Main {
@@ -255,17 +325,20 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().evenOddCount(new int[]{4, 4, 5, 1, 4}, 3));    // [[2, 1], [1, 2], [1, 2]]
-        System.out.println(new Solution().evenOddCount(new int[]{1, 2, 3, 5}, 1));        // [[0, 1], [1, 0], [0, 1], [0, 1]]
-        System.out.println(new Solution().evenOddCount(new int[]{1, 2, 3, 5}, 4));        // [[1, 3]]
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().evenOddCount(arr, k));
+    }
 
-        // Edge cases
-        System.out.println(new Solution().evenOddCount(new int[]{2}, 1));                  // [[1, 0]]  — single even
-        System.out.println(new Solution().evenOddCount(new int[]{1}, 1));                  // [[0, 1]]  — single odd
-        System.out.println(new Solution().evenOddCount(new int[]{2, 4}, 2));               // [[2, 0]]  — all even
-        System.out.println(new Solution().evenOddCount(new int[]{1, 3, 5}, 2));            // [[0, 2], [0, 2]]  — all odd
-        System.out.println(new Solution().evenOddCount(new int[]{2, 2, 2, 2}, 3));         // [[3, 0], [3, 0]]  — all same even
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's arr
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

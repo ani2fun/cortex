@@ -4,6 +4,8 @@ summary: "Walk to find start and end by 1-indexed positions, call the segment-re
 prereqs:
   - 06-pattern-reversal/01-pattern
 difficulty: medium
+kind: problem
+topics: [reversal, doubly-linked-list]
 ---
 
 # Reverse the given segment
@@ -40,8 +42,135 @@ Output: [5, 4, 3, 2, 1]
 Explanation: left = 1, right = n is the full-list reversal special case.
 ```
 
+```quiz
+{
+  "prompt": "Now your turn!",
+  "input": "head = [1, 2, 3, 4, 5], left = 2, right = 4",
+  "options": ["[1, 2, 3, 4, 5]", "[1, 4, 3, 2, 5]", "[4, 3, 2, 1, 5]", "[1, 3, 4, 2, 5]"],
+  "answer": "[1, 4, 3, 2, 5]"
+}
+```
 
----
+## Constraints
+
+- `1 ≤ list length ≤ 10⁵`
+- `-10⁴ ≤ node.val ≤ 10⁴`
+- `1 ≤ left ≤ right ≤ list length`
+- Reverse **in place** — `O(1)` extra space; node values must not be copied or rewritten
+
+```python run viz=linked-list viz-root=head
+import ast
+
+class ListNode:
+    def __init__(self, val, prev=None, next=None):
+        self.val = val
+        self.prev = prev
+        self.next = next
+
+class Solution:
+    def reverse_the_given_segment(self, head, left, right):
+        # Your code goes here — walk to start (pos left) and end (pos right),
+        # call the segment-reversal primitive, return end if left == 1 else head.
+        pass
+
+def build_list(values):              # [1, 2, 3] → 1 ⇄ 2 ⇄ 3
+    head = tail = None
+    for v in values:
+        node = ListNode(v, prev=tail)
+        if tail is not None:
+            tail.next = node
+        else:
+            head = node
+        tail = node
+    return head
+
+def print_list(head):                # 1 ⇄ 2 ⇄ 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
+
+head = build_list(ast.literal_eval(input()))   # the test case's head
+left = int(input())
+right = int(input())
+print_list(Solution().reverse_the_given_segment(head, left, right))
+```
+
+```java run viz=linked-list viz-root=head
+import java.util.*;
+
+public class Main {
+    static class ListNode {
+        int val; ListNode prev, next;
+        ListNode(int val) { this.val = val; }
+    }
+
+    static class Solution {
+        ListNode reverseTheGivenSegment(ListNode head, int left, int right) {
+            // Your code goes here — walk to start (pos left) and end (pos right),
+            // call the segment-reversal primitive, return end if left == 1 else head.
+            return null;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        ListNode head = buildList(parseIntArray(sc.nextLine()));
+        int left = Integer.parseInt(sc.nextLine().trim());
+        int right = Integer.parseInt(sc.nextLine().trim());
+        printList(new Solution().reverseTheGivenSegment(head, left, right));
+    }
+
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 ⇄ 2 ⇄ 3
+        ListNode head = null, tail = null;
+        for (int v : values) {
+            ListNode node = new ListNode(v);
+            node.prev = tail;
+            if (tail != null) tail.next = node;
+            else head = node;
+            tail = node;
+        }
+        return head;
+    }
+
+    static void printList(ListNode head) {         // 1 ⇄ 2 ⇄ 3 → [1, 2, 3]
+        List<Integer> out = new ArrayList<>();
+        for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+        System.out.println(out);
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's head
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "head", "label": "head", "type": "int[]", "placeholder": "[5, 7, 3, 10, 6]" },
+    { "id": "left", "label": "left", "type": "int", "placeholder": "2" },
+    { "id": "right", "label": "right", "type": "int", "placeholder": "4" }
+  ],
+  "cases": [
+    { "args": { "head": "[5, 7, 3, 10, 6]", "left": "2", "right": "4" }, "expected": "[5, 10, 3, 7, 6]" },
+    { "args": { "head": "[5]", "left": "1", "right": "1" }, "expected": "[5]" },
+    { "args": { "head": "[1, 2, 3, 4, 5]", "left": "1", "right": "5" }, "expected": "[5, 4, 3, 2, 1]" },
+    { "args": { "head": "[1, 2, 3, 4, 5]", "left": "1", "right": "3" }, "expected": "[3, 2, 1, 4, 5]" },
+    { "args": { "head": "[1, 2, 3, 4, 5]", "left": "3", "right": "5" }, "expected": "[1, 2, 5, 4, 3]" },
+    { "args": { "head": "[1, 2, 3, 4, 5]", "left": "2", "right": "2" }, "expected": "[1, 2, 3, 4, 5]" },
+    { "args": { "head": "[1, 2]", "left": "1", "right": "2" }, "expected": "[2, 1]" },
+    { "args": { "head": "[1, 2, 3, 4, 5]", "left": "2", "right": "4" }, "expected": "[1, 4, 3, 2, 5]" }
+  ]
+}
+```
 
 <details>
 <summary><h2>Intuition</h2></summary>
@@ -99,50 +228,25 @@ Capture endpoints, reverse, adjust the head reference.
 ### Solution
 
 
-```python run viz=linked-list viz-root=head
-from typing import Optional
+```python solution time=O(n) space=O(1)
+import ast
 
 class ListNode:
-    def __init__(self, val=0, prev=None, nxt=None):
+    def __init__(self, val, prev=None, next=None):
         self.val = val
         self.prev = prev
-        self.next = nxt
-
-
-def from_list(values):
-    if not values:
-        return None
-    head = ListNode(values[0])
-    cur = head
-    for v in values[1:]:
-        node = ListNode(v, prev=cur)
-        cur.next = node
-        cur = node
-    return head
-
-
-def to_list(head):
-    out = []
-    while head is not None:
-        out.append(head.val)
-        head = head.next
-    return out
-
+        self.next = next
 
 class Solution:
-    def get_node_at_position(
-        self, head: Optional[ListNode], position: int
-    ) -> Optional[ListNode]:
-        current: Optional[ListNode] = head
+    def get_node_at_position(self, head, position):
+        current = head
         for _ in range(1, position):
             if current is None:
                 break
             current = current.next
         return current
 
-    def reverse(
-        self, start: Optional[ListNode], end: Optional[ListNode]
-    ) -> None:
+    def reverse(self, start, end):
 
         # If the start is null or start is the end, there's nothing to
         # reverse
@@ -180,19 +284,17 @@ class Solution:
         if left_bound:
             left_bound.next = end
 
-    def reverse_the_given_segment(
-        self, head: Optional[ListNode], left: int, right: int
-    ) -> Optional[ListNode]:
+    def reverse_the_given_segment(self, head, left, right):
 
         # Handle cases where reversal is not needed
         if head is None or head.next is None or left == right:
             return head
 
         # Get the node at the 'left' position
-        start: Optional[ListNode] = self.get_node_at_position(head, left)
+        start = self.get_node_at_position(head, left)
 
         # Get the node at the 'right' position
-        end: Optional[ListNode] = self.get_node_at_position(head, right)
+        end = self.get_node_at_position(head, right)
 
         # Reverse the segment between start and end
         self.reverse(start, end)
@@ -200,63 +302,37 @@ class Solution:
         # Return the new head if the reversal included the head node
         return end if left == 1 else head
 
+def build_list(values):              # [1, 2, 3] → 1 ⇄ 2 ⇄ 3
+    head = tail = None
+    for v in values:
+        node = ListNode(v, prev=tail)
+        if tail is not None:
+            tail.next = node
+        else:
+            head = node
+        tail = node
+    return head
 
-# Examples from the problem statement
-head = from_list([5, 7, 3, 10, 6])
-print(to_list(Solution().reverse_the_given_segment(head, 2, 4)))  # [5, 10, 3, 7, 6]
+def print_list(head):                # 1 ⇄ 2 ⇄ 3 → [1, 2, 3]
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    print(out)
 
-head = from_list([5])
-print(to_list(Solution().reverse_the_given_segment(head, 1, 1)))  # [5]
-
-# Edge cases
-head = from_list([1, 2, 3, 4, 5])
-print(to_list(Solution().reverse_the_given_segment(head, 1, 5)))  # [5, 4, 3, 2, 1]
-
-head = from_list([1, 2, 3, 4, 5])
-print(to_list(Solution().reverse_the_given_segment(head, 1, 3)))  # [3, 2, 1, 4, 5]
-
-head = from_list([1, 2, 3, 4, 5])
-print(to_list(Solution().reverse_the_given_segment(head, 3, 5)))  # [1, 2, 5, 4, 3]
-
-head = from_list([1, 2, 3, 4, 5])
-print(to_list(Solution().reverse_the_given_segment(head, 2, 2)))  # [1, 2, 3, 4, 5]
-
-head = from_list([1, 2])
-print(to_list(Solution().reverse_the_given_segment(head, 1, 2)))  # [2, 1]
-
-head = from_list([1, 2, 3, 4, 5])
-print(to_list(Solution().reverse_the_given_segment(head, 2, 4)))  # [1, 4, 3, 2, 5]
+head = build_list(ast.literal_eval(input()))   # the test case's head
+left = int(input())
+right = int(input())
+print_list(Solution().reverse_the_given_segment(head, left, right))
 ```
 
-```java run viz=linked-list viz-root=head
+```java solution
 import java.util.*;
 
 public class Main {
     static class ListNode {
-        int val;
-        ListNode prev;
-        ListNode next;
-        ListNode() {}
+        int val; ListNode prev, next;
         ListNode(int val) { this.val = val; }
-    }
-
-    static ListNode fromList(int... values) {
-        if (values.length == 0) return null;
-        ListNode head = new ListNode(values[0]);
-        ListNode cur = head;
-        for (int i = 1; i < values.length; i++) {
-            ListNode node = new ListNode(values[i]);
-            node.prev = cur;
-            cur.next = node;
-            cur = node;
-        }
-        return head;
-    }
-
-    static java.util.List<Integer> toList(ListNode head) {
-        java.util.List<Integer> out = new java.util.ArrayList<>();
-        while (head != null) { out.add(head.val); head = head.next; }
-        return out;
     }
 
     static class Solution {
@@ -313,11 +389,7 @@ public class Main {
             }
         }
 
-        public ListNode reverseTheGivenSegment(
-            ListNode head,
-            int left,
-            int right
-        ) {
+        ListNode reverseTheGivenSegment(ListNode head, int left, int right) {
 
             // Handle cases where reversal is not needed
             if (head == null || head.next == null || left == right) {
@@ -339,17 +411,39 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(toList(new Solution().reverseTheGivenSegment(fromList(5, 7, 3, 10, 6), 2, 4)));  // [5, 10, 3, 7, 6]
-        System.out.println(toList(new Solution().reverseTheGivenSegment(fromList(5), 1, 1)));               // [5]
+        Scanner sc = new Scanner(System.in);
+        ListNode head = buildList(parseIntArray(sc.nextLine()));
+        int left = Integer.parseInt(sc.nextLine().trim());
+        int right = Integer.parseInt(sc.nextLine().trim());
+        printList(new Solution().reverseTheGivenSegment(head, left, right));
+    }
 
-        // Edge cases
-        System.out.println(toList(new Solution().reverseTheGivenSegment(fromList(1, 2, 3, 4, 5), 1, 5)));  // [5, 4, 3, 2, 1]
-        System.out.println(toList(new Solution().reverseTheGivenSegment(fromList(1, 2, 3, 4, 5), 1, 3)));  // [3, 2, 1, 4, 5]
-        System.out.println(toList(new Solution().reverseTheGivenSegment(fromList(1, 2, 3, 4, 5), 3, 5)));  // [1, 2, 5, 4, 3]
-        System.out.println(toList(new Solution().reverseTheGivenSegment(fromList(1, 2, 3, 4, 5), 2, 2)));  // [1, 2, 3, 4, 5]
-        System.out.println(toList(new Solution().reverseTheGivenSegment(fromList(1, 2), 1, 2)));            // [2, 1]
-        System.out.println(toList(new Solution().reverseTheGivenSegment(fromList(1, 2, 3, 4, 5), 2, 4)));  // [1, 4, 3, 2, 5]
+    static ListNode buildList(int[] values) {      // {1, 2, 3} → 1 ⇄ 2 ⇄ 3
+        ListNode head = null, tail = null;
+        for (int v : values) {
+            ListNode node = new ListNode(v);
+            node.prev = tail;
+            if (tail != null) tail.next = node;
+            else head = node;
+            tail = node;
+        }
+        return head;
+    }
+
+    static void printList(ListNode head) {         // 1 ⇄ 2 ⇄ 3 → [1, 2, 3]
+        List<Integer> out = new ArrayList<>();
+        for (ListNode n = head; n != null; n = n.next) out.add(n.val);
+        System.out.println(out);
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's head
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```
@@ -421,11 +515,6 @@ The only new thing here is the *bookkeeping*, not the reversal itself — you've
 </details>
 
 Next time you see a problem that asks you to flip a chunk of a linked list — any chunk, anywhere — you won't reach for three pointers and a stack of temporary variables. You'll reach for one swap, one walk, and four boundary stitches. The reversal pattern stops being a trick and becomes a reflex.
-
-</details>
-<details>
-<summary><h2>Key Takeaway</h2></summary>
-
 
 Positional segment reversal composes two positional walks with the segment-reversal primitive. The primitive's `leftBound = start.prev` / `rightBound = end.next` capture (before any swap) handles all four boundary stitches for free; the caller only writes the position walks and adjusts the head reference when `left == 1`.
 

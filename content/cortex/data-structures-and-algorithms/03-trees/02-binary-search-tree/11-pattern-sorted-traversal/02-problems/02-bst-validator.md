@@ -1,143 +1,80 @@
 ---
 title: "BST Validator"
-summary: "Given the root of a binary search tree, return true if the tree is a valid BST, false otherwise. A valid BST has these properties:"
+summary: "Given the root of a binary tree, return true if the tree is a valid BST (every in-order adjacent pair is strictly increasing), false otherwise."
 prereqs:
   - 11-pattern-sorted-traversal/01-pattern
 difficulty: medium
+kind: problem
+topics: [sorted-traversal, binary-search-tree]
 ---
 
 # BST validator
 
 ## Problem Statement
 
-Given the **root** of a binary search tree, return `true` if the tree is a valid BST, `false` otherwise. A valid BST has these properties:
+Given the **root** of a binary tree, return `true` if the tree is a valid BST, `false` otherwise. A valid BST has these properties:
 
 - Every node has a unique key.
 - The left subtree contains only values strictly less than the node.
 - The right subtree contains only values strictly greater than the node.
 - Both subtrees are themselves BSTs.
 
-### Example 1
+## Examples
 
-> - **Input:** `root = [4, 2, 5, 1, 3, null, 6]`
-> - **Output:** `true`
+**Example 1:**
+```
+Input:  root = [4, 2, 5, 1, 3, null, 6]
+Output: true
+```
 
-### Example 2
+**Example 2:**
+```
+Input:  root = [9, 5, 12, 4, null, null, 11]
+Output: false
+```
+Node `11` is in the right subtree of `12` but `11 < 12` — rule violated.
 
-> - **Input:** `root = [9, 5, 12, 4, null, null, 11]`
-> - **Output:** `false`
-> - **Explanation:** Node `11` is in the right subtree of `12` but `11 < 12` — rule violated.
+## Constraints
 
-<details>
-<summary><h2>The Strategy</h2></summary>
-
-
-A valid BST has a **strictly increasing** in-order traversal. So this is just: walk in-order, keep the previous value, and at every step assert `prev < current`. The moment any pair fails, the tree is invalid.
-
-This is dramatically simpler than the recursive `(min, max)` bounds technique you may have seen — the in-order trick reduces tree validity to *list monotonicity*, which is a one-liner.
-
-</details>
-<details>
-<summary><h2>The Solution</h2></summary>
-
-
+- `0 ≤ number of nodes ≤ 10⁴`
+- `-2³¹ ≤ node.val ≤ 2³¹ − 1`
 
 ```python run viz=binary-tree viz-root=root
-from typing import Optional
-
+import json
+from collections import deque
 
 class TreeNode:
-    def __init__(self, val=0, left=None, right=None):
+    def __init__(self, val, left=None, right=None):
         self.val = val
         self.left = left
         self.right = right
 
+class Solution:
+    def bst_validator(self, root):
+        # Your code goes here — iterative in-order; track prev value;
+        # return False if node.val <= prev at any step. Return True if all pass.
+        return True
 
-def from_level_order(values):
-    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
     if not values:
         return None
     root = TreeNode(values[0])
-    queue = [root]
+    queue = deque([root])
     i = 1
     while queue and i < len(values):
-        node = queue.pop(0)
-        if i < len(values) and values[i] is not None:
-            node.left = TreeNode(values[i])
-            queue.append(node.left)
-        i += 1
-        if i < len(values) and values[i] is not None:
-            node.right = TreeNode(values[i])
-            queue.append(node.right)
-        i += 1
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
     return root
 
-
-class Solution:
-    def __init__(self):
-
-        # Variable to keep track of the validity of the BST
-        self.is_valid = True
-
-        # Reference to keep track of the previous node
-        self.prev_node: Optional[TreeNode] = None
-
-    def inorder(self, root: Optional[TreeNode]) -> None:
-        if not root or not self.is_valid:
-            return
-
-        # Traverse left subtree
-        self.inorder(root.left)
-
-        # Current node must be greater than the prevNodeious one in
-        # inorder
-        if self.prev_node and root.val <= self.prev_node.val:
-            self.is_valid = False
-            return
-
-        # Update prevNodeious node
-        self.prev_node = root
-
-        # Traverse right subtree
-        self.inorder(root.right)
-
-    def bst_validator(self, root: Optional[TreeNode]) -> bool:
-
-        # Perform in-order traversal
-        self.inorder(root)
-
-        # Return the validity of the BST
-        return self.is_valid
-
-
-# Example 1: valid BST
-print(Solution().bst_validator(
-    from_level_order([4, 2, 5, 1, 3, None, 6])))   # True
-
-# Example 2: invalid BST (11 < 12 but placed as right child)
-print(Solution().bst_validator(
-    from_level_order([9, 5, 12, 4, None, None, 11])))  # False
-
-# Edge cases
-print(Solution().bst_validator(None))              # True  (empty tree)
-print(Solution().bst_validator(from_level_order([5])))  # True (single node)
-
-# Left-skew valid BST: 1-2-3-4
-root_skew = TreeNode(4)
-root_skew.left = TreeNode(3)
-root_skew.left.left = TreeNode(2)
-root_skew.left.left.left = TreeNode(1)
-print(Solution().bst_validator(root_skew))         # True
-
-# Duplicate value makes it invalid
-dup = TreeNode(5)
-dup.left = TreeNode(5)
-print(Solution().bst_validator(dup))               # False
-
-# Subtree violation: right child less than root
-bad = TreeNode(10)
-bad.right = TreeNode(8)
-print(Solution().bst_validator(bad))               # False
+root = build_tree(json.loads(input()))   # the test case's level-order values
+print("true" if Solution().bst_validator(root) else "false")
 ```
 
 ```java run viz=binary-tree viz-root=root
@@ -145,104 +82,192 @@ import java.util.*;
 
 public class Main {
     static class TreeNode {
-        int val;
-        TreeNode left;
-        TreeNode right;
-        TreeNode() {}
+        int val; TreeNode left, right;
         TreeNode(int val) { this.val = val; }
     }
 
-    static TreeNode fromLevelOrder(Integer... values) {
-        if (values.length == 0 || values[0] == null) return null;
-        TreeNode root = new TreeNode(values[0]);
-        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
-        queue.add(root);
-        int i = 1;
-        while (!queue.isEmpty() && i < values.length) {
-            TreeNode node = queue.poll();
-            if (i < values.length && values[i] != null) {
-                node.left = new TreeNode(values[i]);
-                queue.add(node.left);
-            }
-            i++;
-            if (i < values.length && values[i] != null) {
-                node.right = new TreeNode(values[i]);
-                queue.add(node.right);
-            }
-            i++;
-        }
-        return root;
-    }
-
     static class Solution {
-
-        // Variable to keep track of the validity of the BST
-        private boolean isValid = true;
-
-        // Reference to keep track of the previous node
-        private TreeNode prevNode = null;
-
-        private void inorder(TreeNode root) {
-            if (root == null || !isValid) {
-                return;
-            }
-
-            // Traverse left subtree
-            inorder(root.left);
-
-            // Current node must be greater than the prevNodeious one in
-            // inorder
-            if (prevNode != null && root.val <= prevNode.val) {
-                isValid = false;
-                return;
-            }
-
-            // Update prevNodeious node
-            prevNode = root;
-
-            // Traverse right subtree
-            inorder(root.right);
-        }
-
         public boolean bstValidator(TreeNode root) {
-
-            // Perform in-order traversal
-            inorder(root);
-
-            // Return the validity of the BST
-            return isValid;
+            // Your code goes here — iterative in-order; Integer prev = null;
+            // return false if node.val <= prev. Return true if all pairs pass.
+            return true;
         }
     }
 
     public static void main(String[] args) {
-        // Example 1: valid BST
-        System.out.println(new Solution().bstValidator(
-            fromLevelOrder(4, 2, 5, 1, 3, null, 6)));   // true
+        Scanner sc = new Scanner(System.in);
+        TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+        System.out.println(new Solution().bstValidator(root));
+    }
 
-        // Example 2: invalid BST (11 < 12 but placed as right child)
-        System.out.println(new Solution().bstValidator(
-            fromLevelOrder(9, 5, 12, 4, null, null, 11)));  // false
+    static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+            }
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+            }
+        }
+        return root;
+    }
 
-        // Edge cases
-        System.out.println(new Solution().bstValidator(null));          // true
-        System.out.println(new Solution().bstValidator(fromLevelOrder(5))); // true
+    // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+    static Integer[] parseIntegerArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new Integer[0];
+        String[] parts = inner.split(",");
+        Integer[] out = new Integer[parts.length];
+        for (int i = 0; i < parts.length; i++)
+            out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
 
-        // Left-skew valid BST: 4-3-2-1
-        TreeNode skew = new TreeNode(4);
-        skew.left = new TreeNode(3);
-        skew.left.left = new TreeNode(2);
-        skew.left.left.left = new TreeNode(1);
-        System.out.println(new Solution().bstValidator(skew));          // true
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[4, 2, 5, 1, 3, null, 6]" }
+  ],
+  "cases": [
+    { "args": { "root": "[4, 2, 5, 1, 3, null, 6]" }, "expected": "true" },
+    { "args": { "root": "[9, 5, 12, 4, null, null, 11]" }, "expected": "false" },
+    { "args": { "root": "[]" }, "expected": "true" },
+    { "args": { "root": "[5]" }, "expected": "true" },
+    { "args": { "root": "[5, 5]" }, "expected": "false" },
+    { "args": { "root": "[10, null, 8]" }, "expected": "false" },
+    { "args": { "root": "[4, 2, 6, 1, 3, 5, 7]" }, "expected": "true" }
+  ]
+}
+```
 
-        // Duplicate value makes it invalid
-        TreeNode dup = new TreeNode(5);
-        dup.left = new TreeNode(5);
-        System.out.println(new Solution().bstValidator(dup));           // false
+<details>
+<summary><h2>The Strategy</h2></summary>
 
-        // Subtree violation: right child less than root
-        TreeNode bad = new TreeNode(10);
-        bad.right = new TreeNode(8);
-        System.out.println(new Solution().bstValidator(bad));           // false
+A valid BST has a **strictly increasing** in-order traversal. So this is just: walk in-order, keep the previous value, and at every step assert `prev < current`. The moment any pair fails, the tree is invalid.
+
+This is dramatically simpler than the recursive `(min, max)` bounds technique you may have seen — the in-order trick reduces tree validity to *list monotonicity*, which is a one-liner.
+
+</details>
+<details>
+<summary><h2>Solution</h2></summary>
+
+An in-order traversal of a valid BST produces a strictly increasing sequence. We walk iteratively, tracking the previous value, and immediately return `false` the moment the current node is not strictly greater. An empty tree (or single node) is trivially valid.
+
+```python solution time=O(n) space=O(h)
+import json
+from collections import deque
+
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+class Solution:
+    def bst_validator(self, root):
+        prev = None
+        stack, node = [], root
+        while stack or node:
+            while node:
+                stack.append(node); node = node.left
+            node = stack.pop()
+            if prev is not None and node.val <= prev:   # not strictly increasing → invalid
+                return False
+            prev = node.val
+            node = node.right
+        return True
+
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
+
+root = build_tree(json.loads(input()))   # the test case's level-order values
+print("true" if Solution().bst_validator(root) else "false")
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+    static class TreeNode {
+        int val; TreeNode left, right;
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static class Solution {
+        public boolean bstValidator(TreeNode root) {
+            Deque<TreeNode> stack = new ArrayDeque<>();
+            TreeNode node = root; Integer prev = null;
+            while (!stack.isEmpty() || node != null) {
+                while (node != null) { stack.push(node); node = node.left; }
+                node = stack.pop();
+                if (prev != null && node.val <= prev) return false;   // must strictly increase
+                prev = node.val;
+                node = node.right;
+            }
+            return true;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+        System.out.println(new Solution().bstValidator(root));
+    }
+
+    static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+            }
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+            }
+        }
+        return root;
+    }
+
+    // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+    static Integer[] parseIntegerArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new Integer[0];
+        String[] parts = inner.split(",");
+        Integer[] out = new Integer[parts.length];
+        for (int i = 0; i < parts.length; i++)
+            out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

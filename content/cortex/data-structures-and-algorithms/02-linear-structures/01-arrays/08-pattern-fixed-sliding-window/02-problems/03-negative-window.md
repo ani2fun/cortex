@@ -4,6 +4,8 @@ summary: "Given an integer array arr and a positive integer k, return the count 
 prereqs:
   - 08-pattern-fixed-sliding-window/01-pattern
 difficulty: medium
+kind: problem
+topics: [sliding-window, arrays]
 ---
 
 # Negative Window
@@ -45,6 +47,83 @@ Output: [3]
 Explanation: One window — the whole array — with 3 negatives.
 ```
 
+```quiz
+{
+  "prompt": "Now your turn!",
+  "input": "arr = [-1, 2, -3, -4, 5], k = 2",
+  "options": ["[1, 1, 2, 1]", "[1, 2, 2, 1]", "[1, 1, 1, 1]", "[2, 1, 2, 1]"],
+  "answer": "[1, 1, 2, 1]"
+}
+```
+
+## Constraints
+
+- `0 ≤ arr.length ≤ 10^5`
+- `1 ≤ k ≤ 10^5`
+- `-10^9 ≤ arr[i] ≤ 10^9`
+
+```python run viz=array viz-root=result
+import ast
+from typing import List
+
+class Solution:
+    def negative_window(self, arr: List[int], k: int) -> List[int]:
+        # Your code goes here — slide a fixed window of size k and append the
+        # count of negatives in each full window to the result list.
+        return []
+
+arr = ast.literal_eval(input())      # the test case's arr
+k = int(input())                     # the test case's k
+print(Solution().negative_window(arr, k))
+```
+
+```java run viz=array viz-root=result
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public List<Integer> negativeWindow(int[] arr, int k) {
+            // Your code goes here — slide a fixed window of size k and append the
+            // count of negatives in each full window to the result list.
+            return new ArrayList<>();
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().negativeWindow(arr, k));
+    }
+
+    // "[1, -2, 3]" → {1, -2, 3} — reads the test case's arr
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[4, -4, 5, -1, 4]" },
+    { "id": "k", "label": "k", "type": "int", "placeholder": "3" }
+  ],
+  "cases": [
+    { "args": { "arr": "[4, -4, 5, -1, 4]", "k": "3" }, "expected": "[1, 2, 1]" },
+    { "args": { "arr": "[-1, 2, -3, -4, 5]", "k": "2" }, "expected": "[1, 1, 2, 1]" },
+    { "args": { "arr": "[1, -2, 3, -5]", "k": "1" }, "expected": "[0, 1, 0, 1]" },
+    { "args": { "arr": "[-1, -2, -3, -4]", "k": "3" }, "expected": "[3, 3]" },
+    { "args": { "arr": "[1, 2, 3, 4]", "k": "2" }, "expected": "[0, 0, 0]" },
+    { "args": { "arr": "[-5]", "k": "1" }, "expected": "[1]" }
+  ]
+}
+```
 
 <details>
 <summary><h2>Applying the Diagnostic Questions</h2></summary>
@@ -123,7 +202,8 @@ w2 -> w3: "remove 2 (+0), add -5 (+1) → neg=2"
 
 ### Solution
 
-```python run viz=array viz-root=result
+```python solution time=O(N) space=O(N)
+import ast
 from typing import List
 
 class Solution:
@@ -170,20 +250,12 @@ class Solution:
         return result
 
 
-# Examples from the problem statement
-print(Solution().negative_window([4, -4, 5, -1, 4], 3))     # [1, 2, 1]
-print(Solution().negative_window([1, -2, 3, -5], 1))         # [0, 1, 0, 1]
-print(Solution().negative_window([-1, -2, 3, -5], 4))        # [3]
-
-# Edge cases
-print(Solution().negative_window([-5], 1))                    # [1]  — single negative
-print(Solution().negative_window([3], 1))                     # [0]  — single positive
-print(Solution().negative_window([-1, -2], 2))                # [2]  — two negatives
-print(Solution().negative_window([1, 2, 3, 4], 2))            # [0, 0, 0]  — all positive
-print(Solution().negative_window([-1, -2, -3, -4], 3))        # [3, 3]  — all negative
+arr = ast.literal_eval(input())      # the test case's arr
+k = int(input())                     # the test case's k
+print(Solution().negative_window(arr, k))
 ```
 
-```java run viz=array viz-root=result
+```java solution
 import java.util.*;
 
 public class Main {
@@ -238,17 +310,20 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().negativeWindow(new int[]{4, -4, 5, -1, 4}, 3));     // [1, 2, 1]
-        System.out.println(new Solution().negativeWindow(new int[]{1, -2, 3, -5}, 1));         // [0, 1, 0, 1]
-        System.out.println(new Solution().negativeWindow(new int[]{-1, -2, 3, -5}, 4));        // [3]
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().negativeWindow(arr, k));
+    }
 
-        // Edge cases
-        System.out.println(new Solution().negativeWindow(new int[]{-5}, 1));                    // [1]  — single negative
-        System.out.println(new Solution().negativeWindow(new int[]{3}, 1));                     // [0]  — single positive
-        System.out.println(new Solution().negativeWindow(new int[]{-1, -2}, 2));                // [2]  — two negatives
-        System.out.println(new Solution().negativeWindow(new int[]{1, 2, 3, 4}, 2));            // [0, 0, 0]  — all positive
-        System.out.println(new Solution().negativeWindow(new int[]{-1, -2, -3, -4}, 3));        // [3, 3]  — all negative
+    // "[1, -2, 3]" → {1, -2, 3} — reads the test case's arr
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

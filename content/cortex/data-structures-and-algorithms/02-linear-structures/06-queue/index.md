@@ -13,4 +13,4 @@ Use this page as the chapter map for queue. The guides are ordered from fundamen
 Quick-recall and design material. Skim, don't study top to bottom.
 
 - [Memorize: Queue](/cortex/data-structures-and-algorithms/linear-structures/queue/memorize)
-- [Design a Queue](/cortex/data-structures-and-algorithms/linear-structures/queue/design-a-queue/design-a-queue)
+- [Design a Queue Using Stacks](/cortex/data-structures-and-algorithms/linear-structures/queue/design-a-queue/design-a-queue)

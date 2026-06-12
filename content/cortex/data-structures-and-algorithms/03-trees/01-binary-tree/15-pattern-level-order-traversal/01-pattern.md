@@ -18,6 +18,7 @@ Every pattern so far went **depth-first** — down one branch, all the way to a 
 Group the nodes by level. For the tree below, that's `[[3], [9, 20], [15, 7]]`. The `n = len(q)` line freezes each level's width before we enqueue its children. Run it.
 
 ```python run viz=binary-tree viz-root=root
+import json
 from collections import deque
 
 class TreeNode:
@@ -41,8 +42,108 @@ def level_order(root):
         levels.append(level)
     return levels
 
-root = TreeNode(3, TreeNode(9), TreeNode(20, TreeNode(15), TreeNode(7)))
-print(level_order(root))     # [[3], [9, 20], [15, 7]]
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
+
+root = build_tree(json.loads(input()))   # the test case's level-order values
+print(level_order(root))
+```
+
+```java run viz=binary-tree viz-root=root
+import java.util.*;
+
+public class Main {
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
+  }
+
+  static List<List<Integer>> levelOrder(TreeNode root) {
+    List<List<Integer>> out = new ArrayList<>();
+    if (root == null) return out;
+    Deque<TreeNode> q = new ArrayDeque<>();
+    q.add(root);
+    while (!q.isEmpty()) {
+      int n = q.size();                              // snapshot this level's width
+      List<Integer> level = new ArrayList<>();
+      for (int i = 0; i < n; i++) {
+        TreeNode node = q.poll();
+        level.add(node.val);
+        if (node.left != null)  q.add(node.left);
+        if (node.right != null) q.add(node.right);
+      }
+      out.add(level);
+    }
+    return out;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+    System.out.println(levelOrder(root));
+  }
+
+  static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
+    }
+    return root;
+  }
+
+  // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[3, 9, 20, null, null, 15, 7]" }
+  ],
+  "cases": [
+    { "args": { "root": "[3, 9, 20, null, null, 15, 7]" }, "expected": "[[3], [9, 20], [15, 7]]" },
+    { "args": { "root": "[1]" }, "expected": "[[1]]" },
+    { "args": { "root": "[]" }, "expected": "[]" },
+    { "args": { "root": "[1, 2, 3, 4, 5]" }, "expected": "[[1], [2, 3], [4, 5]]" },
+    { "args": { "root": "[1, 2, null, 3]" }, "expected": "[[1], [2], [3]]" }
+  ]
+}
 ```
 
 ## How It Works
@@ -89,6 +190,137 @@ You'd get a **single flat level holding every node** — `[[3, 9, 20, 15, 7]]` �
 Level groups, plus **right-side view** (last node per level) and **zigzag** (alternating direction) — all the same drain-`n` skeleton:
 
 ```python run viz=binary-tree viz-root=root
+import json
+from collections import deque
+
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val; self.left = left; self.right = right
+
+def level_order(root):
+    # Your code goes here — return a list-of-lists, one inner list per level
+    if root is None: return []
+    pass
+
+def right_side_view(root):
+    # Your code goes here — return the last node value per level
+    if root is None: return []
+    pass
+
+def zigzag(root):
+    # Your code goes here — alternate direction per level (L→R, R→L, …)
+    if root is None: return []
+    pass
+
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
+
+root = build_tree(json.loads(input()))   # the test case's level-order values
+print(level_order(root))
+print(right_side_view(root))
+print(zigzag(root))
+```
+
+```java run viz=binary-tree viz-root=root
+import java.util.*;
+
+public class Main {
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
+  }
+
+  static List<List<Integer>> levelOrder(TreeNode root) {
+    // Your code goes here — return a list-of-lists, one inner list per level
+    return new ArrayList<>();
+  }
+
+  static List<Integer> rightSideView(TreeNode root) {
+    // Your code goes here — return the last node value per level
+    return new ArrayList<>();
+  }
+
+  static List<List<Integer>> zigzag(TreeNode root) {
+    // Your code goes here — alternate direction per level (L→R, R→L, …)
+    return new ArrayList<>();
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+    System.out.println(levelOrder(root));
+    System.out.println(rightSideView(root));
+    System.out.println(zigzag(root));
+  }
+
+  static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
+    }
+    return root;
+  }
+
+  // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[3, 9, 20, null, null, 15, 7]" }
+  ],
+  "cases": [
+    { "args": { "root": "[3, 9, 20, null, null, 15, 7]" }, "expected": "[[3], [9, 20], [15, 7]]\n[3, 20, 7]\n[[3], [20, 9], [15, 7]]" },
+    { "args": { "root": "[1]" }, "expected": "[[1]]\n[1]\n[[1]]" },
+    { "args": { "root": "[1, 2, 3, 4, 5]" }, "expected": "[[1], [2, 3], [4, 5]]\n[1, 3, 5]\n[[1], [3, 2], [4, 5]]" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+All three functions share the same drain-`n` skeleton; only the per-level bookkeeping differs. `level_order` collects every node's value into a list and appends it. `right_side_view` tracks the index `i` and captures `node.val` when `i == n - 1`. `zigzag` uses a `deque` for the level and appends/appendleft based on a direction flag that flips each round.
+
+```python solution time=O(n) space=O(w)
+import json
 from collections import deque
 
 class TreeNode:
@@ -133,16 +365,38 @@ def zigzag(root):
         out.append(list(level)); ltr = not ltr
     return out
 
-root = TreeNode(3, TreeNode(9), TreeNode(20, TreeNode(15), TreeNode(7)))
-print(level_order(root))        # [[3], [9, 20], [15, 7]]
-print(right_side_view(root))    # [3, 20, 7]
-print(zigzag(root))             # [[3], [20, 9], [15, 7]]
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
+
+root = build_tree(json.loads(input()))   # the test case's level-order values
+print(level_order(root))
+print(right_side_view(root))
+print(zigzag(root))
 ```
 
-```java run viz=binary-tree viz-root=root
+```java solution
 import java.util.*;
+
 public class Main {
-  static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } TreeNode(int v, TreeNode l, TreeNode r){ val=v; left=l; right=r; } }
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
+  }
 
   static List<List<Integer>> levelOrder(TreeNode root) {
     List<List<Integer>> out = new ArrayList<>();
@@ -150,7 +404,7 @@ public class Main {
     Deque<TreeNode> q = new ArrayDeque<>();
     q.add(root);
     while (!q.isEmpty()) {
-      int n = q.size();                              // snapshot this level's width
+      int n = q.size();
       List<Integer> level = new ArrayList<>();
       for (int i = 0; i < n; i++) {
         TreeNode node = q.poll();
@@ -162,14 +416,88 @@ public class Main {
     }
     return out;
   }
+
+  static List<Integer> rightSideView(TreeNode root) {
+    List<Integer> out = new ArrayList<>();
+    if (root == null) return out;
+    Deque<TreeNode> q = new ArrayDeque<>();
+    q.add(root);
+    while (!q.isEmpty()) {
+      int n = q.size();
+      for (int i = 0; i < n; i++) {
+        TreeNode node = q.poll();
+        if (i == n - 1) out.add(node.val);
+        if (node.left != null)  q.add(node.left);
+        if (node.right != null) q.add(node.right);
+      }
+    }
+    return out;
+  }
+
+  static List<List<Integer>> zigzag(TreeNode root) {
+    List<List<Integer>> out = new ArrayList<>();
+    if (root == null) return out;
+    Deque<TreeNode> q = new ArrayDeque<>();
+    q.add(root);
+    boolean ltr = true;
+    while (!q.isEmpty()) {
+      int n = q.size();
+      LinkedList<Integer> level = new LinkedList<>();
+      for (int i = 0; i < n; i++) {
+        TreeNode node = q.poll();
+        if (ltr) level.addLast(node.val);
+        else     level.addFirst(node.val);
+        if (node.left != null)  q.add(node.left);
+        if (node.right != null) q.add(node.right);
+      }
+      out.add(level);
+      ltr = !ltr;
+    }
+    return out;
+  }
+
   public static void main(String[] args) {
-    TreeNode root = new TreeNode(3, new TreeNode(9), new TreeNode(20, new TreeNode(15), new TreeNode(7)));
-    System.out.println(levelOrder(root));   // [[3], [9, 20], [15, 7]]
+    Scanner sc = new Scanner(System.in);
+    TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+    System.out.println(levelOrder(root));
+    System.out.println(rightSideView(root));
+    System.out.println(zigzag(root));
+  }
+
+  static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
+    }
+    return root;
+  }
+
+  // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
   }
 }
 ```
 
-Drill the family in **Practice** — [Level Sum](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-level-order-traversal/problems/level-sum), [Deepest Leaves Sum](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-level-order-traversal/problems/deepest-leaves-sum), [Complete Binary Tree Check](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-level-order-traversal/problems/complete-binary-tree-check), [Zigzag Traversal](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-level-order-traversal/problems/zigzag-traversal), and [Cousin Check](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-level-order-traversal/problems/cousin-check).
+</details>
 
 ## Reflect & Connect
 
@@ -178,6 +506,8 @@ Level-order is the breadth-first counterpart to every depth-first tree pattern:
 - **The family** — per-level group / sum / average, right-side view, zigzag, deepest-leaves sum, complete-tree check, cousins. All share the queue + `len(queue)` snapshot; only the per-level bookkeeping differs.
 - **BFS vs DFS** — depth-first ([preorder](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-preorder-traversal-stateless/pattern)/[postorder](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-postorder-traversal-stateless/pattern)) follows *paths* with a stack/recursion; breadth-first follows *levels* with a queue. Reach for BFS the moment the question mentions depth, levels, "nearest," or shortest unweighted distance.
 - **It's graph BFS on a tree** — this exact queue + frontier-by-frontier expansion is [graph breadth-first search](/cortex/data-structures-and-algorithms/graphs-pattern-breadth-first-search-pattern); a tree is just a graph with no cycles, so no `visited` set is needed. Learn it here and graph shortest-path BFS is the same loop.
+
+Drill the family in **Practice** — [Level Sum](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-level-order-traversal/problems/level-sum), [Deepest Leaves Sum](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-level-order-traversal/problems/deepest-leaves-sum), [Complete Binary Tree Check](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-level-order-traversal/problems/complete-binary-tree-check), [Zigzag Traversal](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-level-order-traversal/problems/zigzag-traversal), and [Cousin Check](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-level-order-traversal/problems/cousin-check).
 
 **Prerequisites:** [Recursive Traversals](/cortex/data-structures-and-algorithms/trees/binary-tree/recursive-traversals-in-binary-trees).
 **What's next:** group nodes by horizontal column instead of by level — BFS carrying a coordinate — [Level-Order Traversal (Columns)](/cortex/data-structures-and-algorithms/trees/binary-tree/pattern-level-order-traversal-columns/pattern).

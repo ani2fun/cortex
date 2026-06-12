@@ -1,59 +1,185 @@
 ---
 title: "Descendants Sum Count"
-summary: "See problem statement below."
+summary: "Count nodes whose value equals the sum of all values in their subtree below them (not including themselves)."
 prereqs:
   - 12-pattern-postorder-traversal-stateful/01-pattern
 difficulty: medium
+kind: problem
+topics: [postorder-traversal, binary-tree]
 ---
 
-# Problem 2 — Descendants sum count
+# Descendants Sum Count
 
-> Count nodes whose value equals the sum of *all* values in their subtree below them (not including themselves).
+## Problem Statement
 
-Each subtree returns its sum (so the parent can compute its own); along the way, each call updates a global counter if `node.val == leftSum + rightSum`.
+Given the **root** of a binary tree, count the number of nodes whose value equals the sum of all values in their subtree **below** them (not including the node itself).
 
-<details>
-<summary><h2>Solution</h2></summary>
+Each subtree returns its sum (so the parent can compute its own); along the way, each call increments a global counter if `node.val == left_sum + right_sum`.
 
+## Examples
 
+**Example 1:**
+```
+Input:  root = [21, 7, 3, 5, 2, null, 4]
+Output: 2
+```
+Node `21`: `7 + 3 + 5 + 2 + 4 = 21` ✓. Node `3`: `4 = 3`? No. Node `7`: `5 + 2 = 7` ✓. Count = 2.
+
+**Example 2:**
+```
+Input:  root = [5, 7, 3, 1, 2, null, 3]
+Output: 1
+```
+Node `7`: `1 + 2 = 3` ≠ 7. Node `3`: `3 = 3` ✓. Count = 1.
+
+## Constraints
+
+- `0 ≤ number of nodes ≤ 10⁴`
+- `-10⁴ ≤ node.val ≤ 10⁴`
 
 ```python run viz=binary-tree viz-root=root
-from typing import Optional
-
+import json
+from collections import deque
 
 class TreeNode:
-    def __init__(self, val=0, left=None, right=None):
+    def __init__(self, val, left=None, right=None):
         self.val = val
         self.left = left
         self.right = right
 
+class Solution:
+    def __init__(self):
+        self.count = 0
 
-def from_level_order(values):
-    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    def descendants_sum_count(self, root):
+        # Your code goes here — postorder: return the subtree sum including this node;
+        # increment self.count if node.val == left_sum + right_sum.
+        def compute_sum(node):
+            return 0
+        compute_sum(root)
+        return self.count
+
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
     if not values:
         return None
     root = TreeNode(values[0])
-    queue = [root]
+    queue = deque([root])
     i = 1
     while queue and i < len(values):
-        node = queue.pop(0)
-        if i < len(values) and values[i] is not None:
-            node.left = TreeNode(values[i])
-            queue.append(node.left)
-        i += 1
-        if i < len(values) and values[i] is not None:
-            node.right = TreeNode(values[i])
-            queue.append(node.right)
-        i += 1
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
     return root
 
+root = build_tree(json.loads(input()))   # the test case's level-order values
+print(Solution().descendants_sum_count(root))
+```
+
+```java run viz=binary-tree viz-root=root
+import java.util.*;
+
+public class Main {
+    static class TreeNode {
+        int val; TreeNode left, right;
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static class Solution {
+        private int count = 0;
+
+        private int computeSum(TreeNode node) {
+            // Your code goes here — postorder: return the subtree sum including this node;
+            // increment count if node.val == leftSum + rightSum.
+            return 0;
+        }
+
+        int descendantsSumCount(TreeNode root) {
+            computeSum(root);
+            return count;
+        }
+    }
+
+    public static void main(String[] args) {
+        TreeNode root = buildTree(parseIntegerArray(new Scanner(System.in).nextLine()));
+        System.out.println(new Solution().descendantsSumCount(root));
+    }
+
+    static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+            }
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+            }
+        }
+        return root;
+    }
+
+    // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+    static Integer[] parseIntegerArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new Integer[0];
+        String[] parts = inner.split(",");
+        Integer[] out = new Integer[parts.length];
+        for (int i = 0; i < parts.length; i++)
+            out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[21, 7, 3, 5, 2, null, 4]" }
+  ],
+  "cases": [
+    { "args": { "root": "[21, 7, 3, 5, 2, null, 4]" }, "expected": "2" },
+    { "args": { "root": "[5, 7, 3, 1, 2, null, 3]" }, "expected": "1" },
+    { "args": { "root": "[]" }, "expected": "0" },
+    { "args": { "root": "[0]" }, "expected": "1" },
+    { "args": { "root": "[1]" }, "expected": "0" },
+    { "args": { "root": "[3, 1, 2]" }, "expected": "1" },
+    { "args": { "root": "[6, 3, 3, 1, 2, 1, 2]" }, "expected": "2" }
+  ]
+}
+```
+
+<details>
+<summary><h2>Solution</h2></summary>
+
+Each subtree call returns its total sum (including itself), so the parent can check whether its value equals the sum from below. The counter is a shared accumulator — the stateful postorder shape.
+
+```python solution time=O(n) space=O(h)
+import json
+from collections import deque
+
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
 
 class Solution:
     def __init__(self):
-        self.count: int = 0
+        self.count = 0
 
-    def compute_sum(self, root: Optional[TreeNode]) -> int:
-
+    def compute_sum(self, root):
         # Base case: If the current node is NULL, return 0
         if not root:
             return 0
@@ -71,66 +197,45 @@ class Solution:
         # of the current node
         return left_sum + right_sum + root.val
 
-    def descendants_sum_count(self, root: Optional[TreeNode]) -> int:
-
-        # Call the compute_sum function to count the number of nodes
-        # satisfying the given condition
+    def descendants_sum_count(self, root):
         self.compute_sum(root)
         return self.count
 
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
 
-# Examples from the problem statement
-print(Solution().descendants_sum_count(from_level_order([21, 7, 3, 5, 2, None, 4])))   # 2
-print(Solution().descendants_sum_count(from_level_order([5, 7, 3, 1, 2, None, 3])))    # 1
-
-# Edge cases
-print(Solution().descendants_sum_count(None))                                            # 0
-print(Solution().descendants_sum_count(from_level_order([0])))                           # 1 (single leaf: val==0==sum)
-print(Solution().descendants_sum_count(from_level_order([1])))                           # 0 (single leaf: 1!=0)
-print(Solution().descendants_sum_count(from_level_order([3, 1, 2])))                     # 1 (root: 3==1+2)
-print(Solution().descendants_sum_count(from_level_order([1, 2, None, 3, None, 4])))      # 0 (only-left skew)
-print(Solution().descendants_sum_count(from_level_order([6, 3, 3, 1, 2, 1, 2])))        # 3 (root + both internal nodes)
+root = build_tree(json.loads(input()))   # the test case's level-order values
+print(Solution().descendants_sum_count(root))
 ```
 
-```java run viz=binary-tree viz-root=root
+```java solution
 import java.util.*;
 
 public class Main {
     static class TreeNode {
-        int val;
-        TreeNode left;
-        TreeNode right;
-        TreeNode() {}
+        int val; TreeNode left, right;
         TreeNode(int val) { this.val = val; }
-    }
-
-    static TreeNode fromLevelOrder(Integer... values) {
-        if (values.length == 0 || values[0] == null) return null;
-        TreeNode root = new TreeNode(values[0]);
-        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
-        queue.add(root);
-        int i = 1;
-        while (!queue.isEmpty() && i < values.length) {
-            TreeNode node = queue.poll();
-            if (i < values.length && values[i] != null) {
-                node.left = new TreeNode(values[i]);
-                queue.add(node.left);
-            }
-            i++;
-            if (i < values.length && values[i] != null) {
-                node.right = new TreeNode(values[i]);
-                queue.add(node.right);
-            }
-            i++;
-        }
-        return root;
     }
 
     static class Solution {
         private int count = 0;
 
         private int computeSum(TreeNode root) {
-
             // Base case: If the current node is NULL, return 0
             if (root == null) {
                 return 0;
@@ -151,27 +256,46 @@ public class Main {
             return leftSum + rightSum + root.val;
         }
 
-        public int descendantsSumCount(TreeNode root) {
-
-            // Call the computeSum function to count the number of nodes
-            // satisfying the given condition
+        int descendantsSumCount(TreeNode root) {
             computeSum(root);
             return count;
         }
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().descendantsSumCount(fromLevelOrder(21, 7, 3, 5, 2, null, 4)));   // 2
-        System.out.println(new Solution().descendantsSumCount(fromLevelOrder(5, 7, 3, 1, 2, null, 3)));    // 1
+        TreeNode root = buildTree(parseIntegerArray(new Scanner(System.in).nextLine()));
+        System.out.println(new Solution().descendantsSumCount(root));
+    }
 
-        // Edge cases
-        System.out.println(new Solution().descendantsSumCount(null));                                       // 0
-        System.out.println(new Solution().descendantsSumCount(fromLevelOrder(0)));                          // 1 (single leaf: val==0==sum)
-        System.out.println(new Solution().descendantsSumCount(fromLevelOrder(1)));                          // 0 (single leaf: 1!=0)
-        System.out.println(new Solution().descendantsSumCount(fromLevelOrder(3, 1, 2)));                    // 1 (root: 3==1+2)
-        System.out.println(new Solution().descendantsSumCount(fromLevelOrder(1, 2, null, 3)));              // 0 (only-left skew)
-        System.out.println(new Solution().descendantsSumCount(fromLevelOrder(6, 3, 3, 1, 2, 1, 2)));       // 3 (root + both internal nodes)
+    static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+            }
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+            }
+        }
+        return root;
+    }
+
+    // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+    static Integer[] parseIntegerArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new Integer[0];
+        String[] parts = inner.split(",");
+        Integer[] out = new Integer[parts.length];
+        for (int i = 0; i < parts.length; i++)
+            out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

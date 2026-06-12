@@ -15,7 +15,7 @@ A single counter handles *one* bracket type ("count up on `(`, down on `)`, neve
 
 ## See It Work
 
-Validate `"([{}])"` (properly nested) against `"([)]"` (crossed). Run it, then **Visualise** the open-bracket stack rise and fall.
+Validate a bracket string — run it, then **Visualise** the open-bracket stack rise and fall.
 
 > ▶ Run it, then click **Visualise** — each opener pushes; each closer must match the top and pop it; a clean run ends with an empty stack.
 
@@ -31,8 +31,46 @@ def is_valid(s):
                 return False
     return not stack                      # valid iff nothing left open
 
-print(is_valid("([{}])"))                 # True
-print(is_valid("([)]"))                   # False — nesting crosses
+s = input()
+print("true" if is_valid(s) else "false")
+```
+
+```java run viz=array viz-root=stack viz-kind=stack
+import java.util.*;
+
+public class Main {
+  static boolean isValid(String s) {
+    Map<Character, Character> pairs = Map.of(')', '(', ']', '[', '}', '{');
+    Deque<Character> stack = new ArrayDeque<>();
+    for (char ch : s.toCharArray()) {
+      if (ch == '(' || ch == '[' || ch == '{') stack.push(ch);
+      else if (pairs.containsKey(ch)) {
+        if (stack.isEmpty() || stack.pop() != pairs.get(ch)) return false;
+      }
+    }
+    return stack.isEmpty();
+  }
+
+  public static void main(String[] args) {
+    String s = new Scanner(System.in).nextLine();
+    System.out.println(isValid(s));
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "s", "type": "string", "placeholder": "([{}])" }
+  ],
+  "cases": [
+    { "args": { "s": "([{}])" }, "expected": "true" },
+    { "args": { "s": "()[]{}" }, "expected": "true" },
+    { "args": { "s": "([)]" }, "expected": "false" },
+    { "args": { "s": "(]" }, "expected": "false" },
+    { "args": { "s": "(((" }, "expected": "false" }
+  ]
+}
 ```
 
 ## How It Works
@@ -85,9 +123,57 @@ After pushing `(` and `[`, the top is `[`. The next char `)` wants to match a `(
 
 ## Your Turn
 
-The reusable bracket validator:
+The reusable bracket validator — implement `is_valid` yourself: push every opener; for each closer, the top must be its matching pair; valid iff the stack ends empty.
 
 ```python run viz=array viz-kind=stack
+def is_valid(s):
+    # Your code goes here — push openers; for each closer, check and pop
+    # the top; return True only if the stack ends empty.
+    return False
+
+s = input()
+print("true" if is_valid(s) else "false")
+```
+
+```java run viz=array viz-kind=stack
+import java.util.*;
+
+public class Main {
+  static boolean isValid(String s) {
+    // Your code goes here — push openers; for each closer, check and pop
+    // the top; return true only if the stack ends empty.
+    return false;
+  }
+
+  public static void main(String[] args) {
+    String s = new Scanner(System.in).nextLine();
+    System.out.println(isValid(s));
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "s", "type": "string", "placeholder": "([{}])" }
+  ],
+  "cases": [
+    { "args": { "s": "([{}])" }, "expected": "true" },
+    { "args": { "s": "()[]{}" }, "expected": "true" },
+    { "args": { "s": "([)]" }, "expected": "false" },
+    { "args": { "s": "(]" }, "expected": "false" },
+    { "args": { "s": "(((" }, "expected": "false" },
+    { "args": { "s": "no brackets here" }, "expected": "true" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+A stack is the natural fit because brackets nest *last-opened, first-closed* — exactly LIFO. Push every opener; when a closer arrives, the only opener it can legally match is the one on top. Pop it and check: if the stack is empty (a closer with nothing to match) or the popped opener is the wrong kind, the string is invalid. After the whole scan, a non-empty stack means some opener never closed. One pass, `O(n)` time, `O(n)` worst-case stack space.
+
+```python solution time=O(n) space=O(n)
 def is_valid(s):
     pairs = {')': '(', ']': '[', '}': '{'}
     stack = []
@@ -99,11 +185,11 @@ def is_valid(s):
                 return False
     return not stack
 
-for t in ["([{}])", "()[]{}", "([)]", "(]", "((("]:
-    print(t, "->", is_valid(t))      # True True False False False
+s = input()
+print("true" if is_valid(s) else "false")
 ```
 
-```java run viz=array viz-kind=stack
+```java solution
 import java.util.*;
 
 public class Main {
@@ -112,19 +198,20 @@ public class Main {
     Deque<Character> stack = new ArrayDeque<>();
     for (char ch : s.toCharArray()) {
       if (ch == '(' || ch == '[' || ch == '{') stack.push(ch);
-      else if (pairs.containsKey(ch)) {
+      else if (pairs.containsKey(ch))
         if (stack.isEmpty() || stack.pop() != pairs.get(ch)) return false;
-      }
     }
     return stack.isEmpty();
   }
 
   public static void main(String[] args) {
-    for (String t : new String[]{"([{}])", "()[]{}", "([)]", "(]", "((("})
-      System.out.println(t + " -> " + isValid(t));   // true true false false false
+    String s = new Scanner(System.in).nextLine();
+    System.out.println(isValid(s));
   }
 }
 ```
+
+</details>
 
 Drill the family in **Practice** — [Parentheses Checker](/cortex/data-structures-and-algorithms/linear-structures/stack/pattern-sequence-validation/problems/parentheses-checker), [Minimum Edits](/cortex/data-structures-and-algorithms/linear-structures/stack/pattern-sequence-validation/problems/minimum-edits), [Redundant Parentheses](/cortex/data-structures-and-algorithms/linear-structures/stack/pattern-sequence-validation/problems/redundant-parentheses), and [Balanced Span](/cortex/data-structures-and-algorithms/linear-structures/stack/pattern-sequence-validation/problems/balanced-span).
 

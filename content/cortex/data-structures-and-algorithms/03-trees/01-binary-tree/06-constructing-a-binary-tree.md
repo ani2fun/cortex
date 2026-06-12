@@ -15,9 +15,11 @@ The catch is that **one traversal is lossy**. A preorder of `[1, 2]` could mean 
 
 ## See It Work
 
-Rebuild a tree from its preorder and inorder, then traverse the result to prove it round-trips:
+Rebuild a tree from its preorder and inorder, then traverse the result to prove it round-trips. Pick a pair of traversals, then **Run** it.
 
 ```python run viz=binary-tree viz-root=root
+import ast
+
 class TreeNode:
     def __init__(self, val=0, left=None, right=None):
         self.val, self.left, self.right = val, left, right
@@ -35,12 +37,14 @@ def build(preorder, inorder):
         return node
     return helper(0, len(inorder) - 1)
 
-def preorder(n): return [] if n is None else [n.val] + preorder(n.left) + preorder(n.right)
-def inorder(n):  return [] if n is None else inorder(n.left) + [n.val] + inorder(n.right)
+def preorder_tr(n): return [] if n is None else [n.val] + preorder_tr(n.left) + preorder_tr(n.right)
+def inorder_tr(n):  return [] if n is None else inorder_tr(n.left) + [n.val] + inorder_tr(n.right)
 
-root = build([1, 2, 4, 5, 3], [4, 2, 5, 1, 3])
-print("rebuilt preorder:", preorder(root))   # [1, 2, 4, 5, 3]  -> round-trips
-print("rebuilt inorder :", inorder(root))     # [4, 2, 5, 1, 3]
+preorder = ast.literal_eval(input())
+inorder  = ast.literal_eval(input())
+root = build(preorder, inorder)
+print("rebuilt preorder:", preorder_tr(root))
+print("rebuilt inorder :", inorder_tr(root))
 ```
 
 ```java run viz=binary-tree viz-root=root
@@ -69,10 +73,36 @@ public class Main {
     static List<Integer> pre(TreeNode n) { List<Integer> o=new ArrayList<>(); if(n==null) return o; o.add(n.val); o.addAll(pre(n.left)); o.addAll(pre(n.right)); return o; }
     static List<Integer> in(TreeNode n)  { List<Integer> o=new ArrayList<>(); if(n==null) return o; o.addAll(in(n.left)); o.add(n.val); o.addAll(in(n.right)); return o; }
     public static void main(String[] a) {
-        TreeNode root = build(new int[]{1, 2, 4, 5, 3}, new int[]{4, 2, 5, 1, 3});
+        Scanner sc = new Scanner(System.in);
+        int[] preorder = parseIntArray(sc.nextLine());
+        int[] inorder  = parseIntArray(sc.nextLine());
+        TreeNode root = build(preorder, inorder);
         System.out.println("rebuilt preorder: " + pre(root));
         System.out.println("rebuilt inorder : " + in(root));
     }
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "preorder", "label": "preorder", "type": "int[]", "placeholder": "[1, 2, 4, 5, 3]" },
+    { "id": "inorder",  "label": "inorder",  "type": "int[]", "placeholder": "[4, 2, 5, 1, 3]" }
+  ],
+  "cases": [
+    { "args": { "preorder": "[1, 2, 4, 5, 3]", "inorder": "[4, 2, 5, 1, 3]" }, "expected": "rebuilt preorder: [1, 2, 4, 5, 3]\nrebuilt inorder : [4, 2, 5, 1, 3]" },
+    { "args": { "preorder": "[1, 2, 3]", "inorder": "[2, 1, 3]" }, "expected": "rebuilt preorder: [1, 2, 3]\nrebuilt inorder : [2, 1, 3]" },
+    { "args": { "preorder": "[3, 9, 20, 15, 7]", "inorder": "[9, 3, 15, 20, 7]" }, "expected": "rebuilt preorder: [3, 9, 20, 15, 7]\nrebuilt inorder : [9, 3, 15, 20, 7]" },
+    { "args": { "preorder": "[1]", "inorder": "[1]" }, "expected": "rebuilt preorder: [1]\nrebuilt inorder : [1]" }
+  ]
 }
 ```
 
@@ -105,7 +135,7 @@ Why must one of the two traversals be inorder — why won't preorder + postorder
 
 **Predict before you run:** the left-child tree and the right-child tree — do they have the same preorder? The same postorder? The same inorder?
 
-```python run viz=binary-tree viz-root=root
+```python run
 class TreeNode:
     def __init__(self, val=0, left=None, right=None):
         self.val, self.left, self.right = val, left, right
@@ -139,6 +169,8 @@ The twin construction is **postorder + inorder** (LeetCode 106). Postorder's *la
 **Predict:** rebuilding from `postorder = [4, 5, 2, 3, 1]` and `inorder = [4, 2, 5, 1, 3]` — what preorder should the result have? (It's the same tree, so it should round-trip.)
 
 ```python run viz=binary-tree viz-root=root
+import ast
+
 class TreeNode:
     def __init__(self, val=0, left=None, right=None):
         self.val, self.left, self.right = val, left, right
@@ -156,10 +188,12 @@ def build_post(postorder, inorder):
         return node
     return helper(0, len(inorder) - 1)
 
-def preorder(n): return [] if n is None else [n.val] + preorder(n.left) + preorder(n.right)
+def preorder_tr(n): return [] if n is None else [n.val] + preorder_tr(n.left) + preorder_tr(n.right)
 
-root = build_post([4, 5, 2, 3, 1], [4, 2, 5, 1, 3])
-print("rebuilt preorder:", preorder(root))   # [1, 2, 4, 5, 3] — round-trips
+postorder = ast.literal_eval(input())
+inorder   = ast.literal_eval(input())
+root = build_post(postorder, inorder)
+print("rebuilt preorder:", preorder_tr(root))
 ```
 
 ```java run viz=binary-tree viz-root=root
@@ -187,9 +221,35 @@ public class Main {
     }
     static List<Integer> pre(TreeNode n) { List<Integer> o=new ArrayList<>(); if(n==null) return o; o.add(n.val); o.addAll(pre(n.left)); o.addAll(pre(n.right)); return o; }
     public static void main(String[] a) {
-        TreeNode root = buildPost(new int[]{4, 5, 2, 3, 1}, new int[]{4, 2, 5, 1, 3});
+        Scanner sc = new Scanner(System.in);
+        int[] postorder = parseIntArray(sc.nextLine());
+        int[] inorder   = parseIntArray(sc.nextLine());
+        TreeNode root = buildPost(postorder, inorder);
         System.out.println("rebuilt preorder: " + pre(root));
     }
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "postorder", "label": "postorder", "type": "int[]", "placeholder": "[4, 5, 2, 3, 1]" },
+    { "id": "inorder",   "label": "inorder",   "type": "int[]", "placeholder": "[4, 2, 5, 1, 3]" }
+  ],
+  "cases": [
+    { "args": { "postorder": "[4, 5, 2, 3, 1]", "inorder": "[4, 2, 5, 1, 3]" }, "expected": "rebuilt preorder: [1, 2, 4, 5, 3]" },
+    { "args": { "postorder": "[2, 3, 1]", "inorder": "[2, 1, 3]" }, "expected": "rebuilt preorder: [1, 2, 3]" },
+    { "args": { "postorder": "[9, 15, 7, 20, 3]", "inorder": "[9, 3, 15, 20, 7]" }, "expected": "rebuilt preorder: [3, 9, 20, 15, 7]" },
+    { "args": { "postorder": "[1]", "inorder": "[1]" }, "expected": "rebuilt preorder: [1]" }
+  ]
 }
 ```
 

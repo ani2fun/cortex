@@ -4,6 +4,8 @@ summary: "> You are given an array intervals of non-overlapping intervals, sorte
 prereqs:
   - 10-pattern-interval-merging/01-pattern
 difficulty: hard
+kind: problem
+topics: [intervals, arrays]
 ---
 
 # Insert Interval
@@ -62,6 +64,100 @@ Explanation: [4, 8] absorbs [3, 5], [6, 7], and [8, 10] — its bounds
 Input:  intervals = [],   newInterval = [5, 7]
 Output: [[5, 7]]
 Explanation: Empty input — only the push-the-new-interval step runs.
+```
+
+```quiz
+{
+  "prompt": "Now your turn!",
+  "input": "intervals = [[1, 4], [6, 7]], newInterval = [3, 6]",
+  "options": ["[[1, 7]]", "[[1, 4], [3, 6], [6, 7]]", "[[1, 6], [6, 7]]", "[[1, 4], [6, 7]]"],
+  "answer": "[[1, 7]]"
+}
+```
+
+## Constraints
+
+- `0 ≤ intervals.length ≤ 10^4`, and `intervals` is sorted by start and pairwise non-overlapping
+- `intervals[i] = [si, ei]` and `newInterval = [s, e]` with `0 ≤ si ≤ ei ≤ 10^6`
+
+```python run viz=grid viz-root=intervals
+import ast
+from typing import List
+
+class Solution:
+    def insert_interval(
+        self, intervals: List[List[int]], interval: List[int]
+    ) -> List[List[int]]:
+        # Your code goes here — copy intervals before the new one, absorb every
+        # overlapping interval into it (min start, max end), push it, copy the rest.
+        return []
+
+intervals = ast.literal_eval(input())    # the test case's intervals
+interval = ast.literal_eval(input())     # the test case's newInterval
+print(Solution().insert_interval(intervals, interval))
+```
+
+```java run viz=grid viz-root=intervals
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int[][] insertInterval(int[][] intervals, int[] interval) {
+            // Your code goes here — copy intervals before the new one, absorb every
+            // overlapping interval into it (min start, max end), push it, copy the rest.
+            return new int[0][];
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[][] intervals = parseIntMatrix(sc.nextLine());
+        int[] interval = parseIntArray(sc.nextLine());
+        System.out.println(Arrays.deepToString(new Solution().insertInterval(intervals, interval)));
+    }
+
+    // "[[1, 3], [2, 6]]" → {{1, 3}, {2, 6}} — reads the test case's intervals
+    static int[][] parseIntMatrix(String line) {
+        String s = line.trim();
+        if (s.startsWith("[")) s = s.substring(1);
+        if (s.endsWith("]")) s = s.substring(0, s.length() - 1);
+        s = s.trim();
+        if (s.isEmpty()) return new int[0][];
+        String[] rows = s.split("\\]\\s*,\\s*\\[");
+        int[][] out = new int[rows.length][];
+        for (int i = 0; i < rows.length; i++) {
+            out[i] = parseIntArray(rows[i]);
+        }
+        return out;
+    }
+
+    // "[1, 3]" → {1, 3} — reads a single interval
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "intervals", "label": "intervals", "type": "int[][]", "placeholder": "[[1, 3], [6, 9]]" },
+    { "id": "newInterval", "label": "newInterval", "type": "int[]", "placeholder": "[2, 5]" }
+  ],
+  "cases": [
+    { "args": { "intervals": "[[1, 3], [6, 9]]", "newInterval": "[2, 5]" }, "expected": "[[1, 5], [6, 9]]" },
+    { "args": { "intervals": "[[1, 2], [3, 5], [6, 7], [8, 10], [12, 16]]", "newInterval": "[4, 8]" }, "expected": "[[1, 2], [3, 10], [12, 16]]" },
+    { "args": { "intervals": "[]", "newInterval": "[5, 7]" }, "expected": "[[5, 7]]" },
+    { "args": { "intervals": "[[1, 4], [6, 7]]", "newInterval": "[3, 6]" }, "expected": "[[1, 7]]" },
+    { "args": { "intervals": "[[3, 5], [7, 9]]", "newInterval": "[1, 2]" }, "expected": "[[1, 2], [3, 5], [7, 9]]" },
+    { "args": { "intervals": "[[1, 3], [4, 6], [7, 9]]", "newInterval": "[2, 8]" }, "expected": "[[1, 9]]" }
+  ]
+}
 ```
 
 <details>
@@ -174,7 +270,8 @@ For each `iv` in `intervals`:
 
 ### The Solution
 
-```python run viz=grid viz-root=intervals
+```python solution time=O(N) space=O(N)
+import ast
 from typing import List
 
 class Solution:
@@ -210,20 +307,12 @@ class Solution:
         return merged
 
 
-# Examples from the problem statement
-print(Solution().insert_interval([[1, 4], [6, 7]], [3, 6]))           # [[1, 7]]
-print(Solution().insert_interval([[4, 5], [7, 9]], [6, 8]))           # [[4, 5], [6, 9]]
-print(Solution().insert_interval([[1, 2], [6, 7], [8, 9]], [4, 5]))   # [[1, 2], [4, 5], [6, 7], [8, 9]]
-
-# Edge cases
-print(Solution().insert_interval([], [1, 3]))                          # [[1, 3]]  — empty list
-print(Solution().insert_interval([[2, 5]], [1, 3]))                    # [[1, 5]]  — single overlap at start
-print(Solution().insert_interval([[1, 2]], [3, 4]))                    # [[1, 2], [3, 4]]  — append at end
-print(Solution().insert_interval([[3, 5], [7, 9]], [1, 2]))            # [[1, 2], [3, 5], [7, 9]]  — prepend
-print(Solution().insert_interval([[1, 3], [4, 6], [7, 9]], [2, 8]))   # [[1, 9]]  — merge all
+intervals = ast.literal_eval(input())    # the test case's intervals
+interval = ast.literal_eval(input())     # the test case's newInterval
+print(Solution().insert_interval(intervals, interval))
 ```
 
-```java run viz=grid viz-root=intervals
+```java solution
 import java.util.*;
 
 public class Main {
@@ -263,17 +352,35 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(Arrays.deepToString(new Solution().insertInterval(new int[][]{{1, 4}, {6, 7}}, new int[]{3, 6})));           // [[1, 7]]
-        System.out.println(Arrays.deepToString(new Solution().insertInterval(new int[][]{{4, 5}, {7, 9}}, new int[]{6, 8})));           // [[4, 5], [6, 9]]
-        System.out.println(Arrays.deepToString(new Solution().insertInterval(new int[][]{{1, 2}, {6, 7}, {8, 9}}, new int[]{4, 5}))); // [[1, 2], [4, 5], [6, 7], [8, 9]]
+        Scanner sc = new Scanner(System.in);
+        int[][] intervals = parseIntMatrix(sc.nextLine());
+        int[] interval = parseIntArray(sc.nextLine());
+        System.out.println(Arrays.deepToString(new Solution().insertInterval(intervals, interval)));
+    }
 
-        // Edge cases
-        System.out.println(Arrays.deepToString(new Solution().insertInterval(new int[][]{}, new int[]{1, 3})));                          // [[1, 3]]  — empty list
-        System.out.println(Arrays.deepToString(new Solution().insertInterval(new int[][]{{2, 5}}, new int[]{1, 3})));                    // [[1, 5]]  — single overlap at start
-        System.out.println(Arrays.deepToString(new Solution().insertInterval(new int[][]{{1, 2}}, new int[]{3, 4})));                    // [[1, 2], [3, 4]]  — append at end
-        System.out.println(Arrays.deepToString(new Solution().insertInterval(new int[][]{{3, 5}, {7, 9}}, new int[]{1, 2})));            // [[1, 2], [3, 5], [7, 9]]  — prepend
-        System.out.println(Arrays.deepToString(new Solution().insertInterval(new int[][]{{1, 3}, {4, 6}, {7, 9}}, new int[]{2, 8}))); // [[1, 9]]  — merge all
+    // "[[1, 3], [2, 6]]" → {{1, 3}, {2, 6}} — reads the test case's intervals
+    static int[][] parseIntMatrix(String line) {
+        String s = line.trim();
+        if (s.startsWith("[")) s = s.substring(1);
+        if (s.endsWith("]")) s = s.substring(0, s.length() - 1);
+        s = s.trim();
+        if (s.isEmpty()) return new int[0][];
+        String[] rows = s.split("\\]\\s*,\\s*\\[");
+        int[][] out = new int[rows.length][];
+        for (int i = 0; i < rows.length; i++) {
+            out[i] = parseIntArray(rows[i]);
+        }
+        return out;
+    }
+
+    // "[1, 3]" → {1, 3} — reads a single interval
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

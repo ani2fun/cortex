@@ -15,14 +15,35 @@ The fix is to notice that BST search is **tail-recursive**: the recursive call i
 
 ## See It Work
 
-The same searches as before, now with a `while` loop and a single pointer. Run it.
+The same search as before, now with a `while` loop and a single pointer. Run it.
 
 ```python run viz=binary-tree viz-root=root
+import json
+from collections import deque
+
 class TreeNode:
-    def __init__(self, val):
+    def __init__(self, val, left=None, right=None):
         self.val = val
-        self.left = None
-        self.right = None
+        self.left = left
+        self.right = right
+
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
 
 def insert(root, val):
     if root is None: return TreeNode(val)
@@ -38,10 +59,91 @@ def search(root, val):
         node = node.left if val < node.val else node.right
     return None                              # fell off the tree → not found
 
-root = None
-for v in [5, 3, 8, 1, 4, 7, 9]:
-    root = insert(root, v)
-print(bool(search(root, 7)), bool(search(root, 6)))   # True False
+root = build_tree(json.loads(input()))
+key = int(input())
+print("true" if search(root, key) is not None else "false")
+```
+
+```java run viz=binary-tree viz-root=root
+import java.util.*;
+
+public class Main {
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
+  }
+
+  static TreeNode buildTree(Integer[] values) {
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
+    }
+    return root;
+  }
+
+  static TreeNode insert(TreeNode r, int v) {
+    if (r == null) return new TreeNode(v);
+    if (v < r.val) r.left = insert(r.left, v);
+    else if (v > r.val) r.right = insert(r.right, v);
+    return r;
+  }
+
+  static TreeNode search(TreeNode root, int val) {
+    TreeNode node = root;
+    while (node != null) {
+      if (val == node.val) return node;
+      node = val < node.val ? node.left : node.right;
+    }
+    return null;
+  }
+
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+    int key = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(search(root, key) != null);
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[5, 3, 8, 1, 4, 7, 9]" },
+    { "id": "key", "label": "key", "type": "int", "placeholder": "7" }
+  ],
+  "cases": [
+    { "args": { "root": "[5, 3, 8, 1, 4, 7, 9]", "key": "7" }, "expected": "true" },
+    { "args": { "root": "[5, 3, 8, 1, 4, 7, 9]", "key": "6" }, "expected": "false" },
+    { "args": { "root": "[5, 3, 8, 1, 4, 7, 9]", "key": "1" }, "expected": "true" },
+    { "args": { "root": "[5, 3, 8, 1, 4, 7, 9]", "key": "9" }, "expected": "true" },
+    { "args": { "root": "[5, 3, 8, 1, 4, 7, 9]", "key": "2" }, "expected": "false" },
+    { "args": { "root": "[10]", "key": "10" }, "expected": "true" },
+    { "args": { "root": "[10]", "key": "5" }, "expected": "false" }
+  ]
+}
 ```
 
 ## How It Works
@@ -85,14 +187,159 @@ It's irrelevant for a **balanced** tree: `h ≈ log n`, so even a billion nodes 
 
 ## Your Turn
 
-The reusable iterative search:
+Write the iterative search from scratch — a `while` loop over one pointer.
 
 ```python run viz=binary-tree viz-root=root
+import json
+from collections import deque
+
 class TreeNode:
-    def __init__(self, val):
+    def __init__(self, val, left=None, right=None):
         self.val = val
-        self.left = None
-        self.right = None
+        self.left = left
+        self.right = right
+
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
+
+def insert(root, val):
+    if root is None: return TreeNode(val)
+    if val < root.val: root.left = insert(root.left, val)
+    elif val > root.val: root.right = insert(root.right, val)
+    return root
+
+def search(root, val):
+    # Your code goes here
+    pass
+
+root = build_tree(json.loads(input()))
+key = int(input())
+print("true" if search(root, key) is not None else "false")
+```
+
+```java run viz=binary-tree viz-root=root
+import java.util.*;
+
+public class Main {
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
+  }
+
+  static TreeNode buildTree(Integer[] values) {
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
+    }
+    return root;
+  }
+
+  static TreeNode insert(TreeNode r, int v) {
+    if (r == null) return new TreeNode(v);
+    if (v < r.val) r.left = insert(r.left, v);
+    else if (v > r.val) r.right = insert(r.right, v);
+    return r;
+  }
+
+  static TreeNode search(TreeNode root, int val) {
+    // Your code goes here
+    return null;
+  }
+
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+    int key = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(search(root, key) != null);
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[5, 3, 8, 1, 4, 7, 9]" },
+    { "id": "key", "label": "key", "type": "int", "placeholder": "7" }
+  ],
+  "cases": [
+    { "args": { "root": "[5, 3, 8, 1, 4, 7, 9]", "key": "7" }, "expected": "true" },
+    { "args": { "root": "[5, 3, 8, 1, 4, 7, 9]", "key": "6" }, "expected": "false" },
+    { "args": { "root": "[5, 3, 8, 1, 4, 7, 9]", "key": "1" }, "expected": "true" },
+    { "args": { "root": "[5, 3, 8, 1, 4, 7, 9]", "key": "9" }, "expected": "true" },
+    { "args": { "root": "[5, 3, 8, 1, 4, 7, 9]", "key": "2" }, "expected": "false" },
+    { "args": { "root": "[10]", "key": "10" }, "expected": "true" },
+    { "args": { "root": "[10]", "key": "5" }, "expected": "false" }
+  ]
+}
+```
+
+<details>
+<summary><strong>Editorial</strong></summary>
+
+```python solution
+import json
+from collections import deque
+
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
 
 def insert(root, val):
     if root is None: return TreeNode(val)
@@ -108,21 +355,47 @@ def search(root, val):
         node = node.left if val < node.val else node.right
     return None
 
-root = None
-for v in [5, 3, 8, 1, 4, 7, 9]:
-    root = insert(root, v)
-print(bool(search(root, 1)), bool(search(root, 9)), bool(search(root, 2)))   # True True False
+root = build_tree(json.loads(input()))
+key = int(input())
+print("true" if search(root, key) is not None else "false")
 ```
 
-```java run viz=binary-tree viz-root=root
+```java solution
+import java.util.*;
+
 public class Main {
-  static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } }
+  static class TreeNode {
+    int val; TreeNode left, right;
+    TreeNode(int val) { this.val = val; }
+  }
+
+  static TreeNode buildTree(Integer[] values) {
+    if (values.length == 0 || values[0] == null) return null;
+    TreeNode root = new TreeNode(values[0]);
+    Deque<TreeNode> queue = new ArrayDeque<>();
+    queue.add(root);
+    int i = 1;
+    while (!queue.isEmpty() && i < values.length) {
+      TreeNode node = queue.poll();
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+      }
+      if (i < values.length) {
+        Integer v = values[i++];
+        if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+      }
+    }
+    return root;
+  }
+
   static TreeNode insert(TreeNode r, int v) {
     if (r == null) return new TreeNode(v);
     if (v < r.val) r.left = insert(r.left, v);
     else if (v > r.val) r.right = insert(r.right, v);
     return r;
   }
+
   static TreeNode search(TreeNode root, int val) {
     TreeNode node = root;
     while (node != null) {
@@ -131,13 +404,27 @@ public class Main {
     }
     return null;
   }
+
+  static Integer[] parseIntegerArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new Integer[0];
+    String[] parts = inner.split(",");
+    Integer[] out = new Integer[parts.length];
+    for (int i = 0; i < parts.length; i++)
+      out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+    return out;
+  }
+
   public static void main(String[] args) {
-    TreeNode root = null;
-    for (int v : new int[]{5, 3, 8, 1, 4, 7, 9}) root = insert(root, v);
-    System.out.println((search(root, 7) != null) + " " + (search(root, 6) != null));   // true false
+    Scanner sc = new Scanner(System.in);
+    TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+    int key = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(search(root, key) != null);
   }
 }
 ```
+
+</details>
 
 This is a structural lesson — the iterative descent also underlies iterative insertion and ordered iteration.
 
@@ -193,4 +480,4 @@ Iterative search is a small lesson with a transferable habit:
 
 - **CLRS**, *Introduction to Algorithms*, 4th ed., §12.2 — the iterative `TREE-SEARCH` and the recursion-to-loop equivalence.
 - **Sedgewick & Wayne**, *Algorithms*, 4th ed., §3.2 — iterative BST operations.
-- Tail-recursion-to-loop and the `O(1)`-space iterative search are standard; both runnable blocks are verified by running (`7 ⇒ True, 6 ⇒ False`; `1,9,2 ⇒ True, True, False`).
+- Tail-recursion-to-loop and the `O(1)`-space iterative search are standard; both runnable blocks are verified by running (`7 ⇒ true, 6 ⇒ false`; `1,9,2 ⇒ true, true, false`).

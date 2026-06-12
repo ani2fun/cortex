@@ -17,7 +17,11 @@ Double hashing removes that root cause. The step size comes from a **second hash
 
 Three keys — `1, 8, 15` — all hash to home slot `1` (capacity `7`). But their second hash gives each a different step (`4, 2, 5`), so they scatter to slots `1, 3, 6` along *different* paths. Run it.
 
+> The input is `[k1, k2, k3]` — three keys all sharing the same home slot in a capacity-7 table. The driver prints each key's home and step, then inserts them (value = key) and looks up the last key.
+
 ```python run viz=array
+import ast
+
 EMPTY = None
 DELETED = object()
 R = 5                                   # a prime < capacity, for the second hash
@@ -47,11 +51,82 @@ class DoubleHashing:
             if slot is not DELETED and slot[0] == key: return slot[1]
         return None
 
+keys = ast.literal_eval(input())            # [1, 8, 15]
+k1, k2, k3 = keys[0], keys[1], keys[2]
 t = DoubleHashing(7)
-for k in (1, 8, 15):
-    print(f"key {k}: home={t._h1(k)}, step={t._h2(k)}")   # all home 1; steps 4, 2, 5
-t.put(1, "a"); t.put(8, "b"); t.put(15, "c")
-print(t.get(15))                                          # c
+for k in (k1, k2, k3):
+    print(f"key {k}: home={t._h1(k)}, step={t._h2(k)}")
+t.put(k1, k1); t.put(k2, k2); t.put(k3, k3)    # value = key
+r3 = t.get(k3)
+print(r3 if r3 is not None else "null")
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+  static final int[] DELETED = new int[0];
+  static final int R = 5;
+
+  static class DoubleHashing {
+    int capacity; int[][] slots;
+    DoubleHashing(int cap) { capacity = cap; slots = new int[cap][]; }
+    int h1(int key) { return Math.floorMod(key, capacity); }
+    int h2(int key) { return R - Math.floorMod(key, R); }     // [1,R], never 0
+    void put(int key, int value) {
+      int a = h1(key), b = h2(key), firstDel = -1;
+      for (int step = 0; step < capacity; step++) {
+        int i = (a + step * b) % capacity;
+        int[] s = slots[i];
+        if (s == null) { slots[firstDel != -1 ? firstDel : i] = new int[]{key, value}; return; }
+        if (s == DELETED) { if (firstDel == -1) firstDel = i; }
+        else if (s[0] == key) { slots[i] = new int[]{key, value}; return; }
+      }
+    }
+    Integer get(int key) {
+      int a = h1(key), b = h2(key);
+      for (int step = 0; step < capacity; step++) {
+        int[] s = slots[(a + step * b) % capacity];
+        if (s == null) return null;
+        if (s != DELETED && s[0] == key) return s[1];
+      }
+      return null;
+    }
+  }
+
+  // "[1, 8, 15]" → {1, 8, 15}
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+
+  public static void main(String[] args) {
+    int[] keys = parseIntArray(new Scanner(System.in).nextLine());
+    int k1 = keys[0], k2 = keys[1], k3 = keys[2];
+    DoubleHashing t = new DoubleHashing(7);
+    for (int k : new int[]{k1, k2, k3})
+      System.out.println("key " + k + ": home=" + t.h1(k) + ", step=" + t.h2(k));
+    t.put(k1, k1); t.put(k2, k2); t.put(k3, k3);
+    System.out.println(t.get(k3));
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "keys", "label": "keys", "type": "int[]", "placeholder": "[1, 8, 15]" }
+  ],
+  "cases": [
+    { "args": { "keys": "[1, 8, 15]" }, "expected": "key 1: home=1, step=4\nkey 8: home=1, step=2\nkey 15: home=1, step=5\n15" },
+    { "args": { "keys": "[2, 9, 16]" }, "expected": "key 2: home=2, step=3\nkey 9: home=2, step=1\nkey 16: home=2, step=4\n16" },
+    { "args": { "keys": "[3, 10, 17]" }, "expected": "key 3: home=3, step=2\nkey 10: home=3, step=5\nkey 17: home=3, step=3\n17" }
+  ]
+}
 ```
 
 ## How It Works
@@ -101,9 +176,73 @@ Because the step size comes from **the key itself**, not the home slot. Keys `1`
 
 ## Your Turn
 
-The reusable double-hashing table:
+The reusable double-hashing table. Implement `put` and `get`, then run the driver — it inserts two keys that share a home slot and looks up both plus a missing key.
 
 ```python run viz=array
+EMPTY = None
+DELETED = object()
+R = 5
+
+class DoubleHashing:
+    def __init__(self, capacity=7):
+        self.capacity = capacity
+        self.slots = [EMPTY] * capacity
+    def _h1(self, key): return key % self.capacity
+    def _h2(self, key): return R - (key % R)
+    def put(self, key, value):
+        # Your code goes here
+        pass
+    def get(self, key):
+        # Your code goes here
+        return None
+
+t = DoubleHashing(7)
+t.put(2, 20); t.put(9, 90)            # both home slot 2, different steps
+r2 = t.get(2); r9 = t.get(9); r99 = t.get(99)
+print(str(r2) + " " + str(r9) + " " + ("null" if r99 is None else str(r99)))
+```
+
+```java run viz=array
+public class Main {
+  static final int[] DELETED = new int[0];
+  static final int R = 5;
+  static class DoubleHashing {
+    int capacity; int[][] slots;
+    DoubleHashing(int cap) { capacity = cap; slots = new int[cap][]; }
+    int h1(int key) { return Math.floorMod(key, capacity); }
+    int h2(int key) { return R - Math.floorMod(key, R); }
+    void put(int key, int value) {
+      // Your code goes here
+    }
+    Integer get(int key) {
+      // Your code goes here
+      return null;
+    }
+  }
+  public static void main(String[] args) {
+    DoubleHashing t = new DoubleHashing(7);
+    t.put(2, 20); t.put(9, 90);
+    System.out.println(t.get(2) + " " + t.get(9) + " " + t.get(99));
+  }
+}
+```
+
+```testcases
+{
+  "args": [],
+  "cases": [
+    { "args": {}, "expected": "20 90 null" }
+  ],
+  "verifying": "solution"
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+The structure is identical to linear and quadratic probing — one change in the probe index: replace the step with `h2(key)` per-key stride. `put` loops with `i = (h1 + step * h2) % capacity`, reusing tombstones, stopping at `EMPTY` (insert) or the key (update). `get` walks the same path, stopping at `EMPTY` (absent) or the key (found).
+
+```python solution time=O(1) space=O(n)
 EMPTY = None
 DELETED = object()
 R = 5
@@ -134,11 +273,12 @@ class DoubleHashing:
         return None
 
 t = DoubleHashing(7)
-t.put(2, "p"); t.put(9, "q")            # both home slot 2, different steps
-print(t.get(2), t.get(9), t.get(99))    # p q None
+t.put(2, 20); t.put(9, 90)            # both home slot 2, different steps
+r2 = t.get(2); r9 = t.get(9); r99 = t.get(99)
+print(str(r2) + " " + str(r9) + " " + ("null" if r99 is None else str(r99)))
 ```
 
-```java run viz=array
+```java solution
 public class Main {
   static final int[] DELETED = new int[0];
   static final int R = 5;
@@ -169,11 +309,13 @@ public class Main {
   }
   public static void main(String[] args) {
     DoubleHashing t = new DoubleHashing(7);
-    t.put(2, 20); t.put(9, 90);          // both home slot 2, different steps
-    System.out.println(t.get(2) + " " + t.get(9) + " " + t.get(99));   // 20 90 null
+    t.put(2, 20); t.put(9, 90);
+    System.out.println(t.get(2) + " " + t.get(9) + " " + t.get(99));
   }
 }
 ```
+
+</details>
 
 ## Reflect & Connect
 

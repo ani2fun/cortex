@@ -270,7 +270,7 @@ Quick-recall and design material. Skim, don't study top to bottom.
 - [Design a Min Stack](/cortex/data-structures-and-algorithms/linear-structures/stack/design-min-stack/design-min-stack)
 - [Pattern Synthesis: Stack](/cortex/data-structures-and-algorithms/linear-structures/stack/pattern-synthesis)
 - [Memorize: Queue](/cortex/data-structures-and-algorithms/linear-structures/queue/memorize)
-- [Design a Queue](/cortex/data-structures-and-algorithms/linear-structures/queue/design-a-queue/design-a-queue)
+- [Design a Queue Using Stacks](/cortex/data-structures-and-algorithms/linear-structures/queue/design-a-queue/design-a-queue)
 - [Memorize: Hash Table](/cortex/data-structures-and-algorithms/linear-structures/hash-table/memorize)
 - [Memorize: Counting](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-counting/memorize)
 - [Memorize: Key Generation](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-pattern-generation/memorize)

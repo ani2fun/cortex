@@ -9,6 +9,7 @@ import cortex.client.components.book.{
   CortexReadMeta,
   CortexReaderLayout
 }
+import cortex.client.components.book.workbench.ProblemPageHost
 import cortex.client.markdown.MarkdownRenderer
 import cortex.client.util.{AsyncFetch, PageTitle, ReaderState}
 import cortex.shared.api.Endpoints.{ChapterPayload, ChapterRef}
@@ -52,8 +53,11 @@ object ChapterPage:
           setState = state.setState,
           fetch =
             for
-              payload  <- ApiClient.getCortexChapter(deps._1, chapter)
-              rendered <- MarkdownRenderer.render(payload.raw)
+              payload <- ApiClient.getCortexChapter(deps._1, chapter)
+              rendered <- MarkdownRenderer.render(
+                payload.raw,
+                problemMode = payload.frontmatter.kind.contains("problem")
+              )
             yield Loaded(payload, rendered),
           errorPrefix = s"Failed to load ${deps._1}/${chapter}",
           onLoaded = loaded =>
@@ -116,35 +120,65 @@ object ChapterPage:
     val next: Option[ChapterRef] =
       payload.nextSlug.flatMap(s => payload.book.chapters.find(_.slug == s))
 
-    val content: VdomNode =
-      <.div(
-        ^.className := "cortex-reader-layout__prose",
-        CortexBreadcrumb.Component(
-          CortexBreadcrumb.Props(
-            bookSlug = payload.book.slug,
-            bookTitle = payload.book.title,
-            chapterTitle = payload.frontmatter.title
-          )
-        ),
-        <.h1(
-          ^.id        := "chapter-top",
-          ^.className := "cortex-reader-prose__title",
-          payload.frontmatter.title
-        ),
-        CortexReadMeta.Component(CortexReadMeta.Props(rawMarkdown = payload.raw)),
-        payload.frontmatter.summary
-          .map(s =>
-            <.p(
-              ^.className := "cortex-reader-prose__lede",
-              s
-            ): VdomNode
-          )
-          .getOrElse(EmptyVdom),
-        ChapterContent.Component(ChapterContent.Props(loaded.render)),
-        CortexPrevNext.Component(
-          CortexPrevNext.Props(bookSlug = payload.book.slug, prev = prev, next = next)
-        )
+    // `kind: problem` + a successfully packaged document → the two-pane workbench layout instead of
+    // prose. The marker check covers the renderer's ADR-0001 fallback: a problem chapter whose
+    // structure didn't package (no starter block / testcases) renders as a normal prose chapter.
+    val isWorkbench =
+      payload.frontmatter.kind.contains("problem") &&
+        loaded.render.html.contains("class=\"problem-workbench")
+
+    val breadcrumb = CortexBreadcrumb.Component(
+      CortexBreadcrumb.Props(
+        bookSlug = payload.book.slug,
+        bookTitle = payload.book.title,
+        chapterTitle = payload.frontmatter.title
       )
+    )
+
+    val pager = CortexPrevNext.Component(
+      CortexPrevNext.Props(bookSlug = payload.book.slug, prev = prev, next = next)
+    )
+
+    val content: VdomNode =
+      if isWorkbench then
+        // Full-width column: no prose h1 / lede / read-meta — the workbench's Description tab renders
+        // the title + difficulty + topics itself (from the frontmatter, via ProblemPageHost).
+        <.div(
+          ^.className := "cortex-reader-layout__workbench",
+          breadcrumb,
+          ProblemPageHost.Component(
+            ProblemPageHost.Props(
+              html = loaded.render.html,
+              title = payload.frontmatter.title,
+              difficulty = payload.frontmatter.difficulty,
+              topics = payload.frontmatter.topics.map(_.toList).getOrElse(Nil),
+              book = payload.book.slug,
+              chapter = payload.chapter.slug
+            )
+          ),
+          pager
+        )
+      else
+        <.div(
+          ^.className := "cortex-reader-layout__prose",
+          breadcrumb,
+          <.h1(
+            ^.id        := "chapter-top",
+            ^.className := "cortex-reader-prose__title",
+            payload.frontmatter.title
+          ),
+          CortexReadMeta.Component(CortexReadMeta.Props(rawMarkdown = payload.raw)),
+          payload.frontmatter.summary
+            .map(s =>
+              <.p(
+                ^.className := "cortex-reader-prose__lede",
+                s
+              ): VdomNode
+            )
+            .getOrElse(EmptyVdom),
+          ChapterContent.Component(ChapterContent.Props(loaded.render)),
+          pager
+        )
 
     <.div(
       ^.className := "pt-20",

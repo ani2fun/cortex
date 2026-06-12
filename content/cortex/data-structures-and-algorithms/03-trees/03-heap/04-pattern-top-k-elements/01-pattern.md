@@ -15,21 +15,63 @@ The insight: you only ever need to remember the **K best seen so far**. A **min-
 
 ## See It Work
 
-Find the 2nd-largest element of `[3, 2, 1, 5, 6, 4]` by keeping a size-2 min-heap of the largest seen. Run it, then **Visualise** the heap hold only the top two.
+Find the 2nd-largest element of `[3, 2, 1, 5, 6, 4]` by keeping a size-2 min-heap of the largest seen. Pick a case and **Run** it.
 
-> ▶ Run it, then click **Visualise** — each element pushes; once the heap holds more than `K`, the smallest is popped, so only the `K` largest survive.
-
-```python run viz=array viz-root=heap viz-kind=heap
+```python run
+import ast
 import heapq
 
-nums = [3, 2, 1, 5, 6, 4]
-k = 2
+nums = ast.literal_eval(input())
+k = int(input())
 heap = []                          # min-heap of the K largest seen so far
 for x in nums:
     heapq.heappush(heap, x)
     if len(heap) > k:
         heapq.heappop(heap)        # evict the smallest → keep only the K largest
-print(heap[0])                     # 5 — the root is the smallest keeper = Kth largest
+print(heap[0])                     # the root is the smallest keeper = Kth largest
+```
+
+```java run
+import java.util.*;
+
+public class Main {
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] nums = parseIntArray(sc.nextLine());
+    int k = Integer.parseInt(sc.nextLine().trim());
+    PriorityQueue<Integer> heap = new PriorityQueue<>();   // min-heap
+    for (int x : nums) {
+      heap.offer(x);
+      if (heap.size() > k) heap.poll();                    // evict smallest
+    }
+    System.out.println(heap.peek());                       // root = Kth largest
+  }
+
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "nums", "label": "nums", "type": "int[]", "placeholder": "[3, 2, 1, 5, 6, 4]" },
+    { "id": "k", "label": "k", "type": "int", "placeholder": "2" }
+  ],
+  "cases": [
+    { "args": { "nums": "[3, 2, 1, 5, 6, 4]", "k": "2" }, "expected": "5" },
+    { "args": { "nums": "[3, 2, 1, 5, 6, 4]", "k": "1" }, "expected": "6" },
+    { "args": { "nums": "[3, 2, 1, 5, 6, 4]", "k": "6" }, "expected": "1" },
+    { "args": { "nums": "[1]", "k": "1" }, "expected": "1" },
+    { "args": { "nums": "[5, 5, 5]", "k": "2" }, "expected": "5" }
+  ]
+}
 ```
 
 ## How It Works
@@ -79,9 +121,81 @@ Because the operation you repeat is "throw away the weakest keeper." The weakest
 
 ## Your Turn
 
-The reusable Kth-largest and K-largest:
+Write the size-K heap template: `kth_largest(nums, k)` returns the Kth largest; `k_largest(nums, k)` returns the K largest sorted descending.
 
-```python run viz=array viz-root=heap viz-kind=heap
+```python run
+import ast
+import heapq
+
+def kth_largest(nums, k):
+    # Your code goes here
+    pass
+
+def k_largest(nums, k):
+    # Your code goes here
+    pass
+
+nums = ast.literal_eval(input())
+k = int(input())
+print(kth_largest(nums, k))
+print(k_largest(nums, k))
+```
+
+```java run
+import java.util.*;
+
+public class Main {
+  static int kthLargest(int[] nums, int k) {
+    // Your code goes here
+    return 0;
+  }
+
+  static List<Integer> kLargest(int[] nums, int k) {
+    // Your code goes here
+    return new ArrayList<>();
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] nums = parseIntArray(sc.nextLine());
+    int k = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(kthLargest(nums, k));
+    System.out.println(kLargest(nums, k));
+  }
+
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "nums", "label": "nums", "type": "int[]", "placeholder": "[3, 2, 3, 1, 2, 4, 5, 5, 6]" },
+    { "id": "k", "label": "k", "type": "int", "placeholder": "4" }
+  ],
+  "cases": [
+    { "args": { "nums": "[3, 2, 3, 1, 2, 4, 5, 5, 6]", "k": "4" }, "expected": "4\n[6, 5, 5, 4]" },
+    { "args": { "nums": "[3, 2, 1, 5, 6, 4]", "k": "2" }, "expected": "5\n[6, 5]" },
+    { "args": { "nums": "[1]", "k": "1" }, "expected": "1\n[1]" },
+    { "args": { "nums": "[5, 5, 5]", "k": "2" }, "expected": "5\n[5, 5]" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+`kth_largest` runs the canonical size-K min-heap loop: push every element, pop the root whenever the heap exceeds K. After the pass the root is the Kth largest. `k_largest` runs the same loop and then returns the heap contents sorted descending — the heap is the K largest but not in sorted order, so sort the result.
+
+```python solution time=O(n log K) space=O(K)
+import ast
 import heapq
 
 def kth_largest(nums, k):
@@ -100,11 +214,13 @@ def k_largest(nums, k):
             heapq.heappop(heap)
     return sorted(heap, reverse=True)
 
-print(kth_largest([3, 2, 3, 1, 2, 4, 5, 5, 6], 4))   # 4
-print(k_largest([3, 2, 1, 5, 6, 4], 2))              # [6, 5]
+nums = ast.literal_eval(input())
+k = int(input())
+print(kth_largest(nums, k))
+print(k_largest(nums, k))
 ```
 
-```java run viz=array viz-root=heap viz-kind=heap
+```java solution
 import java.util.*;
 
 public class Main {
@@ -117,15 +233,41 @@ public class Main {
     return heap.peek();                                    // root = Kth largest
   }
 
+  static List<Integer> kLargest(int[] nums, int k) {
+    PriorityQueue<Integer> heap = new PriorityQueue<>();
+    for (int x : nums) {
+      heap.offer(x);
+      if (heap.size() > k) heap.poll();
+    }
+    List<Integer> result = new ArrayList<>(heap);
+    result.sort(Collections.reverseOrder());
+    return result;
+  }
+
   public static void main(String[] args) {
-    System.out.println(kthLargest(new int[]{3, 2, 3, 1, 2, 4, 5, 5, 6}, 4));   // 4
+    Scanner sc = new Scanner(System.in);
+    int[] nums = parseIntArray(sc.nextLine());
+    int k = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(kthLargest(nums, k));
+    System.out.println(kLargest(nums, k));
+  }
+
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
   }
 }
 ```
 
-Drill the family in **Practice** — [Kth Largest Element](/cortex/data-structures-and-algorithms/trees/heap/pattern-top-k-elements/problems/kth-largest-element), [Kth Smallest Element](/cortex/data-structures-and-algorithms/trees/heap/pattern-top-k-elements/problems/kth-smallest-element), [K Range Sum](/cortex/data-structures-and-algorithms/trees/heap/pattern-top-k-elements/problems/k-range-sum), and [K Sorted Array Sorting](/cortex/data-structures-and-algorithms/trees/heap/pattern-top-k-elements/problems/k-sorted-array-sorting).
+</details>
 
 ## Reflect & Connect
+
+Drill the family in **Practice** — [Kth Largest Element](/cortex/data-structures-and-algorithms/trees/heap/pattern-top-k-elements/problems/kth-largest-element), [Kth Smallest Element](/cortex/data-structures-and-algorithms/trees/heap/pattern-top-k-elements/problems/kth-smallest-element), [K Range Sum](/cortex/data-structures-and-algorithms/trees/heap/pattern-top-k-elements/problems/k-range-sum), and [K Sorted Array Sorting](/cortex/data-structures-and-algorithms/trees/heap/pattern-top-k-elements/problems/k-sorted-array-sorting).
 
 The size-K heap is the go-to for "best few out of many":
 
@@ -177,4 +319,4 @@ The size-K heap is the go-to for "best few out of many":
 
 - **CLRS**, *Introduction to Algorithms*, 4th ed., §6 — heaps, heap operations, and priority queues.
 - **Sedgewick & Wayne**, *Algorithms*, 4th ed., §2.4 — priority queues; the "keep the M largest in a min-heap" application is given explicitly.
-- The size-K heap for top-K (and `O(n log K)` cost) is standard; both runnable blocks are verified by running (`kth_largest ⇒ 5` then `4`, `k_largest ⇒ [6, 5]`).
+- The size-K heap for top-K (and `O(n log K)` cost) is standard; both runnable blocks are verified by running.

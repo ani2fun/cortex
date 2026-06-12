@@ -15,22 +15,81 @@ The plain two-pointer move doesn't obviously apply: the numbers are in random or
 
 ## See It Work
 
-On a *sorted* array, walk one pointer from each end and let the running sum steer them. Run it, then **Visualise** the converge.
+On a *sorted* array, walk one pointer from each end and let the running sum steer them. Pick a case below, **Run** it, then **Visualise** the converge.
 
-> ▶ Run it, then click **Visualise** — `left` rises and `right` falls based on whether the sum is under or over the target.
+> ▶ Run it against a case, then click **Visualise** — `left` rises and `right` falls based on whether the sum is under or over the target.
 
 ```python run viz=array viz-root=arr
-arr = [2, 4, 5, 8, 9]          # sorted ascending
-target = 13
+import ast
+
+arr = ast.literal_eval(input())      # sorted ascending
+target = int(input())
 left, right = 0, len(arr) - 1
+found = False
 while left < right:
     s = arr[left] + arr[right]
     if s == target:
-        print(arr[left], arr[right]); break   # 4 9
+        print(arr[left], arr[right])           # the matching pair
+        found = True
+        break
     elif s < target:
         left += 1                              # too small → raise the low end
     else:
         right -= 1                             # too big → lower the high end
+if not found:
+    print("none")
+```
+
+```java run viz=array viz-root=arr
+import java.util.*;
+
+public class Main {
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());   // sorted ascending
+    int target = Integer.parseInt(sc.nextLine().trim());
+    int left = 0, right = arr.length - 1;
+    boolean found = false;
+    while (left < right) {
+      int s = arr[left] + arr[right];
+      if (s == target) {
+        System.out.println(arr[left] + " " + arr[right]);   // the matching pair
+        found = true;
+        break;
+      } else if (s < target) {
+        left++;                                  // too small → raise the low end
+      } else {
+        right--;                                 // too big → lower the high end
+      }
+    }
+    if (!found) System.out.println("none");
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's arr
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr (sorted)", "type": "int[]", "placeholder": "[2, 4, 5, 8, 9]" },
+    { "id": "target", "label": "target", "type": "int", "placeholder": "13" }
+  ],
+  "cases": [
+    { "args": { "arr": "[2, 4, 5, 8, 9]", "target": "13" }, "expected": "4 9" },
+    { "args": { "arr": "[1, 2, 3, 4]", "target": "7" }, "expected": "3 4" },
+    { "args": { "arr": "[2, 4, 5, 8, 9]", "target": "100" }, "expected": "none" },
+    { "args": { "arr": "[1, 2, 3, 4]", "target": "3" }, "expected": "1 2" }
+  ]
+}
 ```
 
 ## How It Works
@@ -74,9 +133,74 @@ Because `9` was already the *largest* value available, and `2 + 9` fell short of
 
 ## Your Turn
 
-The reusable shape — return the indices of a pair that sums to the target, or nothing:
+The reusable shape returns the *indices* of a pair that sums to the target, or nothing. Implement `two_sum_sorted(arr, target)` on a sorted array: two pointers from both ends, steered by the running sum — return the index pair the moment it matches, or `None` if they cross.
 
-```python run viz=array
+```python run viz=array viz-root=arr
+import ast
+
+def two_sum_sorted(arr, target):
+    # Your code goes here — two pointers from both ends; if the sum is too
+    # small advance left, too big retreat right, equal return (left, right).
+    return None
+
+arr = ast.literal_eval(input())      # sorted ascending
+target = int(input())
+result = two_sum_sorted(arr, target)
+print("none" if result is None else f"{result[0]} {result[1]}")
+```
+
+```java run viz=array viz-root=arr
+import java.util.*;
+
+public class Main {
+  static int[] twoSumSorted(int[] arr, int target) {
+    // Your code goes here — two pointers from both ends; if the sum is too
+    // small advance left, too big retreat right, equal return {left, right}.
+    return null;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());
+    int target = Integer.parseInt(sc.nextLine().trim());
+    int[] result = twoSumSorted(arr, target);
+    System.out.println(result == null ? "none" : result[0] + " " + result[1]);
+  }
+
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr (sorted)", "type": "int[]", "placeholder": "[2, 4, 5, 8, 9]" },
+    { "id": "target", "label": "target", "type": "int", "placeholder": "13" }
+  ],
+  "cases": [
+    { "args": { "arr": "[2, 4, 5, 8, 9]", "target": "13" }, "expected": "1 4" },
+    { "args": { "arr": "[1, 3, 6, 10]", "target": "100" }, "expected": "none" },
+    { "args": { "arr": "[1, 2, 3, 4]", "target": "7" }, "expected": "2 3" },
+    { "args": { "arr": "[0, 1]", "target": "1" }, "expected": "0 1" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+On a sorted array the two ends bracket the whole range of reachable sums. If `arr[left] + arr[right]` is too small, `arr[left]` is the smallest value available and can't reach the target paired with anything else — advance `left`. If it's too big, `arr[right]` is the largest and is equally hopeless — retreat `right`. When the sum equals the target, return the index pair. If the pointers cross with no match, no pair sums to the target, so return `None`. `O(n)` after the `O(n log n)` sort, `O(1)` space.
+
+```python solution time=O(n) space=O(1)
+import ast
+
 def two_sum_sorted(arr, target):
     left, right = 0, len(arr) - 1
     while left < right:
@@ -89,12 +213,14 @@ def two_sum_sorted(arr, target):
             right -= 1
     return None
 
-print(two_sum_sorted([2, 4, 5, 8, 9], 13))   # (1, 4) → values 4 and 9
-print(two_sum_sorted([1, 3, 6, 10], 100))     # None
+arr = ast.literal_eval(input())
+target = int(input())
+result = two_sum_sorted(arr, target)
+print("none" if result is None else f"{result[0]} {result[1]}")
 ```
 
-```java run viz=array
-import java.util.Arrays;
+```java solution
+import java.util.*;
 
 public class Main {
   static int[] twoSumSorted(int[] arr, int target) {
@@ -107,16 +233,31 @@ public class Main {
     }
     return null;
   }
+
   public static void main(String[] args) {
-    System.out.println(Arrays.toString(twoSumSorted(new int[]{2, 4, 5, 8, 9}, 13)));  // [1, 4]
-    System.out.println(Arrays.toString(twoSumSorted(new int[]{1, 3, 6, 10}, 100)));   // null
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());
+    int target = Integer.parseInt(sc.nextLine().trim());
+    int[] result = twoSumSorted(arr, target);
+    System.out.println(result == null ? "none" : result[0] + " " + result[1]);
+  }
+
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
   }
 }
 ```
 
-Now drill the family in this section's **Practice** — start with [Two Sum](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers-reduction/problems/two-sum), then [Largest Container](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers-reduction/problems/largest-container).
+</details>
 
 ## Reflect & Connect
+
+Now drill the family in this section's **Practice** — start with [Two Sum](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers-reduction/problems/two-sum), then [Largest Container](/cortex/data-structures-and-algorithms/linear-structures/arrays/pattern-two-pointers-reduction/problems/largest-container).
 
 Reduction is the bridge from "two pointers as a trick" to "two pointers as a tool you *engineer* a problem toward." The family:
 

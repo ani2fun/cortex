@@ -4,6 +4,8 @@ summary: "Given an integer array arr and a target integer, find two distinct ele
 prereqs:
   - 05-pattern-two-pointers-reduction/01-pattern
 difficulty: easy
+kind: problem
+topics: [two-pointers, arrays]
 ---
 
 # Two Sum
@@ -45,6 +47,83 @@ Explanation: No pair sums to 34.
 Input:  arr = [2],  target = 2
 Output: []
 Explanation: Only one element — can't form a pair.
+```
+
+```quiz
+{
+  "prompt": "Now your turn!",
+  "input": "arr = [1, 4, 6, 8, 11], target = 10",
+  "options": ["[4, 6]", "[1, 8]", "[8, 11]", "[]"],
+  "answer": "[4, 6]"
+}
+```
+
+## Constraints
+
+- `0 ≤ arr.length ≤ 10^4`
+- `-10^9 ≤ arr[i] ≤ 10^9`, and the same bound on `target`
+
+```python run viz=array viz-root=arr
+import ast
+from typing import List
+
+class Solution:
+    def two_sum(self, arr: List[int], target: int) -> List[int]:
+        # Your code goes here — sort, then converge two pointers; return the
+        # pair [arr[left], arr[right]] on a match, or [] if none.
+        return []
+
+arr = ast.literal_eval(input())      # the test case's arr
+target = int(input())                # the test case's target
+print(Solution().two_sum(arr, target))
+```
+
+```java run viz=array viz-root=arr
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int[] twoSum(int[] arr, int target) {
+            // Your code goes here — sort, then converge two pointers; return
+            // the pair {arr[left], arr[right]} on a match, or an empty array.
+            return new int[0];
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int target = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(Arrays.toString(new Solution().twoSum(arr, target)));
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's arr
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[2, 8, 3, 6, 4]" },
+    { "id": "target", "label": "target", "type": "int", "placeholder": "7" }
+  ],
+  "cases": [
+    { "args": { "arr": "[2, 8, 3, 6, 4]", "target": "7" }, "expected": "[3, 4]" },
+    { "args": { "arr": "[1, 4, 6, 8, 11]", "target": "10" }, "expected": "[4, 6]" },
+    { "args": { "arr": "[2, -1, 5, -4, 3]", "target": "34" }, "expected": "[]" },
+    { "args": { "arr": "[1, 2]", "target": "3" }, "expected": "[1, 2]" },
+    { "args": { "arr": "[0, 0]", "target": "0" }, "expected": "[0, 0]" },
+    { "args": { "arr": "[-3, -1, 0, 2, 4]", "target": "1" }, "expected": "[-3, 4]" }
+  ]
+}
 ```
 
 <details>
@@ -143,7 +222,8 @@ flowchart TB
 
 ### Solution
 
-```python run viz=array viz-root=arr
+```python solution time=O(n log n) space=O(1)
+import ast
 from typing import List
 
 class Solution:
@@ -173,20 +253,12 @@ class Solution:
         return []
 
 
-# Examples from the problem statement
-print(Solution().two_sum([2, 8, 3, 6, 4], 7))    # [3, 4]
-print(Solution().two_sum([2, -1, 5, -4, 3], 34)) # []
-print(Solution().two_sum([2], 2))                 # []
-
-# Edge cases
-print(Solution().two_sum([], 5))                  # []
-print(Solution().two_sum([1, 2], 3))              # [1, 2] — two elements, hit
-print(Solution().two_sum([1, 2], 5))              # [] — two elements, miss
-print(Solution().two_sum([0, 0], 0))              # [0, 0] — zero sum
-print(Solution().two_sum([-3, -1, 0, 2, 4], 1))  # [-1, 2] — negative numbers
+arr = ast.literal_eval(input())      # the test case's arr
+target = int(input())                # the test case's target
+print(Solution().two_sum(arr, target))
 ```
 
-```java run viz=array viz-root=arr
+```java solution
 import java.util.*;
 
 public class Main {
@@ -225,112 +297,21 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(Arrays.toString(new Solution().twoSum(new int[]{2,8,3,6,4}, 7)));    // [3, 4]
-        System.out.println(Arrays.toString(new Solution().twoSum(new int[]{2,-1,5,-4,3}, 34))); // []
-        System.out.println(Arrays.toString(new Solution().twoSum(new int[]{2}, 2)));             // []
-
-        // Edge cases
-        System.out.println(Arrays.toString(new Solution().twoSum(new int[]{}, 5)));              // []
-        System.out.println(Arrays.toString(new Solution().twoSum(new int[]{1,2}, 3)));           // [1, 2] — two elements, hit
-        System.out.println(Arrays.toString(new Solution().twoSum(new int[]{1,2}, 5)));           // [] — two elements, miss
-        System.out.println(Arrays.toString(new Solution().twoSum(new int[]{0,0}, 0)));           // [0, 0] — zero sum
-        System.out.println(Arrays.toString(new Solution().twoSum(new int[]{-3,-1,0,2,4}, 1)));  // [-1, 2] — negative numbers
-    }
-}
-```
-
-### Step through the execution
-
-Click **Trace** to step through the two-pointer search on the sorted array. The locals panel shows `left`, `right`, and `s` updating at each iteration. Watch `s` converge toward `target` as the pointers close in from both ends of the sorted `arr`.
-
-```python trace
-def two_sum(arr, target):
-    arr.sort()
-    left = 0
-    right = len(arr) - 1
-    while left < right:
-        s = arr[left] + arr[right]
-        if s == target:
-            return [arr[left], arr[right]]
-        elif s < target:
-            left += 1
-        else:
-            right -= 1
-    return []
-
-
-result = two_sum([2, 8, 3, 6, 4], 7)
-print(result)  # [3, 4]
-```
-
-Same search in Java. After `Arrays.sort`, the two pointers `left` and `right` move inward. The sorted `arr` is visible in the locals panel so you can see exactly which elements are being summed at each step. The **Kotlin** and **Scala** tabs show equivalent source.
-
-```java trace
-import java.util.Arrays;
-
-public class Main {
-    static int[] twoSum(int[] arr, int target) {
-        Arrays.sort(arr);
-        int left = 0;
-        int right = arr.length - 1;
-        while (left < right) {
-            int s = arr[left] + arr[right];
-            if (s == target) {
-                return new int[]{arr[left], arr[right]};
-            } else if (s < target) {
-                left++;
-            } else {
-                right--;
-            }
-        }
-        return new int[]{};
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int target = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(Arrays.toString(new Solution().twoSum(arr, target)));
     }
 
-    public static void main(String[] args) {
-        int[] arr = {2, 8, 3, 6, 4};
-        int[] result = twoSum(arr, 7);
-        System.out.println(Arrays.toString(result));  // [3, 4]
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
-```
-
-```kotlin trace
-fun twoSum(arr: IntArray, target: Int): IntArray {
-    arr.sort()
-    var left  = 0
-    var right = arr.size - 1
-    while (left < right) {
-        val s = arr[left] + arr[right]
-        when {
-            s == target -> return intArrayOf(arr[left], arr[right])
-            s < target  -> left++
-            else        -> right--
-        }
-    }
-    return intArrayOf()
-}
-
-fun main() {
-    val result = twoSum(intArrayOf(2, 8, 3, 6, 4), 7)
-    println(result.contentToString())  // [3, 4]
-}
-```
-
-```scala trace
-def twoSum(arr: Array[Int], target: Int): Array[Int] =
-  val a     = arr.sorted
-  var left  = 0
-  var right = a.length - 1
-  while left < right do
-    val s = a(left) + a(right)
-    if s == target then return Array(a(left), a(right))
-    else if s < target then left  += 1
-    else                    right -= 1
-  Array()
-
-@main def run(): Unit =
-  println(twoSum(Array(2, 8, 3, 6, 4), 7).mkString("[", ", ", "]"))  // [3, 4]
 ```
 
 ### Dry Run — Example 1

@@ -4,6 +4,8 @@ summary: "Given a case-sensitive string s, return the length of the longest pali
 prereqs:
   - 07-pattern-counting/01-pattern
 difficulty: medium
+kind: problem
+topics: [counting, hash-table]
 ---
 
 # Build palindrome
@@ -11,20 +13,6 @@ difficulty: medium
 ## Problem Statement
 
 Given a case-sensitive string `s`, return the length of the **longest palindrome** that can be built using all or some of its letters.
-
-### Example 1
-> -   **Input:** `s = "AaAaBbBbc"`
-> -   **Output:** `9`
-> -   **Explanation:** Use every character — e.g. `"BAabcbaAB"`.
-
-### Example 2
-> -   **Input:** `s = "abbd"`
-> -   **Output:** `3`
-> -   **Explanation:** `"bab"` or `"bdb"`.
-
-### Example 3
-> -   **Input:** `s = "abc"`
-> -   **Output:** `1`
 
 ## Examples
 
@@ -56,7 +44,6 @@ Input:  s = "aabb"
 Output: 4
 Explanation: a and b both pair fully (+2 each) with no leftover centre → 4.
 ```
-
 
 <details>
 <summary><h2>Intuition</h2></summary>
@@ -112,11 +99,6 @@ flowchart LR
 
 <p align="center"><strong>Build palindrome — every even-frequency character contributes fully; odd-frequency characters contribute (count − 1); a single bonus +1 for the optional middle character.</strong></p>
 
-</details>
-<details>
-<summary><h2>Approach in Words</h2></summary>
-
-
 Count the letters, then add up the pairs and grant one centre if any odd remains.
 
 1. **Build the frequency map.** Count every character in `s`.
@@ -126,137 +108,122 @@ Count the letters, then add up the pairs and grant one centre if any odd remains
 5. **Return the length.** The accumulated total is the longest buildable palindrome's length.
 
 </details>
-<details>
-<summary><h2>Solution</h2></summary>
 
-
-
-```python run viz=array
-from collections import defaultdict
-from typing import Dict
-
-class Solution:
-    def count_frequency(self, s: str) -> Dict[str, int]:
-        frequency = defaultdict(int)
-        for ch in s:
-            frequency[ch] += 1
-
-        return frequency
-
-    def build_palindrome(self, s: str) -> int:
-
-        # Create a map to store the frequency of each character in the
-        # string
-        frequency = self.count_frequency(s)
-
-        # Initialize the length of the longest palindrome
-        length = 0
-
-        # Initialize a boolean flag to check if there are odd counts of
-        # characters
-        odd = False
-
-        # Iterate over the map to calculate the length of the longest
-        # palindrome
-        for count in frequency.values():
-
-            # If the count of the character is even, add it to the length
-            if count % 2 == 0:
-                length += count
-
-            # If the count of the character is odd, add the count minus
-            # one to the length and set the odd flag to true
-            else:
-                length += count - 1
-                odd = True
-
-        # If there are odd counts of characters, add one to the length
-        return length + 1 if odd else length
-
-
-# Examples from the problem statement
-print(Solution().build_palindrome("AaAaBbBbc"))  # 9
-print(Solution().build_palindrome("abbd"))       # 3
-print(Solution().build_palindrome("abc"))        # 1
-
-# Edge cases
-print(Solution().build_palindrome(""))           # 0
-print(Solution().build_palindrome("a"))          # 1
-print(Solution().build_palindrome("aa"))         # 2
-print(Solution().build_palindrome("aabb"))       # 4
-print(Solution().build_palindrome("aaaa"))       # 4
+```quiz
+{
+  "prompt": "What is the longest palindrome buildable from \"aabbc\"?",
+  "input": "s = \"aabbc\"",
+  "options": ["4", "5", "3", "2"],
+  "answer": "5"
+}
 ```
 
-```java run viz=array
+## Constraints
+
+- `1 ≤ s.length ≤ 2000`
+- `s` consists of uppercase and lowercase English letters
+
+```python run
+class Solution:
+    def build_palindrome(self, s: str) -> int:
+        # Your code goes here — count frequencies, sum even parts, add one centre if any odd.
+        return 0
+
+s = input()
+print(Solution().build_palindrome(s))
+```
+
+```java run
 import java.util.*;
 
 public class Main {
     static class Solution {
-        private Map<Character, Integer> countFrequency(String s) {
-            Map<Character, Integer> frequency = new HashMap<>();
-            for (char ch : s.toCharArray()) {
-                frequency.put(ch, frequency.getOrDefault(ch, 0) + 1);
-            }
-
-            return frequency;
-        }
-
         public int buildPalindrome(String s) {
+            // Your code goes here — count frequencies, sum even parts, add one centre if any odd.
+            return 0;
+        }
+    }
 
-            // Create a map to store the frequency of each character in the
-            // string
-            Map<Character, Integer> frequency = countFrequency(s);
+    public static void main(String[] args) {
+        String s = new Scanner(System.in).nextLine();
+        System.out.println(new Solution().buildPalindrome(s));
+    }
+}
+```
 
-            // Initialize the length of the longest palindrome
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "s", "type": "string", "placeholder": "AaAaBbBbc" }
+  ],
+  "cases": [
+    { "args": { "s": "AaAaBbBbc" }, "expected": "9" },
+    { "args": { "s": "abbd" }, "expected": "3" },
+    { "args": { "s": "abc" }, "expected": "1" },
+    { "args": { "s": "aabb" }, "expected": "4" },
+    { "args": { "s": "a" }, "expected": "1" },
+    { "args": { "s": "aa" }, "expected": "2" },
+    { "args": { "s": "aaaa" }, "expected": "4" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Count each character's frequency, sum even parts, add one centre if any odd count exists.
+
+```python solution time=O(n) space=O(k)
+class Solution:
+    def build_palindrome(self, s: str) -> int:
+        frequency = {}
+        for ch in s:
+            frequency[ch] = frequency.get(ch, 0) + 1
+        length = 0
+        odd = False
+        for count in frequency.values():
+            if count % 2 == 0:
+                length += count
+            else:
+                length += count - 1
+                odd = True
+        return length + 1 if odd else length
+
+s = input()
+print(Solution().build_palindrome(s))
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int buildPalindrome(String s) {
+            Map<Character, Integer> frequency = new HashMap<>();
+            for (char ch : s.toCharArray())
+                frequency.put(ch, frequency.getOrDefault(ch, 0) + 1);
             int length = 0;
-
-            // Initialize a boolean flag to check if there are odd counts of
-            // characters
             boolean odd = false;
-
-            // Iterate over the map to calculate the length of the longest
-            // palindrome
-            for (var entry : frequency.entrySet()) {
-
-                // If the count of the character is even, add it to the
-                // length
-                if (entry.getValue() % 2 == 0) {
-                    length += entry.getValue();
-                }
-
-                // If the count of the character is odd, add the count minus
-                // one to the length and set the odd flag to true
-                else {
-                    length += entry.getValue() - 1;
+            for (int count : frequency.values()) {
+                if (count % 2 == 0) {
+                    length += count;
+                } else {
+                    length += count - 1;
                     odd = true;
                 }
             }
-
-            // If there are odd counts of characters, add one to the length
             return odd ? length + 1 : length;
         }
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().buildPalindrome("AaAaBbBbc")); // 9
-        System.out.println(new Solution().buildPalindrome("abbd"));      // 3
-        System.out.println(new Solution().buildPalindrome("abc"));       // 1
-
-        // Edge cases
-        System.out.println(new Solution().buildPalindrome(""));          // 0
-        System.out.println(new Solution().buildPalindrome("a"));         // 1
-        System.out.println(new Solution().buildPalindrome("aa"));        // 2
-        System.out.println(new Solution().buildPalindrome("aabb"));      // 4
-        System.out.println(new Solution().buildPalindrome("aaaa"));      // 4
+        String s = new Scanner(System.in).nextLine();
+        System.out.println(new Solution().buildPalindrome(s));
     }
 }
 ```
 
-</details>
-<details>
-<summary><h2>Dry Run</h2></summary>
-
+### Dry Run
 
 Walk Example 1 — `s = "AaAaBbBbc"`. Letters are case-sensitive, so `'A'` and `'a'` are distinct. Count, then sum even parts plus one optional centre:
 
@@ -274,26 +241,17 @@ accumulate (length starts at 0, odd flag starts false)
 odd seen → add 1 centre → 8 + 1 = 9
 ```
 
-The result `9` matches the expected output — eight paired letters plus one centre character.
-
-</details>
-<details>
-<summary><h2>Complexity Analysis</h2></summary>
-
+### Complexity Analysis
 
 | Measure | Value | Why |
 |---|---|---|
 | Time  | **O(N)** | One pass to count, one pass over the distinct counts; each step is amortised `O(1)`. |
-| Space | **O(N)** | The map holds up to `N` distinct characters — `O(1)` for a fixed alphabet, `O(N)` in general. |
+| Space | **O(k)** | The map holds up to `k` distinct characters — `O(1)` for a fixed alphabet. |
 
-</details>
-<details>
-<summary><h2>Edge Cases</h2></summary>
-
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
-| Empty string | `s = ""` | `0` | No characters, so the longest palindrome is empty. |
 | Single character | `s = "a"` | `1` | One odd count contributes a lone centre. |
 | One pair | `s = "aa"` | `2` | A single even count pairs fully, no centre. |
 | All pairs | `s = "aabb"` | `4` | Two even counts pair fully; no odd centre to add. |

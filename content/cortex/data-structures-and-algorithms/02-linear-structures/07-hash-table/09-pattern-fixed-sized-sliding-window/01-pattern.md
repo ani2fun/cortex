@@ -41,7 +41,58 @@ def find_anagrams(s, p):
             result.append(i - len(p) + 1)
     return result
 
-print(find_anagrams("cbaebabacd", "abc"))         # [0, 6]
+s = input()                                       # the test string
+p = input()                                       # the pattern
+print(find_anagrams(s, p))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+  static Map<Character, Integer> counts(String s, int from, int to) {
+    Map<Character, Integer> d = new HashMap<>();
+    for (int i = from; i < to; i++) d.merge(s.charAt(i), 1, Integer::sum);
+    return d;
+  }
+
+  static List<Integer> findAnagrams(String s, String p) {
+    List<Integer> result = new ArrayList<>();
+    if (p.length() > s.length()) return result;
+    Map<Character, Integer> need = counts(p, 0, p.length());
+    Map<Character, Integer> window = counts(s, 0, p.length());
+    if (window.equals(need)) result.add(0);
+    for (int i = p.length(); i < s.length(); i++) {
+      window.merge(s.charAt(i), 1, Integer::sum);                       // entering
+      char out = s.charAt(i - p.length());
+      if (window.merge(out, -1, Integer::sum) == 0) window.remove(out); // leaving, del at 0
+      if (window.equals(need)) result.add(i - p.length() + 1);
+    }
+    return result;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    String s = sc.nextLine();                     // the test string
+    String p = sc.nextLine();                     // the pattern
+    System.out.println(findAnagrams(s, p));
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "s", "type": "string", "placeholder": "cbaebabacd" },
+    { "id": "p", "label": "p", "type": "string", "placeholder": "abc" }
+  ],
+  "cases": [
+    { "args": { "s": "cbaebabacd", "p": "abc" }, "expected": "[0, 6]" },
+    { "args": { "s": "abab",       "p": "ab"  }, "expected": "[0, 1, 2]" },
+    { "args": { "s": "abcdef",     "p": "gh"  }, "expected": "[]" },
+    { "args": { "s": "aaa",        "p": "aa"  }, "expected": "[0, 1]" }
+  ]
+}
 ```
 
 ## How It Works
@@ -108,7 +159,9 @@ def find_anagrams(s, p):
             result.append(i - len(p) + 1)
     return result
 
-print(find_anagrams("abab", "ab"))      # [0, 1, 2]
+s = input()
+p = input()
+print(find_anagrams(s, p))
 ```
 
 ```java run viz=array
@@ -137,10 +190,96 @@ public class Main {
   }
 
   public static void main(String[] args) {
-    System.out.println(findAnagrams("abab", "ab"));   // [0, 1, 2]
+    Scanner sc = new Scanner(System.in);
+    String s = sc.nextLine();
+    String p = sc.nextLine();
+    System.out.println(findAnagrams(s, p));
   }
 }
 ```
+
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "s", "type": "string", "placeholder": "abab" },
+    { "id": "p", "label": "p", "type": "string", "placeholder": "ab" }
+  ],
+  "cases": [
+    { "args": { "s": "abab",       "p": "ab"  }, "expected": "[0, 1, 2]" },
+    { "args": { "s": "cbaebabacd", "p": "abc" }, "expected": "[0, 6]" },
+    { "args": { "s": "abcdef",     "p": "gh"  }, "expected": "[]" },
+    { "args": { "s": "aaa",        "p": "aa"  }, "expected": "[0, 1]" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Seed the first window's frequency map from `s[0:len(p)]`, compare to `p`'s map; then slide one step at a time — increment the entering character, decrement (and delete at `0`) the leaving one, compare again. Delete-at-zero is critical: without it the window map carries stale `x:0` entries and `==` against the target map returns `False` even when the window is a true anagram. The result is collected in input order (earliest to latest start index), so no sorting is needed. `O(n)` time, `O(σ)` space for alphabet size `σ`.
+
+```python solution time=O(n) space=O(σ)
+def find_anagrams(s, p):
+    if len(p) > len(s):
+        return []
+    def counts(chars):
+        d = {}
+        for c in chars:
+            d[c] = d.get(c, 0) + 1
+        return d
+    need = counts(p)
+    window = counts(s[:len(p)])
+    result = [0] if window == need else []
+    for i in range(len(p), len(s)):
+        window[s[i]] = window.get(s[i], 0) + 1
+        out = s[i - len(p)]
+        window[out] -= 1
+        if window[out] == 0:
+            del window[out]
+        if window == need:
+            result.append(i - len(p) + 1)
+    return result
+
+s = input()
+p = input()
+print(find_anagrams(s, p))
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+  static Map<Character, Integer> counts(String s, int from, int to) {
+    Map<Character, Integer> d = new HashMap<>();
+    for (int i = from; i < to; i++) d.merge(s.charAt(i), 1, Integer::sum);
+    return d;
+  }
+
+  static List<Integer> findAnagrams(String s, String p) {
+    List<Integer> result = new ArrayList<>();
+    if (p.length() > s.length()) return result;
+    Map<Character, Integer> need = counts(p, 0, p.length());
+    Map<Character, Integer> window = counts(s, 0, p.length());
+    if (window.equals(need)) result.add(0);
+    for (int i = p.length(); i < s.length(); i++) {
+      window.merge(s.charAt(i), 1, Integer::sum);                       // entering
+      char out = s.charAt(i - p.length());
+      if (window.merge(out, -1, Integer::sum) == 0) window.remove(out); // leaving, del at 0
+      if (window.equals(need)) result.add(i - p.length() + 1);
+    }
+    return result;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    String s = sc.nextLine();
+    String p = sc.nextLine();
+    System.out.println(findAnagrams(s, p));
+  }
+}
+```
+
+</details>
 
 Drill the family in **Practice** — [Duplicate Detection](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-fixed-sized-sliding-window/problems/duplicate-detection), [Subarray Distinctness](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-fixed-sized-sliding-window/problems/subarray-distinctness), [Contains Variation](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-fixed-sized-sliding-window/problems/contains-variation), and [Anagram Finder](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-fixed-sized-sliding-window/problems/anagram-finder).
 

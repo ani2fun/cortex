@@ -1,100 +1,78 @@
 ---
 title: "Right View"
-summary: "See problem statement below."
+summary: "Given the root of a binary tree, return the values of the rightmost node at each level of the tree, top to bottom."
 prereqs:
   - 10-pattern-preorder-traversal-stateful/01-pattern
 difficulty: medium
+kind: problem
+topics: [preorder-traversal, binary-tree]
 ---
 
 # Problem 4 — Right view
 
-> Same as the left view, but from the right side. Tree `[1, 2, 3, 4, null, null, 7, 9]` → `[1, 3, 7, 9]`.
+## Problem Statement
+
+Same as the left view, but from the right side. Return the values of the rightmost node at each level, top to bottom.
 
 The trick is *identical* to the left view, with one swap: recurse **right before left**. The first node visited at each new level is now the rightmost.
 
-<details>
-<summary><h2>Solution</h2></summary>
+## Examples
 
+**Example 1:**
+```
+Input:  root = [1, 2, 3, 4, null, null, 7, 9]
+Output: [1, 3, 7, 9]
+```
 
+**Example 2:**
+```
+Input:  root = [1, 8, 4, null, null, 2, 7]
+Output: [1, 4, 7]
+```
+
+## Constraints
+
+- `0 ≤ number of nodes ≤ 10⁴`
+- `-10⁴ ≤ node.val ≤ 10⁴`
+- Recurse right before left — the first visit to each level is the rightmost node
 
 ```python run viz=binary-tree viz-root=root
-from typing import Optional, List
+import json
+from collections import deque
 
 class TreeNode:
-    def __init__(self, val=0, left=None, right=None):
+    def __init__(self, val, left=None, right=None):
         self.val = val
         self.left = left
         self.right = right
 
+class Solution:
+    def right_view(self, root):
+        # Your code goes here — same as left view but recurse right before left.
+        # Track maxLevelReached; when level == maxLevelReached, append root.val
+        # and increment. Then recurse right first, then left.
+        return []
 
-def from_level_order(values):
-    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
     if not values:
         return None
     root = TreeNode(values[0])
-    queue = [root]
+    queue = deque([root])
     i = 1
     while queue and i < len(values):
-        node = queue.pop(0)
-        if i < len(values) and values[i] is not None:
-            node.left = TreeNode(values[i])
-            queue.append(node.left)
-        i += 1
-        if i < len(values) and values[i] is not None:
-            node.right = TreeNode(values[i])
-            queue.append(node.right)
-        i += 1
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
     return root
 
-
-class Solution:
-    def __init__(self):
-
-        # Global variable to keep track of the current level during
-        # recursion
-        self.max_level_reached = 0
-
-    def right_view_helper(
-        self, root: Optional[TreeNode], level: int, result: List[int]
-    ) -> None:
-        if not root:
-            return
-
-        # If this is the first node of the current level, add it to
-        # result
-        if level == self.max_level_reached:
-            result.append(root.val)
-
-            # Increment the level after adding the node to result
-            self.max_level_reached += 1
-
-        # Recur for right, then left (ensures rightmost nodes are visited
-        # first)
-        self.right_view_helper(root.right, level + 1, result)
-        self.right_view_helper(root.left, level + 1, result)
-
-    def right_view(self, root: Optional[TreeNode]) -> List[int]:
-
-        # Stores the right view of the binary tree
-        result = []
-
-        # Find the right view of the binary tree
-        self.right_view_helper(root, 0, result)
-
-        # Return the right view of the binary tree
-        return result
-
-
-# Examples from the problem statement
-print(Solution().right_view(from_level_order([1, 2, 3, 4, None, None, 7, 9])))  # [1, 3, 7, 9]
-print(Solution().right_view(from_level_order([1, 8, 4, None, None, 2, 7])))     # [1, 4, 7]
-
-# Edge cases
-print(Solution().right_view(None))                                                # []
-print(Solution().right_view(from_level_order([5])))                               # [5]
-print(Solution().right_view(from_level_order([1, None, 2, None, 3])))             # [1, 2, 3] (right-skew)
-print(Solution().right_view(from_level_order([1, 2, None, 3])))                   # [1, 2, 3] (left-skew)
-print(Solution().right_view(from_level_order([1, 2, 3, 4, 5, 6, 7])))            # [1, 3, 7]
+root = build_tree(json.loads(input()))
+print(Solution().right_view(root))
 ```
 
 ```java run viz=binary-tree viz-root=root
@@ -102,89 +80,208 @@ import java.util.*;
 
 public class Main {
     static class TreeNode {
-        int val;
-        TreeNode left;
-        TreeNode right;
-        TreeNode() {}
+        int val; TreeNode left, right;
         TreeNode(int val) { this.val = val; }
     }
 
-    static TreeNode fromLevelOrder(Integer... values) {
+    static class Solution {
+        List<Integer> rightView(TreeNode root) {
+            // Your code goes here — same as left view but recurse right before left.
+            // Track maxLevelReached; when level == maxLevelReached, add root.val
+            // and increment. Then recurse right first, then left.
+            return new ArrayList<>();
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+        System.out.println(new Solution().rightView(root));
+    }
+
+    static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
         if (values.length == 0 || values[0] == null) return null;
         TreeNode root = new TreeNode(values[0]);
-        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        Deque<TreeNode> queue = new ArrayDeque<>();
         queue.add(root);
         int i = 1;
         while (!queue.isEmpty() && i < values.length) {
             TreeNode node = queue.poll();
-            if (i < values.length && values[i] != null) {
-                node.left = new TreeNode(values[i]);
-                queue.add(node.left);
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
             }
-            i++;
-            if (i < values.length && values[i] != null) {
-                node.right = new TreeNode(values[i]);
-                queue.add(node.right);
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
             }
-            i++;
         }
         return root;
     }
 
-    static class Solution {
+    // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+    static Integer[] parseIntegerArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new Integer[0];
+        String[] parts = inner.split(",");
+        Integer[] out = new Integer[parts.length];
+        for (int i = 0; i < parts.length; i++)
+            out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
 
-        // Global variable to keep track of the current level during
-        // recursion
+```testcases
+{
+  "args": [
+    { "id": "root", "label": "root", "type": "tree", "placeholder": "[1, 2, 3, 4, null, null, 7, 9]" }
+  ],
+  "cases": [
+    { "args": { "root": "[1, 2, 3, 4, null, null, 7, 9]" }, "expected": "[1, 3, 7, 9]" },
+    { "args": { "root": "[1, 8, 4, null, null, 2, 7]" }, "expected": "[1, 4, 7]" },
+    { "args": { "root": "[]" }, "expected": "[]" },
+    { "args": { "root": "[5]" }, "expected": "[5]" },
+    { "args": { "root": "[1, null, 2, null, 3]" }, "expected": "[1, 2, 3]" },
+    { "args": { "root": "[1, 2, null, 3]" }, "expected": "[1, 2, 3]" },
+    { "args": { "root": "[1, 2, 3, 4, 5, 6, 7]" }, "expected": "[1, 3, 7]" }
+  ]
+}
+```
+
+<details>
+<summary><h2>Solution</h2></summary>
+
+Track a shared `max_level_reached` counter (starts at 0). Recurse **right before left** — the mirror of the left-view. At each node: if `level == max_level_reached`, this is the first (rightmost) node seen at this depth — append its value and increment the counter. No push/pop needed: `max_level_reached` is a monotone global witness.
+
+```python solution time=O(n) space=O(h)
+import json
+from collections import deque
+
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+class Solution:
+    def __init__(self):
+        # Global variable to keep track of the current level during recursion
+        self.max_level_reached = 0
+
+    def helper(self, root, level, result):
+        if not root:
+            return
+        # If this is the first node of the current level, add it to result
+        if level == self.max_level_reached:
+            result.append(root.val)
+            # Increment the level after adding the node to result
+            self.max_level_reached += 1
+        # Recur for right, then left (ensures rightmost nodes are visited first)
+        self.helper(root.right, level + 1, result)
+        self.helper(root.left, level + 1, result)
+
+    def right_view(self, root):
+        # Stores the right view of the binary tree
+        result = []
+        # Find the right view of the binary tree
+        self.helper(root, 0, result)
+        # Return the right view of the binary tree
+        return result
+
+def build_tree(values):              # [1, 2, 3, null, 4] level-order → root
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.left = TreeNode(v); queue.append(node.left)
+        if i < len(values):
+            v = values[i]; i += 1
+            if v is not None:
+                node.right = TreeNode(v); queue.append(node.right)
+    return root
+
+root = build_tree(json.loads(input()))
+print(Solution().right_view(root))
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+    static class TreeNode {
+        int val; TreeNode left, right;
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static class Solution {
+        // Global variable to keep track of the current level during recursion
         private int maxLevelReached = 0;
 
-        private void rightViewHelper(
-            TreeNode root,
-            int level,
-            List<Integer> result
-        ) {
-            if (root == null) {
-                return;
-            }
-
-            // If this is the first node of the current level, add it to
-            // result
+        private void helper(TreeNode root, int level, List<Integer> result) {
+            if (root == null) return;
+            // If this is the first node of the current level, add it to result
             if (level == maxLevelReached) {
                 result.add(root.val);
-
                 // Increment the level after adding the node to result
                 maxLevelReached++;
             }
-
-            // Recur for right, then left (ensures rightmost nodes are
-            // visited first)
-            rightViewHelper(root.right, level + 1, result);
-            rightViewHelper(root.left, level + 1, result);
+            // Recur for right, then left (ensures rightmost nodes are visited first)
+            helper(root.right, level + 1, result);
+            helper(root.left, level + 1, result);
         }
 
-        public List<Integer> rightView(TreeNode root) {
-
+        List<Integer> rightView(TreeNode root) {
             // Stores the right view of the binary tree
             List<Integer> result = new ArrayList<>();
-
             // Find the right view of the binary tree
-            rightViewHelper(root, 0, result);
-
+            helper(root, 0, result);
             // Return the right view of the binary tree
             return result;
         }
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().rightView(fromLevelOrder(1, 2, 3, 4, null, null, 7, 9)));  // [1, 3, 7, 9]
-        System.out.println(new Solution().rightView(fromLevelOrder(1, 8, 4, null, null, 2, 7)));     // [1, 4, 7]
+        Scanner sc = new Scanner(System.in);
+        TreeNode root = buildTree(parseIntegerArray(sc.nextLine()));
+        System.out.println(new Solution().rightView(root));
+    }
 
-        // Edge cases
-        System.out.println(new Solution().rightView(null));                                           // []
-        System.out.println(new Solution().rightView(fromLevelOrder(5)));                              // [5]
-        System.out.println(new Solution().rightView(fromLevelOrder(1, null, 2, null, 3)));            // [1, 2, 3] (right-skew)
-        System.out.println(new Solution().rightView(fromLevelOrder(1, 2, null, 3)));                  // [1, 2, 3] (left-skew)
-        System.out.println(new Solution().rightView(fromLevelOrder(1, 2, 3, 4, 5, 6, 7)));           // [1, 3, 7]
+    static TreeNode buildTree(Integer[] values) {   // [1, 2, 3, null, 4] level-order → root
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.left = new TreeNode(v); queue.add(node.left); }
+            }
+            if (i < values.length) {
+                Integer v = values[i++];
+                if (v != null) { node.right = new TreeNode(v); queue.add(node.right); }
+            }
+        }
+        return root;
+    }
+
+    // "[1, 2, null, 4]" → {1, 2, null, 4} — reads the test case's level-order values
+    static Integer[] parseIntegerArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new Integer[0];
+        String[] parts = inner.split(",");
+        Integer[] out = new Integer[parts.length];
+        for (int i = 0; i < parts.length; i++)
+            out[i] = parts[i].equals("null") ? null : Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```
@@ -192,7 +289,6 @@ public class Main {
 </details>
 <details>
 <summary><h2>Key Takeaway</h2></summary>
-
 
 The stateful preorder pattern is the second-most-common shape in the chapter. Three things to walk away with:
 
