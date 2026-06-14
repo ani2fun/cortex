@@ -4,6 +4,8 @@ summary: "Given a non-negative integer n, return the n-th number in the zigzag s
 prereqs:
   - 07-pattern-multiple-recursion/01-pattern
 difficulty: medium
+kind: problem
+topics: [multiple-recursion, recursion]
 ---
 
 # Zigzag Sequence
@@ -23,20 +25,73 @@ Given a non-negative integer `n`, return the `n`-th number in the zigzag sequenc
 
 You **must** solve this recursively.
 
+---
+
+## Examples
+
+**Example 1**
 ```
 Input:  n = 7
 Output: 2
 Explanation: Z(7) = Z(6) - Z(5) + Z(4) = 3 - 2 + 1 = 2
+```
 
+**Example 2**
+```
 Input:  n = 5
 Output: 2
 Explanation: Z(5) = Z(4) - Z(3) + Z(2) = 1 - 2 + 3 = 2
-
-Input:  n = 0
-Output: 1
 ```
 
----
+## Constraints
+
+- `0 ≤ n ≤ 25` (naive recursion with three calls; larger values are slow without memoisation)
+- Must be solved recursively.
+
+```python run viz=array
+class Solution:
+    def zig_zag_sequence(self, n: int) -> int:
+        # Your code goes here
+        return 0
+
+n = int(input())
+print(Solution().zig_zag_sequence(n))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int zigZagSequence(int n) {
+            // Your code goes here
+            return 0;
+        }
+    }
+
+    public static void main(String[] args) {
+        int n = Integer.parseInt(new Scanner(System.in).nextLine().trim());
+        System.out.println(new Solution().zigZagSequence(n));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "n", "label": "n", "type": "int", "placeholder": "7" }
+  ],
+  "cases": [
+    { "args": { "n": "7" }, "expected": "2" },
+    { "args": { "n": "5" }, "expected": "2" },
+    { "args": { "n": "0" }, "expected": "1" },
+    { "args": { "n": "1" }, "expected": "2" },
+    { "args": { "n": "2" }, "expected": "3" },
+    { "args": { "n": "3" }, "expected": "2" },
+    { "args": { "n": "4" }, "expected": "1" }
+  ]
+}
+```
 
 <details>
 <summary><h2>What's Special About the Zigzag Recurrence?</h2></summary>
@@ -111,7 +166,7 @@ flowchart TB
 
 ### The Solution
 
-```python run viz=array
+```python solution time=O(3^n) space=O(n)
 class Solution:
     def zig_zag_sequence(self, n: int) -> int:
 
@@ -140,19 +195,13 @@ class Solution:
         )
 
 
-# Examples from the problem statement
-print(Solution().zig_zag_sequence(7))   # 2
-print(Solution().zig_zag_sequence(5))   # 2
-print(Solution().zig_zag_sequence(0))   # 1
-
-# Edge cases
-print(Solution().zig_zag_sequence(1))   # 2
-print(Solution().zig_zag_sequence(2))   # 3
-print(Solution().zig_zag_sequence(3))   # 2
-print(Solution().zig_zag_sequence(4))   # 1
+n = int(input())
+print(Solution().zig_zag_sequence(n))
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
     static class Solution {
         public int zigZagSequence(int N) {
@@ -187,16 +236,8 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().zigZagSequence(7));   // 2
-        System.out.println(new Solution().zigZagSequence(5));   // 2
-        System.out.println(new Solution().zigZagSequence(0));   // 1
-
-        // Edge cases
-        System.out.println(new Solution().zigZagSequence(1));   // 2
-        System.out.println(new Solution().zigZagSequence(2));   // 3
-        System.out.println(new Solution().zigZagSequence(3));   // 2
-        System.out.println(new Solution().zigZagSequence(4));   // 1
+        int n = Integer.parseInt(new Scanner(System.in).nextLine().trim());
+        System.out.println(new Solution().zigZagSequence(n));
     }
 }
 ```

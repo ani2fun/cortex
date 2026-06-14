@@ -18,12 +18,39 @@ Two two's-complement identities do the core moves in a single operation. Subtrac
 For `n = 12` (`0b1100`, lowest set bit is position 3): clear it, isolate it, and use the clear-identity to test "is `n` a power of 2?". Run it.
 
 ```python run viz=array
-n = 12                              # 0b1100
+n = int(input())
 
-print(n & (n - 1))                  # 8 — clears the lowest set bit (bit 3)
-print(n & -n)                       # 4 — isolates the lowest set bit (a power of 2)
-print(n > 0 and (n & (n - 1)) == 0) # False — 12 has two set bits, not a power of 2
-print(8 > 0 and (8 & 7) == 0)       # True  — 8 = 0b1000 is a power of 2
+print(n & (n - 1))                  # clears the lowest set bit
+print(n & -n)                       # isolates the lowest set bit (a power of 2)
+print("true" if n > 0 and (n & (n - 1)) == 0 else "false")  # power-of-2 test
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int n = Integer.parseInt(sc.nextLine().trim());
+
+    System.out.println(n & (n - 1));                          // clears the lowest set bit
+    System.out.println(n & -n);                               // isolates the lowest set bit
+    System.out.println(n > 0 && (n & (n - 1)) == 0);         // power-of-2 test
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "n", "label": "n", "type": "int", "placeholder": "12" }
+  ],
+  "cases": [
+    { "args": { "n": "12" }, "expected": "8\n4\nfalse" },
+    { "args": { "n": "8" },  "expected": "0\n8\ntrue" },
+    { "args": { "n": "7" },  "expected": "6\n1\nfalse" }
+  ]
+}
 ```
 
 ## How It Works
@@ -78,24 +105,104 @@ Because each iteration clears exactly *one* set bit (the lowest), so the loop bo
 
 ## Your Turn
 
-The reusable lowest-bit utilities:
+The reusable lowest-bit utilities — fill in both, then Run. The driver reads `n`, prints `lowest_set_bit(n)`, `lowest_set_position(n)`, `is_power_of_two(n)`, and `popcount(n)`:
 
 ```python run viz=array
-def lowest_set_bit(n):       return n & -n            # isolate (power of 2)
-def lowest_set_position(n):  return (n & -n).bit_length()   # 1-indexed position
+def lowest_set_bit(n):
+    # Your code goes here
+    return 0
+
+def lowest_set_position(n):
+    # Your code goes here
+    return 0
+
+def is_power_of_two(n):
+    # Your code goes here
+    return False
+
+def popcount(n):
+    # Your code goes here
+    return 0
+
+n = int(input())
+print(lowest_set_bit(n))
+print(lowest_set_position(n))
+print("true" if is_power_of_two(n) else "false")
+print(popcount(n))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+  static int lowestSetBit(int n) {
+    // Your code goes here
+    return 0;
+  }
+
+  static int lowestSetPosition(int n) {
+    // Your code goes here
+    return 0;
+  }
+
+  static boolean isPowerOfTwo(int n) {
+    // Your code goes here
+    return false;
+  }
+
+  static int popcount(int n) {
+    // Your code goes here
+    return 0;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int n = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(lowestSetBit(n));
+    System.out.println(lowestSetPosition(n));
+    System.out.println(isPowerOfTwo(n));
+    System.out.println(popcount(n));
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "n", "label": "n", "type": "int", "placeholder": "12" }
+  ],
+  "cases": [
+    { "args": { "n": "12" }, "expected": "4\n3\nfalse\n2" },
+    { "args": { "n": "16" }, "expected": "16\n5\ntrue\n1" },
+    { "args": { "n": "13" }, "expected": "1\n1\nfalse\n3" }
+  ]
+}
+```
+
+<details>
+<summary><strong>Editorial</strong></summary>
+
+```python solution
+def lowest_set_bit(n):       return n & -n
+def lowest_set_position(n):  return (n & -n).bit_length()
 def is_power_of_two(n):      return n > 0 and (n & (n - 1)) == 0
 def popcount(n):
     c = 0
     while n:
-        n &= n - 1           # strip the lowest set bit
+        n &= n - 1
         c += 1
     return c
 
-print(lowest_set_bit(12), lowest_set_position(12), is_power_of_two(16), popcount(13))
-# 4 3 True 3
+n = int(input())
+print(lowest_set_bit(n))
+print(lowest_set_position(n))
+print("true" if is_power_of_two(n) else "false")
+print(popcount(n))
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
   static int lowestSetBit(int n)      { return n & -n; }
   static int lowestSetPosition(int n) { return Integer.numberOfTrailingZeros(n & -n) + 1; }
@@ -103,12 +210,17 @@ public class Main {
   static int popcount(int n) { int c = 0; while (n != 0) { n &= n - 1; c++; } return c; }
 
   public static void main(String[] args) {
-    System.out.println(lowestSetBit(12) + " " + lowestSetPosition(12) + " "
-                       + isPowerOfTwo(16) + " " + popcount(13));
-    // 4 3 true 3
+    Scanner sc = new Scanner(System.in);
+    int n = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(lowestSetBit(n));
+    System.out.println(lowestSetPosition(n));
+    System.out.println(isPowerOfTwo(n));
+    System.out.println(popcount(n));
   }
 }
 ```
+
+</details>
 
 Drill the family in **Practice** — [Only Set Bit](/cortex/data-structures-and-algorithms/bit-tricks/pattern-set-bit-finder/problems/only-set-bit) and [Rightmost Set Bit](/cortex/data-structures-and-algorithms/bit-tricks/pattern-set-bit-finder/problems/rightmost-set-bit).
 
@@ -164,4 +276,4 @@ These two identities are *primitives* you'll use without re-deriving:
 
 - **Warren**, *Hacker's Delight*, 2nd ed., ch. 2 — `x & (x-1)`, `x & -x`, and population count.
 - **CLRS**, *Introduction to Algorithms*, 4th ed. — Fenwick/binary-indexed trees use `n & -n`.
-- The two identities, the power-of-2 test, and Kernighan's popcount are standard; both runnable blocks are verified by running (`12 ⇒ clear 8, isolate 4`; utilities ⇒ `4 3 True 3`; `popcount(7)=3`).
+- The two identities, the power-of-2 test, and Kernighan's popcount are standard; both runnable blocks are verified by running.

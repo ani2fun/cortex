@@ -17,19 +17,23 @@ This is the engineer's-eye view of proof, not the lemma-axiom-theorem version: y
 A loop invariant is just a condition true at the top of every iteration. Make it executable — check it on each pass — and "the loop is correct" stops being a hope. Here's a running-max loop with its invariant verified at every step:
 
 ```python run viz=array
+import ast
+
 def find_max(arr):
     best = arr[0]; held = True
     for i in range(1, len(arr)):
         # Loop invariant: best == max(arr[0..i-1]) at the top of each iteration
         if best != max(arr[:i]): held = False
         if arr[i] > best: best = arr[i]
-    print(f"max: {best} | invariant held at every step: {held}")
-    return best
+    return best, held
 
-find_max([3, 1, 4, 1, 5, 9, 2, 6])
+arr = ast.literal_eval(input())
+best, held = find_max(arr)
+print(f"max: {best} | invariant held at every step: {'true' if held else 'false'}")
 ```
 
 ```java run viz=array
+import java.util.*;
 public class Main {
     static int findMax(int[] arr) {
         int best = arr[0]; boolean held = true;
@@ -41,7 +45,31 @@ public class Main {
         System.out.println("max: " + best + " | invariant held at every step: " + held);
         return best;
     }
-    public static void main(String[] x) { findMax(new int[]{3, 1, 4, 1, 5, 9, 2, 6}); }
+    static int[] parseArr(String s) {
+        s = s.trim().replaceAll("[\\[\\]]", "");
+        String[] parts = s.split(",");
+        int[] a = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) a[i] = Integer.parseInt(parts[i].trim());
+        return a;
+    }
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        findMax(parseArr(sc.nextLine()));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "array", "type": "array", "placeholder": "[3, 1, 4, 1, 5, 9, 2, 6]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[3, 1, 4, 1, 5, 9, 2, 6]" }, "expected": "max: 9 | invariant held at every step: true" },
+    { "args": { "arr": "[5, 3, 7, 2]" },              "expected": "max: 7 | invariant held at every step: true" },
+    { "args": { "arr": "[1]" },                        "expected": "max: 1 | invariant held at every step: true" },
+    { "args": { "arr": "[10, 9, 8, 7]" },              "expected": "max: 10 | invariant held at every step: true" }
+  ]
 }
 ```
 
@@ -113,38 +141,102 @@ Induction can feel like a formal ritual. It isn't — the base case and inductiv
 **Predict:** the formula `0 + 1 + … + n = n(n+1)/2` and `2⁰ + 2¹ + … + 2^(n-1) = 2ⁿ − 1` are both standard induction results. Run each against the actual loop for `n = 0…20` — do they match at every `n`, including the base case `n = 0`?
 
 ```python run viz=array
-def sum_loop(n):     return sum(range(n + 1))          # 0+1+...+n
-def sum_formula(n):  return n * (n + 1) // 2
-def pow_loop(n):     return sum(2 ** i for i in range(n))  # 2^0+...+2^(n-1)
-def pow_formula(n):  return 2 ** n - 1
+def sum_formula(n):  # Your code goes here — closed form for 0+1+...+n
+    return 0
 
-ok_sum = all(sum_loop(n) == sum_formula(n) for n in range(21))
-ok_pow = all(pow_loop(n) == pow_formula(n) for n in range(21))
-print("sum 0..n == n(n+1)/2  for n=0..20 ?", ok_sum)
-print("2^0+..+2^(n-1) == 2^n-1 for n=0..20 ?", ok_pow)
-print("base case n=0:", sum_loop(0), "==", sum_formula(0))
+def pow_formula(n):  # Your code goes here — closed form for 2^0+...+2^(n-1)
+    return 0
+
+def sum_loop(n):     return sum(range(n + 1))          # 0+1+...+n
+def pow_loop(n):     return sum(2 ** i for i in range(n))  # 2^0+...+2^(n-1)
+
+n = int(input())
+ok_sum = all(sum_loop(k) == sum_formula(k) for k in range(n + 1))
+ok_pow = all(pow_loop(k) == pow_formula(k) for k in range(n + 1))
+print(f"sum 0..n == n(n+1)/2  for n=0..{n} ? {'true' if ok_sum else 'false'}")
+print(f"2^0+..+2^(n-1) == 2^n-1 for n=0..{n} ? {'true' if ok_pow else 'false'}")
+print(f"base case n=0: {sum_loop(0)} == {sum_formula(0)}")
 ```
 
 ```java run viz=array
+import java.util.*;
 public class Main {
     static long sumLoop(int n) { long s = 0; for (int i = 0; i <= n; i++) s += i; return s; }      // 0+..+n
-    static long sumFormula(int n) { return (long) n * (n + 1) / 2; }
+    static long sumFormula(int n) { return 0; }   // Your code goes here
     static long powLoop(int n) { long s = 0; for (int i = 0; i < n; i++) s += (1L << i); return s; } // 2^0+..+2^(n-1)
-    static long powFormula(int n) { return (1L << n) - 1; }
-    public static void main(String[] x) {
+    static long powFormula(int n) { return 0; }   // Your code goes here
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = Integer.parseInt(sc.nextLine().trim());
         boolean okSum = true, okPow = true;
-        for (int n = 0; n <= 20; n++) {
-            if (sumLoop(n) != sumFormula(n)) okSum = false;
-            if (powLoop(n) != powFormula(n)) okPow = false;
+        for (int k = 0; k <= n; k++) {
+            if (sumLoop(k) != sumFormula(k)) okSum = false;
+            if (powLoop(k) != powFormula(k)) okPow = false;
         }
-        System.out.println("sum 0..n == n(n+1)/2  for n=0..20 ? " + okSum);
-        System.out.println("2^0+..+2^(n-1) == 2^n-1 for n=0..20 ? " + okPow);
+        System.out.println("sum 0..n == n(n+1)/2  for n=0.." + n + " ? " + okSum);
+        System.out.println("2^0+..+2^(n-1) == 2^n-1 for n=0.." + n + " ? " + okPow);
         System.out.println("base case n=0: " + sumLoop(0) + " == " + sumFormula(0));
     }
 }
 ```
 
-Both print `true`, `true`, and `base case n=0: 0 == 0`. The exhaustive check over `n = 0…20` isn't the proof — it's *evidence* that the proof's two pieces hold: the **base case** (`n = 0`: both sides are `0`) and the **inductive step** (adding `(k+1)` to `k(k+1)/2` gives `(k+1)(k+2)/2`; doubling `2ᵏ − 1` and adding `1` gives `2^(k+1) − 1`). When a formula passes for the first 21 values *and* you can show the step, you've got a proof for all `n`. When a tempting-but-wrong formula (say `n²/2` for the sum) fails even one — it gives `0.5` at `n = 1` — the check flags the hole the induction would have exposed. Concrete checking and abstract proof reinforce each other: the loop is the witness, induction is the guarantee.
+```testcases
+{
+  "args": [
+    { "id": "n", "label": "n (check range 0..n)", "type": "number", "placeholder": "20" }
+  ],
+  "cases": [
+    { "args": { "n": "20" }, "expected": "sum 0..n == n(n+1)/2  for n=0..20 ? true\n2^0+..+2^(n-1) == 2^n-1 for n=0..20 ? true\nbase case n=0: 0 == 0" },
+    { "args": { "n": "5" },  "expected": "sum 0..n == n(n+1)/2  for n=0..5 ? true\n2^0+..+2^(n-1) == 2^n-1 for n=0..5 ? true\nbase case n=0: 0 == 0" }
+  ]
+}
+```
+
+Both print `true`, `true`, and `base case n=0: 0 == 0`. The exhaustive check over `n = 0…20` isn't the proof — it's *evidence* that the proof's two pieces hold: the **base case** (`n = 0`: both sides are `0`) and the **inductive step** (adding `(k+1)` to `k(k+1)/2` gives `(k+1)(k+2)/2`; doubling `2ᵏ − 1` and adding `1` gives `2^(k+1) − 1`). When a formula passes for the first 21 values *and* you can show the step, you've got a proof for all `n`. Concrete checking and abstract proof reinforce each other: the loop is the witness, induction is the guarantee.
+
+<details>
+<summary><strong>Editorial</strong></summary>
+
+The arithmetic sum `0+1+…+n = n(n+1)/2` (pair first and last: `n` pairs each summing to `n+1`, divided by 2). The geometric series `2^0+…+2^(n-1) = 2^n − 1` (a power-of-two minus one is all 1-bits in binary). Both can be proved by induction: base case `n=0` checks out, and the step follows algebraically.
+
+```python solution time=O(n) space=O(1)
+def sum_formula(n):  return n * (n + 1) // 2       # closed form for 0+1+...+n
+def pow_formula(n):  return 2 ** n - 1              # closed form for 2^0+...+2^(n-1)
+
+def sum_loop(n):     return sum(range(n + 1))
+def pow_loop(n):     return sum(2 ** i for i in range(n))
+
+n = int(input())
+ok_sum = all(sum_loop(k) == sum_formula(k) for k in range(n + 1))
+ok_pow = all(pow_loop(k) == pow_formula(k) for k in range(n + 1))
+print(f"sum 0..n == n(n+1)/2  for n=0..{n} ? {'true' if ok_sum else 'false'}")
+print(f"2^0+..+2^(n-1) == 2^n-1 for n=0..{n} ? {'true' if ok_pow else 'false'}")
+print(f"base case n=0: {sum_loop(0)} == {sum_formula(0)}")
+```
+
+```java solution
+import java.util.*;
+public class Main {
+    static long sumLoop(int n) { long s = 0; for (int i = 0; i <= n; i++) s += i; return s; }
+    static long sumFormula(int n) { return (long) n * (n + 1) / 2; }
+    static long powLoop(int n) { long s = 0; for (int i = 0; i < n; i++) s += (1L << i); return s; }
+    static long powFormula(int n) { return (1L << n) - 1; }
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = Integer.parseInt(sc.nextLine().trim());
+        boolean okSum = true, okPow = true;
+        for (int k = 0; k <= n; k++) {
+            if (sumLoop(k) != sumFormula(k)) okSum = false;
+            if (powLoop(k) != powFormula(k)) okPow = false;
+        }
+        System.out.println("sum 0..n == n(n+1)/2  for n=0.." + n + " ? " + okSum);
+        System.out.println("2^0+..+2^(n-1) == 2^n-1 for n=0.." + n + " ? " + okPow);
+        System.out.println("base case n=0: " + sumLoop(0) + " == " + sumFormula(0));
+    }
+}
+```
+
+</details>
 
 ## Reflect & Connect
 

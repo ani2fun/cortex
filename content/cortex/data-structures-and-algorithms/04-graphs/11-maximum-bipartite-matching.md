@@ -15,10 +15,10 @@ Greedy fails: grab the first available pairing for each left node and you can pa
 
 ## See It Work
 
-A bipartite graph (applicants `0–3` ↔ jobs `4–7`). Build the flow network — source→L, R→sink, all capacities 1 — and the max flow is the max matching. Run it.
+A bipartite graph (applicants `0–3` ↔ jobs `4–7`). Build the flow network — source→L, R→sink, all capacities 1 — and the max flow is the max matching. The input is an adjacency list `int[][]` plus two arrays of left and right node indices; the output is the integer maximum matching size.
 
 ```python run viz=graph viz-kind=graph
-import sys
+import ast
 
 def max_flow(graph, source, sink):           # Ford-Fulkerson over a residual matrix
     n = len(graph)
@@ -51,9 +51,94 @@ def bipartite_matching(graph, left, right):
     for u in right: fg[u].append((sink, 1))        # each right node → sink, cap 1
     return max_flow(fg, source, sink)
 
-# applicants 0-3, jobs 4-7; each applicant qualifies for some jobs
-graph = [[4,5], [5], [6], [4,6], [0,3], [0,1], [2,3], []]
-print("max matching:", bipartite_matching(graph, [0,1,2,3], [4,5,6,7]))   # 3
+graph = ast.literal_eval(input())
+left  = ast.literal_eval(input())
+right = ast.literal_eval(input())
+print(bipartite_matching(graph, left, right))
+```
+
+```java run viz=graph viz-kind=graph
+import java.util.*;
+
+public class Main {
+  static int n;
+  static boolean dfs(int[][] res, int node, int sink, boolean[] seen, List<Integer> path) {
+    seen[node] = true; path.add(node);
+    if (node == sink) return true;
+    for (int nb = 0; nb < n; nb++)
+      if (!seen[nb] && res[node][nb] > 0 && dfs(res, nb, sink, seen, path)) return true;
+    path.remove(path.size() - 1); return false;
+  }
+  static int maxFlow(List<int[]>[] graph, int source, int sink) {
+    n = graph.length; int[][] res = new int[n][n];
+    for (int u = 0; u < n; u++) for (int[] e : graph[u]) res[u][e[0]] = e[1];
+    int total = 0;
+    while (true) {
+      boolean[] seen = new boolean[n]; List<Integer> path = new ArrayList<>();
+      if (!dfs(res, source, sink, seen, path)) break;
+      int b = Integer.MAX_VALUE;
+      for (int i = 0; i < path.size()-1; i++) b = Math.min(b, res[path.get(i)][path.get(i+1)]);
+      for (int i = 0; i < path.size()-1; i++) { int u=path.get(i), v=path.get(i+1); res[u][v]-=b; res[v][u]+=b; }
+      total += b;
+    }
+    return total;
+  }
+  @SuppressWarnings("unchecked")
+  static int matching(int[][] g, int[] left, int[] right) {
+    int N = g.length + 2, src = g.length, snk = g.length + 1;
+    List<int[]>[] fg = new List[N];
+    for (int i = 0; i < N; i++) fg[i] = new ArrayList<>();
+    for (int u = 0; u < g.length; u++) for (int v : g[u]) fg[u].add(new int[]{v, 1});
+    for (int u : left)  fg[src].add(new int[]{u, 1});
+    for (int u : right) fg[u].add(new int[]{snk, 1});
+    return maxFlow(fg, src, snk);
+  }
+  static int[][] parseIntMatrix(String line) {
+    String trimmed = line.trim();
+    if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+    String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+    String[] rows = inner.split("\\],\\s*\\[");
+    int[][] mat = new int[rows.length][];
+    for (int r = 0; r < rows.length; r++) {
+      String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+      if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+      String[] parts = row.split(",");
+      mat[r] = new int[parts.length];
+      for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+    }
+    return mat;
+  }
+  static int[] parseIntArray(String line) {
+    String s = line.replaceAll("[\\[\\]\\s]", "");
+    if (s.isEmpty()) return new int[0];
+    String[] parts = s.split(",");
+    int[] a = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) a[i] = Integer.parseInt(parts[i].trim());
+    return a;
+  }
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[][] graph = parseIntMatrix(sc.nextLine());
+    int[] left    = parseIntArray(sc.nextLine());
+    int[] right   = parseIntArray(sc.nextLine());
+    System.out.println(matching(graph, left, right));
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "graph", "label": "adjacency list", "type": "int[][]", "placeholder": "[[4, 5], [5], [6], [4, 6], [0, 3], [0, 1], [2, 3], []]" },
+    { "id": "left",  "label": "left nodes",     "type": "int[]",   "placeholder": "[0, 1, 2, 3]" },
+    { "id": "right", "label": "right nodes",    "type": "int[]",   "placeholder": "[4, 5, 6, 7]" }
+  ],
+  "cases": [
+    { "args": { "graph": "[[4, 5], [5], [6], [4, 6], [0, 3], [0, 1], [2, 3], []]", "left": "[0, 1, 2, 3]", "right": "[4, 5, 6, 7]" }, "expected": "3" },
+    { "args": { "graph": "[[2, 3], [2], [], []]", "left": "[0, 1]", "right": "[2, 3]" }, "expected": "2" },
+    { "args": { "graph": "[[4], [5], [6], [7], [0], [1], [2], [3]]", "left": "[0, 1, 2, 3]", "right": "[4, 5, 6, 7]" }, "expected": "4" }
+  ]
+}
 ```
 
 ## How It Works
@@ -97,10 +182,83 @@ Through an **augmenting path that reroutes an earlier choice** — the exact rev
 
 ## Your Turn
 
-Bipartite matching in both languages (reusing the Ford-Fulkerson core):
+Implement maximum bipartite matching by reducing to max-flow. Given a plain adjacency list of a bipartite graph (no weights), plus arrays of left and right node indices, output the integer maximum matching size.
 
 ```python run viz=graph viz-kind=graph
-import sys
+import ast
+
+def bipartite_matching(graph, left, right):
+    # Your code goes here
+    pass
+
+graph = ast.literal_eval(input())
+left  = ast.literal_eval(input())
+right = ast.literal_eval(input())
+print(bipartite_matching(graph, left, right))
+```
+
+```java run viz=graph viz-kind=graph
+import java.util.*;
+
+public class Main {
+  static int[][] parseIntMatrix(String line) {
+    String trimmed = line.trim();
+    if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+    String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+    String[] rows = inner.split("\\],\\s*\\[");
+    int[][] mat = new int[rows.length][];
+    for (int r = 0; r < rows.length; r++) {
+      String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+      if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+      String[] parts = row.split(",");
+      mat[r] = new int[parts.length];
+      for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+    }
+    return mat;
+  }
+  static int[] parseIntArray(String line) {
+    String s = line.replaceAll("[\\[\\]\\s]", "");
+    if (s.isEmpty()) return new int[0];
+    String[] parts = s.split(",");
+    int[] a = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) a[i] = Integer.parseInt(parts[i].trim());
+    return a;
+  }
+  static int matching(int[][] g, int[] left, int[] right) {
+    // Your code goes here
+    return 0;
+  }
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[][] graph = parseIntMatrix(sc.nextLine());
+    int[] left    = parseIntArray(sc.nextLine());
+    int[] right   = parseIntArray(sc.nextLine());
+    System.out.println(matching(graph, left, right));
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "graph", "label": "adjacency list", "type": "int[][]", "placeholder": "[[2, 3], [2], [], []]" },
+    { "id": "left",  "label": "left nodes",     "type": "int[]",   "placeholder": "[0, 1]" },
+    { "id": "right", "label": "right nodes",    "type": "int[]",   "placeholder": "[2, 3]" }
+  ],
+  "cases": [
+    { "args": { "graph": "[[2, 3], [2], [], []]", "left": "[0, 1]", "right": "[2, 3]" }, "expected": "2" },
+    { "args": { "graph": "[[4], [5], [6], [7], [0], [1], [2], [3]]", "left": "[0, 1, 2, 3]", "right": "[4, 5, 6, 7]" }, "expected": "4" },
+    { "args": { "graph": "[[4, 5], [5], [6], [4, 6], [0, 3], [0, 1], [2, 3], []]", "left": "[0, 1, 2, 3]", "right": "[4, 5, 6, 7]" }, "expected": "3" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+```python solution time=O(V·E) space=O(V²)
+import ast
+
 def max_flow(graph, source, sink):
     n = len(graph); res = [[0]*n for _ in range(n)]
     for u in range(n):
@@ -131,12 +289,15 @@ def bipartite_matching(graph, left, right):
     for u in right: fg[u].append((snk, 1))
     return max_flow(fg, src, snk)
 
-print(bipartite_matching([[2,3],[2],[],[]], [0,1], [2,3]))               # 2  (the rematch case)
-print(bipartite_matching([[4],[5],[6],[7],[0],[1],[2],[3]], [0,1,2,3], [4,5,6,7]))  # 4  (perfect)
+graph = ast.literal_eval(input())
+left  = ast.literal_eval(input())
+right = ast.literal_eval(input())
+print(bipartite_matching(graph, left, right))
 ```
 
-```java run viz=graph viz-kind=graph
+```java solution time=O(V·E) space=O(V²)
 import java.util.*;
+
 public class Main {
   static int n;
   static boolean dfs(int[][] res, int node, int sink, boolean[] seen, List<Integer> path) {
@@ -170,12 +331,40 @@ public class Main {
     for (int u : right) fg[u].add(new int[]{snk, 1});
     return maxFlow(fg, src, snk);
   }
-  public static void main(String[] a) {
-    System.out.println(matching(new int[][]{{2,3},{2},{},{}}, new int[]{0,1}, new int[]{2,3}));  // 2
-    System.out.println(matching(new int[][]{{4},{5},{6},{7},{0},{1},{2},{3}}, new int[]{0,1,2,3}, new int[]{4,5,6,7}));  // 4
+  static int[][] parseIntMatrix(String line) {
+    String trimmed = line.trim();
+    if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+    String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+    String[] rows = inner.split("\\],\\s*\\[");
+    int[][] mat = new int[rows.length][];
+    for (int r = 0; r < rows.length; r++) {
+      String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+      if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+      String[] parts = row.split(",");
+      mat[r] = new int[parts.length];
+      for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+    }
+    return mat;
+  }
+  static int[] parseIntArray(String line) {
+    String s = line.replaceAll("[\\[\\]\\s]", "");
+    if (s.isEmpty()) return new int[0];
+    String[] parts = s.split(",");
+    int[] a = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) a[i] = Integer.parseInt(parts[i].trim());
+    return a;
+  }
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[][] graph = parseIntMatrix(sc.nextLine());
+    int[] left    = parseIntArray(sc.nextLine());
+    int[] right   = parseIntArray(sc.nextLine());
+    System.out.println(matching(graph, left, right));
   }
 }
 ```
+
+</details>
 
 Then: report *which* pairs were matched (read the saturated `L→R` edges from the final residual graph); add a **dummy** node so unmatched applicants/jobs are handled cleanly; and verify **König's theorem** (in a bipartite graph, max matching = min vertex cover) on a small example.
 

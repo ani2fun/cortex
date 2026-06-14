@@ -15,12 +15,14 @@ The obvious approach — run Dijkstra `N` times, once per source — costs `O(N�
 
 ## See It Work
 
-Floyd-Warshall on a 5-node weighted graph: build a distance matrix, then relax through every intermediate. The result is the full all-pairs matrix (`-1` = unreachable). Run it.
+Floyd-Warshall on a weighted graph: build a distance matrix, then relax through every intermediate. The graph crosses stdin as a **weighted adjacency list** — `graph[u] = [[nbr, wt], ...]`. The result is the full all-pairs matrix (`-1` = unreachable) printed as a single list-of-lists. Pick a case and **Run** it.
 
 ```python run viz=graph viz-kind=graph
+import ast
+
 INF = float('inf')
 
-def floyd_warshall(graph):                  # graph[u] = list of (neighbour, weight)
+def floyd_warshall(graph):                  # graph[u] = list of [neighbour, weight]
     n = len(graph)
     dist = [[INF] * n for _ in range(n)]
     for u in range(n):
@@ -34,10 +36,84 @@ def floyd_warshall(graph):                  # graph[u] = list of (neighbour, wei
                     dist[i][j] = dist[i][k] + dist[k][j]
     return [[x if x != INF else -1 for x in row] for row in dist]
 
-graph = [[(1,2),(3,5)], [(4,6)], [(4,1)], [(2,2)], [(3,7)]]
-for row in floyd_warshall(graph):
-    print(row)
-# [0, 2, 7, 5, 8] / [-1, 0, 15, 13, 6] / [-1, -1, 0, 8, 1] / [-1, -1, 2, 0, 3] / [-1, -1, 9, 7, 0]
+graph = ast.literal_eval(input())
+print(floyd_warshall(graph))
+```
+
+```java run viz=graph viz-kind=graph
+import java.util.*;
+
+public class Main {
+    static final int INF = Integer.MAX_VALUE / 2;     // /2 avoids overflow on add
+
+    static int[][] floydWarshall(int[][][] graph) {
+        int n = graph.length;
+        int[][] dist = new int[n][n];
+        for (int[] row : dist) Arrays.fill(row, INF);
+        for (int u = 0; u < n; u++) {
+            dist[u][u] = 0;
+            for (int[] e : graph[u]) dist[u][e[0]] = e[1];
+        }
+        for (int k = 0; k < n; k++)
+            for (int i = 0; i < n; i++)
+                for (int j = 0; j < n; j++)
+                    if (dist[i][k] + dist[k][j] < dist[i][j])
+                        dist[i][j] = dist[i][k] + dist[k][j];
+        for (int[] row : dist)
+            for (int j = 0; j < n; j++) if (row[j] >= INF) row[j] = -1;
+        return dist;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[][][] graph = parseWeightedAdj(sc.nextLine());
+        System.out.println(Arrays.deepToString(floydWarshall(graph)));
+    }
+
+    // "[[[1, 4], [2, 1]], [[3, 1]], []]" → graph[u] = list of {nbr, wt}
+    static int[][][] parseWeightedAdj(String line) {
+        List<int[][]> g = new ArrayList<>();
+        int i = 0, n = line.length();
+        while (i < n && line.charAt(i) != '[') i++;
+        i++;                                             // consume outer '['
+        while (i < n) {
+            while (i < n && (line.charAt(i) == ' ' || line.charAt(i) == ',')) i++;
+            if (i >= n || line.charAt(i) == ']') break;  // end of outer list
+            i++;                                         // consume a node group's '['
+            List<int[]> node = new ArrayList<>();
+            while (i < n) {
+                while (i < n && (line.charAt(i) == ' ' || line.charAt(i) == ',')) i++;
+                if (line.charAt(i) == ']') { i++; break; }   // end of this node group
+                i++;                                     // consume a pair's '['
+                int[] pair = new int[2]; int k = 0;
+                while (i < n && line.charAt(i) != ']') {
+                    while (i < n && (line.charAt(i) == ' ' || line.charAt(i) == ',')) i++;
+                    if (line.charAt(i) == ']') break;
+                    int start = i;
+                    while (i < n && (Character.isDigit(line.charAt(i)) || line.charAt(i) == '-')) i++;
+                    pair[k++] = Integer.parseInt(line.substring(start, i));
+                }
+                i++;                                     // consume the pair's ']'
+                node.add(pair);
+            }
+            g.add(node.toArray(new int[0][]));
+        }
+        return g.toArray(new int[0][][]);
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "graph", "label": "graph (weighted adj list)", "type": "int[][]", "placeholder": "[[[1, 3], [3, 7]], [[2, 1]], [[3, 2]], [[0, 6]]]" }
+  ],
+  "cases": [
+    { "args": { "graph": "[[[1, 3], [3, 7]], [[2, 1]], [[3, 2]], [[0, 6]]]" }, "expected": "[[0, 3, 4, 6], [9, 0, 1, 3], [8, 11, 0, 2], [6, 9, 10, 0]]" },
+    { "args": { "graph": "[[[1, 2], [3, 5]], [[4, 6]], [[4, 1]], [[2, 2]], [[3, 7]]]" }, "expected": "[[0, 2, 7, 5, 8], [-1, 0, 15, 13, 6], [-1, -1, 0, 8, 1], [-1, -1, 2, 0, 3], [-1, -1, 9, 7, 0]]" },
+    { "args": { "graph": "[[[1, 1]], [[0, 1]]]" }, "expected": "[[0, 1], [1, 0]]" }
+  ]
+}
 ```
 
 ## How It Works
@@ -73,13 +149,130 @@ Everything hinges on loop order: `k` (intermediate) outermost, then `s`, then `t
 
 Before you read on: swap `k` to be the **innermost** loop (`for i: for j: for k:`) and run it on the graph `0→1(3), 0→3(7), 1→2(1), 2→3(2), 3→0(6)`. The cell `dist[1][0]` comes out as **−1 (unreachable)** instead of the true **9**. Why does the order matter, when each cell's update rule is identical?
 
+```python run viz=graph viz-kind=graph
+INF = float('inf')
+
+# 0→1(3), 0→3(7), 1→2(1), 2→3(2), 3→0(6)
+graph = [[[1,3],[3,7]], [[2,1]], [[3,2]], [[0,6]]]
+
+def fw_correct(graph):
+    n = len(graph)
+    dist = [[INF]*n for _ in range(n)]
+    for u in range(n):
+        dist[u][u] = 0
+        for v, w in graph[u]: dist[u][v] = w
+    for k in range(n):                  # k OUTERMOST — correct
+        for i in range(n):
+            for j in range(n):
+                if dist[i][k] + dist[k][j] < dist[i][j]:
+                    dist[i][j] = dist[i][k] + dist[k][j]
+    return [[x if x != INF else -1 for x in row] for row in dist]
+
+def fw_buggy(graph):
+    n = len(graph)
+    dist = [[INF]*n for _ in range(n)]
+    for u in range(n):
+        dist[u][u] = 0
+        for v, w in graph[u]: dist[u][v] = w
+    for i in range(n):                  # k INNERMOST — wrong
+        for j in range(n):
+            for k in range(n):
+                if dist[i][k] + dist[k][j] < dist[i][j]:
+                    dist[i][j] = dist[i][k] + dist[k][j]
+    return [[x if x != INF else -1 for x in row] for row in dist]
+
+print("correct:", fw_correct(graph))   # dist[1][0] = 9
+print("buggy:  ", fw_buggy(graph))     # dist[1][0] = -1 — wrong!
+```
+
 Because `k` isn't just a loop variable — it's the **DP dimension**, and the recurrence reads values *from the previous `k`-level*. The invariant is "after the `k`-th outer pass, `dist[s][t]` is correct using intermediates `0…k`." With `k` outermost, by the time you use `dist[s][k]` and `dist[k][t]`, both were finalised in earlier passes — they're already shortest paths through lower-numbered intermediates, exactly what the proof needs. Move `k` innermost and you destroy that staging: now you fully resolve one `(i, j)` cell before moving to the next, so when you compute `dist[1][0]` you scan `k = 0…3` looking for `1→k→0` — but the path is `1→2→3→0`, which needs `dist[1][3]` as a stepping stone, and **`dist[1][3]` hasn't been computed yet** (it's filled during the *later* `(i=1, j=3)` cell). So the two-hop-via-an-unfinished-cell route is invisible, and `dist[1][0]` is left at `−1` — the algorithm wrongly reports node 0 unreachable from node 1. The fix isn't more iterations; it's the *order*: `k` outermost stages the intermediates so every value you read is already final. (A useful tell: Floyd-Warshall's correctness proof is *about* `k`, so `k` must be the loop the proof inducts over — the outer one.)
 
 ## Your Turn
 
-Floyd-Warshall in both languages (`-1` = unreachable):
+Floyd-Warshall in both languages (`-1` = unreachable), output as a single list-of-lists line:
 
 ```python run viz=graph viz-kind=graph
+import ast
+
+def floyd_warshall(graph):
+    # Your code goes here — build dist matrix, set dist[u][u]=0 and direct edges,
+    # then triple loop with k OUTERMOST; return list-of-lists with -1 for unreachable.
+    pass
+
+graph = ast.literal_eval(input())
+print(floyd_warshall(graph))
+```
+
+```java run viz=graph viz-kind=graph
+import java.util.*;
+
+public class Main {
+    static int[][] floydWarshall(int[][][] graph) {
+        // Your code goes here — build dist matrix, fill with INF, set dist[u][u]=0
+        // and direct edges; triple loop with k outermost; replace remaining INF with -1.
+        return new int[0][];
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[][][] graph = parseWeightedAdj(sc.nextLine());
+        System.out.println(Arrays.deepToString(floydWarshall(graph)));
+    }
+
+    static int[][][] parseWeightedAdj(String line) {
+        List<int[][]> g = new ArrayList<>();
+        int i = 0, n = line.length();
+        while (i < n && line.charAt(i) != '[') i++;
+        i++;
+        while (i < n) {
+            while (i < n && (line.charAt(i) == ' ' || line.charAt(i) == ',')) i++;
+            if (i >= n || line.charAt(i) == ']') break;
+            i++;
+            List<int[]> node = new ArrayList<>();
+            while (i < n) {
+                while (i < n && (line.charAt(i) == ' ' || line.charAt(i) == ',')) i++;
+                if (line.charAt(i) == ']') { i++; break; }
+                i++;
+                int[] pair = new int[2]; int k = 0;
+                while (i < n && line.charAt(i) != ']') {
+                    while (i < n && (line.charAt(i) == ' ' || line.charAt(i) == ',')) i++;
+                    if (line.charAt(i) == ']') break;
+                    int start = i;
+                    while (i < n && (Character.isDigit(line.charAt(i)) || line.charAt(i) == '-')) i++;
+                    pair[k++] = Integer.parseInt(line.substring(start, i));
+                }
+                i++;
+                node.add(pair);
+            }
+            g.add(node.toArray(new int[0][]));
+        }
+        return g.toArray(new int[0][][]);
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "graph", "label": "graph (weighted adj list)", "type": "int[][]", "placeholder": "[[[1, 3], [3, 7]], [[2, 1]], [[3, 2]], [[0, 6]]]" }
+  ],
+  "cases": [
+    { "args": { "graph": "[[[1, 3], [3, 7]], [[2, 1]], [[3, 2]], [[0, 6]]]" }, "expected": "[[0, 3, 4, 6], [9, 0, 1, 3], [8, 11, 0, 2], [6, 9, 10, 0]]" },
+    { "args": { "graph": "[[[1, 2], [3, 5]], [[4, 6]], [[4, 1]], [[2, 2]], [[3, 7]]]" }, "expected": "[[0, 2, 7, 5, 8], [-1, 0, 15, 13, 6], [-1, -1, 0, 8, 1], [-1, -1, 2, 0, 3], [-1, -1, 9, 7, 0]]" },
+    { "args": { "graph": "[[[1, 1]], [[0, 1]]]" }, "expected": "[[0, 1], [1, 0]]" },
+    { "args": { "graph": "[[]]" }, "expected": "[[0]]" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Floyd-Warshall builds an `N×N` distance matrix, initialises the diagonal to 0 and every direct edge to its weight, then runs three nested loops — `k` outermost (the DP dimension), then `i` and `j`. For each triple `(i, k, j)`, if routing through `k` improves the current `i→j` estimate, update it. Any cell still at `∞` after the loops represents an unreachable pair — replace with `-1`. In Java, use `INF = Integer.MAX_VALUE / 2` (dividing by 2 prevents overflow when adding two `INF` values). Both languages produce identical output since the algorithm is deterministic and all arithmetic is integer.
+
+```python solution time=O(N³) space=O(N²)
+import ast
+
 INF = float('inf')
 
 def floyd_warshall(graph):
@@ -95,40 +288,73 @@ def floyd_warshall(graph):
                     dist[i][j] = dist[i][k] + dist[k][j]
     return [[x if x != INF else -1 for x in row] for row in dist]
 
-# 0→1(3), 0→3(7), 1→2(1), 2→3(2), 3→0(6)
-print(floyd_warshall([[(1,3),(3,7)], [(2,1)], [(3,2)], [(0,6)]]))
-# [[0,3,4,6],[9,0,1,3],[8,11,0,2],[6,9,10,0]]
+graph = ast.literal_eval(input())
+print(floyd_warshall(graph))
 ```
 
-```java run viz=graph viz-kind=graph
+```java solution time=O(N³) space=O(N²)
 import java.util.*;
+
 public class Main {
-  static final int INF = Integer.MAX_VALUE / 2;     // /2 avoids overflow on add
-  static int[][] floydWarshall(int[][][] graph) {
-    int n = graph.length;
-    int[][] dist = new int[n][n];
-    for (int[] row : dist) Arrays.fill(row, INF);
-    for (int u = 0; u < n; u++) {
-      dist[u][u] = 0;
-      for (int[] e : graph[u]) dist[u][e[0]] = e[1];
+    static final int INF = Integer.MAX_VALUE / 2;
+
+    static int[][] floydWarshall(int[][][] graph) {
+        int n = graph.length;
+        int[][] dist = new int[n][n];
+        for (int[] row : dist) Arrays.fill(row, INF);
+        for (int u = 0; u < n; u++) {
+            dist[u][u] = 0;
+            for (int[] e : graph[u]) dist[u][e[0]] = e[1];
+        }
+        for (int k = 0; k < n; k++)
+            for (int i = 0; i < n; i++)
+                for (int j = 0; j < n; j++)
+                    if (dist[i][k] + dist[k][j] < dist[i][j])
+                        dist[i][j] = dist[i][k] + dist[k][j];
+        for (int[] row : dist)
+            for (int j = 0; j < n; j++) if (row[j] >= INF) row[j] = -1;
+        return dist;
     }
-    for (int k = 0; k < n; k++)
-      for (int i = 0; i < n; i++)
-        for (int j = 0; j < n; j++)
-          if (dist[i][k] + dist[k][j] < dist[i][j])
-            dist[i][j] = dist[i][k] + dist[k][j];
-    for (int[] row : dist) for (int j = 0; j < n; j++) if (row[j] >= INF) row[j] = -1;
-    return dist;
-  }
-  public static void main(String[] a) {
-    int[][][] g = {{{1,3},{3,7}}, {{2,1}}, {{3,2}}, {{0,6}}};
-    System.out.println(Arrays.deepToString(floydWarshall(g)));
-    // [[0, 3, 4, 6], [9, 0, 1, 3], [8, 11, 0, 2], [6, 9, 10, 0]]
-  }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[][][] graph = parseWeightedAdj(sc.nextLine());
+        System.out.println(Arrays.deepToString(floydWarshall(graph)));
+    }
+
+    static int[][][] parseWeightedAdj(String line) {
+        List<int[][]> g = new ArrayList<>();
+        int i = 0, n = line.length();
+        while (i < n && line.charAt(i) != '[') i++;
+        i++;
+        while (i < n) {
+            while (i < n && (line.charAt(i) == ' ' || line.charAt(i) == ',')) i++;
+            if (i >= n || line.charAt(i) == ']') break;
+            i++;
+            List<int[]> node = new ArrayList<>();
+            while (i < n) {
+                while (i < n && (line.charAt(i) == ' ' || line.charAt(i) == ',')) i++;
+                if (line.charAt(i) == ']') { i++; break; }
+                i++;
+                int[] pair = new int[2]; int k = 0;
+                while (i < n && line.charAt(i) != ']') {
+                    while (i < n && (line.charAt(i) == ' ' || line.charAt(i) == ',')) i++;
+                    if (line.charAt(i) == ']') break;
+                    int start = i;
+                    while (i < n && (Character.isDigit(line.charAt(i)) || line.charAt(i) == '-')) i++;
+                    pair[k++] = Integer.parseInt(line.substring(start, i));
+                }
+                i++;
+                node.add(pair);
+            }
+            g.add(node.toArray(new int[0][]));
+        }
+        return g.toArray(new int[0][][]);
+    }
 }
 ```
 
-Then: detect a **negative cycle** (any `dist[i][i] < 0` after the loops); compute the **transitive closure** (boolean FW: `reach[i][j] |= reach[i][k] && reach[k][j]`); reconstruct paths with a `next[][]` matrix; and benchmark FW vs `N`×Dijkstra on a sparse vs dense graph.
+</details>
 
 ## Reflect & Connect
 

@@ -43,17 +43,17 @@ flowchart LR
 
 ## See It Work
 
-Count the components and measure each one's size. The flood-fill (DFS here) absorbs an entire component; the outer loop kicks off a new flood from each still-unvisited node.
+Count the components and measure each one's size. The flood-fill (DFS here) absorbs an entire component; the outer loop kicks off a new flood from each still-unvisited node. The graph crosses stdin as an **adjacency list** — `graph[u]` is node `u`'s list of neighbours — so there is no construction step: the input *is* the graph. Pick a case and **Run** it.
 
 ```python run viz=graph viz-kind=graph
-adj = {0: [1, 2], 1: [0, 2], 2: [1, 0], 3: [4], 4: [3], 5: []}
+import ast
 
-def components(adj, n):
+def components(graph, n):
     visited = set()
     sizes = []
     def dfs(u):                                          # flood-fill one component, return its size
         visited.add(u); size = 1
-        for v in adj[u]:
+        for v in graph[u]:
             if v not in visited: size += dfs(v)
         return size
     for v in range(n):                                  # outer loop: every UNVISITED node = a new component
@@ -61,7 +61,8 @@ def components(adj, n):
             sizes.append(dfs(v))
     return sizes
 
-sizes = components(adj, 6)
+graph = ast.literal_eval(input())   # adjacency list: graph[u] = u's neighbours
+sizes = components(graph, len(graph))
 print("components:", len(sizes))
 print("sizes:", sizes)
 ```
@@ -70,23 +71,55 @@ print("sizes:", sizes)
 import java.util.*;
 
 public class Main {
-    static Map<Integer, List<Integer>> adj = Map.of(
-        0, List.of(1, 2), 1, List.of(0, 2), 2, List.of(1, 0), 3, List.of(4), 4, List.of(3), 5, List.of());
-    static Set<Integer> visited = new HashSet<>();
+    static boolean[] visited;
 
-    static int dfs(int u) {                              // flood-fill one component, return its size
-        visited.add(u); int size = 1;
-        for (int v : adj.get(u)) if (!visited.contains(v)) size += dfs(v);
+    static int dfs(int[][] graph, int u) {              // flood-fill one component, return its size
+        visited[u] = true; int size = 1;
+        for (int v : graph[u]) if (!visited[v]) size += dfs(graph, v);
         return size;
     }
 
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
+    }
+
     public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[][] graph = parseIntMatrix(sc.nextLine());
+        int n = graph.length;
+        visited = new boolean[n];
         List<Integer> sizes = new ArrayList<>();
-        for (int v = 0; v < 6; v++)                      // outer loop: every unvisited node = a new component
-            if (!visited.contains(v)) sizes.add(dfs(v));
+        for (int v = 0; v < n; v++)                     // outer loop: every unvisited node = a new component
+            if (!visited[v]) sizes.add(dfs(graph, v));
         System.out.println("components: " + sizes.size());
         System.out.println("sizes: " + sizes);
     }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "graph", "label": "graph", "type": "int[][]", "placeholder": "[[1, 2], [0, 2], [1, 0], [4], [3], []]" }
+  ],
+  "cases": [
+    { "args": { "graph": "[[1, 2], [0, 2], [1, 0], [4], [3], []]" }, "expected": "components: 3\nsizes: [3, 2, 1]" },
+    { "args": { "graph": "[[1], [0]]" }, "expected": "components: 1\nsizes: [2]" },
+    { "args": { "graph": "[[1], [], [3], [2]]" }, "expected": "components: 2\nsizes: [2, 2]" },
+    { "args": { "graph": "[[1], [0], [], [4], [3]]" }, "expected": "components: 3\nsizes: [2, 1, 2]" }
+  ]
 }
 ```
 
@@ -148,18 +181,18 @@ The outer loop is the whole pattern. It's tempting to think "I'll just DFS the g
 **Predict before you run:** with a single DFS launched from node 0 (no outer loop), how many components does it count on our 3-component graph?
 
 ```python run viz=graph viz-kind=graph
-adj = {0: [1, 2], 1: [0, 2], 2: [1, 0], 3: [4], 4: [3], 5: []}
+graph = [[1, 2], [0, 2], [1, 0], [4], [3], []]
 
-def components_buggy(adj, n):
+def components_buggy(graph, n):
     visited = set()
     def dfs(u):
         visited.add(u)
-        for v in adj[u]:
+        for v in graph[u]:
             if v not in visited: dfs(v)
     dfs(0)                                              # ONE flood, from node 0 — no outer loop
     return 1                                            # "we walked the graph, so... one component?"
 
-print("components:", components_buggy(adj, 6))
+print("components:", components_buggy(graph, 6))
 print("visited:", "only node 0's component")
 ```
 
@@ -172,58 +205,164 @@ It returns **1**, but the graph has **3** components. A single DFS from node 0 o
 
 ## Your Turn
 
-The most famous instance is a *grid*, where the graph is implicit — each `'1'` cell is a node, neighbours are the four orthogonal cells. **Number of Islands** ([LeetCode 200](https://leetcode.com/problems/number-of-islands/)): count connected groups of land.
+The most famous instance is a *grid*, where the graph is implicit — each `1` cell is a node, neighbours are the four orthogonal cells. **Number of Islands** ([LeetCode 200](https://leetcode.com/problems/number-of-islands/)): count connected groups of land.
 
 ```python run viz=grid
+import ast
+
 def num_islands(grid):
     if not grid: return 0
     R, C = len(grid), len(grid[0])
     def sink(r, c):                                     # flood-fill one island, erasing it
-        if r < 0 or r >= R or c < 0 or c >= C or grid[r][c] != '1': return
-        grid[r][c] = '0'
+        if r < 0 or r >= R or c < 0 or c >= C or grid[r][c] != 1: return
+        grid[r][c] = 0
         sink(r+1, c); sink(r-1, c); sink(r, c+1); sink(r, c-1)
     count = 0
     for r in range(R):
         for c in range(C):                              # outer loop over every cell
-            if grid[r][c] == '1':                       # unvisited land = a new island
+            if grid[r][c] == 1:                         # unvisited land = a new island
                 count += 1; sink(r, c)
     return count
 
-g1 = [list("11000"), list("11000"), list("00100"), list("00011")]
-print(num_islands(g1))                                  # 3
-g2 = [list("111"), list("010"), list("111")]
-print(num_islands(g2))                                  # 1
+grid = ast.literal_eval(input())
+print(num_islands(grid))
 ```
 
 ```java run viz=grid
+import java.util.*;
+
 public class Main {
     static int R, C;
-    static void sink(char[][] g, int r, int c) {        // flood-fill one island, erasing it
-        if (r < 0 || r >= R || c < 0 || c >= C || g[r][c] != '1') return;
-        g[r][c] = '0';
+
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
+    }
+
+    static void sink(int[][] g, int r, int c) {         // flood-fill one island, erasing it
+        if (r < 0 || r >= R || c < 0 || c >= C || g[r][c] != 1) return;
+        g[r][c] = 0;
         sink(g, r+1, c); sink(g, r-1, c); sink(g, r, c+1); sink(g, r, c-1);
     }
-    static int numIslands(char[][] g) {
+
+    static int numIslands(int[][] g) {
         if (g.length == 0) return 0;
         R = g.length; C = g[0].length; int count = 0;
         for (int r = 0; r < R; r++)
             for (int c = 0; c < C; c++)                 // outer loop over every cell
-                if (g[r][c] == '1') { count++; sink(g, r, c); }   // unvisited land = a new island
+                if (g[r][c] == 1) { count++; sink(g, r, c); }   // unvisited land = a new island
         return count;
     }
-    static char[][] grid(String... rows) {
-        char[][] g = new char[rows.length][];
-        for (int i = 0; i < rows.length; i++) g[i] = rows[i].toCharArray();
-        return g;
-    }
+
     public static void main(String[] args) {
-        System.out.println(numIslands(grid("11000", "11000", "00100", "00011")));  // 3
-        System.out.println(numIslands(grid("111", "010", "111")));                 // 1
+        Scanner sc = new Scanner(System.in);
+        int[][] grid = parseIntMatrix(sc.nextLine());
+        System.out.println(numIslands(grid));
     }
 }
 ```
 
-Both print `3` then `1`. The grid version is the identical pattern — the only change is that neighbours come from `(r±1, c±1)` deltas instead of an adjacency list. The four problems in this section's **Problems** folder cover both flavours: explicit-graph components, sum-of-minimums, island count, and largest-island size.
+```testcases
+{
+  "args": [
+    { "id": "grid", "label": "grid", "type": "int[][]", "placeholder": "[[1, 1, 0, 0, 0], [1, 1, 0, 0, 0], [0, 0, 1, 0, 0], [0, 0, 0, 1, 1]]" }
+  ],
+  "cases": [
+    { "args": { "grid": "[[1, 1, 0, 0, 0], [1, 1, 0, 0, 0], [0, 0, 1, 0, 0], [0, 0, 0, 1, 1]]" }, "expected": "3" },
+    { "args": { "grid": "[[1, 1, 1], [0, 1, 0], [1, 1, 1]]" }, "expected": "1" },
+    { "args": { "grid": "[[0]]" }, "expected": "0" },
+    { "args": { "grid": "[[1]]" }, "expected": "1" },
+    { "args": { "grid": "[[0, 0], [0, 0]]" }, "expected": "0" },
+    { "args": { "grid": "[[1, 0], [0, 1]]" }, "expected": "2" }
+  ]
+}
+```
+
+<details>
+<summary><strong>Editorial</strong></summary>
+
+The grid version is the identical pattern — the only change is that neighbours come from `(r±1, c)` / `(r, c±1)` deltas instead of an adjacency list. The sink function erases land cells in-place to avoid a separate `visited` array, but the two-level structure (outer cell loop + inner flood-fill) is unchanged.
+
+```python solution time=O(R×C) space=O(R×C)
+import ast
+
+def num_islands(grid):
+    if not grid: return 0
+    R, C = len(grid), len(grid[0])
+    def sink(r, c):
+        if r < 0 or r >= R or c < 0 or c >= C or grid[r][c] != 1: return
+        grid[r][c] = 0
+        sink(r+1, c); sink(r-1, c); sink(r, c+1); sink(r, c-1)
+    count = 0
+    for r in range(R):
+        for c in range(C):
+            if grid[r][c] == 1:
+                count += 1; sink(r, c)
+    return count
+
+grid = ast.literal_eval(input())
+print(num_islands(grid))
+```
+
+```java solution time=O(R×C) space=O(R×C)
+import java.util.*;
+
+public class Main {
+    static int R, C;
+
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
+    }
+
+    static void sink(int[][] g, int r, int c) {
+        if (r < 0 || r >= R || c < 0 || c >= C || g[r][c] != 1) return;
+        g[r][c] = 0;
+        sink(g, r+1, c); sink(g, r-1, c); sink(g, r, c+1); sink(g, r, c-1);
+    }
+
+    static int numIslands(int[][] g) {
+        if (g.length == 0) return 0;
+        R = g.length; C = g[0].length; int count = 0;
+        for (int r = 0; r < R; r++)
+            for (int c = 0; c < C; c++)
+                if (g[r][c] == 1) { count++; sink(g, r, c); }
+        return count;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[][] grid = parseIntMatrix(sc.nextLine());
+        System.out.println(numIslands(grid));
+    }
+}
+```
+
+</details>
+
+The four problems in this section's **Problems** folder cover both flavours: explicit-graph components, sum-of-minimums, island count, and largest-island size.
 
 ## Reflect & Connect
 

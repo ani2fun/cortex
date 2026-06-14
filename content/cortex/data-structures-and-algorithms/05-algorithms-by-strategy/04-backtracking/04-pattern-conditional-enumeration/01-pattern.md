@@ -54,8 +54,9 @@ def generate_balanced(n):
     helper(0, 0)
     return res
 
-s = generate_balanced(3)
-print(s)
+n = int(input())
+s = generate_balanced(n)
+print('[' + ', '.join(s) + ']')
 print("count:", len(s))
 ```
 
@@ -68,15 +69,30 @@ public class Main {
         if (closes < opens) { cur.append(')'); gen(n, opens, closes + 1, cur, res); cur.deleteCharAt(cur.length() - 1); }
     }
     public static void main(String[] args) {
+        int n = Integer.parseInt(new Scanner(System.in).nextLine().trim());
         List<String> res = new ArrayList<>();
-        gen(3, 0, 0, new StringBuilder(), res);
+        gen(n, 0, 0, new StringBuilder(), res);
         System.out.println(res);
         System.out.println("count: " + res.size());
     }
 }
 ```
 
-Both print the 5 balanced strings — `((()))`, `(()())`, `(())()`, `()(())`, `()()()` — and `count: 5`. The unpruned tree has `2⁶ = 64` length-6 strings; pruning walks only the 5 that survive.
+```testcases
+{
+  "args": [
+    { "id": "n", "label": "n", "type": "int", "placeholder": "3" }
+  ],
+  "cases": [
+    { "args": { "n": "2" }, "expected": "[(()), ()()]\ncount: 2" },
+    { "args": { "n": "3" }, "expected": "[((())), (()()), (())(), ()(()), ()()()]\ncount: 5" },
+    { "args": { "n": "1" }, "expected": "[()]\ncount: 1" },
+    { "args": { "n": "4" }, "expected": "[(((()))), ((()())), ((())()), ((()))(), (()(())), (()()()), (()())(), (())(()), (())()(), ()((())), ()(()()), ()(())(), ()()(()), ()()()()]\ncount: 14" }
+  ]
+}
+```
+
+Both print the balanced strings — `((()))`, `(()())`, `(())()`, `()(())`, `()()()` — and `count: 5`. The unpruned tree has `2⁶ = 64` length-6 strings; pruning walks only the 5 that survive.
 
 ## How It Works
 
@@ -139,6 +155,67 @@ It emits **20** strings, of which only **5** are balanced. Dropping the `closes 
 **Combination Sum** ([LeetCode 39](https://leetcode.com/problems/combination-sum/)) — find all combinations of candidates (reusable) that sum to a target. Constraint-bounded pruning: sort the candidates, and once one exceeds the remaining target, every later one does too — `break`.
 
 ```python run viz=array
+import ast
+
+def combination_sum(candidates, target):
+    # Your code goes here — sort candidates, backtrack with start index and remaining target
+    # break when candidates[i] > remaining (they're sorted, so all later are too)
+    return []
+
+candidates = ast.literal_eval(input())
+target = int(input())
+print(combination_sum(candidates, target))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static List<List<Integer>> combinationSum(int[] candidates, int target) {
+        // Your code goes here — sort candidates, backtrack with start index and remaining target
+        // break when candidates[i] > remaining (they're sorted, so all later are too)
+        return new ArrayList<>();
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] candidates = parseIntArray(sc.nextLine());
+        int target = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(combinationSum(candidates, target));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "candidates", "label": "candidates", "type": "int[]", "placeholder": "[2, 3, 6, 7]" },
+    { "id": "target", "label": "target", "type": "int", "placeholder": "7" }
+  ],
+  "cases": [
+    { "args": { "candidates": "[2, 3, 6, 7]", "target": "7" }, "expected": "[[2, 2, 3], [7]]" },
+    { "args": { "candidates": "[2, 3, 5]", "target": "8" }, "expected": "[[2, 2, 2, 2], [2, 3, 3], [3, 5]]" },
+    { "args": { "candidates": "[1, 2, 3]", "target": "4" }, "expected": "[[1, 1, 1, 1], [1, 1, 2], [1, 3], [2, 2]]" },
+    { "args": { "candidates": "[5]", "target": "5" }, "expected": "[[5]]" }
+  ]
+}
+```
+
+<details>
+<summary><strong>Editorial</strong></summary>
+
+```python solution time=O(n^(t/m)) space=O(t/m)
+import ast
+
 def combination_sum(candidates, target):
     candidates.sort()
     res, cur = [], []
@@ -154,12 +231,14 @@ def combination_sum(candidates, target):
     backtrack(0, target)
     return res
 
-print(combination_sum([2, 3, 6, 7], 7))             # [[2, 2, 3], [7]]
-print(combination_sum([2, 3, 5], 8))                # [[2, 2, 2, 2], [2, 3, 3], [3, 5]]
+candidates = ast.literal_eval(input())
+target = int(input())
+print(combination_sum(candidates, target))
 ```
 
-```java run viz=array
+```java solution
 import java.util.*;
+
 public class Main {
     static void cs(int[] c, int start, int rem, List<Integer> cur, List<List<Integer>> res) {
         if (rem == 0) { res.add(new ArrayList<>(cur)); return; }
@@ -172,17 +251,30 @@ public class Main {
         Arrays.sort(c); List<List<Integer>> res = new ArrayList<>();
         cs(c, 0, t, new ArrayList<>(), res); return res;
     }
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
     public static void main(String[] args) {
-        System.out.println(combinationSum(new int[]{2,3,6,7}, 7));   // [[2, 2, 3], [7]]
-        System.out.println(combinationSum(new int[]{2,3,5}, 8));     // [[2,2,2,2],[2,3,3],[3,5]]
+        Scanner sc = new Scanner(System.in);
+        int[] candidates = parseIntArray(sc.nextLine());
+        int target = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(combinationSum(candidates, target));
     }
 }
 ```
 
 Both print `[[2, 2, 3], [7]]` then `[[2,2,2,2],[2,3,3],[3,5]]`. The `break` (constraint-bounded prune) plus the `start`-index trick (avoid permuted duplicates) keep the search to viable combinations only. The four problems in this section's **Problems** folder cover both flavours: generate-parentheses (choice-bounded), target-sum (constraint-bounded), IP addresses (both), and string permutations.
 
+</details>
+
 ## Reflect & Connect
 
+- **Practice —** [Generate Parentheses](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-conditional-enumeration-generate-parentheses), [Target Sum Combinations](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-conditional-enumeration-target-sum-combinations), [Generate IP Addresses](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-conditional-enumeration-generate-ip-addresses), [String Permutations](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-conditional-enumeration-string-permutations)
 - **The middle of the backtracking spectrum.** [Unconditional](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-unconditional-enumeration) records every leaf; conditional prunes doomed partials; backtracking search mutates a structure and undoes on failure. Same choose/recurse/undo skeleton, increasing discipline.
 - **Pruning is correctness, not just speed.** Well-designed viability checks make every recorded leaf valid by construction — you often don't need a separate leaf validator at all. The dropped-guard experiment shows what you lose without it.
 - **Auxiliary state powers the prune.** You can only classify a partial as doomed if you carry the right running summary — counts, a remaining target, a position. Designing that state *is* designing the pruning.

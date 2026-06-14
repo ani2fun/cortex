@@ -4,6 +4,8 @@ summary: "Given a positive integer n, return a list containing the numbers from 
 prereqs:
   - 06-pattern-tail-recursion/01-pattern
 difficulty: easy
+kind: problem
+topics: [tail-recursion, recursion]
 ---
 
 # Reverse Sequence
@@ -16,15 +18,82 @@ The mirror image of Forward Sequence from the Head Recursion lesson. Same proble
 
 Given a positive integer `n`, return a list containing the numbers from `n` down to `1`. You **must** solve this recursively.
 
+---
+
+## Examples
+
+**Example 1**
 ```
 Input:  n = 5
 Output: [5, 4, 3, 2, 1]
-
-Input:  n = 1
-Output: [1]
+Explanation: Numbers from 5 down to 1, appended during descent.
 ```
 
----
+**Example 2**
+```
+Input:  n = 1
+Output: [1]
+Explanation: Single element — append 1, recurse to n=0 which is the base case.
+```
+
+## Constraints
+
+- `1 ≤ n ≤ 1000`
+- Must be solved recursively.
+
+```python run viz=array viz-root=result
+from typing import List
+
+class Solution:
+    def helper(self, n: int, result: List[int]) -> None:
+        # Your code goes here
+        pass
+
+    def reverse_sequence(self, n: int) -> List[int]:
+        result: List[int] = []
+        self.helper(n, result)
+        return result
+
+n = int(input())
+print(Solution().reverse_sequence(n))
+```
+
+```java run viz=array viz-root=result
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        private void helper(int n, List<Integer> result) {
+            // Your code goes here
+        }
+
+        public List<Integer> reverseSequence(int n) {
+            List<Integer> result = new ArrayList<>();
+            helper(n, result);
+            return result;
+        }
+    }
+
+    public static void main(String[] args) {
+        int n = Integer.parseInt(new Scanner(System.in).nextLine().trim());
+        System.out.println(new Solution().reverseSequence(n));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "n", "label": "n", "type": "int", "placeholder": "5" }
+  ],
+  "cases": [
+    { "args": { "n": "5" }, "expected": "[5, 4, 3, 2, 1]" },
+    { "args": { "n": "1" }, "expected": "[1]" },
+    { "args": { "n": "3" }, "expected": "[3, 2, 1]" },
+    { "args": { "n": "10" }, "expected": "[10, 9, 8, 7, 6, 5, 4, 3, 2, 1]" }
+  ]
+}
+```
 
 <details>
 <summary><h2>Why Tail Recursion Fits Here</h2></summary>
@@ -126,7 +195,7 @@ state: "n=0 — base case fires, return" {
 
 ### The Solution
 
-```python run viz=array viz-root=result
+```python solution time=O(n) space=O(n)
 from typing import List
 
 class Solution:
@@ -159,16 +228,11 @@ class Solution:
         return result
 
 
-# Examples from the problem statement
-print(Solution().reverse_sequence(5))   # [5, 4, 3, 2, 1]
-
-# Edge cases
-print(Solution().reverse_sequence(1))   # [1]
-print(Solution().reverse_sequence(3))   # [3, 2, 1]
-print(Solution().reverse_sequence(10))  # [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+n = int(input())
+print(Solution().reverse_sequence(n))
 ```
 
-```java run viz=array viz-root=result
+```java solution
 import java.util.*;
 
 public class Main {
@@ -191,7 +255,7 @@ public class Main {
             helper(N - 1, result);
         }
 
-        public List<Integer> reverseSquence(int N) {
+        public List<Integer> reverseSequence(int N) {
 
             // Initialize an empty list to store the result
             List<Integer> result = new ArrayList<>();
@@ -206,13 +270,8 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().reverseSquence(5));   // [5, 4, 3, 2, 1]
-
-        // Edge cases
-        System.out.println(new Solution().reverseSquence(1));   // [1]
-        System.out.println(new Solution().reverseSquence(3));   // [3, 2, 1]
-        System.out.println(new Solution().reverseSquence(10));  // [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+        int n = Integer.parseInt(new Scanner(System.in).nextLine().trim());
+        System.out.println(new Solution().reverseSequence(n));
     }
 }
 ```

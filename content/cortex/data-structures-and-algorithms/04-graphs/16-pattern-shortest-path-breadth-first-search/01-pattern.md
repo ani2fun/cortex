@@ -36,38 +36,36 @@ flowchart TB
 
 ## See It Work
 
-Shortest path on that graph (0 = Source … 5 = Target). Each queue entry carries `(node, distance)`; the first time we pop the target, that distance is minimal.
+Shortest path on an unweighted graph. The graph crosses stdin as an **adjacency list** — `graph[u]` is node `u`'s list of neighbours. Each queue entry carries `(node, distance)`; the first time we pop the target, that distance is minimal. Pick a case and **Run** it.
 
 ```python run viz=graph viz-kind=graph
+import ast
 from collections import deque
 
-adj = {0: [1, 2], 1: [0, 3], 2: [0, 3, 4], 3: [1, 2], 4: [2, 5], 5: [4]}
-
-def bfs_dist(adj, source, target):
+def bfs_dist(graph, source, target):
     queue = deque([(source, 0)])
     seen = {source}
     while queue:
         node, d = queue.popleft()                       # FIFO: nearest-first
         if node == target:
             return d                                    # first arrival = shortest
-        for nb in adj[node]:
+        for nb in graph[node]:
             if nb not in seen:
                 seen.add(nb)                            # mark at PUSH time
                 queue.append((nb, d + 1))
     return -1
 
-print("0 -> 5:", bfs_dist(adj, 0, 5))                   # 3
-print("0 -> 3:", bfs_dist(adj, 0, 3))                   # 2
+graph = ast.literal_eval(input())   # adjacency list: graph[u] = u's neighbours
+source = int(input())
+target = int(input())
+print(bfs_dist(graph, source, target))
 ```
 
 ```java run viz=graph viz-kind=graph
 import java.util.*;
 
 public class Main {
-    static Map<Integer, List<Integer>> adj = Map.of(
-        0, List.of(1, 2), 1, List.of(0, 3), 2, List.of(0, 3, 4), 3, List.of(1, 2), 4, List.of(2, 5), 5, List.of(4));
-
-    static int bfsDist(int source, int target) {
+    static int bfsDist(int[][] graph, int source, int target) {
         Deque<int[]> queue = new ArrayDeque<>();
         queue.add(new int[]{source, 0});
         Set<Integer> seen = new HashSet<>(); seen.add(source);
@@ -75,21 +73,57 @@ public class Main {
             int[] cur = queue.poll();                    // FIFO: nearest-first
             int node = cur[0], d = cur[1];
             if (node == target) return d;                // first arrival = shortest
-            for (int nb : adj.get(node))
-                if (seen.add(nb))                        // add returns false if already present (mark at PUSH)
+            for (int nb : graph[node])
+                if (seen.add(nb))                        // add returns false if already present
                     queue.add(new int[]{nb, d + 1});
         }
         return -1;
     }
 
     public static void main(String[] args) {
-        System.out.println("0 -> 5: " + bfsDist(0, 5));   // 3
-        System.out.println("0 -> 3: " + bfsDist(0, 3));   // 2
+        Scanner sc = new Scanner(System.in);
+        int[][] graph = parseIntMatrix(sc.nextLine());
+        int source = Integer.parseInt(sc.nextLine().trim());
+        int target = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(bfsDist(graph, source, target));
+    }
+
+    // "[[1, 2], [0, 3], [0, 3, 4]]" → adjacency list graph[u] = u's neighbours
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
     }
 }
 ```
 
-Both print `0 -> 5: 3` and `0 -> 3: 2` — the FIFO queue hands back the minimum hop-count for free.
+```testcases
+{
+  "args": [
+    { "id": "graph", "label": "graph", "type": "int[][]", "placeholder": "[[1, 2], [0, 3], [0, 3, 4], [1, 2], [2, 5], [4]]" },
+    { "id": "source", "label": "source", "type": "int", "placeholder": "0" },
+    { "id": "target", "label": "target", "type": "int", "placeholder": "5" }
+  ],
+  "cases": [
+    { "args": { "graph": "[[1, 2], [0, 3], [0, 3, 4], [1, 2], [2, 5], [4]]", "source": "0", "target": "5" }, "expected": "3" },
+    { "args": { "graph": "[[1, 2], [0, 3], [0, 3, 4], [1, 2], [2, 5], [4]]", "source": "0", "target": "3" }, "expected": "2" },
+    { "args": { "graph": "[[1], [2], []]", "source": "0", "target": "2" }, "expected": "2" },
+    { "args": { "graph": "[[], [0]]", "source": "0", "target": "1" }, "expected": "-1" }
+  ]
+}
+```
+
+Both print `3` for the `0 → 5` query — the FIFO queue hands back the minimum hop-count for free. The BFS visits ring 1 (`{1, 2}`) before ring 2 (`{3, 4}`), so the 3-hop path through node 4 is found before any longer detour.
 
 ## How It Works
 
@@ -150,7 +184,74 @@ FIFO returns `2`; LIFO returns `3`. With a stack, the search dives down the firs
 
 The grid classic: **Shortest Path in Binary Matrix** ([LeetCode 1091](https://leetcode.com/problems/shortest-path-in-binary-matrix/)). From the top-left to the bottom-right of an `n × n` grid, moving through `0` cells in any of **8** directions, return the number of cells on the shortest clear path (or `-1`).
 
-```python run viz=grid
+```python run viz=grid viz-root=grid
+import ast
+from collections import deque
+
+def shortest_path_binary_matrix(grid):
+    # Your code goes here — BFS from (0,0) to (n-1,n-1) through 0-cells,
+    # 8 directions. Distance counts CELLS (start = 1). Return -1 if blocked.
+    pass
+
+grid = ast.literal_eval(input())
+print(shortest_path_binary_matrix(grid))
+```
+
+```java run viz=grid viz-root=grid
+import java.util.*;
+
+public class Main {
+    static int shortestPathBinaryMatrix(int[][] grid) {
+        // Your code goes here — BFS from (0,0) to (n-1,n-1) through 0-cells,
+        // 8 directions. Distance counts CELLS (start = 1). Return -1 if blocked.
+        return -1;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[][] grid = parseIntMatrix(sc.nextLine());
+        System.out.println(shortestPathBinaryMatrix(grid));
+    }
+
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "grid", "label": "grid", "type": "int[][]", "placeholder": "[[0, 0, 0], [1, 1, 0], [1, 1, 0]]" }
+  ],
+  "cases": [
+    { "args": { "grid": "[[0, 0, 0], [1, 1, 0], [1, 1, 0]]" }, "expected": "4" },
+    { "args": { "grid": "[[1, 0, 0], [1, 1, 0], [1, 1, 0]]" }, "expected": "-1" },
+    { "args": { "grid": "[[0, 0], [0, 0]]" }, "expected": "2" },
+    { "args": { "grid": "[[0]]" }, "expected": "1" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+The grid is an implicit graph. Treat each `(r, c)` as a node; neighbours are the eight adjacent cells that are in-bounds, unblocked (`0`), and not yet seen. Seed BFS at `(0, 0)` with distance `1` (the count includes the start cell). Return the distance the first time you dequeue `(n-1, n-1)`. If the start or end is blocked, short-circuit to `-1` immediately.
+
+```python solution time=O(n²) space=O(n²)
+import ast
 from collections import deque
 
 def shortest_path_binary_matrix(grid):
@@ -168,11 +269,11 @@ def shortest_path_binary_matrix(grid):
                     seen.add((nr, nc)); q.append((nr, nc, d + 1))
     return -1
 
-print(shortest_path_binary_matrix([[0,0,0],[1,1,0],[1,1,0]]))   # 4
-print(shortest_path_binary_matrix([[1,0,0],[1,1,0],[1,1,0]]))   # -1
+grid = ast.literal_eval(input())
+print(shortest_path_binary_matrix(grid))
 ```
 
-```java run viz=grid
+```java solution
 import java.util.*;
 
 public class Main {
@@ -199,13 +300,30 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        System.out.println(shortestPathBinaryMatrix(new int[][]{{0,0,0},{1,1,0},{1,1,0}}));   // 4
-        System.out.println(shortestPathBinaryMatrix(new int[][]{{1,0,0},{1,1,0},{1,1,0}}));   // -1
+        Scanner sc = new Scanner(System.in);
+        int[][] grid = parseIntMatrix(sc.nextLine());
+        System.out.println(shortestPathBinaryMatrix(grid));
+    }
+
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
     }
 }
 ```
 
-Both print `4` then `-1`: the clear diagonal-friendly path is 4 cells, and a blocked start is unreachable. The four problems in this section's **Problems** folder drill the variants — grid steps, nearest-distance, and word-transformation ladders.
+</details>
 
 ## Reflect & Connect
 
@@ -252,4 +370,4 @@ Both print `4` then `-1`: the clear diagonal-friendly path is 4 cells, and a blo
 - **CLRS** (Cormen, Leiserson, Rivest, Stein), *Introduction to Algorithms*, 3rd ed., §22.2 — breadth-first search and the theorem that BFS computes shortest-path distances on unweighted graphs.
 - **Sedgewick & Wayne**, *Algorithms*, 4th ed., §4.1 — `BreadthFirstPaths`: BFS shortest paths in number of edges, with the FIFO-order argument.
 - **Skiena**, *The Algorithm Design Manual*, 3rd ed., §5.6–5.7 — BFS, its shortest-path property, and 0-1 BFS / multi-source extensions.
-- **LeetCode 1091** "Shortest Path in Binary Matrix" and **127** "Word Ladder" are the canonical drills. The `3`/`2`, FIFO-vs-LIFO `2`/`3`, and `4`/`-1` outputs above come from the runnable blocks — re-run to verify.
+- **LeetCode 1091** "Shortest Path in Binary Matrix" and **127** "Word Ladder" are the canonical drills. The outputs above come from the runnable blocks — re-run to verify.

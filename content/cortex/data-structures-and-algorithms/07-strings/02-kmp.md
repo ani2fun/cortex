@@ -42,8 +42,10 @@ def kmp_search(text, pattern):
             j = lps[j - 1]                           # keep going (handles overlaps)
     return hits
 
-print(build_lps("ababaca"))                          # [0, 0, 1, 2, 3, 0, 1]
-print(kmp_search("abxabcabcaby", "abcaby"))          # [6]
+pattern = input()
+text = input()
+print(build_lps(pattern))
+print(kmp_search(text, pattern))
 ```
 
 ```java run viz=array
@@ -70,13 +72,31 @@ public class Main {
         return hits;
     }
     public static void main(String[] args) {
-        System.out.println(Arrays.toString(buildLps("ababaca")));   // [0, 0, 1, 2, 3, 0, 1]
-        System.out.println(kmpSearch("abxabcabcaby", "abcaby"));    // [6]
+        Scanner sc = new Scanner(System.in);
+        String pattern = sc.nextLine();
+        String text = sc.nextLine();
+        System.out.println(Arrays.toString(buildLps(pattern)));
+        System.out.println(kmpSearch(text, pattern));
     }
 }
 ```
 
-Both print the `lps` array `[0, 0, 1, 2, 3, 0, 1]` then `[6]`. The pattern `"abcaby"` matches only at index 6 — the same answer naive gives, but the text pointer here never rewinds. Build `O(m)`, search `O(n)`, total `O(n + m)`.
+```testcases
+{
+  "args": [
+    { "id": "pattern", "label": "pattern", "type": "string", "placeholder": "ababaca" },
+    { "id": "text", "label": "text", "type": "string", "placeholder": "abxabcabcaby" }
+  ],
+  "cases": [
+    { "args": { "pattern": "ababaca", "text": "abxabcabcaby" }, "expected": "[0, 0, 1, 2, 3, 0, 1]\n[]" },
+    { "args": { "pattern": "abcabc", "text": "abcabcabc" }, "expected": "[0, 0, 0, 1, 2, 3]\n[0, 3]" },
+    { "args": { "pattern": "aab", "text": "aababcaab" }, "expected": "[0, 1, 0]\n[0, 6]" },
+    { "args": { "pattern": "abab", "text": "ababababab" }, "expected": "[0, 0, 1, 2]\n[0, 2, 4, 6]" }
+  ]
+}
+```
+
+Both print the `lps` array then the list of match positions. The pattern `"ababaca"` against `"abxabcabcaby"` shows `lps = [0, 0, 1, 2, 3, 0, 1]` with no match (the text has `"abcaby"` not `"ababaca"`); `"abcabc"` matches at both 0 and 3 in `"abcabcabc"`. Build `O(m)`, search `O(n)`, total `O(n + m)`.
 
 ## How It Works
 
@@ -147,17 +167,82 @@ def build_lps(s):
     return lps
 
 def repeated_substring(s):
+    # Your code goes here
+    return False
+
+s = input()
+print("true" if repeated_substring(s) else "false")
+```
+
+```java run viz=array
+import java.util.*;
+public class Main {
+    static int[] buildLps(String s) {
+        int m = s.length(); int[] lps = new int[m]; int k = 0;
+        for (int i = 1; i < m; i++) {
+            while (k > 0 && s.charAt(i) != s.charAt(k)) k = lps[k - 1];
+            if (s.charAt(i) == s.charAt(k)) k++;
+            lps[i] = k;
+        }
+        return lps;
+    }
+    static boolean repeatedSubstring(String s) {
+        // Your code goes here
+        return false;
+    }
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String s = sc.nextLine();
+        System.out.println(repeatedSubstring(s));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "string", "type": "string", "placeholder": "abab" }
+  ],
+  "cases": [
+    { "args": { "s": "abab" }, "expected": "true" },
+    { "args": { "s": "aba" }, "expected": "false" },
+    { "args": { "s": "abcabcabc" }, "expected": "true" },
+    { "args": { "s": "aaaa" }, "expected": "true" },
+    { "args": { "s": "abcdef" }, "expected": "false" }
+  ]
+}
+```
+
+`"abab"` has period `4 - 2 = 2` (`"ab"` repeats); `"aba"` has period `3 - 1 = 2`, which doesn't divide 3, so it's not a clean repetition; `"abcabcabc"` has period 3. The failure function encodes the deepest self-overlap, and that overlap *is* the period — a slick reuse of KMP's precompute for a problem that has nothing obviously to do with searching.
+
+<details>
+<summary><strong>Editorial</strong></summary>
+
+`n - lps[n-1]` is the shortest period of the string. If that period divides `n` and `lps[n-1] > 0` (so there's a nontrivial overlap), the string is a clean repetition of a smaller block. Build the lps array in `O(n)` and check two conditions.
+
+```python solution time=O(n) space=O(n)
+def build_lps(s):
+    m = len(s); lps = [0] * m; k = 0
+    for i in range(1, m):
+        while k > 0 and s[i] != s[k]:
+            k = lps[k - 1]
+        if s[i] == s[k]:
+            k += 1
+        lps[i] = k
+    return lps
+
+def repeated_substring(s):
     n = len(s)
     lps = build_lps(s)
     period = n - lps[n - 1]                           # shortest period candidate
     return lps[n - 1] > 0 and n % period == 0
 
-print(repeated_substring("abab"))        # True   ("ab" x 2)
-print(repeated_substring("aba"))         # False
-print(repeated_substring("abcabcabc"))   # True   ("abc" x 3)
+s = input()
+print("true" if repeated_substring(s) else "false")
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
 public class Main {
     static int[] buildLps(String s) {
         int m = s.length(); int[] lps = new int[m]; int k = 0;
@@ -173,14 +258,14 @@ public class Main {
         return lps[n - 1] > 0 && n % period == 0;
     }
     public static void main(String[] args) {
-        System.out.println(repeatedSubstring("abab"));        // true
-        System.out.println(repeatedSubstring("aba"));         // false
-        System.out.println(repeatedSubstring("abcabcabc"));   // true
+        Scanner sc = new Scanner(System.in);
+        String s = sc.nextLine();
+        System.out.println(repeatedSubstring(s));
     }
 }
 ```
 
-Both print `true`, `false`, `true`. `"abab"` has period `4 - 2 = 2` (`"ab"` repeats); `"aba"` has period `3 - 1 = 2`, which doesn't divide 3, so it's not a clean repetition; `"abcabcabc"` has period 3. The failure function encodes the deepest self-overlap, and that overlap *is* the period — a slick reuse of KMP's precompute for a problem that has nothing obviously to do with searching.
+</details>
 
 ## Reflect & Connect
 

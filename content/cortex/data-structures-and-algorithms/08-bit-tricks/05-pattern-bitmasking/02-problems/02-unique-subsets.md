@@ -4,23 +4,102 @@ summary: "Given an array of n distinct elements, return every possible subset (t
 prereqs:
   - 05-pattern-bitmasking/01-pattern
 difficulty: medium
+kind: problem
+topics: [bitmasking, bit-manipulation]
 ---
 
 # Unique Subsets
 
-## The Problem
+Enumerate the entire power set by treating each integer `0..2^n−1` as a bitmask encoding one subset.
+
+## Problem Statement
 
 Given an array of `n` distinct elements, return every possible subset (the power set). Order of subsets doesn't matter.
 
+## Examples
+
+**Example 1**
 ```
-Input:  [1, 2, 3]
-Output: [[], [1], [2], [1, 2], [3], [1, 3], [2, 3], [1, 2, 3]]   (8 subsets)
+Input:  arr = [1, 2, 3]
+Output: [[], [1], [2], [1, 2], [3], [1, 3], [2, 3], [1, 2, 3]]
+Explanation: 8 subsets for 3 elements (2^3 = 8), listed in natural bitmask order.
+```
 
-Input:  [1]
+**Example 2**
+```
+Input:  arr = [1]
 Output: [[], [1]]
+Explanation: 2 subsets for 1 element.
+```
 
-Input:  []
+**Example 3**
+```
+Input:  arr = []
 Output: [[]]
+Explanation: The empty array has exactly one subset — the empty set.
+```
+
+## Constraints
+
+- `0 ≤ n ≤ 20` — `n` is small; there are `2^n` subsets (feasibility ceiling for bitmask enumeration).
+- All elements are distinct integers.
+- Return subsets in natural bitmask order (mask `0` to `2^n - 1`); both Python and Java iterate identically so output is byte-exact.
+
+```python run viz=array viz-root=arr
+import ast
+
+class Solution:
+    def unique_subsets(self, arr):
+        # Your code goes here
+        return [[]]
+
+arr = ast.literal_eval(input())
+print(Solution().unique_subsets(arr))
+```
+
+```java run viz=array viz-root=arr
+import java.util.*;
+
+public class Main {
+  static int[] parseIntArray(String s) {
+    s = s.trim();
+    if (s.equals("[]")) return new int[0];
+    s = s.substring(1, s.length() - 1);
+    String[] parts = s.split(",");
+    int[] a = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) a[i] = Integer.parseInt(parts[i].trim());
+    return a;
+  }
+
+  static class Solution {
+    public List<List<Integer>> uniqueSubsets(int[] arr) {
+      // Your code goes here
+      List<List<Integer>> result = new ArrayList<>();
+      result.add(new ArrayList<>());
+      return result;
+    }
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine().trim());
+    System.out.println(new Solution().uniqueSubsets(arr));
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "array", "placeholder": "[1, 2, 3]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[1, 2, 3]" }, "expected": "[[], [1], [2], [1, 2], [3], [1, 3], [2, 3], [1, 2, 3]]" },
+    { "args": { "arr": "[1]" }, "expected": "[[], [1]]" },
+    { "args": { "arr": "[]" }, "expected": "[[]]" },
+    { "args": { "arr": "[1, 2]" }, "expected": "[[], [1], [2], [1, 2]]" }
+  ]
+}
 ```
 
 <details>
@@ -74,7 +153,8 @@ Because the map from masks to subsets is a *bijection*: each `n`-bit integer enc
 
 ### The Solution
 
-```python run viz=array viz-root=arr
+```python solution time=O(n × 2^n) space=O(n × 2^n)
+import ast
 from typing import List
 
 class Solution:
@@ -104,63 +184,60 @@ class Solution:
         return unique_subsets
 
 
-# Examples from the problem statement
-print(Solution().unique_subsets([1, 2, 3]))    # [[], [1], [2], [1, 2], [3], [1, 3], [2, 3], [1, 2, 3]]
-print(Solution().unique_subsets([1]))          # [[], [1]]
-print(Solution().unique_subsets([]))           # [[]]
-
-# Edge cases
-print(len(Solution().unique_subsets([1, 2])))        # 4
-print(len(Solution().unique_subsets([1, 2, 3, 4])))  # 16
-print(Solution().unique_subsets([5]))                # [[], [5]]
+arr = ast.literal_eval(input())
+print(Solution().unique_subsets(arr))
 ```
 
-```java run viz=array viz-root=arr
+```java solution
 import java.util.*;
 
 public class Main {
-    static class Solution {
-        public List<List<Integer>> uniqueSubsets(int[] arr) {
-            int n = arr.length;
+  static int[] parseIntArray(String s) {
+    s = s.trim();
+    if (s.equals("[]")) return new int[0];
+    s = s.substring(1, s.length() - 1);
+    String[] parts = s.split(",");
+    int[] a = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) a[i] = Integer.parseInt(parts[i].trim());
+    return a;
+  }
 
-            // Total number of uniqueSubsets will be 2^n
-            int powerSetSize = 1 << n;
+  static class Solution {
+    public List<List<Integer>> uniqueSubsets(int[] arr) {
+      int n = arr.length;
 
-            // List to store all uniqueSubsets
-            List<List<Integer>> uniqueSubsets = new ArrayList<>(
-                powerSetSize
-            );
+      // Total number of uniqueSubsets will be 2^n
+      int powerSetSize = 1 << n;
 
-            // Generate uniqueSubsets using bitmasking
-            for (int i = 0; i < powerSetSize; i++) {
-                List<Integer> subset = new ArrayList<>();
-                for (int j = 0; j < n; j++) {
+      // List to store all uniqueSubsets
+      List<List<Integer>> uniqueSubsets = new ArrayList<>(
+          powerSetSize
+      );
 
-                    // Check if j-th bit is set in i
-                    if (((i >> j) & 1) == 1) {
+      // Generate uniqueSubsets using bitmasking
+      for (int i = 0; i < powerSetSize; i++) {
+        List<Integer> subset = new ArrayList<>();
+        for (int j = 0; j < n; j++) {
 
-                        // Add arr[j] to the current subset
-                        subset.add(arr[j]);
-                    }
-                }
-                uniqueSubsets.add(subset);
-            }
+          // Check if j-th bit is set in i
+          if (((i >> j) & 1) == 1) {
 
-            return uniqueSubsets;
+            // Add arr[j] to the current subset
+            subset.add(arr[j]);
+          }
         }
-    }
+        uniqueSubsets.add(subset);
+      }
 
-    public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().uniqueSubsets(new int[]{1, 2, 3}));    // [[], [1], [2], [1, 2], [3], [1, 3], [2, 3], [1, 2, 3]]
-        System.out.println(new Solution().uniqueSubsets(new int[]{1}));          // [[], [1]]
-        System.out.println(new Solution().uniqueSubsets(new int[]{}));           // [[]]
-
-        // Edge cases
-        System.out.println(new Solution().uniqueSubsets(new int[]{1, 2}).size());        // 4
-        System.out.println(new Solution().uniqueSubsets(new int[]{1, 2, 3, 4}).size());  // 16
-        System.out.println(new Solution().uniqueSubsets(new int[]{5}));                  // [[], [5]]
+      return uniqueSubsets;
     }
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine().trim());
+    System.out.println(new Solution().uniqueSubsets(arr));
+  }
 }
 ```
 

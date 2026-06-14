@@ -15,20 +15,65 @@ Each pass scans the entire unsorted region to find its smallest element, then sw
 
 ## See It Work
 
-Sort `[5, 2, 8, 1, 9, 3]` by selecting the minimum each pass. Run it, then **Visualise** the minimum jump to the front of the unsorted region.
+Sort an array by selecting the minimum each pass. Run it, then **Visualise** the minimum jump to the front of the unsorted region.
 
 > ▶ Run it, then click **Visualise** — each pass finds the smallest remaining value and swaps it into the next sorted slot.
 
 ```python run viz=array viz-root=arr
-arr = [5, 2, 8, 1, 9, 3]
+import ast
+
+arr = ast.literal_eval(input())         # the test case's array
 n = len(arr)
 for i in range(n - 1):
     min_idx = i
-    for j in range(i + 1, n):        # scan the unsorted region [i+1 .. n) for its minimum
+    for j in range(i + 1, n):          # scan the unsorted region [i+1 .. n) for its minimum
         if arr[j] < arr[min_idx]:
             min_idx = j
     arr[i], arr[min_idx] = arr[min_idx], arr[i]   # one swap: minimum into slot i
-print(arr)                           # [1, 2, 3, 5, 8, 9]
+print(arr)                              # [1, 2, 3, 5, 8, 9]
+```
+
+```java run viz=array viz-root=arr
+import java.util.*;
+
+public class Main {
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());   // the test case's array
+    int n = arr.length;
+    for (int i = 0; i < n - 1; i++) {
+      int minIdx = i;
+      for (int j = i + 1; j < n; j++)          // scan unsorted region for minimum
+        if (arr[j] < arr[minIdx]) minIdx = j;
+      int t = arr[i]; arr[i] = arr[minIdx]; arr[minIdx] = t;   // one swap: minimum into slot i
+    }
+    System.out.println(Arrays.toString(arr));   // [1, 2, 3, 5, 8, 9]
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's array
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[5, 2, 8, 1, 9, 3]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[5, 2, 8, 1, 9, 3]" }, "expected": "[1, 2, 3, 5, 8, 9]" },
+    { "args": { "arr": "[1, 2, 3, 4]" }, "expected": "[1, 2, 3, 4]" },
+    { "args": { "arr": "[3, 1, 2]" }, "expected": "[1, 2, 3]" },
+    { "args": { "arr": "[1]" }, "expected": "[1]" }
+  ]
+}
 ```
 
 ## How It Works
@@ -71,9 +116,67 @@ Because selection sort never learns whether the array is sorted — it only ever
 
 ## Your Turn
 
-The reusable selection sort:
+Implement selection sort: each pass find the minimum of the unsorted region and swap it into the next sorted slot. Return the sorted array.
 
 ```python run viz=array
+import ast
+
+def selection_sort(arr):
+    # Your code goes here — each pass: find min of arr[i..n-1], swap into slot i.
+    return arr
+
+arr = ast.literal_eval(input())      # the test case's array
+print(selection_sort(arr))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+  static int[] selectionSort(int[] arr) {
+    // Your code goes here — each pass: find min of arr[i..n-1], swap into slot i.
+    return arr;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());
+    System.out.println(Arrays.toString(selectionSort(arr)));
+  }
+
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[5, 2, 8, 1, 9, 3]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[5, 2, 8, 1, 9, 3]" }, "expected": "[1, 2, 3, 5, 8, 9]" },
+    { "args": { "arr": "[1, 2, 3, 4]" }, "expected": "[1, 2, 3, 4]" },
+    { "args": { "arr": "[9, 7, 5, 3, 1]" }, "expected": "[1, 3, 5, 7, 9]" },
+    { "args": { "arr": "[2, 1]" }, "expected": "[1, 2]" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Two nested loops with no early-exit. The inner loop scans `arr[i..n-1]` tracking the index of the minimum; after the scan, a single swap places the minimum at index `i`. The sorted prefix grows by one per pass, making `n−1` passes and `n−1` swaps total. `O(n²)` comparisons always (not adaptive), `O(1)` space, not stable.
+
+```python solution time=O(n^2) space=O(1)
+import ast
+
 def selection_sort(arr):
     n = len(arr)
     for i in range(n - 1):
@@ -84,11 +187,11 @@ def selection_sort(arr):
         arr[i], arr[min_idx] = arr[min_idx], arr[i]
     return arr
 
-print(selection_sort([5, 2, 8, 1, 9, 3]))   # [1, 2, 3, 5, 8, 9]
-print(selection_sort([3, 1, 2]))            # [1, 2, 3]
+arr = ast.literal_eval(input())      # the test case's array
+print(selection_sort(arr))
 ```
 
-```java run viz=array
+```java solution
 import java.util.*;
 
 public class Main {
@@ -104,12 +207,23 @@ public class Main {
   }
 
   public static void main(String[] args) {
-    System.out.println(Arrays.toString(selectionSort(new int[]{5, 2, 8, 1, 9, 3})));   // [1, 2, 3, 5, 8, 9]
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());
+    System.out.println(Arrays.toString(selectionSort(arr)));
+  }
+
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
   }
 }
 ```
 
-This is a structural lesson — drill sorting in the pattern sets.
+</details>
 
 ## Reflect & Connect
 

@@ -4,6 +4,8 @@ summary: "Given a queue q, reverse its contents in place. You may not return a n
 prereqs:
   - 05-pattern-head-recursion/01-pattern
 difficulty: medium
+kind: problem
+topics: [head-recursion, recursion]
 ---
 
 # Reverse a Queue
@@ -16,12 +18,89 @@ The hardest of the four. The recursive structure is still head-recursion-flavour
 
 Given a queue `q`, reverse its contents in place. You may not return a new queue. You **must** solve this recursively.
 
+---
+
+## Examples
+
+**Example 1**
 ```
 Input:  q = [1, 2, 3, 4, 5, 6, 7]   (front on the left)
 Output: q = [7, 6, 5, 4, 3, 2, 1]
 ```
 
----
+**Example 2**
+```
+Input:  q = [1, 2]
+Output: q = [2, 1]
+Explanation: dequeue 1, recurse on [2] (base), enqueue 1 → [2, 1].
+```
+
+## Constraints
+
+- `0 ≤ q.length ≤ 10⁴`
+- Elements are integers.
+- Must be solved recursively; no auxiliary data structure other than the call stack.
+
+```python run viz=array
+import ast
+from typing import List
+
+class Solution:
+    def reverse_a_queue(self, q: List[int]) -> None:
+        # Your code goes here — base case: size 0 or 1 returns;
+        # otherwise dequeue front, recurse, then enqueue front at back.
+        pass
+
+q = ast.literal_eval(input())
+Solution().reverse_a_queue(q)
+print(q)
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public void reverseAQueue(List<Integer> q) {
+            // Your code goes here — base case: size 0 or 1 returns;
+            // otherwise remove(0) for dequeue, recurse, then add for enqueue.
+        }
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i].trim());
+        return out;
+    }
+
+    public static void main(String[] args) {
+        int[] arr = parseIntArray(new Scanner(System.in).nextLine().trim());
+        List<Integer> q = new ArrayList<>();
+        for (int v : arr) q.add(v);
+        new Solution().reverseAQueue(q);
+        System.out.println(q);
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "q", "label": "q", "type": "int[]", "placeholder": "[1, 2, 3, 4, 5, 6, 7]" }
+  ],
+  "cases": [
+    { "args": { "q": "[1, 2, 3, 4, 5, 6, 7]" }, "expected": "[7, 6, 5, 4, 3, 2, 1]" },
+    { "args": { "q": "[]" }, "expected": "[]" },
+    { "args": { "q": "[42]" }, "expected": "[42]" },
+    { "args": { "q": "[1, 2]" }, "expected": "[2, 1]" },
+    { "args": { "q": "[3, 3, 3]" }, "expected": "[3, 3, 3]" },
+    { "args": { "q": "[10, 20, 30, 40, 50]" }, "expected": "[50, 40, 30, 20, 10]" }
+  ]
+}
+```
 
 <details>
 <summary><h2>What Makes Reversing a Queue Recursively Tricky?</h2></summary>
@@ -130,7 +209,8 @@ The "stash" is conceptual — those saved fronts physically live in `frontElemen
 
 ### The Solution
 
-```python run viz=array viz-root=q1
+```python solution time=O(n) space=O(n)
+import ast
 from typing import List
 
 class Solution:
@@ -150,33 +230,17 @@ class Solution:
         q.append(front_element)
 
 
-# Examples from the problem statement
-q1 = [1, 2, 3, 4, 5, 6, 7]
-Solution().reverse_a_queue(q1); print(q1)   # [7, 6, 5, 4, 3, 2, 1]
-
-# Edge cases
-q2: List[int] = []
-Solution().reverse_a_queue(q2); print(q2)   # []
-
-q3 = [42]
-Solution().reverse_a_queue(q3); print(q3)   # [42]
-
-q4 = [1, 2]
-Solution().reverse_a_queue(q4); print(q4)   # [2, 1]
-
-q5 = [3, 3, 3]
-Solution().reverse_a_queue(q5); print(q5)   # [3, 3, 3]
-
-q6 = [10, 20, 30, 40, 50]
-Solution().reverse_a_queue(q6); print(q6)   # [50, 40, 30, 20, 10]
+q = ast.literal_eval(input())
+Solution().reverse_a_queue(q)
+print(q)
 ```
 
-```java run viz=array viz-root=q1
+```java solution
 import java.util.*;
 
 public class Main {
     static class Solution {
-        public void reverseAQueue(Queue<Integer> q) {
+        public void reverseAQueue(List<Integer> q) {
 
             // Base case: Queue is empty or has only one element
             if (q.isEmpty() || q.size() == 1) {
@@ -184,7 +248,7 @@ public class Main {
             }
 
             // Dequeue the front element
-            int frontElement = q.poll();
+            int frontElement = q.remove(0);
 
             // Reverse the remaining queue
             reverseAQueue(q);
@@ -194,32 +258,21 @@ public class Main {
         }
     }
 
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i].trim());
+        return out;
+    }
+
     public static void main(String[] args) {
-        // Examples from the problem statement
-        Queue<Integer> q1 = new LinkedList<>(Arrays.asList(1, 2, 3, 4, 5, 6, 7));
-        new Solution().reverseAQueue(q1);
-        System.out.println(q1);   // [7, 6, 5, 4, 3, 2, 1]
-
-        // Edge cases
-        Queue<Integer> q2 = new LinkedList<>();
-        new Solution().reverseAQueue(q2);
-        System.out.println(q2);   // []
-
-        Queue<Integer> q3 = new LinkedList<>(Arrays.asList(42));
-        new Solution().reverseAQueue(q3);
-        System.out.println(q3);   // [42]
-
-        Queue<Integer> q4 = new LinkedList<>(Arrays.asList(1, 2));
-        new Solution().reverseAQueue(q4);
-        System.out.println(q4);   // [2, 1]
-
-        Queue<Integer> q5 = new LinkedList<>(Arrays.asList(3, 3, 3));
-        new Solution().reverseAQueue(q5);
-        System.out.println(q5);   // [3, 3, 3]
-
-        Queue<Integer> q6 = new LinkedList<>(Arrays.asList(10, 20, 30, 40, 50));
-        new Solution().reverseAQueue(q6);
-        System.out.println(q6);   // [50, 40, 30, 20, 10]
+        int[] arr = parseIntArray(new Scanner(System.in).nextLine().trim());
+        List<Integer> q = new ArrayList<>();
+        for (int v : arr) q.add(v);
+        new Solution().reverseAQueue(q);
+        System.out.println(q);
     }
 }
 ```

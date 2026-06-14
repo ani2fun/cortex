@@ -67,15 +67,14 @@ A comparison sort learns about the order *only* through yes/no comparisons. Mode
 
 ## Your Turn
 
-See **stability** for yourself — sort records by one key and watch equal keys keep their input order:
+See **stability** for yourself — sort records by one key and watch equal keys keep their input order. Pass an array of `[name, number]` pairs; the sort is stable, so equal numbers preserve the input name order.
 
 ```python run viz=array
-# a STABLE sort preserves the input order of equal-key elements
-records = [("alice", 2), ("bob", 1), ("carol", 2), ("dave", 1)]
-records.sort(key=lambda r: r[1])     # sort by the number only
+import ast
+
+records = ast.literal_eval(input())         # e.g. [["alice",2],["bob",1],["carol",2],["dave",1]]
+records.sort(key=lambda r: r[1])            # stable sort by number only
 print(records)
-# [('bob', 1), ('dave', 1), ('alice', 2), ('carol', 2)]
-# bob before dave (both 1), alice before carol (both 2) — input order kept
 ```
 
 ```java run viz=array
@@ -83,12 +82,49 @@ import java.util.*;
 
 public class Main {
   public static void main(String[] args) {
-    // Arrays.sort on objects is a stable merge sort
-    String[][] records = {{"alice", "2"}, {"bob", "1"}, {"carol", "2"}, {"dave", "1"}};
-    Arrays.sort(records, Comparator.comparingInt(r -> Integer.parseInt(r[1])));
-    System.out.println(Arrays.deepToString(records));
-    // [[bob, 1], [dave, 1], [alice, 2], [carol, 2]]
+    Scanner sc = new Scanner(System.in);
+    int[][] records = parseIntMatrix(sc.nextLine());
+    // sort stably by column 1 (the number)
+    List<int[]> list = new ArrayList<>();
+    for (int[] r : records) list.add(r);
+    list.sort(Comparator.comparingInt(r -> r[1]));
+    int[][] out = list.toArray(new int[0][]);
+    System.out.println(Arrays.deepToString(out));
   }
+
+  static int[][] parseIntMatrix(String line) {
+    String inner = line.replaceAll("^\\[|\\]$", "").trim();
+    if (inner.isEmpty()) return new int[0][0];
+    List<int[]> rows = new ArrayList<>();
+    int depth = 0, start = 0;
+    for (int i = 0; i < inner.length(); i++) {
+      char c = inner.charAt(i);
+      if (c == '[') { if (depth++ == 0) start = i; }
+      else if (c == ']') {
+        if (--depth == 0) {
+          String row = inner.substring(start + 1, i).replaceAll("\\s", "");
+          String[] parts = row.split(",");
+          int[] r = new int[parts.length];
+          for (int k = 0; k < parts.length; k++) r[k] = Integer.parseInt(parts[k]);
+          rows.add(r);
+        }
+      }
+    }
+    return rows.toArray(new int[0][]);
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "records", "label": "records", "type": "int[][]", "placeholder": "[[0,2],[1,1],[2,2],[3,1]]" }
+  ],
+  "cases": [
+    { "args": { "records": "[[0,2],[1,1],[2,2],[3,1]]" }, "expected": "[[1, 1], [3, 1], [0, 2], [2, 2]]" },
+    { "args": { "records": "[[5,3],[6,1],[7,3]]" }, "expected": "[[6, 1], [5, 3], [7, 3]]" },
+    { "args": { "records": "[[1,1]]" }, "expected": "[[1, 1]]" }
+  ]
 }
 ```
 

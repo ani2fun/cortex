@@ -18,7 +18,7 @@ There's no array to search — so you binary-search the **answer range** itself.
 Koko eats bananas: piles `[3, 6, 7, 11]`, and she must finish within `h = 8` hours. At speed `k` per hour, a pile of `p` takes `⌈p/k⌉` hours. Find the **minimum** speed `k`. Run it.
 
 ```python run viz=array
-import math
+import ast, math
 
 def min_eating_speed(piles, h):
     def feasible(k):                          # can she finish within h hours at speed k?
@@ -32,8 +32,59 @@ def min_eating_speed(piles, h):
             lo = mid + 1                      # too slow → need faster
     return lo                                  # smallest feasible speed
 
-print(min_eating_speed([3, 6, 7, 11], 8))     # 4
-print(min_eating_speed([30, 11, 23, 4, 20], 5))   # 30
+piles = ast.literal_eval(input())
+h = int(input())
+print(min_eating_speed(piles, h))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static boolean feasible(int[] piles, int k, int h) {
+        long hours = 0;
+        for (int p : piles) hours += (p + k - 1) / k;   // ceil(p/k)
+        return hours <= h;
+    }
+    static int minEatingSpeed(int[] piles, int h) {
+        int lo = 1, hi = 0;
+        for (int p : piles) hi = Math.max(hi, p);
+        while (lo < hi) {
+            int mid = lo + (hi - lo) / 2;
+            if (feasible(piles, mid, h)) hi = mid;
+            else lo = mid + 1;
+        }
+        return lo;
+    }
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] piles = parseIntArray(sc.nextLine());
+        int h = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(minEatingSpeed(piles, h));
+    }
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "piles", "label": "piles", "type": "int[]", "placeholder": "[3, 6, 7, 11]" },
+    { "id": "h", "label": "h", "type": "int", "placeholder": "8" }
+  ],
+  "cases": [
+    { "args": { "piles": "[3, 6, 7, 11]", "h": "8" }, "expected": "4" },
+    { "args": { "piles": "[30, 11, 23, 4, 20]", "h": "5" }, "expected": "30" },
+    { "args": { "piles": "[30, 11, 23, 4, 20]", "h": "6" }, "expected": "23" }
+  ]
+}
 ```
 
 ## How It Works
@@ -85,7 +136,62 @@ Monotonicity is what makes "discard half" valid. When `feasible(mid)` is true, t
 The reusable minimum-feasible search:
 
 ```python run viz=array
-import math
+import ast, math
+
+def min_eating_speed(piles, h):
+    # Your code goes here — binary-search the speed in [1, max(piles)].
+    # Define feasible(k): return True if sum of ceil(p/k) for all p is <= h.
+    return -1
+
+piles = ast.literal_eval(input())
+h = int(input())
+print(min_eating_speed(piles, h))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static int minEatingSpeed(int[] piles, int h) {
+        // Your code goes here — binary-search the speed in [1, max(piles)].
+        // Define a feasible helper: return true if sum of ceil(p/k) for all p is <= h.
+        return -1;
+    }
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] piles = parseIntArray(sc.nextLine());
+        int h = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(minEatingSpeed(piles, h));
+    }
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "piles", "label": "piles", "type": "int[]", "placeholder": "[30, 11, 23, 4, 20]" },
+    { "id": "h", "label": "h", "type": "int", "placeholder": "6" }
+  ],
+  "cases": [
+    { "args": { "piles": "[30, 11, 23, 4, 20]", "h": "6" }, "expected": "23" },
+    { "args": { "piles": "[312884470]", "h": "312884469" }, "expected": "2" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+```python solution time=O(n log(max(piles))) space=O(1)
+import ast, math
 
 def min_eating_speed(piles, h):
     def feasible(k):
@@ -99,33 +205,48 @@ def min_eating_speed(piles, h):
             lo = mid + 1
     return lo
 
-print(min_eating_speed([30, 11, 23, 4, 20], 6))   # 23
-print(min_eating_speed([312884470], 312884469))   # 2
+piles = ast.literal_eval(input())
+h = int(input())
+print(min_eating_speed(piles, h))
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
-  static boolean feasible(int[] piles, int k, int h) {
-    long hours = 0;
-    for (int p : piles) hours += (p + k - 1) / k;   // ceil(p/k)
-    return hours <= h;
-  }
-  static int minEatingSpeed(int[] piles, int h) {
-    int lo = 1, hi = 0;
-    for (int p : piles) hi = Math.max(hi, p);
-    while (lo < hi) {
-      int mid = lo + (hi - lo) / 2;
-      if (feasible(piles, mid, h)) hi = mid;
-      else lo = mid + 1;
+    static boolean feasible(int[] piles, int k, int h) {
+        long hours = 0;
+        for (int p : piles) hours += (p + k - 1) / k;
+        return hours <= h;
     }
-    return lo;
-  }
-  public static void main(String[] args) {
-    System.out.println(minEatingSpeed(new int[]{3, 6, 7, 11}, 8));        // 4
-    System.out.println(minEatingSpeed(new int[]{30, 11, 23, 4, 20}, 5));  // 30
-  }
+    static int minEatingSpeed(int[] piles, int h) {
+        int lo = 1, hi = 0;
+        for (int p : piles) hi = Math.max(hi, p);
+        while (lo < hi) {
+            int mid = lo + (hi - lo) / 2;
+            if (feasible(piles, mid, h)) hi = mid;
+            else lo = mid + 1;
+        }
+        return lo;
+    }
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] piles = parseIntArray(sc.nextLine());
+        int h = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(minEatingSpeed(piles, h));
+    }
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
 }
 ```
+
+</details>
 
 Drill the family in **Practice** — [Punctual Arrival Speed](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/pattern-minimum-predicate-search/problems/punctual-arrival-speed), [Penalty with Balls](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/pattern-minimum-predicate-search/problems/penalty-with-balls), [Minimum Shipping Capacity](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/pattern-minimum-predicate-search/problems/minimum-shipping-capacity), and [Trip Completion Frenzy](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/pattern-minimum-predicate-search/problems/trip-completion-frenzy).
 

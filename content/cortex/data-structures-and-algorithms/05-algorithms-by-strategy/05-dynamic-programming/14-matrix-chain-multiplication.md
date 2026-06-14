@@ -16,6 +16,8 @@ This is **the** canonical split-point interval DP — the problem CLRS uses to t
 A matrix chain is given by a dimensions array `p`: matrix `i` is `p[i-1] × p[i]`. `dp[i][j]` is the minimum cost to multiply matrices `i..j`. For each split `k`, the two halves cost `dp[i][k]` and `dp[k+1][j]`, and joining their results — a `p[i-1] × p[k]` matrix by a `p[k] × p[j]` matrix — costs `p[i-1]·p[k]·p[j]`.
 
 ```python run viz=grid
+import ast
+
 def matrix_chain(p):
     n = len(p) - 1                                   # number of matrices
     dp = [[0] * (n + 1) for _ in range(n + 1)]       # 1-indexed; dp[i][i] = 0
@@ -26,11 +28,13 @@ def matrix_chain(p):
                            for k in range(i, j))     # try every split point k
     return dp[1][n]
 
-print(matrix_chain([10, 30, 5, 60, 8]))    # 4300   (A·B·C·D)
-print(matrix_chain([40, 20, 30, 10, 30]))  # 26000
+p = ast.literal_eval(input())
+print(matrix_chain(p))
 ```
 
 ```java run viz=grid
+import java.util.*;
+
 public class Main {
     static int matrixChain(int[] p) {
         int n = p.length - 1;
@@ -44,10 +48,35 @@ public class Main {
             }
         return dp[1][n];
     }
+
     public static void main(String[] args) {
-        System.out.println(matrixChain(new int[]{10, 30, 5, 60, 8}));    // 4300
-        System.out.println(matrixChain(new int[]{40, 20, 30, 10, 30}));  // 26000
+        Scanner sc = new Scanner(System.in);
+        int[] p = parseIntArray(sc.nextLine());
+        System.out.println(matrixChain(p));
     }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "p", "label": "p", "type": "int[]", "placeholder": "[10, 30, 5, 60, 8]" }
+  ],
+  "cases": [
+    { "args": { "p": "[10, 30, 5, 60, 8]" }, "expected": "4300" },
+    { "args": { "p": "[40, 20, 30, 10, 30]" }, "expected": "26000" },
+    { "args": { "p": "[10, 100, 5, 50]" }, "expected": "7500" },
+    { "args": { "p": "[5, 10, 3]" }, "expected": "150" }
+  ]
 }
 ```
 
@@ -111,9 +140,77 @@ print("DP optimum:", matrix_chain([10, 100, 5, 50]))
 
 ## Your Turn
 
-Knowing the *cost* is half the answer; you usually want the *grouping*. Record the best split for each interval, then recurse to print the parenthesization — the same backtrace you used for LCS, edit distance, and palindrome partitioning, now over a 2D split table.
+Knowing the *cost* is half the answer; you usually want the *grouping*. Record the best split for each interval, then recurse to print the parenthesization — the same backtrace you used for LCS, edit distance, and palindrome partitioning, now over a 2D split table. Print the optimal parenthesization string on the first line, its cost on the second line.
 
 ```python run viz=grid
+import ast
+
+def matrix_chain_order(p):
+    # Your code goes here — return (order_string, cost)
+    return ("", 0)
+
+p = ast.literal_eval(input())
+order, cost = matrix_chain_order(p)
+print(order)
+print(cost)
+```
+
+```java run viz=grid
+import java.util.*;
+
+public class Main {
+    static int[][] split;
+
+    static String build(int i, int j) {
+        // Your code goes here
+        return "";
+    }
+
+    static String order(int[] p) {
+        // Your code goes here
+        return "";
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] p = parseIntArray(sc.nextLine());
+        // Your code goes here — print order string then cost on separate lines
+        System.out.println(order(p));
+        System.out.println(0);
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "p", "label": "p", "type": "int[]", "placeholder": "[10, 100, 5, 50]" }
+  ],
+  "cases": [
+    { "args": { "p": "[10, 100, 5, 50]" }, "expected": "((AB)C)\n7500" },
+    { "args": { "p": "[10, 30, 5, 60, 8]" }, "expected": "((AB)(CD))\n4300" },
+    { "args": { "p": "[5, 10, 3]" }, "expected": "(AB)\n150" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Both recover `((AB)C)` and `((AB)(CD))`. The second confirms the See It surprise: the optimal grouping of `A·B·C·D` is `((A·B)·(C·D))` at 4300 — not the left-to-right `((AB)C)D` (9300) most people reach for. Storing one `split[i][j]` per interval turns a DP that reports a *number* into one that reports the *plan*, the universal "recover the decision" technique for interval DP.
+
+```python solution time=O(n³) space=O(n²)
+import ast
+
 def matrix_chain_order(p):
     n = len(p) - 1
     dp = [[0] * (n + 1) for _ in range(n + 1)]
@@ -133,19 +230,25 @@ def matrix_chain_order(p):
         return "(" + build(i, k) + build(k + 1, j) + ")"
     return build(1, n), dp[1][n]
 
-print(matrix_chain_order([10, 100, 5, 50]))    # ('((AB)C)', 7500)
-print(matrix_chain_order([10, 30, 5, 60, 8]))  # ('((AB)(CD))', 4300)
+p = ast.literal_eval(input())
+order, cost = matrix_chain_order(p)
+print(order)
+print(cost)
 ```
 
-```java run viz=grid
+```java solution
+import java.util.*;
+
 public class Main {
     static int[][] split;
+
     static String build(int i, int j) {
         if (i == j) return String.valueOf((char) ('A' + i - 1));
         int k = split[i][j];
         return "(" + build(i, k) + build(k + 1, j) + ")";
     }
-    static String order(int[] p) {
+
+    static int order(int[] p) {
         int n = p.length - 1;
         int[][] dp = new int[n + 1][n + 1];
         split = new int[n + 1][n + 1];
@@ -158,16 +261,29 @@ public class Main {
                     if (cost < dp[i][j]) { dp[i][j] = cost; split[i][j] = k; }
                 }
             }
-        return build(1, n);
+        int n2 = p.length - 1;
+        System.out.println(build(1, n2));
+        return dp[1][n2];
     }
+
     public static void main(String[] args) {
-        System.out.println(order(new int[]{10, 100, 5, 50}));    // ((AB)C)
-        System.out.println(order(new int[]{10, 30, 5, 60, 8}));  // ((AB)(CD))
+        Scanner sc = new Scanner(System.in);
+        int[] p = parseIntArray(sc.nextLine());
+        System.out.println(order(p));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```
 
-Both recover `((AB)C)` and `((AB)(CD))`. The second confirms the See It surprise: the optimal grouping of `A·B·C·D` is `((A·B)·(C·D))` at 4300 — not the left-to-right `((AB)C)D` (9300) most people reach for. Storing one `split[i][j]` per interval turns a DP that reports a *number* into one that reports the *plan*, the universal "recover the decision" technique for interval DP.
+</details>
 
 ## Reflect & Connect
 

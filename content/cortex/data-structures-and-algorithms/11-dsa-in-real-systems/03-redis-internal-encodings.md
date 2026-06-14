@@ -17,7 +17,8 @@ Redis turns that into policy. Each collection type has a **compact encoding** fo
 A Set of integers starts as an `intset` — a sorted packed array with binary-search membership. The moment it outgrows the threshold, Redis converts it to a hash table. The stored data is identical; only the physical encoding changes.
 
 ```python run viz=array
-import bisect
+import bisect, ast
+
 class AdaptiveSet:
     THRESHOLD = 4                          # tiny for the demo; Redis default is 512
     def __init__(self):
@@ -39,12 +40,17 @@ class AdaptiveSet:
         i = bisect.bisect_left(self.intset, x)           # O(log n) binary search
         return i < len(self.intset) and self.intset[i] == x
 
+initial = ast.literal_eval(input())   # first batch of elements (stays compact)
+extra = int(input())                  # element that pushes past threshold
+check = int(input())                  # element to check membership
+
 s = AdaptiveSet()
-for x in [50, 20, 40, 10]:                  # 4 ints: within threshold
+for x in initial:
     s.add(x)
-print("size 4:", s.encoding(), "| contains 40?", s.contains(40))
-s.add(30)                                    # 5th int pushes past THRESHOLD=4
-print("size 5:", s.encoding(), "| contains 40?", s.contains(40))
+n1 = len(initial)
+print("size " + str(n1) + ": " + s.encoding() + " | contains " + str(check) + "? " + ("true" if s.contains(check) else "false"))
+s.add(extra)
+print("size " + str(n1 + 1) + ": " + s.encoding() + " | contains " + str(check) + "? " + ("true" if s.contains(check) else "false"))
 ```
 
 ```java run viz=array
@@ -68,16 +74,38 @@ public class Main {
         }
     }
     public static void main(String[] a) {
+        Scanner sc = new Scanner(System.in);
+        String line = sc.nextLine().trim().replaceAll("[\\[\\]]", "");
+        List<Integer> initial = new ArrayList<>();
+        for (String s : line.split(",")) initial.add(Integer.parseInt(s.trim()));
+        int extra = Integer.parseInt(sc.nextLine().trim());
+        int check = Integer.parseInt(sc.nextLine().trim());
         AdaptiveSet s = new AdaptiveSet();
-        for (int x : new int[]{50, 20, 40, 10}) s.add(x);
-        System.out.println("size 4: " + s.encoding() + " | contains 40? " + s.contains(40));
-        s.add(30);
-        System.out.println("size 5: " + s.encoding() + " | contains 40? " + s.contains(40));
+        for (int x : initial) s.add(x);
+        int n1 = initial.size();
+        System.out.println("size " + n1 + ": " + s.encoding() + " | contains " + check + "? " + s.contains(check));
+        s.add(extra);
+        System.out.println("size " + (n1 + 1) + ": " + s.encoding() + " | contains " + check + "? " + s.contains(check));
     }
 }
 ```
 
-Both print `size 4: intset | contains 40? true`, then `size 5: hashtable | contains 40? true`. At four elements the Set is a compact sorted array searched in `O(log n)`; the fifth element trips the threshold and Redis rebuilds it as a hash table. Membership stays correct the whole way — `contains(40)` is true before and after — because the *logical* Set never changed, only its bytes.
+```testcases
+{
+  "args": [
+    { "id": "initial", "label": "initial elements", "type": "string", "placeholder": "[50, 20, 40, 10]" },
+    { "id": "extra", "label": "extra element", "type": "string", "placeholder": "30" },
+    { "id": "check", "label": "check membership", "type": "string", "placeholder": "40" }
+  ],
+  "cases": [
+    { "args": { "initial": "[50, 20, 40, 10]", "extra": "30", "check": "40" }, "expected": "size 4: intset | contains 40? true\nsize 5: hashtable | contains 40? true" },
+    { "args": { "initial": "[1, 2, 3, 4]", "extra": "5", "check": "3" }, "expected": "size 4: intset | contains 3? true\nsize 5: hashtable | contains 3? true" },
+    { "args": { "initial": "[7, 14, 21]", "extra": "28", "check": "9" }, "expected": "size 3: intset | contains 9? false\nsize 4: intset | contains 9? false" }
+  ]
+}
+```
+
+The first two cases print `size 4: intset | contains 40? true`, then `size 5: hashtable | contains 40? true`. At four elements the Set is a compact sorted array searched in `O(log n)`; the fifth element trips the threshold and Redis rebuilds it as a hash table. Membership stays correct the whole way — `contains(40)` is true before and after — because the *logical* Set never changed, only its bytes.
 
 ## How It Works
 
@@ -151,6 +179,91 @@ You've seen the Set grow *into* a hash table. Now shrink it back down.
 **Predict:** a Set grows to 5 elements and upgrades to `hashtable`. You then delete 3 of them, leaving just 2 — far below the threshold again. Does Redis revert to the compact `intset`, or stay a `hashtable`?
 
 ```python run viz=array
+import ast
+
+class AdaptiveSet:
+    THRESHOLD = 4
+    def __init__(self): self.intset = []; self.hashset = None
+    def encoding(self): return "hashtable" if self.hashset is not None else "intset"
+    def add(self, x):
+        # Your code goes here
+        return
+    def remove(self, x):
+        # Your code goes here
+        return
+    def size(self):
+        # Your code goes here
+        return 0
+
+to_add = ast.literal_eval(input())    # elements to add (triggers upgrade)
+to_remove = ast.literal_eval(input()) # elements to remove (shrinks back below threshold)
+
+s = AdaptiveSet()
+for x in to_add: s.add(x)
+print("after growth:", s.encoding(), "size", s.size())
+for x in to_remove: s.remove(x)
+print("after shrink:", s.encoding(), "size", s.size())
+```
+
+```java run viz=array
+import java.util.*;
+public class Main {
+    static class AdaptiveSet {
+        static final int THRESHOLD = 4;
+        List<Integer> intset = new ArrayList<>();
+        HashSet<Integer> hashset = null;
+        String encoding() { return hashset != null ? "hashtable" : "intset"; }
+        void add(int x) {
+            // Your code goes here
+        }
+        void remove(int x) {
+            // Your code goes here
+        }
+        int size() {
+            // Your code goes here
+            return 0;
+        }
+    }
+    public static void main(String[] a) {
+        Scanner sc = new Scanner(System.in);
+        String line1 = sc.nextLine().trim().replaceAll("[\\[\\]]", "");
+        String line2 = sc.nextLine().trim().replaceAll("[\\[\\]]", "");
+        List<Integer> toAdd = new ArrayList<>(), toRemove = new ArrayList<>();
+        for (String s : line1.split(",")) toAdd.add(Integer.parseInt(s.trim()));
+        for (String s : line2.split(",")) toRemove.add(Integer.parseInt(s.trim()));
+        AdaptiveSet s = new AdaptiveSet();
+        for (int x : toAdd) s.add(x);
+        System.out.println("after growth: " + s.encoding() + " size " + s.size());
+        for (int x : toRemove) s.remove(x);
+        System.out.println("after shrink: " + s.encoding() + " size " + s.size());
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "to_add", "label": "elements to add", "type": "string", "placeholder": "[1, 2, 3, 4, 5]" },
+    { "id": "to_remove", "label": "elements to remove", "type": "string", "placeholder": "[1, 2, 3]" }
+  ],
+  "cases": [
+    { "args": { "to_add": "[1, 2, 3, 4, 5]", "to_remove": "[1, 2, 3]" }, "expected": "after growth: hashtable size 5\nafter shrink: hashtable size 2" },
+    { "args": { "to_add": "[10, 20, 30, 40, 50]", "to_remove": "[10, 20, 30, 40]" }, "expected": "after growth: hashtable size 5\nafter shrink: hashtable size 1" },
+    { "args": { "to_add": "[5, 10, 15, 20, 25]", "to_remove": "[5, 10, 15, 20, 25]" }, "expected": "after growth: hashtable size 5\nafter shrink: hashtable size 0" }
+  ]
+}
+```
+
+Both print `after growth: hashtable size 5`, then `after shrink: hashtable size 2`. The encoding stays `hashtable` even though the Set is now smaller than the threshold — **the upgrade is one-way.** Redis never downgrades an encoding on delete: checking "could I shrink back?" on every removal would cost more than it saves, and a collection that grew once tends to grow again. The practical consequence is a real production gotcha — a Hash that briefly spiked over the threshold keeps paying the hash-table memory price forever; to reclaim the compact encoding you must `DUMP`/`RESTORE` or re-insert into a fresh key.
+
+<details>
+<summary><strong>Editorial</strong></summary>
+
+The upgrade is one-way: `add` mirrors the See-It-Work logic (sort into intset, convert to hashset past threshold); `remove` always deletes from whichever structure is active without checking whether it could revert. That asymmetry is the whole lesson.
+
+```python solution time=O(n log n) space=O(n)
+import ast
+
 class AdaptiveSet:
     THRESHOLD = 4
     def __init__(self): self.intset = []; self.hashset = None
@@ -166,14 +279,17 @@ class AdaptiveSet:
     def size(self):
         return len(self.hashset) if self.hashset is not None else len(self.intset)
 
+to_add = ast.literal_eval(input())
+to_remove = ast.literal_eval(input())
+
 s = AdaptiveSet()
-for x in [1, 2, 3, 4, 5]: s.add(x)         # 5 > THRESHOLD 4 -> upgrades
+for x in to_add: s.add(x)
 print("after growth:", s.encoding(), "size", s.size())
-for x in [1, 2, 3]: s.remove(x)            # shrink back to 2 elements
+for x in to_remove: s.remove(x)
 print("after shrink:", s.encoding(), "size", s.size())
 ```
 
-```java run viz=array
+```java solution
 import java.util.*;
 public class Main {
     static class AdaptiveSet {
@@ -193,16 +309,22 @@ public class Main {
         int size() { return hashset != null ? hashset.size() : intset.size(); }
     }
     public static void main(String[] a) {
+        Scanner sc = new Scanner(System.in);
+        String line1 = sc.nextLine().trim().replaceAll("[\\[\\]]", "");
+        String line2 = sc.nextLine().trim().replaceAll("[\\[\\]]", "");
+        List<Integer> toAdd = new ArrayList<>(), toRemove = new ArrayList<>();
+        for (String s : line1.split(",")) toAdd.add(Integer.parseInt(s.trim()));
+        for (String s : line2.split(",")) toRemove.add(Integer.parseInt(s.trim()));
         AdaptiveSet s = new AdaptiveSet();
-        for (int x : new int[]{1, 2, 3, 4, 5}) s.add(x);   // 5 > THRESHOLD 4 -> upgrades
+        for (int x : toAdd) s.add(x);
         System.out.println("after growth: " + s.encoding() + " size " + s.size());
-        for (int x : new int[]{1, 2, 3}) s.remove(x);      // shrink back to 2
+        for (int x : toRemove) s.remove(x);
         System.out.println("after shrink: " + s.encoding() + " size " + s.size());
     }
 }
 ```
 
-Both print `after growth: hashtable size 5`, then `after shrink: hashtable size 2`. The encoding stays `hashtable` even though the Set is now smaller than the threshold — **the upgrade is one-way.** Redis never downgrades an encoding on delete: checking "could I shrink back?" on every removal would cost more than it saves, and a collection that grew once tends to grow again. The practical consequence is a real production gotcha — a Hash that briefly spiked over the threshold keeps paying the hash-table memory price forever; to reclaim the compact encoding you must `DUMP`/`RESTORE` or re-insert into a fresh key.
+</details>
 
 ## Reflect & Connect
 
@@ -241,7 +363,7 @@ Both print `after growth: hashtable size 5`, then `after shrink: hashtable size 
 <details>
 <summary><strong>Q:</strong> How is a Redis Sorted Set stored, and why a skip list?</summary>
 
-**A:** As two structures in tandem: a skip list keyed by score (for `ZRANGE`/range queries) plus a hash table mapping member→score (for `O(1)` `ZSCORE`/`ZRANK`). Redis chose a skip list over a balanced tree for simpler code — being single-threaded, it doesn't need the skip list's concurrency advantages.
+**A:** As two structures in tandem: a skip list keyed by score (for `ZRANGE`/range queries) plus a hash table mapping member->score (for `O(1)` `ZSCORE`/`ZRANK`). Redis chose a skip list over a balanced tree for simpler code — being single-threaded, it doesn't need the skip list's concurrency advantages.
 
 </details>
 
@@ -250,4 +372,4 @@ Both print `after growth: hashtable size 5`, then `after shrink: hashtable size 
 - **Redis source**: `src/intset.c` (packed sorted ints), `src/listpack.c` (contiguous encoding, Redis 7+), `src/dict.c` (`dictRehashStep` — incremental rehashing), `src/t_zset.c` (skip list + hash table), `src/quicklist.c`. The [Redis docs on memory optimization](https://redis.io/docs/latest/operate/oss_and_stack/management/optimization/memory-optimization/) describe the encoding thresholds.
 - **Salvatore Sanfilippo (antirez)**, Redis design notes and the `t_zset.c` comments — the rationale for skip lists over balanced trees and the encoding-per-size approach.
 - **[Memory Model and Cache](/cortex/data-structures-and-algorithms/foundations/memory-model-and-cache)** — why contiguous, cache-local layouts win for small `n` (the constants Big-O hides).
-- The size-triggered transition (`intset` at 4 → `hashtable` at 5, membership preserved), the non-integer trigger (a 3-element set upgrading on a string), and the one-way upgrade (`hashtable` staying after shrinking to 2) all come from the runnable blocks above (deterministic models of the encoding switch) — re-run to verify.
+- The size-triggered transition (`intset` at 4 -> `hashtable` at 5, membership preserved), the non-integer trigger (a 3-element set upgrading on a string), and the one-way upgrade (`hashtable` staying after shrinking to 2) all come from the runnable blocks above (deterministic models of the encoding switch) — re-run to verify.

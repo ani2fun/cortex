@@ -18,6 +18,8 @@ The trigger is any of these phrasings: "the **first** index where…", "the **le
 "Search insert position": where would `5` go in `[1, 3, 6, 8]` to keep it sorted? That's the first index whose value is `≥ 5`. Run it.
 
 ```python run viz=array
+import ast
+
 def lower_bound(arr, target):
     lo, hi = 0, len(arr)                 # half-open [lo, hi)
     while lo < hi:
@@ -28,8 +30,59 @@ def lower_bound(arr, target):
             hi = mid                     # candidate — look further left
     return lo                            # first index with arr[index] >= target
 
-print(lower_bound([1, 3, 6, 8], 5))      # 2  (insert 5 before the 6)
-print(lower_bound([1, 3, 6, 8], 3))      # 1  (first occurrence of 3)
+arr = ast.literal_eval(input())
+target = int(input())
+print(lower_bound(arr, target))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static int lowerBound(int[] arr, int target) {
+        int lo = 0, hi = arr.length;     // half-open [lo, hi)
+        while (lo < hi) {
+            int mid = lo + (hi - lo) / 2;
+            if (arr[mid] < target)        // predicate "arr[mid] >= target" is still false
+                lo = mid + 1;
+            else
+                hi = mid;                 // candidate — look further left
+        }
+        return lo;                        // first index with arr[index] >= target
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int target = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(lowerBound(arr, target));
+    }
+
+    // "[1, 3, 6, 8]" → {1, 3, 6, 8}
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[1, 3, 6, 8]" },
+    { "id": "target", "label": "target", "type": "int", "placeholder": "5" }
+  ],
+  "cases": [
+    { "args": { "arr": "[1, 3, 6, 8]", "target": "5" }, "expected": "2" },
+    { "args": { "arr": "[1, 3, 6, 8]", "target": "3" }, "expected": "1" },
+    { "args": { "arr": "[1, 3, 6, 8]", "target": "1" }, "expected": "0" },
+    { "args": { "arr": "[1, 3, 6, 8]", "target": "9" }, "expected": "4" }
+  ]
+}
 ```
 
 ## How It Works
@@ -76,37 +129,119 @@ Because the boundary index *partitions* the array: everything at indices `[0, lo
 The reusable lower bound (recognition: first-true / insert / count):
 
 ```python run viz=array
-def lower_bound(arr, target):
-    lo, hi = 0, len(arr)
-    while lo < hi:
-        mid = lo + (hi - lo) // 2
-        if arr[mid] < target:
-            lo = mid + 1
-        else:
-            hi = mid
-    return lo
+import ast
 
-a = [1, 3, 6, 8, 8, 10]
-print(lower_bound(a, 8), lower_bound(a, 7), lower_bound(a, 0), lower_bound(a, 99))   # 3 3 0 6
+def lower_bound(arr, target):
+    # Your code goes here — half-open [lo, hi), move lo=mid+1 while
+    # arr[mid] < target, else hi=mid; return lo.
+    return -1
+
+arr = ast.literal_eval(input())
+target = int(input())
+print(lower_bound(arr, target))
 ```
 
 ```java run viz=array
+import java.util.*;
+
 public class Main {
-  static int lowerBound(int[] arr, int target) {
-    int lo = 0, hi = arr.length;
-    while (lo < hi) {
-      int mid = lo + (hi - lo) / 2;
-      if (arr[mid] < target) lo = mid + 1;
-      else hi = mid;
+    static int lowerBound(int[] arr, int target) {
+        // Your code goes here — half-open [lo, hi), move lo=mid+1 while
+        // arr[mid] < target, else hi=mid; return lo.
+        return -1;
     }
-    return lo;
-  }
-  public static void main(String[] args) {
-    int[] a = {1, 3, 6, 8, 8, 10};
-    System.out.println(lowerBound(a, 5) + " " + lowerBound(a, 8));   // 3 3
-  }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int target = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(lowerBound(arr, target));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
 }
 ```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[1, 3, 6, 8, 8, 10]" },
+    { "id": "target", "label": "target", "type": "int", "placeholder": "8" }
+  ],
+  "cases": [
+    { "args": { "arr": "[1, 3, 6, 8, 8, 10]", "target": "8" }, "expected": "3" },
+    { "args": { "arr": "[1, 3, 6, 8, 8, 10]", "target": "7" }, "expected": "3" },
+    { "args": { "arr": "[1, 3, 6, 8, 8, 10]", "target": "0" }, "expected": "0" },
+    { "args": { "arr": "[1, 3, 6, 8, 8, 10]", "target": "99" }, "expected": "6" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Half-open invariant `[lo, hi)`: `hi` starts at `len(arr)` (or `arr.length`). Each step, if `arr[mid] < target` the predicate is still false — move `lo = mid + 1`; otherwise `hi = mid` (candidate, look further left). When `lo == hi`, both point at the first `true`. `O(log n)` time, `O(1)` space.
+
+```python solution time=O(log n) space=O(1)
+import ast
+
+def lower_bound(arr, target):
+    lo, hi = 0, len(arr)                 # half-open [lo, hi)
+    while lo < hi:
+        mid = lo + (hi - lo) // 2
+        if arr[mid] < target:            # predicate "arr[mid] >= target" is still false
+            lo = mid + 1
+        else:
+            hi = mid                     # candidate — look further left
+    return lo                            # first index with arr[index] >= target
+
+arr = ast.literal_eval(input())
+target = int(input())
+print(lower_bound(arr, target))
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+    static int lowerBound(int[] arr, int target) {
+        int lo = 0, hi = arr.length;     // half-open [lo, hi)
+        while (lo < hi) {
+            int mid = lo + (hi - lo) / 2;
+            if (arr[mid] < target)        // predicate "arr[mid] >= target" is still false
+                lo = mid + 1;
+            else
+                hi = mid;                 // candidate — look further left
+        }
+        return lo;                        // first index with arr[index] >= target
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int target = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(lowerBound(arr, target));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+</details>
 
 Drill the family in **Practice** — [Search Insert Position](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/pattern-lower-bound/problems/search-insert-position), [First and Last Position](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/pattern-lower-bound/problems/first-and-last-position), [Closest Element](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/pattern-lower-bound/problems/closest-element), and [K Closest Elements](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/pattern-lower-bound/problems/k-closest-elements).
 
@@ -162,4 +297,4 @@ Lower bound is the "first true" half of boundary search:
 
 - **Sedgewick & Wayne**, *Algorithms*, 4th ed., §3.1 — rank / ceiling queries (lower-bound semantics).
 - **C++ STL / Python `bisect`** — `lower_bound` / `bisect_left` define the "first index ≥ target" contract.
-- The recognition triggers and boundary-as-count corollary are standard; both runnable blocks are verified by running (`5 ⇒ 2`, `3 ⇒ 1`; `[1,3,6,8,8,10]` ⇒ `8→3, 7→3, 0→0, 99→6`).
+- The recognition triggers and boundary-as-count corollary are standard; both runnable blocks are verified by running (`[1,3,6,8],5 ⇒ 2`, `[1,3,6,8],3 ⇒ 1`; `[1,3,6,8,8,10],8 ⇒ 3`, `[1,3,6,8,8,10],7 ⇒ 3`).

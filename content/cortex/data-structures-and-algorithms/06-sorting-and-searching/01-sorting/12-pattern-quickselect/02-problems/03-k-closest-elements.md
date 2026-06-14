@@ -4,31 +4,138 @@ summary: "Given an array arr, an integer k, and a target target, return the k cl
 prereqs:
   - 12-pattern-quickselect/01-pattern
 difficulty: medium
+kind: problem
+topics: [quickselect, sorting]
 ---
 
 # K Closest Elements
 
 Quickselect's partition step compares against a pivot. Change *what* you compare and you can find the k-th most-anything: closest to a target, brightest, oldest, etc.
 
----
+## Problem Statement
 
-## The Problem
+Given an array `arr`, an integer `k`, and a target `target`, return the `k` closest elements to `target` (sorted ascending). Closeness is measured by `|x - target|`; ties broken by smaller value first.
 
-Given an array `arr`, an integer `k`, and a target `target`, return the `k` closest elements to `target`. Closeness is measured by `|x - target|`; ties broken by smaller value first.
+## Examples
 
+**Example 1**
 ```
 Input:  arr = [1, 2, 3, 4, 5, 6], k = 3, target = 4
-Output: [4, 3, 5]
-
-Input:  arr = [1, 4, 5, 6, 7, 8], k = 4, target = 3
-Output: [4, 1, 5, 6]
-
-Input:  arr = [1, 5, 8, 10, 12, 13], k = 3, target = 10
-Output: [10, 8, 12]
+Output: [3, 4, 5]
+Explanation: Distances: |1-4|=3, |2-4|=2, |3-4|=1, |4-4|=0, |5-4|=1, |6-4|=2.
+             The 3 closest are 4 (d=0), 3 and 5 (d=1). Sorted: [3, 4, 5].
 ```
 
----
+**Example 2**
+```
+Input:  arr = [1, 5, 8, 10, 12, 13], k = 3, target = 10
+Output: [8, 10, 12]
+Explanation: Distances: |8-10|=2, |10-10|=0, |12-10|=2. No ties at the boundary.
+```
 
+## Constraints
+
+- `1 ≤ arr.length ≤ 10^4`
+- `1 ≤ k ≤ arr.length`
+- `-10^4 ≤ arr[i], target ≤ 10^4`
+- Output is sorted ascending. Tie-break: smaller value ranks closer.
+
+```python run viz=array
+import ast
+import random
+from typing import List
+
+class Solution:
+    def partition(self, arr: List[int], left: int, right: int, target: int) -> int:
+        # Your code goes here — partition by distance to target,
+        # tie-break by smaller value.
+        return left
+
+    def quickselect(self, arr: List[int], left: int, right: int, k: int, target: int) -> None:
+        # Your code goes here
+        pass
+
+    def k_closest_elements(self, arr: List[int], k: int, target: int) -> List[int]:
+        # Your code goes here — quickselect then return sorted(arr[:k]).
+        return []
+
+
+arr = ast.literal_eval(input())
+k = int(input())
+target = int(input())
+print(sorted(Solution().k_closest_elements(arr, k, target)))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        private void swap(int[] arr, int i, int j) {
+            int temp = arr[i]; arr[i] = arr[j]; arr[j] = temp;
+        }
+
+        private int partition(int[] arr, int left, int right, int target) {
+            // Your code goes here — distance-based partition,
+            // tie-break by smaller value.
+            return left;
+        }
+
+        private void quickselect(int[] arr, int left, int right, int k, int target) {
+            // Your code goes here
+        }
+
+        public int[] kClosestElements(int[] arr, int k, int target) {
+            // Your code goes here — quickselect then sort and return arr[0..k].
+            return new int[0];
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        int target = Integer.parseInt(sc.nextLine().trim());
+        int[] r = new Solution().kClosestElements(arr, k, target);
+        Arrays.sort(r);
+        System.out.println(Arrays.toString(r));
+    }
+
+    // "[1, 2, 3, 4, 5, 6]" → {1, 2, 3, 4, 5, 6}
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[1, 2, 3, 4, 5, 6]" },
+    { "id": "k", "label": "k", "type": "int", "placeholder": "3" },
+    { "id": "target", "label": "target", "type": "int", "placeholder": "4" }
+  ],
+  "cases": [
+    { "args": { "arr": "[1, 2, 3, 4, 5, 6]", "k": "3", "target": "4" }, "expected": "[3, 4, 5]" },
+    { "args": { "arr": "[1, 4, 5, 6, 7, 8]", "k": "4", "target": "3" }, "expected": "[1, 4, 5, 6]" },
+    { "args": { "arr": "[1, 5, 8, 10, 12, 13]", "k": "3", "target": "10" }, "expected": "[8, 10, 12]" },
+    { "args": { "arr": "[1, 10, 20]", "k": "2", "target": "15" }, "expected": "[10, 20]" },
+    { "args": { "arr": "[1, 2]", "k": "1", "target": "2" }, "expected": "[2]" }
+  ]
+}
+```
+
+<details>
+<summary><h2>Intuition</h2></summary>
+
+The same quickselect algorithm works here — just swap the comparison function. Instead of comparing raw values, compare distances `|x - target|`. After partitioning by distance, the `k` closest elements land in the first `k` slots (in arbitrary order). Since random pivots make the result non-deterministic in ordering, sort those `k` elements before returning. The tie-break `(|x-target|, x)` inside the partition ensures the partition itself is deterministic even when two elements are equidistant.
+
+</details>
 <details>
 <summary><h2>Solution &amp; Analysis</h2></summary>
 
@@ -36,37 +143,22 @@ Output: [10, 8, 12]
 
 Replace the partition's "compare elements directly" with "compare distance-to-target." Everything else is identical.
 
-```python run viz=array
+```python solution time=O(n) space=O(log n)
+import ast
 import random
 from typing import List
 
 class Solution:
 
-    # Function to partition the array based on the absolute difference
-    # to the target
     def partition(
         self, arr: List[int], left: int, right: int, target: int
     ) -> int:
-
-        # Randomly select a pivot index between left and right
         pivot = left + random.randint(0, right - left)
-
-        # 1. Get the pivot value and its absolute difference to the
-        # target
         pivot_val = arr[pivot]
         pivot_diff = abs(pivot_val - target)
-
-        # Move the pivot to the end and update the index
         arr[pivot], arr[right] = arr[right], arr[pivot]
-
-        # 2. Move elements around the pivot such that closer elements
-        # come to the left
         next_closest_index = left
         for i in range(left, right):
-
-            # If the current element is closer to the target than the
-            # pivot element, swap it with the element at
-            # next_closest_index
             if abs(arr[i] - target) < pivot_diff or (
                 abs(arr[i] - target) == pivot_diff and arr[i] < pivot_val
             ):
@@ -75,92 +167,58 @@ class Solution:
                     arr[next_closest_index],
                 )
                 next_closest_index += 1
-
-        # 3. Move pivot to its final position
         arr[next_closest_index], arr[right] = (
             arr[right],
             arr[next_closest_index],
         )
         return next_closest_index
 
-    # Quickselect to find the k closest elements
     def quickselect(
         self, arr: List[int], left: int, right: int, k: int, target: int
     ) -> None:
         if left == right:
             return
-
-        # Partition the array and get the pivot index
         pivot = self.partition(arr, left, right, target)
-
-        # If the pivot is at the k-th position (in 0-indexed)
         if k - 1 == pivot:
             return
-
-        # If pivot is greater than k - 1, search in the left half
         elif pivot > k - 1:
             self.quickselect(arr, left, pivot - 1, k, target)
-
-        # If k is greater than the pivot index, search in the right half
         else:
             self.quickselect(arr, pivot + 1, right, k, target)
 
     def k_closest_elements(
         self, arr: List[int], k: int, target: int
     ) -> List[int]:
-
-        # Step 1: Perform Quickselect to find the k closest elements
         self.quickselect(arr, 0, len(arr) - 1, k, target)
-
-        # Step 2: The first k elements will be the closest elements
         return arr[:k]
 
 
-print(sorted(Solution().k_closest_elements([1, 2, 3, 4, 5, 6], 3, 4)))     # [3, 4, 5]
-print(sorted(Solution().k_closest_elements([1, 4, 5, 6, 7, 8], 4, 3)))     # [1, 4, 5, 6]
-print(sorted(Solution().k_closest_elements([1, 5, 8, 10, 12, 13], 3, 10))) # [8, 10, 12]
-print(sorted(Solution().k_closest_elements([1], 1, 5)))                    # [1]
-print(sorted(Solution().k_closest_elements([1, 2], 1, 2)))                 # [2]
-print(sorted(Solution().k_closest_elements([1, 10, 20], 2, 15)))           # [10, 20]
+arr = ast.literal_eval(input())
+k = int(input())
+target = int(input())
+print(sorted(Solution().k_closest_elements(arr, k, target)))
 ```
 
-```java run viz=array
+```java solution
 import java.util.*;
 
 public class Main {
     static class Solution {
 
-        // Helper method to swap elements in the array
         private void swap(int[] arr, int i, int j) {
             int temp = arr[i];
             arr[i] = arr[j];
             arr[j] = temp;
         }
 
-        // Function to partition the array based on the absolute difference
-        // to the target
         private int partition(int[] arr, int left, int right, int target) {
-
-            // Randomly select a pivot index between left and right
             Random rand = new Random();
             int pivot = left + rand.nextInt(right - left + 1);
-
-            // 1. Get the pivot value and its absolute difference to the
-            // target
             int pivotVal = arr[pivot];
             int pivotDiff = Math.abs(pivotVal - target);
-
-            // Move the pivot to the end and update the index
             swap(arr, pivot, right);
-
-            // 2. Move elements around the pivot such that closer elements
-            // come to the left
             int nextClosestIndex = left;
             for (int i = left; i < right; i++) {
-
-                // If the current element is closer to the target than the
-                // pivot element, swap it with the element at
-                // nextClosestIndex
                 if (
                     Math.abs(arr[i] - target) < pivotDiff ||
                     (Math.abs(arr[i] - target) == pivotDiff &&
@@ -170,77 +228,54 @@ public class Main {
                     nextClosestIndex++;
                 }
             }
-
-            // 3. Move pivot to its final position
             swap(arr, nextClosestIndex, right);
             return nextClosestIndex;
         }
 
-        // Quickselect to find the k closest elements
         private void quickselect(
-            int[] arr,
-            int left,
-            int right,
-            int k,
-            int target
+            int[] arr, int left, int right, int k, int target
         ) {
             if (left == right) {
                 return;
             }
-
-            // Partition the array and get the pivot index
             int pivot = partition(arr, left, right, target);
-
-            // If the pivot is at the k-th position (in 0-indexed)
             if (k - 1 == pivot) {
                 return;
-            }
-
-            // If pivot is greater than k - 1, search in the left half
-            else if (pivot > k - 1) {
+            } else if (pivot > k - 1) {
                 quickselect(arr, left, pivot - 1, k, target);
-            }
-
-            // If k is greater than the pivot index, search in the right half
-            else {
+            } else {
                 quickselect(arr, pivot + 1, right, k, target);
             }
         }
 
-        // Function to return the k closest elements as an array
         public int[] kClosestElements(int[] arr, int k, int target) {
-
-            // Step 1: Perform Quickselect to find the k closest elements
             quickselect(arr, 0, arr.length - 1, k, target);
-
-            // Step 2: Create a new array to store the closest elements
             return Arrays.copyOfRange(arr, 0, k);
         }
     }
 
     public static void main(String[] args) {
-        int[] r1 = new Solution().kClosestElements(new int[]{1, 2, 3, 4, 5, 6}, 3, 4);
-        Arrays.sort(r1); System.out.println(Arrays.toString(r1));    // [3, 4, 5]
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        int target = Integer.parseInt(sc.nextLine().trim());
+        int[] r = new Solution().kClosestElements(arr, k, target);
+        Arrays.sort(r);
+        System.out.println(Arrays.toString(r));
+    }
 
-        int[] r2 = new Solution().kClosestElements(new int[]{1, 4, 5, 6, 7, 8}, 4, 3);
-        Arrays.sort(r2); System.out.println(Arrays.toString(r2));    // [1, 4, 5, 6]
-
-        int[] r3 = new Solution().kClosestElements(new int[]{1, 5, 8, 10, 12, 13}, 3, 10);
-        Arrays.sort(r3); System.out.println(Arrays.toString(r3));    // [8, 10, 12]
-
-        int[] r4 = new Solution().kClosestElements(new int[]{1}, 1, 5);
-        Arrays.sort(r4); System.out.println(Arrays.toString(r4));    // [1]
-
-        int[] r5 = new Solution().kClosestElements(new int[]{1, 2}, 1, 2);
-        Arrays.sort(r5); System.out.println(Arrays.toString(r5));    // [2]
-
-        int[] r6 = new Solution().kClosestElements(new int[]{1, 10, 20}, 2, 15);
-        Arrays.sort(r6); System.out.println(Arrays.toString(r6));    // [10, 20]
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```
 
-The partition compares with the score-tuple `(|x - target|, x)` instead of the raw value `x`: an element wins the swap if its distance to the target is strictly less than the pivot's, or — on a tie — its value is strictly less than the pivot's. The structure of `quickselect` and the recursive driver is unchanged from the basic version; once `pivot == k - 1`, the first `k` slots of `arr` hold the k closest elements (in arbitrary order).
+The partition compares with the score-tuple `(|x - target|, x)` instead of the raw value `x`: an element wins the swap if its distance to the target is strictly less than the pivot's, or — on a tie — its value is strictly less than the pivot's. The structure of `quickselect` and the recursive driver is unchanged from the basic version; once `pivot == k - 1`, the first `k` slots of `arr` hold the k closest elements (in arbitrary order). Both Python and Java sort the result before printing to canonicalize random-pivot output.
 
 ### Complexity
 

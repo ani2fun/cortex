@@ -4,6 +4,8 @@ summary: "Given a string digits consisting of digits 2–9, return all letter co
 prereqs:
   - 03-pattern-unconditional-enumeration/01-pattern
 difficulty: medium
+kind: problem
+topics: [unconditional-enumeration, backtracking]
 ---
 
 # Phone Combinations
@@ -39,6 +41,85 @@ Output: ["a", "b", "c"]
 ```
 
 ---
+
+## Examples
+
+**Example 1**
+```
+Input:  digits = "46"
+Output: [gm, gn, go, hm, hn, ho, im, in, io]
+Explanation: Digit 4 → ghi (3 choices), digit 6 → mno (3 choices) → 3 × 3 = 9 combinations.
+```
+
+**Example 2**
+```
+Input:  digits = "2"
+Output: [a, b, c]
+Explanation: Single digit 2 → abc (3 choices) → 3 combinations.
+```
+
+```quiz
+{
+  "prompt": "Why does the branching factor vary between digits 2–6 and digits 7, 9?",
+  "options": ["Digits 7 and 9 map to 4 letters each (pqrs, wxyz), all others map to 3", "Digits 7 and 9 are prime", "Digits 7 and 9 map to vowels", "The branching factor is always 3"],
+  "answer": "Digits 7 and 9 map to 4 letters each (pqrs, wxyz), all others map to 3"
+}
+```
+
+## Constraints
+
+- `1 ≤ digits.length ≤ 4`
+- `digits[i]` is a digit in the range `['2', '9']`.
+- No empty-string test case (avoids stdin EOF crash — the empty-digits case returns `[]` and is covered in the editorial edge cases).
+
+```python run viz=graph viz-root=current_combination
+from typing import List
+
+class Solution:
+    def phone_combinations(self, digits: str) -> List[str]:
+        # Your code goes here — use a phone_mapping table, backtrack over
+        # each digit's letters, build a string at the leaf.
+        return []
+
+digits = input().strip()     # the test case's digits
+r = Solution().phone_combinations(digits)
+print("[" + ", ".join(r) + "]")
+```
+
+```java run viz=graph viz-root=current_combination
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public List<String> phoneCombinations(String digits) {
+            // Your code goes here — use a phoneMapping table, backtrack over
+            // each digit's letters, build a string at the leaf.
+            return new ArrayList<>();
+        }
+    }
+
+    public static void main(String[] args) {
+        String digits = new Scanner(System.in).nextLine().trim();
+        List<String> r = new Solution().phoneCombinations(digits);
+        System.out.println(r);
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "digits", "label": "digits", "type": "string", "placeholder": "46" }
+  ],
+  "cases": [
+    { "args": { "digits": "46" }, "expected": "[gm, gn, go, hm, hn, ho, im, in, io]" },
+    { "args": { "digits": "28" }, "expected": "[at, au, av, bt, bu, bv, ct, cu, cv]" },
+    { "args": { "digits": "2" }, "expected": "[a, b, c]" },
+    { "args": { "digits": "9" }, "expected": "[w, x, y, z]" },
+    { "args": { "digits": "23" }, "expected": "[ad, ae, af, bd, be, bf, cd, ce, cf]" }
+  ]
+}
+```
 
 <details>
 <summary><h2>State Space Tree</h2></summary>
@@ -82,7 +163,7 @@ flowchart TB
 
 ### The Solution
 
-```python run viz=graph viz-root=current_combination
+```python solution time=O(n · 4^n) space=O(n)
 from typing import List
 
 class Solution:
@@ -162,18 +243,12 @@ class Solution:
         return combinations
 
 
-# Examples from the problem statement
-print(Solution().phone_combinations("46"))   # ['gm', 'gn', 'go', 'hm', 'hn', 'ho', 'im', 'in', 'io']
-print(Solution().phone_combinations("28"))   # ['at', 'au', 'av', 'bt', 'bu', 'bv', 'ct', 'cu', 'cv']
-print(Solution().phone_combinations("2"))    # ['a', 'b', 'c']
-
-# Edge cases
-print(Solution().phone_combinations(""))     # []
-print(Solution().phone_combinations("9"))    # ['w', 'x', 'y', 'z']
-print(len(Solution().phone_combinations("23")))  # 9
+digits = input().strip()     # the test case's digits
+r = Solution().phone_combinations(digits)
+print("[" + ", ".join(r) + "]")
 ```
 
-```java run viz=graph viz-root=current_combination
+```java solution
 import java.util.*;
 
 public class Main {
@@ -267,15 +342,8 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().phoneCombinations("46"));   // [gm, gn, go, hm, hn, ho, im, in, io]
-        System.out.println(new Solution().phoneCombinations("28"));   // [at, au, av, bt, bu, bv, ct, cu, cv]
-        System.out.println(new Solution().phoneCombinations("2"));    // [a, b, c]
-
-        // Edge cases
-        System.out.println(new Solution().phoneCombinations(""));     // []
-        System.out.println(new Solution().phoneCombinations("9"));    // [w, x, y, z]
-        System.out.println(new Solution().phoneCombinations("23").size());  // 9
+        String digits = new Scanner(System.in).nextLine().trim();
+        System.out.println(new Solution().phoneCombinations(digits));
     }
 }
 ```

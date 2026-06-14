@@ -18,6 +18,8 @@ Its idea is the purest divide-and-conquer: a single element is already sorted, a
 Sort `[5, 2, 8, 1, 9, 3]` by splitting, sorting halves, and merging. Run it.
 
 ```python run viz=array
+import ast
+
 def merge(a, b):
     out, i, j = [], 0, 0
     while i < len(a) and j < len(b):
@@ -36,7 +38,60 @@ def merge_sort(arr):
     right = merge_sort(arr[mid:])      # divide + conquer (right half)
     return merge(left, right)          # combine
 
-print(merge_sort([5, 2, 8, 1, 9, 3]))  # [1, 2, 3, 5, 8, 9]
+arr = ast.literal_eval(input())        # the test case's array
+print(merge_sort(arr))                 # [1, 2, 3, 5, 8, 9]
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+  static int[] merge(int[] a, int[] b) {
+    int[] out = new int[a.length + b.length];
+    int i = 0, j = 0, k = 0;
+    while (i < a.length && j < b.length) out[k++] = (a[i] <= b[j]) ? a[i++] : b[j++];
+    while (i < a.length) out[k++] = a[i++];
+    while (j < b.length) out[k++] = b[j++];
+    return out;
+  }
+
+  static int[] mergeSort(int[] arr) {
+    if (arr.length <= 1) return arr;   // a 0- or 1-element array is already sorted
+    int mid = arr.length / 2;
+    return merge(mergeSort(Arrays.copyOfRange(arr, 0, mid)),
+                 mergeSort(Arrays.copyOfRange(arr, mid, arr.length)));
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());   // the test case's array
+    System.out.println(Arrays.toString(mergeSort(arr)));   // [1, 2, 3, 5, 8, 9]
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's array
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[5, 2, 8, 1, 9, 3]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[5, 2, 8, 1, 9, 3]" }, "expected": "[1, 2, 3, 5, 8, 9]" },
+    { "args": { "arr": "[3, 1, 2]" }, "expected": "[1, 2, 3]" },
+    { "args": { "arr": "[1, 2, 3, 4]" }, "expected": "[1, 2, 3, 4]" },
+    { "args": { "arr": "[1]" }, "expected": "[1]" }
+  ]
+}
 ```
 
 ## How It Works
@@ -84,9 +139,67 @@ It's *where the work lives* and *who controls the split*. Quicksort splits via a
 
 ## Your Turn
 
-The reusable merge sort:
+Implement merge sort: split the array at its midpoint, recursively sort each half, then merge the two sorted halves by repeatedly taking the smaller front element. Return the sorted array.
 
 ```python run viz=array
+import ast
+
+def merge_sort(arr):
+    # Your code goes here — split at midpoint, recursively sort halves, merge.
+    return arr
+
+arr = ast.literal_eval(input())      # the test case's array
+print(merge_sort(arr))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+  static int[] mergeSort(int[] arr) {
+    // Your code goes here — split at midpoint, recursively sort halves, merge.
+    return arr;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());
+    System.out.println(Arrays.toString(mergeSort(arr)));
+  }
+
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[5, 2, 8, 1, 9, 3]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[5, 2, 8, 1, 9, 3]" }, "expected": "[1, 2, 3, 5, 8, 9]" },
+    { "args": { "arr": "[3, 1, 2]" }, "expected": "[1, 2, 3]" },
+    { "args": { "arr": "[9, 7, 5, 3, 1]" }, "expected": "[1, 3, 5, 7, 9]" },
+    { "args": { "arr": "[2, 1]" }, "expected": "[1, 2]" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Base case: array of length ≤ 1 is already sorted. Otherwise split at `mid = len // 2`, recursively sort each half, then merge: walk two indices across both halves, appending the smaller front to the output; when one half is exhausted, append the other's remaining tail. The `<=` in the comparison makes the merge stable. `O(n log n)` in every case (midpoint split is always balanced); `O(n)` extra space for the merge buffer.
+
+```python solution time=O(n log n) space=O(n)
+import ast
+
 def merge(a, b):
     out, i, j = [], 0, 0
     while i < len(a) and j < len(b):
@@ -103,11 +216,11 @@ def merge_sort(arr):
     mid = len(arr) // 2
     return merge(merge_sort(arr[:mid]), merge_sort(arr[mid:]))
 
-print(merge_sort([5, 2, 8, 1, 9, 3]))   # [1, 2, 3, 5, 8, 9]
-print(merge_sort([3, 1, 2]))            # [1, 2, 3]
+arr = ast.literal_eval(input())      # the test case's array
+print(merge_sort(arr))
 ```
 
-```java run viz=array
+```java solution
 import java.util.*;
 
 public class Main {
@@ -119,19 +232,32 @@ public class Main {
     while (j < b.length) out[k++] = b[j++];
     return out;
   }
+
   static int[] mergeSort(int[] arr) {
     if (arr.length <= 1) return arr;
     int mid = arr.length / 2;
     return merge(mergeSort(Arrays.copyOfRange(arr, 0, mid)),
                  mergeSort(Arrays.copyOfRange(arr, mid, arr.length)));
   }
+
   public static void main(String[] args) {
-    System.out.println(Arrays.toString(mergeSort(new int[]{5, 2, 8, 1, 9, 3})));   // [1, 2, 3, 5, 8, 9]
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());
+    System.out.println(Arrays.toString(mergeSort(arr)));
+  }
+
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
   }
 }
 ```
 
-This is a structural lesson — drill sorting in the pattern sets.
+</details>
 
 ## Reflect & Connect
 

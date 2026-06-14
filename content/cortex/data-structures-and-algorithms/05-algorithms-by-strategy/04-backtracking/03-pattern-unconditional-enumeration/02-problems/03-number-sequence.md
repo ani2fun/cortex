@@ -4,6 +4,8 @@ summary: "Given non-negative integers n and k, return all sequences of length n 
 prereqs:
   - 03-pattern-unconditional-enumeration/01-pattern
 difficulty: medium
+kind: problem
+topics: [unconditional-enumeration, backtracking]
 ---
 
 # Number Sequence
@@ -29,6 +31,87 @@ Output: [[1], [2], [3], [4]]
 
 ---
 
+## Examples
+
+**Example 1**
+```
+Input:  n = 2, k = 2
+Output: [[1, 1], [1, 2], [2, 1], [2, 2]]
+Explanation: Depth 2, branching factor 2 → 2² = 4 leaves, all recorded.
+```
+
+**Example 2**
+```
+Input:  n = 0, k = 3
+Output: [[]]
+Explanation: n = 0 means zero slots → one leaf, the empty sequence.
+```
+
+```quiz
+{
+  "prompt": "How many sequences does number_sequence(n, k) produce?",
+  "options": ["n + k", "n × k", "k^n", "n^k"],
+  "answer": "k^n"
+}
+```
+
+## Constraints
+
+- `0 ≤ n ≤ 6`
+- `0 ≤ k ≤ 6`
+- When `k = 0` the result is `[]` (no choices, no leaves).
+
+```python run viz=graph viz-root=sequences
+from typing import List
+
+class Solution:
+    def number_sequence(self, n: int, k: int) -> List[List[int]]:
+        # Your code goes here — backtrack over n slots;
+        # at each slot try choices 1..k; record a copy at the leaf.
+        return []
+
+n = int(input())     # the test case's n
+k = int(input())     # the test case's k
+print(Solution().number_sequence(n, k))
+```
+
+```java run viz=graph viz-root=sequences
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public List<List<Integer>> numberSequence(int n, int k) {
+            // Your code goes here — backtrack over n slots;
+            // at each slot try choices 1..k; record a copy at the leaf.
+            return new ArrayList<>();
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = Integer.parseInt(sc.nextLine().trim());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().numberSequence(n, k));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "n", "label": "n", "type": "int", "placeholder": "2" },
+    { "id": "k", "label": "k", "type": "int", "placeholder": "2" }
+  ],
+  "cases": [
+    { "args": { "n": "2", "k": "2" }, "expected": "[[1, 1], [1, 2], [2, 1], [2, 2]]" },
+    { "args": { "n": "3", "k": "1" }, "expected": "[[1, 1, 1]]" },
+    { "args": { "n": "1", "k": "4" }, "expected": "[[1], [2], [3], [4]]" },
+    { "args": { "n": "0", "k": "3" }, "expected": "[[]]" },
+    { "args": { "n": "1", "k": "1" }, "expected": "[[1]]" }
+  ]
+}
+```
+
 <details>
 <summary><h2>What Does the State Space Tree Look Like?</h2></summary>
 
@@ -41,7 +124,7 @@ Depth `n`, branching factor `k`, every leaf valid. `k^n` total leaves — exactl
 
 ### The Solution
 
-```python run viz=graph viz-root=sequences
+```python solution time=O(n · k^n) space=O(n)
 from typing import List
 
 class Solution:
@@ -94,18 +177,12 @@ class Solution:
         return sequences
 
 
-# Examples from the problem statement
-print(Solution().number_sequence(2, 2))   # [[1, 1], [1, 2], [2, 1], [2, 2]]
-print(Solution().number_sequence(3, 1))   # [[1, 1, 1]]
-print(Solution().number_sequence(1, 4))   # [[1], [2], [3], [4]]
-
-# Edge cases
-print(Solution().number_sequence(0, 3))   # [[]]
-print(Solution().number_sequence(1, 1))   # [[1]]
-print(len(Solution().number_sequence(3, 3)))  # 27
+n = int(input())     # the test case's n
+k = int(input())     # the test case's k
+print(Solution().number_sequence(n, k))
 ```
 
-```java run viz=graph viz-root=sequences
+```java solution
 import java.util.*;
 
 public class Main {
@@ -167,15 +244,10 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().numberSequence(2, 2));   // [[1, 1], [1, 2], [2, 1], [2, 2]]
-        System.out.println(new Solution().numberSequence(3, 1));   // [[1, 1, 1]]
-        System.out.println(new Solution().numberSequence(1, 4));   // [[1], [2], [3], [4]]
-
-        // Edge cases
-        System.out.println(new Solution().numberSequence(0, 3));   // [[]]
-        System.out.println(new Solution().numberSequence(1, 1));   // [[1]]
-        System.out.println(new Solution().numberSequence(3, 3).size());  // 27
+        Scanner sc = new Scanner(System.in);
+        int n = Integer.parseInt(sc.nextLine().trim());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().numberSequence(n, k));
     }
 }
 ```

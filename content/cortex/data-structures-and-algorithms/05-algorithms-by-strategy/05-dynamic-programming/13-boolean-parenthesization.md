@@ -41,8 +41,8 @@ def count_true(expr):
                     F[i][j] += lt * rt + lf * rf
     return T[0][n - 1]
 
-print(count_true("T^F&T"))     # 2
-print(count_true("T|T&F^T"))   # 4
+expr = input()
+print(count_true(expr))
 ```
 
 ```java run viz=array
@@ -71,10 +71,26 @@ public class Main {
             }
         return (int) T[0][n - 1];
     }
+
     public static void main(String[] args) {
-        System.out.println(countTrue("T^F&T"));     // 2
-        System.out.println(countTrue("T|T&F^T"));   // 4
+        java.util.Scanner sc = new java.util.Scanner(System.in);
+        System.out.println(countTrue(sc.nextLine().trim()));
     }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "expr", "label": "expr", "type": "string", "placeholder": "T^F&T" }
+  ],
+  "cases": [
+    { "args": { "expr": "T^F&T" }, "expected": "2" },
+    { "args": { "expr": "T|T&F^T" }, "expected": "4" },
+    { "args": { "expr": "T&T" }, "expected": "1" },
+    { "args": { "expr": "F|T" }, "expected": "1" },
+    { "args": { "expr": "T^T^T" }, "expected": "2" }
+  ]
 }
 ```
 
@@ -155,6 +171,52 @@ Correct is `1`; the buggy version returns `0`. `F | T` evaluates to `True` — t
 
 ```python run viz=array
 def diff_ways(expr):
+    # Your code goes here
+    return []
+
+expr = input()
+print(sorted(diff_ways(expr)))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static List<Integer> diffWays(String e) {
+        // Your code goes here
+        return new ArrayList<>();
+    }
+
+    public static void main(String[] args) {
+        String expr = new java.util.Scanner(System.in).nextLine().trim();
+        List<Integer> w = diffWays(expr);
+        Collections.sort(w);
+        System.out.println(w);
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "expr", "label": "expr", "type": "string", "placeholder": "2-1-1" }
+  ],
+  "cases": [
+    { "args": { "expr": "2-1-1" }, "expected": "[0, 2]" },
+    { "args": { "expr": "2*3-4*5" }, "expected": "[-34, -14, -10, -10, 10]" },
+    { "args": { "expr": "2+3" }, "expected": "[5]" },
+    { "args": { "expr": "2*3" }, "expected": "[6]" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Both print `[0, 2]` then `[-34, -14, -10, -10, 10]`. `2-1-1` parenthesizes as `(2-1)-1 = 0` or `2-(1-1) = 2`; the second expression has five groupings. This is boolean parenthesization's structural twin — split at each operator, combine the sub-results — just collecting *values* instead of *counts*. (It's written here as plain recursion to show the split clearly; memoizing on the substring turns it into the same bottom-up interval DP.)
+
+```python solution time=O(n·Catalan(n)) space=O(n·Catalan(n))
+def diff_ways(expr):
     if expr.isdigit():
         return [int(expr)]                           # base: a bare number
     res = []
@@ -165,12 +227,13 @@ def diff_ways(expr):
                     res.append(l + r if ch == '+' else l - r if ch == '-' else l * r)
     return res
 
-print(sorted(diff_ways("2-1-1")))      # [0, 2]
-print(sorted(diff_ways("2*3-4*5")))    # [-34, -14, -10, -10, 10]
+expr = input()
+print(sorted(diff_ways(expr)))
 ```
 
-```java run viz=array
+```java solution
 import java.util.*;
+
 public class Main {
     static List<Integer> diffWays(String e) {
         List<Integer> res = new ArrayList<>();
@@ -184,16 +247,17 @@ public class Main {
         }
         return res;
     }
+
     public static void main(String[] args) {
-        List<Integer> w1 = diffWays("2-1-1");   Collections.sort(w1);
-        List<Integer> w2 = diffWays("2*3-4*5"); Collections.sort(w2);
-        System.out.println(w1);   // [0, 2]
-        System.out.println(w2);   // [-34, -14, -10, -10, 10]
+        String expr = new java.util.Scanner(System.in).nextLine().trim();
+        List<Integer> w = diffWays(expr);
+        Collections.sort(w);
+        System.out.println(w);
     }
 }
 ```
 
-Both print `[0, 2]` then `[-34, -14, -10, -10, 10]`. `2-1-1` parenthesizes as `(2-1)-1 = 0` or `2-(1-1) = 2`; the second expression has five groupings. This is boolean parenthesization's structural twin — split at each operator, combine the sub-results — just collecting *values* instead of *counts*. (It's written here as plain recursion to show the split clearly; memoizing on the substring turns it into the same bottom-up interval DP.)
+</details>
 
 ## Reflect & Connect
 

@@ -1,9 +1,11 @@
 ---
 title: "Solve Sudoku"
-summary: "Given a partially filled 9 × 9 sudoku grid (with 'X' marking empty cells), fill in the empty cells so that:"
+summary: "Given a partially filled 9 × 9 sudoku grid (with 0 marking empty cells), fill in the empty cells so that:"
 prereqs:
   - 05-pattern-backtracking-search/01-pattern
 difficulty: hard
+kind: problem
+topics: [backtracking-search, backtracking]
 ---
 
 # Solve Sudoku
@@ -14,14 +16,111 @@ The hardest worked problem in this section. Sudoku's state space is enormous, bu
 
 ## The Problem
 
-Given a partially filled `9 × 9` sudoku grid (with `'X'` marking empty cells), fill in the empty cells so that:
+Given a partially filled `9 × 9` sudoku grid (with `0` marking empty cells), fill in the empty cells so that:
 1. Every row contains digits `1`-`9` exactly once.
 2. Every column contains digits `1`-`9` exactly once.
 3. Each of the nine `3 × 3` sub-boxes contains digits `1`-`9` exactly once.
 
-The grid is mutated in place.
+The grid is mutated in place; return the solved grid as a list-of-lists.
 
 ---
+
+## Examples
+
+**Example 1**
+```
+Input:  [[5,3,0,0,7,0,0,0,0],
+         [6,0,0,1,9,5,0,0,0],
+         [0,9,8,0,0,0,0,6,0],
+         [8,0,0,0,6,0,0,0,3],
+         [4,0,0,8,0,3,0,0,1],
+         [7,0,0,0,2,0,0,0,6],
+         [0,6,0,0,0,0,2,8,0],
+         [0,0,0,4,1,9,0,0,5],
+         [0,0,0,0,8,0,0,7,9]]
+Output: [[5,3,4,6,7,8,9,1,2],
+         [6,7,2,1,9,5,3,4,8],
+         [1,9,8,3,4,2,5,6,7],
+         [8,5,9,7,6,1,4,2,3],
+         [4,2,6,8,5,3,7,9,1],
+         [7,1,3,9,2,4,8,5,6],
+         [9,6,1,5,3,7,2,8,4],
+         [2,8,7,4,1,9,6,3,5],
+         [3,4,5,2,8,6,1,7,9]]
+```
+
+## Constraints
+
+- Grid is always `9 × 9`.
+- `0` marks an empty cell; digits `1`-`9` are pre-filled clues.
+- The puzzle is guaranteed to have a unique solution.
+
+```python run viz=grid viz-root=board
+import ast
+
+class Solution:
+    def solve_sudoku(self, board):
+        # Your code goes here
+        # Find next empty cell (0), try digits 1-9 that fit, recurse, undo on failure
+        pass
+
+board = ast.literal_eval(input())
+Solution().solve_sudoku(board)
+print(board)
+```
+
+```java run viz=grid viz-root=board
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public void solveSudoku(int[][] board) {
+            // Your code goes here
+            // Find next empty cell (0), try digits 1-9 that fit, recurse, undo on failure
+        }
+    }
+
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[][] board = parseIntMatrix(sc.nextLine());
+        new Solution().solveSudoku(board);
+        List<List<Integer>> result = new ArrayList<>();
+        for (int[] row : board) {
+            List<Integer> rowList = new ArrayList<>();
+            for (int v : row) rowList.add(v);
+            result.add(rowList);
+        }
+        System.out.println(result);
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "board", "label": "board", "type": "int[][]", "placeholder": "[[5,3,0,0,7,0,0,0,0],...]" }
+  ],
+  "cases": [
+    { "args": { "board": "[[5,3,0,0,7,0,0,0,0],[6,0,0,1,9,5,0,0,0],[0,9,8,0,0,0,0,6,0],[8,0,0,0,6,0,0,0,3],[4,0,0,8,0,3,0,0,1],[7,0,0,0,2,0,0,0,6],[0,6,0,0,0,0,2,8,0],[0,0,0,4,1,9,0,0,5],[0,0,0,0,8,0,0,7,9]]" }, "expected": "[[5, 3, 4, 6, 7, 8, 9, 1, 2], [6, 7, 2, 1, 9, 5, 3, 4, 8], [1, 9, 8, 3, 4, 2, 5, 6, 7], [8, 5, 9, 7, 6, 1, 4, 2, 3], [4, 2, 6, 8, 5, 3, 7, 9, 1], [7, 1, 3, 9, 2, 4, 8, 5, 6], [9, 6, 1, 5, 3, 7, 2, 8, 4], [2, 8, 7, 4, 1, 9, 6, 3, 5], [3, 4, 5, 2, 8, 6, 1, 7, 9]]" }
+  ]
+}
+```
 
 <details>
 <summary><h2>What's the Recursion Doing?</h2></summary>
@@ -60,14 +159,15 @@ If a digit doesn't lead to a solution, we have to clear that cell so we can try 
 
 ### The Solution
 
-```python run viz=grid viz-root=board1
+```python solution time=O(9^81) space=O(81)
+import ast
 from typing import List
 
 class Solution:
 
     # Checks if placing 'num' in the specified row is valid
     def is_valid_row(
-        self, board: List[List[str]], row: int, num: str
+        self, board: List[List[int]], row: int, num: int
     ) -> bool:
         for col in range(9):
             if board[row][col] == num:
@@ -76,7 +176,7 @@ class Solution:
 
     # Checks if placing 'num' in the specified column is valid
     def is_valid_col(
-        self, board: List[List[str]], col: int, num: str
+        self, board: List[List[int]], col: int, num: int
     ) -> bool:
         for row in range(9):
             if board[row][col] == num:
@@ -86,7 +186,7 @@ class Solution:
     # Checks if placing 'num' in the 3x3 sub-grid containing (row, col)
     # is valid
     def is_valid_subgrid(
-        self, board: List[List[str]], row: int, col: int, num: str
+        self, board: List[List[int]], row: int, col: int, num: int
     ) -> bool:
         start_row = (row // 3) * 3
         start_col = (col // 3) * 3
@@ -98,7 +198,7 @@ class Solution:
 
     # Checks if placing 'num' at (row, col) is valid in all respects
     def is_valid_placement(
-        self, board: List[List[str]], row: int, col: int, num: str
+        self, board: List[List[int]], row: int, col: int, num: int
     ) -> bool:
 
         # Check row, column, and sub-grid constraints
@@ -109,17 +209,17 @@ class Solution:
         )
 
     # Recursive search function to fill the Sudoku board
-    def search_solution(self, board: List[List[str]]) -> bool:
+    def search_solution(self, board: List[List[int]]) -> bool:
 
         # Iterate through each cell of the board
         for row in range(9):
             for col in range(9):
 
                 # Only attempt to fill empty cells
-                if board[row][col] == "X":
+                if board[row][col] == 0:
 
-                    # Try all digits from "1" to "9" in this cell
-                    for num in map(str, range(1, 10)):
+                    # Try all digits from 1 to 9 in this cell
+                    for num in range(1, 10):
 
                         # Check if placing the number is valid (solution
                         # state possible)
@@ -135,7 +235,7 @@ class Solution:
 
                             # If it did not lead to a solution, remove
                             # the number (revert choice)
-                            board[row][col] = "X"
+                            board[row][col] = 0
 
                     # If no valid number can be placed in this cell,
                     # backtrack
@@ -144,76 +244,25 @@ class Solution:
         # If all cells are filled successfully, the board is solved
         return True
 
-    def solve_sudoku(self, board: List[List[str]]) -> None:
+    def solve_sudoku(self, board: List[List[int]]) -> None:
 
         # Start the search process to fill the board
         self.search_solution(board)
 
 
-# Example from the problem statement
-board1 = [
-    ['5','3','X','X','7','X','X','X','X'],
-    ['6','X','X','1','9','5','X','X','X'],
-    ['X','9','8','X','X','X','X','6','X'],
-    ['8','X','X','X','6','X','X','X','3'],
-    ['4','X','X','8','X','3','X','X','1'],
-    ['7','X','X','X','2','X','X','X','6'],
-    ['X','6','X','X','X','X','2','8','X'],
-    ['X','X','X','4','1','9','X','X','5'],
-    ['X','X','X','X','8','X','X','7','9'],
-]
-Solution().solve_sudoku(board1)
-for row in board1:
-    print(row)
-# [5,3,4,6,7,8,9,1,2]
-# [6,7,2,1,9,5,3,4,8]
-# [1,9,8,3,4,2,5,6,7]
-# [8,5,9,7,6,1,4,2,3]
-# [4,2,6,8,5,3,7,9,1]
-# [7,1,3,9,2,4,8,5,6]
-# [9,6,1,5,3,7,2,8,4]
-# [2,8,7,4,1,9,6,3,5]
-# [3,4,5,2,8,6,1,7,9]
-
-# Nearly full board — only one empty cell
-board2 = [
-    ['5','3','4','6','7','8','9','1','2'],
-    ['6','7','2','1','9','5','3','4','8'],
-    ['1','9','8','3','4','2','5','6','7'],
-    ['8','5','9','7','6','1','4','2','3'],
-    ['4','2','6','8','5','3','7','9','1'],
-    ['7','1','3','9','2','4','8','5','6'],
-    ['9','6','1','5','3','7','2','8','4'],
-    ['2','8','7','4','1','9','6','3','5'],
-    ['3','4','5','2','8','6','1','7','X'],
-]
-Solution().solve_sudoku(board2)
-print(board2[8][8])                                   # 9
-
-# Already solved board — no-op
-board3 = [
-    ['5','3','4','6','7','8','9','1','2'],
-    ['6','7','2','1','9','5','3','4','8'],
-    ['1','9','8','3','4','2','5','6','7'],
-    ['8','5','9','7','6','1','4','2','3'],
-    ['4','2','6','8','5','3','7','9','1'],
-    ['7','1','3','9','2','4','8','5','6'],
-    ['9','6','1','5','3','7','2','8','4'],
-    ['2','8','7','4','1','9','6','3','5'],
-    ['3','4','5','2','8','6','1','7','9'],
-]
-Solution().solve_sudoku(board3)
-print(board3[0][0])                                   # 5
+board = ast.literal_eval(input())
+Solution().solve_sudoku(board)
+print(board)
 ```
 
-```java run viz=grid viz-root=board1
+```java solution
 import java.util.*;
 
 public class Main {
     static class Solution {
 
         // Checks if placing 'num' in the specified row is valid
-        private boolean isValidRow(char[][] board, int row, char num) {
+        private boolean isValidRow(int[][] board, int row, int num) {
             for (int col = 0; col < 9; col++) {
                 if (board[row][col] == num) {
                     return false;
@@ -223,7 +272,7 @@ public class Main {
         }
 
         // Checks if placing 'num' in the specified column is valid
-        private boolean isValidCol(char[][] board, int col, char num) {
+        private boolean isValidCol(int[][] board, int col, int num) {
             for (int row = 0; row < 9; row++) {
                 if (board[row][col] == num) {
                     return false;
@@ -235,10 +284,10 @@ public class Main {
         // Checks if placing 'num' in the 3x3 sub-grid containing (row, col)
         // is valid
         private boolean isValidSubGrid(
-            char[][] board,
+            int[][] board,
             int row,
             int col,
-            char num
+            int num
         ) {
             int startRow = (row / 3) * 3;
             int startCol = (col / 3) * 3;
@@ -254,10 +303,10 @@ public class Main {
 
         // Checks if placing 'num' at (row, col) is valid in all respects
         private boolean isValidPlacement(
-            char[][] board,
+            int[][] board,
             int row,
             int col,
-            char num
+            int num
         ) {
 
             // Check row, column, and sub-grid constraints
@@ -269,25 +318,24 @@ public class Main {
         }
 
         // Recursive search function to fill the Sudoku board
-        private boolean searchSolution(char[][] board) {
+        private boolean searchSolution(int[][] board) {
 
             // Iterate through each cell of the board
             for (int row = 0; row < 9; row++) {
                 for (int col = 0; col < 9; col++) {
 
                     // Only attempt to fill empty cells
-                    if (board[row][col] == 'X') {
+                    if (board[row][col] == 0) {
 
-                        // Try all digits from "1" to "9" in this cell
+                        // Try all digits from 1 to 9 in this cell
                         for (int num = 1; num <= 9; num++) {
-                            char strNum = (char) (num + '0');
 
                             // Check if placing the number is valid (solution
                             // state possible)
-                            if (isValidPlacement(board, row, col, strNum)) {
+                            if (isValidPlacement(board, row, col, num)) {
 
                                 // Place the number in the cell (make choice)
-                                board[row][col] = strNum;
+                                board[row][col] = num;
 
                                 // Recursively attempt to fill the rest of
                                 // the board
@@ -299,7 +347,7 @@ public class Main {
 
                                 // If it did not lead to a solution, remove
                                 // the number (revert choice)
-                                board[row][col] = 'X';
+                                board[row][col] = 0;
                             }
                         }
 
@@ -314,67 +362,40 @@ public class Main {
             return true;
         }
 
-        public void solveSudoku(char[][] board) {
+        public void solveSudoku(int[][] board) {
 
             // Start the search process to fill the board
             searchSolution(board);
         }
     }
 
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
+    }
+
     public static void main(String[] args) {
-        // Example from the problem statement
-        char[][] board1 = {
-            {'5','3','X','X','7','X','X','X','X'},
-            {'6','X','X','1','9','5','X','X','X'},
-            {'X','9','8','X','X','X','X','6','X'},
-            {'8','X','X','X','6','X','X','X','3'},
-            {'4','X','X','8','X','3','X','X','1'},
-            {'7','X','X','X','2','X','X','X','6'},
-            {'X','6','X','X','X','X','2','8','X'},
-            {'X','X','X','4','1','9','X','X','5'},
-            {'X','X','X','X','8','X','X','7','9'},
-        };
-        new Solution().solveSudoku(board1);
-        for (char[] row : board1) System.out.println(Arrays.toString(row));
-        // [5,3,4,6,7,8,9,1,2]
-        // [6,7,2,1,9,5,3,4,8]
-        // [1,9,8,3,4,2,5,6,7]
-        // [8,5,9,7,6,1,4,2,3]
-        // [4,2,6,8,5,3,7,9,1]
-        // [7,1,3,9,2,4,8,5,6]
-        // [9,6,1,5,3,7,2,8,4]
-        // [2,8,7,4,1,9,6,3,5]
-        // [3,4,5,2,8,6,1,7,9]
-
-        // Nearly full board — only one empty cell
-        char[][] board2 = {
-            {'5','3','4','6','7','8','9','1','2'},
-            {'6','7','2','1','9','5','3','4','8'},
-            {'1','9','8','3','4','2','5','6','7'},
-            {'8','5','9','7','6','1','4','2','3'},
-            {'4','2','6','8','5','3','7','9','1'},
-            {'7','1','3','9','2','4','8','5','6'},
-            {'9','6','1','5','3','7','2','8','4'},
-            {'2','8','7','4','1','9','6','3','5'},
-            {'3','4','5','2','8','6','1','7','X'},
-        };
-        new Solution().solveSudoku(board2);
-        System.out.println(board2[8][8]);                             // 9
-
-        // Already solved board — no-op
-        char[][] board3 = {
-            {'5','3','4','6','7','8','9','1','2'},
-            {'6','7','2','1','9','5','3','4','8'},
-            {'1','9','8','3','4','2','5','6','7'},
-            {'8','5','9','7','6','1','4','2','3'},
-            {'4','2','6','8','5','3','7','9','1'},
-            {'7','1','3','9','2','4','8','5','6'},
-            {'9','6','1','5','3','7','2','8','4'},
-            {'2','8','7','4','1','9','6','3','5'},
-            {'3','4','5','2','8','6','1','7','9'},
-        };
-        new Solution().solveSudoku(board3);
-        System.out.println(board3[0][0]);                             // 5
+        Scanner sc = new Scanner(System.in);
+        int[][] board = parseIntMatrix(sc.nextLine());
+        new Solution().solveSudoku(board);
+        List<List<Integer>> result = new ArrayList<>();
+        for (int[] row : board) {
+            List<Integer> rowList = new ArrayList<>();
+            for (int v : row) rowList.add(v);
+            result.add(rowList);
+        }
+        System.out.println(result);
     }
 }
 ```
@@ -394,7 +415,7 @@ In practice, the constraint propagation (rule out digits that conflict with row/
 |---|---|---|
 | Already solved | All cells filled | Return immediately. |
 | Unsolvable | Contradictory clues | `false` returned (no solution). |
-| Empty board | All cells 'X' | Generates *some* valid Sudoku (not unique). |
+| Empty board | All cells 0 | Generates *some* valid Sudoku (not unique). |
 | Multiple solutions | Some easier puzzles | Returns the first found. |
 
 </details>
@@ -414,6 +435,8 @@ The next major topic in the course is **sorting**, where the four backtracking p
 <summary><strong>Answer — open after you've thought about it</strong></summary>
 
 ```python run viz=grid
+import ast
+
 class Solution:
     def count_sudoku_solutions(self, board):
         count = [0]                      # mutable counter (closure trick)
@@ -423,14 +446,25 @@ class Solution:
     def _search(self, board, count):
         for row in range(9):
             for col in range(9):
-                if board[row][col] == "X":
-                    for d in "123456789":
+                if board[row][col] == 0:
+                    for d in range(1, 10):
                         if self._is_valid(board, row, col, d):
                             board[row][col] = d
                             self._search(board, count)
-                            board[row][col] = "X"      # undo (always)
+                            board[row][col] = 0      # undo (always)
                     return                              # don't propagate "true"
         count[0] += 1                                   # all cells filled — record one more solution
+
+    def _is_valid(self, board, row, col, num):
+        for c in range(9):
+            if board[row][c] == num: return False
+        for r in range(9):
+            if board[r][col] == num: return False
+        sr, sc = (row // 3) * 3, (col // 3) * 3
+        for r in range(sr, sr + 3):
+            for c in range(sc, sc + 3):
+                if board[r][c] == num: return False
+        return True
 ```
 
 The change: instead of returning `true` and propagating, *continue exploring* even after a solution is found. The undo step now always runs (no "if true: return"). Time complexity is much worse — we no longer get the exponential speedup of early termination — but the recipe is otherwise identical.

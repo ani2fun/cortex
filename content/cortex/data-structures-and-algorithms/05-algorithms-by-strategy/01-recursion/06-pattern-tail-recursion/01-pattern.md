@@ -53,10 +53,13 @@ def sum_to_n(n):
         return helper(n - 1, acc + n)       # fold FIRST, then tail-call (last action)
     return helper(n, 0)
 
-print("sum_to_n(5):", sum_to_n(5))
+n = int(input())
+print(sum_to_n(n))
 ```
 
 ```java run viz=array
+import java.util.*;
+
 public class Main {
     static int sumToN(int n) { return helper(n, 0); }
     static int helper(int n, int acc) {
@@ -64,12 +67,27 @@ public class Main {
         return helper(n - 1, acc + n);          // fold first, tail-call last
     }
     public static void main(String[] args) {
-        System.out.println("sumToN(5): " + sumToN(5));
+        int n = Integer.parseInt(new Scanner(System.in).nextLine().trim());
+        System.out.println(sumToN(n));
     }
 }
 ```
 
-Both print `15`. The accumulator grows on the descent — `0 → 5 → 9 → 12 → 14 → 15` — and the base case returns it unchanged. No frame does anything on the way back; each just passes the value through.
+```testcases
+{
+  "args": [
+    { "id": "n", "label": "n", "type": "int", "placeholder": "5" }
+  ],
+  "cases": [
+    { "args": { "n": "5" }, "expected": "15" },
+    { "args": { "n": "1" }, "expected": "1" },
+    { "args": { "n": "0" }, "expected": "0" },
+    { "args": { "n": "10" }, "expected": "55" }
+  ]
+}
+```
+
+The accumulator grows on the descent — `0 → 5 → 9 → 12 → 14 → 15` — and the base case returns it unchanged. No frame does anything on the way back; each just passes the value through.
 
 ## How It Works
 
@@ -149,6 +167,48 @@ A palindrome check is naturally tail-recursive: compare the ends, then tail-call
 
 ```python run viz=array
 def is_palindrome(s, lo=0, hi=None):
+    # Your code goes here
+    return True
+
+s = input()
+print("true" if is_palindrome(s) else "false")
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static boolean isPalindrome(String s, int lo, int hi) {
+        // Your code goes here
+        return true;
+    }
+    public static void main(String[] args) {
+        String s = new Scanner(System.in).nextLine().trim();
+        System.out.println(isPalindrome(s, 0, s.length() - 1) ? "true" : "false");
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "s", "type": "string", "placeholder": "racecar" }
+  ],
+  "cases": [
+    { "args": { "s": "racecar" }, "expected": "true" },
+    { "args": { "s": "hello" }, "expected": "false" },
+    { "args": { "s": "a" }, "expected": "true" },
+    { "args": { "s": "ab" }, "expected": "false" },
+    { "args": { "s": "abba" }, "expected": "true" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+```python solution time=O(n) space=O(n)
+def is_palindrome(s, lo=0, hi=None):
     if hi is None: hi = len(s) - 1
     if lo >= hi:                            # base: pointers crossed → palindrome
         return True
@@ -156,11 +216,13 @@ def is_palindrome(s, lo=0, hi=None):
         return False
     return is_palindrome(s, lo + 1, hi - 1) # tail call: shrink inward
 
-print("racecar:", is_palindrome("racecar"))  # True
-print("hello:", is_palindrome("hello"))      # False
+s = input()
+print("true" if is_palindrome(s) else "false")
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
     static boolean isPalindrome(String s, int lo, int hi) {
         if (lo >= hi) return true;                       // base
@@ -168,13 +230,15 @@ public class Main {
         return isPalindrome(s, lo + 1, hi - 1);          // tail call
     }
     public static void main(String[] args) {
-        System.out.println("racecar: " + isPalindrome("racecar", 0, 6));   // true
-        System.out.println("hello: " + isPalindrome("hello", 0, 4));       // false
+        String s = new Scanner(System.in).nextLine().trim();
+        System.out.println(isPalindrome(s, 0, s.length() - 1) ? "true" : "false");
     }
 }
 ```
 
-Both print `True/true` then `False/false`. Each call's only work — the end comparison — happens *before* the tail call; nothing is left for the ascent. The four problems in this section's **Problems** folder — reverse a sequence, search an element, palindrome check, reverse a list — are all this "work-on-descent, recurse-last" shape.
+Both print `true` then `false`. Each call's only work — the end comparison — happens *before* the tail call; nothing is left for the ascent. The four problems in this section's **Problems** folder — reverse a sequence, search an element, palindrome check, reverse a list — are all this "work-on-descent, recurse-last" shape.
+
+</details>
 
 ## Reflect & Connect
 

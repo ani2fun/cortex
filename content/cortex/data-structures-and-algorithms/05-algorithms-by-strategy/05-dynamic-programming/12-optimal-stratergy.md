@@ -16,6 +16,8 @@ That word *guarantee* is what makes this a new kind of DP. Every problem so far 
 `dp[i][j]` = the most the player-to-move can guarantee from the slice `coins[i..j]`. Take the left coin or the right coin; whichever you take, the opponent then plays optimally on the rest and **leaves you the worse of the two remainders** — that's the `min`.
 
 ```python run viz=grid
+import ast
+
 def optimal_strategy(coins):
     n = len(coins)
     dp = [[0] * n for _ in range(n)]
@@ -30,11 +32,13 @@ def optimal_strategy(coins):
             dp[i][j] = max(take_left, take_right)             # you pick your better option
     return dp[0][n - 1]
 
-print(optimal_strategy([8, 15, 3, 7]))   # 22
-print(optimal_strategy([2, 2, 2, 2]))    # 4
+coins = ast.literal_eval(input())
+print(optimal_strategy(coins))
 ```
 
 ```java run viz=grid
+import java.util.*;
+
 public class Main {
     static int optimalStrategy(int[] coins) {
         int n = coins.length;
@@ -50,10 +54,36 @@ public class Main {
             }
         return dp[0][n - 1];
     }
+
     public static void main(String[] args) {
-        System.out.println(optimalStrategy(new int[]{8, 15, 3, 7}));   // 22
-        System.out.println(optimalStrategy(new int[]{2, 2, 2, 2}));    // 4
+        Scanner sc = new Scanner(System.in);
+        int[] coins = parseIntArray(sc.nextLine());
+        System.out.println(optimalStrategy(coins));
     }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "coins", "label": "coins", "type": "int[]", "placeholder": "[8, 15, 3, 7]" }
+  ],
+  "cases": [
+    { "args": { "coins": "[8, 15, 3, 7]" }, "expected": "22" },
+    { "args": { "coins": "[2, 2, 2, 2]" }, "expected": "4" },
+    { "args": { "coins": "[1, 100, 1]" }, "expected": "2" },
+    { "args": { "coins": "[5, 3, 7, 10]" }, "expected": "15" },
+    { "args": { "coins": "[10]" }, "expected": "10" }
+  ]
 }
 ```
 
@@ -122,6 +152,64 @@ Adversarial gives `2`; the buggy `max` claims `101`. With `[1,100,1]`, whatever 
 **Predict the Winner** ([LeetCode 486](https://leetcode.com/problems/predict-the-winner/)) — does the first player win (or tie)? This is the *margin* formulation from above: `dp[i][j] = max(nums[i] − dp[i+1][j], nums[j] − dp[i][j-1])`, and the answer is `dp[0][n-1] ≥ 0`. No `min` in sight — the subtraction *is* the adversary.
 
 ```python run viz=grid
+import ast
+
+def predict_winner(nums):
+    # Your code goes here
+    return False
+
+nums = ast.literal_eval(input())
+print("true" if predict_winner(nums) else "false")
+```
+
+```java run viz=grid
+import java.util.*;
+
+public class Main {
+    static boolean predictWinner(int[] nums) {
+        // Your code goes here
+        return false;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] nums = parseIntArray(sc.nextLine());
+        System.out.println(predictWinner(nums));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "nums", "label": "nums", "type": "int[]", "placeholder": "[1, 5, 2]" }
+  ],
+  "cases": [
+    { "args": { "nums": "[1, 5, 2]" }, "expected": "false" },
+    { "args": { "nums": "[1, 5, 233, 7]" }, "expected": "true" },
+    { "args": { "nums": "[1, 2]" }, "expected": "true" },
+    { "args": { "nums": "[1, 1, 1]" }, "expected": "true" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Both print `false` then `true`. In `[1,5,2]` the second player can always answer to come out ahead (margin −2 for player 1); in `[1,5,233,7]` the first player grabs the `7` to expose and then claim the `233`, winning easily. The subtractive form collapses the whole max-min dance into one signed recurrence — the cleanest expression of "their optimal play counts against me."
+
+```python solution time=O(n²) space=O(n²)
+import ast
+
 def predict_winner(nums):
     n = len(nums)
     dp = [[0] * n for _ in range(n)]                          # dp[i][j] = best (mine - opponent's) on [i..j]
@@ -134,11 +222,13 @@ def predict_winner(nums):
                            nums[j] - dp[i][j - 1])
     return dp[0][n - 1] >= 0                                  # first player at least ties
 
-print(predict_winner([1, 5, 2]))       # False
-print(predict_winner([1, 5, 233, 7]))  # True
+nums = ast.literal_eval(input())
+print("true" if predict_winner(nums) else "false")
 ```
 
-```java run viz=grid
+```java solution
+import java.util.*;
+
 public class Main {
     static boolean predictWinner(int[] nums) {
         int n = nums.length;
@@ -151,14 +241,25 @@ public class Main {
             }
         return dp[0][n - 1] >= 0;
     }
+
     public static void main(String[] args) {
-        System.out.println(predictWinner(new int[]{1, 5, 2}));       // false
-        System.out.println(predictWinner(new int[]{1, 5, 233, 7}));  // true
+        Scanner sc = new Scanner(System.in);
+        int[] nums = parseIntArray(sc.nextLine());
+        System.out.println(predictWinner(nums));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```
 
-Both print `false` then `true`. In `[1,5,2]` the second player can always answer to come out ahead (margin −2 for player 1); in `[1,5,233,7]` the first player grabs the `7` to expose and then claim the `233`, winning easily. The subtractive form collapses the whole max-min dance into one signed recurrence — the cleanest expression of "their optimal play counts against me."
+</details>
 
 ## Reflect & Connect
 

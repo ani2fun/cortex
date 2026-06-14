@@ -4,6 +4,8 @@ summary: "Given an n × m grid of integers, find the length of the longest path 
 prereqs:
   - 18-pattern-2d-grid/01-pattern
 difficulty: medium
+kind: problem
+topics: [2d-grid, dynamic-programming]
 ---
 
 # Longest Ascending Route
@@ -22,6 +24,109 @@ Input:  matrix = [[1, 2, 3],
                   [4, 5, 6],
                   [7, 8, 9]]
 Output: 5                 Multiple longest paths; e.g. 1 → 2 → 3 → 6 → 9
+```
+
+---
+
+## Examples
+
+**Example 1**
+```
+Input:  matrix = [[1, 2, 9], [5, 3, 8], [4, 6, 7]]
+Output: 7
+Explanation: Path 1 → 2 → 3 → 6 → 7 → 8 → 9 snakes through the grid, length 7.
+```
+
+**Example 2**
+```
+Input:  matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+Output: 5
+Explanation: Multiple paths of length 5 exist, e.g. 1 → 2 → 3 → 6 → 9.
+```
+
+```quiz
+{
+  "prompt": "Why does the strict-increase rule guarantee the recursion DAG is acyclic?",
+  "options": [
+    "Because the grid is finite",
+    "Every edge points to a strictly greater value, so no path can revisit a cell",
+    "DFS never revisits nodes",
+    "Memoization prevents cycles"
+  ],
+  "answer": "Every edge points to a strictly greater value, so no path can revisit a cell"
+}
+```
+
+## Constraints
+
+- `1 ≤ n, m ≤ 200`
+- `0 ≤ matrix[i][j] ≤ 2³¹ − 1`
+- Moves are 4-connected (up/down/left/right); diagonals don't count.
+
+```python run viz=grid
+import ast
+
+class Solution:
+    def longest_ascending_route(self, matrix):
+        # Your code goes here — DFS with memoization from every cell;
+        # dp[r][c] = length of longest ascending path starting at (r, c).
+        return 0
+
+matrix = ast.literal_eval(input())   # the test case's matrix
+print(Solution().longest_ascending_route(matrix))
+```
+
+```java run viz=grid
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int longestAscendingRoute(int[][] matrix) {
+            // Your code goes here — DFS with memoization from every cell;
+            // dp[r][c] = length of longest ascending path starting at (r, c).
+            return 0;
+        }
+    }
+
+    public static void main(String[] args) {
+        int[][] matrix = parseIntMatrix(new Scanner(System.in).nextLine());
+        System.out.println(new Solution().longestAscendingRoute(matrix));
+    }
+
+    // "[[1, 2, 9], [5, 3, 8]]" → int[][] — reads the test case's matrix
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "matrix", "label": "matrix", "type": "int[][]", "placeholder": "[[1, 1, 0], [0, 1, 1]]" }
+  ],
+  "cases": [
+    { "args": { "matrix": "[[1, 2, 9], [5, 3, 8], [4, 6, 7]]" }, "expected": "7" },
+    { "args": { "matrix": "[[1, 2, 3], [4, 5, 6], [7, 8, 9]]" }, "expected": "5" },
+    { "args": { "matrix": "[[1]]" }, "expected": "1" },
+    { "args": { "matrix": "[[1, 2]]" }, "expected": "2" },
+    { "args": { "matrix": "[[9, 8, 7], [6, 5, 4], [3, 2, 1]]" }, "expected": "5" },
+    { "args": { "matrix": "[[1, 1], [1, 1]]" }, "expected": "1" },
+    { "args": { "matrix": "[[3, 4, 5], [3, 2, 6], [2, 2, 1]]" }, "expected": "4" }
+  ]
+}
 ```
 
 <details>
@@ -46,7 +151,8 @@ Because every edge points to a strictly greater value, no path can revisit a cel
 
 ### The Solution
 
-```python run viz=grid viz-root=matrix
+```python solution time=O(rows × cols) space=O(rows × cols)
+import ast
 from typing import List
 
 class Solution:
@@ -122,19 +228,11 @@ class Solution:
         return max_length
 
 
-# Examples from the problem statement
-print(Solution().longest_ascending_route([[1, 2, 9], [5, 3, 8], [4, 6, 7]]))  # 7
-print(Solution().longest_ascending_route([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))  # 5
-
-# Edge cases
-print(Solution().longest_ascending_route([[1]]))                               # 1  — 1x1
-print(Solution().longest_ascending_route([[1, 2]]))                            # 2  — 1x2
-print(Solution().longest_ascending_route([[9, 8, 7], [6, 5, 4], [3, 2, 1]])) # 9  — strictly decreasing grid
-print(Solution().longest_ascending_route([[1, 1], [1, 1]]))                    # 1  — all same
-print(Solution().longest_ascending_route([[3, 4, 5], [3, 2, 6], [2, 2, 1]])) # 4
+matrix = ast.literal_eval(input())   # the test case's matrix
+print(Solution().longest_ascending_route(matrix))
 ```
 
-```java run viz=grid viz-root=matrix
+```java solution
 import java.util.*;
 
 public class Main {
@@ -215,16 +313,24 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().longestAscendingRoute(new int[][]{{1,2,9},{5,3,8},{4,6,7}}));  // 7
-        System.out.println(new Solution().longestAscendingRoute(new int[][]{{1,2,3},{4,5,6},{7,8,9}}));  // 5
+        int[][] matrix = parseIntMatrix(new Scanner(System.in).nextLine());
+        System.out.println(new Solution().longestAscendingRoute(matrix));
+    }
 
-        // Edge cases
-        System.out.println(new Solution().longestAscendingRoute(new int[][]{{1}}));                      // 1
-        System.out.println(new Solution().longestAscendingRoute(new int[][]{{1,2}}));                    // 2
-        System.out.println(new Solution().longestAscendingRoute(new int[][]{{9,8,7},{6,5,4},{3,2,1}})); // 9
-        System.out.println(new Solution().longestAscendingRoute(new int[][]{{1,1},{1,1}}));              // 1
-        System.out.println(new Solution().longestAscendingRoute(new int[][]{{3,4,5},{3,2,6},{2,2,1}})); // 4
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
     }
 }
 ```

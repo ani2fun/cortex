@@ -18,6 +18,7 @@ The power is that *any* ordering reduces to "given two elements, which is smalle
 Arrange numbers to form the **largest** possible concatenation. `[3, 30, 34, 5, 9]` → `"9534330"`. Naive descending sort fails (it puts `3` before `30`, giving `…3030…`); the right comparator asks "does `a+b` or `b+a` read larger?". Run it.
 
 ```python run viz=array
+import ast
 import functools
 
 def largest_number(nums):
@@ -30,8 +31,52 @@ def largest_number(nums):
     result = "".join(strs)
     return "0" if result[0] == "0" else result   # e.g. [0,0] → "0", not "00"
 
-print(largest_number([3, 30, 34, 5, 9]))   # 9534330
-print(largest_number([10, 2]))             # 210
+nums = ast.literal_eval(input())
+print(largest_number(nums))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static String largestNumber(int[] nums) {
+        String[] s = new String[nums.length];
+        for (int i = 0; i < nums.length; i++) s[i] = String.valueOf(nums[i]);
+        Arrays.sort(s, (a, b) -> (b + a).compareTo(a + b));   // descending by concatenation
+        if (s[0].equals("0")) return "0";
+        return String.join("", s);
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] nums = parseIntArray(sc.nextLine());
+        System.out.println(largestNumber(nums));
+    }
+
+    // "[3, 30, 34, 5, 9]" → {3, 30, 34, 5, 9}
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "nums", "label": "nums", "type": "int[]", "placeholder": "[3, 30, 34, 5, 9]" }
+  ],
+  "cases": [
+    { "args": { "nums": "[3, 30, 34, 5, 9]" }, "expected": "9534330" },
+    { "args": { "nums": "[10, 2]" }, "expected": "210" },
+    { "args": { "nums": "[0, 0]" }, "expected": "0" },
+    { "args": { "nums": "[9, 1]" }, "expected": "91" }
+  ]
+}
 ```
 
 ## How It Works
@@ -73,41 +118,114 @@ Because the goal isn't "biggest number first" — it's "biggest *concatenation*,
 
 ## Your Turn
 
-The reusable largest-number (a comparator) plus a multi-key sort (a key):
+Implement `largest_number(nums)` using the `a+b vs b+a` comparator. Return `"0"` if the result would be all zeros.
 
 ```python run viz=array
-import functools
+import ast
 
 def largest_number(nums):
-    strs = list(map(str, nums))
-    strs.sort(key=functools.cmp_to_key(lambda a, b: -1 if a + b > b + a else (1 if a + b < b + a else 0)))
-    out = "".join(strs)
-    return "0" if out[0] == "0" else out
+    # Your code goes here — convert to strings, sort with a+b vs b+a
+    # comparator (descending), join, handle all-zeros edge case.
+    return ""
 
-# multi-level key: sort people by height descending, ties by name ascending
-people = [("bob", 175), ("amy", 180), ("cy", 175)]
-people.sort(key=lambda p: (-p[1], p[0]))
-
-print(largest_number([3, 30, 34, 5, 9]))   # 9534330
-print(people)                               # [('amy', 180), ('bob', 175), ('cy', 175)]
+nums = ast.literal_eval(input())
+print(largest_number(nums))
 ```
 
 ```java run viz=array
 import java.util.*;
 
 public class Main {
-  static String largestNumber(int[] nums) {
-    String[] s = new String[nums.length];
-    for (int i = 0; i < nums.length; i++) s[i] = String.valueOf(nums[i]);
-    Arrays.sort(s, (a, b) -> (b + a).compareTo(a + b));   // descending by concatenation
-    return s[0].equals("0") ? "0" : String.join("", s);
-  }
-  public static void main(String[] args) {
-    System.out.println(largestNumber(new int[]{3, 30, 34, 5, 9}));   // 9534330
-    System.out.println(largestNumber(new int[]{10, 2}));             // 210
-  }
+    static String largestNumber(int[] nums) {
+        // Your code goes here — convert to strings, sort with (b+a).compareTo(a+b),
+        // join, handle all-zeros edge case.
+        return "";
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] nums = parseIntArray(sc.nextLine());
+        System.out.println(largestNumber(nums));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
 }
 ```
+
+```testcases
+{
+  "args": [
+    { "id": "nums", "label": "nums", "type": "int[]", "placeholder": "[3, 30, 34, 5, 9]" }
+  ],
+  "cases": [
+    { "args": { "nums": "[3, 30, 34, 5, 9]" }, "expected": "9534330" },
+    { "args": { "nums": "[10, 2]" }, "expected": "210" },
+    { "args": { "nums": "[0, 0]" }, "expected": "0" },
+    { "args": { "nums": "[9, 1]" }, "expected": "91" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Convert each integer to a string, then sort with the pairwise comparator `a+b vs b+a` (descending). Join the sorted strings; if the result starts with `"0"`, the input was all zeros — return `"0"`. `O(n log n)` time, `O(n)` space for the string array.
+
+```python solution time=O(n log n) space=O(n)
+import ast
+import functools
+
+def largest_number(nums):
+    strs = list(map(str, nums))
+    def cmp(a, b):
+        if a + b > b + a: return -1
+        if a + b < b + a: return 1
+        return 0
+    strs.sort(key=functools.cmp_to_key(cmp))
+    result = "".join(strs)
+    return "0" if result[0] == "0" else result
+
+nums = ast.literal_eval(input())
+print(largest_number(nums))
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+    static String largestNumber(int[] nums) {
+        String[] s = new String[nums.length];
+        for (int i = 0; i < nums.length; i++) s[i] = String.valueOf(nums[i]);
+        Arrays.sort(s, (a, b) -> (b + a).compareTo(a + b));
+        if (s[0].equals("0")) return "0";
+        return String.join("", s);
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] nums = parseIntArray(sc.nextLine());
+        System.out.println(largestNumber(nums));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+</details>
 
 Drill the family in **Practice** — [Bitwise Sort](/cortex/data-structures-and-algorithms/sorting-and-searching/sorting/pattern-custom-compare/problems/bitwise-sort), [Sort Characters by Frequency](/cortex/data-structures-and-algorithms/sorting-and-searching/sorting/pattern-custom-compare/problems/sort-characters-by-frequency), [Largest Number](/cortex/data-structures-and-algorithms/sorting-and-searching/sorting/pattern-custom-compare/problems/largest-number), and [Sort People by Height](/cortex/data-structures-and-algorithms/sorting-and-searching/sorting/pattern-custom-compare/problems/sort-people-by-height).
 

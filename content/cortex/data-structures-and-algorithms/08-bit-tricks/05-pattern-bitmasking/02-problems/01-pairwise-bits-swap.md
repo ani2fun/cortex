@@ -4,18 +4,89 @@ summary: "Given a 32-bit integer num, swap every pair of adjacent bits — bit 1
 prereqs:
   - 05-pattern-bitmasking/01-pattern
 difficulty: medium
+kind: problem
+topics: [bitmasking, bit-manipulation]
 ---
 
 # Pairwise Bits Swap
 
-## The Problem
+Swap every adjacent bit pair in one shot using two constant masks — no loop needed.
+
+## Problem Statement
 
 Given a 32-bit integer `num`, swap every pair of adjacent bits — bit 1 ↔ bit 2, bit 3 ↔ bit 4, …, bit 31 ↔ bit 32. Return the new value.
 
+## Examples
+
+**Example 1**
 ```
-Input:  num = 1   →  2     (binary 01 → 10)
-Input:  num = 31568  →  47008
-Input:  num = 5419430  →  10580569
+Input:  num = 1
+Output: 2
+Explanation: Binary 01 → 10; the single set bit shifts one position up.
+```
+
+**Example 2**
+```
+Input:  num = 31568
+Output: 47008
+Explanation: Every adjacent pair swaps; the combined rearrangement yields 47008.
+```
+
+**Example 3**
+```
+Input:  num = 5419430
+Output: 10580569
+Explanation: All adjacent pairs swap throughout the 32-bit representation.
+```
+
+## Constraints
+
+- `0 ≤ num ≤ 2^31 - 1` — inputs stay in the small-positive range so the result is also a plain non-negative int.
+- The swap processes all 32 bit positions simultaneously in `O(1)`.
+
+```python run viz=array
+class Solution:
+    def pairwise_bits_swap(self, num: int) -> int:
+        # Your code goes here
+        return 0
+
+num = int(input())
+print(Solution().pairwise_bits_swap(num))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int pairwiseBitsSwap(int num) {
+            // Your code goes here
+            return 0;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int num = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().pairwiseBitsSwap(num));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "num", "label": "num", "type": "int", "placeholder": "1" }
+  ],
+  "cases": [
+    { "args": { "num": "1" }, "expected": "2" },
+    { "args": { "num": "31568" }, "expected": "47008" },
+    { "args": { "num": "5419430" }, "expected": "10580569" },
+    { "args": { "num": "0" }, "expected": "0" },
+    { "args": { "num": "2" }, "expected": "1" },
+    { "args": { "num": "3" }, "expected": "3" }
+  ]
+}
 ```
 
 <details>
@@ -72,9 +143,7 @@ Because each half has 1s only in *complementary* positions: after shifts, the fi
 
 ### The Solution
 
-```python run viz=array
-import sys
-
+```python solution time=O(1) space=O(1)
 class Solution:
     def pairwise_bits_swap(self, num: int) -> int:
 
@@ -103,20 +172,13 @@ class Solution:
         return swapped
 
 
-# Examples from the problem statement
-print(Solution().pairwise_bits_swap(31568))      # 47008
-print(Solution().pairwise_bits_swap(5419430))    # 10580569
-print(Solution().pairwise_bits_swap(1))          # 2
-
-# Edge cases
-print(Solution().pairwise_bits_swap(0))          # 0
-print(Solution().pairwise_bits_swap(2))          # 1
-print(Solution().pairwise_bits_swap(3))          # 3
-print(Solution().pairwise_bits_swap(4))          # 8
-print(Solution().pairwise_bits_swap(10))         # 5
+num = int(input())
+print(Solution().pairwise_bits_swap(num))
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
     static class Solution {
         public int pairwiseBitsSwap(int num) {
@@ -145,17 +207,9 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().pairwiseBitsSwap(31568));      // 47008
-        System.out.println(new Solution().pairwiseBitsSwap(5419430));    // 10580569
-        System.out.println(new Solution().pairwiseBitsSwap(1));          // 2
-
-        // Edge cases
-        System.out.println(new Solution().pairwiseBitsSwap(0));          // 0
-        System.out.println(new Solution().pairwiseBitsSwap(2));          // 1
-        System.out.println(new Solution().pairwiseBitsSwap(3));          // 3
-        System.out.println(new Solution().pairwiseBitsSwap(4));          // 8
-        System.out.println(new Solution().pairwiseBitsSwap(10));         // 5
+        Scanner sc = new Scanner(System.in);
+        int num = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().pairwiseBitsSwap(num));
     }
 }
 ```

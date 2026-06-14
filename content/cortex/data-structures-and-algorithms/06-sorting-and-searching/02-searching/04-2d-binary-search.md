@@ -18,6 +18,8 @@ So you don't need a 2D algorithm at all: binary-search the matrix as if it were 
 Search a 3×3 fully-sorted matrix for `9`. Run it — note the matrix is never copied; only the index is mapped to a cell.
 
 ```python run viz=array
+import ast
+
 def search_matrix(matrix, target):
     if not matrix or not matrix[0]:
         return False
@@ -34,9 +36,69 @@ def search_matrix(matrix, target):
             hi = mid - 1
     return False
 
-m = [[1, 3, 5], [7, 9, 11], [13, 15, 17]]
-print(search_matrix(m, 9))    # True
-print(search_matrix(m, 8))    # False
+matrix = ast.literal_eval(input())
+target = int(input())
+print("true" if search_matrix(matrix, target) else "false")
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+  static boolean searchMatrix(int[][] matrix, int target) {
+    if (matrix.length == 0 || matrix[0].length == 0) return false;
+    int rows = matrix.length, cols = matrix[0].length, lo = 0, hi = rows * cols - 1;
+    while (lo <= hi) {
+      int mid = lo + (hi - lo) / 2;
+      int val = matrix[mid / cols][mid % cols];
+      if (val == target) return true;
+      else if (val < target) lo = mid + 1;
+      else hi = mid - 1;
+    }
+    return false;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[][] matrix = parseIntMatrix(sc.nextLine());
+    int target = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(searchMatrix(matrix, target));
+  }
+
+  // "[[1,2,3],[4,5,6]]" → {{1,2,3},{4,5,6}} — reads the test case's matrix
+  static int[][] parseIntMatrix(String line) {
+    String trimmed = line.trim();
+    if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+    String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+    String[] rows = inner.split("\\],\\s*\\[");
+    int[][] mat = new int[rows.length][];
+    for (int r = 0; r < rows.length; r++) {
+      String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+      if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+      String[] parts = row.split(",");
+      mat[r] = new int[parts.length];
+      for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+    }
+    return mat;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "matrix", "label": "matrix", "type": "int[][]", "placeholder": "[[1, 3, 5], [7, 9, 11], [13, 15, 17]]" },
+    { "id": "target", "label": "target", "type": "number", "placeholder": "9" }
+  ],
+  "cases": [
+    { "args": { "matrix": "[[1, 3, 5], [7, 9, 11], [13, 15, 17]]", "target": "9" }, "expected": "true" },
+    { "args": { "matrix": "[[1, 3, 5], [7, 9, 11], [13, 15, 17]]", "target": "8" }, "expected": "false" },
+    { "args": { "matrix": "[[1, 3, 5], [7, 9, 11], [13, 15, 17]]", "target": "1" }, "expected": "true" },
+    { "args": { "matrix": "[[1, 4, 7, 11], [12, 15, 20, 23], [30, 34, 50, 60]]", "target": "20" }, "expected": "true" },
+    { "args": { "matrix": "[[1, 4, 7, 11], [12, 15, 20, 23], [30, 34, 50, 60]]", "target": "13" }, "expected": "false" }
+  ],
+  "verifying": "run"
+}
 ```
 
 ## How It Works
@@ -77,9 +139,83 @@ They're the **same** asymptotic cost: `log(m·n) = log m + log n`, so one binary
 
 ## Your Turn
 
-The reusable 2D binary search:
+Implement 2D binary search: binary-search the flat index range `[0, rows·cols−1]`, decode each probe with `(mid // cols, mid % cols)`, return `True`/`true` if found.
 
 ```python run viz=array
+import ast
+
+def search_matrix(matrix, target):
+    if not matrix or not matrix[0]:
+        return False
+    rows, cols = len(matrix), len(matrix[0])
+    # Your code goes here — lo=0, hi=rows*cols-1; decode mid → (mid//cols, mid%cols); return True if found.
+    return False
+
+matrix = ast.literal_eval(input())
+target = int(input())
+print("true" if search_matrix(matrix, target) else "false")
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+  static boolean searchMatrix(int[][] matrix, int target) {
+    if (matrix.length == 0 || matrix[0].length == 0) return false;
+    // Your code goes here — lo=0, hi=rows*cols-1; decode mid → (mid/cols, mid%cols); return true if found.
+    return false;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[][] matrix = parseIntMatrix(sc.nextLine());
+    int target = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(searchMatrix(matrix, target));
+  }
+
+  // "[[1,2,3],[4,5,6]]" → {{1,2,3},{4,5,6}} — reads the test case's matrix
+  static int[][] parseIntMatrix(String line) {
+    String trimmed = line.trim();
+    if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+    String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+    String[] rows = inner.split("\\],\\s*\\[");
+    int[][] mat = new int[rows.length][];
+    for (int r = 0; r < rows.length; r++) {
+      String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+      if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+      String[] parts = row.split(",");
+      mat[r] = new int[parts.length];
+      for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+    }
+    return mat;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "matrix", "label": "matrix", "type": "int[][]", "placeholder": "[[1, 3, 5], [7, 9, 11], [13, 15, 17]]" },
+    { "id": "target", "label": "target", "type": "number", "placeholder": "9" }
+  ],
+  "cases": [
+    { "args": { "matrix": "[[1, 3, 5], [7, 9, 11], [13, 15, 17]]", "target": "9" }, "expected": "true" },
+    { "args": { "matrix": "[[1, 3, 5], [7, 9, 11], [13, 15, 17]]", "target": "8" }, "expected": "false" },
+    { "args": { "matrix": "[[1, 3, 5], [7, 9, 11], [13, 15, 17]]", "target": "17" }, "expected": "true" },
+    { "args": { "matrix": "[[1, 4, 7, 11], [12, 15, 20, 23], [30, 34, 50, 60]]", "target": "20" }, "expected": "true" },
+    { "args": { "matrix": "[[1, 4, 7, 11], [12, 15, 20, 23], [30, 34, 50, 60]]", "target": "13" }, "expected": "false" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Set `lo = 0`, `hi = rows * cols - 1`. Each step compute `mid = lo + (hi - lo) // 2` (overflow-safe). Decode the flat index with `row = mid // cols`, `col = mid % cols`, then read `val = matrix[row][col]`. On a match return `True`; if `val < target` set `lo = mid + 1`; otherwise set `hi = mid - 1`. When `lo > hi` the target isn't present — return `False`. `O(log(m·n))` time, `O(1)` space.
+
+```python solution time=O(log(m·n)) space=O(1)
+import ast
+
 def search_matrix(matrix, target):
     if not matrix or not matrix[0]:
         return False
@@ -96,32 +232,55 @@ def search_matrix(matrix, target):
             hi = mid - 1
     return False
 
-m = [[1, 4, 7, 11], [12, 15, 20, 23], [30, 34, 50, 60]]
-print(search_matrix(m, 20), search_matrix(m, 13))   # True False
+matrix = ast.literal_eval(input())
+target = int(input())
+print("true" if search_matrix(matrix, target) else "false")
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
-  static boolean searchMatrix(int[][] m, int target) {
-    if (m.length == 0 || m[0].length == 0) return false;
-    int rows = m.length, cols = m[0].length, lo = 0, hi = rows * cols - 1;
+  static boolean searchMatrix(int[][] matrix, int target) {
+    if (matrix.length == 0 || matrix[0].length == 0) return false;
+    int rows = matrix.length, cols = matrix[0].length, lo = 0, hi = rows * cols - 1;
     while (lo <= hi) {
       int mid = lo + (hi - lo) / 2;
-      int val = m[mid / cols][mid % cols];
+      int val = matrix[mid / cols][mid % cols];
       if (val == target) return true;
       else if (val < target) lo = mid + 1;
       else hi = mid - 1;
     }
     return false;
   }
+
   public static void main(String[] args) {
-    int[][] m = {{1, 4, 7, 11}, {12, 15, 20, 23}, {30, 34, 50, 60}};
-    System.out.println(searchMatrix(m, 20) + " " + searchMatrix(m, 13));   // true false
+    Scanner sc = new Scanner(System.in);
+    int[][] matrix = parseIntMatrix(sc.nextLine());
+    int target = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(searchMatrix(matrix, target));
+  }
+
+  // "[[1,2,3],[4,5,6]]" → {{1,2,3},{4,5,6}} — reads the test case's matrix
+  static int[][] parseIntMatrix(String line) {
+    String trimmed = line.trim();
+    if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+    String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+    String[] rows = inner.split("\\],\\s*\\[");
+    int[][] mat = new int[rows.length][];
+    for (int r = 0; r < rows.length; r++) {
+      String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+      if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+      String[] parts = row.split(",");
+      mat[r] = new int[parts.length];
+      for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+    }
+    return mat;
   }
 }
 ```
 
-This is a structural lesson — drill searching in the pattern sets.
+</details>
 
 ## Reflect & Connect
 
@@ -175,4 +334,4 @@ This is a structural lesson — drill searching in the pattern sets.
 
 - **CLRS**, *Introduction to Algorithms*, 4th ed. — binary search; row-major addressing of multidimensional arrays.
 - The "search a 2D matrix" problem (fully-sorted variant) is a standard interview question with this flatten-the-index solution.
-- The `O(log(m·n))` bound and index mapping are standard; both runnable blocks are verified by running (`9 ⇒ True`, `8 ⇒ False`; `20 ⇒ True`, `13 ⇒ False`).
+- The `O(log(m·n))` bound and index mapping are standard; both runnable blocks are verified by running (`9 ⇒ true`, `8 ⇒ false`; `20 ⇒ true`, `13 ⇒ false`).

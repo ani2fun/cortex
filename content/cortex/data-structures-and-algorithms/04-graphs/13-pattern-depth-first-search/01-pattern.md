@@ -5,6 +5,8 @@ prereqs:
   - 04-graphs/04-traversing-a-graph
 ---
 
+# Pattern: Depth-First Search
+
 ## Why It Exists
 
 In lesson 4 you used DFS as a *traversal* — visit every node once. That's its simplest use. DFS has a second, far more powerful use: **enumerating paths**. Every recursive call walks deeper into one route; every `return` backtracks a step and tries an alternative.
@@ -37,64 +39,96 @@ flowchart LR
 
 ## See It Work
 
-Enumerate every path from `0` to `4` on that graph. The `on_path` set is added-to on entry and removed on exit — that removal is what lets node 4 (and 2) participate in more than one path.
+Enumerate every path from `0` to `4`. The graph crosses stdin as an **adjacency list** — `graph[u]` is node `u`'s list of neighbours, in order — so there's no construction step: the input *is* the graph. The `on_path` set is added-to on entry and removed on exit; that removal is what lets node 4 (and 2) participate in more than one path. Pick a case and **Run** it.
 
 ```python run viz=graph viz-kind=graph
-adj = {0: [1, 2], 1: [4], 2: [3, 4], 3: [4], 4: [0]}
+import ast
 
-def all_paths(adj, s, t):
+def all_paths(graph, s, t):
     res, path, on_path = [], [], set()
     def dfs(u):
         on_path.add(u); path.append(u)                  # enter
         if u == t:
             res.append(path[:])                         # record a complete path
         else:
-            for v in adj.get(u, []):
+            for v in graph[u]:
                 if v not in on_path:                    # skip nodes already on THIS path
                     dfs(v)
         on_path.remove(u); path.pop()                   # exit — UNDO the entry
     dfs(s)
     return res
 
-paths = all_paths(adj, 0, 4)
-for p in paths: print(" -> ".join(map(str, p)))
-print("count:", len(paths))
+graph = ast.literal_eval(input())   # adjacency list: graph[u] = u's neighbours
+s = int(input())                    # source
+t = int(input())                    # target
+print(all_paths(graph, s, t))
 ```
 
 ```java run viz=graph viz-kind=graph
 import java.util.*;
 
 public class Main {
-    static Map<Integer, List<Integer>> adj = Map.of(
-        0, List.of(1, 2), 1, List.of(4), 2, List.of(3, 4), 3, List.of(4), 4, List.of(0));
     static List<List<Integer>> res = new ArrayList<>();
     static List<Integer> path = new ArrayList<>();
     static Set<Integer> onPath = new HashSet<>();
 
-    static void dfs(int u, int t) {
+    static void dfs(int[][] graph, int u, int t) {
         onPath.add(u); path.add(u);                     // enter
         if (u == t) {
             res.add(new ArrayList<>(path));             // record
         } else {
-            for (int v : adj.getOrDefault(u, List.of()))
-                if (!onPath.contains(v)) dfs(v, t);     // skip nodes on THIS path
+            for (int v : graph[u])
+                if (!onPath.contains(v)) dfs(graph, v, t);   // skip nodes on THIS path
         }
         onPath.remove(u); path.remove(path.size() - 1); // exit — UNDO
     }
 
     public static void main(String[] args) {
-        dfs(0, 4);
-        for (List<Integer> p : res) {
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < p.size(); i++) sb.append(i > 0 ? " -> " : "").append(p.get(i));
-            System.out.println(sb);
+        Scanner sc = new Scanner(System.in);
+        int[][] graph = parseIntMatrix(sc.nextLine());
+        int s = Integer.parseInt(sc.nextLine().trim());
+        int t = Integer.parseInt(sc.nextLine().trim());
+        dfs(graph, s, t);
+        System.out.println(res);
+    }
+
+    // "[[1, 2], [4], [3, 4]]" → adjacency list graph[u] = u's neighbours
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
         }
-        System.out.println("count: " + res.size());
+        return mat;
     }
 }
 ```
 
-Both enumerate the three paths `0 → 1 → 4`, `0 → 2 → 3 → 4`, `0 → 2 → 4` (DFS visits node 2's neighbour 3 before 4, so the longer route prints second).
+```testcases
+{
+  "args": [
+    { "id": "graph", "label": "graph", "type": "int[][]", "placeholder": "[[1, 2], [4], [3, 4], [4], [0]]" },
+    { "id": "s", "label": "source", "type": "int", "placeholder": "0" },
+    { "id": "t", "label": "target", "type": "int", "placeholder": "4" }
+  ],
+  "cases": [
+    { "args": { "graph": "[[1, 2], [4], [3, 4], [4], [0]]", "s": "0", "t": "4" }, "expected": "[[0, 1, 4], [0, 2, 3, 4], [0, 2, 4]]" },
+    { "args": { "graph": "[[1, 2], [3], [3], []]", "s": "0", "t": "3" }, "expected": "[[0, 1, 3], [0, 2, 3]]" },
+    { "args": { "graph": "[[1], [2], []]", "s": "0", "t": "2" }, "expected": "[[0, 1, 2]]" },
+    { "args": { "graph": "[[1], []]", "s": "0", "t": "0" }, "expected": "[[0]]" },
+    { "args": { "graph": "[[], [0]]", "s": "0", "t": "1" }, "expected": "[]" }
+  ]
+}
+```
+
+Both print `[[0, 1, 4], [0, 2, 3, 4], [0, 2, 4]]` — the three paths `0 → 1 → 4`, `0 → 2 → 3 → 4`, `0 → 2 → 4` (DFS visits node 2's neighbour 3 before 4, so the longer route prints before the short one). The enumeration order is fixed by the neighbour order in the adjacency list, so both languages produce it identically.
 
 ## How It Works
 
@@ -151,38 +185,113 @@ The pattern lives or dies on the entry/exit symmetry. Suppose you replace the pe
 **Predict before you run:** on the same graph, how many of the three `0 → 4` paths does the buggy version find?
 
 ```python run viz=graph viz-kind=graph
-adj = {0: [1, 2], 1: [4], 2: [3, 4], 3: [4], 4: [0]}
+graph = [[1, 2], [4], [3, 4], [4], [0]]
 
-def all_paths_buggy(adj, s, t):
+def all_paths_buggy(graph, s, t):
     res, path, visited = [], [], set()
     def dfs(u):
         visited.add(u); path.append(u)                  # mark — but NEVER unmark
         if u == t:
             res.append(path[:])
         else:
-            for v in adj.get(u, []):
+            for v in graph[u]:
                 if v not in visited: dfs(v)
         path.pop()                                      # path is restored, `visited` is NOT
     dfs(s)
     return res
 
-paths = all_paths_buggy(adj, 0, 4)
-for p in paths: print(" -> ".join(map(str, p)))
-print("count:", len(paths))
+print(all_paths_buggy(graph, 0, 4))
 ```
 
 <details>
 <summary><strong>Reveal</strong></summary>
 
-It finds just **one** path: `0 → 1 → 4`. Once the first path consumes nodes 1 and 4, the global `visited` set locks them out forever. When DFS backtracks to try `0 → 2`, node 4 is already marked, so `0 → 2 → 4` and `0 → 2 → 3 → 4` are both invisible. A "visited" set answers "have we *ever* been here?" — right for traversal, wrong for enumeration. The fix is exactly the `on_path.remove(node)` on exit: it scopes the bookkeeping to the *current* path, so a node freed on backtrack can rejoin a different route.
+It finds just **one** path: `[[0, 1, 4]]`. Once the first path consumes nodes 1 and 4, the global `visited` set locks them out forever. When DFS backtracks to try `0 → 2`, node 4 is already marked, so `0 → 2 → 4` and `0 → 2 → 3 → 4` are both invisible. A "visited" set answers "have we *ever* been here?" — right for traversal, wrong for enumeration. The fix is exactly the `on_path.remove(node)` on exit: it scopes the bookkeeping to the *current* path, so a node freed on backtrack can rejoin a different route.
 
 </details>
 
 ## Your Turn
 
-The canonical version: **All Paths From Source to Target** ([LeetCode 797](https://leetcode.com/problems/all-paths-from-source-to-target/)). Given a DAG as an adjacency list, return every path from `0` to `n − 1`. Because it's acyclic you don't even need the `on_path` guard — but the add-on-entry / undo-on-exit rhythm is identical.
+The canonical version: **All Paths From Source to Target** ([LeetCode 797](https://leetcode.com/problems/all-paths-from-source-to-target/)). Given a DAG as an adjacency list, return every path from `0` to `n − 1`. Because it's acyclic you don't even need the `on_path` guard — but the add-on-entry / undo-on-exit rhythm is identical. Write it yourself.
 
 ```python run viz=graph viz-kind=graph
+import ast
+
+def all_paths_source_target(graph):
+    # Your code goes here — DFS from 0; the target is node n - 1.
+    # enter: path.append(u); if u == n-1 record a copy of path; else recurse
+    # each neighbour in graph[u]; exit: path.pop().
+    pass
+
+graph = ast.literal_eval(input())   # adjacency list of a DAG
+print(all_paths_source_target(graph))
+```
+
+```java run viz=graph viz-kind=graph
+import java.util.*;
+
+public class Main {
+    static int[][] graph;
+    static List<List<Integer>> res;
+    static List<Integer> path;
+
+    static void dfs(int u) {
+        // Your code goes here — enter: path.add(u); if u == graph.length - 1 record
+        // a copy; else recurse each neighbour in graph[u]; exit: path.remove(last).
+    }
+
+    static List<List<Integer>> allPaths(int[][] g) {
+        graph = g; res = new ArrayList<>(); path = new ArrayList<>();
+        dfs(0);
+        return res;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        System.out.println(allPaths(parseIntMatrix(sc.nextLine())));
+    }
+
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "graph", "label": "graph", "type": "int[][]", "placeholder": "[[1, 2], [3], [3], []]" }
+  ],
+  "cases": [
+    { "args": { "graph": "[[1, 2], [3], [3], []]" }, "expected": "[[0, 1, 3], [0, 2, 3]]" },
+    { "args": { "graph": "[[1], [2], []]" }, "expected": "[[0, 1, 2]]" },
+    { "args": { "graph": "[[4], [4], [4], [4], []]" }, "expected": "[[0, 4]]" },
+    { "args": { "graph": "[[1, 3], [2], [3], []]" }, "expected": "[[0, 1, 2, 3], [0, 3]]" },
+    { "args": { "graph": "[[1, 2], [2], []]" }, "expected": "[[0, 1, 2], [0, 2]]" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+The DAG version is the See-It-Work skeleton with the target fixed at `n − 1` and the `on_path` guard dropped (acyclic, so no node can repeat on a path anyway). Enter a node by appending it; if it's the destination, record a *copy* of the path (a live reference would mutate as the search continues); otherwise recurse into each neighbour. On exit, pop — restoring the path for the sibling branch. A graph like `[[1, 2], [2], []]` has two routes to node 2 — `0 → 1 → 2` and the direct `0 → 2` — so both come back in enumeration order.
+
+```python solution time=O(2^N · N) space=O(N)
+import ast
+
 def all_paths_source_target(graph):
     n = len(graph); res, path = [], []
     def dfs(u):
@@ -195,15 +304,18 @@ def all_paths_source_target(graph):
     dfs(0)
     return res
 
-print(all_paths_source_target([[1, 2], [3], [3], []]))  # [[0, 1, 3], [0, 2, 3]]
-print(all_paths_source_target([[1], [2], []]))          # [[0, 1, 2]]
+graph = ast.literal_eval(input())   # adjacency list of a DAG
+print(all_paths_source_target(graph))
 ```
 
-```java run viz=graph viz-kind=graph
+```java solution
 import java.util.*;
 
 public class Main {
-    static int[][] graph; static List<List<Integer>> res; static List<Integer> path;
+    static int[][] graph;
+    static List<List<Integer>> res;
+    static List<Integer> path;
+
     static void dfs(int u) {
         path.add(u);                                    // enter
         if (u == graph.length - 1) {
@@ -213,21 +325,41 @@ public class Main {
         }
         path.remove(path.size() - 1);                   // exit — undo
     }
+
     static List<List<Integer>> allPaths(int[][] g) {
         graph = g; res = new ArrayList<>(); path = new ArrayList<>();
         dfs(0);
         return res;
     }
+
     public static void main(String[] args) {
-        System.out.println(allPaths(new int[][]{{1, 2}, {3}, {3}, {}}));  // [[0, 1, 3], [0, 2, 3]]
-        System.out.println(allPaths(new int[][]{{1}, {2}, {}}));          // [[0, 1, 2]]
+        Scanner sc = new Scanner(System.in);
+        System.out.println(allPaths(parseIntMatrix(sc.nextLine())));
+    }
+
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
     }
 }
 ```
 
-Both print `[[0, 1, 3], [0, 2, 3]]` then `[[0, 1, 2]]`. When you want more, the four problems in this section's **Problems** folder each instantiate a different `f`/`g`: source-to-target paths, paths with a given weight, Hamiltonian paths, and simple cycles.
+</details>
 
 ## Reflect & Connect
+
+When you want more, the four problems in this section's **Problems** folder each instantiate a different `f`/`g`: source-to-target paths, paths with a given weight, Hamiltonian paths, and simple cycles.
 
 - **This *is* backtracking.** "Add on entry, recurse, undo on exit" is the backtracking skeleton you'll meet again in the Algorithms-by-Strategy part. Generating combinations and permutations is just DFS on an *implicit* graph where the neighbours are "the choices still available."
 - **The `on_path` set is the cycle-detection idea in disguise.** Tracking "nodes on the current recursion path" is exactly the grey/black colouring from directed cycle detection — a node on the path is grey, a finished node is black.

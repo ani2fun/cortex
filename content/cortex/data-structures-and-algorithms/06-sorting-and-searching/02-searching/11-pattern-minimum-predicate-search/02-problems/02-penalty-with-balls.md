@@ -4,11 +4,13 @@ summary: "Given bag sizes bags[] and maxOperations, you can split any bag into t
 prereqs:
   - 11-pattern-minimum-predicate-search/01-pattern
 difficulty: medium
+kind: problem
+topics: [minimum-predicate-search, searching]
 ---
 
 # Penalty With Balls
 
-## The Problem
+## Problem Statement
 
 Given bag sizes `bags[]` and `maxOperations`, you can split any bag into two non-zero parts (counts as one operation). Minimize the largest bag size after at most `maxOperations` splits.
 
@@ -23,6 +25,102 @@ Input:  bags = [4, 2], maxOperations = 4
 Output: 1
 ```
 
+---
+
+## Examples
+
+**Example 1**
+```
+Input:  bags = [9, 7, 6], maxOperations = 3
+Output: 5
+Explanation: Split 9 → (5,4) and 7 → (5,2) and 6 → (5,1) using 3 operations; the largest bag is now 5.
+```
+
+**Example 2**
+```
+Input:  bags = [4, 8], maxOperations = 1
+Output: 4
+Explanation: With one split we can break 8 → (4,4); the largest remaining bag is 4.
+```
+
+## Constraints
+
+- `1 ≤ bags.length ≤ 10^5`
+- `1 ≤ bags[i] ≤ 10^9`
+- `1 ≤ maxOperations ≤ 10^9`
+
+```python run viz=array viz-root=bags
+import ast
+
+class Solution:
+    def penalty_with_balls(self, bags, max_operations):
+        # Your code goes here — binary-search the penalty (max bag size) in [1, max(bags)].
+        # For a candidate penalty, count how many splits are needed to reduce every bag
+        # to at most that size. Return the minimum feasible penalty.
+        return -1
+
+
+bags = ast.literal_eval(input())
+max_operations = int(input())
+print(Solution().penalty_with_balls(bags, max_operations))
+```
+
+```java run viz=array viz-root=bags
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int penaltyWithBalls(int[] bags, int maxOperations) {
+            // Your code goes here — binary-search the penalty (max bag size) in [1, max(bags)].
+            // For a candidate penalty, count how many splits are needed to reduce every bag
+            // to at most that size. Return the minimum feasible penalty.
+            return -1;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] bags = parseIntArray(sc.nextLine());
+        int maxOperations = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().penaltyWithBalls(bags, maxOperations));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "bags", "label": "bags", "type": "int[]", "placeholder": "[9, 7, 6]" },
+    { "id": "maxOperations", "label": "maxOperations", "type": "int", "placeholder": "3" }
+  ],
+  "cases": [
+    { "args": { "bags": "[9, 7, 6]", "maxOperations": "3" }, "expected": "5" },
+    { "args": { "bags": "[4, 8]", "maxOperations": "1" }, "expected": "4" },
+    { "args": { "bags": "[4, 2]", "maxOperations": "4" }, "expected": "1" },
+    { "args": { "bags": "[1]", "maxOperations": "0" }, "expected": "1" },
+    { "args": { "bags": "[1]", "maxOperations": "5" }, "expected": "1" },
+    { "args": { "bags": "[10]", "maxOperations": "1" }, "expected": "5" },
+    { "args": { "bags": "[6, 6]", "maxOperations": "0" }, "expected": "6" },
+    { "args": { "bags": "[2, 4, 6]", "maxOperations": "6" }, "expected": "2" }
+  ]
+}
+```
+
+<details>
+<summary><h2>Intuition</h2></summary>
+
+The largest possible bag size after operations is monotone: if we can achieve a maximum bag size of `p`, we can also achieve any larger size with fewer or equal operations. This `false…false, true…true` shape over candidate penalties lets us binary-search `[1, max(bags)]` for the smallest feasible penalty. For each candidate, a bag of size `b > penalty` needs exactly `ceil(b / penalty) - 1 = (b-1) // penalty` splits, and we check whether the total fits within `maxOperations`.
+
+</details>
 <details>
 <summary><h2>The Solution</h2></summary>
 
@@ -30,7 +128,8 @@ Output: 1
 Predicate: "can we achieve max-bag-size = penalty?" — a bag of size `b > penalty` needs `(b - 1) // penalty` splits. Sum and check against `maxOperations`. Binary-search penalty in `[1, max(bags)]`.
 
 
-```python run viz=array viz-root=bags
+```python solution time=O(n log(max(bags))) space=O(1)
+import ast
 from typing import List
 
 class Solution:
@@ -87,20 +186,12 @@ class Solution:
         return low
 
 
-# Examples from the problem statement
-print(Solution().penalty_with_balls([9, 7, 6], 3))   # 5
-print(Solution().penalty_with_balls([4, 8], 1))      # 4
-print(Solution().penalty_with_balls([4, 2], 4))      # 1
-
-# Edge cases
-print(Solution().penalty_with_balls([1], 0))         # 1   (single bag, no ops)
-print(Solution().penalty_with_balls([1], 5))         # 1   (already size 1)
-print(Solution().penalty_with_balls([10], 1))        # 5   (split once: [5,5])
-print(Solution().penalty_with_balls([6, 6], 0))      # 6   (no operations)
-print(Solution().penalty_with_balls([2, 4, 6], 6))   # 1   (enough ops for penalty=1)
+bags = ast.literal_eval(input())
+max_operations = int(input())
+print(Solution().penalty_with_balls(bags, max_operations))
 ```
 
-```java run viz=array viz-root=bags
+```java solution
 import java.util.*;
 
 public class Main {
@@ -166,17 +257,19 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().penaltyWithBalls(new int[]{9, 7, 6}, 3));   // 5
-        System.out.println(new Solution().penaltyWithBalls(new int[]{4, 8}, 1));      // 4
-        System.out.println(new Solution().penaltyWithBalls(new int[]{4, 2}, 4));      // 1
+        Scanner sc = new Scanner(System.in);
+        int[] bags = parseIntArray(sc.nextLine());
+        int maxOperations = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().penaltyWithBalls(bags, maxOperations));
+    }
 
-        // Edge cases
-        System.out.println(new Solution().penaltyWithBalls(new int[]{1}, 0));         // 1
-        System.out.println(new Solution().penaltyWithBalls(new int[]{1}, 5));         // 1
-        System.out.println(new Solution().penaltyWithBalls(new int[]{10}, 1));        // 5
-        System.out.println(new Solution().penaltyWithBalls(new int[]{6, 6}, 0));      // 6
-        System.out.println(new Solution().penaltyWithBalls(new int[]{2, 4, 6}, 6));   // 1
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

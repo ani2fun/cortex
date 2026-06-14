@@ -4,6 +4,8 @@ summary: "Given a 2D grid board of single-character strings and a target string 
 prereqs:
   - 05-pattern-backtracking-search/01-pattern
 difficulty: medium
+kind: problem
+topics: [backtracking-search, backtracking]
 ---
 
 # Word Quest
@@ -25,6 +27,96 @@ Output: true
 ```
 
 ---
+
+## Examples
+
+**Example 1**
+```
+Input:  board = ["ABCE","SFCS","ADEE"],  word = "ABCCED"
+Output: true
+Explanation: A(0,0)→B(0,1)→C(0,2)→C(1,2)→E(2,2)→D(2,1) — each cell adjacent and not reused.
+```
+
+**Example 2**
+```
+Input:  board = ["AB","CD"],  word = "ABBA"
+Output: false
+Explanation: After tracing A→B, "B" is already visited — can't reuse it for the second B.
+```
+
+## Constraints
+
+- `1 ≤ rows, cols ≤ 6`
+- `1 ≤ word.length ≤ 15`
+- `board` and `word` consist of uppercase English letters.
+- Board is passed as a list of row strings (e.g. `["ABCE","SFCS","ADEE"]`).
+
+```python run viz=grid viz-root=board
+import json
+
+class Solution:
+    def word_quest(self, board, word):
+        # Your code goes here
+        # Mark visited cells with '#', undo on failure
+        return False
+
+board_rows = json.loads(input())
+board = [list(r) for r in board_rows]
+word = input()
+result = Solution().word_quest(board, word)
+print("true" if result else "false")
+```
+
+```java run viz=grid viz-root=board
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public boolean wordQuest(char[][] board, String word) {
+            // Your code goes here
+            // Mark visited cells with '#', undo on failure
+            return false;
+        }
+    }
+
+    static char[][] parseBoardRows(String line) {
+        String inner = line.trim().substring(1, line.trim().length() - 1).trim();
+        String[] parts = inner.split(",\\s*\"");
+        char[][] board = new char[parts.length][];
+        for (int i = 0; i < parts.length; i++) {
+            String row = parts[i].replace("\"", "").replace("[", "").replace("]", "").trim();
+            board[i] = row.toCharArray();
+        }
+        return board;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        char[][] board = parseBoardRows(sc.nextLine());
+        String word = sc.nextLine().trim();
+        System.out.println(new Solution().wordQuest(board, word));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "board", "label": "board", "type": "string[]", "placeholder": "[\"ABCE\",\"SFCS\",\"ADEE\"]" },
+    { "id": "word", "label": "word", "type": "string", "placeholder": "ABCCED" }
+  ],
+  "cases": [
+    { "args": { "board": "[\"ABCE\",\"SFCS\",\"ADEE\"]", "word": "ABCCED" }, "expected": "true" },
+    { "args": { "board": "[\"ABCE\",\"SFCS\",\"ADEE\"]", "word": "SEE" }, "expected": "true" },
+    { "args": { "board": "[\"ABCE\",\"SFCS\",\"ADEE\"]", "word": "ABCB" }, "expected": "false" },
+    { "args": { "board": "[\"A\"]", "word": "A" }, "expected": "true" },
+    { "args": { "board": "[\"A\"]", "word": "B" }, "expected": "false" },
+    { "args": { "board": "[\"AB\",\"CD\"]", "word": "ABBA" }, "expected": "false" },
+    { "args": { "board": "[\"AB\",\"CD\"]", "word": "ABDC" }, "expected": "true" },
+    { "args": { "board": "[\"C\",\"B\",\"A\"]", "word": "ABC" }, "expected": "true" }
+  ]
+}
+```
 
 <details>
 <summary><h2>What's the Recursion Doing?</h2></summary>
@@ -87,7 +179,8 @@ Different starting cells should each get a clean view of the board. If we forget
 
 ### The Solution
 
-```python run viz=grid viz-root=b1
+```python solution time=O(rows·cols·4^len(word)) space=O(len(word))
+import json
 from typing import List, Tuple
 
 class Solution:
@@ -180,40 +273,16 @@ class Solution:
         return False
 
 
-# Example from the problem statement
-b1 = [['A','B','C','E'],['S','F','C','S'],['A','D','E','E']]
-print(Solution().word_quest(b1, "ABCCED"))            # True
-
-# Another word on the same board
-b2 = [['A','B','C','E'],['S','F','C','S'],['A','D','E','E']]
-print(Solution().word_quest(b2, "SEE"))               # True
-
-# Word not on board
-b3 = [['A','B','C','E'],['S','F','C','S'],['A','D','E','E']]
-print(Solution().word_quest(b3, "ABCB"))              # False
-
-# Single-cell board — word present
-b4 = [['A']]
-print(Solution().word_quest(b4, "A"))                 # True
-
-# Single-cell board — word absent
-b5 = [['A']]
-print(Solution().word_quest(b5, "B"))                 # False
-
-# Word requires same cell twice — not allowed
-b6 = [['A','B'],['C','D']]
-print(Solution().word_quest(b6, "ABBA"))              # False
-
-# Word spans entire board
-b7 = [['A','B'],['C','D']]
-print(Solution().word_quest(b7, "ABDC"))              # True
-
-# Word found going upward
-b8 = [['C'],['B'],['A']]
-print(Solution().word_quest(b8, "ABC"))               # True
+board_rows = json.loads(input())
+board = [list(r) for r in board_rows]
+word = input()
+result = Solution().word_quest(board, word)
+print("true" if result else "false")
 ```
 
-```java run viz=grid viz-root=b1
+```java solution
+import java.util.*;
+
 public class Main {
     static class Solution {
 
@@ -317,38 +386,22 @@ public class Main {
         }
     }
 
+    static char[][] parseBoardRows(String line) {
+        String inner = line.trim().substring(1, line.trim().length() - 1).trim();
+        String[] parts = inner.split(",\\s*\"");
+        char[][] board = new char[parts.length][];
+        for (int i = 0; i < parts.length; i++) {
+            String row = parts[i].replace("\"", "").replace("[", "").replace("]", "").trim();
+            board[i] = row.toCharArray();
+        }
+        return board;
+    }
+
     public static void main(String[] args) {
-        // Example from the problem statement
-        char[][] b1 = {{'A','B','C','E'},{'S','F','C','S'},{'A','D','E','E'}};
-        System.out.println(new Solution().wordQuest(b1, "ABCCED"));   // true
-
-        // Another word on the same board
-        char[][] b2 = {{'A','B','C','E'},{'S','F','C','S'},{'A','D','E','E'}};
-        System.out.println(new Solution().wordQuest(b2, "SEE"));       // true
-
-        // Word not on board
-        char[][] b3 = {{'A','B','C','E'},{'S','F','C','S'},{'A','D','E','E'}};
-        System.out.println(new Solution().wordQuest(b3, "ABCB"));      // false
-
-        // Single-cell board — word present
-        char[][] b4 = {{'A'}};
-        System.out.println(new Solution().wordQuest(b4, "A"));         // true
-
-        // Single-cell board — word absent
-        char[][] b5 = {{'A'}};
-        System.out.println(new Solution().wordQuest(b5, "B"));         // false
-
-        // Word requires same cell twice — not allowed
-        char[][] b6 = {{'A','B'},{'C','D'}};
-        System.out.println(new Solution().wordQuest(b6, "ABBA"));      // false
-
-        // Word spans entire board
-        char[][] b7 = {{'A','B'},{'C','D'}};
-        System.out.println(new Solution().wordQuest(b7, "ABDC"));      // true
-
-        // Word found going upward
-        char[][] b8 = {{'C'},{'B'},{'A'}};
-        System.out.println(new Solution().wordQuest(b8, "ABC"));       // true
+        Scanner sc = new Scanner(System.in);
+        char[][] board = parseBoardRows(sc.nextLine());
+        String word = sc.nextLine().trim();
+        System.out.println(new Solution().wordQuest(board, word));
     }
 }
 ```

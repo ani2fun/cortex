@@ -15,10 +15,15 @@ The answer is governed by one of the most elegant results in graph theory, the *
 
 ## See It Work
 
-A small network, source 0 → sink 3. Ford-Fulkerson pushes flow along augmenting paths until none remain; the total is the max flow. Run it.
+A small network, source 0 → sink 3. Ford-Fulkerson pushes flow along augmenting paths until none remain; the total is the max flow. The input is a weighted adjacency list `graph[u] = [[neighbour, capacity], ...]`, plus source and sink integers.
 
 ```python run viz=graph viz-kind=graph
-def max_flow(graph, source, sink):          # graph[u] = list of (neighbour, capacity)
+import ast
+
+def parseWeightedAdj(line):
+    return ast.literal_eval(line)
+
+def max_flow(graph, source, sink):          # graph[u] = list of [neighbour, capacity]
     n = len(graph)
     res = [[0]*n for _ in range(n)]          # residual capacity matrix
     for u in range(n):
@@ -44,9 +49,94 @@ def max_flow(graph, source, sink):          # graph[u] = list of (neighbour, cap
         total += bottleneck
     return total
 
-# s=0→A=1 (3), s→B=2 (4), A→t=3 (2), B→t=3 (3)
-graph = [[(1,3),(2,4)], [(3,2)], [(3,3)], []]
-print("max flow:", max_flow(graph, 0, 3))   # 5  (= min cut {s,A,B}|{t} = A→t 2 + B→t 3)
+graph = parseWeightedAdj(input())
+source = int(input())
+sink   = int(input())
+print(max_flow(graph, source, sink))
+```
+
+```java run viz=graph viz-kind=graph
+import java.util.*;
+
+public class Main {
+  static int n;
+  static boolean findPath(int[][] res, int node, int sink, boolean[] seen, List<Integer> path) {
+    seen[node] = true; path.add(node);
+    if (node == sink) return true;
+    for (int nb = 0; nb < n; nb++)
+      if (!seen[nb] && res[node][nb] > 0 && findPath(res, nb, sink, seen, path)) return true;
+    path.remove(path.size() - 1); return false;
+  }
+  static int maxFlow(int[][][] graph, int source, int sink) {
+    n = graph.length;
+    int[][] res = new int[n][n];
+    for (int u = 0; u < n; u++) for (int[] e : graph[u]) res[u][e[0]] = e[1];
+    int total = 0;
+    while (true) {
+      boolean[] seen = new boolean[n]; List<Integer> path = new ArrayList<>();
+      if (!findPath(res, source, sink, seen, path)) break;
+      int b = Integer.MAX_VALUE;
+      for (int i = 0; i < path.size()-1; i++) b = Math.min(b, res[path.get(i)][path.get(i+1)]);
+      for (int i = 0; i < path.size()-1; i++) {
+        int u = path.get(i), v = path.get(i+1);
+        res[u][v] -= b; res[v][u] += b;
+      }
+      total += b;
+    }
+    return total;
+  }
+  static int[][][] parseWeightedAdj(String line) {
+    List<int[][]> g = new ArrayList<>();
+    int i = 0, len = line.length();
+    while (i < len && line.charAt(i) != '[') i++;
+    i++;
+    while (i < len) {
+      while (i < len && (line.charAt(i) == ' ' || line.charAt(i) == ',')) i++;
+      if (i >= len || line.charAt(i) == ']') break;
+      i++;
+      List<int[]> node = new ArrayList<>();
+      while (i < len) {
+        while (i < len && (line.charAt(i) == ' ' || line.charAt(i) == ',')) i++;
+        if (line.charAt(i) == ']') { i++; break; }
+        i++;
+        int[] pair = new int[2]; int k = 0;
+        while (i < len && line.charAt(i) != ']') {
+          while (i < len && (line.charAt(i) == ' ' || line.charAt(i) == ',')) i++;
+          if (line.charAt(i) == ']') break;
+          int start = i;
+          while (i < len && (Character.isDigit(line.charAt(i)) || line.charAt(i) == '-')) i++;
+          pair[k++] = Integer.parseInt(line.substring(start, i));
+        }
+        i++;
+        node.add(pair);
+      }
+      g.add(node.toArray(new int[0][]));
+    }
+    return g.toArray(new int[0][][]);
+  }
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[][][] graph = parseWeightedAdj(sc.nextLine());
+    int source = Integer.parseInt(sc.nextLine().trim());
+    int sink   = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(maxFlow(graph, source, sink));
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "graph",  "label": "graph (weighted adj)",  "type": "string", "placeholder": "[[[1,3],[2,4]],[[3,2]],[[3,3]],[]]" },
+    { "id": "source", "label": "source", "type": "int", "placeholder": "0" },
+    { "id": "sink",   "label": "sink",   "type": "int", "placeholder": "3" }
+  ],
+  "cases": [
+    { "args": { "graph": "[[[1,3],[2,4]],[[3,2]],[[3,3]],[]]", "source": "0", "sink": "3" }, "expected": "5" },
+    { "args": { "graph": "[[[1,5]],[[2,5]],[]]", "source": "0", "sink": "2" }, "expected": "5" },
+    { "args": { "graph": "[[[1,3],[2,2]],[[3,3]],[[3,2]],[]]", "source": "0", "sink": "3" }, "expected": "5" }
+  ]
+}
 ```
 
 ## How It Works
@@ -84,9 +174,90 @@ The **reverse edge** rescues it. When 1 unit is pushed along `s→A→B→t`, th
 
 ## Your Turn
 
-Ford-Fulkerson in both languages — a direct-plus-detour network, and the reverse-edge graph that reaches 20:
+Implement Ford-Fulkerson max-flow. The input is a weighted adjacency list, a source, and a sink; output the integer maximum flow value.
 
 ```python run viz=graph viz-kind=graph
+import ast
+
+def max_flow(graph, source, sink):
+    # Your code goes here
+    pass
+
+graph  = ast.literal_eval(input())
+source = int(input())
+sink   = int(input())
+print(max_flow(graph, source, sink))
+```
+
+```java run viz=graph viz-kind=graph
+import java.util.*;
+
+public class Main {
+  static int n;
+  static int[][][] parseWeightedAdj(String line) {
+    List<int[][]> g = new ArrayList<>();
+    int i = 0, len = line.length();
+    while (i < len && line.charAt(i) != '[') i++;
+    i++;
+    while (i < len) {
+      while (i < len && (line.charAt(i) == ' ' || line.charAt(i) == ',')) i++;
+      if (i >= len || line.charAt(i) == ']') break;
+      i++;
+      List<int[]> node = new ArrayList<>();
+      while (i < len) {
+        while (i < len && (line.charAt(i) == ' ' || line.charAt(i) == ',')) i++;
+        if (line.charAt(i) == ']') { i++; break; }
+        i++;
+        int[] pair = new int[2]; int k = 0;
+        while (i < len && line.charAt(i) != ']') {
+          while (i < len && (line.charAt(i) == ' ' || line.charAt(i) == ',')) i++;
+          if (line.charAt(i) == ']') break;
+          int start = i;
+          while (i < len && (Character.isDigit(line.charAt(i)) || line.charAt(i) == '-')) i++;
+          pair[k++] = Integer.parseInt(line.substring(start, i));
+        }
+        i++;
+        node.add(pair);
+      }
+      g.add(node.toArray(new int[0][]));
+    }
+    return g.toArray(new int[0][][]);
+  }
+  static int maxFlow(int[][][] graph, int source, int sink) {
+    // Your code goes here
+    return 0;
+  }
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[][][] graph = parseWeightedAdj(sc.nextLine());
+    int source = Integer.parseInt(sc.nextLine().trim());
+    int sink   = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(maxFlow(graph, source, sink));
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "graph",  "label": "graph (weighted adj)",  "type": "string", "placeholder": "[[[1,8],[2,10]],[],[[3,3]],[[1,2]]]" },
+    { "id": "source", "label": "source", "type": "int", "placeholder": "0" },
+    { "id": "sink",   "label": "sink",   "type": "int", "placeholder": "1" }
+  ],
+  "cases": [
+    { "args": { "graph": "[[[1,8],[2,10]],[],[[3,3]],[[1,2]]]", "source": "0", "sink": "1" }, "expected": "10" },
+    { "args": { "graph": "[[[1,10],[2,10]],[[2,1],[3,10]],[[3,10]],[]]", "source": "0", "sink": "3" }, "expected": "20" },
+    { "args": { "graph": "[[[1,3],[2,4]],[[3,2]],[[3,3]],[]]", "source": "0", "sink": "3" }, "expected": "5" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+```python solution time=O(V·E·maxflow) space=O(V²)
+import ast
+
 def max_flow(graph, source, sink):
     n = len(graph)
     res = [[0]*n for _ in range(n)]
@@ -109,12 +280,15 @@ def max_flow(graph, source, sink):
         total += b
     return total
 
-print(max_flow([[(1,8),(2,10)], [], [(3,3)], [(1,2)]], 0, 1))           # 10  (direct 8 + detour 2)
-print(max_flow([[(1,10),(2,10)], [(2,1),(3,10)], [(3,10)], []], 0, 3))  # 20  (reverse-edge undo)
+graph  = ast.literal_eval(input())
+source = int(input())
+sink   = int(input())
+print(max_flow(graph, source, sink))
 ```
 
-```java run viz=graph viz-kind=graph
+```java solution time=O(V·E·maxflow) space=O(V²)
 import java.util.*;
+
 public class Main {
   static int n;
   static boolean find(int[][] res, int node, int sink, boolean[] seen, List<Integer> path) {
@@ -142,12 +316,46 @@ public class Main {
     }
     return total;
   }
-  public static void main(String[] a) {
-    System.out.println(maxFlow(new int[][][]{{{1,8},{2,10}}, {}, {{3,3}}, {{1,2}}}, 0, 1));         // 10
-    System.out.println(maxFlow(new int[][][]{{{1,10},{2,10}}, {{2,1},{3,10}}, {{3,10}}, {}}, 0, 3)); // 20
+  static int[][][] parseWeightedAdj(String line) {
+    List<int[][]> g = new ArrayList<>();
+    int i = 0, len = line.length();
+    while (i < len && line.charAt(i) != '[') i++;
+    i++;
+    while (i < len) {
+      while (i < len && (line.charAt(i) == ' ' || line.charAt(i) == ',')) i++;
+      if (i >= len || line.charAt(i) == ']') break;
+      i++;
+      List<int[]> node = new ArrayList<>();
+      while (i < len) {
+        while (i < len && (line.charAt(i) == ' ' || line.charAt(i) == ',')) i++;
+        if (line.charAt(i) == ']') { i++; break; }
+        i++;
+        int[] pair = new int[2]; int k = 0;
+        while (i < len && line.charAt(i) != ']') {
+          while (i < len && (line.charAt(i) == ' ' || line.charAt(i) == ',')) i++;
+          if (line.charAt(i) == ']') break;
+          int start = i;
+          while (i < len && (Character.isDigit(line.charAt(i)) || line.charAt(i) == '-')) i++;
+          pair[k++] = Integer.parseInt(line.substring(start, i));
+        }
+        i++;
+        node.add(pair);
+      }
+      g.add(node.toArray(new int[0][]));
+    }
+    return g.toArray(new int[0][][]);
+  }
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[][][] graph = parseWeightedAdj(sc.nextLine());
+    int source = Integer.parseInt(sc.nextLine().trim());
+    int sink   = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(maxFlow(graph, source, sink));
   }
 }
 ```
+
+</details>
 
 Then: use **BFS** for the augmenting path (Edmonds-Karp, `O(VE²)`); recover the **min cut** (the saturated `S→T` edges, where `S` = nodes reachable from `s` in the final residual graph); and model **edge-disjoint paths** as max flow with all capacities 1.
 

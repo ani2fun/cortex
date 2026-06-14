@@ -44,11 +44,16 @@ class Trie:
             dfs(node, "")
         return sorted(out)
 
+words = input().split(',')
+prefix1 = input()
+prefix2 = input()
 t = Trie()
-for w in ["car", "card", "cat", "dog"]:
+for w in words:
     t.insert(w)
-print(t.autocomplete("ca"))   # ['car', 'card', 'cat']
-print(t.autocomplete("do"))   # ['dog']
+xs = t.autocomplete(prefix1)
+ys = t.autocomplete(prefix2)
+print('[' + ', '.join(xs) + ']')
+print('[' + ', '.join(ys) + ']')
 ```
 
 ```java run viz=array
@@ -80,15 +85,35 @@ public class Main {
         }
     }
     public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String[] words = sc.nextLine().split(",");
+        String prefix1 = sc.nextLine();
+        String prefix2 = sc.nextLine();
         Trie t = new Trie();
-        for (String w : new String[]{"car", "card", "cat", "dog"}) t.insert(w);
-        System.out.println(t.autocomplete("ca"));   // [car, card, cat]
-        System.out.println(t.autocomplete("do"));   // [dog]
+        for (String w : words) t.insert(w);
+        System.out.println(t.autocomplete(prefix1));
+        System.out.println(t.autocomplete(prefix2));
     }
 }
 ```
 
-Both print `['car', 'card', 'cat']` then `['dog']`. The walk to `ca` is `O(2)`; everything under that node is a completion. A hash set of the same words would have to examine all four keys to answer the same query.
+```testcases
+{
+  "args": [
+    { "id": "words", "label": "words (comma-separated)", "type": "string", "placeholder": "car,card,cat,dog" },
+    { "id": "prefix1", "label": "prefix 1", "type": "string", "placeholder": "ca" },
+    { "id": "prefix2", "label": "prefix 2", "type": "string", "placeholder": "do" }
+  ],
+  "cases": [
+    { "args": { "words": "car,card,cat,dog", "prefix1": "ca", "prefix2": "do" }, "expected": "[car, card, cat]\n[dog]" },
+    { "args": { "words": "apple,app,application,apt", "prefix1": "ap", "prefix2": "apt" }, "expected": "[app, apple, application, apt]\n[apt]" },
+    { "args": { "words": "hello,help,helium,hero", "prefix1": "hel", "prefix2": "her" }, "expected": "[helium, hello, help]\n[hero]" },
+    { "args": { "words": "abc,abd,xyz", "prefix1": "ab", "prefix2": "xy" }, "expected": "[abc, abd]\n[xyz]" }
+  ]
+}
+```
+
+Both print `[car, card, cat]` then `[dog]`. The walk to `ca` is `O(2)`; everything under that node is a completion. A hash set of the same words would have to examine all four keys to answer the same query.
 
 ## How It Works
 
@@ -179,6 +204,71 @@ class Trie:
         node.is_end = True
 
 def longest_common_prefix(words):
+    # Your code goes here
+    return ""
+
+words = input().split(',')
+print("'" + longest_common_prefix(words) + "'")
+```
+
+```java run viz=array
+import java.util.*;
+public class Main {
+    static class Trie {
+        Map<Character, Trie> children = new TreeMap<>();
+        boolean isEnd = false;
+        void insert(String w) {
+            Trie n = this;
+            for (char c : w.toCharArray()) n = n.children.computeIfAbsent(c, x -> new Trie());
+            n.isEnd = true;
+        }
+    }
+    static String longestCommonPrefix(String[] words) {
+        // Your code goes here
+        return "";
+    }
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String[] words = sc.nextLine().split(",");
+        System.out.println("'" + longestCommonPrefix(words) + "'");
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "words", "label": "words (comma-separated)", "type": "string", "placeholder": "flower,flow,flight" }
+  ],
+  "cases": [
+    { "args": { "words": "flower,flow,flight" }, "expected": "'fl'" },
+    { "args": { "words": "dog,racecar,car" }, "expected": "''" },
+    { "args": { "words": "interview,internal,interlude" }, "expected": "'inter'" },
+    { "args": { "words": "abc,abcde,abcdef" }, "expected": "'abc'" },
+    { "args": { "words": "apple,app,application" }, "expected": "'app'" }
+  ]
+}
+```
+
+The branch at `fl` (where `flower`/`flow` diverge from `flight`) stops the prefix; `flow` being a complete word would *also* stop it (the `is_end` check). For `["dog", "racecar", "car"]` the root branches immediately, so the common prefix is empty. Note how the *structure* of the trie directly encodes the answer — walking until the first branch or word-end is the whole algorithm.
+
+<details>
+<summary><strong>Editorial</strong></summary>
+
+Insert all words into a trie, then walk down from the root while there is exactly one child and no word has ended at the current node. The first branch or `is_end` marker stops the common prefix. Both langs print the result wrapped in single quotes for exact matching.
+
+```python solution time=O(total chars) space=O(total chars)
+class Trie:
+    def __init__(self):
+        self.children = {}
+        self.is_end = False
+    def insert(self, word):
+        node = self
+        for c in word:
+            node = node.children.setdefault(c, Trie())
+        node.is_end = True
+
+def longest_common_prefix(words):
     if not words:
         return ""
     t = Trie()
@@ -191,11 +281,11 @@ def longest_common_prefix(words):
         node = node.children[c]
     return "".join(prefix)
 
-print(repr(longest_common_prefix(["flower", "flow", "flight"])))   # 'fl'
-print(repr(longest_common_prefix(["dog", "racecar", "car"])))      # ''
+words = input().split(',')
+print("'" + longest_common_prefix(words) + "'")
 ```
 
-```java run viz=array
+```java solution
 import java.util.*;
 public class Main {
     static class Trie {
@@ -219,13 +309,14 @@ public class Main {
         return sb.toString();
     }
     public static void main(String[] args) {
-        System.out.println("'" + longestCommonPrefix(new String[]{"flower", "flow", "flight"}) + "'");   // 'fl'
-        System.out.println("'" + longestCommonPrefix(new String[]{"dog", "racecar", "car"}) + "'");      // ''
+        Scanner sc = new Scanner(System.in);
+        String[] words = sc.nextLine().split(",");
+        System.out.println("'" + longestCommonPrefix(words) + "'");
     }
 }
 ```
 
-Both print `'fl'` then `''`. The branch at `fl` (where `flower`/`flow` diverge from `flight`) stops the prefix; `flow` being a complete word would *also* stop it (the `is_end` check). For `["dog", "racecar", "car"]` the root branches immediately, so the common prefix is empty. Note how the *structure* of the trie directly encodes the answer — walking until the first branch or word-end is the whole algorithm.
+</details>
 
 ## Reflect & Connect
 

@@ -4,27 +4,115 @@ summary: "Given a sorted array, integer k, and integer target, return the k clos
 prereqs:
   - 09-pattern-lower-bound/01-pattern
 difficulty: medium
+kind: problem
+topics: [lower-bound, searching]
 ---
 
 # K Closest Elements
 
 Lower bound anchors a sliding window that expands outward.
 
-## The Problem
+## Problem Statement
 
 Given a sorted array, integer `k`, and integer `target`, return the `k` closest elements to target, sorted ascending. Ties broken by smaller value first.
 
+## Examples
+
+**Example 1**
 ```
 Input:  arr = [1, 2, 3, 4, 5, 6], k = 3, target = 4
 Output: [3, 4, 5]
-
-Input:  arr = [1, 4, 5, 6, 7, 8], k = 3, target = 4
-Output: [4, 5, 6]
-
-Input:  arr = [1, 5, 8, 10, 12, 13], k = 3, target = 10
-Output: [8, 10, 12]
+Explanation: The three elements closest to 4 are 3 (|3-4|=1), 4 (|4-4|=0), 5 (|5-4|=1) — returned in sorted order.
 ```
 
+**Example 2**
+```
+Input:  arr = [1, 5, 8, 10, 12, 13], k = 3, target = 10
+Output: [8, 10, 12]
+Explanation: 8 (|8-10|=2), 10 (|10-10|=0), 12 (|12-10|=2) are equidistant on both sides; they form the closest window.
+```
+
+## Constraints
+
+- `1 ≤ arr.length ≤ 10^4`
+- `1 ≤ k ≤ arr.length`
+- `-10^4 ≤ arr[i], target ≤ 10^4`
+- `arr` is sorted in ascending order.
+
+```python run viz=array
+import ast
+from typing import List
+
+class Solution:
+    def k_closest_elements(self, arr: List[int], k: int, target: int) -> List[int]:
+        # Your code goes here — lower_bound(target) gives index right with
+        # arr[right] >= target; set left = right - 1; expand outward k times
+        # taking whichever of arr[left] / arr[right] is closer (tie → left);
+        # return arr[left+1 : right].
+        return []
+
+arr = ast.literal_eval(input())
+k = int(input())
+target = int(input())
+print(Solution().k_closest_elements(arr, k, target))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int[] kClosestElements(int[] arr, int k, int target) {
+            // Your code goes here — lowerBound(target) gives index right with
+            // arr[right] >= target; set left = right - 1; expand outward k times
+            // taking whichever of arr[left] / arr[right] is closer (tie → left);
+            // return arr[left+1 .. right-1].
+            return new int[0];
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        int target = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(Arrays.toString(new Solution().kClosestElements(arr, k, target)));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[1, 2, 3, 4, 5, 6]" },
+    { "id": "k", "label": "k", "type": "number", "placeholder": "3" },
+    { "id": "target", "label": "target", "type": "number", "placeholder": "4" }
+  ],
+  "cases": [
+    { "args": { "arr": "[1, 2, 3, 4, 5, 6]", "k": "3", "target": "4" }, "expected": "[3, 4, 5]" },
+    { "args": { "arr": "[1, 4, 5, 6, 7, 8]", "k": "3", "target": "4" }, "expected": "[4, 5, 6]" },
+    { "args": { "arr": "[1, 5, 8, 10, 12, 13]", "k": "3", "target": "10" }, "expected": "[8, 10, 12]" },
+    { "args": { "arr": "[5]", "k": "1", "target": "5" }, "expected": "[5]" },
+    { "args": { "arr": "[1, 2, 3, 4, 5, 6]", "k": "6", "target": "4" }, "expected": "[1, 2, 3, 4, 5, 6]" }
+  ]
+}
+```
+
+<details>
+<summary><h2>Intuition</h2></summary>
+
+`lower_bound(target)` splits the sorted array at the first element `>= target`, giving two candidate sides: everything to the left (all `< target`) and everything to the right (all `>= target`). Place `left` at `right - 1` to straddle this boundary. Then greedily expand the window `k` times — each step pulls in whichever boundary element is closer to `target` (ties go left, preserving the "smaller value" tie-breaking rule). The result is always a sorted contiguous slice since the array is sorted.
+
+</details>
 <details>
 <summary><h2>The Solution</h2></summary>
 
@@ -32,7 +120,8 @@ Output: [8, 10, 12]
 `lower_bound(target)` gives the first index `>= target`; that splits the array into a left side (all `< target`) and a right side (all `>= target`). Set `right` to that index and `left` to `right - 1` — the two candidates straddling the target. Expand the window outward `k` times: on each step, take whichever of `arr[left]` / `arr[right]` is closer to `target` (ties broken by the smaller value, i.e. the `left` side), stepping that pointer outward; if one side has run off the array, take the other. The `k` elements collected between the final pointers — `arr[left + 1 : right]` — are the answer, already sorted ascending.
 
 
-```python run viz=array
+```python solution time=O(log n + k) space=O(k)
+import ast
 from typing import List
 
 class Solution:
@@ -108,19 +197,13 @@ class Solution:
         return arr[left + 1: right]
 
 
-# Examples from the problem statement
-print(Solution().k_closest_elements([1, 2, 3, 4, 5, 6], 3, 4))     # [3, 4, 5]
-print(Solution().k_closest_elements([1, 4, 5, 6, 7, 8], 3, 4))     # [4, 5, 6]
-print(Solution().k_closest_elements([1, 5, 8, 10, 12, 13], 3, 10)) # [8, 10, 12]
-
-# Edge cases
-print(Solution().k_closest_elements([], 3, 4))                      # [] — empty array
-print(Solution().k_closest_elements([1, 2, 3, 4, 5, 6], 0, 4))     # [] — k = 0
-print(Solution().k_closest_elements([5], 1, 5))                     # [5] — single element match
-print(Solution().k_closest_elements([1, 2, 3, 4, 5, 6], 6, 4))     # [1, 2, 3, 4, 5, 6] — k = all
+arr = ast.literal_eval(input())
+k = int(input())
+target = int(input())
+print(Solution().k_closest_elements(arr, k, target))
 ```
 
-```java run viz=array
+```java solution
 import java.util.*;
 
 public class Main {
@@ -212,16 +295,20 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(Arrays.toString(new Solution().kClosestElements(new int[]{1, 2, 3, 4, 5, 6}, 3, 4)));     // [3, 4, 5]
-        System.out.println(Arrays.toString(new Solution().kClosestElements(new int[]{1, 4, 5, 6, 7, 8}, 3, 4)));     // [4, 5, 6]
-        System.out.println(Arrays.toString(new Solution().kClosestElements(new int[]{1, 5, 8, 10, 12, 13}, 3, 10))); // [8, 10, 12]
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        int target = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(Arrays.toString(new Solution().kClosestElements(arr, k, target)));
+    }
 
-        // Edge cases
-        System.out.println(Arrays.toString(new Solution().kClosestElements(new int[]{}, 3, 4)));                      // [] — empty array
-        System.out.println(Arrays.toString(new Solution().kClosestElements(new int[]{1, 2, 3, 4, 5, 6}, 0, 4)));     // [] — k = 0
-        System.out.println(Arrays.toString(new Solution().kClosestElements(new int[]{5}, 1, 5)));                     // [5] — single element match
-        System.out.println(Arrays.toString(new Solution().kClosestElements(new int[]{1, 2, 3, 4, 5, 6}, 6, 4)));     // [1, 2, 3, 4, 5, 6] — k = all
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

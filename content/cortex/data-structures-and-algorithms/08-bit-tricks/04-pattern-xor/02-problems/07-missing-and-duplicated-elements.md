@@ -4,23 +4,108 @@ summary: "An array of size n should contain elements from 1 to n, but one elemen
 prereqs:
   - 04-pattern-xor/01-pattern
 difficulty: hard
+kind: problem
+topics: [xor, bit-manipulation]
 ---
 
 # Missing and Duplicated Elements
 
-## The Problem
+XOR the array with the full index range to isolate two unknowns, then partition by a differing bit to separate them.
 
-An array of size `n` should contain elements from `1` to `n`, but one element is missing and another is duplicated (appears twice). Return both — in any order.
+## Problem Statement
 
+An array of size `n` should contain elements from `1` to `n`, but one element is missing and another is duplicated (appears twice). Return `[duplicate, missing]`.
+
+## Examples
+
+**Example 1**
 ```
-Input:  [1, 5, 2, 4, 2]    →  [2, 3]   (2 is duplicated, 3 is missing)
-Input:  [2, 4, 1, 3, 6, 6] →  [5, 6]   (6 is duplicated, 5 is missing)
-Input:  [1, 1]             →  [1, 2]
+Input:  [1, 5, 2, 4, 2]
+Output: [2, 3]
+Explanation: 2 is duplicated, 3 is missing.
+```
+
+**Example 2**
+```
+Input:  [2, 4, 1, 3, 6, 6]
+Output: [6, 5]
+Explanation: 6 is duplicated, 5 is missing.
+```
+
+**Example 3**
+```
+Input:  [1, 1]
+Output: [1, 2]
+Explanation: 1 is duplicated, 2 is missing.
+```
+
+## Constraints
+
+- `2 ≤ arr.length = n`
+- Elements are intended to be from `1` to `n` inclusive.
+- Exactly one element is duplicated and exactly one is missing.
+
+```python run viz=array viz-root=arr
+import ast, math
+from typing import List
+
+class Solution:
+    def missing_and_duplicated_elements(self, arr: List[int]) -> List[int]:
+        # Your code goes here
+        return []
+
+
+arr = ast.literal_eval(input())
+print(Solution().missing_and_duplicated_elements(arr))
+```
+
+```java run viz=array viz-root=arr
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public List<Integer> missingAndDuplicatedElements(int[] arr) {
+            // Your code goes here
+            return new ArrayList<>();
+        }
+    }
+
+    static int[] parseIntArray(String s) {
+        s = s.trim();
+        if (s.equals("[]")) return new int[0];
+        s = s.substring(1, s.length() - 1);
+        String[] parts = s.split(",");
+        int[] arr = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) arr[i] = Integer.parseInt(parts[i].trim());
+        return arr;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine().trim());
+        System.out.println(new Solution().missingAndDuplicatedElements(arr));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[1, 5, 2, 4, 2]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[1, 5, 2, 4, 2]" }, "expected": "[2, 3]" },
+    { "args": { "arr": "[2, 4, 1, 3, 6, 6]" }, "expected": "[6, 5]" },
+    { "args": { "arr": "[1, 1]" }, "expected": "[1, 2]" },
+    { "args": { "arr": "[2, 2]" }, "expected": "[2, 1]" },
+    { "args": { "arr": "[1, 3, 3]" }, "expected": "[3, 2]" },
+    { "args": { "arr": "[3, 1, 2, 4, 4]" }, "expected": "[4, 5]" }
+  ]
+}
 ```
 
 <details>
 <summary><h2>The Recurrence — Same Trick as "Two Odd Elements"</h2></summary>
-
 
 XOR the array together with `1..n`. Most elements cancel; only the missing and the duplicated survive — with the duplicated appearing 2× in the array and 1× in `1..n` (3 total → survives), and the missing appearing 0× in the array and 1× in `1..n` (1 total → survives). Result is `missing ^ duplicated`.
 
@@ -32,11 +117,13 @@ Final step: figure out which value is the missing one (it's *not* in the array) 
 <details>
 <summary><h2>The Solution</h2></summary>
 
+### The Solution
 
+XOR-all (array + indices) surfaces `missing ^ duplicated`. A single partition pass recovers both values; a final linear scan identifies which is the duplicate (the one present in the array). Identical algorithm in both languages; output order matches execution.
 
-```python run viz=array viz-root=arr
+```python solution time=O(n) space=O(1)
+import ast, math
 from typing import List
-import math
 
 class Solution:
     def missing_and_duplicated_elements(
@@ -93,18 +180,11 @@ class Solution:
         return [num1, num2]
 
 
-# Examples from the problem statement
-print(Solution().missing_and_duplicated_elements([1, 5, 2, 4, 2]))       # [2, 3]
-print(Solution().missing_and_duplicated_elements([2, 4, 1, 3, 6, 6]))    # [5, 6]
-print(Solution().missing_and_duplicated_elements([1, 1]))                 # [1, 2]
-
-# Edge cases
-print(Solution().missing_and_duplicated_elements([2, 2]))                 # [1, 2]
-print(Solution().missing_and_duplicated_elements([1, 3, 3]))              # [2, 3]
-print(Solution().missing_and_duplicated_elements([3, 1, 2, 4, 4]))        # [5, 4]
+arr = ast.literal_eval(input())
+print(Solution().missing_and_duplicated_elements(arr))
 ```
 
-```java run viz=array viz-root=arr
+```java solution
 import java.util.*;
 
 public class Main {
@@ -177,16 +257,20 @@ public class Main {
         }
     }
 
-    public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().missingAndDuplicatedElements(new int[]{1, 5, 2, 4, 2}));       // [2, 3]
-        System.out.println(new Solution().missingAndDuplicatedElements(new int[]{2, 4, 1, 3, 6, 6}));    // [5, 6]
-        System.out.println(new Solution().missingAndDuplicatedElements(new int[]{1, 1}));                 // [1, 2]
+    static int[] parseIntArray(String s) {
+        s = s.trim();
+        if (s.equals("[]")) return new int[0];
+        s = s.substring(1, s.length() - 1);
+        String[] parts = s.split(",");
+        int[] arr = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) arr[i] = Integer.parseInt(parts[i].trim());
+        return arr;
+    }
 
-        // Edge cases
-        System.out.println(new Solution().missingAndDuplicatedElements(new int[]{2, 2}));                 // [1, 2]
-        System.out.println(new Solution().missingAndDuplicatedElements(new int[]{1, 3, 3}));              // [2, 3]
-        System.out.println(new Solution().missingAndDuplicatedElements(new int[]{3, 1, 2, 4, 4}));        // [5, 4]
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine().trim());
+        System.out.println(new Solution().missingAndDuplicatedElements(arr));
     }
 }
 ```

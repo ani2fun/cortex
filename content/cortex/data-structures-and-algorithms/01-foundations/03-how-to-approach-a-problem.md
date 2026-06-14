@@ -65,50 +65,78 @@ Before the next section — how would you *know* the formula is right, and not j
 
 ## Your Turn
 
-This is the habit that separates people who *think* they're right from people who *are*: run your fast idea against the brute force on hundreds of random inputs. If they ever disagree, you hear about it immediately.
+Apply the routine: implement `smart(n)` — return the sum `1 + 2 + … + n` in `O(1)` time using the closed-form formula instead of a loop. The brute-force loop is already in the editorial for comparison.
 
 ```python run viz=array
-import random
+def smart(n):
+    # Your code goes here
+    return 0
 
-def brute(n):                 # the dead-simple correct version: add them up
-    total = 0
-    for i in range(1, n + 1):
-        total += i
-    return total
-
-def smart(n):                 # the idea we want to trust
-    return n * (n + 1) // 2
-
-for _ in range(1000):
-    n = random.randint(0, 100)
-    assert brute(n) == smart(n), f"disagreement at n={n}"
-print("1000 random cases: smart agrees with brute ✓")
+n = int(input())
+print(smart(n))
 ```
 
 ```java run viz=array
-import java.util.Random;
-
+import java.util.*;
 public class Main {
-  static long brute(int n) {
-    long total = 0;
-    for (int i = 1; i <= n; i++) total += i;
-    return total;
-  }
-  static long smart(int n) {
-    return (long) n * (n + 1) / 2;
-  }
-  public static void main(String[] args) {
-    Random rng = new Random();
-    for (int t = 0; t < 1000; t++) {
-      int n = rng.nextInt(101);
-      if (brute(n) != smart(n)) throw new AssertionError("disagreement at n=" + n);
+    static long smart(long n) {
+        // Your code goes here
+        return 0;
     }
-    System.out.println("1000 random cases: smart agrees with brute ✓");
-  }
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        long n = sc.nextLong();
+        System.out.println(smart(n));
+    }
 }
 ```
 
-Now break it on purpose: change `smart` to `n * (n + 1)` (drop the `/ 2`) and rerun. Watch the stress test catch the bug instantly — that's the safety net working.
+```testcases
+{
+  "args": [
+    { "id": "n", "label": "n", "type": "int", "placeholder": "4" }
+  ],
+  "cases": [
+    { "args": { "n": "1" },    "expected": "1" },
+    { "args": { "n": "4" },    "expected": "10" },
+    { "args": { "n": "10" },   "expected": "55" },
+    { "args": { "n": "100" },  "expected": "5050" }
+  ]
+}
+```
+
+`n = 4` gives `1 + 2 + 3 + 4 = 10`; `n = 100` gives `5050` (Gauss's classroom trick). This is the classic "brute force → improve" move: a loop that adds `n` numbers one at a time becomes a single formula.
+
+<details>
+<summary><strong>Editorial</strong></summary>
+
+The formula `n × (n + 1) / 2` is Gauss's closed form for the sum of the first `n` natural numbers — `O(1)` time and `O(1)` space. You can stress-test it against the brute-force loop on any `n` you like; they will always agree.
+
+```python solution time=O(1) space=O(1)
+def smart(n):
+    return n * (n + 1) // 2
+
+n = int(input())
+print(smart(n))
+```
+
+```java solution
+import java.util.*;
+public class Main {
+    static long smart(long n) {
+        return n * (n + 1) / 2;
+    }
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        long n = sc.nextLong();
+        System.out.println(smart(n));
+    }
+}
+```
+
+</details>
+
+To see the safety-net habit in action, try changing `smart` to `n * (n + 1)` (drop the `/ 2`) and run a few cases by hand — the bug shows up immediately.
 
 ## Reflect & Connect
 

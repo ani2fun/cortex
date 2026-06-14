@@ -18,6 +18,8 @@ The staircase search exploits a special vantage point: the **top-right corner**.
 Search a row/column-sorted matrix for `5`, starting from the top-right corner. Run it.
 
 ```python run viz=array
+import ast
+
 def search_matrix(matrix, target):
     if not matrix or not matrix[0]:
         return False
@@ -32,12 +34,68 @@ def search_matrix(matrix, target):
             row += 1                         # too small → drop this entire row
     return False
 
-m = [[1, 4, 7, 11],
-     [2, 5, 8, 12],
-     [3, 6, 9, 16],
-     [10, 13, 14, 17]]
-print(search_matrix(m, 5))     # True
-print(search_matrix(m, 15))    # False
+matrix = ast.literal_eval(input())
+target = int(input())
+print("true" if search_matrix(matrix, target) else "false")
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+  static boolean searchMatrix(int[][] matrix, int target) {
+    if (matrix.length == 0 || matrix[0].length == 0) return false;
+    int row = 0, col = matrix[0].length - 1;            // top-right
+    while (row < matrix.length && col >= 0) {
+      int val = matrix[row][col];
+      if (val == target) return true;
+      else if (val > target) col--;                // drop column
+      else row++;                                  // drop row
+    }
+    return false;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[][] matrix = parseIntMatrix(sc.nextLine());
+    int target = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(searchMatrix(matrix, target));
+  }
+
+  // "[[1,2,3],[4,5,6]]" → {{1,2,3},{4,5,6}} — reads the test case's matrix
+  static int[][] parseIntMatrix(String line) {
+    String trimmed = line.trim();
+    if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+    String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+    String[] rows = inner.split("\\],\\s*\\[");
+    int[][] mat = new int[rows.length][];
+    for (int r = 0; r < rows.length; r++) {
+      String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+      if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+      String[] parts = row.split(",");
+      mat[r] = new int[parts.length];
+      for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+    }
+    return mat;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "matrix", "label": "matrix", "type": "int[][]", "placeholder": "[[1, 4, 7, 11], [2, 5, 8, 12], [3, 6, 9, 16], [10, 13, 14, 17]]" },
+    { "id": "target", "label": "target", "type": "number", "placeholder": "5" }
+  ],
+  "cases": [
+    { "args": { "matrix": "[[1, 4, 7, 11], [2, 5, 8, 12], [3, 6, 9, 16], [10, 13, 14, 17]]", "target": "5" }, "expected": "true" },
+    { "args": { "matrix": "[[1, 4, 7, 11], [2, 5, 8, 12], [3, 6, 9, 16], [10, 13, 14, 17]]", "target": "15" }, "expected": "false" },
+    { "args": { "matrix": "[[1, 4, 7], [2, 5, 8], [3, 6, 9]]", "target": "6" }, "expected": "true" },
+    { "args": { "matrix": "[[1, 4, 7], [2, 5, 8], [3, 6, 9]]", "target": "10" }, "expected": "false" },
+    { "args": { "matrix": "[[1, 4, 7], [2, 5, 8], [3, 6, 9]]", "target": "1" }, "expected": "true" }
+  ],
+  "verifying": "run"
+}
 ```
 
 ## How It Works
@@ -86,9 +144,82 @@ The top-left cell is the *minimum* of the entire matrix — it's the smallest in
 
 ## Your Turn
 
-The reusable staircase search:
+Implement staircase search: start at the top-right corner; step left if the cell is too big, step down if too small.
 
 ```python run viz=array
+import ast
+
+def search_matrix(matrix, target):
+    if not matrix or not matrix[0]:
+        return False
+    # Your code goes here — start at (0, cols-1); col-=1 if too big, row+=1 if too small; return True if found.
+    return False
+
+matrix = ast.literal_eval(input())
+target = int(input())
+print("true" if search_matrix(matrix, target) else "false")
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+  static boolean searchMatrix(int[][] matrix, int target) {
+    if (matrix.length == 0 || matrix[0].length == 0) return false;
+    // Your code goes here — start at (0, cols-1); col-- if too big, row++ if too small; return true if found.
+    return false;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[][] matrix = parseIntMatrix(sc.nextLine());
+    int target = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(searchMatrix(matrix, target));
+  }
+
+  // "[[1,2,3],[4,5,6]]" → {{1,2,3},{4,5,6}} — reads the test case's matrix
+  static int[][] parseIntMatrix(String line) {
+    String trimmed = line.trim();
+    if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+    String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+    String[] rows = inner.split("\\],\\s*\\[");
+    int[][] mat = new int[rows.length][];
+    for (int r = 0; r < rows.length; r++) {
+      String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+      if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+      String[] parts = row.split(",");
+      mat[r] = new int[parts.length];
+      for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+    }
+    return mat;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "matrix", "label": "matrix", "type": "int[][]", "placeholder": "[[1, 4, 7, 11], [2, 5, 8, 12], [3, 6, 9, 16], [10, 13, 14, 17]]" },
+    { "id": "target", "label": "target", "type": "number", "placeholder": "5" }
+  ],
+  "cases": [
+    { "args": { "matrix": "[[1, 4, 7, 11], [2, 5, 8, 12], [3, 6, 9, 16], [10, 13, 14, 17]]", "target": "9" }, "expected": "true" },
+    { "args": { "matrix": "[[1, 4, 7, 11], [2, 5, 8, 12], [3, 6, 9, 16], [10, 13, 14, 17]]", "target": "13" }, "expected": "true" },
+    { "args": { "matrix": "[[1, 4, 7, 11], [2, 5, 8, 12], [3, 6, 9, 16], [10, 13, 14, 17]]", "target": "0" }, "expected": "false" },
+    { "args": { "matrix": "[[1, 4, 7], [2, 5, 8], [3, 6, 9]]", "target": "6" }, "expected": "true" },
+    { "args": { "matrix": "[[1, 4, 7], [2, 5, 8], [3, 6, 9]]", "target": "10" }, "expected": "false" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Set `row = 0`, `col = cols - 1` (top-right corner). Each step read `val = matrix[row][col]`. On a match return `True`; if `val > target` decrement `col` (drop the column); otherwise increment `row` (drop the row). Stop when `row >= rows` or `col < 0` — the target isn't present, return `False`. `O(m + n)` time, `O(1)` space.
+
+```python solution time=O(m+n) space=O(1)
+import ast
+
 def search_matrix(matrix, target):
     if not matrix or not matrix[0]:
         return False
@@ -103,31 +234,54 @@ def search_matrix(matrix, target):
             row += 1
     return False
 
-m = [[1, 4, 7, 11], [2, 5, 8, 12], [3, 6, 9, 16], [10, 13, 14, 17]]
-print(search_matrix(m, 9), search_matrix(m, 13), search_matrix(m, 0))   # True True False
+matrix = ast.literal_eval(input())
+target = int(input())
+print("true" if search_matrix(matrix, target) else "false")
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
-  static boolean searchMatrix(int[][] m, int target) {
-    if (m.length == 0 || m[0].length == 0) return false;
-    int row = 0, col = m[0].length - 1;            // top-right
-    while (row < m.length && col >= 0) {
-      int val = m[row][col];
+  static boolean searchMatrix(int[][] matrix, int target) {
+    if (matrix.length == 0 || matrix[0].length == 0) return false;
+    int row = 0, col = matrix[0].length - 1;
+    while (row < matrix.length && col >= 0) {
+      int val = matrix[row][col];
       if (val == target) return true;
-      else if (val > target) col--;                // drop column
-      else row++;                                  // drop row
+      else if (val > target) col--;
+      else row++;
     }
     return false;
   }
+
   public static void main(String[] args) {
-    int[][] m = {{1, 4, 7, 11}, {2, 5, 8, 12}, {3, 6, 9, 16}, {10, 13, 14, 17}};
-    System.out.println(searchMatrix(m, 5) + " " + searchMatrix(m, 15));   // true false
+    Scanner sc = new Scanner(System.in);
+    int[][] matrix = parseIntMatrix(sc.nextLine());
+    int target = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(searchMatrix(matrix, target));
+  }
+
+  // "[[1,2,3],[4,5,6]]" → {{1,2,3},{4,5,6}} — reads the test case's matrix
+  static int[][] parseIntMatrix(String line) {
+    String trimmed = line.trim();
+    if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+    String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+    String[] rows = inner.split("\\],\\s*\\[");
+    int[][] mat = new int[rows.length][];
+    for (int r = 0; r < rows.length; r++) {
+      String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+      if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+      String[] parts = row.split(",");
+      mat[r] = new int[parts.length];
+      for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+    }
+    return mat;
   }
 }
 ```
 
-This is a structural lesson — drill searching in the pattern sets.
+</details>
 
 ## Reflect & Connect
 
@@ -181,4 +335,4 @@ The staircase is the matrix search for when you *can't* flatten:
 
 - **Sedgewick / standard interview canon** — "Search a 2D Matrix II" (Young tableau search) is the classic staircase problem.
 - **CLRS**, *Introduction to Algorithms*, 4th ed. — Young tableaux (problem 6-3) use the same row/column-sorted monotone structure.
-- The top-right staircase and its `O(m + n)` bound are standard; both runnable blocks are verified by running (`5 ⇒ True`, `15 ⇒ False`; `9,13,0 ⇒ True, True, False`).
+- The top-right staircase and its `O(m + n)` bound are standard; both runnable blocks are verified by running (`5 ⇒ true`, `15 ⇒ false`; `9 ⇒ true`, `0 ⇒ false`).

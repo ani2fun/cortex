@@ -4,6 +4,8 @@ summary: "Given a non-negative integer n, return the sum of its digits. You must
 prereqs:
   - 05-pattern-head-recursion/01-pattern
 difficulty: easy
+kind: problem
+topics: [head-recursion, recursion]
 ---
 
 # Sum of Digits
@@ -30,6 +32,81 @@ Output: 0
 ```
 
 ---
+
+## Examples
+
+**Example 1**
+```
+Input:  n = 523
+Output: 10
+Explanation: 5 + 2 + 3 = 10.
+```
+
+**Example 2**
+```
+Input:  n = 1005
+Output: 6
+Explanation: 1 + 0 + 0 + 5 = 6 — the zeros contribute nothing.
+```
+
+```quiz
+{
+  "prompt": "What is the recursion depth for sum_of_digits(2024)?",
+  "options": ["2024", "4", "10", "1"],
+  "answer": "4"
+}
+```
+
+## Constraints
+
+- `0 ≤ n ≤ 2³¹ − 1`
+- Must be solved recursively (no loop over the digits).
+
+```python run viz=array
+class Solution:
+    def sum_of_digits(self, n: int) -> int:
+        # Your code goes here — base case n == 0 returns 0; otherwise recurse
+        # on n // 10 and add n % 10 on the way back up.
+        return 0
+
+n = int(input())                # the test case's n
+print(Solution().sum_of_digits(n))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int sumOfDigits(int n) {
+            // Your code goes here — base case n == 0 returns 0; otherwise
+            // recurse on n / 10 and add n % 10 on the way back up.
+            return 0;
+        }
+    }
+
+    public static void main(String[] args) {
+        int n = Integer.parseInt(new Scanner(System.in).nextLine().trim());
+        System.out.println(new Solution().sumOfDigits(n));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "n", "label": "n", "type": "int", "placeholder": "523" }
+  ],
+  "cases": [
+    { "args": { "n": "523" }, "expected": "10" },
+    { "args": { "n": "1005" }, "expected": "6" },
+    { "args": { "n": "0" }, "expected": "0" },
+    { "args": { "n": "9" }, "expected": "9" },
+    { "args": { "n": "999" }, "expected": "27" },
+    { "args": { "n": "2147483647" }, "expected": "46" }
+  ]
+}
+```
 
 <details>
 <summary><h2>What Does "Lop Off the Last Digit" Mean?</h2></summary>
@@ -107,7 +184,7 @@ flowchart TB
 
 ### The Solution
 
-```python run viz=array
+```python solution time=O(log n) space=O(log n)
 class Solution:
     def sum_of_digits(self, n: int) -> int:
 
@@ -124,19 +201,13 @@ class Solution:
         return remaining_sum + n % 10
 
 
-# Examples from the problem statement
-print(Solution().sum_of_digits(523))   # 10
-print(Solution().sum_of_digits(1005))  # 6
-print(Solution().sum_of_digits(0))     # 0
-
-# Edge cases
-print(Solution().sum_of_digits(9))     # 9
-print(Solution().sum_of_digits(99))    # 18
-print(Solution().sum_of_digits(1000))  # 1
-print(Solution().sum_of_digits(999))   # 27
+n = int(input())                # the test case's n
+print(Solution().sum_of_digits(n))
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
     static class Solution {
         public int sumOfDigits(int N) {
@@ -157,16 +228,8 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().sumOfDigits(523));   // 10
-        System.out.println(new Solution().sumOfDigits(1005));  // 6
-        System.out.println(new Solution().sumOfDigits(0));     // 0
-
-        // Edge cases
-        System.out.println(new Solution().sumOfDigits(9));     // 9
-        System.out.println(new Solution().sumOfDigits(99));    // 18
-        System.out.println(new Solution().sumOfDigits(1000));  // 1
-        System.out.println(new Solution().sumOfDigits(999));   // 27
+        int n = Integer.parseInt(new Scanner(System.in).nextLine().trim());
+        System.out.println(new Solution().sumOfDigits(n));
     }
 }
 ```

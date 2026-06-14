@@ -4,205 +4,210 @@ summary: "Given an undirected graph and a values array, return a list of all con
 prereqs:
   - 14-pattern-connected-components/01-pattern
 difficulty: easy
+kind: problem
+topics: [connected-components, graph]
 ---
 
 # Problem: Find Connected Components
 
-## The Problem
+## Problem Statement
 
-Given an undirected graph and a `values` array, return a list of all connected components — but only of the *visitable* nodes (`values[i] > 0`).
+Given an undirected graph (as an adjacency list) and a `values` array, return a list of all connected components — but only of the *visitable* nodes (`values[i] > 0`). Nodes with `values[i] == 0` act as blockers: the DFS will not enter them, so a chain of zero-value nodes can split the graph into isolated visitable islands.
 
+## Examples
+
+**Example 1:**
 ```
 Input:  graph = [[1], [0, 2], [1, 3], [2, 4], [3, 5], [4, 6], [5]],
         values = [1, 0, 1, 0, 1, 0, 1]
 Output: [[0], [2], [4], [6]]
 ```
 
-The "visitable" twist makes the problem more interesting: nodes with `values[i] == 0` block the DFS entirely, so a chain of zeros isolates the visitable nodes from each other.
+The alternating `0` values in `values` block every connection. Nodes 0, 2, 4, 6 each become an isolated singleton component.
 
-<details>
-<summary><h2>Pattern Mapping</h2></summary>
+**Example 2:**
+```
+Input:  graph = [[1], [0], [], [4], [3]],
+        values = [1, 1, 1, 1, 1]
+Output: [[0, 1], [2], [3, 4]]
+```
 
+Node 2 is isolated (no edges); nodes 0–1 and 3–4 form pairs.
 
-- `f`: append node to current component's list.
-- `g`: append the component to the master result list.
-- *Visitability filter*: only descend into neighbours where `values[neighbour] > 0`.
+## Constraints
 
-</details>
-<details>
-<summary><h2>The Solution</h2></summary>
-
-
+- `0 ≤ n ≤ 10⁴` nodes
+- `0 ≤ values[i] ≤ 10⁴`
+- Output components are sorted internally and sorted by their first element (for determinism)
 
 ```python run viz=graph viz-root=graph
-from typing import List, Set
+import ast
 
-class Solution:
-    def dfs(
-        self,
-        graph: List[List[int]],
-        node: int,
-        values: List[int],
-        visited: Set[int],
-        component: List[int],
-    ) -> None:
+def connected_components(graph, values):
+    # Your code goes here
+    return []
 
-        # Mark the current node as visited in the graph to avoid
-        # visiting it again
-        visited.add(node)
-
-        # Add the current node to the component list
-        component.append(node)
-
-        # Traverse all the neighbours of the current node
-        for neighbour in graph[node]:
-
-            # If the neighbour is not visited and has a positive value,
-            # recursively visit it
-            if neighbour not in visited and values[neighbour] != 0:
-
-                # Recursively visit all the nodes in the connected
-                # component
-                self.dfs(graph, neighbour, values, visited, component)
-
-    def connected_components(
-        self, graph: List[List[int]], values: List[int]
-    ) -> List[List[int]]:
-
-        # Number of nodes in the graph
-        n = len(graph)
-
-        # Initialize visited set
-        visited: Set[int] = set()
-
-        # Initialize a list to store the connected components
-        components: List[List[int]] = []
-
-        # Iterate through all nodes in the graph
-        for node in range(n):
-
-            # Start DFS only if node is unvisited and has a positive
-            # value, visiting all nodes in the connected component
-            # and adding them to the components list
-            if values[node] > 0 and node not in visited:
-
-                # Create a new component to store the nodes in the
-                # connected component
-                component: List[int] = []
-
-                # Start DFS from the current node and find all nodes
-                # in the connected component
-                self.dfs(graph, node, values, visited, component)
-
-                # Add the found component to the components list
-                components.append(component)
-
-        # Return the list of connected components
-        return components
-
-
-# Examples from the problem statement
-print(Solution().connected_components([[1],[0,2],[1,3],[2,4],[3,5],[4,6],[5]], [1,0,1,0,1,0,1]))  # [[0],[2],[4],[6]]
-print(Solution().connected_components([[1],[0],[],[4],[3]], [1,1,1,1,1]))  # [[0,1],[2],[3,4]]
-
-# Edge cases
-print(Solution().connected_components([], []))                    # []
-print(Solution().connected_components([[]], [1]))                  # [[0]]
-print(Solution().connected_components([[]], [0]))                  # [] — zero value, unvisitable
-print(Solution().connected_components([[1],[0]], [1,1]))           # [[0,1]]
-print(Solution().connected_components([[1],[0]], [1,0]))           # [[0]] — node 1 blocked
-# All zeros
-print(Solution().connected_components([[1],[0]], [0,0]))           # []
+graph = ast.literal_eval(input())
+values = ast.literal_eval(input())
+result = connected_components(graph, values)
+# sort for determinism
+result = [sorted(c) for c in result]
+result.sort(key=lambda c: c[0] if c else 0)
+print(result)
 ```
 
 ```java run viz=graph viz-root=graph
 import java.util.*;
 
 public class Main {
-    static class Solution {
-        private void dfs(
-            List<List<Integer>> graph,
-            int node,
-            int[] values,
-            Set<Integer> visited,
-            List<Integer> component
-        ) {
-
-            // Mark the current node as visited in the graph to avoid
-            // visiting it again
-            visited.add(node);
-
-            // Add the current node to the component list
-            component.add(node);
-
-            // Traverse all the neighbours of the current node
-            for (int neighbour : graph.get(node)) {
-
-                // If the neighbour is not visited and has a positive value,
-                // recursively visit it
-                if (!visited.contains(neighbour) && values[neighbour] != 0) {
-
-                    // Recursively visit all the nodes in the connected
-                    // component
-                    dfs(graph, neighbour, values, visited, component);
-                }
-            }
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
         }
+        return mat;
+    }
 
-        public List<List<Integer>> connectedComponents(
-            List<List<Integer>> graph,
-            int[] values
-        ) {
+    static int[] parseIntArray(String line) {
+        String s = line.replaceAll("[\\[\\]\\s]", "");
+        if (s.isEmpty()) return new int[0];
+        String[] parts = s.split(",");
+        int[] a = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) a[i] = Integer.parseInt(parts[i].trim());
+        return a;
+    }
 
-            // Number of nodes in the graph
-            int N = graph.size();
-
-            // Initialize visited set
-            Set<Integer> visited = new HashSet<>();
-
-            // Initialize a list to store the connected components
-            List<List<Integer>> components = new ArrayList<>();
-
-            // Iterate through all nodes in the graph
-            for (int node = 0; node < N; node++) {
-
-                // Start DFS only if node is unvisited and has a positive
-                // value, visiting all nodes in the connected component
-                // and adding them to the components list
-                if (values[node] > 0 && !visited.contains(node)) {
-
-                    // Create a new component to store the nodes in the
-                    // connected component
-                    List<Integer> component = new ArrayList<>();
-
-                    // Start DFS from the current node and find all nodes
-                    // in the connected component
-                    dfs(graph, node, values, visited, component);
-
-                    // Add the found component to the components list
-                    components.add(component);
-                }
-            }
-
-            // Return the list of connected components
-            return components;
-        }
+    static List<List<Integer>> connectedComponents(int[][] graph, int[] values) {
+        // Your code goes here
+        return new ArrayList<>();
     }
 
     public static void main(String[] args) {
-        Solution sol = new Solution();
+        Scanner sc = new Scanner(System.in);
+        int[][] graph = parseIntMatrix(sc.nextLine());
+        int[] values = parseIntArray(sc.nextLine());
+        List<List<Integer>> result = connectedComponents(graph, values);
+        // sort for determinism
+        for (List<Integer> c : result) Collections.sort(c);
+        result.sort((a, b) -> a.isEmpty() ? 0 : a.get(0) - b.get(0));
+        System.out.println(result);
+    }
+}
+```
 
-        // Examples from the problem statement
-        System.out.println(sol.connectedComponents(List.of(List.of(1),List.of(0,2),List.of(1,3),List.of(2,4),List.of(3,5),List.of(4,6),List.of(5)), new int[]{1,0,1,0,1,0,1}));  // [[0],[2],[4],[6]]
-        System.out.println(sol.connectedComponents(List.of(List.of(1),List.of(0),new ArrayList<>(),List.of(4),List.of(3)), new int[]{1,1,1,1,1}));  // [[0,1],[2],[3,4]]
+```testcases
+{
+  "args": [
+    { "id": "graph", "label": "graph", "type": "int[][]", "placeholder": "[[1], [0, 2], [1, 3], [2, 4], [3, 5], [4, 6], [5]]" },
+    { "id": "values", "label": "values", "type": "int[]", "placeholder": "[1, 0, 1, 0, 1, 0, 1]" }
+  ],
+  "cases": [
+    { "args": { "graph": "[[1], [0, 2], [1, 3], [2, 4], [3, 5], [4, 6], [5]]", "values": "[1, 0, 1, 0, 1, 0, 1]" }, "expected": "[[0], [2], [4], [6]]" },
+    { "args": { "graph": "[[1], [0], [], [4], [3]]", "values": "[1, 1, 1, 1, 1]" }, "expected": "[[0, 1], [2], [3, 4]]" },
+    { "args": { "graph": "[[1], [0]]", "values": "[1, 1]" }, "expected": "[[0, 1]]" },
+    { "args": { "graph": "[[1], [0]]", "values": "[1, 0]" }, "expected": "[[0]]" },
+    { "args": { "graph": "[[1], [0]]", "values": "[0, 0]" }, "expected": "[]" },
+    { "args": { "graph": "[[1], [0], []]", "values": "[1, 1, 1]" }, "expected": "[[0, 1], [2]]" },
+    { "args": { "graph": "[]", "values": "[]" }, "expected": "[]" }
+  ]
+}
+```
 
-        // Edge cases
-        System.out.println(sol.connectedComponents(new ArrayList<>(), new int[]{}));  // []
-        System.out.println(sol.connectedComponents(List.of(new ArrayList<>()), new int[]{1}));  // [[0]]
-        System.out.println(sol.connectedComponents(List.of(new ArrayList<>()), new int[]{0}));  // []
-        System.out.println(sol.connectedComponents(List.of(List.of(1), List.of(0)), new int[]{1,1}));  // [[0,1]]
-        System.out.println(sol.connectedComponents(List.of(List.of(1), List.of(0)), new int[]{1,0}));  // [[0]]
-        System.out.println(sol.connectedComponents(List.of(List.of(1), List.of(0)), new int[]{0,0}));  // []
+<details>
+<summary>Editorial</summary>
+
+**Approach:** apply the standard connected-components skeleton, but add a visitability guard — only start a new flood from a node if `values[node] > 0`, and only enter a neighbour if `values[neighbour] != 0`. This is the exact `f`/`g` pattern from the lesson: `f` = append node to the current component list; `g` = append the finished component to the master result. Because the output lists components (an unordered set), we sort within each component and sort the components by first element to make the output deterministic.
+
+```python solution time=O(V+E) space=O(V)
+import ast
+
+def dfs(graph, node, values, visited, component):
+    visited.add(node)
+    component.append(node)
+    for neighbour in graph[node]:
+        if neighbour not in visited and values[neighbour] != 0:
+            dfs(graph, neighbour, values, visited, component)
+
+def connected_components(graph, values):
+    n = len(graph)
+    visited = set()
+    components = []
+    for node in range(n):
+        if values[node] > 0 and node not in visited:
+            component = []
+            dfs(graph, node, values, visited, component)
+            components.append(component)
+    components = [sorted(c) for c in components]
+    components.sort(key=lambda c: c[0] if c else 0)
+    return components
+
+graph = ast.literal_eval(input())
+values = ast.literal_eval(input())
+print(connected_components(graph, values))
+```
+
+```java solution time=O(V+E) space=O(V)
+import java.util.*;
+
+public class Main {
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
+    }
+
+    static int[] parseIntArray(String line) {
+        String s = line.replaceAll("[\\[\\]\\s]", "");
+        if (s.isEmpty()) return new int[0];
+        String[] parts = s.split(",");
+        int[] a = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) a[i] = Integer.parseInt(parts[i].trim());
+        return a;
+    }
+
+    static void dfs(int[][] graph, int node, int[] values, boolean[] visited, List<Integer> component) {
+        visited[node] = true;
+        component.add(node);
+        for (int nbr : graph[node])
+            if (!visited[nbr] && values[nbr] != 0)
+                dfs(graph, nbr, values, visited, component);
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[][] graph = parseIntMatrix(sc.nextLine());
+        int[] values = parseIntArray(sc.nextLine());
+        int n = graph.length;
+        boolean[] visited = new boolean[n];
+        List<List<Integer>> components = new ArrayList<>();
+        for (int node = 0; node < n; node++) {
+            if (values[node] > 0 && !visited[node]) {
+                List<Integer> comp = new ArrayList<>();
+                dfs(graph, node, values, visited, comp);
+                Collections.sort(comp);
+                components.add(comp);
+            }
+        }
+        components.sort((a, b) -> a.isEmpty() ? 0 : a.get(0) - b.get(0));
+        System.out.println(components);
     }
 }
 ```

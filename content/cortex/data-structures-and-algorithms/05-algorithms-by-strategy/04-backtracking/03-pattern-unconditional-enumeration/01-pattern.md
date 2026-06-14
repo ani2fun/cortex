@@ -56,7 +56,9 @@ def enumerate_all(n, k):
     helper()
     return results
 
-print(enumerate_all(2, 2))
+n = int(input())     # the test case's n
+k = int(input())     # the test case's k
+print(enumerate_all(n, k))
 ```
 
 ```java run viz=array
@@ -71,10 +73,28 @@ public class Main {
         }
     }
     public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = Integer.parseInt(sc.nextLine().trim());
+        int k = Integer.parseInt(sc.nextLine().trim());
         List<List<Integer>> res = new ArrayList<>();
-        helper(2, 2, new ArrayList<>(), res);
+        helper(n, k, new ArrayList<>(), res);
         System.out.println(res);
     }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "n", "label": "n", "type": "int", "placeholder": "2" },
+    { "id": "k", "label": "k", "type": "int", "placeholder": "2" }
+  ],
+  "cases": [
+    { "args": { "n": "2", "k": "2" }, "expected": "[[1, 1], [1, 2], [2, 1], [2, 2]]" },
+    { "args": { "n": "2", "k": "3" }, "expected": "[[1, 1], [1, 2], [1, 3], [2, 1], [2, 2], [2, 3], [3, 1], [3, 2], [3, 3]]" },
+    { "args": { "n": "3", "k": "2" }, "expected": "[[1, 1, 1], [1, 1, 2], [1, 2, 1], [1, 2, 2], [2, 1, 1], [2, 1, 2], [2, 2, 1], [2, 2, 2]]" },
+    { "args": { "n": "1", "k": "3" }, "expected": "[[1], [2], [3]]" }
+  ]
 }
 ```
 
@@ -148,8 +168,11 @@ def letter_combinations(digits):
     backtrack(0)
     return res
 
-print(letter_combinations("23"))
-print("count:", len(letter_combinations("23")))
+# Your code goes here — replace the call with your own implementation
+digits = input().strip()     # the test case's digits
+r = letter_combinations(digits)
+print("[" + ", ".join(r) + "]")
+print("count:", len(r))
 ```
 
 ```java run viz=array
@@ -169,9 +192,25 @@ public class Main {
         return res;
     }
     public static void main(String[] args) {
-        System.out.println(letterCombinations("23"));
-        System.out.println("count: " + letterCombinations("23").size());
+        String digits = new Scanner(System.in).nextLine().trim();
+        List<String> r = letterCombinations(digits);
+        System.out.println(r);
+        System.out.println("count: " + r.size());
     }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "digits", "label": "digits", "type": "string", "placeholder": "23" }
+  ],
+  "cases": [
+    { "args": { "digits": "23" }, "expected": "[ad, ae, af, bd, be, bf, cd, ce, cf]\ncount: 9" },
+    { "args": { "digits": "2" }, "expected": "[a, b, c]\ncount: 3" },
+    { "args": { "digits": "9" }, "expected": "[w, x, y, z]\ncount: 4" },
+    { "args": { "digits": "46" }, "expected": "[gm, gn, go, hm, hn, ho, im, in, io]\ncount: 9" }
+  ]
 }
 ```
 

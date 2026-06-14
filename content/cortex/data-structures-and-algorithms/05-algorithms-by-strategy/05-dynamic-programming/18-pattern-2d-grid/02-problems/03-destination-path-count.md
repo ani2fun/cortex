@@ -4,6 +4,8 @@ summary: "Given an n × m matrix of non-negative cell costs and a target cost, c
 prereqs:
   - 18-pattern-2d-grid/01-pattern
 difficulty: medium
+kind: problem
+topics: [2d-grid, dynamic-programming]
 ---
 
 # Destination Path Count
@@ -24,6 +26,114 @@ Input:  matrix = [[1, 2, 3],
                   [2, 8, 9]],
         cost = 21
 Output: 2                          Two paths sum to 21
+```
+
+---
+
+## Examples
+
+**Example 1**
+```
+Input:  matrix = [[1, 2, 9], [5, 3, 8], [4, 6, 7]], cost = 19
+Output: 1
+Explanation: Only path 1 → 2 → 3 → 6 → 7 sums to 19.
+```
+
+**Example 2**
+```
+Input:  matrix = [[1, 1], [1, 1]], cost = 3
+Output: 2
+Explanation: Both paths (right-down and down-right) sum to 1+1+1 = 3.
+```
+
+```quiz
+{
+  "prompt": "Why is the DP state 3D (r, c, remaining_cost) rather than 2D (r, c)?",
+  "options": [
+    "The grid is 3D",
+    "Two paths to the same cell with different remaining budgets give different answers",
+    "To handle negative costs",
+    "Because we move in 3 directions"
+  ],
+  "answer": "Two paths to the same cell with different remaining budgets give different answers"
+}
+```
+
+## Constraints
+
+- `1 ≤ n, m ≤ 50`
+- `0 ≤ matrix[i][j] ≤ 100`
+- `0 ≤ cost ≤ 10000`
+- Moves are right or down only.
+
+```python run viz=grid
+import ast
+
+class Solution:
+    def destination_path_count(self, matrix, cost):
+        # Your code goes here — memoize on (r, c, remaining_cost).
+        # dp[r][c][k] = number of paths from (0,0) to (r,c) summing to k.
+        return 0
+
+matrix = ast.literal_eval(input())   # the test case's matrix
+cost = int(input())                   # the test case's cost
+print(Solution().destination_path_count(matrix, cost))
+```
+
+```java run viz=grid
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int destinationPathCount(int[][] matrix, int cost) {
+            // Your code goes here — memoize on (r, c, remaining_cost).
+            // dp[r][c][k] = number of paths from (0,0) to (r,c) summing to k.
+            return 0;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[][] matrix = parseIntMatrix(sc.nextLine());
+        int cost = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().destinationPathCount(matrix, cost));
+    }
+
+    // "[[1, 2], [3, 4]]" → int[][] — reads the test case's matrix
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "matrix", "label": "matrix", "type": "int[][]", "placeholder": "[[1, 1, 0], [0, 1, 1]]" },
+    { "id": "cost", "label": "cost", "type": "int", "placeholder": "3" }
+  ],
+  "cases": [
+    { "args": { "matrix": "[[1, 2, 9], [5, 3, 8], [4, 6, 7]]", "cost": "19" }, "expected": "1" },
+    { "args": { "matrix": "[[1, 2, 3], [1, 5, 6], [2, 8, 9]]", "cost": "21" }, "expected": "2" },
+    { "args": { "matrix": "[[5]]", "cost": "5" }, "expected": "1" },
+    { "args": { "matrix": "[[5]]", "cost": "3" }, "expected": "0" },
+    { "args": { "matrix": "[[1, 2], [3, 4]]", "cost": "7" }, "expected": "1" },
+    { "args": { "matrix": "[[1, 2], [3, 4]]", "cost": "8" }, "expected": "1" },
+    { "args": { "matrix": "[[1, 1], [1, 1]]", "cost": "3" }, "expected": "2" }
+  ]
+}
 ```
 
 <details>
@@ -51,7 +161,8 @@ Because the answer at `(r, c)` depends on the *budget* still available — two d
 
 ### The Solution
 
-```python run viz=grid viz-root=matrix
+```python solution time=O(rows × cols × cost) space=O(rows × cols × cost)
+import ast
 from typing import List, Dict
 
 class Solution:
@@ -124,19 +235,12 @@ class Solution:
         )
 
 
-# Examples from the problem statement
-print(Solution().destination_path_count([[1,2,9],[5,3,8],[4,6,7]], 19))   # 1
-print(Solution().destination_path_count([[1,2,3],[1,5,6],[2,8,9]], 21))   # 2
-
-# Edge cases
-print(Solution().destination_path_count([[5]], 5))                         # 1  — 1x1 exact
-print(Solution().destination_path_count([[5]], 3))                         # 0  — 1x1 wrong cost
-print(Solution().destination_path_count([[1,2],[3,4]], 7))                 # 1  — [1,3,4]
-print(Solution().destination_path_count([[1,2],[3,4]], 8))                 # 0  — no path sums to 8 (paths are 1+2+4=7 or 1+3+4=8)
-print(Solution().destination_path_count([[1,1],[1,1]], 3))                 # 2  — both paths cost 3
+matrix = ast.literal_eval(input())   # the test case's matrix
+cost = int(input())                   # the test case's cost
+print(Solution().destination_path_count(matrix, cost))
 ```
 
-```java run viz=grid viz-root=matrix
+```java solution
 import java.util.*;
 
 public class Main {
@@ -248,16 +352,26 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().destinationPathCount(new int[][]{{1,2,9},{5,3,8},{4,6,7}}, 19));   // 1
-        System.out.println(new Solution().destinationPathCount(new int[][]{{1,2,3},{1,5,6},{2,8,9}}, 21));   // 2
+        Scanner sc = new Scanner(System.in);
+        int[][] matrix = parseIntMatrix(sc.nextLine());
+        int cost = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().destinationPathCount(matrix, cost));
+    }
 
-        // Edge cases
-        System.out.println(new Solution().destinationPathCount(new int[][]{{5}}, 5));                         // 1
-        System.out.println(new Solution().destinationPathCount(new int[][]{{5}}, 3));                         // 0
-        System.out.println(new Solution().destinationPathCount(new int[][]{{1,2},{3,4}}, 7));                 // 1
-        System.out.println(new Solution().destinationPathCount(new int[][]{{1,2},{3,4}}, 8));                 // 0
-        System.out.println(new Solution().destinationPathCount(new int[][]{{1,1},{1,1}}, 3));                 // 2
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
     }
 }
 ```

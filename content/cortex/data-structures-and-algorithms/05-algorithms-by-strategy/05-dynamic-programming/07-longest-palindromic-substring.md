@@ -33,11 +33,13 @@ def longest_palindrome(s):
                     start, best = i, length
     return s[start:start + best]
 
-print(longest_palindrome("babad"))   # bab
-print(longest_palindrome("cbbd"))    # bb
+s = input()
+print(longest_palindrome(s))
 ```
 
 ```java run viz=grid
+import java.util.*;
+
 public class Main {
     static String longestPalindrome(String s) {
         int n = s.length();
@@ -56,9 +58,24 @@ public class Main {
         return s.substring(start, start + best);
     }
     public static void main(String[] args) {
-        System.out.println(longestPalindrome("babad"));   // bab
-        System.out.println(longestPalindrome("cbbd"));    // bb
+        Scanner sc = new Scanner(System.in);
+        String s = sc.nextLine();
+        System.out.println(longestPalindrome(s));
     }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "s", "type": "string", "placeholder": "babad" }
+  ],
+  "cases": [
+    { "args": { "s": "babad" }, "expected": "bab" },
+    { "args": { "s": "cbbd" }, "expected": "bb" },
+    { "args": { "s": "a" }, "expected": "a" },
+    { "args": { "s": "racecar" }, "expected": "racecar" }
+  ]
 }
 ```
 
@@ -154,16 +171,78 @@ def count_substrings(s):
             r += 1
         return c
 
+    # Your code goes here — iterate all 2n-1 centers and expand
+    return total
+
+s = input()
+print(count_substrings(s))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static int countSubstrings(String s) {
+        // Your code goes here
+        return 0;
+    }
+    static int expand(String s, int l, int r) {
+        int c = 0;
+        while (l >= 0 && r < s.length() && s.charAt(l) == s.charAt(r)) { c++; l--; r++; }
+        return c;
+    }
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String s = sc.nextLine();
+        System.out.println(countSubstrings(s));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "s", "type": "string", "placeholder": "aaa" }
+  ],
+  "cases": [
+    { "args": { "s": "aaa" }, "expected": "6" },
+    { "args": { "s": "abc" }, "expected": "3" },
+    { "args": { "s": "a" }, "expected": "1" },
+    { "args": { "s": "abba" }, "expected": "6" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+A palindrome is defined by its center; there are `2n−1` of them. Expand from each single-character center (odd length) and each between-character center (even length) while the mirror holds — each step that survives is one palindrome.
+
+```python solution time=O(n²) space=O(1)
+def count_substrings(s):
+    n = len(s)
+    total = 0
+
+    def expand(l, r):
+        c = 0
+        while l >= 0 and r < n and s[l] == s[r]:  # mirror holds -> one more palindrome
+            c += 1
+            l -= 1
+            r += 1
+        return c
+
     for center in range(n):
         total += expand(center, center)           # odd-length cores (single char)
         total += expand(center, center + 1)       # even-length cores (between two chars)
     return total
 
-print(count_substrings("aaa"))   # 6   ("a"x3, "aa"x2, "aaa")
-print(count_substrings("abc"))   # 3   (each single char)
+s = input()
+print(count_substrings(s))
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
     static int countSubstrings(String s) {
         int n = s.length(), total = 0;
@@ -179,13 +258,16 @@ public class Main {
         return c;
     }
     public static void main(String[] args) {
-        System.out.println(countSubstrings("aaa"));   // 6
-        System.out.println(countSubstrings("abc"));   // 3
+        Scanner sc = new Scanner(System.in);
+        String s = sc.nextLine();
+        System.out.println(countSubstrings(s));
     }
 }
 ```
 
-Both print `6` then `3`. `"aaa"` has three single `a`s, two `"aa"`s, and one `"aaa"`; `"abc"` has only its three single characters. Each surviving expansion step is one more palindrome — the counting twin of "remember the longest span."
+</details>
+
+`"aaa"` has three single `a`s, two `"aa"`s, and one `"aaa"`; `"abc"` has only its three single characters. Each surviving expansion step is one more palindrome — the counting twin of "remember the longest span."
 
 ## Reflect & Connect
 

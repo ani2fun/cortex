@@ -15,13 +15,12 @@ The reframe: **every grid is a graph.** Each cell `(r, c)` is a node; its neighb
 
 ## See It Work
 
-A 4×5 grid where `1` = walkable, `0` = blocked. DFS visits every walkable cell reachable from each unvisited start — exactly disconnected-graph DFS, where each walkable region is a component ("island"). Run it.
+A 4×4 grid where `1` = walkable, `0` = blocked. DFS visits every walkable cell reachable from each unvisited start — each walkable region is a component ("island"). Returns the visited cells as a list of `[row, col]` pairs. Pick a case and **Run** it.
 
 ```python run viz=grid
-DIRS = [(-1, 0), (0, 1), (1, 0), (0, -1)]      # up, right, down, left — 4 cardinal deltas
+import ast
 
-def is_valid(grid, r, c):
-    return 0 <= r < len(grid) and 0 <= c < len(grid[0]) and grid[r][c] == 1
+DIRS = [(-1, 0), (0, 1), (1, 0), (0, -1)]      # up, right, down, left
 
 def dfs_grid(grid):
     if not grid: return []
@@ -30,20 +29,83 @@ def dfs_grid(grid):
     result = []
     def dfs(r, c):
         visited[r][c] = True
-        result.append((r, c))
-        for dr, dc in DIRS:                     # neighbours = current + each delta
+        result.append([r, c])                   # [row, col] — not a tuple
+        for dr, dc in DIRS:
             nr, nc = r + dr, c + dc
-            if is_valid(grid, nr, nc) and not visited[nr][nc]:
+            if 0 <= nr < rows and 0 <= nc < cols and grid[nr][nc] == 1 and not visited[nr][nc]:
                 dfs(nr, nc)
-    for r in range(rows):                       # outer loop ⇒ every island
+    for r in range(rows):
         for c in range(cols):
             if grid[r][c] == 1 and not visited[r][c]:
                 dfs(r, c)
     return result
 
-grid = [[1,1,0,0], [0,0,1,1], [1,0,1,1], [1,0,0,0]]
+grid = ast.literal_eval(input())
 print(dfs_grid(grid))
-# [(0, 0), (0, 1), (1, 2), (1, 3), (2, 3), (2, 2), (2, 0), (3, 0)]
+```
+
+```java run viz=grid
+import java.util.*;
+
+public class Main {
+    static final int[][] DIRS = {{-1,0},{0,1},{1,0},{0,-1}};
+    static List<List<Integer>> result;
+    static boolean[][] visited;
+
+    static void dfs(int[][] grid, int r, int c) {
+        visited[r][c] = true;
+        result.add(Arrays.asList(r, c));            // [row, col]
+        for (int[] d : DIRS) {
+            int nr = r + d[0], nc = c + d[1];
+            if (nr >= 0 && nr < grid.length && nc >= 0 && nc < grid[0].length
+                    && grid[nr][nc] == 1 && !visited[nr][nc])
+                dfs(grid, nr, nc);
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[][] grid = parseIntMatrix(sc.nextLine());
+        if (grid.length == 0) { System.out.println("[]"); return; }
+        result  = new ArrayList<>();
+        visited = new boolean[grid.length][grid[0].length];
+        for (int r = 0; r < grid.length; r++)
+            for (int c = 0; c < grid[0].length; c++)
+                if (grid[r][c] == 1 && !visited[r][c]) dfs(grid, r, c);
+        System.out.println(result);
+    }
+
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "grid", "label": "grid", "type": "int[][]", "placeholder": "[[1, 1, 0, 0], [0, 0, 1, 1], [1, 0, 1, 1], [1, 0, 0, 0]]" }
+  ],
+  "cases": [
+    { "args": { "grid": "[[1, 1, 0, 0], [0, 0, 1, 1], [1, 0, 1, 1], [1, 0, 0, 0]]" }, "expected": "[[0, 0], [0, 1], [1, 2], [1, 3], [2, 3], [2, 2], [2, 0], [3, 0]]" },
+    { "args": { "grid": "[[1, 0, 1], [0, 0, 0], [1, 0, 1]]" }, "expected": "[[0, 0], [0, 2], [2, 0], [2, 2]]" },
+    { "args": { "grid": "[[1, 1, 1], [1, 1, 1], [1, 1, 1]]" }, "expected": "[[0, 0], [0, 1], [0, 2], [1, 2], [2, 2], [2, 1], [1, 1], [1, 0], [2, 0]]" },
+    { "args": { "grid": "[[0, 0, 0], [0, 0, 0]]" }, "expected": "[]" },
+    { "args": { "grid": "[[1, 0], [0, 1]]" }, "expected": "[[0, 0], [1, 1]]" }
+  ]
+}
 ```
 
 ## How It Works
@@ -65,7 +127,7 @@ flowchart TB
 
 <p align="center"><strong>a cell's four neighbours are itself plus each direction delta; bounds + walkability filter which actually exist.</strong></p>
 
-The 4×5 grid above has three walkable regions, so the outer loop fires DFS three times — `count_islands` is literally "how many times did the outer loop start a search?" Complexity is `O(rows × cols)`: every cell is visited once and each does `O(1)` neighbour work.
+The 4×4 grid above has three walkable regions, so the outer loop fires DFS three times — `count_islands` is literally "how many times did the outer loop start a search?" Complexity is `O(rows × cols)`: every cell is visited once and each does `O(1)` neighbour work.
 
 ### Key Takeaway
 
@@ -81,58 +143,159 @@ The neighbours are **computed, not stored**: you add each direction delta to the
 
 ## Your Turn
 
-Grid DFS and an island count (how many components), in both languages:
+Implement `count_islands` — the classic grid DFS counting problem — in both languages.
 
 ```python run viz=grid
-DIRS = [(-1,0), (0,1), (1,0), (0,-1)]
+import ast
+
+DIRS = [(-1, 0), (0, 1), (1, 0), (0, -1)]
+
+def count_islands(grid):
+    # Your code goes here — outer double-loop over cells; for each unvisited walkable cell,
+    # increment a counter and run DFS to mark the whole island; return the count.
+    pass
+
+grid = ast.literal_eval(input())
+print(count_islands(grid))
+```
+
+```java run viz=grid
+import java.util.*;
+
+public class Main {
+    static final int[][] DIRS = {{-1,0},{0,1},{1,0},{0,-1}};
+
+    static void dfs(int[][] g, boolean[][] seen, int r, int c) {
+        // Your code goes here — mark seen, recurse into valid unvisited walkable neighbours.
+        seen[r][c] = true;
+    }
+
+    static int countIslands(int[][] g) {
+        // Your code goes here — outer double-loop; count DFS launches.
+        return 0;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[][] grid = parseIntMatrix(sc.nextLine());
+        System.out.println(countIslands(grid));
+    }
+
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "grid", "label": "grid", "type": "int[][]", "placeholder": "[[1, 1, 0, 0], [0, 0, 1, 1], [1, 0, 1, 1], [1, 0, 0, 0]]" }
+  ],
+  "cases": [
+    { "args": { "grid": "[[1, 1, 0, 0], [0, 0, 1, 1], [1, 0, 1, 1], [1, 0, 0, 0]]" }, "expected": "3" },
+    { "args": { "grid": "[[1, 1, 1], [1, 1, 1], [1, 1, 1]]" }, "expected": "1" },
+    { "args": { "grid": "[[1, 0, 1], [0, 0, 0], [1, 0, 1]]" }, "expected": "4" },
+    { "args": { "grid": "[[0, 0, 0], [0, 0, 0]]" }, "expected": "0" },
+    { "args": { "grid": "[[1, 0], [0, 1]]" }, "expected": "2" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+The outer double-loop scans every cell. When it finds a walkable, unvisited cell, it increments the island counter and launches a DFS from that cell to mark every connected walkable cell as visited — so the outer loop never re-enters a cell that's already part of a discovered island. The DFS is a standard recursive visit: mark the current cell visited, then for each direction delta generate the candidate neighbour, check bounds + walkability + not-yet-visited, and recurse. Each outer-loop launch = one island; the total launch count is the answer.
+
+```python solution time=O(rows × cols) space=O(rows × cols)
+import ast
+
+DIRS = [(-1, 0), (0, 1), (1, 0), (0, -1)]
 
 def count_islands(grid):
     if not grid: return 0
     rows, cols = len(grid), len(grid[0])
-    seen = [[False]*cols for _ in range(rows)]
+    seen = [[False] * cols for _ in range(rows)]
     def dfs(r, c):
         seen[r][c] = True
         for dr, dc in DIRS:
-            nr, nc = r+dr, c+dc
+            nr, nc = r + dr, c + dc
             if 0 <= nr < rows and 0 <= nc < cols and grid[nr][nc] == 1 and not seen[nr][nc]:
                 dfs(nr, nc)
     islands = 0
     for r in range(rows):
         for c in range(cols):
             if grid[r][c] == 1 and not seen[r][c]:
-                islands += 1; dfs(r, c)         # each launch = one island
+                islands += 1; dfs(r, c)
     return islands
 
-print(count_islands([[1,1,0,0], [0,0,1,1], [1,0,1,1], [1,0,0,0]]))   # 3
-print(count_islands([[1,1,1],[1,1,1],[1,1,1]]))                       # 1
-print(count_islands([[1,0,1],[0,0,0],[1,0,1]]))                       # 4
+grid = ast.literal_eval(input())
+print(count_islands(grid))
 ```
 
-```java run viz=grid
+```java solution
+import java.util.*;
+
 public class Main {
-  static final int[][] DIRS = {{-1,0},{0,1},{1,0},{0,-1}};
-  static void dfs(int[][] g, int r, int c, boolean[][] seen) {
-    seen[r][c] = true;
-    for (int[] d : DIRS) {
-      int nr = r + d[0], nc = c + d[1];
-      if (nr >= 0 && nr < g.length && nc >= 0 && nc < g[0].length
-          && g[nr][nc] == 1 && !seen[nr][nc]) dfs(g, nr, nc, seen);
+    static final int[][] DIRS = {{-1,0},{0,1},{1,0},{0,-1}};
+
+    static void dfs(int[][] g, boolean[][] seen, int r, int c) {
+        seen[r][c] = true;
+        for (int[] d : DIRS) {
+            int nr = r + d[0], nc = c + d[1];
+            if (nr >= 0 && nr < g.length && nc >= 0 && nc < g[0].length
+                    && g[nr][nc] == 1 && !seen[nr][nc])
+                dfs(g, seen, nr, nc);
+        }
     }
-  }
-  static int countIslands(int[][] g) {
-    boolean[][] seen = new boolean[g.length][g[0].length];
-    int islands = 0;
-    for (int r = 0; r < g.length; r++)
-      for (int c = 0; c < g[0].length; c++)
-        if (g[r][c] == 1 && !seen[r][c]) { islands++; dfs(g, r, c, seen); }
-    return islands;
-  }
-  public static void main(String[] a) {
-    System.out.println(countIslands(new int[][]{{1,1,0,0},{0,0,1,1},{1,0,1,1},{1,0,0,0}}));  // 3
-    System.out.println(countIslands(new int[][]{{1,0,1},{0,0,0},{1,0,1}}));                  // 4
-  }
+
+    static int countIslands(int[][] g) {
+        if (g.length == 0) return 0;
+        boolean[][] seen = new boolean[g.length][g[0].length];
+        int islands = 0;
+        for (int r = 0; r < g.length; r++)
+            for (int c = 0; c < g[0].length; c++)
+                if (g[r][c] == 1 && !seen[r][c]) { islands++; dfs(g, seen, r, c); }
+        return islands;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[][] grid = parseIntMatrix(sc.nextLine());
+        System.out.println(countIslands(grid));
+    }
+
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
+    }
 }
 ```
+
+</details>
 
 Then: swap DFS for **BFS** (a queue) to get the **shortest path** through a maze (fewest steps = BFS's ripple); extend `DIRS` to **8 directions**; do a **flood fill** (recolour a region); and try **multi-source BFS** (seed the queue with several starts at once — "rotting oranges").
 
@@ -143,7 +306,7 @@ Then: swap DFS for **BFS** (a queue) to get the **shortest path** through a maze
 - **The problem family** — number of islands, flood fill, surrounded regions, max area of island (all DFS/connected-components); shortest path in a maze, rotting oranges, "01 matrix" (all [BFS](/cortex/data-structures-and-algorithms/graphs/pattern-shortest-path-breadth-first-search/pattern), because they ask for *fewest steps*). Same two engines, dozens of disguises.
 - **Implicit-graph thinking generalises** — you never built an adjacency list, yet you ran graph algorithms. The same trick applies to any state space where "neighbours" are *generated by rules*: chess-knight moves, word-ladder edits, puzzle states. Whenever you can write a `neighbours(state)` function, BFS/DFS apply with no explicit graph.
 - **DFS vs BFS, grid edition** — DFS (recursion) is cleanest for "fill / count a region"; BFS (queue) is mandatory for "fewest steps," because the ripple reaches each cell by its shortest distance. The choice is the same one from [graph traversal](/cortex/data-structures-and-algorithms/graphs/traversing-a-graph).
-- **The recurring bugs** — forgetting the bounds check (or Python's silent negative-index wraparound), hardcoding four `if`s instead of a direction array, and marking visited too late in BFS. The `is_valid` helper + direction array kill the first two.
+- **The recurring bugs** — forgetting the bounds check (or Python's silent negative-index wraparound), hardcoding four `if`s instead of a direction array, and marking visited too late in BFS. The direction array + bounds check kill the first two.
 
 **Prerequisites:** [Traversing a Graph](/cortex/data-structures-and-algorithms/graphs/traversing-a-graph).
 **What's next:** use DFS's structure to answer a yes/no about the graph itself — does it contain a cycle? — [Cycle Detection](/cortex/data-structures-and-algorithms/graphs/cycle-detection).
@@ -196,4 +359,4 @@ Then: swap DFS for **BFS** (a queue) to get the **shortest path** through a maze
 
 - **CLRS**, *Introduction to Algorithms*, 4th ed., §20.2–20.3 — BFS/DFS (grids are the implicit-graph special case).
 - **Sedgewick & Wayne**, *Algorithms*, 4th ed., §4.1 — connected components and implicit graphs.
-- Both runnable blocks are verified by running (4×5 grid DFS order `[(0,0),(0,1),(1,2),(1,3),(2,3),(2,2),(2,0),(3,0)]`; `count_islands` → 3, 1, 4; neighbour counts corner 2 / interior 4 confirmed).
+- Both runnable blocks are verified by running (4×4 grid DFS order `[[0,0],[0,1],[1,2],[1,3],[2,3],[2,2],[2,0],[3,0]]`; `count_islands` → 3, 1, 4, 0, 2; neighbour counts corner 2 / interior 4 confirmed).

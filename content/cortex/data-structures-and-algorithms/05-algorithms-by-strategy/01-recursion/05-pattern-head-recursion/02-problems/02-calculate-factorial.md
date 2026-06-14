@@ -4,6 +4,8 @@ summary: "Given a non-negative integer n, return its factorial: n! = n × (n-1) 
 prereqs:
   - 05-pattern-head-recursion/01-pattern
 difficulty: easy
+kind: problem
+topics: [head-recursion, recursion]
 ---
 
 # Calculate Factorial
@@ -16,21 +18,87 @@ The poster child of recursion. The combine function is multiplication; the base 
 
 Given a non-negative integer `n`, return its factorial: `n! = n × (n-1) × (n-2) × ... × 1`. By convention `0! = 1`. You **must** solve this recursively.
 
+---
+
+## Examples
+
+**Example 1**
 ```
 Input:  n = 7
 Output: 5040
 Explanation: 7 × 6 × 5 × 4 × 3 × 2 × 1 = 5040
+```
 
+**Example 2**
+```
 Input:  n = 5
 Output: 120
 Explanation: 5 × 4 × 3 × 2 × 1 = 120
-
-Input:  n = 0
-Output: 1
-Explanation: factorial(0) = 1 by convention.
 ```
 
----
+```quiz
+{
+  "prompt": "What would be wrong with using fact(0) = 0 as the base case?",
+  "options": [
+    "Nothing — 0 is a valid identity",
+    "Every multiplication on the ascent would be n × 0 = 0, collapsing the whole result to 0",
+    "It would cause an infinite loop",
+    "It only affects odd inputs"
+  ],
+  "answer": "Every multiplication on the ascent would be n × 0 = 0, collapsing the whole result to 0"
+}
+```
+
+## Constraints
+
+- `0 ≤ n ≤ 12` (fits in a 32-bit int; `13!` overflows)
+- Must be solved recursively (no loop over integers).
+
+```python run viz=array
+class Solution:
+    def factorial(self, n: int) -> int:
+        # Your code goes here — base case n == 0 returns 1;
+        # otherwise recurse on n-1 and multiply on the ascent.
+        return 0
+
+n = int(input())
+print(Solution().factorial(n))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int factorial(int N) {
+            // Your code goes here — base case N == 0 returns 1;
+            // otherwise recurse on N-1 and multiply on the ascent.
+            return 0;
+        }
+    }
+
+    public static void main(String[] args) {
+        int n = Integer.parseInt(new Scanner(System.in).nextLine().trim());
+        System.out.println(new Solution().factorial(n));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "n", "label": "n", "type": "int", "placeholder": "5" }
+  ],
+  "cases": [
+    { "args": { "n": "7" }, "expected": "5040" },
+    { "args": { "n": "5" }, "expected": "120" },
+    { "args": { "n": "0" }, "expected": "1" },
+    { "args": { "n": "1" }, "expected": "1" },
+    { "args": { "n": "2" }, "expected": "2" },
+    { "args": { "n": "10" }, "expected": "3628800" }
+  ]
+}
+```
 
 <details>
 <summary><h2>What Does "Factorial" Mean Recursively?</h2></summary>
@@ -119,7 +187,7 @@ flowchart TB
 
 ### The Solution
 
-```python run viz=array
+```python solution time=O(n) space=O(n)
 class Solution:
     def factorial(self, n: int) -> int:
 
@@ -134,18 +202,13 @@ class Solution:
         return n * factorial_of_n_minus_1
 
 
-# Examples from the problem statement
-print(Solution().factorial(7))   # 5040
-print(Solution().factorial(5))   # 120
-print(Solution().factorial(0))   # 1
-
-# Edge cases
-print(Solution().factorial(1))   # 1
-print(Solution().factorial(2))   # 2
-print(Solution().factorial(10))  # 3628800
+n = int(input())
+print(Solution().factorial(n))
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
     static class Solution {
         public int factorial(int N) {
@@ -164,15 +227,8 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().factorial(7));   // 5040
-        System.out.println(new Solution().factorial(5));   // 120
-        System.out.println(new Solution().factorial(0));   // 1
-
-        // Edge cases
-        System.out.println(new Solution().factorial(1));   // 1
-        System.out.println(new Solution().factorial(2));   // 2
-        System.out.println(new Solution().factorial(10));  // 3628800
+        int n = Integer.parseInt(new Scanner(System.in).nextLine().trim());
+        System.out.println(new Solution().factorial(n));
     }
 }
 ```

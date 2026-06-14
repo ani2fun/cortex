@@ -34,11 +34,47 @@ def quadratic(n):        # touch every pair
             ops += 1
     return ops
 
-for n in [10, 100, 1000]:
-    print(f"n={n:>4}   linear={linear(n):>8}   quadratic={quadratic(n):>10}")
+n = int(input())
+print(f"n={n:>4}   linear={linear(n):>8}   quadratic={quadratic(n):>10}")
 ```
 
-Look at the columns as `n` grows 10× each row. `linear` grows 10× with it. `quadratic` grows **100×**. That gap is everything.
+```java run viz=array
+import java.util.*;
+public class Main {
+    static long linear(int n) {
+        long ops = 0;
+        for (int i = 0; i < n; i++) ops++;
+        return ops;
+    }
+    static long quadratic(int n) {
+        long ops = 0;
+        for (int i = 0; i < n; i++)
+            for (int j = 0; j < n; j++) ops++;
+        return ops;
+    }
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = sc.nextInt();
+        System.out.printf("n=%4d   linear=%8d   quadratic=%10d%n", n, linear(n), quadratic(n));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "n", "label": "n", "type": "int", "placeholder": "10" }
+  ],
+  "cases": [
+    { "args": { "n": "10" },   "expected": "n=  10   linear=      10   quadratic=       100" },
+    { "args": { "n": "100" },  "expected": "n= 100   linear=     100   quadratic=     10000" },
+    { "args": { "n": "1000" }, "expected": "n=1000   linear=    1000   quadratic=   1000000" },
+    { "args": { "n": "5" },    "expected": "n=   5   linear=       5   quadratic=        25" }
+  ]
+}
+```
+
+Look at the rows as `n` grows 10×. `linear` grows 10× with it. `quadratic` grows **100×**. That gap is everything.
 
 ## How It Works
 
@@ -76,9 +112,54 @@ No — it roughly *quadrupled* (6 → 28). The number of pairs grows like `n²/2
 
 ## Your Turn
 
-Run the counter again, but this time *predict each row before you read it*. If `n` jumps from 1,000 to 2,000, what happens to the `quadratic` column?
+Predict each row before you read it. If `n` doubles from 1,000 to 2,000, what happens to the `quadratic` column? Implement `quadratic(n)` — count exactly how many inner-loop steps a nested double loop takes.
 
 ```python run viz=array
+def quadratic(n):
+    # Your code goes here
+    return 0
+
+n = int(input())
+print(f"n={n:>5}   quadratic ops={quadratic(n):>12}")
+```
+
+```java run viz=array
+import java.util.*;
+public class Main {
+    static long quadratic(int n) {
+        // Your code goes here
+        return 0;
+    }
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = sc.nextInt();
+        System.out.printf("n=%5d   quadratic ops=%12d%n", n, quadratic(n));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "n", "label": "n", "type": "int", "placeholder": "1000" }
+  ],
+  "cases": [
+    { "args": { "n": "1000" }, "expected": "n= 1000   quadratic ops=     1000000" },
+    { "args": { "n": "2000" }, "expected": "n= 2000   quadratic ops=     4000000" },
+    { "args": { "n": "4000" }, "expected": "n= 4000   quadratic ops=    16000000" },
+    { "args": { "n": "500" },  "expected": "n=  500   quadratic ops=      250000" }
+  ]
+}
+```
+
+Each time `n` doubles, the count goes up 4×. That is what `O(n²)` *feels* like.
+
+<details>
+<summary><strong>Editorial</strong></summary>
+
+The nested double loop increments a counter once per `(i, j)` pair — exactly `n × n = n²` increments. There's no shortcut: run both loops and count.
+
+```python solution time=O(n^2) space=O(1)
 def quadratic(n):
     ops = 0
     for i in range(n):
@@ -86,27 +167,29 @@ def quadratic(n):
             ops += 1
     return ops
 
-for n in [1000, 2000, 4000]:
-    print(f"n={n:>5}   quadratic ops={quadratic(n):>12}")
+n = int(input())
+print(f"n={n:>5}   quadratic ops={quadratic(n):>12}")
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
 public class Main {
-  static long quadratic(int n) {
-    long ops = 0;
-    for (int i = 0; i < n; i++)
-      for (int j = 0; j < n; j++)
-        ops++;
-    return ops;
-  }
-  public static void main(String[] args) {
-    for (int n : new int[]{1000, 2000, 4000})
-      System.out.printf("n=%5d   quadratic ops=%12d%n", n, quadratic(n));
-  }
+    static long quadratic(int n) {
+        long ops = 0;
+        for (int i = 0; i < n; i++)
+            for (int j = 0; j < n; j++)
+                ops++;
+        return ops;
+    }
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = sc.nextInt();
+        System.out.printf("n=%5d   quadratic ops=%12d%n", n, quadratic(n));
+    }
 }
 ```
 
-Each time `n` doubles, the count goes up 4×. That is what `O(n²)` *feels* like.
+</details>
 
 ## Reflect & Connect
 

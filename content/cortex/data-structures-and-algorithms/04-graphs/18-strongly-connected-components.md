@@ -23,18 +23,20 @@ Two `O(V + E)` algorithms find all SCCs. **Kosaraju** runs two DFS passes — ea
 
 ## See It Work
 
-The same directed graph, both algorithms. They emit SCCs in different orders, but the *set* of SCCs is identical — that uniqueness is the whole point.
+The same directed graph, both algorithms. They emit SCCs in different orders internally, but the *set* of SCCs is identical — and after canonicalizing (sort each SCC, then sort SCCs by first element) both algorithms produce the same output. The graph crosses stdin as a directed adjacency list. Pick a case and **Run** it.
 
 ```python run viz=graph viz-kind=graph
+import ast
 import sys
 sys.setrecursionlimit(10**6)
 
-def kosaraju(n, adj):
+def kosaraju(graph):
+    n = len(graph)
     visited = [False] * n
     order = []                                          # vertices by DFS finish time
     def dfs1(u):
         visited[u] = True
-        for v in adj[u]:
+        for v in graph[u]:
             if not visited[v]: dfs1(v)
         order.append(u)                                 # push on finish (post-order)
     for i in range(n):
@@ -42,7 +44,7 @@ def kosaraju(n, adj):
 
     adj_t = [[] for _ in range(n)]                      # transpose: reverse every edge
     for u in range(n):
-        for v in adj[u]: adj_t[v].append(u)
+        for v in graph[u]: adj_t[v].append(u)
 
     visited = [False] * n
     sccs = []
@@ -56,13 +58,14 @@ def kosaraju(n, adj):
             sccs.append(scc)
     return sccs
 
-def tarjan(n, adj):
+def tarjan(graph):
+    n = len(graph)
     disc = [-1] * n; low = [-1] * n; on_stack = [False] * n
     stk, sccs, timer = [], [], [0]
     def dfs(u):
         disc[u] = low[u] = timer[0]; timer[0] += 1
         stk.append(u); on_stack[u] = True
-        for v in adj[u]:
+        for v in graph[u]:
             if disc[v] == -1:                           # tree edge
                 dfs(v); low[u] = min(low[u], low[v])
             elif on_stack[v]:                           # back/cross edge into current path
@@ -77,13 +80,17 @@ def tarjan(n, adj):
         if disc[v] == -1: dfs(v)
     return sccs
 
-n = 6                                                   # A=0 B=1 C=2 D=3 E=4 F=5
-edges = [(0,1), (1,2), (2,0), (2,3), (3,4), (4,3), (3,5)]
-adj = [[] for _ in range(n)]
-for u, v in edges: adj[u].append(v)
+def canonical(sccs):
+    # sort nodes within each SCC, then sort SCCs by first element
+    sorted_sccs = [sorted(s) for s in sccs]
+    return sorted(sorted_sccs)
 
-print("Kosaraju:", [sorted(s) for s in kosaraju(n, adj)])
-print("Tarjan:  ", [sorted(s) for s in tarjan(n, adj)])
+graph = ast.literal_eval(input())
+k = canonical(kosaraju(graph))
+t = canonical(tarjan(graph))
+print("Kosaraju:", k)
+print("Tarjan:  ", t)
+print("same set:", "true" if k == t else "false")
 ```
 
 ```java run viz=graph viz-kind=graph
@@ -123,10 +130,10 @@ public class Main {
     static int[] disc, low; static boolean[] onStack;
     static Deque<Integer> tstk = new ArrayDeque<>();
     static List<List<Integer>> tsccs = new ArrayList<>(); static int timer = 0;
-    static void tarjan(int u, List<List<Integer>> adj) {
+    static void tarjanDfs(int u, List<List<Integer>> adj) {
         disc[u] = low[u] = timer++; tstk.push(u); onStack[u] = true;
         for (int v : adj.get(u)) {
-            if (disc[v] == -1) { tarjan(v, adj); low[u] = Math.min(low[u], low[v]); }
+            if (disc[v] == -1) { tarjanDfs(v, adj); low[u] = Math.min(low[u], low[v]); }
             else if (onStack[v]) low[u] = Math.min(low[u], disc[v]);
         }
         if (low[u] == disc[u]) {                          // SCC root
@@ -136,26 +143,73 @@ public class Main {
         }
     }
 
+    static List<List<Integer>> canonical(List<List<Integer>> sccs) {
+        for (List<Integer> s : sccs) Collections.sort(s);
+        sccs.sort(Comparator.comparingInt(s -> s.get(0)));
+        return sccs;
+    }
+
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
+    }
+
     public static void main(String[] args) {
-        int n = 6;
-        int[][] edges = {{0,1}, {1,2}, {2,0}, {2,3}, {3,4}, {4,3}, {3,5}};
+        Scanner sc = new Scanner(System.in);
+        int[][] raw = parseIntMatrix(sc.nextLine());
+        int n = raw.length;
         List<List<Integer>> adj = new ArrayList<>();
         for (int i = 0; i < n; i++) adj.add(new ArrayList<>());
-        for (int[] e : edges) adj.get(e[0]).add(e[1]);
+        for (int u = 0; u < n; u++) for (int v : raw[u]) adj.get(u).add(v);
 
-        List<List<Integer>> ksccs = kosaraju(n, adj);
-        for (List<Integer> s : ksccs) Collections.sort(s);
-        System.out.println("Kosaraju: " + ksccs);
+        List<List<Integer>> k = canonical(kosaraju(n, adj));
+        System.out.println("Kosaraju: " + k);
 
-        disc = new int[n]; low = new int[n]; onStack = new boolean[n]; Arrays.fill(disc, -1);
-        for (int i = 0; i < n; i++) if (disc[i] == -1) tarjan(i, adj);
-        for (List<Integer> s : tsccs) Collections.sort(s);
-        System.out.println("Tarjan:   " + tsccs);
+        disc = new int[n]; low = new int[n]; onStack = new boolean[n];
+        tstk = new ArrayDeque<>(); tsccs = new ArrayList<>(); timer = 0; Arrays.fill(disc, -1);
+        for (int i = 0; i < n; i++) if (disc[i] == -1) tarjanDfs(i, adj);
+        List<List<Integer>> t = canonical(tsccs);
+        System.out.println("Tarjan:   " + t);
+        System.out.println("same set: " + (k.equals(t)));
     }
 }
 ```
 
-Both find the same three SCCs: `{0,1,2}`, `{3,4}`, `{5}`. Kosaraju lists them source-first; Tarjan lists them sink-first (`{5}` before `{3,4}` before `{0,1,2}`) — that sink-first order is a free reverse-topological sort of the condensation.
+```testcases
+{
+  "args": [
+    { "id": "graph", "label": "directed adj list", "type": "int[][]", "placeholder": "[[1, 2], [2], [0]]" }
+  ],
+  "cases": [
+    {
+      "args": { "graph": "[[1], [2], [0], [4], [3], []]" },
+      "expected": "Kosaraju: [[0, 1, 2], [3, 4], [5]]\nTarjan:   [[0, 1, 2], [3, 4], [5]]\nsame set: true"
+    },
+    {
+      "args": { "graph": "[[1], [2], [0]]" },
+      "expected": "Kosaraju: [[0, 1, 2]]\nTarjan:   [[0, 1, 2]]\nsame set: true"
+    },
+    {
+      "args": { "graph": "[[1], [], [3], []]" },
+      "expected": "Kosaraju: [[0], [1], [2], [3]]\nTarjan:   [[0], [1], [2], [3]]\nsame set: true"
+    }
+  ],
+  "verifying": "run"
+}
+```
+
+Both find the same SCCs after canonicalization: each SCC's nodes sorted, then SCCs sorted by first element. Kosaraju lists them source-first; Tarjan lists them sink-first (`{5}` before `{3,4}` before `{0,1,2}`) — that sink-first order is a free reverse-topological sort of the condensation. After canonicalization, both match.
 
 ## How It Works
 
@@ -260,16 +314,19 @@ It prints `[[0, 1, 2, 3, 4, 5]]` — **one giant SCC** instead of three. Startin
 The most common interview use of SCCs: **detect a cycle in a directed graph and count its components.** A directed graph has a cycle iff some SCC has size ≥ 2 (or a vertex has a self-loop).
 
 ```python run viz=graph viz-kind=graph
+import ast
 import sys
 sys.setrecursionlimit(10**6)
 
-def tarjan(n, adj):
+# Your code goes here
+def tarjan(graph):
+    n = len(graph)
     disc = [-1] * n; low = [-1] * n; on_stack = [False] * n
     stk, sccs, timer = [], [], [0]
     def dfs(u):
         disc[u] = low[u] = timer[0]; timer[0] += 1
         stk.append(u); on_stack[u] = True
-        for v in adj[u]:
+        for v in graph[u]:
             if disc[v] == -1: dfs(v); low[u] = min(low[u], low[v])
             elif on_stack[v]: low[u] = min(low[u], disc[v])
         if low[u] == disc[u]:
@@ -282,18 +339,16 @@ def tarjan(n, adj):
         if disc[v] == -1: dfs(v)
     return sccs
 
-def count_and_cycle(n, adj):
-    sccs = tarjan(n, adj)
-    has_cycle = any(len(s) >= 2 for s in sccs) or any(u in adj[u] for u in range(n))
+def count_and_cycle(graph):
+    n = len(graph)
+    sccs = tarjan(graph)
+    has_cycle = any(len(s) >= 2 for s in sccs) or any(u in graph[u] for u in range(n))
     return len(sccs), has_cycle
 
-cyc = [[] for _ in range(6)]                            # has two real cycles
-for u, v in [(0,1),(1,2),(2,0),(2,3),(3,4),(4,3),(3,5)]: cyc[u].append(v)
-print(count_and_cycle(6, cyc))                          # (3, True)
-
-dag = [[] for _ in range(3)]                            # acyclic
-for u, v in [(0,1),(1,2),(0,2)]: dag[u].append(v)
-print(count_and_cycle(3, dag))                          # (3, False)
+graph = ast.literal_eval(input())
+count, has_cycle = count_and_cycle(graph)
+print(count)
+print("true" if has_cycle else "false")
 ```
 
 ```java run viz=graph viz-kind=graph
@@ -316,32 +371,175 @@ public class Main {
         }
     }
 
+    // Your code goes here
     static int[] countAndCycle(int n, List<List<Integer>> adj) {
         disc = new int[n]; low = new int[n]; onStack = new boolean[n];
-        stk.clear(); sccs.clear(); timer = 0; Arrays.fill(disc, -1);
+        stk = new ArrayDeque<>(); sccs = new ArrayList<>(); timer = 0; Arrays.fill(disc, -1);
         for (int i = 0; i < n; i++) if (disc[i] == -1) tarjan(i, adj);
         boolean cyc = false;
-        for (List<Integer> s : sccs) if (s.size() >= 2) cyc = true;
-        for (int u = 0; u < n; u++) if (adj.get(u).contains(u)) cyc = true;
+        for (List<Integer> s : sccs) if (s.size() >= 2) { cyc = true; break; }
+        if (!cyc) for (int u = 0; u < n; u++) if (adj.get(u).contains(u)) { cyc = true; break; }
         return new int[]{ sccs.size(), cyc ? 1 : 0 };
     }
 
-    static List<List<Integer>> build(int n, int[][] es) {
-        List<List<Integer>> a = new ArrayList<>();
-        for (int i = 0; i < n; i++) a.add(new ArrayList<>());
-        for (int[] e : es) a.get(e[0]).add(e[1]);
-        return a;
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
     }
+
     public static void main(String[] args) {
-        int[] r1 = countAndCycle(6, build(6, new int[][]{{0,1},{1,2},{2,0},{2,3},{3,4},{4,3},{3,5}}));
-        System.out.println("(" + r1[0] + ", " + (r1[1] == 1) + ")");     // (3, true)
-        int[] r2 = countAndCycle(3, build(3, new int[][]{{0,1},{1,2},{0,2}}));
-        System.out.println("(" + r2[0] + ", " + (r2[1] == 1) + ")");     // (3, false)
+        Scanner sc = new Scanner(System.in);
+        int[][] raw = parseIntMatrix(sc.nextLine());
+        int n = raw.length;
+        List<List<Integer>> adj = new ArrayList<>();
+        for (int i = 0; i < n; i++) adj.add(new ArrayList<>());
+        for (int u = 0; u < n; u++) for (int v : raw[u]) adj.get(u).add(v);
+        int[] r = countAndCycle(n, adj);
+        System.out.println(r[0]);
+        System.out.println(r[1] == 1);
     }
 }
 ```
 
-Both report `(3, True)` for the cyclic graph and `(3, False)` for the DAG. When you're ready for more: **Mother Vertex** (the last vertex Kosaraju's first pass finishes is the only candidate), and **Critical Connections** (LeetCode 1192) — bridges, the *next* chapter, but the same lowlink machinery.
+```testcases
+{
+  "args": [
+    { "id": "graph", "label": "directed adj list", "type": "int[][]", "placeholder": "[[1, 2], [2], [0]]" }
+  ],
+  "cases": [
+    {
+      "args": { "graph": "[[1], [2], [0], [4], [3], []]" },
+      "expected": "3\ntrue"
+    },
+    {
+      "args": { "graph": "[[1], [2], []]" },
+      "expected": "3\nfalse"
+    },
+    {
+      "args": { "graph": "[[1, 2], [3], [3], []]" },
+      "expected": "4\nfalse"
+    }
+  ],
+  "verifying": "solution"
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+**Approach:** Run Tarjan's SCC algorithm, then check if any SCC has size ≥ 2 (a cycle within the component) or any vertex has a self-loop. The number of SCCs is the component count. Time: `O(V + E)`. Space: `O(V)`.
+
+```python solution time=O(V+E) space=O(V)
+import ast
+import sys
+sys.setrecursionlimit(10**6)
+
+def tarjan(graph):
+    n = len(graph)
+    disc = [-1] * n; low = [-1] * n; on_stack = [False] * n
+    stk, sccs, timer = [], [], [0]
+    def dfs(u):
+        disc[u] = low[u] = timer[0]; timer[0] += 1
+        stk.append(u); on_stack[u] = True
+        for v in graph[u]:
+            if disc[v] == -1: dfs(v); low[u] = min(low[u], low[v])
+            elif on_stack[v]: low[u] = min(low[u], disc[v])
+        if low[u] == disc[u]:
+            scc = []
+            while True:
+                w = stk.pop(); on_stack[w] = False; scc.append(w)
+                if w == u: break
+            sccs.append(scc)
+    for v in range(n):
+        if disc[v] == -1: dfs(v)
+    return sccs
+
+def count_and_cycle(graph):
+    n = len(graph)
+    sccs = tarjan(graph)
+    has_cycle = any(len(s) >= 2 for s in sccs) or any(u in graph[u] for u in range(n))
+    return len(sccs), has_cycle
+
+graph = ast.literal_eval(input())
+count, has_cycle = count_and_cycle(graph)
+print(count)
+print("true" if has_cycle else "false")
+```
+
+```java solution time=O(V+E) space=O(V)
+import java.util.*;
+
+public class Main {
+    static int[] disc, low; static boolean[] onStack;
+    static Deque<Integer> stk = new ArrayDeque<>();
+    static List<List<Integer>> sccs = new ArrayList<>(); static int timer = 0;
+    static void tarjan(int u, List<List<Integer>> adj) {
+        disc[u] = low[u] = timer++; stk.push(u); onStack[u] = true;
+        for (int v : adj.get(u)) {
+            if (disc[v] == -1) { tarjan(v, adj); low[u] = Math.min(low[u], low[v]); }
+            else if (onStack[v]) low[u] = Math.min(low[u], disc[v]);
+        }
+        if (low[u] == disc[u]) {
+            List<Integer> scc = new ArrayList<>();
+            while (true) { int w = stk.pop(); onStack[w] = false; scc.add(w); if (w == u) break; }
+            sccs.add(scc);
+        }
+    }
+
+    static int[] countAndCycle(int n, List<List<Integer>> adj) {
+        disc = new int[n]; low = new int[n]; onStack = new boolean[n];
+        stk = new ArrayDeque<>(); sccs = new ArrayList<>(); timer = 0; Arrays.fill(disc, -1);
+        for (int i = 0; i < n; i++) if (disc[i] == -1) tarjan(i, adj);
+        boolean cyc = false;
+        for (List<Integer> s : sccs) if (s.size() >= 2) { cyc = true; break; }
+        if (!cyc) for (int u = 0; u < n; u++) if (adj.get(u).contains(u)) { cyc = true; break; }
+        return new int[]{ sccs.size(), cyc ? 1 : 0 };
+    }
+
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[][] raw = parseIntMatrix(sc.nextLine());
+        int n = raw.length;
+        List<List<Integer>> adj = new ArrayList<>();
+        for (int i = 0; i < n; i++) adj.add(new ArrayList<>());
+        for (int u = 0; u < n; u++) for (int v : raw[u]) adj.get(u).add(v);
+        int[] r = countAndCycle(n, adj);
+        System.out.println(r[0]);
+        System.out.println(r[1] == 1);
+    }
+}
+```
+
+</details>
+
+When you're ready for more: **Mother Vertex** (the last vertex Kosaraju's first pass finishes is the only candidate), and **Critical Connections** (LeetCode 1192) — bridges, the *next* chapter, but the same lowlink machinery.
 
 ## Reflect & Connect
 
@@ -396,4 +594,4 @@ Both report `(3, True)` for the cyclic graph and `(3, False)` for the DAG. When 
 - **Sedgewick & Wayne**, *Algorithms*, 4th ed., §4.2 — the Kosaraju–Sharir algorithm worked end-to-end, plus the condensation (kernel DAG).
 - **Tarjan, R. E.** (1972), "Depth-first search and linear graph algorithms", *SIAM J. Computing* 1(2) — the original single-pass lowlink algorithm.
 - **Skiena**, *The Algorithm Design Manual*, 3rd ed., §5.10 — SCC applications and the directed-vs-undirected connectivity distinction.
-- **NetworkX** `strongly_connected_components` and **Boost** `strong_components` are Tarjan-based; Broder et al. (2000), "Graph structure in the Web", measured the web's giant SCC. The `[[0,1,2],[3,4],[5]]` / one-SCC / `(3, True)` outputs above come from the runnable blocks — re-run to verify.
+- **NetworkX** `strongly_connected_components` and **Boost** `strong_components` are Tarjan-based; Broder et al. (2000), "Graph structure in the Web", measured the web's giant SCC. The canonicalized SCC outputs and cycle-count outputs above all come from the runnable blocks — re-run to verify.

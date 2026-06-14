@@ -17,7 +17,7 @@ HyperLogLog estimates the same number in a **fixed few kilobytes**, whatever the
 Hash each item; the first `p` bits choose a bucket (register), and the leading-zero count of the rest updates that register's max. The cardinality estimate combines all registers via a bias-corrected harmonic mean.
 
 ```python run viz=array
-import math, hashlib
+import math, hashlib, ast
 def _hash32(x):                                        # deterministic, well-mixed: top 32 bits of MD5
     return int.from_bytes(hashlib.md5(x.encode()).digest()[:4], "big")
 
@@ -41,17 +41,20 @@ class HyperLogLog:
                 E = self.m * math.log(self.m / V)
         return E
 
-hll = HyperLogLog(p=10)                                 # 1024 registers (~1 KB)
-for i in range(10000):
+p = ast.literal_eval(input())                          # number of register bits (m = 2^p)
+n = ast.literal_eval(input())                          # number of distinct items to add
+hll = HyperLogLog(p)
+for i in range(n):
     hll.add(f"item{i}")
-print(round(hll.count()))                               # ~10482 (true 10000)
-for i in range(10000):
-    hll.add(f"item{i}")                                # re-add everything
-print(round(hll.count()))                               # ~10482 — duplicates don't change cardinality
+print(round(hll.count()))                              # estimate after first pass
+for i in range(n):
+    hll.add(f"item{i}")                               # re-add everything
+print(round(hll.count()))                              # same — duplicates don't change cardinality
 ```
 
 ```java run viz=array
 import java.security.MessageDigest;
+import java.util.*;
 public class Main {
     static long hash32(String x) {
         try {
@@ -80,12 +83,28 @@ public class Main {
         }
     }
     public static void main(String[] args) {
-        HLL hll = new HLL(10);
-        for (int i = 0; i < 10000; i++) hll.add("item" + i);
-        System.out.println(Math.round(hll.count()));   // ~10482
-        for (int i = 0; i < 10000; i++) hll.add("item" + i);
-        System.out.println(Math.round(hll.count()));   // ~10482
+        Scanner sc = new Scanner(System.in);
+        int p = Integer.parseInt(sc.nextLine().trim());  // register bits
+        int n = Integer.parseInt(sc.nextLine().trim());  // distinct item count
+        HLL hll = new HLL(p);
+        for (int i = 0; i < n; i++) hll.add("item" + i);
+        System.out.println(Math.round(hll.count()));
+        for (int i = 0; i < n; i++) hll.add("item" + i);
+        System.out.println(Math.round(hll.count()));
     }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "p", "label": "register bits (p)", "type": "number", "placeholder": "10" },
+    { "id": "n", "label": "distinct items (n)", "type": "number", "placeholder": "10000" }
+  ],
+  "cases": [
+    { "args": { "p": "10", "n": "10000" }, "expected": "10482\n10482" },
+    { "args": { "p": "8",  "n": "1000"  }, "expected": "1014\n1014" }
+  ]
 }
 ```
 
@@ -152,7 +171,7 @@ After `1000` distinct items the maximum is about **11** — close to `log₂(100
 **Merge two sketches into a union count.** HyperLogLog's superpower for distributed systems: combine per-stream sketches by taking the element-wise *max* of their registers, and read off the cardinality of the union — no access to the original items needed.
 
 ```python run viz=array
-import hashlib, math
+import hashlib, math, ast
 def _hash32(x):
     return int.from_bytes(hashlib.md5(x.encode()).digest()[:4], "big")
 class HyperLogLog:
@@ -170,23 +189,28 @@ class HyperLogLog:
             V = self.reg.count(0)
             if V: E = self.m * math.log(self.m / V)
         return E
-    def merge(self, other):                            # union = element-wise max of registers
-        out = HyperLogLog(self.p)
-        out.reg = [max(a, b) for a, b in zip(self.reg, other.reg)]
-        return out
+    def merge(self, other):
+        # Your code goes here — return a new HyperLogLog whose registers are element-wise max
+        return HyperLogLog(self.p)
 
-A = HyperLogLog(p=10)
-B = HyperLogLog(p=10)
-for i in range(0, 1000):
-    A.add(f"u{i}")                                     # A = {u0 .. u999}
-for i in range(500, 1500):
-    B.add(f"u{i}")                                     # B = {u500 .. u1499}, overlapping 500..999
-print(round(A.count()), round(B.count()))              # ~1004, ~945  (each true 1000)
-print(round(A.merge(B).count()))                       # ~1465  (true union 1500)
+p = ast.literal_eval(input())
+a_start = ast.literal_eval(input())
+a_end = ast.literal_eval(input())
+b_start = ast.literal_eval(input())
+b_end = ast.literal_eval(input())
+A = HyperLogLog(p=p)
+B = HyperLogLog(p=p)
+for i in range(a_start, a_end):
+    A.add(f"u{i}")
+for i in range(b_start, b_end):
+    B.add(f"u{i}")
+print(round(A.count()), round(B.count()))
+print(round(A.merge(B).count()))
 ```
 
 ```java run viz=array
 import java.security.MessageDigest;
+import java.util.*;
 public class Main {
     static long hash32(String x) {
         try {
@@ -211,17 +235,137 @@ public class Main {
             if (E <= 2.5 * m && V > 0) E = m * Math.log((double) m / V);
             return E;
         }
-        HLL merge(HLL o) { HLL out = new HLL(p); for (int i = 0; i < m; i++) out.reg[i] = Math.max(reg[i], o.reg[i]); return out; }
+        HLL merge(HLL o) {
+            // Your code goes here — return a new HLL whose registers are element-wise max
+            return new HLL(p);
+        }
     }
     public static void main(String[] args) {
-        HLL A = new HLL(10), B = new HLL(10);
-        for (int i = 0; i < 1000; i++) A.add("u" + i);
-        for (int i = 500; i < 1500; i++) B.add("u" + i);
-        System.out.println(Math.round(A.count()) + " " + Math.round(B.count()));   // ~1004 ~945
-        System.out.println(Math.round(A.merge(B).count()));                        // ~1465
+        Scanner sc = new Scanner(System.in);
+        int p = Integer.parseInt(sc.nextLine().trim());
+        int aStart = Integer.parseInt(sc.nextLine().trim());
+        int aEnd = Integer.parseInt(sc.nextLine().trim());
+        int bStart = Integer.parseInt(sc.nextLine().trim());
+        int bEnd = Integer.parseInt(sc.nextLine().trim());
+        HLL A = new HLL(p), B = new HLL(p);
+        for (int i = aStart; i < aEnd; i++) A.add("u" + i);
+        for (int i = bStart; i < bEnd; i++) B.add("u" + i);
+        System.out.println(Math.round(A.count()) + " " + Math.round(B.count()));
+        System.out.println(Math.round(A.merge(B).count()));
     }
 }
 ```
+
+```testcases
+{
+  "args": [
+    { "id": "p",       "label": "register bits (p)",  "type": "number", "placeholder": "10" },
+    { "id": "a_start", "label": "A start index",       "type": "number", "placeholder": "0" },
+    { "id": "a_end",   "label": "A end index",         "type": "number", "placeholder": "1000" },
+    { "id": "b_start", "label": "B start index",       "type": "number", "placeholder": "500" },
+    { "id": "b_end",   "label": "B end index",         "type": "number", "placeholder": "1500" }
+  ],
+  "cases": [
+    { "args": { "p": "10", "a_start": "0", "a_end": "1000", "b_start": "500",  "b_end": "1500" }, "expected": "1004 945\n1465" },
+    { "args": { "p": "10", "a_start": "0", "a_end": "500",  "b_start": "500",  "b_end": "1000" }, "expected": "499 483\n1004" }
+  ]
+}
+```
+
+<details>
+<summary><strong>Editorial</strong></summary>
+
+Element-wise max of registers computes the union cardinality: each register tracks the deepest leading-zero run seen in its bucket, and the union's deepest run is just the larger of the two values. No access to the original items needed.
+
+```python solution time=O(m) space=O(m)
+import hashlib, math, ast
+def _hash32(x):
+    return int.from_bytes(hashlib.md5(x.encode()).digest()[:4], "big")
+class HyperLogLog:
+    def __init__(self, p):
+        self.p = p; self.m = 1 << p; self.reg = [0] * self.m
+    def add(self, x):
+        h = _hash32(x); idx = h >> (32 - self.p); w = h & ((1 << (32 - self.p)) - 1)
+        rank = (32 - self.p) - w.bit_length() + 1 if w else (32 - self.p) + 1
+        self.reg[idx] = max(self.reg[idx], rank)
+    def count(self):
+        alpha = 0.7213 / (1 + 1.079 / self.m) if self.m >= 128 else 0.673
+        Z = sum(2.0 ** (-r) for r in self.reg)
+        E = alpha * self.m * self.m / Z
+        if E <= 2.5 * self.m:
+            V = self.reg.count(0)
+            if V: E = self.m * math.log(self.m / V)
+        return E
+    def merge(self, other):                            # union = element-wise max of registers
+        out = HyperLogLog(self.p)
+        out.reg = [max(a, b) for a, b in zip(self.reg, other.reg)]
+        return out
+
+p = ast.literal_eval(input())
+a_start = ast.literal_eval(input())
+a_end = ast.literal_eval(input())
+b_start = ast.literal_eval(input())
+b_end = ast.literal_eval(input())
+A = HyperLogLog(p=p)
+B = HyperLogLog(p=p)
+for i in range(a_start, a_end):
+    A.add(f"u{i}")
+for i in range(b_start, b_end):
+    B.add(f"u{i}")
+print(round(A.count()), round(B.count()))
+print(round(A.merge(B).count()))
+```
+
+```java solution
+import java.security.MessageDigest;
+import java.util.*;
+public class Main {
+    static long hash32(String x) {
+        try {
+            byte[] d = MessageDigest.getInstance("MD5").digest(x.getBytes("UTF-8"));
+            return ((d[0]&0xFFL)<<24)|((d[1]&0xFFL)<<16)|((d[2]&0xFFL)<<8)|(d[3]&0xFFL);
+        } catch (Exception e) { throw new RuntimeException(e); }
+    }
+    static class HLL {
+        int p, m; int[] reg;
+        HLL(int p) { this.p = p; this.m = 1 << p; reg = new int[m]; }
+        void add(String x) {
+            long h = hash32(x); int idx = (int)(h >>> (32 - p)); long w = h & ((1L << (32 - p)) - 1);
+            int bitlen = (w == 0) ? 0 : (64 - Long.numberOfLeadingZeros(w));
+            int rank = (w != 0) ? (32 - p) - bitlen + 1 : (32 - p) + 1;
+            if (rank > reg[idx]) reg[idx] = rank;
+        }
+        double count() {
+            double alpha = m >= 128 ? 0.7213 / (1 + 1.079 / m) : 0.673;
+            double Z = 0; int V = 0;
+            for (int r : reg) { Z += Math.pow(2, -r); if (r == 0) V++; }
+            double E = alpha * m * m / Z;
+            if (E <= 2.5 * m && V > 0) E = m * Math.log((double) m / V);
+            return E;
+        }
+        HLL merge(HLL o) {                             // union = element-wise max
+            HLL out = new HLL(p);
+            for (int i = 0; i < m; i++) out.reg[i] = Math.max(reg[i], o.reg[i]);
+            return out;
+        }
+    }
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int p = Integer.parseInt(sc.nextLine().trim());
+        int aStart = Integer.parseInt(sc.nextLine().trim());
+        int aEnd = Integer.parseInt(sc.nextLine().trim());
+        int bStart = Integer.parseInt(sc.nextLine().trim());
+        int bEnd = Integer.parseInt(sc.nextLine().trim());
+        HLL A = new HLL(p), B = new HLL(p);
+        for (int i = aStart; i < aEnd; i++) A.add("u" + i);
+        for (int i = bStart; i < bEnd; i++) B.add("u" + i);
+        System.out.println(Math.round(A.count()) + " " + Math.round(B.count()));
+        System.out.println(Math.round(A.merge(B).count()));
+    }
+}
+```
+
+</details>
 
 Both estimate the two streams near `1000` each and their union near `1465` (true `1500`) — computed from the registers alone, never touching the original `u*` items. Element-wise max works because a register holds the *deepest* leading-zero run seen in its bucket, and the union's deepest run is just the max of the two. That mergeability is why HyperLogLog scales horizontally: every shard keeps its own tiny sketch, and a coordinator merges them for a global distinct-count.
 

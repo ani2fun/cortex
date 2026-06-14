@@ -17,10 +17,15 @@ Counting sort does. Instead of asking "is `a < b`?", it uses each value **as an 
 
 Sort `[2, 5, 3, 0, 2, 3, 0, 3]` (values in `0..5`) by counting. Run it — notice there's not a single comparison between elements.
 
-```python run viz=array
-def counting_sort(arr):
-    if not arr:
-        return arr
+> ▶ Run it, then click **Visualise** — tallying fills each bucket by index; reading the buckets left-to-right emits values in sorted order, no comparisons ever made.
+
+```python run viz=array viz-root=arr
+import ast
+
+arr = ast.literal_eval(input())         # the test case's array
+if not arr:
+    print(arr)
+else:
     lo, hi = min(arr), max(arr)
     count = [0] * (hi - lo + 1)        # one bucket per possible value
     for x in arr:
@@ -28,9 +33,51 @@ def counting_sort(arr):
     out = []
     for i, c in enumerate(count):
         out.extend([i + lo] * c)       # read buckets back in ascending order
-    return out
+    print(out)                          # [0, 0, 2, 2, 3, 3, 3, 5]
+```
 
-print(counting_sort([2, 5, 3, 0, 2, 3, 0, 3]))   # [0, 0, 2, 2, 3, 3, 3, 5]
+```java run viz=array viz-root=arr
+import java.util.*;
+
+public class Main {
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());   // the test case's array
+    if (arr.length == 0) { System.out.println("[]"); return; }
+    int lo = Arrays.stream(arr).min().getAsInt(), hi = Arrays.stream(arr).max().getAsInt();
+    int[] count = new int[hi - lo + 1];         // one bucket per possible value
+    for (int x : arr) count[x - lo]++;          // tally — value used as an index, no comparisons
+    int[] out = new int[arr.length];
+    int idx = 0;
+    for (int v = 0; v < count.length; v++)
+      for (int c = 0; c < count[v]; c++) out[idx++] = v + lo;   // read buckets back in order
+    System.out.println(Arrays.toString(out));   // [0, 0, 2, 2, 3, 3, 3, 5]
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's array
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[2, 5, 3, 0, 2, 3, 0, 3]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[2, 5, 3, 0, 2, 3, 0, 3]" }, "expected": "[0, 0, 2, 2, 3, 3, 3, 5]" },
+    { "args": { "arr": "[5, 2, 8, 1, 9, 3]" }, "expected": "[1, 2, 3, 5, 8, 9]" },
+    { "args": { "arr": "[3, 3, 1, 2, 3]" }, "expected": "[1, 2, 3, 3, 3]" },
+    { "args": { "arr": "[1]" }, "expected": "[1]" }
+  ]
+}
 ```
 
 ## How It Works
@@ -78,9 +125,69 @@ The single outlier `1{,}000{,}000` forces the `count` array to span `0..1{,}000{
 
 ## Your Turn
 
-The reusable counting sort:
+Implement the counting sort: find the value range, tally occurrences into a count array (value used as index), then emit each value in order as many times as it was counted. Return the sorted array.
 
 ```python run viz=array
+import ast
+
+def counting_sort(arr):
+    # Your code goes here — find lo/hi, build a count array,
+    # tally each value, then emit values in order.
+    return arr
+
+arr = ast.literal_eval(input())      # the test case's array
+print(counting_sort(arr))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+  static int[] countingSort(int[] arr) {
+    // Your code goes here — find lo/hi, build a count array,
+    // tally each value, then emit values in order.
+    return arr;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());
+    System.out.println(Arrays.toString(countingSort(arr)));
+  }
+
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[2, 5, 3, 0, 2, 3, 0, 3]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[2, 5, 3, 0, 2, 3, 0, 3]" }, "expected": "[0, 0, 2, 2, 3, 3, 3, 5]" },
+    { "args": { "arr": "[5, 2, 8, 1, 9, 3]" }, "expected": "[1, 2, 3, 5, 8, 9]" },
+    { "args": { "arr": "[9, 7, 5, 3, 1]" }, "expected": "[1, 3, 5, 7, 9]" },
+    { "args": { "arr": "[2, 1]" }, "expected": "[1, 2]" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Find the value range `[lo, hi]`, allocate a count array of size `hi - lo + 1`, tally each element into its bucket (`count[x - lo]++`), then emit values in order — each value `v + lo` repeated `count[v]` times. `O(n + k)` time and space (`k` = value range), no comparisons.
+
+```python solution time=O(n+k) space=O(k)
+import ast
+
 def counting_sort(arr):
     if not arr:
         return arr
@@ -93,11 +200,11 @@ def counting_sort(arr):
         out.extend([i + lo] * c)
     return out
 
-print(counting_sort([5, 2, 8, 1, 9, 3]))             # [1, 2, 3, 5, 8, 9]
-print(counting_sort([2, 5, 3, 0, 2, 3, 0, 3]))       # [0, 0, 2, 2, 3, 3, 3, 5]
+arr = ast.literal_eval(input())      # the test case's array
+print(counting_sort(arr))
 ```
 
-```java run viz=array
+```java solution
 import java.util.*;
 
 public class Main {
@@ -114,12 +221,23 @@ public class Main {
   }
 
   public static void main(String[] args) {
-    System.out.println(Arrays.toString(countingSort(new int[]{2, 5, 3, 0, 2, 3, 0, 3})));   // [0, 0, 2, 2, 3, 3, 3, 5]
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());
+    System.out.println(Arrays.toString(countingSort(arr)));
+  }
+
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
   }
 }
 ```
 
-This is a structural lesson — drill sorting in the pattern sets.
+</details>
 
 ## Reflect & Connect
 

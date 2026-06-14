@@ -20,6 +20,8 @@ Sort `[3, 3, 1, 2, 3, 1, 2]` — only three distinct values, lots of repeats. Wa
 > ▶ Run it, then click **Visualise** — each partition splits into `<`/`==`/`>`; the equal-to-pivot middle is done and never recursed into.
 
 ```python run viz=array viz-root=arr
+import ast
+
 def quicksort3(arr, lo=0, hi=None):
     if hi is None:
         hi = len(arr) - 1
@@ -38,7 +40,57 @@ def quicksort3(arr, lo=0, hi=None):
     quicksort3(arr, gt + 1, hi)            # ... and > ; the == middle is finalized
     return arr
 
-print(quicksort3([3, 3, 1, 2, 3, 1, 2]))   # [1, 1, 2, 2, 3, 3, 3]
+arr = ast.literal_eval(input())            # the test case's array
+print(quicksort3(arr))                     # [1, 1, 2, 2, 3, 3, 3]
+```
+
+```java run viz=array viz-root=arr
+import java.util.*;
+
+public class Main {
+  static void quicksort3(int[] arr, int lo, int hi) {
+    if (lo >= hi) return;
+    int pivot = arr[lo], lt = lo, i = lo, gt = hi;
+    while (i <= gt) {
+      if (arr[i] < pivot) { int t = arr[lt]; arr[lt] = arr[i]; arr[i] = t; lt++; i++; }
+      else if (arr[i] > pivot) { int t = arr[i]; arr[i] = arr[gt]; arr[gt] = t; gt--; }
+      else i++;
+    }
+    quicksort3(arr, lo, lt - 1);           // recurse only on < ...
+    quicksort3(arr, gt + 1, hi);           // ... and > ; the == middle is finalized
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());   // the test case's array
+    quicksort3(arr, 0, arr.length - 1);
+    System.out.println(Arrays.toString(arr));   // [1, 1, 2, 2, 3, 3, 3]
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's array
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[3, 3, 1, 2, 3, 1, 2]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[3, 3, 1, 2, 3, 1, 2]" }, "expected": "[1, 1, 2, 2, 3, 3, 3]" },
+    { "args": { "arr": "[5, 2, 8, 1, 9, 3]" }, "expected": "[1, 2, 3, 5, 8, 9]" },
+    { "args": { "arr": "[7, 7, 7, 7]" }, "expected": "[7, 7, 7, 7]" },
+    { "args": { "arr": "[1]" }, "expected": "[1]" }
+  ]
+}
 ```
 
 ## How It Works
@@ -84,9 +136,72 @@ Three-way quicksort sorts an all-equal array in **`O(n)`**: the very first parti
 
 ## Your Turn
 
-The reusable three-way quicksort:
+Implement the three-way quicksort: partition around `arr[lo]` into `< pivot`, `== pivot`, `> pivot` regions using the Dutch-flag sweep, then recurse only on the `<` and `>` sides. Return the sorted array.
 
 ```python run viz=array
+import ast
+
+def quicksort3(arr, lo=0, hi=None):
+    if hi is None:
+        hi = len(arr) - 1
+    # Your code goes here — Dutch-flag sweep around arr[lo]; recurse on [lo, lt-1]
+    # and [gt+1, hi]; the == middle is already in place.
+    return arr
+
+arr = ast.literal_eval(input())      # the test case's array
+print(quicksort3(arr))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+  static void quicksort3(int[] arr, int lo, int hi) {
+    if (lo >= hi) return;
+    // Your code goes here — Dutch-flag sweep around arr[lo]; recurse on [lo, lt-1]
+    // and [gt+1, hi]; the == middle is already in place.
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());
+    quicksort3(arr, 0, arr.length - 1);
+    System.out.println(Arrays.toString(arr));
+  }
+
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[3, 3, 1, 2, 3, 1, 2]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[3, 3, 1, 2, 3, 1, 2]" }, "expected": "[1, 1, 2, 2, 3, 3, 3]" },
+    { "args": { "arr": "[5, 2, 8, 1, 9, 3]" }, "expected": "[1, 2, 3, 5, 8, 9]" },
+    { "args": { "arr": "[7, 7, 7, 7]" }, "expected": "[7, 7, 7, 7]" },
+    { "args": { "arr": "[9, 1, 5, 3, 7]" }, "expected": "[1, 3, 5, 7, 9]" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Dutch-flag sweep around `arr[lo]`: maintain three pointers `lt`, `i`, `gt` (initially `lo, lo, hi`). Walk `i` forward — if `arr[i] < pivot` swap with `arr[lt]` and advance both; if `arr[i] > pivot` swap with `arr[gt]` and retreat `gt` (don't advance `i` — the swap-in is unexamined); otherwise advance `i`. After the sweep `[lo, lt)` is `<`, `[lt, gt]` is `==`, `(gt, hi]` is `>`. Recurse only on the outer two. `O(n log k)` for `k` distinct keys; `O(n log n)` all-distinct; `O(1)` extra space (stack `O(log n)`).
+
+```python solution time=O(n log k) space=O(log n)
+import ast
+
 def quicksort3(arr, lo=0, hi=None):
     if hi is None:
         hi = len(arr) - 1
@@ -105,11 +220,11 @@ def quicksort3(arr, lo=0, hi=None):
     quicksort3(arr, gt + 1, hi)
     return arr
 
-print(quicksort3([5, 2, 8, 1, 9, 3]))   # [1, 2, 3, 5, 8, 9]
-print(quicksort3([7, 7, 7, 7]))         # [7, 7, 7, 7]  (one O(n) pass)
+arr = ast.literal_eval(input())      # the test case's array
+print(quicksort3(arr))
 ```
 
-```java run viz=array
+```java solution
 import java.util.*;
 
 public class Main {
@@ -124,15 +239,26 @@ public class Main {
     quicksort3(arr, lo, lt - 1);
     quicksort3(arr, gt + 1, hi);
   }
+
   public static void main(String[] args) {
-    int[] arr = {3, 3, 1, 2, 3, 1, 2};
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());
     quicksort3(arr, 0, arr.length - 1);
-    System.out.println(Arrays.toString(arr));   // [1, 1, 2, 2, 3, 3, 3]
+    System.out.println(Arrays.toString(arr));
+  }
+
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
   }
 }
 ```
 
-This is a structural lesson — drill sorting in the pattern sets.
+</details>
 
 ## Reflect & Connect
 

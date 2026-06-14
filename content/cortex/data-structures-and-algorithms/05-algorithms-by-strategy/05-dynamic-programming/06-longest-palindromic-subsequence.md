@@ -33,11 +33,13 @@ def lps(s):
                 dp[i][j] = max(dp[i + 1][j], dp[i][j - 1])   # drop the left end OR the right end
     return dp[0][n - 1]
 
-print(lps("bbbab"))   # 4   ("bbbb")
-print(lps("cbbd"))    # 2   ("bb")
+s = input()
+print(lps(s))
 ```
 
 ```java run viz=grid
+import java.util.*;
+
 public class Main {
     static int lps(String s) {
         int n = s.length();
@@ -55,9 +57,24 @@ public class Main {
         return dp[0][n - 1];
     }
     public static void main(String[] args) {
-        System.out.println(lps("bbbab"));   // 4
-        System.out.println(lps("cbbd"));    // 2
+        Scanner sc = new Scanner(System.in);
+        String s = sc.nextLine();
+        System.out.println(lps(s));
     }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "s", "type": "string", "placeholder": "bbbab" }
+  ],
+  "cases": [
+    { "args": { "s": "bbbab" }, "expected": "4" },
+    { "args": { "s": "cbbd" }, "expected": "2" },
+    { "args": { "s": "a" }, "expected": "1" },
+    { "args": { "s": "character" }, "expected": "5" }
+  ]
 }
 ```
 
@@ -149,13 +166,90 @@ def lps(s):
     return dp[0][n - 1]
 
 def min_insertions(s):
-    return len(s) - lps(s)                       # keep the LPS, mirror everything else
+    # Your code goes here
+    return 0
 
-print(min_insertions("mbadm"))   # 2   (LPS "mam"/"mbm" = 3, so 5 - 3)
-print(min_insertions("zzazz"))   # 0   (already a palindrome)
+s = input()
+print(min_insertions(s))
 ```
 
 ```java run viz=grid
+import java.util.*;
+
+public class Main {
+    static int lps(String s) {
+        int n = s.length();
+        if (n == 0) return 0;
+        int[][] dp = new int[n][n];
+        for (int i = 0; i < n; i++) dp[i][i] = 1;
+        for (int len = 2; len <= n; len++)
+            for (int i = 0; i + len - 1 < n; i++) {
+                int j = i + len - 1;
+                if (s.charAt(i) == s.charAt(j))
+                    dp[i][j] = (len > 2 ? dp[i + 1][j - 1] : 0) + 2;
+                else
+                    dp[i][j] = Math.max(dp[i + 1][j], dp[i][j - 1]);
+            }
+        return dp[0][n - 1];
+    }
+    static int minInsertions(String s) {
+        // Your code goes here
+        return 0;
+    }
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String s = sc.nextLine();
+        System.out.println(minInsertions(s));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "s", "type": "string", "placeholder": "mbadm" }
+  ],
+  "cases": [
+    { "args": { "s": "mbadm" }, "expected": "2" },
+    { "args": { "s": "zzazz" }, "expected": "0" },
+    { "args": { "s": "a" }, "expected": "0" },
+    { "args": { "s": "ab" }, "expected": "1" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+The characters already in the longest palindromic subsequence can stay put; every other character needs a mirror inserted. So the answer is `n − LPS(s)` — one subtraction on top of the same table.
+
+```python solution time=O(n²) space=O(n²)
+def lps(s):
+    n = len(s)
+    if n == 0:
+        return 0
+    dp = [[0] * n for _ in range(n)]
+    for i in range(n):
+        dp[i][i] = 1
+    for length in range(2, n + 1):
+        for i in range(n - length + 1):
+            j = i + length - 1
+            if s[i] == s[j]:
+                dp[i][j] = (dp[i + 1][j - 1] if length > 2 else 0) + 2
+            else:
+                dp[i][j] = max(dp[i + 1][j], dp[i][j - 1])
+    return dp[0][n - 1]
+
+def min_insertions(s):
+    return len(s) - lps(s)                       # keep the LPS, mirror everything else
+
+s = input()
+print(min_insertions(s))
+```
+
+```java solution
+import java.util.*;
+
 public class Main {
     static int lps(String s) {
         int n = s.length();
@@ -174,13 +268,16 @@ public class Main {
     }
     static int minInsertions(String s) { return s.length() - lps(s); }
     public static void main(String[] args) {
-        System.out.println(minInsertions("mbadm"));   // 2
-        System.out.println(minInsertions("zzazz"));   // 0
+        Scanner sc = new Scanner(System.in);
+        String s = sc.nextLine();
+        System.out.println(minInsertions(s));
     }
 }
 ```
 
-Both print `2` then `0`. `"mbadm"` has LPS `3` (`"mam"` or `"mbm"`), so two characters lack a mirror; `"zzazz"` is already a palindrome, so its LPS is the whole string and nothing needs inserting. The same `n − LPS` formula also counts the minimum *deletions* to reach a palindrome — delete instead of mirror, the leftover is the same.
+</details>
+
+`"mbadm"` has LPS `3` (`"mam"` or `"mbm"`), so two characters lack a mirror; `"zzazz"` is already a palindrome, so its LPS is the whole string and nothing needs inserting. The same `n − LPS` formula also counts the minimum *deletions* to reach a palindrome — delete instead of mirror, the leftover is the same.
 
 ## Reflect & Connect
 

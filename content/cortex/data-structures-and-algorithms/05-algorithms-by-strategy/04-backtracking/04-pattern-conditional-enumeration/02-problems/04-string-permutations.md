@@ -4,6 +4,8 @@ summary: "Given a string s, return all permutations. Order doesn't matter. The i
 prereqs:
   - 04-pattern-conditional-enumeration/01-pattern
 difficulty: medium
+kind: problem
+topics: [conditional-enumeration, backtracking]
 ---
 
 # String Permutations
@@ -18,10 +20,95 @@ Given a string `s`, return all permutations. Order doesn't matter. The input len
 
 ```
 Input:  s = "abc"
-Output: ["abc", "acb", "bac", "bca", "cab", "cba"]
+Output: [abc, acb, bac, bca, cba, cab]
 ```
 
 ---
+
+## Examples
+
+**Example 1**
+```
+Input:  s = "abc"
+Output: [abc, acb, bac, bca, cba, cab]
+Explanation: 3! = 6 permutations. Swap-and-undo visits them in DFS order — not lexicographic.
+```
+
+**Example 2**
+```
+Input:  s = "ab"
+Output: [ab, ba]
+Explanation: 2! = 2 permutations.
+```
+
+```quiz
+{
+  "prompt": "Why does swap(0,2) on 'abc' produce 'cba' and not 'abc'?",
+  "options": [
+    "It swaps the first and last characters",
+    "It reverses the string",
+    "It swaps characters at positions 0 and 2 — 'a' and 'c'",
+    "It's a no-op when the indices match"
+  ],
+  "answer": "It swaps characters at positions 0 and 2 — 'a' and 'c'"
+}
+```
+
+## Constraints
+
+- `1 ≤ s.length ≤ 6`
+- `s` consists of lowercase English letters.
+- Output in any order; these tests use the swap-and-undo DFS visit order.
+
+```python run viz=array viz-root=result
+from typing import List
+
+class Solution:
+    def string_permutations(self, s: str) -> List[str]:
+        # Your code goes here — convert s to a list, backtrack from index 0;
+        # at each level swap state[index] with state[i] for i in [index, len-1],
+        # recurse, then swap back
+        return []
+
+s = input()
+result = Solution().string_permutations(s)
+print('[' + ', '.join(result) + ']')
+```
+
+```java run viz=array viz-root=result
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public List<String> stringPermutations(String s) {
+            // Your code goes here — convert s to StringBuilder, backtrack from index 0;
+            // at each level swap state[index] with state[i] for i in [index, len-1],
+            // recurse, then swap back
+            return new ArrayList<>();
+        }
+    }
+
+    public static void main(String[] args) {
+        String s = new Scanner(System.in).nextLine();
+        System.out.println(new Solution().stringPermutations(s));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "s", "type": "string", "placeholder": "abc" }
+  ],
+  "cases": [
+    { "args": { "s": "abc" }, "expected": "[abc, acb, bac, bca, cba, cab]" },
+    { "args": { "s": "ab" }, "expected": "[ab, ba]" },
+    { "args": { "s": "a" }, "expected": "[a]" },
+    { "args": { "s": "xyz" }, "expected": "[xyz, xzy, yxz, yzx, zyx, zxy]" },
+    { "args": { "s": "ba" }, "expected": "[ba, ab]" }
+  ]
+}
+```
 
 <details>
 <summary><h2>What's the Recursion Doing?</h2></summary>
@@ -64,7 +151,7 @@ This is technically *unconditional* — every leaf is a valid permutation. We in
 
 ### The Solution
 
-```python run viz=array viz-root=result
+```python solution time=O(n · n!) space=O(n)
 from typing import List
 
 class Solution:
@@ -113,19 +200,12 @@ class Solution:
         return result
 
 
-# Example from the problem statement
-print(sorted(Solution().string_permutations("abc")))  # ['abc', 'acb', 'bac', 'bca', 'cab', 'cba']
-
-# Edge cases
-print(sorted(Solution().string_permutations("a")))    # ['a']
-print(sorted(Solution().string_permutations("ab")))   # ['ab', 'ba']
-print(sorted(Solution().string_permutations("aa")))   # ['aa', 'aa']
-print(len(Solution().string_permutations("abcd")))    # 24
-print(sorted(Solution().string_permutations("ba")))   # ['ab', 'ba']
-print(sorted(Solution().string_permutations("xyz")))  # ['xyz', 'xzy', 'yxz', 'yzx', 'zxy', 'zyx']
+s = input()
+result = Solution().string_permutations(s)
+print('[' + ', '.join(result) + ']')
 ```
 
-```java run viz=array viz-root=result
+```java solution
 import java.util.*;
 
 public class Main {
@@ -190,34 +270,8 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Example from the problem statement
-        List<String> r1 = new Solution().stringPermutations("abc");
-        Collections.sort(r1);
-        System.out.println(r1);                           // [abc, acb, bac, bca, cab, cba]
-
-        // Edge cases
-        List<String> r2 = new Solution().stringPermutations("a");
-        Collections.sort(r2);
-        System.out.println(r2);                           // [a]
-
-        List<String> r3 = new Solution().stringPermutations("ab");
-        Collections.sort(r3);
-        System.out.println(r3);                           // [ab, ba]
-
-        List<String> r4 = new Solution().stringPermutations("aa");
-        Collections.sort(r4);
-        System.out.println(r4);                           // [aa, aa]
-
-        List<String> r5 = new Solution().stringPermutations("abcd");
-        System.out.println(r5.size());                    // 24
-
-        List<String> r6 = new Solution().stringPermutations("ba");
-        Collections.sort(r6);
-        System.out.println(r6);                           // [ab, ba]
-
-        List<String> r7 = new Solution().stringPermutations("xyz");
-        Collections.sort(r7);
-        System.out.println(r7);                           // [xyz, xzy, yxz, yzx, zxy, zyx]
+        String s = new Scanner(System.in).nextLine();
+        System.out.println(new Solution().stringPermutations(s));
     }
 }
 ```

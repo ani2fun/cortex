@@ -16,6 +16,8 @@ It's the boolean (or counting) specialization of [knapsack](/cortex/data-structu
 `dp[j]` = "is sum `j` reachable from some subset seen so far?" Seed `dp[0] = True` (the empty subset sums to 0). For each number, sweep targets **descending** and mark `dp[j]` reachable if `dp[j - x]` already was.
 
 ```python run viz=array
+import ast
+
 def subset_sum(nums, target):
     dp = [False] * (target + 1)
     dp[0] = True                                     # empty subset sums to 0 — the seed
@@ -24,11 +26,14 @@ def subset_sum(nums, target):
             dp[j] = dp[j] or dp[j - x]
     return dp[target]
 
-print(subset_sum([3, 34, 4, 12, 5, 2], 9))   # True   (4 + 5)
-print(subset_sum([1, 2, 5], 4))              # False
+nums = ast.literal_eval(input())
+target = int(input())
+print("true" if subset_sum(nums, target) else "false")
 ```
 
 ```java run viz=array
+import java.util.*;
+
 public class Main {
     static boolean subsetSum(int[] nums, int target) {
         boolean[] dp = new boolean[target + 1];
@@ -38,10 +43,37 @@ public class Main {
                 dp[j] = dp[j] || dp[j - x];
         return dp[target];
     }
+
     public static void main(String[] args) {
-        System.out.println(subsetSum(new int[]{3, 34, 4, 12, 5, 2}, 9));   // true
-        System.out.println(subsetSum(new int[]{1, 2, 5}, 4));             // false
+        Scanner sc = new Scanner(System.in);
+        int[] nums = parseIntArray(sc.nextLine());
+        int target = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(subsetSum(nums, target));
     }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "nums", "label": "nums", "type": "int[]", "placeholder": "[3, 34, 4, 12, 5, 2]" },
+    { "id": "target", "label": "target", "type": "int", "placeholder": "9" }
+  ],
+  "cases": [
+    { "args": { "nums": "[3, 34, 4, 12, 5, 2]", "target": "9" }, "expected": "true" },
+    { "args": { "nums": "[1, 2, 5]", "target": "4" }, "expected": "false" },
+    { "args": { "nums": "[1, 2, 3]", "target": "6" }, "expected": "true" },
+    { "args": { "nums": "[5, 10, 3]", "target": "7" }, "expected": "false" }
+  ]
 }
 ```
 
@@ -110,6 +142,62 @@ Correct is `True`; the buggy version returns `False` — and it would return `Fa
 **Minimum Subset Sum Difference** (a.k.a. Last Stone Weight II, [LeetCode 1049](https://leetcode.com/problems/last-stone-weight-ii/)) — split the numbers into two groups minimizing `|sum₁ − sum₂|`. The trick: one group's sum determines the other's, so find the *reachable* subset sum closest to `total/2`. Subset sum builds the full reachability set; you read off the best.
 
 ```python run viz=array
+import ast
+
+def min_subset_diff(nums):
+    # Your code goes here
+    return 0
+
+nums = ast.literal_eval(input())
+print(min_subset_diff(nums))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static int minSubsetDiff(int[] nums) {
+        // Your code goes here
+        return 0;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] nums = parseIntArray(sc.nextLine());
+        System.out.println(minSubsetDiff(nums));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "nums", "label": "nums", "type": "int[]", "placeholder": "[1, 2, 3, 9]" }
+  ],
+  "cases": [
+    { "args": { "nums": "[1, 2, 3, 9]" }, "expected": "3" },
+    { "args": { "nums": "[1, 6, 11, 5]" }, "expected": "1" },
+    { "args": { "nums": "[1, 2, 3, 4]" }, "expected": "0" },
+    { "args": { "nums": "[5]" }, "expected": "5" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+```python solution time=O(n·total) space=O(total)
+import ast
+
 def min_subset_diff(nums):
     total = sum(nums)
     half = total // 2
@@ -121,11 +209,13 @@ def min_subset_diff(nums):
     best = max(j for j in range(half + 1) if dp[j])  # reachable sum closest to total/2
     return total - 2 * best                          # the other group is total - best
 
-print(min_subset_diff([1, 2, 3, 9]))    # 3   ({1,2,3}=6  vs  {9}=9)
-print(min_subset_diff([1, 6, 11, 5]))   # 1   ({1,5,6}=12 vs  {11}=11)
+nums = ast.literal_eval(input())
+print(min_subset_diff(nums))
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
     static int minSubsetDiff(int[] nums) {
         int total = 0; for (int x : nums) total += x;
@@ -139,14 +229,27 @@ public class Main {
         for (int j = half; j >= 0; j--) if (dp[j]) { best = j; break; }   // closest to half
         return total - 2 * best;
     }
+
     public static void main(String[] args) {
-        System.out.println(minSubsetDiff(new int[]{1, 2, 3, 9}));    // 3
-        System.out.println(minSubsetDiff(new int[]{1, 6, 11, 5}));   // 1
+        Scanner sc = new Scanner(System.in);
+        int[] nums = parseIntArray(sc.nextLine());
+        System.out.println(minSubsetDiff(nums));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```
 
 Both print `3` then `1`. The reachability array is the same subset-sum DP; the only new step is scanning it for the sum nearest `total/2`. That move — *build the reachable set, then read the answer off it* — turns a boolean "can we?" into an optimization "how close can we get?", which is why this one pattern covers partition, balancing, and difference-minimization alike.
+
+</details>
 
 ## Reflect & Connect
 

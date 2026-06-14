@@ -18,13 +18,57 @@ That collapses a whole class of problems. "Every element appears twice except on
 In `[2, 2, 2, 1, 3, 1, 3]`, the `1`s and `3`s appear in pairs and the `2` appears three times (odd). XOR everything and only the odd-occurring `2` survives. Run it.
 
 ```python run viz=array
+import ast
+
 def find_odd_occurring(nums):
     x = 0
     for n in nums:
         x ^= n           # pairs cancel (a ^ a = 0); the odd-count value survives
     return x
 
-print(find_odd_occurring([2, 2, 2, 1, 3, 1, 3]))   # 2
+nums = ast.literal_eval(input())
+print(find_odd_occurring(nums))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static int findOddOccurring(int[] nums) {
+        int x = 0;
+        for (int n : nums) x ^= n;
+        return x;
+    }
+
+    static int[] parseIntArray(String s) {
+        s = s.trim();
+        if (s.equals("[]")) return new int[0];
+        s = s.substring(1, s.length() - 1);
+        String[] parts = s.split(",");
+        int[] arr = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) arr[i] = Integer.parseInt(parts[i].trim());
+        return arr;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] nums = parseIntArray(sc.nextLine().trim());
+        System.out.println(findOddOccurring(nums));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "nums", "label": "nums", "type": "int[]", "placeholder": "[2, 2, 2, 1, 3, 1, 3]" }
+  ],
+  "cases": [
+    { "args": { "nums": "[2, 2, 2, 1, 3, 1, 3]" }, "expected": "2" },
+    { "args": { "nums": "[4, 1, 2, 1, 2]" }, "expected": "4" },
+    { "args": { "nums": "[5, 5, 5, 5, 7]" }, "expected": "7" }
+  ]
+}
 ```
 
 ## How It Works
@@ -87,41 +131,139 @@ What matters is **parity of the count, not the number two**. `5 ^ 5 = 0`, and `0
 
 ## Your Turn
 
-The reusable odd-occurring finder and the temp-free swap:
+The reusable odd-occurring finder and the temp-free swap — fill in both, then Run. The driver reads `n` and `k`, prints `find_odd_occurring(nums)` then the result after swapping `a` and `b` (decimal):
 
 ```python run viz=array
+def find_odd_occurring(nums):
+    # Your code goes here
+    return 0
+
+def xor_swap(a, b):
+    # Your code goes here
+    return a, b
+
+import ast
+nums = ast.literal_eval(input())
+a = int(input())
+b = int(input())
+print(find_odd_occurring(nums))
+a, b = xor_swap(a, b)
+print(a, b)
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static int findOddOccurring(int[] nums) {
+        // Your code goes here
+        return 0;
+    }
+
+    static int[] xorSwap(int a, int b) {
+        // Your code goes here
+        return new int[]{a, b};
+    }
+
+    static int[] parseIntArray(String s) {
+        s = s.trim();
+        if (s.equals("[]")) return new int[0];
+        s = s.substring(1, s.length() - 1);
+        String[] parts = s.split(",");
+        int[] arr = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) arr[i] = Integer.parseInt(parts[i].trim());
+        return arr;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] nums = parseIntArray(sc.nextLine().trim());
+        int a = Integer.parseInt(sc.nextLine().trim());
+        int b = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(findOddOccurring(nums));
+        int[] swapped = xorSwap(a, b);
+        System.out.println(swapped[0] + " " + swapped[1]);
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "nums", "label": "nums", "type": "int[]", "placeholder": "[4, 1, 2, 1, 2]" },
+    { "id": "a", "label": "a", "type": "int", "placeholder": "5" },
+    { "id": "b", "label": "b", "type": "int", "placeholder": "9" }
+  ],
+  "cases": [
+    { "args": { "nums": "[4, 1, 2, 1, 2]", "a": "5", "b": "9" }, "expected": "4\n9 5" },
+    { "args": { "nums": "[2, 2, 2, 1, 3, 1, 3]", "a": "3", "b": "7" }, "expected": "2\n7 3" },
+    { "args": { "nums": "[5, 5, 5, 5, 7]", "a": "1", "b": "2" }, "expected": "7\n2 1" }
+  ]
+}
+```
+
+<details>
+<summary><strong>Editorial</strong></summary>
+
+```python solution
 def find_odd_occurring(nums):
     x = 0
     for n in nums:
         x ^= n
     return x
 
-print(find_odd_occurring([4, 1, 2, 1, 2]))   # 4
+def xor_swap(a, b):
+    if a != b:
+        a ^= b; b ^= a; a ^= b
+    return a, b
 
-a, b = 5, 9
-a ^= b; b ^= a; a ^= b      # swap with no temporary
-print(a, b)                  # 9 5
+import ast
+nums = ast.literal_eval(input())
+a = int(input())
+b = int(input())
+print(find_odd_occurring(nums))
+a, b = xor_swap(a, b)
+print(a, b)
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
-  static int findOddOccurring(int[] nums) {
-    int x = 0;
-    for (int n : nums) x ^= n;
-    return x;
-  }
+    static int findOddOccurring(int[] nums) {
+        int x = 0;
+        for (int n : nums) x ^= n;
+        return x;
+    }
 
-  public static void main(String[] args) {
-    System.out.println(findOddOccurring(new int[]{4, 1, 2, 1, 2}));   // 4
+    static int[] xorSwap(int a, int b) {
+        if (a != b) { a ^= b; b ^= a; a ^= b; }
+        return new int[]{a, b};
+    }
 
-    int a = 5, b = 9;
-    a ^= b; b ^= a; a ^= b;     // swap with no temporary
-    System.out.println(a + " " + b);   // 9 5
-  }
+    static int[] parseIntArray(String s) {
+        s = s.trim();
+        if (s.equals("[]")) return new int[0];
+        s = s.substring(1, s.length() - 1);
+        String[] parts = s.split(",");
+        int[] arr = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) arr[i] = Integer.parseInt(parts[i].trim());
+        return arr;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] nums = parseIntArray(sc.nextLine().trim());
+        int a = Integer.parseInt(sc.nextLine().trim());
+        int b = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(findOddOccurring(nums));
+        int[] swapped = xorSwap(a, b);
+        System.out.println(swapped[0] + " " + swapped[1]);
+    }
 }
 ```
 
-Drill the family in **Practice** — [Have Opposite Signs](/cortex/data-structures-and-algorithms/bit-tricks/pattern-xor/problems/have-opposite-signs), [Swap Without a Temporary](/cortex/data-structures-and-algorithms/bit-tricks/pattern-xor/problems/swap-numbers-without-a-temporary), [Odd-Occurring Element](/cortex/data-structures-and-algorithms/bit-tricks/pattern-xor/problems/odd-occurring-element), [Duplicate Element](/cortex/data-structures-and-algorithms/bit-tricks/pattern-xor/problems/duplicate-element), and [Missing and Duplicated Elements](/cortex/data-structures-and-algorithms/bit-tricks/pattern-xor/problems/missing-and-duplicated-elements).
+</details>
 
 ## Reflect & Connect
 
@@ -175,4 +317,4 @@ XOR's self-inverse property is a Swiss-army knife for "things that come in pairs
 
 - **Warren**, *Hacker's Delight*, 2nd ed. — XOR identities and the XOR swap.
 - **CLRS**, *Introduction to Algorithms*, 4th ed. — bitwise operations; XOR as parity / addition without carry.
-- The XOR-cancellation technique (odd-occurring, two-odd partition, missing number) is standard; both runnable blocks are verified by running (`[2,2,2,1,3,1,3] ⇒ 2`, `[4,1,2,1,2] ⇒ 4`, swap ⇒ `9 5`).
+- The XOR-cancellation technique (odd-occurring, two-odd partition, missing number) is standard; both runnable blocks are verified by running.

@@ -31,11 +31,14 @@ def is_match(s, p):
                 dp[i][j] = dp[i - 1][j - 1]              # match one char (DIAGONAL)
     return dp[m][n]
 
-print(is_match("adceb", "*a*b"))   # True
-print(is_match("cb", "?a"))        # False
+s = input()
+p = input()
+print("true" if is_match(s, p) else "false")
 ```
 
 ```java run viz=grid
+import java.util.*;
+
 public class Main {
     static boolean isMatch(String s, String p) {
         int m = s.length(), n = p.length();
@@ -51,9 +54,26 @@ public class Main {
         return dp[m][n];
     }
     public static void main(String[] args) {
-        System.out.println(isMatch("adceb", "*a*b"));   // true
-        System.out.println(isMatch("cb", "?a"));        // false
+        Scanner sc = new Scanner(System.in);
+        String s = sc.nextLine();
+        String p = sc.nextLine();
+        System.out.println(isMatch(s, p));
     }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "s", "type": "string", "placeholder": "adceb" },
+    { "id": "p", "label": "p", "type": "string", "placeholder": "*a*b" }
+  ],
+  "cases": [
+    { "args": { "s": "adceb", "p": "*a*b" }, "expected": "true" },
+    { "args": { "s": "cb", "p": "?a" }, "expected": "false" },
+    { "args": { "s": "abc", "p": "*" }, "expected": "true" },
+    { "args": { "s": "abc", "p": "a?c" }, "expected": "true" }
+  ]
 }
 ```
 
@@ -132,6 +152,54 @@ Correct is `True`; the buggy version returns `False`. The diagonal transition `d
 
 ```python run viz=grid
 def is_interleave(s1, s2, s3):
+    # Your code goes here
+    return False
+
+s1 = input()
+s2 = input()
+s3 = input()
+print("true" if is_interleave(s1, s2, s3) else "false")
+```
+
+```java run viz=grid
+import java.util.*;
+
+public class Main {
+    static boolean isInterleave(String s1, String s2, String s3) {
+        // Your code goes here
+        return false;
+    }
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String s1 = sc.nextLine();
+        String s2 = sc.nextLine();
+        String s3 = sc.nextLine();
+        System.out.println(isInterleave(s1, s2, s3));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "s1", "label": "s1", "type": "string", "placeholder": "aabcc" },
+    { "id": "s2", "label": "s2", "type": "string", "placeholder": "dbbca" },
+    { "id": "s3", "label": "s3", "type": "string", "placeholder": "aadbbcbcac" }
+  ],
+  "cases": [
+    { "args": { "s1": "aabcc", "s2": "dbbca", "s3": "aadbbcbcac" }, "expected": "true" },
+    { "args": { "s1": "aabcc", "s2": "dbbca", "s3": "aadbbbaccc" }, "expected": "false" },
+    { "args": { "s1": "abc", "s2": "def", "s3": "adbecf" }, "expected": "true" },
+    { "args": { "s1": "abc", "s2": "def", "s3": "adcebf" }, "expected": "false" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+```python solution time=O(m·n) space=O(m·n)
+def is_interleave(s1, s2, s3):
     m, n = len(s1), len(s2)
     if m + n != len(s3):
         return False
@@ -145,11 +213,15 @@ def is_interleave(s1, s2, s3):
                 dp[i][j] = dp[i][j] or dp[i][j - 1]      # take s2's char (LEFT)
     return dp[m][n]
 
-print(is_interleave("aabcc", "dbbca", "aadbbcbcac"))   # True
-print(is_interleave("aabcc", "dbbca", "aadbbbaccc"))   # False
+s1 = input()
+s2 = input()
+s3 = input()
+print("true" if is_interleave(s1, s2, s3) else "false")
 ```
 
-```java run viz=grid
+```java solution
+import java.util.*;
+
 public class Main {
     static boolean isInterleave(String s1, String s2, String s3) {
         int m = s1.length(), n = s2.length();
@@ -164,13 +236,18 @@ public class Main {
         return dp[m][n];
     }
     public static void main(String[] args) {
-        System.out.println(isInterleave("aabcc", "dbbca", "aadbbcbcac"));   // true
-        System.out.println(isInterleave("aabcc", "dbbca", "aadbbbaccc"));   // false
+        Scanner sc = new Scanner(System.in);
+        String s1 = sc.nextLine();
+        String s2 = sc.nextLine();
+        String s3 = sc.nextLine();
+        System.out.println(isInterleave(s1, s2, s3));
     }
 }
 ```
 
 Both print `true` then `false`. The grid index is the giveaway that you've recognised the pattern: `dp[i][j]` covers exactly `i + j` characters of `s3`, so `s3[i+j-1]` is "the next character to place." No diagonal appears because you never consume from both sources at once — a textbook example of the transition set encoding the rules.
+
+</details>
 
 ## Reflect & Connect
 

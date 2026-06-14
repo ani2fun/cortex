@@ -20,6 +20,8 @@ Sort `[5, 2, 8, 1, 9, 3]`: build a max-heap, then repeatedly move the root to th
 > ▶ Run it, then click **Visualise** — after the heap is built, each step swaps the max (root) to the end and sifts the new root down.
 
 ```python run viz=array viz-root=arr
+import ast
+
 def heapify(arr, n, i):                 # sift-down at i within a heap of size n
     largest, l, r = i, 2 * i + 1, 2 * i + 2
     if l < n and arr[l] > arr[largest]: largest = l
@@ -28,7 +30,7 @@ def heapify(arr, n, i):                 # sift-down at i within a heap of size n
         arr[i], arr[largest] = arr[largest], arr[i]
         heapify(arr, n, largest)        # the demoted element keeps sinking
 
-arr = [5, 2, 8, 1, 9, 3]
+arr = ast.literal_eval(input())         # the test case's array
 n = len(arr)
 for i in range(n // 2 - 1, -1, -1):     # build a max-heap, bottom-up — O(n)
     heapify(arr, n, i)
@@ -36,6 +38,58 @@ for end in range(n - 1, 0, -1):         # repeatedly extract the max
     arr[0], arr[end] = arr[end], arr[0] # max (root) → its final slot at the end
     heapify(arr, end, 0)                # restore the heap over the shrunken prefix
 print(arr)                              # [1, 2, 3, 5, 8, 9]
+```
+
+```java run viz=array viz-root=arr
+import java.util.*;
+
+public class Main {
+  static void heapify(int[] arr, int n, int i) {   // sift-down at i within a heap of size n
+    int largest = i, l = 2 * i + 1, r = 2 * i + 2;
+    if (l < n && arr[l] > arr[largest]) largest = l;
+    if (r < n && arr[r] > arr[largest]) largest = r;
+    if (largest != i) {
+      int t = arr[i]; arr[i] = arr[largest]; arr[largest] = t;
+      heapify(arr, n, largest);        // the demoted element keeps sinking
+    }
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());   // the test case's array
+    int n = arr.length;
+    for (int i = n / 2 - 1; i >= 0; i--) heapify(arr, n, i);   // build max-heap — O(n)
+    for (int end = n - 1; end > 0; end--) {    // repeatedly extract the max
+      int t = arr[0]; arr[0] = arr[end]; arr[end] = t;          // max (root) → end
+      heapify(arr, end, 0);                    // restore heap over the shrunken prefix
+    }
+    System.out.println(Arrays.toString(arr));   // [1, 2, 3, 5, 8, 9]
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's array
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[5, 2, 8, 1, 9, 3]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[5, 2, 8, 1, 9, 3]" }, "expected": "[1, 2, 3, 5, 8, 9]" },
+    { "args": { "arr": "[3, 1, 2, 1]" }, "expected": "[1, 1, 2, 3]" },
+    { "args": { "arr": "[1, 2, 3, 4]" }, "expected": "[1, 2, 3, 4]" },
+    { "args": { "arr": "[1]" }, "expected": "[1]" }
+  ]
+}
 ```
 
 ## How It Works
@@ -80,9 +134,77 @@ Because **most nodes are near the bottom and barely sift at all**. Half the node
 
 ## Your Turn
 
-The reusable in-place heapsort:
+Implement heapsort in place: first build a max-heap from the array (bottom-up `heapify` from `n/2 − 1` to `0`), then `n − 1` times swap the root to the end and sift the new root down over the shrinking heap. Return the sorted array.
 
 ```python run viz=array
+import ast
+
+def heapify(arr, n, i):
+    # Your code goes here — sift-down: find the largest of i and its children,
+    # swap if needed, and recurse on the displaced node.
+    pass
+
+def heapsort(arr):
+    # Your code goes here — build max-heap, then repeatedly extract the max.
+    return arr
+
+arr = ast.literal_eval(input())      # the test case's array
+print(heapsort(arr))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+  static void heapify(int[] arr, int n, int i) {
+    // Your code goes here — sift-down: find the largest of i and its children,
+    // swap if needed, and recurse on the displaced node.
+  }
+
+  static int[] heapsort(int[] arr) {
+    // Your code goes here — build max-heap, then repeatedly extract the max.
+    return arr;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());
+    System.out.println(Arrays.toString(heapsort(arr)));
+  }
+
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[5, 2, 8, 1, 9, 3]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[5, 2, 8, 1, 9, 3]" }, "expected": "[1, 2, 3, 5, 8, 9]" },
+    { "args": { "arr": "[3, 1, 2, 1]" }, "expected": "[1, 1, 2, 3]" },
+    { "args": { "arr": "[9, 7, 5, 3, 1]" }, "expected": "[1, 3, 5, 7, 9]" },
+    { "args": { "arr": "[2, 1]" }, "expected": "[1, 2]" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+`heapify(arr, n, i)` sifts node `i` down: find the largest among `i`, left child `2i+1`, right child `2i+2` (within heap size `n`); if it isn't `i`, swap and recurse on that child. `heapsort` builds a max-heap by calling `heapify` from `n/2 − 1` down to `0`, then `n − 1` times swaps `arr[0]` (the current max) with `arr[end]` and calls `heapify(arr, end, 0)` to restore the heap over the shrunken prefix. `O(n log n)` every case; `O(1)` extra space; not stable.
+
+```python solution time=O(n log n) space=O(1)
+import ast
+
 def heapify(arr, n, i):
     largest, l, r = i, 2 * i + 1, 2 * i + 2
     if l < n and arr[l] > arr[largest]: largest = l
@@ -100,11 +222,11 @@ def heapsort(arr):
         heapify(arr, end, 0)
     return arr
 
-print(heapsort([5, 2, 8, 1, 9, 3]))   # [1, 2, 3, 5, 8, 9]
-print(heapsort([3, 1, 2, 1]))         # [1, 1, 2, 3]
+arr = ast.literal_eval(input())      # the test case's array
+print(heapsort(arr))
 ```
 
-```java run viz=array
+```java solution
 import java.util.*;
 
 public class Main {
@@ -117,6 +239,7 @@ public class Main {
       heapify(arr, n, largest);
     }
   }
+
   static int[] heapsort(int[] arr) {
     int n = arr.length;
     for (int i = n / 2 - 1; i >= 0; i--) heapify(arr, n, i);
@@ -126,13 +249,25 @@ public class Main {
     }
     return arr;
   }
+
   public static void main(String[] args) {
-    System.out.println(Arrays.toString(heapsort(new int[]{5, 2, 8, 1, 9, 3})));   // [1, 2, 3, 5, 8, 9]
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());
+    System.out.println(Arrays.toString(heapsort(arr)));
+  }
+
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
   }
 }
 ```
 
-This is a structural lesson — drill sorting in the pattern sets.
+</details>
 
 ## Reflect & Connect
 

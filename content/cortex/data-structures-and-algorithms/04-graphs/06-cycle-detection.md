@@ -15,9 +15,11 @@ Both answers are a [DFS](/cortex/data-structures-and-algorithms/graphs/traversin
 
 ## See It Work
 
-Undirected cycle detection: DFS, and flag a back edge to a visited node that **isn't the parent**. A square has a cycle; a tree doesn't. Run it.
+Undirected cycle detection: DFS, and flag a back edge to a visited node that **isn't the parent**. A square has a cycle; a tree doesn't. The graph crosses stdin as an adjacency list — one line, parsed directly. Pick a case and **Run** it.
 
 ```python run viz=graph viz-kind=graph
+import ast
+
 def has_cycle_undirected(graph):
     visited = set()
     def dfs(node, parent):
@@ -34,10 +36,69 @@ def has_cycle_undirected(graph):
             return True
     return False
 
-square = [[1,2], [0,4], [0,3], [2,4], [1,3]]    # contains a cycle
-tree   = [[1,2], [0,3], [0], [1]]               # acyclic
-print(has_cycle_undirected(square))   # True
-print(has_cycle_undirected(tree))     # False
+graph = ast.literal_eval(input())
+print("true" if has_cycle_undirected(graph) else "false")
+```
+
+```java run viz=graph viz-kind=graph
+import java.util.*;
+
+public class Main {
+    static boolean dfsUnd(int[][] g, int node, int parent, boolean[] visited) {
+        visited[node] = true;
+        for (int nb : g[node]) {
+            if (!visited[nb]) {
+                if (dfsUnd(g, nb, node, visited)) return true;
+            } else if (nb != parent) {      // visited AND not parent ⇒ cycle
+                return true;
+            }
+        }
+        return false;
+    }
+
+    static boolean hasCycleUndirected(int[][] g) {
+        boolean[] visited = new boolean[g.length];
+        for (int v = 0; v < g.length; v++)
+            if (!visited[v] && dfsUnd(g, v, -1, visited)) return true;
+        return false;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[][] graph = parseIntMatrix(sc.nextLine());
+        System.out.println(hasCycleUndirected(graph));
+    }
+
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "graph", "label": "graph (undirected adj list)", "type": "int[][]", "placeholder": "[[1, 2], [0, 4], [0, 3], [2, 4], [1, 3]]" }
+  ],
+  "cases": [
+    { "args": { "graph": "[[1, 2], [0, 4], [0, 3], [2, 4], [1, 3]]" }, "expected": "true" },
+    { "args": { "graph": "[[1, 2], [0, 3], [0], [1]]" }, "expected": "false" },
+    { "args": { "graph": "[[1], [0, 2], [1, 3], [2]]" }, "expected": "false" },
+    { "args": { "graph": "[[1], [0, 2], [1, 3], [2, 0]]" }, "expected": "true" }
+  ]
+}
 ```
 
 ## How It Works
@@ -76,13 +137,127 @@ Take the diamond above — `A→B→D` and `A→C→D`, no cycle. Now *misapply*
 
 Before you read on: DFS goes `A→B→D`, backtracks, then `A→C→D` and finds `D` already visited (and `D` isn't `C`'s parent). The undirected rule shouts "cycle!" — but the diamond is acyclic. Why is it wrong, and what does the directed algorithm check instead that gets it right?
 
+```python run viz=graph viz-kind=graph
+# Directed diamond — 0→1→3, 0→2→3; no cycle.
+# Misapply the undirected rule: visited non-parent neighbour ⇒ cycle.
+graph = [[1, 2], [3], [3], []]
+
+def undirected_rule_on_directed(graph):
+    visited = set()
+    def dfs(node, parent):
+        visited.add(node)
+        for nb in graph[node]:
+            if nb not in visited:
+                if dfs(nb, node): return True
+            elif nb != parent:           # ← undirected rule applied to a directed graph
+                return True
+        return False
+    return any(v not in visited and dfs(v, -1) for v in range(len(graph)))
+
+def directed_correct(graph):
+    visited, in_path = set(), set()
+    def dfs(node):
+        visited.add(node); in_path.add(node)
+        for nb in graph[node]:
+            if nb in in_path: return True
+            if nb not in visited and dfs(nb): return True
+        in_path.remove(node)
+        return False
+    return any(v not in visited and dfs(v) for v in range(len(graph)))
+
+print("undirected rule (wrong):", undirected_rule_on_directed(graph))   # True — false positive
+print("directed rule (correct):", directed_correct(graph))              # False — correct
+```
+
 The undirected rule conflates **"visited"** with **"on my current path,"** and on a directed graph those are different. When `C` reaches `D` the second time, `D` was already **finished** — DFS entered it from `B`, explored it fully, and backtracked out. In three-state terms `D` is **black**, not grey: it's *not* on the path `A→C→…` currently being explored, it's just a node that happens to have been completed earlier via another route. There's no loop, because following the edges never returns you to a node you're *currently inside*. The directed algorithm asks the precise question — **"is this neighbour grey (still on the recursion stack)?"** — and `D` is black, so it correctly says "no cycle." Add the edge `D→A` and re-run: now from `D` you look at `A`, which is **grey** (you're still inside `A`'s call — it's the root of the current path), so you've closed a loop and it's a true cycle. The load-bearing line is `in_path.remove(node)` on exit: it flips a node grey→black so that finishing a node *takes it off the path*. Delete that one line and every visited node stays grey forever — the diamond's second visit to `D` finds it "grey" and you're back to the false positive. So the rules aren't arbitrary per graph type: undirected needs *parent exclusion* (because edges are bidirectional), directed needs *path membership* (because a back edge only loops if it points at an ancestor you haven't left yet). Same DFS skeleton, two different "what counts as a back edge" tests.
 
 ## Your Turn
 
-Both detectors in both languages — undirected (parent rule) and directed (recursion-stack rule):
+Both detectors in both languages — undirected (parent rule) and directed (recursion-stack rule). The graph arrives as an adjacency list on one stdin line; the second line is a character `'u'` for undirected or `'d'` for directed.
 
 ```python run viz=graph viz-kind=graph
+import ast
+
+def has_cycle_undirected(graph):
+    # Your code goes here — DFS with parent; return True if a visited non-parent is found.
+    pass
+
+def has_cycle_directed(graph):
+    # Your code goes here — DFS with in_path set; return True if a grey neighbour is found.
+    pass
+
+graph = ast.literal_eval(input())
+kind = input().strip()
+if kind == 'u':
+    print("true" if has_cycle_undirected(graph) else "false")
+else:
+    print("true" if has_cycle_directed(graph) else "false")
+```
+
+```java run viz=graph viz-kind=graph
+import java.util.*;
+
+public class Main {
+    static boolean hasCycleUndirected(int[][] g) {
+        // Your code goes here — DFS with parent; return true if visited non-parent found.
+        return false;
+    }
+
+    static boolean hasCycleDirected(int[][] g) {
+        // Your code goes here — DFS with inPath boolean[]; return true if grey neighbour found.
+        return false;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[][] graph = parseIntMatrix(sc.nextLine());
+        String kind = sc.nextLine().trim();
+        boolean result = kind.equals("u") ? hasCycleUndirected(graph) : hasCycleDirected(graph);
+        System.out.println(result);
+    }
+
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "graph", "label": "graph (adj list)", "type": "int[][]", "placeholder": "[[1, 2], [0, 4], [0, 3], [2, 4], [1, 3]]" },
+    { "id": "kind", "label": "kind ('u' or 'd')", "type": "string", "placeholder": "u" }
+  ],
+  "cases": [
+    { "args": { "graph": "[[1, 2], [0, 4], [0, 3], [2, 4], [1, 3]]", "kind": "u" }, "expected": "true" },
+    { "args": { "graph": "[[1, 2], [0, 3], [0], [1]]", "kind": "u" }, "expected": "false" },
+    { "args": { "graph": "[[1, 2], [3], [3], [0]]", "kind": "d" }, "expected": "true" },
+    { "args": { "graph": "[[1, 2], [3], [3], []]", "kind": "d" }, "expected": "false" },
+    { "args": { "graph": "[[4], [5], [3], [5], [1], []]", "kind": "d" }, "expected": "false" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Both detectors share the DFS skeleton — the only difference is the "back edge" test. **Undirected:** carry `parent` down; a visited non-parent neighbour closes a loop. **Directed:** maintain `in_path` (the grey set); a neighbour that's still on the current recursion path is a cycle — the `in_path.remove(node)` / `inPath[node] = false` on exit is the load-bearing line that flips grey→black. A black node reached via a different route isn't a cycle.
+
+```python solution time=O(V+E) space=O(V)
+import ast
+
 def has_cycle_undirected(graph):
     visited = set()
     def dfs(node, parent):
@@ -105,38 +280,81 @@ def has_cycle_directed(graph):
         return False
     return any(v not in visited and dfs(v) for v in range(len(graph)))
 
-print(has_cycle_undirected([[1,2],[0,4],[0,3],[2,4],[1,3]]))   # True
-print(has_cycle_directed([[1,2],[3],[3],[]]))                  # False — diamond DAG
-print(has_cycle_directed([[1,2],[3],[3],[0]]))                 # True  — diamond + D→A
-print(has_cycle_directed([[4],[5],[3],[5],[1],[]]))            # False — a DAG
+graph = ast.literal_eval(input())
+kind = input().strip()
+if kind == 'u':
+    print("true" if has_cycle_undirected(graph) else "false")
+else:
+    print("true" if has_cycle_directed(graph) else "false")
 ```
 
-```java run viz=graph viz-kind=graph
+```java solution time=O(V+E) space=O(V)
 import java.util.*;
+
 public class Main {
-  static boolean dfsDir(List<List<Integer>> g, int node, boolean[] visited, boolean[] inPath) {
-    visited[node] = true; inPath[node] = true;
-    for (int nb : g.get(node)) {
-      if (inPath[nb]) return true;                       // grey ⇒ cycle
-      if (!visited[nb] && dfsDir(g, nb, visited, inPath)) return true;
+    static boolean dfsUnd(int[][] g, int node, int parent, boolean[] visited) {
+        visited[node] = true;
+        for (int nb : g[node]) {
+            if (!visited[nb]) {
+                if (dfsUnd(g, nb, node, visited)) return true;
+            } else if (nb != parent) {
+                return true;
+            }
+        }
+        return false;
     }
-    inPath[node] = false;                                // grey → black
-    return false;
-  }
-  static boolean hasCycleDirected(List<List<Integer>> g) {
-    boolean[] visited = new boolean[g.size()], inPath = new boolean[g.size()];
-    for (int v = 0; v < g.size(); v++)
-      if (!visited[v] && dfsDir(g, v, visited, inPath)) return true;
-    return false;
-  }
-  public static void main(String[] a) {
-    System.out.println(hasCycleDirected(List.of(List.of(1,2), List.of(3), List.of(3), List.of())));   // false
-    System.out.println(hasCycleDirected(List.of(List.of(1,2), List.of(3), List.of(3), List.of(0))));  // true
-  }
+
+    static boolean hasCycleUndirected(int[][] g) {
+        boolean[] visited = new boolean[g.length];
+        for (int v = 0; v < g.length; v++)
+            if (!visited[v] && dfsUnd(g, v, -1, visited)) return true;
+        return false;
+    }
+
+    static boolean dfsDir(int[][] g, int node, boolean[] visited, boolean[] inPath) {
+        visited[node] = true; inPath[node] = true;
+        for (int nb : g[node]) {
+            if (inPath[nb]) return true;                 // grey ⇒ cycle
+            if (!visited[nb] && dfsDir(g, nb, visited, inPath)) return true;
+        }
+        inPath[node] = false;                            // grey → black
+        return false;
+    }
+
+    static boolean hasCycleDirected(int[][] g) {
+        boolean[] visited = new boolean[g.length], inPath = new boolean[g.length];
+        for (int v = 0; v < g.length; v++)
+            if (!visited[v] && dfsDir(g, v, visited, inPath)) return true;
+        return false;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[][] graph = parseIntMatrix(sc.nextLine());
+        String kind = sc.nextLine().trim();
+        boolean result = kind.equals("u") ? hasCycleUndirected(graph) : hasCycleDirected(graph);
+        System.out.println(result);
+    }
+
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
+    }
 }
 ```
 
-Then: detect a cycle in an undirected graph with **DSU** (union edges; same-set endpoints = cycle); return the **actual cycle** (track parents and walk back when you hit a grey node); and use directed cycle detection as the **feasibility check** for a topological sort.
+</details>
 
 ## Reflect & Connect
 

@@ -116,32 +116,83 @@ It stops just short of `sys.getrecursionlimit()` — `1000` by default — print
 
 ## Your Turn
 
-The standard fix when recursion would nest too deep: **don't recurse — iterate.** A loop reuses a single frame, so it never grows the stack. Sum `1..n` for an `n` that would blow the recursion limit many times over:
+The standard fix when recursion would nest too deep: **don't recurse — iterate.** A loop reuses a single frame, so it never grows the stack. Implement `sum_to_iter(n)` that computes the sum `1 + 2 + … + n` iteratively — no recursion — so it works safely even for values that would blow the recursion limit many times over.
 
 ```python run viz=array
+def sum_to_iter(n):
+    # Your code goes here — use a loop so the stack stays flat.
+    # A recursive version would overflow long before n = 1_000_000.
+    return 0
+
+n = int(input())                  # the test case's n
+print(sum_to_iter(n))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static long sumToIter(int n) {
+        // Your code goes here — use a loop; no stack growth.
+        return 0;
+    }
+
+    public static void main(String[] args) {
+        int n = Integer.parseInt(new Scanner(System.in).nextLine().trim());
+        System.out.println(sumToIter(n));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "n", "label": "n", "type": "int", "placeholder": "1000000" }
+  ],
+  "cases": [
+    { "args": { "n": "1000000" }, "expected": "500000500000" },
+    { "args": { "n": "5" }, "expected": "15" },
+    { "args": { "n": "10" }, "expected": "55" },
+    { "args": { "n": "1" }, "expected": "1" },
+    { "args": { "n": "0" }, "expected": "0" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+A loop reuses a single frame for all `n` iterations — the stack stays flat. The recursive `sum_to(n)` piles up `n` frames and overflows at `n ≈ 1000` (Python default) or a few thousand (JVM); the iterative version does the identical arithmetic without touching the stack. When recursion's depth would exceed `stack ÷ frame`, converting to a loop (or an explicit heap-backed stack) is the cure.
+
+```python solution time=O(n) space=O(1)
 def sum_to_iter(n):
     total = 0
     for i in range(1, n + 1):    # one frame, reused n times — stack stays flat
         total += i
     return total
 
-print(sum_to_iter(1_000_000))    # 500000500000 — a recursive version would overflow long before here
+n = int(input())
+print(sum_to_iter(n))
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
     static long sumToIter(int n) {
         long total = 0;
         for (int i = 1; i <= n; i++) total += i;   // single frame, no stack growth
         return total;
     }
+
     public static void main(String[] args) {
-        System.out.println(sumToIter(1_000_000));   // 500000500000
+        int n = Integer.parseInt(new Scanner(System.in).nextLine().trim());
+        System.out.println(sumToIter(n));
     }
 }
 ```
 
-Both print `500000500000`. The recursive `sum_to(1_000_000)` would pile up a million frames and overflow; the loop does the identical arithmetic in one frame. When recursion's depth would exceed `stack ÷ frame`, converting to a loop (or an explicit heap-backed stack) is the cure.
+</details>
 
 ## Reflect & Connect
 

@@ -17,6 +17,8 @@ The honest brute force is the [backtracking](/cortex/data-structures-and-algorit
 `dp[i][c]` = the best value achievable using the first `i` items within capacity `c`. For each item, take the better of **excluding** it (`dp[i-1][c]`) or **including** it (its value plus the best for the remaining capacity, `dp[i-1][c - weight]`) when it fits.
 
 ```python run viz=grid
+import ast
+
 def knapsack(weights, values, W):
     n = len(weights)
     dp = [[0] * (W + 1) for _ in range(n + 1)]
@@ -27,10 +29,15 @@ def knapsack(weights, values, W):
                 dp[i][c] = max(dp[i][c], values[i - 1] + dp[i - 1][c - weights[i - 1]])
     return dp[n][W]
 
-print(knapsack([1, 3, 4, 5], [1, 4, 5, 7], 7))   # 9   (items of weight 3 and 4 -> value 4 + 5)
+weights = ast.literal_eval(input())
+values = ast.literal_eval(input())
+W = int(input())
+print(knapsack(weights, values, W))
 ```
 
 ```java run viz=grid
+import java.util.*;
+
 public class Main {
     static int knapsack(int[] w, int[] v, int W) {
         int n = w.length;
@@ -43,9 +50,37 @@ public class Main {
             }
         return dp[n][W];
     }
-    public static void main(String[] args) {
-        System.out.println(knapsack(new int[]{1, 3, 4, 5}, new int[]{1, 4, 5, 7}, 7));   // 9
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] weights = parseIntArray(sc.nextLine());
+        int[] values = parseIntArray(sc.nextLine());
+        int W = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(knapsack(weights, values, W));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "weights", "label": "weights", "type": "int[]", "placeholder": "[1, 3, 4, 5]" },
+    { "id": "values", "label": "values", "type": "int[]", "placeholder": "[1, 4, 5, 7]" },
+    { "id": "W", "label": "W", "type": "int", "placeholder": "7" }
+  ],
+  "cases": [
+    { "args": { "weights": "[1, 3, 4, 5]", "values": "[1, 4, 5, 7]", "W": "7" }, "expected": "9" },
+    { "args": { "weights": "[2, 3, 4]", "values": "[3, 4, 5]", "W": "5" }, "expected": "7" },
+    { "args": { "weights": "[1]", "values": "[10]", "W": "1" }, "expected": "10" },
+    { "args": { "weights": "[5]", "values": "[10]", "W": "3" }, "expected": "0" }
+  ]
 }
 ```
 
@@ -110,6 +145,69 @@ Sweeping **ascending**, `dp[c - 2]` has *already been updated with this same ite
 **Partition Equal Subset Sum** ([LeetCode 416](https://leetcode.com/problems/partition-equal-subset-sum/)) — can the array be split into two subsets with equal sums? That's knapsack with values *equal to* weights and a target of `total/2`: a **boolean** "can we hit exactly this sum?" instead of "maximise value." Same 1D array, same descending sweep for 0/1, `or` instead of `max`.
 
 ```python run viz=array
+import ast
+
+def can_partition(nums):
+    total = sum(nums)
+    if total % 2:
+        return False                                            # odd total can't split evenly
+    target = total // 2
+    dp = [False] * (target + 1)
+    dp[0] = True                                                # the empty subset sums to 0
+    # Your code goes here — DESCENDING capacity sweep for 0/1
+    return dp[target]
+
+nums = ast.literal_eval(input())
+result = can_partition(nums)
+print("true" if result else "false")
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static boolean canPartition(int[] nums) {
+        // Your code goes here — odd total check, then DESCENDING sweep
+        return false;
+    }
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] nums = parseIntArray(sc.nextLine());
+        System.out.println(canPartition(nums));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "nums", "label": "nums", "type": "int[]", "placeholder": "[1, 5, 11, 5]" }
+  ],
+  "cases": [
+    { "args": { "nums": "[1, 5, 11, 5]" }, "expected": "true" },
+    { "args": { "nums": "[1, 2, 3, 5]" }, "expected": "false" },
+    { "args": { "nums": "[1, 1]" }, "expected": "true" },
+    { "args": { "nums": "[1, 2, 5]" }, "expected": "false" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Knapsack with values equal to weights and a target of `total/2`. Use a boolean 1D array, seed `dp[0] = True`, and sweep capacity **descending** so each item is used at most once.
+
+```python solution time=O(n·W) space=O(W)
+import ast
+
 def can_partition(nums):
     total = sum(nums)
     if total % 2:
@@ -122,11 +220,14 @@ def can_partition(nums):
             dp[c] = dp[c] or dp[c - x]
     return dp[target]
 
-print(can_partition([1, 5, 11, 5]))   # True   (11 == 1 + 5 + 5)
-print(can_partition([1, 2, 3, 5]))    # False  (total 11 is odd)
+nums = ast.literal_eval(input())
+result = can_partition(nums)
+print("true" if result else "false")
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
     static boolean canPartition(int[] nums) {
         int total = 0; for (int x : nums) total += x;
@@ -139,14 +240,25 @@ public class Main {
                 dp[c] = dp[c] || dp[c - x];
         return dp[target];
     }
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
     public static void main(String[] args) {
-        System.out.println(canPartition(new int[]{1, 5, 11, 5}));   // true
-        System.out.println(canPartition(new int[]{1, 2, 3, 5}));    // false
+        Scanner sc = new Scanner(System.in);
+        int[] nums = parseIntArray(sc.nextLine());
+        System.out.println(canPartition(nums));
     }
 }
 ```
 
-Both print `true` then `false`. `[1,5,11,5]` splits as `{11}` vs `{1,5,5}` (each sums to 11); `[1,2,3,5]` has odd total 11 and can't split at all. This is **subset-sum**, the boolean heart of the knapsack family — you'll meet it again as its own pattern. Note the descending sweep is doing the same 0/1 work as above: each number lands in at most one subset.
+</details>
+
+`[1,5,11,5]` splits as `{11}` vs `{1,5,5}` (each sums to 11); `[1,2,3,5]` has odd total 11 and can't split at all. This is **subset-sum**, the boolean heart of the knapsack family — you'll meet it again as its own pattern. Note the descending sweep is doing the same 0/1 work as above: each number lands in at most one subset.
 
 ## Reflect & Connect
 

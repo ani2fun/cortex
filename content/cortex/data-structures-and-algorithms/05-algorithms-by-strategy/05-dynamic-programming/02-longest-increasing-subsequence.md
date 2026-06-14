@@ -16,6 +16,8 @@ LIS is the [linear-DP](/cortex/data-structures-and-algorithms/algorithms-by-stra
 `lis(i) = 1 + max(lis(j))` over all `j < i` with `arr[j] < arr[i]` (or just `1` if no such `j`). The answer is the max over all `i`.
 
 ```python run viz=array
+import ast
+
 def lis(arr):
     if not arr: return 0
     dp = [1] * len(arr)                              # dp[i] = LIS ending at i (at least itself)
@@ -25,11 +27,13 @@ def lis(arr):
                 dp[i] = max(dp[i], dp[j] + 1)
     return max(dp)
 
-print(lis([10, 9, 2, 5, 3, 7, 101, 18]))             # 4  e.g. [2, 3, 7, 101]
+arr = ast.literal_eval(input())
+print(lis(arr))
 ```
 
 ```java run viz=array
 import java.util.*;
+
 public class Main {
     static int lis(int[] a) {
         if (a.length == 0) return 0;
@@ -40,13 +44,36 @@ public class Main {
         }
         return best;
     }
+
     public static void main(String[] args) {
-        System.out.println(lis(new int[]{10, 9, 2, 5, 3, 7, 101, 18}));   // 4
+        int[] arr = parseIntArray(new Scanner(System.in).nextLine());
+        System.out.println(lis(arr));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```
 
-Both print `4` — e.g. `[2, 3, 7, 101]`, picked out of the array by skipping the dips. Cost: `O(n²)` (the nested loop), `O(n)` space.
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[10,9,2,5,3,7,101,18]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[10,9,2,5,3,7,101,18]" }, "expected": "4" },
+    { "args": { "arr": "[0,1,0,3,2,3]" }, "expected": "4" },
+    { "args": { "arr": "[7,7,7,7,7]" }, "expected": "1" },
+    { "args": { "arr": "[1,2,3,4,5]" }, "expected": "5" }
+  ]
+}
+```
 
 ## How It Works
 
@@ -110,6 +137,63 @@ The contiguous run is `3` (`[3, 7, 101]`); the true LIS is `4` (`[2, 3, 7, 101]`
 **Maximum Sum Increasing Subsequence** — same DP, one operator changed. Instead of *counting* elements, *sum* their values: `dp[i] = arr[i] + max(dp[j] for j<i, arr[j]<arr[i])`. The longest isn't always the heaviest.
 
 ```python run viz=array
+import ast
+
+def max_sum_increasing(arr):
+    # Your code goes here — dp[i] = best sum of an increasing subseq ending at i
+    return 0
+
+arr = ast.literal_eval(input())
+print(max_sum_increasing(arr))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static int maxSumIncreasing(int[] a) {
+        // Your code goes here — dp[i] = best sum of an increasing subseq ending at i
+        return 0;
+    }
+
+    public static void main(String[] args) {
+        int[] arr = parseIntArray(new Scanner(System.in).nextLine());
+        System.out.println(maxSumIncreasing(arr));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[1,101,2,3,100,4,5]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[1,101,2,3,100,4,5]" }, "expected": "106" },
+    { "args": { "arr": "[3,4,5,10]" }, "expected": "22" },
+    { "args": { "arr": "[10,5,4,3]" }, "expected": "10" },
+    { "args": { "arr": "[5,1,4,2,3]" }, "expected": "6" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Note `[1,2,3,100]` (sum 106, length 4) beats `[1,2,3,4,5]` (sum 15, length 5) — maximising sum and maximising length are different objectives on the same DP skeleton. The remaining DP lessons keep this move: same scaffold, a different subproblem definition and recurrence.
+
+```python solution time=O(n²) space=O(n)
+import ast
+
 def max_sum_increasing(arr):
     dp = arr[:]                                      # dp[i] = best sum of an increasing subseq ending at i
     for i in range(len(arr)):
@@ -118,12 +202,13 @@ def max_sum_increasing(arr):
                 dp[i] = max(dp[i], dp[j] + arr[i])
     return max(dp)
 
-print(max_sum_increasing([1, 101, 2, 3, 100, 4, 5]))   # 106  ([1,2,3,100])
-print(max_sum_increasing([3, 4, 5, 10]))               # 22   (whole array)
+arr = ast.literal_eval(input())
+print(max_sum_increasing(arr))
 ```
 
-```java run viz=array
+```java solution
 import java.util.*;
+
 public class Main {
     static int maxSumIncreasing(int[] a) {
         int[] dp = a.clone(); int best = 0;
@@ -133,14 +218,24 @@ public class Main {
         }
         return best;
     }
+
     public static void main(String[] args) {
-        System.out.println(maxSumIncreasing(new int[]{1,101,2,3,100,4,5}));   // 106
-        System.out.println(maxSumIncreasing(new int[]{3,4,5,10}));            // 22
+        int[] arr = parseIntArray(new Scanner(System.in).nextLine());
+        System.out.println(maxSumIncreasing(arr));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```
 
-Both print `106` then `22`. Note `[1,2,3,100]` (sum 106, length 4) beats `[1,2,3,4,5]` (sum 15, length 5) — maximising sum and maximising length are different objectives on the same DP skeleton. The remaining DP lessons keep this move: same scaffold, a different subproblem definition and recurrence.
+</details>
 
 ## Reflect & Connect
 

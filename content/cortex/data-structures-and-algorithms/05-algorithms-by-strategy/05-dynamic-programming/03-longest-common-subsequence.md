@@ -28,10 +28,14 @@ def lcs(a, b):
                 dp[i][j] = max(dp[i - 1][j], dp[i][j - 1])   # mismatch: best of left / up
     return dp[m][n]
 
-print(lcs("abcde", "ace"))                            # 3  ("ace")
+a = input()
+b = input()
+print(lcs(a, b))
 ```
 
 ```java run viz=grid
+import java.util.*;
+
 public class Main {
     static int lcs(String a, String b) {
         int m = a.length(), n = b.length();
@@ -43,13 +47,30 @@ public class Main {
                     : Math.max(dp[i - 1][j], dp[i][j - 1]);        // mismatch: left / up
         return dp[m][n];
     }
+
     public static void main(String[] args) {
-        System.out.println(lcs("abcde", "ace"));      // 3
+        Scanner sc = new Scanner(System.in);
+        String a = sc.nextLine();
+        String b = sc.nextLine();
+        System.out.println(lcs(a, b));
     }
 }
 ```
 
-Both print `3` — the LCS is `"ace"`, threaded out of `"abcde"` by skipping `b` and `d`. Cost: `O(m·n)` time and space.
+```testcases
+{
+  "args": [
+    { "id": "a", "label": "a", "type": "string", "placeholder": "abcde" },
+    { "id": "b", "label": "b", "type": "string", "placeholder": "ace" }
+  ],
+  "cases": [
+    { "args": { "a": "abcde", "b": "ace" }, "expected": "3" },
+    { "args": { "a": "abc", "b": "abc" }, "expected": "3" },
+    { "args": { "a": "abc", "b": "def" }, "expected": "0" },
+    { "args": { "a": "abcba", "b": "abcbcba" }, "expected": "5" }
+  ]
+}
+```
 
 ## How It Works
 
@@ -112,6 +133,63 @@ Correct is `1` (the string `"a"` has one `a` to match); the buggy version return
 
 ```python run viz=grid
 def lcs(a, b):
+    # Your code goes here — dp[i][j] = LCS of first i chars of a and first j of b
+    return 0
+
+def min_delete(a, b):
+    # Your code goes here — use lcs
+    return 0
+
+a = input()
+b = input()
+print(min_delete(a, b))
+```
+
+```java run viz=grid
+import java.util.*;
+
+public class Main {
+    static int lcs(String a, String b) {
+        // Your code goes here — dp[i][j] = LCS of first i chars of a and first j of b
+        return 0;
+    }
+
+    static int minDelete(String a, String b) {
+        // Your code goes here — use lcs
+        return 0;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String a = sc.nextLine();
+        String b = sc.nextLine();
+        System.out.println(minDelete(a, b));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "a", "label": "a", "type": "string", "placeholder": "sea" },
+    { "id": "b", "label": "b", "type": "string", "placeholder": "eat" }
+  ],
+  "cases": [
+    { "args": { "a": "sea", "b": "eat" }, "expected": "2" },
+    { "args": { "a": "leetcode", "b": "etco" }, "expected": "4" },
+    { "args": { "a": "abc", "b": "abc" }, "expected": "0" },
+    { "args": { "a": "abc", "b": "def" }, "expected": "6" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+The LCS of `"sea"`/`"eat"` is `"ea"` (length 2), so `3 + 3 − 2·2 = 2` deletions. Same DP table, one arithmetic step — the recurring DP move of reusing a core subproblem for a derived answer.
+
+```python solution time=O(m·n) space=O(m·n)
+def lcs(a, b):
     m, n = len(a), len(b); dp = [[0]*(n+1) for _ in range(m+1)]
     for i in range(1, m+1):
         for j in range(1, n+1):
@@ -121,11 +199,14 @@ def lcs(a, b):
 def min_delete(a, b):
     return len(a) + len(b) - 2 * lcs(a, b)            # everything outside the LCS is deleted
 
-print(min_delete("sea", "eat"))         # 2   (delete 's' and 't'; keep "ea")
-print(min_delete("leetcode", "etco"))   # 4
+a = input()
+b = input()
+print(min_delete(a, b))
 ```
 
-```java run viz=grid
+```java solution
+import java.util.*;
+
 public class Main {
     static int lcs(String a, String b) {
         int m=a.length(), n=b.length(); int[][] dp = new int[m+1][n+1];
@@ -133,15 +214,19 @@ public class Main {
             dp[i][j] = a.charAt(i-1)==b.charAt(j-1) ? dp[i-1][j-1]+1 : Math.max(dp[i-1][j], dp[i][j-1]);
         return dp[m][n];
     }
+
     static int minDelete(String a, String b) { return a.length() + b.length() - 2*lcs(a, b); }
+
     public static void main(String[] args) {
-        System.out.println(minDelete("sea", "eat"));         // 2
-        System.out.println(minDelete("leetcode", "etco"));   // 4
+        Scanner sc = new Scanner(System.in);
+        String a = sc.nextLine();
+        String b = sc.nextLine();
+        System.out.println(minDelete(a, b));
     }
 }
 ```
 
-Both print `2` then `4`. The LCS of `"sea"`/`"eat"` is `"ea"` (length 2), so `3 + 3 − 2·2 = 2` deletions. Same DP table, one arithmetic step — the recurring DP move of reusing a core subproblem for a derived answer.
+</details>
 
 ## Reflect & Connect
 

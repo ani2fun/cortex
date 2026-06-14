@@ -4,14 +4,19 @@ summary: "In an N×M grid where 1 = walkable and 0 = wall, find the minimum numb
 prereqs:
   - 16-pattern-shortest-path-breadth-first-search/01-pattern
 difficulty: medium
+kind: problem
+topics: [shortest-path-bfs, graph]
 ---
 
 # Problem: Minimum Steps in a Grid
 
-## The Problem
+## Problem Statement
 
-In an N×M grid where `1` = walkable and `0` = wall, find the minimum number of cardinal-direction moves from `(0, 0)` to `(N-1, M-1)`. Return -1 if no path exists.
+In an N×M grid where `1` = walkable and `0` = wall, find the minimum number of cardinal-direction moves from `(0, 0)` to `(N-1, M-1)`. Return `-1` if no path exists.
 
+## Examples
+
+**Example 1:**
 ```
 Input:  grid = [[1, 0, 1, 1],
                 [1, 1, 1, 1],
@@ -19,207 +24,173 @@ Input:  grid = [[1, 0, 1, 1],
 Output: 5
 ```
 
-<details>
-<summary><h2>Pattern Mapping</h2></summary>
+**Example 2:**
+```
+Input:  grid = [[1, 1, 1, 1],
+                [1, 1, 1, 1],
+                [1, 1, 0, 1]]
+Output: 5
+```
 
+## Constraints
 
-The grid is a graph with implicit edges. BFS from `(0,0)`. As soon as the dequeued cell is `(N-1, M-1)`, return the carried distance. If the queue empties without finding the destination, return -1.
-
-</details>
-<details>
-<summary><h2>The Solution</h2></summary>
-
-
+- `1 ≤ N, M ≤ 100`
+- Grid cells are either `0` (wall) or `1` (walkable)
+- Return `-1` if the start or end is a wall, or no path exists
 
 ```python run viz=grid viz-root=grid
-from typing import List, Tuple
-from queue import Queue
-
-class Cell:
-    def __init__(self, row: int, col: int, steps: int):
-        self.row = row
-        self.col = col
-        self.steps = steps
+import ast
+from collections import deque
 
 class Solution:
-    def is_valid_cell(
-        self, grid: List[List[int]], row: int, col: int
-    ) -> bool:
-        return (
-            0 <= row < len(grid)
-            and 0 <= col < len(grid[0])
-            and grid[row][col] == 1
-        )
-
-    def minimum_steps_in_a_grid(self, grid: List[List[int]]) -> int:
-        rows = len(grid)
-        cols = len(grid[0])
-
-        # Create a visited matrix to keep track of visited cells
-        visited = [[False] * cols for _ in range(rows)]
-
-        # Create a queue for BFS traversal
-        queue = Queue()
-        queue.put(Cell(0, 0, 0))
-        visited[0][0] = True
-
-        # Define the possible movements: up, right, down, left
-        directions: List[Tuple[int, int]] = [
-            (-1, 0),  # up
-            (0, 1),   # right
-            (1, 0),   # down
-            (0, -1)   # left
-        ]
-
-        while not queue.empty():
-            curr_cell = queue.get()
-
-            curr_row = curr_cell.row
-            curr_col = curr_cell.col
-            curr_steps = curr_cell.steps
-
-            # Check if reached the destination cell
-            if curr_row == rows - 1 and curr_col == cols - 1:
-                return curr_steps
-
-            # Explore the neighbours
-            for dr, dc in directions:
-                new_row = curr_row + dr
-                new_col = curr_col + dc
-
-                # Check if the new cell is within the grid boundaries
-                # and contains 1
-                if self.is_valid_cell(grid, new_row, new_col):
-
-                    # Check if the new cell has not been visited before
-                    if not visited[new_row][new_col]:
-
-                        # Add the new cell to the queue
-                        queue.put(Cell(new_row, new_col, curr_steps + 1))
-
-                        # Mark the new cell as visited
-                        visited[new_row][new_col] = True
-
-        # No path found
+    def minimum_steps_in_a_grid(self, grid):
+        # Your code goes here — BFS from (0,0) to (N-1,M-1) through 1-cells,
+        # 4 cardinal directions. Carry step count in each queue entry. Return -1
+        # if the start or end is blocked or no path exists.
         return -1
 
-
-# Examples from the problem statement
-print(Solution().minimum_steps_in_a_grid([[1,0,1,1],[1,1,1,1],[0,1,0,1]]))  # 5
-print(Solution().minimum_steps_in_a_grid([[1,1,1,1],[1,1,1,1],[1,1,0,1]]))  # 5
-
-# Edge cases
-print(Solution().minimum_steps_in_a_grid([[1]]))                             # 0 — 1x1 passable
-print(Solution().minimum_steps_in_a_grid([[0]]))                             # -1 — 1x1 wall
-print(Solution().minimum_steps_in_a_grid([[1,1],[1,1]]))                     # 2 — 2x2 all passable
-print(Solution().minimum_steps_in_a_grid([[1,0],[0,1]]))                     # -1 — no path
-print(Solution().minimum_steps_in_a_grid([[0,1,1],[1,1,1],[1,1,1]]))         # -1 — blocked start
-print(Solution().minimum_steps_in_a_grid([[1,1,1],[1,1,1],[1,1,0]]))         # -1 — blocked end
+grid = ast.literal_eval(input())
+print(Solution().minimum_steps_in_a_grid(grid))
 ```
 
 ```java run viz=grid viz-root=grid
 import java.util.*;
 
 public class Main {
-    static class Cell {
-
-        int row;
-        int col;
-        int steps;
-
-        public Cell(int row, int col, int steps) {
-            this.row = row;
-            this.col = col;
-            this.steps = steps;
-        }
-    }
-
     static class Solution {
-        private boolean isValidCell(int[][] grid, int row, int col) {
-            return (
-                row >= 0 &&
-                row < grid.length &&
-                col >= 0 &&
-                col < grid[0].length &&
-                grid[row][col] == 1
-            );
-        }
-
         public int minimumStepsInAGrid(int[][] grid) {
-            int rows = grid.length;
-            int cols = grid[0].length;
-
-            // Create a visited matrix to keep track of visited cells
-            boolean[][] visited = new boolean[rows][cols];
-
-            // Create a queue for BFS traversal
-            Queue<Cell> queue = new LinkedList<>();
-            queue.add(new Cell(0, 0, 0));
-            visited[0][0] = true;
-
-            // Define the possible movements: up, right, down, left
-            int[][] directions = {
-                {-1, 0}, // up
-                {0, 1},  // right
-                {1, 0},  // down
-                {0, -1}  // left
-            };
-
-            while (!queue.isEmpty()) {
-                Cell currCell = queue.poll();
-
-                int currRow = currCell.row;
-                int currCol = currCell.col;
-                int currSteps = currCell.steps;
-
-                // Check if reached the destination cell
-                if (currRow == rows - 1 && currCol == cols - 1) {
-                    return currSteps;
-                }
-
-                // Explore the neighbours
-                for (int[] dir : directions) {
-                    int newRow = currRow + dir[0];
-                    int newCol = currCol + dir[1];
-
-                    // Check if the new cell is within the grid boundaries
-                    // and contains 1
-                    if (isValidCell(grid, newRow, newCol)) {
-
-                        // Check if the new cell has not been visited before
-                        if (!visited[newRow][newCol]) {
-
-                            // Add the new cell to the queue
-                            queue.add(
-                                new Cell(newRow, newCol, currSteps + 1)
-                            );
-
-                            // Mark the new cell as visited
-                            visited[newRow][newCol] = true;
-                        }
-                    }
-                }
-            }
-
-            // No path found
+            // Your code goes here — BFS from (0,0) to (N-1,M-1) through 1-cells,
+            // 4 cardinal directions. Carry step count in each queue entry. Return -1
+            // if the start or end is blocked or no path exists.
             return -1;
         }
     }
 
     public static void main(String[] args) {
-        Solution sol = new Solution();
+        Scanner sc = new Scanner(System.in);
+        int[][] grid = parseIntMatrix(sc.nextLine());
+        System.out.println(new Solution().minimumStepsInAGrid(grid));
+    }
 
-        // Examples from the problem statement
-        System.out.println(sol.minimumStepsInAGrid(new int[][]{{1,0,1,1},{1,1,1,1},{0,1,0,1}}));  // 5
-        System.out.println(sol.minimumStepsInAGrid(new int[][]{{1,1,1,1},{1,1,1,1},{1,1,0,1}}));  // 5
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
+    }
+}
+```
 
-        // Edge cases
-        System.out.println(sol.minimumStepsInAGrid(new int[][]{{1}}));                             // 0
-        System.out.println(sol.minimumStepsInAGrid(new int[][]{{0}}));                             // -1
-        System.out.println(sol.minimumStepsInAGrid(new int[][]{{1,1},{1,1}}));                     // 2
-        System.out.println(sol.minimumStepsInAGrid(new int[][]{{1,0},{0,1}}));                     // -1
-        System.out.println(sol.minimumStepsInAGrid(new int[][]{{0,1,1},{1,1,1},{1,1,1}}));         // -1
-        System.out.println(sol.minimumStepsInAGrid(new int[][]{{1,1,1},{1,1,1},{1,1,0}}));         // -1
+```testcases
+{
+  "args": [
+    { "id": "grid", "label": "grid", "type": "int[][]", "placeholder": "[[1, 0, 1, 1], [1, 1, 1, 1], [0, 1, 0, 1]]" }
+  ],
+  "cases": [
+    { "args": { "grid": "[[1, 0, 1, 1], [1, 1, 1, 1], [0, 1, 0, 1]]" }, "expected": "5" },
+    { "args": { "grid": "[[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 0, 1]]" }, "expected": "5" },
+    { "args": { "grid": "[[1]]" }, "expected": "0" },
+    { "args": { "grid": "[[0]]" }, "expected": "-1" },
+    { "args": { "grid": "[[1, 1], [1, 1]]" }, "expected": "2" },
+    { "args": { "grid": "[[1, 0], [0, 1]]" }, "expected": "-1" },
+    { "args": { "grid": "[[0, 1, 1], [1, 1, 1], [1, 1, 1]]" }, "expected": "-1" },
+    { "args": { "grid": "[[1, 1, 1], [1, 1, 1], [1, 1, 0]]" }, "expected": "-1" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+The grid is an implicit unweighted graph. BFS from `(0, 0)` carries the step count in each queue entry; the first time `(N-1, M-1)` is dequeued, that count is the minimum. Mark cells visited at push time (not pop) to prevent re-enqueueing. Check validity — within bounds and `grid[r][c] == 1` — before pushing a neighbour. A blocked start or end is an immediate `-1` return.
+
+```python solution time=O(N*M) space=O(N*M)
+import ast
+from collections import deque
+
+class Solution:
+    def minimum_steps_in_a_grid(self, grid):
+        rows, cols = len(grid), len(grid[0])
+        if grid[0][0] == 0 or grid[rows-1][cols-1] == 0:
+            return -1
+        visited = [[False] * cols for _ in range(rows)]
+        queue = deque([(0, 0, 0)])
+        visited[0][0] = True
+        directions = [(-1, 0), (0, 1), (1, 0), (0, -1)]
+        while queue:
+            r, c, steps = queue.popleft()
+            if r == rows - 1 and c == cols - 1:
+                return steps
+            for dr, dc in directions:
+                nr, nc = r + dr, c + dc
+                if 0 <= nr < rows and 0 <= nc < cols and grid[nr][nc] == 1 and not visited[nr][nc]:
+                    visited[nr][nc] = True
+                    queue.append((nr, nc, steps + 1))
+        return -1
+
+grid = ast.literal_eval(input())
+print(Solution().minimum_steps_in_a_grid(grid))
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int minimumStepsInAGrid(int[][] grid) {
+            int rows = grid.length, cols = grid[0].length;
+            if (grid[0][0] == 0 || grid[rows-1][cols-1] == 0) return -1;
+            boolean[][] visited = new boolean[rows][cols];
+            Deque<int[]> queue = new ArrayDeque<>();
+            queue.add(new int[]{0, 0, 0});
+            visited[0][0] = true;
+            int[][] dirs = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
+            while (!queue.isEmpty()) {
+                int[] cur = queue.poll();
+                int r = cur[0], c = cur[1], steps = cur[2];
+                if (r == rows - 1 && c == cols - 1) return steps;
+                for (int[] dir : dirs) {
+                    int nr = r + dir[0], nc = c + dir[1];
+                    if (nr >= 0 && nr < rows && nc >= 0 && nc < cols
+                            && grid[nr][nc] == 1 && !visited[nr][nc]) {
+                        visited[nr][nc] = true;
+                        queue.add(new int[]{nr, nc, steps + 1});
+                    }
+                }
+            }
+            return -1;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[][] grid = parseIntMatrix(sc.nextLine());
+        System.out.println(new Solution().minimumStepsInAGrid(grid));
+    }
+
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
     }
 }
 ```

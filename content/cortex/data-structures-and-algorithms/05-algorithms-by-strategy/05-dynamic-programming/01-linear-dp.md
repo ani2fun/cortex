@@ -52,10 +52,13 @@ def fib_tab(n):
         dp[i] = dp[i - 1] + dp[i - 2]             # recurrence, in dependency order
     return dp[n]
 
-print("fib_tab(10):", fib_tab(10))
+n = int(input())
+print(fib_tab(n))
 ```
 
 ```java run viz=array
+import java.util.*;
+
 public class Main {
     static long fibTab(int n) {
         if (n < 2) return n;
@@ -64,12 +67,25 @@ public class Main {
         return dp[n];
     }
     public static void main(String[] args) {
-        System.out.println("fib_tab(10): " + fibTab(10));
+        int n = Integer.parseInt(new Scanner(System.in).nextLine().trim());
+        System.out.println(fibTab(n));
     }
 }
 ```
 
-Both print `55`. The table fills `0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55` — linear time, no recomputation.
+```testcases
+{
+  "args": [
+    { "id": "n", "label": "n", "type": "int", "placeholder": "10" }
+  ],
+  "cases": [
+    { "args": { "n": "10" }, "expected": "55" },
+    { "args": { "n": "0" }, "expected": "0" },
+    { "args": { "n": "1" }, "expected": "1" },
+    { "args": { "n": "6" }, "expected": "8" }
+  ]
+}
+```
 
 ## How It Works
 
@@ -138,17 +154,76 @@ Naive `fib(35)` makes **29,860,703** calls; the memoised version makes **69**. S
 **House Robber** ([LeetCode 198](https://leetcode.com/problems/house-robber/)) — rob a street of houses without hitting two adjacent ones; maximise the loot. Linear DP: at each house, either *skip* it (keep `dp[i-1]`) or *take* it (`dp[i-2] + value`). Recurrence `dp[i] = max(dp[i-1], dp[i-2] + nums[i])`, space-optimised to two scalars.
 
 ```python run viz=array
+import ast
+
+def rob(nums):
+    # Your code goes here — two rolling scalars, skip vs take
+    return 0
+
+nums = ast.literal_eval(input())
+print(rob(nums))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static int rob(int[] nums) {
+        // Your code goes here — two rolling scalars, skip vs take
+        return 0;
+    }
+
+    public static void main(String[] args) {
+        int[] nums = parseIntArray(new Scanner(System.in).nextLine());
+        System.out.println(rob(nums));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "nums", "label": "nums", "type": "int[]", "placeholder": "[2,7,9,3,1]" }
+  ],
+  "cases": [
+    { "args": { "nums": "[2,7,9,3,1]" }, "expected": "12" },
+    { "args": { "nums": "[1,2,3,1]" }, "expected": "4" },
+    { "args": { "nums": "[2,1,1,2]" }, "expected": "4" },
+    { "args": { "nums": "[5]" }, "expected": "5" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+The recurrence looks back exactly two cells, so the rolling-window space-optimisation applies — `O(1)` space. The 14 lessons in this section climb from here: LIS, LCS, edit distance, knapsack — each a richer subproblem and recurrence on the same scaffold.
+
+```python solution time=O(n) space=O(1)
+import ast
+
 def rob(nums):
     prev2, prev1 = 0, 0                          # dp[i-2], dp[i-1]
     for x in nums:
         prev2, prev1 = prev1, max(prev1, prev2 + x)   # skip vs take
     return prev1
 
-print("rob([2,7,9,3,1]):", rob([2, 7, 9, 3, 1]))   # 12  (2 + 9 + 1)
-print("rob([1,2,3,1]):", rob([1, 2, 3, 1]))        # 4   (1 + 3)
+nums = ast.literal_eval(input())
+print(rob(nums))
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
     static int rob(int[] nums) {
         int prev2 = 0, prev1 = 0;                       // dp[i-2], dp[i-1]
@@ -158,14 +233,24 @@ public class Main {
         }
         return prev1;
     }
+
     public static void main(String[] args) {
-        System.out.println("rob([2,7,9,3,1]): " + rob(new int[]{2,7,9,3,1}));   // 12
-        System.out.println("rob([1,2,3,1]): " + rob(new int[]{1,2,3,1}));       // 4
+        int[] nums = parseIntArray(new Scanner(System.in).nextLine());
+        System.out.println(rob(nums));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```
 
-Both print `12` then `4`. The recurrence looks back exactly two cells, so the rolling-window space-optimisation applies — `O(1)` space. The 14 lessons in this section climb from here: LIS, LCS, edit distance, knapsack — each a richer subproblem and recurrence on the same scaffold.
+</details>
 
 ## Reflect & Connect
 

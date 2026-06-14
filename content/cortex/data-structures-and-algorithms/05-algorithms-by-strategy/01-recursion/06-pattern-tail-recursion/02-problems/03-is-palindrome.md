@@ -4,6 +4,8 @@ summary: "Given an array arr, return true if it reads the same forwards and back
 prereqs:
   - 06-pattern-tail-recursion/01-pattern
 difficulty: easy
+kind: problem
+topics: [tail-recursion, recursion]
 ---
 
 # Is Palindrome
@@ -16,18 +18,100 @@ Two-pointer recursion. Start at both ends, walk inward, fail fast on mismatch.
 
 Given an array `arr`, return `true` if it reads the same forwards and backwards, else `false`. You **must** solve this recursively.
 
+---
+
+## Examples
+
+**Example 1**
 ```
 Input:  arr = [1, 2, 2, 1]
 Output: true
-
-Input:  arr = [1, 3, 2, 1]
-Output: false
-
-Input:  arr = []
-Output: true   (an empty array is trivially a palindrome)
+Explanation: arr[0]=1 matches arr[3]=1, arr[1]=2 matches arr[2]=2, pointers cross → palindrome.
 ```
 
----
+**Example 2**
+```
+Input:  arr = [1, 3, 2, 1]
+Output: false
+Explanation: arr[0]=1 matches arr[3]=1, but arr[1]=3 ≠ arr[2]=2 → not a palindrome.
+```
+
+```quiz
+{
+  "prompt": "What does is_palindrome([]) return?",
+  "options": ["true", "false", "error", "-1"],
+  "answer": "true"
+}
+```
+
+## Constraints
+
+- `0 ≤ arr.length ≤ 10⁴`
+- `-10⁹ ≤ arr[i] ≤ 10⁹`
+- Must be solved recursively.
+
+```python run viz=array
+import ast
+
+class Solution:
+    def helper(self, arr, start: int, end: int) -> bool:
+        # Your code goes here
+        return True
+
+    def is_palindrome(self, arr) -> bool:
+        return self.helper(arr, 0, len(arr) - 1)
+
+arr = ast.literal_eval(input())
+print("true" if Solution().is_palindrome(arr) else "false")
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static int[] parseIntArray(String line) {
+        String s = line.replaceAll("[\\[\\]\\s]", "");
+        if (s.isEmpty()) return new int[0];
+        String[] parts = s.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i].trim());
+        return out;
+    }
+
+    static class Solution {
+        private boolean helper(int[] arr, int start, int end) {
+            // Your code goes here
+            return true;
+        }
+
+        public boolean isPalindrome(int[] arr) {
+            return helper(arr, 0, arr.length - 1);
+        }
+    }
+
+    public static void main(String[] args) {
+        int[] arr = parseIntArray(new Scanner(System.in).nextLine().trim());
+        System.out.println(new Solution().isPalindrome(arr) ? "true" : "false");
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[1, 2, 2, 1]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[1, 2, 2, 1]" }, "expected": "true" },
+    { "args": { "arr": "[1, 3, 2, 1]" }, "expected": "false" },
+    { "args": { "arr": "[]" }, "expected": "true" },
+    { "args": { "arr": "[5]" }, "expected": "true" },
+    { "args": { "arr": "[1, 2, 1]" }, "expected": "true" },
+    { "args": { "arr": "[1, 2, 3]" }, "expected": "false" },
+    { "args": { "arr": "[1, 1, 1, 1]" }, "expected": "true" }
+  ]
+}
+```
 
 <details>
 <summary><h2>Why Tail Recursion Fits Here</h2></summary>
@@ -109,7 +193,8 @@ state: "start=2, end=1   start ≥ end" {
 
 ### The Solution
 
-```python run viz=array
+```python solution time=O(n) space=O(n)
+import ast
 from typing import List
 
 class Solution:
@@ -131,20 +216,23 @@ class Solution:
         return self.helper(arr, 0, len(arr) - 1)
 
 
-# Examples from the problem statement
-print(Solution().is_palindrome([1, 2, 2, 1]))     # True
-print(Solution().is_palindrome([1, 3, 2, 1]))     # False
-print(Solution().is_palindrome([]))               # True
-
-# Edge cases
-print(Solution().is_palindrome([5]))              # True
-print(Solution().is_palindrome([1, 2, 1]))        # True
-print(Solution().is_palindrome([1, 2, 3]))        # False
-print(Solution().is_palindrome([1, 1, 1, 1]))     # True
+arr = ast.literal_eval(input())
+print("true" if Solution().is_palindrome(arr) else "false")
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
+    static int[] parseIntArray(String line) {
+        String s = line.replaceAll("[\\[\\]\\s]", "");
+        if (s.isEmpty()) return new int[0];
+        String[] parts = s.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i].trim());
+        return out;
+    }
+
     static class Solution {
         private boolean helper(int[] arr, int start, int end) {
 
@@ -169,16 +257,8 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().isPalindrome(new int[]{1, 2, 2, 1}));     // true
-        System.out.println(new Solution().isPalindrome(new int[]{1, 3, 2, 1}));     // false
-        System.out.println(new Solution().isPalindrome(new int[]{}));               // true
-
-        // Edge cases
-        System.out.println(new Solution().isPalindrome(new int[]{5}));              // true
-        System.out.println(new Solution().isPalindrome(new int[]{1, 2, 1}));        // true
-        System.out.println(new Solution().isPalindrome(new int[]{1, 2, 3}));        // false
-        System.out.println(new Solution().isPalindrome(new int[]{1, 1, 1, 1}));     // true
+        int[] arr = parseIntArray(new Scanner(System.in).nextLine().trim());
+        System.out.println(new Solution().isPalindrome(arr) ? "true" : "false");
     }
 }
 ```

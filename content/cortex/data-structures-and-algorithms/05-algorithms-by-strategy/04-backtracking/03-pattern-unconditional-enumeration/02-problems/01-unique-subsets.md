@@ -4,6 +4,8 @@ summary: "Given an integer array arr containing unique elements, return all poss
 prereqs:
   - 03-pattern-unconditional-enumeration/01-pattern
 difficulty: easy
+kind: problem
+topics: [unconditional-enumeration, backtracking]
 ---
 
 # Unique Subsets
@@ -28,6 +30,96 @@ Output: [[]]
 ```
 
 ---
+
+## Examples
+
+**Example 1**
+```
+Input:  arr = [1, 2, 3]
+Output: [[1, 2, 3], [1, 2], [1, 3], [1], [2, 3], [2], [3], []]
+Explanation: All 2³ = 8 subsets, in the order the backtracking visits them.
+```
+
+**Example 2**
+```
+Input:  arr = []
+Output: [[]]
+Explanation: The empty set has exactly one subset — itself.
+```
+
+```quiz
+{
+  "prompt": "How many subsets does an array of n unique elements have?",
+  "options": ["n", "2n", "n²", "2ⁿ"],
+  "answer": "2ⁿ"
+}
+```
+
+## Constraints
+
+- `0 ≤ arr.length ≤ 20`
+- All elements are unique.
+- The result is the power set; subsets may be returned in any order (these tests use the order the backtracking discovers them — include-first).
+
+```python run viz=graph viz-root=arr
+import ast
+from typing import List
+
+class Solution:
+    def unique_subsets(self, arr: List[int]) -> List[List[int]]:
+        # Your code goes here — backtrack over each index with two choices
+        # (include arr[index] or skip it); record a copy of the current
+        # subset when every element has been decided.
+        return []
+
+arr = ast.literal_eval(input())     # the test case's arr
+print(Solution().unique_subsets(arr))
+```
+
+```java run viz=graph viz-root=arr
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public List<List<Integer>> uniqueSubsets(int[] arr) {
+            // Your code goes here — backtrack over each index with two choices
+            // (include arr[index] or skip it); record a copy of the current
+            // subset when every element has been decided.
+            return new ArrayList<>();
+        }
+    }
+
+    public static void main(String[] args) {
+        int[] arr = parseIntArray(new Scanner(System.in).nextLine());
+        System.out.println(new Solution().uniqueSubsets(arr));
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's arr
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[1, 2, 3]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[1, 2, 3]" }, "expected": "[[1, 2, 3], [1, 2], [1, 3], [1], [2, 3], [2], [3], []]" },
+    { "args": { "arr": "[1]" }, "expected": "[[1], []]" },
+    { "args": { "arr": "[]" }, "expected": "[[]]" },
+    { "args": { "arr": "[5, 10]" }, "expected": "[[5, 10], [5], [10], []]" },
+    { "args": { "arr": "[1, 2, 3, 4]" }, "expected": "[[1, 2, 3, 4], [1, 2, 3], [1, 2, 4], [1, 2], [1, 3, 4], [1, 3], [1, 4], [1], [2, 3, 4], [2, 3], [2, 4], [2], [3, 4], [3], [4], []]" }
+  ]
+}
+```
 
 <details>
 <summary><h2>What Does "Power Set" Mean Recursively?</h2></summary>
@@ -143,7 +235,10 @@ state: "...backtrack further, eventually visit all 8 leaves" {
 
 ### The Solution
 
-```python run viz=graph viz-root=arr
+Both languages iterate the two choices in the **same fixed order — include first, then skip** — so the backtracking visits the leaves in an identical sequence and the raw `[[…], …]` output is byte-for-byte the same in Python and Java. No sorting is needed (and adding a per-language sort would *break* parity: Python sorts lists element-wise while Java's `toString` sort orders them differently).
+
+```python solution time=O(n · 2^n) space=O(n)
+import ast
 from typing import List
 
 class Solution:
@@ -210,17 +305,11 @@ class Solution:
         return subsets
 
 
-# Examples from the problem statement
-print(sorted(Solution().unique_subsets([1, 2, 3])))  # [[], [1], [1, 2], [1, 2, 3], [1, 3], [2], [2, 3], [3]]
-print(sorted(Solution().unique_subsets([1])))        # [[], [1]]
-print(sorted(Solution().unique_subsets([])))         # [[]]
-
-# Edge cases
-print(sorted(Solution().unique_subsets([5, 10])))    # [[], [5], [5, 10], [10]]
-print(len(Solution().unique_subsets([1, 2, 3, 4]))) # 16
+arr = ast.literal_eval(input())     # the test case's arr
+print(Solution().unique_subsets(arr))
 ```
 
-```java run viz=graph viz-root=arr
+```java solution
 import java.util.*;
 
 public class Main {
@@ -290,24 +379,17 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        List<List<Integer>> r1 = new Solution().uniqueSubsets(new int[]{1, 2, 3});
-        r1.forEach(Collections::sort); Collections.sort(r1, (a, b) -> a.toString().compareTo(b.toString()));
-        System.out.println(r1);  // [[], [1], [1, 2], [1, 2, 3], [1, 3], [2], [2, 3], [3]]
+        int[] arr = parseIntArray(new Scanner(System.in).nextLine());
+        System.out.println(new Solution().uniqueSubsets(arr));
+    }
 
-        List<List<Integer>> r2 = new Solution().uniqueSubsets(new int[]{1});
-        r2.forEach(Collections::sort); Collections.sort(r2, (a, b) -> a.toString().compareTo(b.toString()));
-        System.out.println(r2);  // [[], [1]]
-
-        List<List<Integer>> r3 = new Solution().uniqueSubsets(new int[]{});
-        System.out.println(r3);  // [[]]
-
-        // Edge cases
-        List<List<Integer>> r4 = new Solution().uniqueSubsets(new int[]{5, 10});
-        r4.forEach(Collections::sort); Collections.sort(r4, (a, b) -> a.toString().compareTo(b.toString()));
-        System.out.println(r4);  // [[], [10], [5], [5, 10]]
-
-        System.out.println(new Solution().uniqueSubsets(new int[]{1, 2, 3, 4}).size());  // 16
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

@@ -4,18 +4,95 @@ summary: "Given an integer num and a non-negative integer n, compute num^n. Requ
 prereqs:
   - 06-pattern-applications/01-pattern
 difficulty: medium
+kind: problem
+topics: [applications, bit-manipulation]
 ---
 
 # Power Function — Fast Exponentiation
 
-## The Problem
+Read the exponent's bits low-to-high: square the base each step, multiply into the result on set bits — `O(log n)` multiplications total.
+
+## Problem Statement
 
 Given an integer `num` and a non-negative integer `n`, compute `num^n`. Required: O(log n) time.
 
+## Examples
+
+**Example 1**
 ```
-Input:  num = 4, n = 2   →  16
-Input:  num = 10, n = 3  →  1000
-Input:  num = 2, n = 8   →  256
+Input:  num = 4, n = 2
+Output: 16
+Explanation: 4^2 = 16.
+```
+
+**Example 2**
+```
+Input:  num = 10, n = 3
+Output: 1000
+Explanation: 10^3 = 1000.
+```
+
+**Example 3**
+```
+Input:  num = 2, n = 8
+Output: 256
+Explanation: 2^8 = 256; binary 1000 — only one multiply into result (at bit 3), plus 4 squarings.
+```
+
+## Constraints
+
+- `-10 ≤ num ≤ 10` — small base; keeps intermediate squares in safe range for both `int` squaring and `long` accumulation.
+- `0 ≤ n ≤ 30` — non-negative exponent; `n = 0` always returns 1.
+
+```python run viz=array
+class Solution:
+    def power_function(self, num: int, n: int) -> int:
+        # Your code goes here
+        return 0
+
+
+num = int(input())
+n = int(input())
+print(Solution().power_function(num, n))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public long powerFunction(int num, int n) {
+            // Your code goes here
+            return 0;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int num = Integer.parseInt(sc.nextLine().trim());
+        int n = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().powerFunction(num, n));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "num", "label": "num", "type": "int", "placeholder": "4" },
+    { "id": "n", "label": "n", "type": "int", "placeholder": "2" }
+  ],
+  "cases": [
+    { "args": { "num": "4", "n": "2" }, "expected": "16" },
+    { "args": { "num": "10", "n": "3" }, "expected": "1000" },
+    { "args": { "num": "2", "n": "8" }, "expected": "256" },
+    { "args": { "num": "5", "n": "0" }, "expected": "1" },
+    { "args": { "num": "1", "n": "100" }, "expected": "1" },
+    { "args": { "num": "2", "n": "1" }, "expected": "2" },
+    { "args": { "num": "3", "n": "4" }, "expected": "81" },
+    { "args": { "num": "0", "n": "5" }, "expected": "0" }
+  ]
+}
 ```
 
 <details>
@@ -76,9 +153,7 @@ flowchart LR
 <details>
 <summary><h2>The Solution</h2></summary>
 
-
-
-```python run viz=array
+```python solution time=O(log n) space=O(1)
 class Solution:
     def power_function(self, num: int, n: int) -> int:
 
@@ -102,20 +177,14 @@ class Solution:
         return pow
 
 
-# Examples from the problem statement
-print(Solution().power_function(4, 2))     # 16
-print(Solution().power_function(10, 3))    # 1000
-print(Solution().power_function(2, 8))     # 256
-
-# Edge cases
-print(Solution().power_function(5, 0))     # 1
-print(Solution().power_function(1, 100))   # 1
-print(Solution().power_function(2, 1))     # 2
-print(Solution().power_function(3, 4))     # 81
-print(Solution().power_function(0, 5))     # 0
+num = int(input())
+n = int(input())
+print(Solution().power_function(num, n))
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
     static class Solution {
         public long powerFunction(int num, int n) {
@@ -144,17 +213,10 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().powerFunction(4, 2));     // 16
-        System.out.println(new Solution().powerFunction(10, 3));    // 1000
-        System.out.println(new Solution().powerFunction(2, 8));     // 256
-
-        // Edge cases
-        System.out.println(new Solution().powerFunction(5, 0));     // 1
-        System.out.println(new Solution().powerFunction(1, 100));   // 1
-        System.out.println(new Solution().powerFunction(2, 1));     // 2
-        System.out.println(new Solution().powerFunction(3, 4));     // 81
-        System.out.println(new Solution().powerFunction(0, 5));     // 0
+        Scanner sc = new Scanner(System.in);
+        int num = Integer.parseInt(sc.nextLine().trim());
+        int n = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().powerFunction(num, n));
     }
 }
 ```

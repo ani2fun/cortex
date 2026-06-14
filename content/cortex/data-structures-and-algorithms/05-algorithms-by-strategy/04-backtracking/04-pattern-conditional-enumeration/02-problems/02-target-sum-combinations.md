@@ -4,6 +4,8 @@ summary: "Given an array arr of distinct positive integers and a positive intege
 prereqs:
   - 04-pattern-conditional-enumeration/01-pattern
 difficulty: medium
+kind: problem
+topics: [conditional-enumeration, backtracking]
 ---
 
 # Target Sum Combinations
@@ -28,6 +30,104 @@ Output: [[1,1,1,1], [1,1,2], [1,3], [2,2]]
 ```
 
 ---
+
+## Examples
+
+**Example 1**
+```
+Input:  arr = [2, 3, 6, 7], target = 7
+Output: [[2, 2, 3], [7]]
+Explanation: 2+2+3=7 and 7=7. Both combinations are unique by multiplicities.
+```
+
+**Example 2**
+```
+Input:  arr = [2, 3, 5], target = 8
+Output: [[2, 2, 2, 2], [2, 3, 3], [3, 5]]
+Explanation: All three combinations of sorted [2,3,5] elements that sum to 8.
+```
+
+```quiz
+{
+  "prompt": "Why does the algorithm use a `start` index rather than always looping from 0?",
+  "options": [
+    "To avoid revisiting elements we've already excluded",
+    "To enforce non-decreasing order and prevent permuted duplicates",
+    "To implement constraint-bounded pruning",
+    "To limit recursion depth"
+  ],
+  "answer": "To enforce non-decreasing order and prevent permuted duplicates"
+}
+```
+
+## Constraints
+
+- `1 ≤ arr.length ≤ 30`
+- `2 ≤ arr[i] ≤ 40`
+- All elements of `arr` are distinct.
+- `1 ≤ target ≤ 40`
+
+```python run viz=array viz-root=combinations
+import ast
+from typing import List
+
+class Solution:
+    def target_sum_combinations(self, arr: List[int], target: int) -> List[List[int]]:
+        # Your code goes here — sort arr, backtrack with start index and remaining target
+        # skip arr[i] > remaining (continue); use i (not i+1) to allow reuse
+        return []
+
+arr = ast.literal_eval(input())
+target = int(input())
+print(Solution().target_sum_combinations(arr, target))
+```
+
+```java run viz=array viz-root=combinations
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public List<List<Integer>> targetSumCombinations(int[] arr, int target) {
+            // Your code goes here — sort arr, backtrack with start index and remaining target
+            // skip arr[i] > remaining (continue); use i (not i+1) to allow reuse
+            return new ArrayList<>();
+        }
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int target = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().targetSumCombinations(arr, target));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[2, 3, 6, 7]" },
+    { "id": "target", "label": "target", "type": "int", "placeholder": "7" }
+  ],
+  "cases": [
+    { "args": { "arr": "[2, 3, 5]", "target": "8" }, "expected": "[[2, 2, 2, 2], [2, 3, 3], [3, 5]]" },
+    { "args": { "arr": "[2, 3, 6, 7]", "target": "7" }, "expected": "[[2, 2, 3], [7]]" },
+    { "args": { "arr": "[1, 2, 3]", "target": "4" }, "expected": "[[1, 1, 1, 1], [1, 1, 2], [1, 3], [2, 2]]" },
+    { "args": { "arr": "[2]", "target": "3" }, "expected": "[]" },
+    { "args": { "arr": "[5]", "target": "5" }, "expected": "[[5]]" },
+    { "args": { "arr": "[1]", "target": "3" }, "expected": "[[1, 1, 1]]" }
+  ]
+}
+```
 
 <details>
 <summary><h2>What Pruning Helps Here?</h2></summary>
@@ -110,7 +210,8 @@ The recursion's three branches:
 
 ### The Solution
 
-```python run viz=array viz-root=combinations
+```python solution time=O(arr.length^(target/min(arr))) space=O(target/min(arr))
+import ast
 from typing import List
 
 class Solution:
@@ -182,18 +283,12 @@ class Solution:
         return combinations
 
 
-# Examples from the problem statement
-print(Solution().target_sum_combinations([2, 3, 5], 8))     # [[2, 2, 2, 2], [2, 3, 3], [3, 5]]
-print(Solution().target_sum_combinations([2, 3, 6, 7], 7))  # [[2, 2, 3], [7]]
-print(Solution().target_sum_combinations([1, 2, 3], 4))     # [[1, 1, 1, 1], [1, 1, 2], [1, 3], [2, 2]]
-
-# Edge cases
-print(Solution().target_sum_combinations([2], 3))            # []
-print(Solution().target_sum_combinations([5], 5))            # [[5]]
-print(Solution().target_sum_combinations([1], 3))            # [[1, 1, 1]]
+arr = ast.literal_eval(input())
+target = int(input())
+print(Solution().target_sum_combinations(arr, target))
 ```
 
-```java run viz=array viz-root=combinations
+```java solution
 import java.util.*;
 
 public class Main {
@@ -275,16 +370,20 @@ public class Main {
         }
     }
 
-    public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().targetSumCombinations(new int[]{2, 3, 5}, 8));     // [[2, 2, 2, 2], [2, 3, 3], [3, 5]]
-        System.out.println(new Solution().targetSumCombinations(new int[]{2, 3, 6, 7}, 7));  // [[2, 2, 3], [7]]
-        System.out.println(new Solution().targetSumCombinations(new int[]{1, 2, 3}, 4));     // [[1, 1, 1, 1], [1, 1, 2], [1, 3], [2, 2]]
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
 
-        // Edge cases
-        System.out.println(new Solution().targetSumCombinations(new int[]{2}, 3));            // []
-        System.out.println(new Solution().targetSumCombinations(new int[]{5}, 5));            // [[5]]
-        System.out.println(new Solution().targetSumCombinations(new int[]{1}, 3));            // [[1, 1, 1]]
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int target = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().targetSumCombinations(arr, target));
     }
 }
 ```
@@ -338,7 +437,7 @@ The two-pronged pruning (sort + `continue` on overshoot) typically reduces the s
 |---|---|---|
 | `target = 0` | any input | `[[]]` (one empty combination). |
 | All elements > target | `[5, 6], target = 3` | `[]`. |
-| One-element solution | `[7, 2], target = 7` | `[[7], [2,2,2]]` (after sorting). |
+| One-element solution | `[7, 2], target = 7` | `[[2, 2, 2], [7]]` (after sorting). |
 | Large target | `[1], target = 100` | `[[1] * 100]`. |
 
 </details>

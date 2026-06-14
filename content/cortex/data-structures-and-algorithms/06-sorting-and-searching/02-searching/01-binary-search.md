@@ -18,6 +18,8 @@ Halving the search space each step gives `O(log n)`: a million elements take abo
 Find `7` in the sorted array `[1, 3, 5, 7, 9, 11]`. Each step checks the middle and throws away half. Run it.
 
 ```python run viz=array
+import ast
+
 def binary_search(arr, target):
     lo, hi = 0, len(arr) - 1
     while lo <= hi:
@@ -30,8 +32,58 @@ def binary_search(arr, target):
             hi = mid - 1                 # target is in the left half
     return -1                            # not present
 
-print(binary_search([1, 3, 5, 7, 9, 11], 7))   # 3
-print(binary_search([1, 3, 5, 7, 9, 11], 4))   # -1
+arr = ast.literal_eval(input())
+target = int(input())
+print(binary_search(arr, target))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+  static int binarySearch(int[] arr, int target) {
+    int lo = 0, hi = arr.length - 1;
+    while (lo <= hi) {
+      int mid = lo + (hi - lo) / 2;      // overflow-safe
+      if (arr[mid] == target) return mid; // found
+      else if (arr[mid] < target) lo = mid + 1; // target is in the right half
+      else hi = mid - 1;                 // target is in the left half
+    }
+    return -1;                           // not present
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());
+    int target = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(binarySearch(arr, target));
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's array
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[1, 3, 5, 7, 9, 11]" },
+    { "id": "target", "label": "target", "type": "number", "placeholder": "7" }
+  ],
+  "cases": [
+    { "args": { "arr": "[1, 3, 5, 7, 9, 11]", "target": "7" }, "expected": "3" },
+    { "args": { "arr": "[1, 3, 5, 7, 9, 11]", "target": "4" }, "expected": "-1" },
+    { "args": { "arr": "[1, 3, 5, 7, 9, 11]", "target": "1" }, "expected": "0" },
+    { "args": { "arr": "[1, 3, 5, 7, 9, 11]", "target": "11" }, "expected": "5" }
+  ]
+}
 ```
 
 ## How It Works
@@ -83,9 +135,70 @@ About **30** (`log₂(10⁹) ≈ 30`). Each comparison halves the range, so the 
 
 ## Your Turn
 
-The reusable binary search:
+Implement binary search: maintain a `[lo, hi]` inclusive range; probe the midpoint and discard the half that can't contain the target. Return the index if found, `-1` if not.
 
 ```python run viz=array
+import ast
+
+def binary_search(arr, target):
+    # Your code goes here — lo=0, hi=len-1; probe mid; move lo or hi; return -1 if not found.
+    return -1
+
+arr = ast.literal_eval(input())
+target = int(input())
+print(binary_search(arr, target))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+  static int binarySearch(int[] arr, int target) {
+    // Your code goes here — lo=0, hi=len-1; probe mid; move lo or hi; return -1 if not found.
+    return -1;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());
+    int target = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(binarySearch(arr, target));
+  }
+
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[1, 3, 5, 7, 9, 11]" },
+    { "id": "target", "label": "target", "type": "number", "placeholder": "7" }
+  ],
+  "cases": [
+    { "args": { "arr": "[1, 3, 5, 7, 9, 11]", "target": "7" }, "expected": "3" },
+    { "args": { "arr": "[1, 3, 5, 7, 9, 11]", "target": "4" }, "expected": "-1" },
+    { "args": { "arr": "[1, 3, 5, 7, 9, 11]", "target": "1" }, "expected": "0" },
+    { "args": { "arr": "[2, 4, 6, 8, 10]", "target": "6" }, "expected": "2" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Set `lo = 0`, `hi = len(arr) - 1`. Each step compute `mid = lo + (hi - lo) // 2` (overflow-safe). On a match return `mid`; if `arr[mid] < target` set `lo = mid + 1`; otherwise set `hi = mid - 1`. When `lo > hi` the target isn't present — return `-1`. `O(log n)` time, `O(1)` space.
+
+```python solution time=O(log n) space=O(1)
+import ast
+
 def binary_search(arr, target):
     lo, hi = 0, len(arr) - 1
     while lo <= hi:
@@ -98,30 +211,45 @@ def binary_search(arr, target):
             hi = mid - 1
     return -1
 
-vals = [1, 3, 5, 7, 9, 11]
-print(binary_search(vals, 1), binary_search(vals, 11), binary_search(vals, 8))   # 0 5 -1
+arr = ast.literal_eval(input())
+target = int(input())
+print(binary_search(arr, target))
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
   static int binarySearch(int[] arr, int target) {
     int lo = 0, hi = arr.length - 1;
     while (lo <= hi) {
-      int mid = lo + (hi - lo) / 2;           // overflow-safe
+      int mid = lo + (hi - lo) / 2;
       if (arr[mid] == target) return mid;
       else if (arr[mid] < target) lo = mid + 1;
       else hi = mid - 1;
     }
     return -1;
   }
+
   public static void main(String[] args) {
-    int[] vals = {1, 3, 5, 7, 9, 11};
-    System.out.println(binarySearch(vals, 7) + " " + binarySearch(vals, 4));   // 3 -1
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());
+    int target = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(binarySearch(arr, target));
+  }
+
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
   }
 }
 ```
 
-This is a structural lesson — drill searching in the pattern sets.
+</details>
 
 ## Reflect & Connect
 
@@ -175,4 +303,4 @@ Binary search is one idea — *halve a monotonic search space* — with a huge r
 
 - **CLRS**, *Introduction to Algorithms*, 4th ed. — binary search and the `O(log n)` analysis; **Bentley**, *Programming Pearls*, ch. 4 — the correctness pitfalls.
 - **Sedgewick & Wayne**, *Algorithms*, 4th ed., §1.4 / §3.1 — binary search and ordered symbol tables; the Java overflow fix is documented in the JDK history.
-- Binary search's `O(log n)` bound and the overflow/off-by-one pitfalls are standard; both runnable blocks are verified by running (`7 ⇒ 3`, `4 ⇒ -1`, ends `⇒ 0, 5`).
+- Binary search's `O(log n)` bound and the overflow/off-by-one pitfalls are standard; both runnable blocks are verified by running (`[1,3,5,7,9,11], 7 ⇒ 3`; `[1,3,5,7,9,11], 4 ⇒ -1`).

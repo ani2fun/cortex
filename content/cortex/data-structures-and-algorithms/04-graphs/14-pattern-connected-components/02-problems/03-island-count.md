@@ -4,16 +4,21 @@ summary: "A grid of 0s and 1s. 1 = land, 0 = water. An island is a maximal group
 prereqs:
   - 14-pattern-connected-components/01-pattern
 difficulty: medium
+kind: problem
+topics: [connected-components, graph]
 ---
 
 # Problem: Island Count
 
-## The Problem
+## Problem Statement
 
 A grid of `0`s and `1`s. `1` = land, `0` = water. An **island** is a maximal group of connected `1`s. Two land cells are connected if they're adjacent in **any of 8 directions** (cardinals + diagonals).
 
 Return the number of islands.
 
+## Examples
+
+**Example 1:**
 ```
 Input:  grid = [[1, 1, 0, 0],
                 [0, 0, 1, 1],
@@ -22,238 +27,178 @@ Input:  grid = [[1, 1, 0, 0],
 Output: 2
 ```
 
-<details>
-<summary><h2>Pattern Mapping</h2></summary>
+The top-left `1,1` pair is one island; the remaining `1`s form a single connected blob (they touch diagonally at row 1 col 2 / row 2 col 2).
 
+**Example 2:**
+```
+Input:  grid = [[1, 1, 0, 0],
+                [0, 1, 1, 1],
+                [1, 0, 1, 1],
+                [1, 0, 0, 0]]
+Output: 1
+```
 
-The grid is just a graph in disguise. Each cell is a node. Each "is-adjacent" relation is an edge.
+All land cells connect into one island.
 
-- `f`: nothing per-cell (just visit).
-- `g`: +1 per island found.
-- *Connectivity*: 8 directions instead of 4.
+## Constraints
 
-The 8-direction array is the only structural change from grid traversal in lesson 5.
-
-</details>
-<details>
-<summary><h2>The Solution</h2></summary>
-
-
+- `0 ≤ R, C ≤ 300`
+- `grid[r][c] ∈ {0, 1}`
+- 8-direction connectivity (diagonals count)
 
 ```python run viz=grid viz-root=grid
-from typing import List, Tuple
+import ast
 
-class Solution:
-    def is_valid_cell(
-        self, grid: List[List[int]], row: int, col: int
-    ) -> bool:
+def island_count(grid):
+    # Your code goes here
+    return 0
 
-        # Check if a cell is valid and belongs to a region of 1's, also
-        # check that the cell is not water
-        return (
-            row >= 0
-            and row < len(grid)
-            and col >= 0
-            and col < len(grid[0])
-            and grid[row][col] == 1
-        )
-
-    def dfs(
-        self,
-        grid: List[List[int]],
-        row: int,
-        col: int,
-        visited: List[List[bool]],
-    ) -> None:
-
-        # Mark the current cell as visited
-        visited[row][col] = True
-
-        # Define the possible movements: all 8 directions (up, right, 
-        # down, left, and diagonals)
-        directions: List[Tuple[int, int]] = [
-            (-1,  0), # Top
-            (-1,  1), # Top-right
-            (0,  1),  # Right
-            (1,  1),  # Bottom-right
-            (1,  0),  # Bottom
-            (1, -1),  # Bottom-left
-            (0, -1),  # Left
-            (-1, -1), # Top-left
-        ]
-
-        # Check all 8 neighbouring cells
-        for dr, dc in directions:
-            new_row = row + dr
-            new_col = col + dc
-
-            # If the neighbour is not visited, recursively call the DFS
-            # function on the neighbour
-            if (
-                self.is_valid_cell(grid, new_row, new_col)
-                and not visited[new_row][new_col]
-            ):
-                self.dfs(grid, new_row, new_col, visited)
-
-    def island_count(self, grid: List[List[int]]) -> int:
-        rows = len(grid)
-
-        # Check if the grid is empty
-        if rows == 0:
-            return 0
-
-        cols = len(grid[0])
-
-        # Initialise the island count to 0
-        islands = 0
-
-        # Initialize visited array
-        visited = [[False] * cols for _ in range(rows)]
-
-        # Traverse each cell of the grid
-        for row in range(rows):
-            for col in range(cols):
-
-                # If the cell is a water cell or it's already visited,
-                # all the cells connected to it are also visited
-                if grid[row][col] == 0 or visited[row][col]:
-                    continue
-
-                # Found a new land cell
-                islands += 1
-
-                # Perform DFS on this new cell to visit all the cells
-                # connected to it.
-                self.dfs(grid, row, col, visited)
-
-        # Return the number of islands
-        return islands
-
-
-# Examples from the problem statement
-print(Solution().island_count([[1,1,0,0],[0,0,1,1],[1,0,1,1],[1,0,0,0]]))  # 2
-print(Solution().island_count([[1,1,0,0],[0,1,1,1],[1,0,1,1],[1,0,0,0]]))  # 1
-
-# Edge cases
-print(Solution().island_count([]))                                          # 0
-print(Solution().island_count([[0]]))                                       # 0
-print(Solution().island_count([[1]]))                                       # 1
-print(Solution().island_count([[0,0,0],[0,0,0]]))                           # 0
-print(Solution().island_count([[1,1],[1,1]]))                               # 1
-print(Solution().island_count([[1,0,1],[0,0,0],[1,0,1]]))                   # 4
+grid = ast.literal_eval(input())
+print(island_count(grid))
 ```
 
 ```java run viz=grid viz-root=grid
 import java.util.*;
 
 public class Main {
-    static class Solution {
-        private boolean isValidCell(int[][] grid, int row, int col) {
-
-            // Check if a cell is valid and belongs to a region of 1's, also
-            // check that the cell is not water
-            return (
-                row >= 0 &&
-                row < grid.length &&
-                col >= 0 &&
-                col < grid[0].length &&
-                grid[row][col] == 1
-            );
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
         }
+        return mat;
+    }
 
-        private void dfs(
-            int[][] grid,
-            int row,
-            int col,
-            boolean[][] visited
-        ) {
-
-            // Mark the current cell as visited
-            visited[row][col] = true;
-
-            // Define the possible movements: all 8 directions (up, right, 
-            // down, left, and diagonals)
-            int[][] directions = {
-                {-1,  0}, // Top
-                {-1,  1}, // Top-right
-                {0,  1},  // Right
-                {1,  1},  // Bottom-right
-                {1,  0},  // Bottom
-                {1, -1},  // Bottom-left
-                {0, -1},  // Left
-                {-1, -1}  // Top-left
-            };
-
-            // Check all 8 neighbouring cells
-            for (int[] dir : directions) {
-                int newRow = row + dir[0];
-                int newCol = col + dir[1];
-
-                // If the neighbour is not visited, recursively call the DFS
-                // function on the neighbour
-                if (
-                    isValidCell(grid, newRow, newCol) &&
-                    !visited[newRow][newCol]
-                ) {
-                    dfs(grid, newRow, newCol, visited);
-                }
-            }
-        }
-
-        public int islandCount(int[][] grid) {
-            int rows = grid.length;
-
-            // Check if the grid is empty
-            if (rows == 0) {
-                return 0;
-            }
-
-            int cols = grid[0].length;
-
-            // Initialise the island count to 0
-            int islands = 0;
-
-            // Initialize visited array
-            boolean[][] visited = new boolean[rows][cols];
-
-            // Traverse each cell of the grid
-            for (int row = 0; row < rows; row++) {
-                for (int col = 0; col < cols; col++) {
-
-                    // If the cell is a water cell or it's already visited,
-                    // all the cells connected to it are also visited
-                    if (grid[row][col] == 0 || visited[row][col]) {
-                        continue;
-                    }
-
-                    // Found a new land cell
-                    islands++;
-
-                    // Perform DFS on this new cell to visit all the cells
-                    // connected to it.
-                    dfs(grid, row, col, visited);
-                }
-            }
-
-            // Return the number of islands
-            return islands;
-        }
+    static int islandCount(int[][] grid) {
+        // Your code goes here
+        return 0;
     }
 
     public static void main(String[] args) {
-        Solution sol = new Solution();
+        Scanner sc = new Scanner(System.in);
+        int[][] grid = parseIntMatrix(sc.nextLine());
+        System.out.println(islandCount(grid));
+    }
+}
+```
 
-        // Examples from the problem statement
-        System.out.println(sol.islandCount(new int[][]{{1,1,0,0},{0,0,1,1},{1,0,1,1},{1,0,0,0}}));  // 2
-        System.out.println(sol.islandCount(new int[][]{{1,1,0,0},{0,1,1,1},{1,0,1,1},{1,0,0,0}}));  // 1
+```testcases
+{
+  "args": [
+    { "id": "grid", "label": "grid", "type": "int[][]", "placeholder": "[[1, 1, 0, 0], [0, 0, 1, 1], [1, 0, 1, 1], [1, 0, 0, 0]]" }
+  ],
+  "cases": [
+    { "args": { "grid": "[[1, 1, 0, 0], [0, 0, 1, 1], [1, 0, 1, 1], [1, 0, 0, 0]]" }, "expected": "2" },
+    { "args": { "grid": "[[1, 1, 0, 0], [0, 1, 1, 1], [1, 0, 1, 1], [1, 0, 0, 0]]" }, "expected": "1" },
+    { "args": { "grid": "[]" }, "expected": "0" },
+    { "args": { "grid": "[[0]]" }, "expected": "0" },
+    { "args": { "grid": "[[1]]" }, "expected": "1" },
+    { "args": { "grid": "[[0, 0, 0], [0, 0, 0]]" }, "expected": "0" },
+    { "args": { "grid": "[[1, 1], [1, 1]]" }, "expected": "1" },
+    { "args": { "grid": "[[1, 0, 1], [0, 0, 0], [1, 0, 1]]" }, "expected": "4" },
+    { "args": { "grid": "[[1, 0, 0], [0, 1, 0], [0, 0, 1]]" }, "expected": "1" }
+  ]
+}
+```
 
-        // Edge cases
-        System.out.println(sol.islandCount(new int[][]{}));                          // 0
-        System.out.println(sol.islandCount(new int[][]{{0}}));                       // 0
-        System.out.println(sol.islandCount(new int[][]{{1}}));                       // 1
-        System.out.println(sol.islandCount(new int[][]{{0,0,0},{0,0,0}}));           // 0
-        System.out.println(sol.islandCount(new int[][]{{1,1},{1,1}}));               // 1
-        System.out.println(sol.islandCount(new int[][]{{1,0,1},{0,0,0},{1,0,1}}));   // 4
+<details>
+<summary>Editorial</summary>
+
+**Approach:** the grid is a graph in disguise — each `1` cell is a node, and the 8 direction deltas define the edges. Apply the standard connected-components flood-fill: outer loop over every cell; when a land cell is found unvisited, increment the count and DFS to mark the whole island as visited. The `visited` boolean matrix plays the role of the global `visited` set from the pattern. The only structural change from 4-direction grids is the 8-entry direction array.
+
+```python solution time=O(R×C) space=O(R×C)
+import ast
+
+def island_count(grid):
+    rows = len(grid)
+    if rows == 0:
+        return 0
+    cols = len(grid[0])
+    directions = [(-1,0),(-1,1),(0,1),(1,1),(1,0),(1,-1),(0,-1),(-1,-1)]
+    visited = [[False] * cols for _ in range(rows)]
+
+    def is_valid(r, c):
+        return 0 <= r < rows and 0 <= c < cols and grid[r][c] == 1
+
+    def dfs(r, c):
+        visited[r][c] = True
+        for dr, dc in directions:
+            nr, nc = r + dr, c + dc
+            if is_valid(nr, nc) and not visited[nr][nc]:
+                dfs(nr, nc)
+
+    islands = 0
+    for row in range(rows):
+        for col in range(cols):
+            if grid[row][col] == 0 or visited[row][col]:
+                continue
+            islands += 1
+            dfs(row, col)
+    return islands
+
+grid = ast.literal_eval(input())
+print(island_count(grid))
+```
+
+```java solution time=O(R×C) space=O(R×C)
+import java.util.*;
+
+public class Main {
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
+    }
+
+    static int rows, cols;
+    static boolean[][] visited;
+    static int[][] DIRS = {{-1,0},{-1,1},{0,1},{1,1},{1,0},{1,-1},{0,-1},{-1,-1}};
+
+    static boolean isValid(int[][] grid, int r, int c) {
+        return r >= 0 && r < rows && c >= 0 && c < cols && grid[r][c] == 1;
+    }
+
+    static void dfs(int[][] grid, int r, int c) {
+        visited[r][c] = true;
+        for (int[] d : DIRS) {
+            int nr = r + d[0], nc = c + d[1];
+            if (isValid(grid, nr, nc) && !visited[nr][nc]) dfs(grid, nr, nc);
+        }
+    }
+
+    static int islandCount(int[][] grid) {
+        if (grid.length == 0) return 0;
+        rows = grid.length; cols = grid[0].length;
+        visited = new boolean[rows][cols];
+        int count = 0;
+        for (int r = 0; r < rows; r++)
+            for (int c = 0; c < cols; c++)
+                if (grid[r][c] == 1 && !visited[r][c]) { count++; dfs(grid, r, c); }
+        return count;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[][] grid = parseIntMatrix(sc.nextLine());
+        System.out.println(islandCount(grid));
     }
 }
 ```

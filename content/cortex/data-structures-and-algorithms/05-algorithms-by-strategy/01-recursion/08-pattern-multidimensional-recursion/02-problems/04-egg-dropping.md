@@ -1,9 +1,11 @@
 ---
 title: "Egg Dropping"
-summary: "You have eggs identical eggs and a building with floors floors. You want to find the highest floor from which an egg can be dropped without breaking (the "threshold floor"). An egg either breaks on im"
+summary: "You have eggs identical eggs and a building with floors floors. You want to find the highest floor from which an egg can be dropped without breaking (the threshold floor). Return the minimum number of drops needed in the worst case."
 prereqs:
   - 08-pattern-multidimensional-recursion/01-pattern
 difficulty: hard
+kind: problem
+topics: [multidimensional-recursion, recursion]
 ---
 
 # Egg Dropping
@@ -18,18 +20,97 @@ You have `eggs` identical eggs and a building with `floors` floors. You want to 
 
 You want a strategy that minimises the **worst-case number of drops** across all possible threshold floors. Return the minimum number of drops needed in the worst case.
 
+---
+
+## Examples
+
+**Example 1**
 ```
 Input:  eggs = 4, floors = 2
 Output: 2
-
-Input:  eggs = 2, floors = 1
-Output: 1
-
-Input:  eggs = 1, floors = 1
-Output: 1
+Explanation: With 4 eggs and 2 floors, worst-case still requires 2 drops.
 ```
 
----
+**Example 2**
+```
+Input:  eggs = 2, floors = 6
+Output: 3
+Explanation: Optimal strategy: drop from floor 3. If breaks → check 1, 2. If survives → drop from 5. If breaks → check 4. If survives → check 6. At most 3 drops.
+```
+
+```quiz
+{
+  "prompt": "How many drops does eggDrop(1, n) always require?",
+  "options": ["1", "n/2", "n", "log n"],
+  "answer": "n"
+}
+```
+
+## Constraints
+
+- `1 ≤ eggs ≤ 5`
+- `0 ≤ floors ≤ 20`
+
+```python run viz=array
+import sys
+
+class Solution:
+    def egg_drop(self, eggs: int, floors: int) -> int:
+        # Your code goes here — base cases:
+        #   floors == 0: return 0
+        #   floors == 1: return 1
+        #   eggs == 1: return floors
+        # Recursive: try each floor f from 1..floors; take min over f of
+        #   (1 + max(egg_drop(eggs-1, f-1), egg_drop(eggs, floors-f)))
+        return 0
+
+eggs = int(input())
+floors = int(input())
+print(Solution().egg_drop(eggs, floors))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int eggDrop(int eggs, int floors) {
+            // Your code goes here — base cases:
+            //   floors == 0: return 0
+            //   floors == 1: return 1
+            //   eggs == 1: return floors
+            // Recursive: try each floor f from 1..floors; take min over f of
+            //   (1 + max(eggDrop(eggs-1, f-1), eggDrop(eggs, floors-f)))
+            return 0;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int eggs = Integer.parseInt(sc.nextLine().trim());
+        int floors = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().eggDrop(eggs, floors));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "eggs", "label": "eggs", "type": "int", "placeholder": "2" },
+    { "id": "floors", "label": "floors", "type": "int", "placeholder": "6" }
+  ],
+  "cases": [
+    { "args": { "eggs": "4", "floors": "2" }, "expected": "2" },
+    { "args": { "eggs": "2", "floors": "1" }, "expected": "1" },
+    { "args": { "eggs": "1", "floors": "1" }, "expected": "1" },
+    { "args": { "eggs": "2", "floors": "0" }, "expected": "0" },
+    { "args": { "eggs": "1", "floors": "5" }, "expected": "5" },
+    { "args": { "eggs": "2", "floors": "6" }, "expected": "3" },
+    { "args": { "eggs": "3", "floors": "5" }, "expected": "3" }
+  ]
+}
+```
 
 <details>
 <summary><h2>What Does the Recurrence Mean?</h2></summary>
@@ -118,7 +199,7 @@ flowchart TB
 
 ### The Solution
 
-```python run viz=array
+```python solution time=O(eggs*floors^2) space=O(floors)
 import sys
 
 class Solution:
@@ -158,19 +239,14 @@ class Solution:
         return min_drops
 
 
-# Examples from the problem statement
-print(Solution().egg_drop(4, 2))   # 2
-print(Solution().egg_drop(2, 1))   # 1
-print(Solution().egg_drop(1, 1))   # 1
-
-# Edge cases
-print(Solution().egg_drop(2, 0))   # 0
-print(Solution().egg_drop(1, 5))   # 5
-print(Solution().egg_drop(2, 6))   # 3
-print(Solution().egg_drop(3, 5))   # 3
+eggs = int(input())
+floors = int(input())
+print(Solution().egg_drop(eggs, floors))
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
     static class Solution {
         public int eggDrop(int eggs, int floors) {
@@ -215,16 +291,10 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().eggDrop(4, 2));   // 2
-        System.out.println(new Solution().eggDrop(2, 1));   // 1
-        System.out.println(new Solution().eggDrop(1, 1));   // 1
-
-        // Edge cases
-        System.out.println(new Solution().eggDrop(2, 0));   // 0
-        System.out.println(new Solution().eggDrop(1, 5));   // 5
-        System.out.println(new Solution().eggDrop(2, 6));   // 3
-        System.out.println(new Solution().eggDrop(3, 5));   // 3
+        Scanner sc = new Scanner(System.in);
+        int eggs = Integer.parseInt(sc.nextLine().trim());
+        int floors = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().eggDrop(eggs, floors));
     }
 }
 ```

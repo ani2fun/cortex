@@ -11,7 +11,7 @@ You didn't write a bad algorithm — you ran out of a **region of memory** most 
 
 ## See It Work
 
-Recursion makes the stack *visible*. Each call pushes a frame; each return pops one. Watch `fact(3)` stack three frames deep, hit the base case, then unwind last-in-first-out:
+Recursion makes the stack *visible*. Each call pushes a frame; each return pops one. Watch `fact(n)` stack frames deep, hit the base case, then unwind last-in-first-out:
 
 ```python run viz=array
 def fact(n, depth=0):
@@ -24,10 +24,13 @@ def fact(n, depth=0):
     print(f"{pad}pop  fact({n}) = {r}")           # this frame pops; caller resumes
     return r
 
-print("result:", fact(3))
+n = int(input())                  # the test case's n
+print("result:", fact(n))
 ```
 
 ```java run viz=array
+import java.util.*;
+
 public class Main {
     static int fact(int n, int depth) {
         String pad = "  ".repeat(depth);
@@ -38,12 +41,26 @@ public class Main {
         return r;
     }
     public static void main(String[] args) {
-        System.out.println("result: " + fact(3, 0));
+        int n = Integer.parseInt(new Scanner(System.in).nextLine().trim());
+        System.out.println("result: " + fact(n, 0));
     }
 }
 ```
 
-Both print the same nested trace ending in `result: 6`. Three frames — `fact(3)`, `fact(2)`, `fact(1)` — are alive at the deepest point, and they unwind in reverse: `fact(1)` returns first, `fact(3)` last. That LIFO order *is* recursion.
+```testcases
+{
+  "args": [
+    { "id": "n", "label": "n", "type": "int", "placeholder": "3" }
+  ],
+  "cases": [
+    { "args": { "n": "3" }, "expected": "push fact(3)\n  push fact(2)\n    push fact(1)\n    base -> 1\n  pop  fact(2) = 2\npop  fact(3) = 6\nresult: 6" },
+    { "args": { "n": "1" }, "expected": "push fact(1)\nbase -> 1\nresult: 1" },
+    { "args": { "n": "4" }, "expected": "push fact(4)\n  push fact(3)\n    push fact(2)\n      push fact(1)\n      base -> 1\n    pop  fact(2) = 2\n  pop  fact(3) = 6\npop  fact(4) = 24\nresult: 24" }
+  ]
+}
+```
+
+Both print the same nested trace ending in `result: 6` (for n=3). Three frames — `fact(3)`, `fact(2)`, `fact(1)` — are alive at the deepest point, and they unwind in reverse: `fact(1)` returns first, `fact(3)` last. That LIFO order *is* recursion.
 
 ## How It Works
 
@@ -130,31 +147,88 @@ It raises `UnboundLocalError: cannot access local variable 'counter' where it is
 
 ## Your Turn
 
-The flip side: state that must **survive across calls** can't live on the stack (frames vanish on return) — it belongs in the **static** region. Implement a call-counter whose value persists even though every call gets a brand-new frame.
+The flip side: state that must **survive across calls** can't live on the stack (frames vanish on return) — it belongs in the **static** region. Implement a call-counter that returns how many times it has been called. Its value must persist even though every call gets a brand-new frame.
 
 ```python run viz=array
+def call_count():
+    # Your code goes here — the counter must survive across calls.
+    # Hint: a function attribute persists with the function object (heap),
+    # which outlives any single frame — the same effect as a static variable.
+    return 0
+
+k = int(input())                  # the test case's k (number of calls)
+results = [call_count() for _ in range(k)]
+print(" ".join(str(r) for r in results))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static class Counter {
+        // Your code goes here — declare a class-level static field
+        // so it persists in the static region across all calls.
+        static int callCount() { return 0; }
+    }
+
+    public static void main(String[] args) {
+        int k = Integer.parseInt(new Scanner(System.in).nextLine().trim());
+        List<String> results = new ArrayList<>();
+        for (int i = 0; i < k; i++) results.add(String.valueOf(Counter.callCount()));
+        System.out.println(String.join(" ", results));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "k", "label": "k", "type": "int", "placeholder": "3" }
+  ],
+  "cases": [
+    { "args": { "k": "3" }, "expected": "1 2 3" },
+    { "args": { "k": "5" }, "expected": "1 2 3 4 5" },
+    { "args": { "k": "1" }, "expected": "1" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Each call gets a fresh stack frame, but the counter `n` lives in the static region — a function attribute in Python (which persists on the function object, heap-allocated), a class static field in Java — so it accumulates across calls. The contrast is the whole lesson: **stack = per-call and temporary; static = whole-program and persistent.**
+
+```python solution time=O(1) space=O(1)
 def call_count():
     # Python has no `static`; a function attribute lives with the function
     # object (heap), which persists across calls — same effect as static.
     call_count.n = getattr(call_count, "n", 0) + 1
     return call_count.n
 
-print(call_count(), call_count(), call_count())   # 1 2 3
+k = int(input())
+results = [call_count() for _ in range(k)]
+print(" ".join(str(r) for r in results))
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
     static class Counter {
         static int n = 0;                 // class-level static field = static region
         static int callCount() { return ++n; }
     }
+
     public static void main(String[] args) {
-        System.out.println(Counter.callCount() + " " + Counter.callCount() + " " + Counter.callCount());  // 1 2 3
+        int k = Integer.parseInt(new Scanner(System.in).nextLine().trim());
+        List<String> results = new ArrayList<>();
+        for (int i = 0; i < k; i++) results.add(String.valueOf(Counter.callCount()));
+        System.out.println(String.join(" ", results));
     }
 }
 ```
 
-Both print `1 2 3`. Each call gets a fresh stack frame, but `n` lives in the static region (a function attribute in Python, a class static field in Java), so it accumulates. The contrast is the whole lesson: **stack = per-call and temporary; static = whole-program and persistent.**
+</details>
 
 ## Reflect & Connect
 
@@ -201,4 +275,4 @@ Both print `1 2 3`. Each call gets a fresh stack frame, but `n` lives in the sta
 - **Bryant & O'Hallaron**, *Computer Systems: A Programmer's Perspective*, 3rd ed., Ch. 3 (machine-level stack frames) and Ch. 9 (virtual memory / the four segments) — the authoritative treatment of process memory layout.
 - **Drepper, U.** (2007), "What Every Programmer Should Know About Memory" — the canonical deep dive on the memory hierarchy underneath these regions.
 - **CPython docs** — `sys.setrecursionlimit` and `sys.getrecursionlimit`: the interpreter's frame limit vs. the underlying C stack, and why raising it too far segfaults.
-- The `result: 6` trace, the `UnboundLocalError`, and the `1 2 3` counter above all come from the runnable blocks — re-run to verify.
+- The `result: 6` trace, the `UnboundLocalError`, and the `1 2 3` counter above come from the runnable blocks — re-run to verify.

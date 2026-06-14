@@ -4,6 +4,8 @@ summary: "Given a digit string s, return all valid IPv4 addresses formed by inse
 prereqs:
   - 04-pattern-conditional-enumeration/01-pattern
 difficulty: medium
+kind: problem
+topics: [conditional-enumeration, backtracking]
 ---
 
 # Generate IP Addresses
@@ -28,6 +30,92 @@ Output: []
 ```
 
 ---
+
+## Examples
+
+**Example 1**
+```
+Input:  s = "25525512235"
+Output: [255.255.12.235, 255.255.122.35]
+Explanation: Two ways to split 11 digits into 4 valid octets.
+```
+
+**Example 2**
+```
+Input:  s = "0000"
+Output: [0.0.0.0]
+Explanation: Each digit is its own segment "0" — the only valid split.
+```
+
+```quiz
+{
+  "prompt": "Why is '01.0.0.0' an invalid IPv4 address?",
+  "options": [
+    "01 is greater than 255",
+    "Leading zeros are forbidden except for the literal string '0'",
+    "There must be exactly 4 digits per segment",
+    "IPv4 only allows single-digit segments"
+  ],
+  "answer": "Leading zeros are forbidden except for the literal string '0'"
+}
+```
+
+## Constraints
+
+- `1 ≤ s.length ≤ 20`
+- `s` consists of digits only.
+
+```python run viz=array viz-root=segments
+from typing import List
+
+class Solution:
+    def generate_ip_addresses(self, s: str) -> List[str]:
+        # Your code goes here — for each position, try segment lengths 1, 2, 3;
+        # validate each segment (no leading zeros, value in [0,255]);
+        # record when exactly 4 segments have consumed all of s
+        return []
+
+s = input()
+result = Solution().generate_ip_addresses(s)
+print('[' + ', '.join(result) + ']')
+```
+
+```java run viz=array viz-root=segments
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public List<String> generateIPAddresses(String s) {
+            // Your code goes here — for each position, try segment lengths 1, 2, 3;
+            // validate each segment (no leading zeros, value in [0,255]);
+            // record when exactly 4 segments have consumed all of s
+            return new ArrayList<>();
+        }
+    }
+
+    public static void main(String[] args) {
+        String s = new Scanner(System.in).nextLine();
+        System.out.println(new Solution().generateIPAddresses(s));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "s", "type": "string", "placeholder": "25525512235" }
+  ],
+  "cases": [
+    { "args": { "s": "25525512235" }, "expected": "[255.255.12.235, 255.255.122.35]" },
+    { "args": { "s": "025511135" }, "expected": "[0.255.11.135, 0.255.111.35]" },
+    { "args": { "s": "789" }, "expected": "[]" },
+    { "args": { "s": "0000" }, "expected": "[0.0.0.0]" },
+    { "args": { "s": "1111" }, "expected": "[1.1.1.1]" },
+    { "args": { "s": "255255255255" }, "expected": "[255.255.255.255]" },
+    { "args": { "s": "010010" }, "expected": "[0.10.0.10, 0.100.1.0]" }
+  ]
+}
+```
 
 <details>
 <summary><h2>What's the Recursion Doing?</h2></summary>
@@ -96,7 +184,7 @@ Each recursion picks one more segment. ✓
 
 ### The Solution
 
-```python run viz=array viz-root=segments
+```python solution time=O(81 · n) space=O(1)
 from typing import List
 
 class Solution:
@@ -186,18 +274,12 @@ class Solution:
         return ip_addresses
 
 
-# Examples from the problem statement
-print(Solution().generate_ip_addresses("25525512235"))  # ['255.255.12.235', '255.255.122.35']
-print(Solution().generate_ip_addresses("025511135"))    # ['0.255.11.135', '0.255.111.35']
-print(Solution().generate_ip_addresses("789"))          # []
-
-# Edge cases
-print(Solution().generate_ip_addresses("0000"))         # ['0.0.0.0']
-print(Solution().generate_ip_addresses("1111"))         # ['1.1.1.1']
-print(Solution().generate_ip_addresses("255255255255")) # ['255.255.255.255']
+s = input()
+result = Solution().generate_ip_addresses(s)
+print('[' + ', '.join(result) + ']')
 ```
 
-```java run viz=array viz-root=segments
+```java solution
 import java.util.*;
 
 public class Main {
@@ -302,15 +384,8 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().generateIPAddresses("25525512235"));  // [255.255.12.235, 255.255.122.35]
-        System.out.println(new Solution().generateIPAddresses("025511135"));    // [0.255.11.135, 0.255.111.35]
-        System.out.println(new Solution().generateIPAddresses("789"));          // []
-
-        // Edge cases
-        System.out.println(new Solution().generateIPAddresses("0000"));         // [0.0.0.0]
-        System.out.println(new Solution().generateIPAddresses("1111"));         // [1.1.1.1]
-        System.out.println(new Solution().generateIPAddresses("255255255255")); // [255.255.255.255]
+        String s = new Scanner(System.in).nextLine();
+        System.out.println(new Solution().generateIPAddresses(s));
     }
 }
 ```
@@ -361,7 +436,7 @@ The constant depth is unusual; most backtracking has linear depth. The bound her
 | Too short | `"12"` | `[]` (can't split into 4 segments). |
 | Too long | `"123456789012345"` | `[]` (every split has at least one over-3-char segment). |
 | All zeros | `"0000"` | `["0.0.0.0"]`. |
-| Leading zeros | `"010010"` | `["0.10.0.10"]` (others have leading zeros). |
+| Leading zeros | `"010010"` | `["0.10.0.10", "0.100.1.0"]` (others have leading zeros). |
 | Boundary 255 | `"255255255255"` | `["255.255.255.255"]`. |
 
 </details>

@@ -4,6 +4,8 @@ summary: "Given a non-negative integer n, return the n-th Catalan number, where:
 prereqs:
   - 07-pattern-multiple-recursion/01-pattern
 difficulty: medium
+kind: problem
+topics: [multiple-recursion, recursion]
 ---
 
 # Catalan Number
@@ -21,19 +23,81 @@ Given a non-negative integer `n`, return the `n`-th Catalan number, where:
 
 You **must** solve this recursively.
 
+---
+
+## Examples
+
+**Example 1**
 ```
 Input:  n = 7
 Output: 429
 Explanation: C(7) = C(0)*C(6) + C(1)*C(5) + C(2)*C(4) + C(3)*C(3) + C(4)*C(2) + C(5)*C(1) + C(6)*C(0) = 429
-
-Input:  n = 5
-Output: 42
-
-Input:  n = 0
-Output: 1
 ```
 
----
+**Example 2**
+```
+Input:  n = 5
+Output: 42
+Explanation: C(5) = 42 (the 5th Catalan number)
+```
+
+```quiz
+{
+  "prompt": "How many recursive calls does C(3) make in total (including all sub-calls)?",
+  "options": ["3", "6", "12", "19"],
+  "answer": "19"
+}
+```
+
+## Constraints
+
+- `0 ≤ n ≤ 12` (naive recursion; larger values are slow without memoisation)
+- Must be solved recursively.
+
+```python run viz=array
+class Solution:
+    def catalan(self, n: int) -> int:
+        # Your code goes here
+        return 0
+
+n = int(input())
+print(Solution().catalan(n))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int catalan(int n) {
+            // Your code goes here
+            return 0;
+        }
+    }
+
+    public static void main(String[] args) {
+        int n = Integer.parseInt(new Scanner(System.in).nextLine().trim());
+        System.out.println(new Solution().catalan(n));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "n", "label": "n", "type": "int", "placeholder": "7" }
+  ],
+  "cases": [
+    { "args": { "n": "7" }, "expected": "429" },
+    { "args": { "n": "5" }, "expected": "42" },
+    { "args": { "n": "0" }, "expected": "1" },
+    { "args": { "n": "1" }, "expected": "1" },
+    { "args": { "n": "2" }, "expected": "2" },
+    { "args": { "n": "3" }, "expected": "5" },
+    { "args": { "n": "4" }, "expected": "14" }
+  ]
+}
+```
 
 <details>
 <summary><h2>What Are Catalan Numbers?</h2></summary>
@@ -123,7 +187,7 @@ flowchart TB
 
 ### The Solution
 
-```python run viz=array
+```python solution time=O(4^n / n^1.5) space=O(n)
 class Solution:
     def catalan(self, n: int) -> int:
 
@@ -144,19 +208,13 @@ class Solution:
         return result
 
 
-# Examples from the problem statement
-print(Solution().catalan(7))   # 429
-print(Solution().catalan(5))   # 42
-print(Solution().catalan(0))   # 1
-
-# Edge cases
-print(Solution().catalan(1))   # 1
-print(Solution().catalan(2))   # 2
-print(Solution().catalan(3))   # 5
-print(Solution().catalan(4))   # 14
+n = int(input())
+print(Solution().catalan(n))
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
     static class Solution {
         public int catalan(int N) {
@@ -182,16 +240,8 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().catalan(7));   // 429
-        System.out.println(new Solution().catalan(5));   // 42
-        System.out.println(new Solution().catalan(0));   // 1
-
-        // Edge cases
-        System.out.println(new Solution().catalan(1));   // 1
-        System.out.println(new Solution().catalan(2));   // 2
-        System.out.println(new Solution().catalan(3));   // 5
-        System.out.println(new Solution().catalan(4));   // 14
+        int n = Integer.parseInt(new Scanner(System.in).nextLine().trim());
+        System.out.println(new Solution().catalan(n));
     }
 }
 ```

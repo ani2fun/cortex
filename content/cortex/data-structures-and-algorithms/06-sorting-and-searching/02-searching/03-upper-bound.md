@@ -18,6 +18,8 @@ On its own that's the answer to "first element `> x`." But the real power is the
 In `[1, 3, 3, 5, 7]`, find the first index `> 3` (it's `3`, where `5` sits — just past the two 3s), and use the pair to count the 3s. Run it.
 
 ```python run viz=array
+import ast
+
 def lower_bound(arr, t):
     lo, hi = 0, len(arr)
     while lo < hi:
@@ -36,9 +38,63 @@ def upper_bound(arr, target):
             hi = mid
     return lo                            # first index with arr[index] > target
 
-a = [1, 3, 3, 5, 7]
-print(upper_bound(a, 3))                 # 3  (first index > 3)
-print(upper_bound(a, 3) - lower_bound(a, 3))   # 2  (count of 3s)
+arr = ast.literal_eval(input())
+target = int(input())
+print(upper_bound(arr, target))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+  static int lowerBound(int[] arr, int t) {
+    int lo = 0, hi = arr.length;
+    while (lo < hi) { int m = lo + (hi - lo) / 2; if (arr[m] < t) lo = m + 1; else hi = m; }
+    return lo;
+  }
+
+  static int upperBound(int[] arr, int target) {
+    int lo = 0, hi = arr.length;
+    while (lo < hi) {
+      int mid = lo + (hi - lo) / 2;
+      if (arr[mid] <= target) lo = mid + 1; // <= : skip elements EQUAL to target too
+      else hi = mid;
+    }
+    return lo;                              // first index with arr[index] > target
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());
+    int target = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(upperBound(arr, target));
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's array
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[1, 3, 3, 5, 7]" },
+    { "id": "target", "label": "target", "type": "number", "placeholder": "3" }
+  ],
+  "cases": [
+    { "args": { "arr": "[1, 3, 3, 5, 7]", "target": "3" }, "expected": "3" },
+    { "args": { "arr": "[1, 3, 3, 5, 7]", "target": "1" }, "expected": "1" },
+    { "args": { "arr": "[1, 3, 3, 5, 7]", "target": "7" }, "expected": "5" },
+    { "args": { "arr": "[1, 3, 3, 5, 7]", "target": "0" }, "expected": "0" }
+  ]
+}
 ```
 
 ## How It Works
@@ -83,52 +139,118 @@ Because the comparison decides what happens when `arr[mid] == target`. In lower 
 
 ## Your Turn
 
-The reusable upper bound (with a count helper):
+Implement upper bound: same half-open `[lo, hi)` template as lower bound, but change `arr[mid] < target` to `arr[mid] <= target` so equal elements are also pushed past. Return `lo` when the range collapses.
 
 ```python run viz=array
-def lower_bound(arr, t):
-    lo, hi = 0, len(arr)
-    while lo < hi:
-        mid = lo + (hi - lo) // 2
-        if arr[mid] < t: lo = mid + 1
-        else: hi = mid
-    return lo
+import ast
 
-def upper_bound(arr, t):
-    lo, hi = 0, len(arr)
-    while lo < hi:
-        mid = lo + (hi - lo) // 2
-        if arr[mid] <= t: lo = mid + 1
-        else: hi = mid
-    return lo
+def upper_bound(arr, target):
+    # Your code goes here — half-open [lo, hi), hi=len; <= target → lo=mid+1; else hi=mid.
+    return 0
 
-def count(arr, t):
-    return upper_bound(arr, t) - lower_bound(arr, t)
-
-a = [1, 2, 2, 2, 5, 7]
-print(upper_bound(a, 2), count(a, 2), count(a, 4))   # 4 3 0
+arr = ast.literal_eval(input())
+target = int(input())
+print(upper_bound(arr, target))
 ```
 
 ```java run viz=array
+import java.util.*;
+
 public class Main {
-  static int lowerBound(int[] a, int t) {
-    int lo = 0, hi = a.length;
-    while (lo < hi) { int m = lo + (hi - lo) / 2; if (a[m] < t) lo = m + 1; else hi = m; }
-    return lo;
+  static int upperBound(int[] arr, int target) {
+    // Your code goes here — half-open [lo, hi), hi=len; <= target → lo=mid+1; else hi=mid.
+    return 0;
   }
-  static int upperBound(int[] a, int t) {
-    int lo = 0, hi = a.length;
-    while (lo < hi) { int m = lo + (hi - lo) / 2; if (a[m] <= t) lo = m + 1; else hi = m; }
-    return lo;
-  }
+
   public static void main(String[] args) {
-    int[] a = {1, 2, 2, 2, 5, 7};
-    System.out.println(upperBound(a, 2) + " " + (upperBound(a, 2) - lowerBound(a, 2)));   // 4 3
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());
+    int target = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(upperBound(arr, target));
+  }
+
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
   }
 }
 ```
 
-This is a structural lesson — drill searching in the pattern sets.
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[1, 3, 3, 5, 7]" },
+    { "id": "target", "label": "target", "type": "number", "placeholder": "3" }
+  ],
+  "cases": [
+    { "args": { "arr": "[1, 3, 3, 5, 7]", "target": "3" }, "expected": "3" },
+    { "args": { "arr": "[1, 3, 3, 5, 7]", "target": "1" }, "expected": "1" },
+    { "args": { "arr": "[1, 3, 3, 5, 7]", "target": "7" }, "expected": "5" },
+    { "args": { "arr": "[1, 2, 2, 2, 5, 7]", "target": "2" }, "expected": "4" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Set `lo = 0`, `hi = len(arr)` (half-open). Each step: `mid = lo + (hi - lo) // 2`; if `arr[mid] <= target` set `lo = mid + 1` (go past equal elements too); otherwise set `hi = mid` (mid is a candidate — it's strictly greater). When `lo == hi`, return `lo`. The only difference from lower bound is `<=` instead of `<`. `O(log n)` time, `O(1)` space. Returns `len` if every element is ≤ target.
+
+```python solution time=O(log n) space=O(1)
+import ast
+
+def upper_bound(arr, target):
+    lo, hi = 0, len(arr)
+    while lo < hi:
+        mid = lo + (hi - lo) // 2
+        if arr[mid] <= target:
+            lo = mid + 1
+        else:
+            hi = mid
+    return lo
+
+arr = ast.literal_eval(input())
+target = int(input())
+print(upper_bound(arr, target))
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+  static int upperBound(int[] arr, int target) {
+    int lo = 0, hi = arr.length;
+    while (lo < hi) {
+      int mid = lo + (hi - lo) / 2;
+      if (arr[mid] <= target) lo = mid + 1;
+      else hi = mid;
+    }
+    return lo;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());
+    int target = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(upperBound(arr, target));
+  }
+
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+</details>
 
 ## Reflect & Connect
 
@@ -182,4 +304,4 @@ Upper bound completes the boundary pair:
 
 - **Sedgewick & Wayne**, *Algorithms*, 4th ed., §3.1 — ordered symbol-table rank/range queries.
 - **C++ STL / Python `bisect`** — `upper_bound` / `bisect_right` define the "first index > target" contract; `equal_range` is the lower/upper pair.
-- The `< ` vs `≤` distinction and the counting corollary are standard; both runnable blocks are verified by running (`upper_bound(·,3)=3`, count of 3s `=2`; `[1,2,2,2,5,7]` ⇒ `4, 3, 0`).
+- The `<` vs `≤` distinction and the counting corollary are standard; both runnable blocks are verified by running (`[1,3,3,5,7], 3 ⇒ 3`; `[1,3,3,5,7], 7 ⇒ 5`; `[1,2,2,2,5,7], 2 ⇒ 4`).

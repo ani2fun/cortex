@@ -1,9 +1,11 @@
 ---
 title: "Ackermann Function"
-summary: "Compute A(m, n) defined as:"
+summary: "Compute A(m, n) defined as: A(0, n) = n + 1; A(m, 0) = A(m-1, 1) for m > 0; A(m, n) = A(m-1, A(m, n-1)) for m > 0, n > 0."
 prereqs:
   - 08-pattern-multidimensional-recursion/01-pattern
 difficulty: medium
+kind: problem
+topics: [multidimensional-recursion, recursion]
 ---
 
 # Ackermann Function
@@ -22,20 +24,94 @@ Compute `A(m, n)` defined as:
 
 You **must** solve this recursively.
 
+> **Warning:** `A(4, 2)` already has more digits than there are atoms in the observable universe. Don't try `m ≥ 4`. Even `A(3, 10)` will hang. Keep test inputs within `m ≤ 3, n ≤ 5`.
+
+---
+
+## Examples
+
+**Example 1**
 ```
 Input:  m = 2, n = 2
 Output: 7
-
-Input:  m = 1, n = 1
-Output: 3
-
-Input:  m = 0, n = 0
-Output: 1
 ```
 
-> **Warning:** `A(4, 2)` already has more digits than there are atoms in the observable universe. Don't try `m ≥ 4`. Even `A(3, 10)` will hang.
+**Example 2**
+```
+Input:  m = 1, n = 1
+Output: 3
+Explanation: A(1, 1) = A(0, A(1, 0)) = A(0, A(0, 1)) = A(0, 2) = 3
+```
 
----
+```quiz
+{
+  "prompt": "What does A(0, n) return for any n?",
+  "options": ["n", "n + 1", "1", "A(1, n)"],
+  "answer": "n + 1"
+}
+```
+
+## Constraints
+
+- `0 ≤ m ≤ 3`
+- `0 ≤ n ≤ 5`
+- Must be solved recursively.
+
+```python run viz=array
+class Solution:
+    def ackerman(self, m: int, n: int) -> int:
+        # Your code goes here — three cases:
+        # if m == 0: return n + 1
+        # if m > 0 and n == 0: return ackerman(m - 1, 1)
+        # if m > 0 and n > 0: return ackerman(m - 1, ackerman(m, n - 1))
+        return 0
+
+m = int(input())
+n = int(input())
+print(Solution().ackerman(m, n))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int ackerman(int m, int n) {
+            // Your code goes here — three cases:
+            // if m == 0: return n + 1
+            // if m > 0 and n == 0: return ackerman(m - 1, 1)
+            // if m > 0 and n > 0: return ackerman(m - 1, ackerman(m, n - 1))
+            return 0;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int m = Integer.parseInt(sc.nextLine().trim());
+        int n = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().ackerman(m, n));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "m", "label": "m", "type": "int", "placeholder": "2" },
+    { "id": "n", "label": "n", "type": "int", "placeholder": "2" }
+  ],
+  "cases": [
+    { "args": { "m": "2", "n": "2" }, "expected": "7" },
+    { "args": { "m": "1", "n": "1" }, "expected": "3" },
+    { "args": { "m": "0", "n": "0" }, "expected": "1" },
+    { "args": { "m": "0", "n": "5" }, "expected": "6" },
+    { "args": { "m": "1", "n": "0" }, "expected": "2" },
+    { "args": { "m": "2", "n": "0" }, "expected": "3" },
+    { "args": { "m": "2", "n": "3" }, "expected": "9" },
+    { "args": { "m": "3", "n": "2" }, "expected": "29" }
+  ]
+}
+```
 
 <details>
 <summary><h2>What Makes Ackermann Wild</h2></summary>
@@ -103,7 +179,7 @@ table: "Ackermann's small values — A(m, n)" {
 
 ### The Solution
 
-```python run viz=array
+```python solution time=O(non-elementary) space=O(non-elementary)
 class Solution:
     def ackerman(self, m: int, n: int) -> int:
 
@@ -125,19 +201,14 @@ class Solution:
         return 0
 
 
-# Examples from the problem statement
-print(Solution().ackerman(2, 2))   # 7
-print(Solution().ackerman(1, 1))   # 3
-print(Solution().ackerman(0, 0))   # 1
-
-# Edge cases
-print(Solution().ackerman(0, 5))   # 6
-print(Solution().ackerman(1, 0))   # 2
-print(Solution().ackerman(2, 0))   # 3
-print(Solution().ackerman(2, 3))   # 9
+m = int(input())
+n = int(input())
+print(Solution().ackerman(m, n))
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
     static class Solution {
         public int ackerman(int M, int N) {
@@ -165,16 +236,10 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().ackerman(2, 2));   // 7
-        System.out.println(new Solution().ackerman(1, 1));   // 3
-        System.out.println(new Solution().ackerman(0, 0));   // 1
-
-        // Edge cases
-        System.out.println(new Solution().ackerman(0, 5));   // 6
-        System.out.println(new Solution().ackerman(1, 0));   // 2
-        System.out.println(new Solution().ackerman(2, 0));   // 3
-        System.out.println(new Solution().ackerman(2, 3));   // 9
+        Scanner sc = new Scanner(System.in);
+        int m = Integer.parseInt(sc.nextLine().trim());
+        int n = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().ackerman(m, n));
     }
 }
 ```
@@ -225,7 +290,7 @@ Memoisation helps only modestly here — the values themselves grow so fast that
 | `m = 0` | `A(0, n)` | `n + 1` | Pure base case. |
 | `n = 0` | `A(m, 0)` | `A(m - 1, 1)` | Bridges to base. |
 | Small | `A(2, 3)` | `9` | Tractable. |
-| Edge | `A(3, 5)` | `253` | Slow but possible. |
+| Edge | `A(3, 2)` | `29` | Slow but possible. |
 | Pathological | `A(4, 1)` | `65533` | Calls explode; will likely overflow stack on most systems. |
 | Insane | `A(4, 2)` | `2^65536 − 3` | Larger than any number ever counted. |
 

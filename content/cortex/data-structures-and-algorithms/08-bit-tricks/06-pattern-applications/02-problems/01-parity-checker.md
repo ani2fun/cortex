@@ -4,18 +4,90 @@ summary: "Given an integer, return "odd" if it's odd, "even" if it's even."
 prereqs:
   - 06-pattern-applications/01-pattern
 difficulty: easy
+kind: problem
+topics: [applications, bit-manipulation]
 ---
 
 # Parity Checker
 
-## The Problem
+The least significant bit is all you need — `n & 1` is the parity test.
+
+## Problem Statement
 
 Given an integer, return `"odd"` if it's odd, `"even"` if it's even.
 
+## Examples
+
+**Example 1**
 ```
-Input:  num = 10  →  "even"
-Input:  num = 9   →  "odd"
-Input:  num = 1   →  "odd"
+Input:  num = 10
+Output: even
+Explanation: 10 in binary is 1010; LSB is 0, so it's even.
+```
+
+**Example 2**
+```
+Input:  num = 9
+Output: odd
+Explanation: 9 in binary is 1001; LSB is 1, so it's odd.
+```
+
+**Example 3**
+```
+Input:  num = -1
+Output: odd
+Explanation: -1 in two's complement has all bits set; LSB is 1, so it's odd.
+```
+
+## Constraints
+
+- `-2^31 ≤ num ≤ 2^31 - 1` — ordinary signed 32-bit integer.
+- `num & 1` is parity-correct for negative numbers in two's complement.
+
+```python run viz=array
+class Solution:
+    def parity_checker(self, num: int) -> str:
+        # Your code goes here
+        return ""
+
+
+num = int(input())
+print(Solution().parity_checker(num))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public String parityChecker(int num) {
+            // Your code goes here
+            return "";
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int num = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().parityChecker(num));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "num", "label": "num", "type": "int", "placeholder": "10" }
+  ],
+  "cases": [
+    { "args": { "num": "10" }, "expected": "even" },
+    { "args": { "num": "9" }, "expected": "odd" },
+    { "args": { "num": "1" }, "expected": "odd" },
+    { "args": { "num": "0" }, "expected": "even" },
+    { "args": { "num": "-1" }, "expected": "odd" },
+    { "args": { "num": "-2" }, "expected": "even" }
+  ]
+}
 ```
 
 <details>
@@ -38,9 +110,7 @@ Compare to `n % 2`: for negative numbers in C and similar languages, `(-3) % 2 =
 <details>
 <summary><h2>The Solution</h2></summary>
 
-
-
-```python run viz=array
+```python solution time=O(1) space=O(1)
 class Solution:
     def parity_checker(self, num: int) -> str:
 
@@ -55,20 +125,13 @@ class Solution:
             return "even"
 
 
-# Examples from the problem statement
-print(Solution().parity_checker(10))     # even
-print(Solution().parity_checker(9))      # odd
-print(Solution().parity_checker(1))      # odd
-
-# Edge cases
-print(Solution().parity_checker(0))      # even
-print(Solution().parity_checker(2))      # even
-print(Solution().parity_checker(-1))     # odd
-print(Solution().parity_checker(-2))     # even
-print(Solution().parity_checker(100))    # even
+num = int(input())
+print(Solution().parity_checker(num))
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
     static class Solution {
         public String parityChecker(int num) {
@@ -87,17 +150,9 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().parityChecker(10));     // even
-        System.out.println(new Solution().parityChecker(9));      // odd
-        System.out.println(new Solution().parityChecker(1));      // odd
-
-        // Edge cases
-        System.out.println(new Solution().parityChecker(0));      // even
-        System.out.println(new Solution().parityChecker(2));      // even
-        System.out.println(new Solution().parityChecker(-1));     // odd
-        System.out.println(new Solution().parityChecker(-2));     // even
-        System.out.println(new Solution().parityChecker(100));    // even
+        Scanner sc = new Scanner(System.in);
+        int num = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().parityChecker(num));
     }
 }
 ```

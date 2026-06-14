@@ -33,12 +33,15 @@ class LSM:
                 return None if layer[k] == TOMBSTONE else layer[k]
         return None
 
+key = input()
+v1 = input()
+v2 = input()
 db = LSM()
-db.put("user:1", "alice")
-db.flush()                       # "alice" now lives in an SSTable on disk
-db.put("user:1", "alice2")       # update -> lands in the fresh memtable (newer)
-print("read user:1 ->", db.get("user:1"))
-print("# sstables:", len(db.sstables), "| old value still on disk:", db.sstables[0]["user:1"])
+db.put(key, v1)
+db.flush()                       # v1 now lives in an SSTable on disk
+db.put(key, v2)                  # update -> lands in the fresh memtable (newer)
+print("read " + key + " ->", db.get(key))
+print("# sstables:", len(db.sstables), "| old value still on disk:", db.sstables[0][key])
 ```
 
 ```java run viz=array
@@ -58,13 +61,32 @@ public class Main {
         }
     }
     public static void main(String[] x) {
+        Scanner sc = new Scanner(System.in);
+        String key = sc.nextLine();
+        String v1  = sc.nextLine();
+        String v2  = sc.nextLine();
         LSM db = new LSM();
-        db.put("user:1", "alice");
-        db.flush();                       // "alice" now lives in an SSTable
-        db.put("user:1", "alice2");       // update -> fresh memtable (newer)
-        System.out.println("read user:1 -> " + db.get("user:1"));
-        System.out.println("# sstables: " + db.sstables.size() + " | old value still on disk: " + db.sstables.get(0).get("user:1"));
+        db.put(key, v1);
+        db.flush();                       // v1 now lives in an SSTable
+        db.put(key, v2);                  // update -> fresh memtable (newer)
+        System.out.println("read " + key + " -> " + db.get(key));
+        System.out.println("# sstables: " + db.sstables.size() + " | old value still on disk: " + db.sstables.get(0).get(key));
     }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "key",    "label": "key",           "type": "string", "placeholder": "user:1" },
+    { "id": "v1",     "label": "initial value",  "type": "string", "placeholder": "alice" },
+    { "id": "v2",     "label": "updated value",  "type": "string", "placeholder": "alice2" }
+  ],
+  "cases": [
+    { "args": { "key": "user:1", "v1": "alice",  "v2": "alice2" }, "expected": "read user:1 -> alice2\n# sstables: 1 | old value still on disk: alice" },
+    { "args": { "key": "score",  "v1": "100",    "v2": "200"    }, "expected": "read score -> 200\n# sstables: 1 | old value still on disk: 100" },
+    { "args": { "key": "color",  "v1": "blue",   "v2": "red"    }, "expected": "read color -> red\n# sstables: 1 | old value still on disk: blue" }
+  ]
 }
 ```
 
@@ -141,21 +163,111 @@ Tombstones and shadowed values pile up; **compaction** is the garbage collector 
 
 ```python run viz=array
 TOMBSTONE = "<deleted>"
+def compact(sstables):
+    # Your code goes here — merge newest-first SSTables, keep newest per key, drop tombstones
+    return {}
+
+n_newer = int(input())
+sst2 = {}
+for _ in range(n_newer):
+    line = input(); k, v = line.split("=", 1); sst2[k] = v
+n_older = int(input())
+sst1 = {}
+for _ in range(n_older):
+    line = input(); k, v = line.split("=", 1); sst1[k] = v
+before = [sst2, sst1]
+after = compact(before)
+keys_strs = ["[" + ", ".join(sorted(s.keys())) + "]" for s in before]
+print("before: 2 SSTables, keys per: [" + ", ".join(keys_strs) + "]")
+print("after compaction: {" + ", ".join(f"{k}={v}" for k, v in sorted(after.items())) + "}")
+```
+
+```java run viz=array
+import java.util.*;
+public class Main {
+    static final String TOMBSTONE = "<deleted>";
+    static Map<String,String> compact(List<Map<String,String>> sstables) {
+        // Your code goes here — merge newest-first SSTables, keep newest per key, drop tombstones
+        return new TreeMap<>();
+    }
+    public static void main(String[] x) {
+        Scanner sc = new Scanner(System.in);
+        int nNewer = Integer.parseInt(sc.nextLine().trim());
+        Map<String,String> sst2 = new TreeMap<>();
+        for (int i = 0; i < nNewer; i++) {
+            String line = sc.nextLine(); int idx = line.indexOf("=");
+            sst2.put(line.substring(0, idx), line.substring(idx + 1));
+        }
+        int nOlder = Integer.parseInt(sc.nextLine().trim());
+        Map<String,String> sst1 = new TreeMap<>();
+        for (int i = 0; i < nOlder; i++) {
+            String line = sc.nextLine(); int idx = line.indexOf("=");
+            sst1.put(line.substring(0, idx), line.substring(idx + 1));
+        }
+        List<Map<String,String>> before = List.of(sst2, sst1);
+        Map<String,String> after = compact(before);
+        System.out.println("before: 2 SSTables, keys per: [" + new TreeSet<>(sst2.keySet()) + ", " + new TreeSet<>(sst1.keySet()) + "]");
+        System.out.println("after compaction: " + after);
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "n_newer", "label": "# newer entries",       "type": "number",  "placeholder": "2" },
+    { "id": "sst2",    "label": "newer SSTable (k=v)",   "type": "string",  "placeholder": "k1=<deleted>\nk2=v2new" },
+    { "id": "n_older", "label": "# older entries",       "type": "number",  "placeholder": "3" },
+    { "id": "sst1",    "label": "older SSTable (k=v)",   "type": "string",  "placeholder": "k1=v1\nk2=v2old\nk3=v3" }
+  ],
+  "cases": [
+    {
+      "args": { "n_newer": "2", "sst2": "k1=<deleted>\nk2=v2new", "n_older": "3", "sst1": "k1=v1\nk2=v2old\nk3=v3" },
+      "expected": "before: 2 SSTables, keys per: [[k1, k2], [k1, k2, k3]]\nafter compaction: {k2=v2new, k3=v3}"
+    },
+    {
+      "args": { "n_newer": "1", "sst2": "a=new_a", "n_older": "2", "sst1": "a=old_a\nb=b_val" },
+      "expected": "before: 2 SSTables, keys per: [[a], [a, b]]\nafter compaction: {a=new_a, b=b_val}"
+    },
+    {
+      "args": { "n_newer": "1", "sst2": "x=<deleted>", "n_older": "1", "sst1": "x=orig" },
+      "expected": "before: 2 SSTables, keys per: [[x], [x]]\nafter compaction: {}"
+    }
+  ]
+}
+```
+
+Both compact the two files into one holding `k2=v2new` and `k3=v3`. Three things happened in a single sorted pass: `k1`'s tombstone met its old value and **both were dropped** (space reclaimed); `k2` kept only the **newer** `v2new`, discarding `v2old`; and `k3`, present in just the old file, carried through unchanged.
+
+<details>
+<summary><strong>Editorial</strong></summary>
+
+Iterate SSTables from oldest to newest so each newer write simply overwrites the merged map — then strip tombstones in one pass. A single `O(total keys)` merge, done.
+
+```python solution time=O(n) space=O(n)
+TOMBSTONE = "<deleted>"
 def compact(sstables):                 # merge newest-first SSTables into one
     merged = {}
     for sst in reversed(sstables):     # apply OLDEST first so newer writes overwrite
         merged.update(sst)
     return {k: v for k, v in merged.items() if v != TOMBSTONE}   # drop tombstoned keys
 
-sst2 = {"k1": TOMBSTONE, "k2": "v2new"}             # newer SSTable: deletes k1, updates k2
-sst1 = {"k1": "v1", "k2": "v2old", "k3": "v3"}      # older SSTable
-before = [sst2, sst1]                                # newest first
+n_newer = int(input())
+sst2 = {}
+for _ in range(n_newer):
+    line = input(); k, v = line.split("=", 1); sst2[k] = v
+n_older = int(input())
+sst1 = {}
+for _ in range(n_older):
+    line = input(); k, v = line.split("=", 1); sst1[k] = v
+before = [sst2, sst1]
 after = compact(before)
-print("before: 2 SSTables, keys per:", [sorted(s) for s in before])
-print("after compaction:", dict(sorted(after.items())))
+keys_strs = ["[" + ", ".join(sorted(s.keys())) + "]" for s in before]
+print("before: 2 SSTables, keys per: [" + ", ".join(keys_strs) + "]")
+print("after compaction: {" + ", ".join(f"{k}={v}" for k, v in sorted(after.items())) + "}")
 ```
 
-```java run viz=array
+```java solution
 import java.util.*;
 public class Main {
     static final String TOMBSTONE = "<deleted>";
@@ -167,16 +279,28 @@ public class Main {
         return out;
     }
     public static void main(String[] x) {
-        Map<String,String> sst2 = new TreeMap<>(Map.of("k1", TOMBSTONE, "k2", "v2new"));        // newer
-        Map<String,String> sst1 = new TreeMap<>(Map.of("k1", "v1", "k2", "v2old", "k3", "v3")); // older
-        List<Map<String,String>> before = List.of(sst2, sst1);  // newest first
+        Scanner sc = new Scanner(System.in);
+        int nNewer = Integer.parseInt(sc.nextLine().trim());
+        Map<String,String> sst2 = new TreeMap<>();
+        for (int i = 0; i < nNewer; i++) {
+            String line = sc.nextLine(); int idx = line.indexOf("=");
+            sst2.put(line.substring(0, idx), line.substring(idx + 1));
+        }
+        int nOlder = Integer.parseInt(sc.nextLine().trim());
+        Map<String,String> sst1 = new TreeMap<>();
+        for (int i = 0; i < nOlder; i++) {
+            String line = sc.nextLine(); int idx = line.indexOf("=");
+            sst1.put(line.substring(0, idx), line.substring(idx + 1));
+        }
+        List<Map<String,String>> before = List.of(sst2, sst1);
+        Map<String,String> after = compact(before);
         System.out.println("before: 2 SSTables, keys per: [" + new TreeSet<>(sst2.keySet()) + ", " + new TreeSet<>(sst1.keySet()) + "]");
-        System.out.println("after compaction: " + compact(before));
+        System.out.println("after compaction: " + after);
     }
 }
 ```
 
-Both compact the two files into one holding `k2=v2new` and `k3=v3` (Python prints `{'k2': 'v2new', 'k3': 'v3'}`, Java `{k2=v2new, k3=v3}`). Three things happened in a single sorted pass: `k1`'s tombstone met its old value and **both were dropped** (space reclaimed); `k2` kept only the **newer** `v2new`, discarding `v2old`; and `k3`, present in just the old file, carried through unchanged. Two SSTables became one, so the next read for any of these keys checks half as many files. That's compaction's double payoff — it reclaims the space shadowing leaves behind *and* shrinks read amplification — and it's why an LSM must keep compaction running fast enough to match the write rate.
+</details>
 
 ## Reflect & Connect
 

@@ -4,31 +4,139 @@ summary: "Given an array arr and a positive integer k, return the k most frequen
 prereqs:
   - 12-pattern-quickselect/01-pattern
 difficulty: medium
+kind: problem
+topics: [quickselect, sorting]
 ---
 
 # K Most Frequent Elements
 
 The final pattern — quickselect on a *derived* array. Build a frequency map, extract unique elements, quickselect by frequency.
 
----
+## Problem Statement
 
-## The Problem
+Given an array `arr` and a positive integer `k`, return the `k` most frequent elements (sorted ascending).
 
-Given an array `arr` and a positive integer `k`, return the `k` most frequent elements (in any order).
+## Examples
 
+**Example 1**
 ```
 Input:  arr = [1, 2, 2, 3, 3, 3], k = 2
-Output: [2, 3]      (3 appears 3 times, 2 appears 2 times)
-
-Input:  arr = [1, 5, 6, 6], k = 1
-Output: [6]
-
-Input:  arr = [1], k = 1
-Output: [1]
+Output: [2, 3]
+Explanation: 3 appears 3 times, 2 appears 2 times, 1 appears 1 time. Top 2 by frequency: [2, 3].
 ```
 
----
+**Example 2**
+```
+Input:  arr = [1, 5, 6, 6], k = 1
+Output: [6]
+Explanation: 6 appears 2 times — the highest frequency. Top 1: [6].
+```
 
+## Constraints
+
+- `1 ≤ arr.length ≤ 10^4`
+- `-10^4 ≤ arr[i] ≤ 10^4`
+- `1 ≤ k ≤` number of unique elements in `arr`
+- Test cases have no tie at the k-th frequency boundary (the result set is unambiguous).
+- Output is sorted ascending.
+
+```python run viz=array viz-root=unique
+import ast
+import random
+from typing import List, Dict
+
+class Solution:
+    def partition(
+        self, unique: List[int], left: int, right: int, frequency: Dict[int, int]
+    ) -> int:
+        # Your code goes here — partition by frequency descending.
+        return left
+
+    def quickselect(
+        self, unique: List[int], left: int, right: int, k: int, frequency: Dict[int, int]
+    ) -> None:
+        # Your code goes here
+        pass
+
+    def k_most_frequent_elements(self, arr: List[int], k: int) -> List[int]:
+        # Your code goes here — build freq map, collect uniques, quickselect,
+        # return unique[:k].
+        return []
+
+
+arr = ast.literal_eval(input())
+k = int(input())
+print(sorted(Solution().k_most_frequent_elements(arr, k)))
+```
+
+```java run viz=array viz-root=unique
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        private void swap(int[] arr, int i, int j) {
+            int temp = arr[i]; arr[i] = arr[j]; arr[j] = temp;
+        }
+
+        private int partition(int[] unique, int left, int right, Map<Integer, Integer> frequency) {
+            // Your code goes here — partition by frequency descending.
+            return left;
+        }
+
+        private void quickselect(int[] unique, int left, int right, int k, Map<Integer, Integer> frequency) {
+            // Your code goes here
+        }
+
+        public int[] kMostFrequentElements(int[] arr, int k) {
+            // Your code goes here — build freq map, collect uniques,
+            // quickselect, return unique[0..k].
+            return new int[0];
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        int[] r = new Solution().kMostFrequentElements(arr, k);
+        Arrays.sort(r);
+        System.out.println(Arrays.toString(r));
+    }
+
+    // "[1, 2, 2, 3, 3, 3]" → {1, 2, 2, 3, 3, 3}
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[1, 2, 2, 3, 3, 3]" },
+    { "id": "k", "label": "k", "type": "int", "placeholder": "2" }
+  ],
+  "cases": [
+    { "args": { "arr": "[1, 2, 2, 3, 3, 3]", "k": "2" }, "expected": "[2, 3]" },
+    { "args": { "arr": "[1, 5, 6, 6]", "k": "1" }, "expected": "[6]" },
+    { "args": { "arr": "[1]", "k": "1" }, "expected": "[1]" },
+    { "args": { "arr": "[4, 4, 4, 4]", "k": "1" }, "expected": "[4]" },
+    { "args": { "arr": "[5, 5, 3, 3, 1]", "k": "2" }, "expected": "[3, 5]" }
+  ]
+}
+```
+
+<details>
+<summary><h2>Intuition</h2></summary>
+
+Quickselect normally partitions by the element's raw value. Here the "value" we care about is the element's *frequency*. Build a frequency map in `O(n)`, collect the unique keys into a list, then run quickselect where the comparison is `frequency[a] > frequency[b]` (most frequent goes left). Once the pivot lands at index `k-1`, the first `k` slots hold the top-k by frequency. Since the partition uses a random pivot, the returned slice is in arbitrary order — sort it before returning.
+
+</details>
 <details>
 <summary><h2>Solution &amp; Analysis</h2></summary>
 
@@ -36,18 +144,15 @@ Output: [1]
 
 Two phases:
 1. **Build a frequency map** in `O(n)`, then collect the *unique* values into a `unique` list.
-2. **Quickselect over `unique`** — but the comparison is no longer on the raw value. The partition reads each element's frequency through the map and routes *more frequent* elements to the left. Once the pivot lands at index `k - 1`, the first `k` slots of `unique` hold the k most frequent values.
+2. **Quickselect over `unique`** — the partition reads each element's frequency through the map and routes *more frequent* elements to the left. Once the pivot lands at index `k - 1`, the first `k` slots of `unique` hold the k most frequent values.
 
-This is quickselect on a *derived* array: the elements being partitioned are the unique values, but the score driving every comparison is `frequency[value]`. The partition's `>` comparison (more frequent goes left) means the recursion converges on the k highest-frequency values rather than the k smallest.
-
-```python run viz=array viz-root=unique
+```python solution time=O(n) space=O(n)
+import ast
 import random
 from typing import List, Dict
 
 class Solution:
 
-    # Partition function to rearrange the elements based on their
-    # frequency
     def partition(
         self,
         unique: List[int],
@@ -55,37 +160,23 @@ class Solution:
         right: int,
         frequency: Dict[int, int],
     ) -> int:
-
-        # Random pivot index
         pivot = left + random.randint(0, right - left)
-
-        # 1. Ge the frequency of the pivot element
         pivot_freq = frequency[unique[pivot]]
-
-        # Move pivot to the end
         unique[pivot], unique[right] = unique[right], unique[pivot]
-
-        # 2. Move all more frequent elements to the left
         next_higher_frequency_index = left
         for i in range(left, right):
-
-            # If the frequency of the current element is greater than
-            # the frequency of the pivot element, swap them
             if frequency[unique[i]] > pivot_freq:
                 unique[next_higher_frequency_index], unique[i] = (
                     unique[i],
                     unique[next_higher_frequency_index],
                 )
                 next_higher_frequency_index += 1
-
-        # 3. Move pivot to its final position
         unique[right], unique[next_higher_frequency_index] = (
             unique[next_higher_frequency_index],
             unique[right],
         )
         return next_higher_frequency_index
 
-    # Quickselect to find the k-th most frequent element
     def quickselect(
         self,
         unique: List[int],
@@ -94,106 +185,65 @@ class Solution:
         k: int,
         frequency: Dict[int, int],
     ) -> None:
-
-        # Only one element left in the range
         if left == right:
             return
-
-        # Partition the array and get the pivot index
         pivot = self.partition(unique, left, right, frequency)
-
-        # If the pivot is at the k-th position (in 0-indexed)
         if k - 1 == pivot:
             return
-
-        # If pivot is greater than k - 1, search in the left half
         elif pivot > k - 1:
             self.quickselect(unique, left, pivot - 1, k, frequency)
-
-        # If k is greater than the pivot index, search in the right half
         else:
             self.quickselect(unique, pivot + 1, right, k, frequency)
 
     def k_most_frequent_elements(
         self, arr: List[int], k: int
     ) -> List[int]:
-
-        # Hash map to store frequency of each element
         frequency = {}
-
-        # Step 1: Count frequency of each element
         for n in arr:
             frequency[n] = frequency.get(n, 0) + 1
-
-        # List to keep track of unique elements
         unique = list(frequency.keys())
-
-        # Step 3: Find the k-th most frequent element
-        # We want the k-th largest element by frequency
         self.quickselect(unique, 0, len(unique) - 1, k, frequency)
-
-        # Step 4: Return the top k frequent elements
         return unique[:k]
 
 
-print(sorted(Solution().k_most_frequent_elements([1, 2, 2, 3, 3, 3], 2)))  # [2, 3]
-print(sorted(Solution().k_most_frequent_elements([1, 5, 6, 6], 1)))        # [6]
-print(sorted(Solution().k_most_frequent_elements([1], 1)))                  # [1]
-print(sorted(Solution().k_most_frequent_elements([4, 4, 4, 4], 1)))        # [4]
-print(sorted(Solution().k_most_frequent_elements([1, 2, 3], 3)))            # [1, 2, 3]
-print(sorted(Solution().k_most_frequent_elements([5, 5, 3, 3, 1], 2)))     # [3, 5]
+arr = ast.literal_eval(input())
+k = int(input())
+print(sorted(Solution().k_most_frequent_elements(arr, k)))
 ```
 
-```java run viz=array viz-root=unique
+```java solution
 import java.util.*;
 
 public class Main {
     static class Solution {
 
-        // Helper method to swap elements in the array
         private void swap(int[] arr, int i, int j) {
             int temp = arr[i];
             arr[i] = arr[j];
             arr[j] = temp;
         }
 
-        // Partition function to rearrange the elements based on their
-        // frequency
         private int partition(
             int[] unique,
             int left,
             int right,
             Map<Integer, Integer> frequency
         ) {
-
-            // Random pivot index
             Random rand = new Random();
             int pivot = left + rand.nextInt(right - left + 1);
-
-            // 1. Get the frequency of the pivot element
             int pivotFreq = frequency.get(unique[pivot]);
-
-            // Move pivot to the end
             swap(unique, pivot, right);
-
-            // 2. Move all more frequent elements to the left
             int nextHigherFrequencyIndex = left;
             for (int i = left; i < right; i++) {
-
-                // If the frequency of the current element is greater than
-                // the frequency of the pivot element, swap them
                 if (frequency.get(unique[i]) > pivotFreq) {
                     swap(unique, nextHigherFrequencyIndex, i);
                     nextHigherFrequencyIndex += 1;
                 }
             }
-
-            // 3. Move pivot to its final position
             swap(unique, nextHigherFrequencyIndex, right);
             return nextHigherFrequencyIndex;
         }
 
-        // Quickselect to find the k-th most frequent element
         private void quickselect(
             int[] unique,
             int left,
@@ -201,93 +251,64 @@ public class Main {
             int k,
             Map<Integer, Integer> frequency
         ) {
-
-            // Only one element left in the range
             if (left == right) {
                 return;
             }
-
-            // Partition the array and get the pivot index
             int pivot = partition(unique, left, right, frequency);
-
-            // If the pivot is at the k-th position (in 0-indexed)
             if (k - 1 == pivot) {
                 return;
-            }
-
-            // If pivot is greater than k - 1, search in the left half
-            else if (pivot > k - 1) {
+            } else if (pivot > k - 1) {
                 quickselect(unique, left, pivot - 1, k, frequency);
-            }
-
-            // If k is greater than the pivot index, search in the right half
-            else {
+            } else {
                 quickselect(unique, pivot + 1, right, k, frequency);
             }
         }
 
         public int[] kMostFrequentElements(int[] arr, int k) {
-
-            // Hash map to store frequency of each element
             Map<Integer, Integer> frequency = new HashMap<>();
-
-            // Step 1: Count frequency of each element
             for (int n : arr) {
                 frequency.put(n, frequency.getOrDefault(n, 0) + 1);
             }
-
-            // List to keep track of unique elements
             int[] unique = new int[frequency.size()];
             int idx = 0;
-
-            // Step 2: Store the unique elements in the array
             for (var element : frequency.entrySet()) {
                 unique[idx++] = element.getKey();
             }
-
-            // Step 3: Find the k-th most frequent element
-            // We want the k-th largest element by frequency
             quickselect(unique, 0, unique.length - 1, k, frequency);
-
-            // Step 4: Return the top k frequent elements
             return Arrays.copyOfRange(unique, 0, k);
         }
     }
 
     public static void main(String[] args) {
-        int[] r1 = new Solution().kMostFrequentElements(new int[]{1, 2, 2, 3, 3, 3}, 2);
-        Arrays.sort(r1); System.out.println(Arrays.toString(r1));   // [2, 3]
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        int[] r = new Solution().kMostFrequentElements(arr, k);
+        Arrays.sort(r);
+        System.out.println(Arrays.toString(r));
+    }
 
-        int[] r2 = new Solution().kMostFrequentElements(new int[]{1, 5, 6, 6}, 1);
-        Arrays.sort(r2); System.out.println(Arrays.toString(r2));   // [6]
-
-        int[] r3 = new Solution().kMostFrequentElements(new int[]{1}, 1);
-        Arrays.sort(r3); System.out.println(Arrays.toString(r3));   // [1]
-
-        int[] r4 = new Solution().kMostFrequentElements(new int[]{4, 4, 4, 4}, 1);
-        Arrays.sort(r4); System.out.println(Arrays.toString(r4));   // [4]
-
-        int[] r5 = new Solution().kMostFrequentElements(new int[]{1, 2, 3}, 3);
-        Arrays.sort(r5); System.out.println(Arrays.toString(r5));   // [1, 2, 3]
-
-        int[] r6 = new Solution().kMostFrequentElements(new int[]{5, 5, 3, 3, 1}, 2);
-        Arrays.sort(r6); System.out.println(Arrays.toString(r6));   // [3, 5]
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```
 
-The structure mirrors basic quickselect, with one change: the partition no longer compares `arr[i] < pivot_value` — it compares `frequency[unique[i]] > pivot_freq`, reading each element's score out of the frequency map. Routing *more frequent* values left (a `>` test) makes the k-th *most* frequent — rather than k-th smallest — land at index `k - 1`, so `unique[:k]` is the answer.
+The structure mirrors basic quickselect, with one change: the partition no longer compares `arr[i] < pivot_value` — it compares `frequency[unique[i]] > pivot_freq`, reading each element's score out of the frequency map. Routing *more frequent* values left (a `>` test) makes the k-th *most* frequent — rather than k-th smallest — land at index `k - 1`, so `unique[:k]` is the answer. Both Python and Java sort before printing to produce deterministic output regardless of random-pivot ordering.
 
 ### Complexity
 
 | Resource | Cost |
 |---|---|
 | **Time (frequency build)** | `O(n)` — one pass over `arr`. |
-| **Time (quickselect)** | `O(u)` average — each partition is `O(u)` and the search space halves each recursion; `O(u²)` worst case, where `u = number of unique elements ≤ n`. |
+| **Time (quickselect)** | `O(u)` average where `u = number of unique elements ≤ n`. |
 | **Total time** | `O(n + u)` average. |
 | **Space** | `O(u)` for the frequency map and the `unique` list; `O(log u)` average for the recursion stack. |
-
-For inputs with many unique elements (`u ≈ n`), this is `O(n)` average — the random pivot makes the `O(u²)` worst case practically unreachable. The map lookup inside the partition is `O(1)`, so reading frequencies adds no asymptotic cost.
 
 </details>
 <details>

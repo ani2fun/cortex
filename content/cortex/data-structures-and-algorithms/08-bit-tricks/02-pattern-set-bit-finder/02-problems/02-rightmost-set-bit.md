@@ -4,23 +4,89 @@ summary: "Given a 32-bit integer num, find the 1-indexed position of its rightmo
 prereqs:
   - 02-pattern-set-bit-finder/01-pattern
 difficulty: easy
+kind: problem
+topics: [set-bit-finder, bit-manipulation]
 ---
 
 # Rightmost Set Bit
 
-## The Problem
+Isolate the rightmost set bit with `n & -n`, then count how many times you shift right until it falls off — that count is the 1-indexed position.
+
+## Problem Statement
 
 Given a 32-bit integer `num`, find the 1-indexed position of its rightmost (lowest) set bit.
 
+## Examples
+
+**Example 1**
 ```
 Input:  num = 10
-Output: 2                   Binary 1010 — lowest set bit is at position 2
+Output: 2
+Explanation: Binary 1010 — lowest set bit is at position 2.
+```
 
+**Example 2**
+```
 Input:  num = 16
-Output: 5                   Binary 0001 0000 — bit 5 is the only set bit
+Output: 5
+Explanation: Binary 0001 0000 — bit 5 is the only (and lowest) set bit.
+```
 
+**Example 3**
+```
 Input:  num = 17
-Output: 1                   Binary 0001 0001 — bit 1 is the rightmost set bit
+Output: 1
+Explanation: Binary 0001 0001 — bit 1 is the rightmost set bit.
+```
+
+## Constraints
+
+- `1 ≤ num ≤ 2^31 - 1` — positive non-negative integers; inputs are kept non-negative so `x & -x` agrees across Python and Java.
+- The result is always in `[1, 32]`.
+
+```python run viz=array
+class Solution:
+    def rightmost_set_bit(self, num: int) -> int:
+        # Your code goes here
+        return 0
+
+
+num = int(input())
+print(Solution().rightmost_set_bit(num))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int rightmostSetBit(int num) {
+            // Your code goes here
+            return 0;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int num = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().rightmostSetBit(num));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "num", "label": "num", "type": "int", "placeholder": "10" }
+  ],
+  "cases": [
+    { "args": { "num": "10" }, "expected": "2" },
+    { "args": { "num": "16" }, "expected": "5" },
+    { "args": { "num": "17" }, "expected": "1" },
+    { "args": { "num": "12" }, "expected": "3" },
+    { "args": { "num": "1" },  "expected": "1" }
+  ]
+}
 ```
 
 <details>
@@ -53,7 +119,9 @@ return index
 
 ### The Solution
 
-```python run viz=array
+Fast-path the LSB case, then isolate the rightmost set bit via XOR and count right-shifts until it drops to zero. Non-negative inputs keep `x & -x` consistent between Python's arbitrary-precision and Java's 32-bit signed `int`; plain `int` output, no masking needed.
+
+```python solution time=O(1) space=O(1)
 class Solution:
     def rightmost_set_bit(self, num: int) -> int:
 
@@ -81,20 +149,13 @@ class Solution:
         return index
 
 
-# Examples from the problem statement
-print(Solution().rightmost_set_bit(10))    # 2
-print(Solution().rightmost_set_bit(16))    # 5
-print(Solution().rightmost_set_bit(17))    # 1
-
-# Edge cases
-print(Solution().rightmost_set_bit(1))     # 1
-print(Solution().rightmost_set_bit(2))     # 2
-print(Solution().rightmost_set_bit(4))     # 3
-print(Solution().rightmost_set_bit(8))     # 4
-print(Solution().rightmost_set_bit(12))    # 3
+num = int(input())
+print(Solution().rightmost_set_bit(num))
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
     static class Solution {
         public int rightmostSetBit(int num) {
@@ -127,17 +188,9 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().rightmostSetBit(10));    // 2
-        System.out.println(new Solution().rightmostSetBit(16));    // 5
-        System.out.println(new Solution().rightmostSetBit(17));    // 1
-
-        // Edge cases
-        System.out.println(new Solution().rightmostSetBit(1));     // 1
-        System.out.println(new Solution().rightmostSetBit(2));     // 2
-        System.out.println(new Solution().rightmostSetBit(4));     // 3
-        System.out.println(new Solution().rightmostSetBit(8));     // 4
-        System.out.println(new Solution().rightmostSetBit(12));    // 3
+        Scanner sc = new Scanner(System.in);
+        int num = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().rightmostSetBit(num));
     }
 }
 ```

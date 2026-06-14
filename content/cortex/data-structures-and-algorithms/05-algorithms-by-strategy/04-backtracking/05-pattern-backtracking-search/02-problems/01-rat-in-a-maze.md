@@ -4,6 +4,8 @@ summary: "Given an N × M maze where 0 is walkable and 1 is an obstacle, the rat
 prereqs:
   - 05-pattern-backtracking-search/01-pattern
 difficulty: medium
+kind: problem
+topics: [backtracking-search, backtracking]
 ---
 
 # Rat in a Maze
@@ -25,6 +27,95 @@ Output: "DDRDRR"   (or "DRDDRR" — any valid path)
 ```
 
 ---
+
+## Examples
+
+**Example 1**
+```
+Input:  maze = [[0,1,1,1],[0,0,1,0],[0,0,1,1],[1,0,0,0]]
+Output: DDRDRR
+Explanation: D→(1,0), D→(2,0), R→(2,1), D→(3,1), R→(3,2), R→(3,3) — the first valid path the DFS finds.
+```
+
+**Example 2**
+```
+Input:  maze = [[0,1],[1,0]]
+Output: (empty string)
+Explanation: The two 0-cells are diagonal — no orthogonal path exists.
+```
+
+## Constraints
+
+- `1 ≤ N, M ≤ 20`
+- `maze[i][j] ∈ {0, 1}` — 0 = walkable, 1 = obstacle.
+- Returns the first valid path found in D→R→U→L order, or empty string if none.
+- If start `(0,0)` or end `(N-1,M-1)` is blocked, return `""` immediately.
+
+```python run viz=grid viz-root=maze
+import ast
+
+class Solution:
+    def rat_in_a_maze(self, maze):
+        # Your code goes here
+        # Mark visited cells with -1, undo on failure
+        return ""
+
+maze = ast.literal_eval(input())
+print(Solution().rat_in_a_maze(maze))
+```
+
+```java run viz=grid viz-root=maze
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public String ratInAMaze(int[][] maze) {
+            // Your code goes here
+            // Mark visited cells with -1, undo on failure
+            return "";
+        }
+    }
+
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[][] maze = parseIntMatrix(sc.nextLine());
+        System.out.println(new Solution().ratInAMaze(maze));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "maze", "label": "maze", "type": "int[][]", "placeholder": "[[0,1,1,1],[0,0,1,0],[0,0,1,1],[1,0,0,0]]" }
+  ],
+  "cases": [
+    { "args": { "maze": "[[0,1,1,1],[0,0,1,0],[0,0,1,1],[1,0,0,0]]" }, "expected": "DDRDRR" },
+    { "args": { "maze": "[[0,0],[0,0]]" }, "expected": "DR" },
+    { "args": { "maze": "[[0]]" }, "expected": "" },
+    { "args": { "maze": "[[1,0],[0,0]]" }, "expected": "" },
+    { "args": { "maze": "[[0,0],[0,1]]" }, "expected": "" },
+    { "args": { "maze": "[[0,0,0,0]]" }, "expected": "RRR" },
+    { "args": { "maze": "[[0,0,1],[1,0,1],[1,0,0]]" }, "expected": "RDDR" }
+  ]
+}
+```
 
 <details>
 <summary><h2>What Makes This a Search Problem?</h2></summary>
@@ -125,7 +216,8 @@ state: "Continue exploring; eventual success → 'DDRDRR'" {
 
 ### The Solution
 
-```python run viz=grid viz-root=maze1
+```python solution time=O(4^(R·C)) space=O(R·C)
+import ast
 from typing import List, Tuple
 
 class Solution:
@@ -208,40 +300,13 @@ class Solution:
         return "".join(path)
 
 
-# Example from the problem statement — one valid path exists
-maze1 = [[0, 1, 1, 1], [0, 0, 1, 0], [0, 0, 1, 1], [1, 0, 0, 0]]
-print(Solution().rat_in_a_maze(maze1))                # DDRDRR (or DRDDRR)
-
-# Simple 2x2 open maze — single step right then down
-maze2 = [[0, 0], [0, 0]]
-print(Solution().rat_in_a_maze(maze2))                # DR (or similar valid path)
-
-# 1x1 maze — already at destination
-maze3 = [[0]]
-print(Solution().rat_in_a_maze(maze3))                # (empty string — already there)
-
-# No path — start blocked
-maze4 = [[1, 0], [0, 0]]
-print(Solution().rat_in_a_maze(maze4))                # (empty string)
-
-# No path — destination blocked
-maze5 = [[0, 0], [0, 1]]
-print(Solution().rat_in_a_maze(maze5))                # (empty string)
-
-# Straight right path only
-maze6 = [[0, 0, 0, 0]]
-print(Solution().rat_in_a_maze(maze6))                # RRR
-
-# Straight down path only
-maze7 = [[0], [0], [0], [0]]
-print(Solution().rat_in_a_maze(maze7))                # DDD
-
-# Longer maze with single winding path
-maze8 = [[0, 0, 1], [1, 0, 1], [1, 0, 0]]
-print(Solution().rat_in_a_maze(maze8))                # RDRDD (or similar valid path)
+maze = ast.literal_eval(input())
+print(Solution().rat_in_a_maze(maze))
 ```
 
-```java run viz=grid viz-root=maze1
+```java solution
+import java.util.*;
+
 public class Main {
     static class Solution {
 
@@ -347,38 +412,26 @@ public class Main {
         }
     }
 
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
+    }
+
     public static void main(String[] args) {
-        // Example from the problem statement — one valid path exists
-        int[][] maze1 = {{0,1,1,1},{0,0,1,0},{0,0,1,1},{1,0,0,0}};
-        System.out.println(new Solution().ratInAMaze(maze1));   // DDRDRR (or DRDDRR)
-
-        // Simple 2x2 open maze
-        int[][] maze2 = {{0,0},{0,0}};
-        System.out.println(new Solution().ratInAMaze(maze2));   // DR (or similar valid path)
-
-        // 1x1 maze — already at destination
-        int[][] maze3 = {{0}};
-        System.out.println(new Solution().ratInAMaze(maze3));   // (empty string)
-
-        // No path — start blocked
-        int[][] maze4 = {{1,0},{0,0}};
-        System.out.println(new Solution().ratInAMaze(maze4));   // (empty string)
-
-        // No path — destination blocked
-        int[][] maze5 = {{0,0},{0,1}};
-        System.out.println(new Solution().ratInAMaze(maze5));   // (empty string)
-
-        // Straight right path only
-        int[][] maze6 = {{0,0,0,0}};
-        System.out.println(new Solution().ratInAMaze(maze6));   // RRR
-
-        // Straight down path only
-        int[][] maze7 = {{0},{0},{0},{0}};
-        System.out.println(new Solution().ratInAMaze(maze7));   // DDD
-
-        // Longer maze with single winding path
-        int[][] maze8 = {{0,0,1},{1,0,1},{1,0,0}};
-        System.out.println(new Solution().ratInAMaze(maze8));   // RDRDD (or similar valid path)
+        Scanner sc = new Scanner(System.in);
+        int[][] maze = parseIntMatrix(sc.nextLine());
+        System.out.println(new Solution().ratInAMaze(maze));
     }
 }
 ```

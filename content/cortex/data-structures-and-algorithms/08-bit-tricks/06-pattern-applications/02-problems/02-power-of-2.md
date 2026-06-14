@@ -4,18 +4,92 @@ summary: "Given an integer, return true if it's a positive power of 2 (1, 2, 4, 
 prereqs:
   - 06-pattern-applications/01-pattern
 difficulty: easy
+kind: problem
+topics: [applications, bit-manipulation]
 ---
 
 # Power of 2
 
-## The Problem
+A power of 2 has exactly one set bit — and `n & (n-1)` clears it in a single operation.
+
+## Problem Statement
 
 Given an integer, return `true` if it's a positive power of 2 (1, 2, 4, 8, …); else `false`.
 
+## Examples
+
+**Example 1**
 ```
-Input:  num = 1   →  true     2^0
-Input:  num = 8   →  true     2^3
-Input:  num = 3   →  false
+Input:  num = 1
+Output: true
+Explanation: 1 = 2^0 — exactly one set bit.
+```
+
+**Example 2**
+```
+Input:  num = 8
+Output: true
+Explanation: 8 = 2^3 in binary is 1000 — exactly one set bit.
+```
+
+**Example 3**
+```
+Input:  num = 3
+Output: false
+Explanation: 3 in binary is 11 — two set bits, not a power of 2.
+```
+
+## Constraints
+
+- `-2^31 ≤ num ≤ 2^31 - 1` — ordinary signed 32-bit integer.
+- `num ≤ 0` is always `false` (0 is not a power of 2; negatives are not).
+
+```python run viz=array
+class Solution:
+    def power_of2(self, num: int) -> bool:
+        # Your code goes here
+        return False
+
+
+num = int(input())
+print("true" if Solution().power_of2(num) else "false")
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public boolean powerOf2(int num) {
+            // Your code goes here
+            return false;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int num = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().powerOf2(num));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "num", "label": "num", "type": "int", "placeholder": "8" }
+  ],
+  "cases": [
+    { "args": { "num": "1" }, "expected": "true" },
+    { "args": { "num": "8" }, "expected": "true" },
+    { "args": { "num": "3" }, "expected": "false" },
+    { "args": { "num": "0" }, "expected": "false" },
+    { "args": { "num": "-1" }, "expected": "false" },
+    { "args": { "num": "2" }, "expected": "true" },
+    { "args": { "num": "16" }, "expected": "true" },
+    { "args": { "num": "6" }, "expected": "false" }
+  ]
+}
 ```
 
 <details>
@@ -36,9 +110,7 @@ In two's complement, `0 - 1 = -1` (all bits 1). `0 & -1 = 0`. Without the `n > 0
 <details>
 <summary><h2>The Solution</h2></summary>
 
-
-
-```python run viz=array
+```python solution time=O(1) space=O(1)
 class Solution:
     def power_of2(self, num: int) -> bool:
 
@@ -48,20 +120,13 @@ class Solution:
         return num > 0 and (num & (num - 1)) == 0
 
 
-# Examples from the problem statement
-print(Solution().power_of2(1))      # True
-print(Solution().power_of2(8))      # True
-print(Solution().power_of2(3))      # False
-
-# Edge cases
-print(Solution().power_of2(0))      # False
-print(Solution().power_of2(-1))     # False
-print(Solution().power_of2(2))      # True
-print(Solution().power_of2(16))     # True
-print(Solution().power_of2(6))      # False
+num = int(input())
+print("true" if Solution().power_of2(num) else "false")
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
     static class Solution {
         public boolean powerOf2(int num) {
@@ -74,17 +139,9 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().powerOf2(1));      // true
-        System.out.println(new Solution().powerOf2(8));      // true
-        System.out.println(new Solution().powerOf2(3));      // false
-
-        // Edge cases
-        System.out.println(new Solution().powerOf2(0));      // false
-        System.out.println(new Solution().powerOf2(-1));     // false
-        System.out.println(new Solution().powerOf2(2));      // true
-        System.out.println(new Solution().powerOf2(16));     // true
-        System.out.println(new Solution().powerOf2(6));      // false
+        Scanner sc = new Scanner(System.in);
+        int num = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().powerOf2(num));
     }
 }
 ```

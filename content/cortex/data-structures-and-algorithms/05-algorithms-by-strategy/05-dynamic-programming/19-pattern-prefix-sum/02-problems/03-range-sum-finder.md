@@ -4,6 +4,8 @@ summary: "Build a class RangeSumFinder that takes a 2D matrix in its constructor
 prereqs:
   - 19-pattern-prefix-sum/01-pattern
 difficulty: medium
+kind: problem
+topics: [prefix-sum, dynamic-programming]
 ---
 
 # Range Sum Finder
@@ -24,6 +26,117 @@ Output:     [null, 5, 45, 28]
 
 The interface is the standard `(row1, col1, row2, col2)` rectangle. The contract: each query *must* be `O(1)` after construction.
 
+## Examples
+
+**Example 1**
+```
+Input:  matrix = [[1,2,3],[4,5,6],[7,8,9]], row1=1, col1=1, row2=1, col2=1
+Output: 5
+Explanation: Single cell (1,1) = 5.
+```
+
+**Example 2**
+```
+Input:  matrix = [[1,2,3],[4,5,6],[7,8,9]], row1=0, col1=0, row2=2, col2=2
+Output: 45
+Explanation: The whole 3×3 matrix sums to 45.
+```
+
+## Constraints
+
+- `1 ≤ rows, cols ≤ 200`
+- `0 ≤ row1 ≤ row2 < rows`, `0 ≤ col1 ≤ col2 < cols`
+- Matrix values can be negative.
+- `sumRegion` must run in `O(1)` after construction.
+
+```python run viz=grid viz-root=matrix
+import ast
+
+class RangeSumFinder:
+    def __init__(self, matrix):
+        # Your code goes here — build a prefix sum table (rows+1)×(cols+1)
+        # so every sumRegion query is O(1) using four-corner inclusion-exclusion.
+        pass
+
+    def sum_region(self, row1, col1, row2, col2):
+        # Your code goes here — return prefix_sum[row2+1][col2+1]
+        # - prefix_sum[row1][col2+1] - prefix_sum[row2+1][col1] + prefix_sum[row1][col1]
+        return 0
+
+matrix = ast.literal_eval(input())
+row1 = int(input())
+col1 = int(input())
+row2 = int(input())
+col2 = int(input())
+rsf = RangeSumFinder(matrix)
+print(rsf.sum_region(row1, col1, row2, col2))
+```
+
+```java run viz=grid viz-root=matrix
+import java.util.*;
+
+public class Main {
+    static class RangeSumFinder {
+        // Your code goes here — store a prefix sum table built in the constructor.
+        public RangeSumFinder(int[][] matrix) {
+        }
+
+        public int sumRegion(int row1, int col1, int row2, int col2) {
+            return 0;
+        }
+    }
+
+    // "[1, 2, 3], [4, 5, 6]]" → int[][] — reads a 2-D matrix from one stdin line
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[][] matrix = parseIntMatrix(sc.nextLine());
+        int row1 = Integer.parseInt(sc.nextLine().trim());
+        int col1 = Integer.parseInt(sc.nextLine().trim());
+        int row2 = Integer.parseInt(sc.nextLine().trim());
+        int col2 = Integer.parseInt(sc.nextLine().trim());
+        RangeSumFinder rsf = new RangeSumFinder(matrix);
+        System.out.println(rsf.sumRegion(row1, col1, row2, col2));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "matrix", "label": "matrix", "type": "int[][]", "placeholder": "[[1,2,3],[4,5,6],[7,8,9]]" },
+    { "id": "row1", "label": "row1", "type": "int", "placeholder": "1" },
+    { "id": "col1", "label": "col1", "type": "int", "placeholder": "1" },
+    { "id": "row2", "label": "row2", "type": "int", "placeholder": "1" },
+    { "id": "col2", "label": "col2", "type": "int", "placeholder": "1" }
+  ],
+  "cases": [
+    { "args": { "matrix": "[[1,2,3],[4,5,6],[7,8,9]]", "row1": "1", "col1": "1", "row2": "1", "col2": "1" }, "expected": "5" },
+    { "args": { "matrix": "[[1,2,3],[4,5,6],[7,8,9]]", "row1": "0", "col1": "0", "row2": "2", "col2": "2" }, "expected": "45" },
+    { "args": { "matrix": "[[1,2,3],[4,5,6],[7,8,9]]", "row1": "1", "col1": "1", "row2": "2", "col2": "2" }, "expected": "28" },
+    { "args": { "matrix": "[[1]]", "row1": "0", "col1": "0", "row2": "0", "col2": "0" }, "expected": "1" },
+    { "args": { "matrix": "[[-1,-2],[-3,-4]]", "row1": "0", "col1": "0", "row2": "1", "col2": "1" }, "expected": "-10" },
+    { "args": { "matrix": "[[1,2],[3,4]]", "row1": "0", "col1": "0", "row2": "0", "col2": "0" }, "expected": "1" },
+    { "args": { "matrix": "[[1,2],[3,4]]", "row1": "1", "col1": "1", "row2": "1", "col2": "1" }, "expected": "4" }
+  ]
+}
+```
+
 <details>
 <summary><h2>The Approach</h2></summary>
 
@@ -40,7 +153,8 @@ Because the query rate dominates the cost. If `k` queries each take `O(n × m)` 
 
 ### The Solution
 
-```python run viz=grid viz-root=matrix
+```python solution time=O(n × m) construction, O(1) query space=O(n × m)
+import ast
 from typing import List
 
 class RangeSumFinder:
@@ -78,14 +192,6 @@ class RangeSumFinder:
     def sum_region(
         self, row1: int, col1: int, row2: int, col2: int
     ) -> int:
-
-        # The sum of the rectangle is calculated using the values in the
-        # new matrix prefixSum The formula is: sum =
-        # prefixSum[row2+1][col2+1] - prefixSum[row1][col2 + 1] -
-        # prefixSum[row2 + 1][col1] + prefixSum[row1][col1] It subtracts
-        # the sum of elements above and to the left of the rectangle,
-        # and adds back the sum of the elements above and to the left of
-        # the rectangle, to avoid double subtraction
         return (
             self.prefix_sum[row2 + 1][col2 + 1]
             - self.prefix_sum[row1][col2 + 1]
@@ -93,27 +199,16 @@ class RangeSumFinder:
             + self.prefix_sum[row1][col1]
         )
 
-
-# Example from the problem statement
-rsf = RangeSumFinder([[1,2,3],[4,5,6],[7,8,9]])
-print(rsf.sum_region(1, 1, 1, 1))  # 5
-print(rsf.sum_region(0, 0, 2, 2))  # 45
-print(rsf.sum_region(1, 1, 2, 2))  # 28
-
-# Edge cases
-rsf2 = RangeSumFinder([[1]])
-print(rsf2.sum_region(0, 0, 0, 0)) # 1  — single cell
-
-rsf3 = RangeSumFinder([[1,2],[3,4]])
-print(rsf3.sum_region(0, 0, 0, 0)) # 1  — top-left cell
-print(rsf3.sum_region(1, 1, 1, 1)) # 4  — bottom-right cell
-print(rsf3.sum_region(0, 0, 1, 1)) # 10 — whole matrix
-
-rsf4 = RangeSumFinder([[-1,-2],[-3,-4]])
-print(rsf4.sum_region(0, 0, 1, 1)) # -10 — negative values
+matrix = ast.literal_eval(input())
+row1 = int(input())
+col1 = int(input())
+row2 = int(input())
+col2 = int(input())
+rsf = RangeSumFinder(matrix)
+print(rsf.sum_region(row1, col1, row2, col2))
 ```
 
-```java run viz=grid viz-root=matrix
+```java solution
 import java.util.*;
 
 public class Main {
@@ -153,14 +248,6 @@ public class Main {
 
         // Method to calculate the sum of elements within a given rectangle
         public int sumRegion(int row1, int col1, int row2, int col2) {
-
-            // The sum of the rectangle is calculated using the values in the
-            // new matrix prefixSum The formula is: sum =
-            // prefixSum[row2+1][col2+1] - prefixSum[row1][col2 + 1] -
-            // prefixSum[row2 + 1][col1] + prefixSum[row1][col1] It subtracts
-            // the sum of elements above and to the left of the rectangle,
-            // and adds back the sum of the elements above and to the left of
-            // the rectangle, to avoid double subtraction
             return (
                 prefixSum[row2 + 1][col2 + 1] -
                 prefixSum[row1][col2 + 1] -
@@ -170,24 +257,31 @@ public class Main {
         }
     }
 
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
+    }
+
     public static void main(String[] args) {
-        // Example from the problem statement
-        RangeSumFinder rsf = new RangeSumFinder(new int[][]{{1,2,3},{4,5,6},{7,8,9}});
-        System.out.println(rsf.sumRegion(1, 1, 1, 1));  // 5
-        System.out.println(rsf.sumRegion(0, 0, 2, 2));  // 45
-        System.out.println(rsf.sumRegion(1, 1, 2, 2));  // 28
-
-        // Edge cases
-        RangeSumFinder rsf2 = new RangeSumFinder(new int[][]{{1}});
-        System.out.println(rsf2.sumRegion(0, 0, 0, 0)); // 1
-
-        RangeSumFinder rsf3 = new RangeSumFinder(new int[][]{{1,2},{3,4}});
-        System.out.println(rsf3.sumRegion(0, 0, 0, 0)); // 1
-        System.out.println(rsf3.sumRegion(1, 1, 1, 1)); // 4
-        System.out.println(rsf3.sumRegion(0, 0, 1, 1)); // 10
-
-        RangeSumFinder rsf4 = new RangeSumFinder(new int[][]{{-1,-2},{-3,-4}});
-        System.out.println(rsf4.sumRegion(0, 0, 1, 1)); // -10
+        Scanner sc = new Scanner(System.in);
+        int[][] matrix = parseIntMatrix(sc.nextLine());
+        int row1 = Integer.parseInt(sc.nextLine().trim());
+        int col1 = Integer.parseInt(sc.nextLine().trim());
+        int row2 = Integer.parseInt(sc.nextLine().trim());
+        int col2 = Integer.parseInt(sc.nextLine().trim());
+        RangeSumFinder rsf = new RangeSumFinder(matrix);
+        System.out.println(rsf.sumRegion(row1, col1, row2, col2));
     }
 }
 ```

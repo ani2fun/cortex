@@ -34,12 +34,19 @@ class StripedHashMap:
     def get(self, key):                                # reads are lock-free (atomic bucket-head read)
         return self.stripes[self.stripe_of(key)].get(key)
 
+keys = input().split()
+vals = list(map(int, input().split()))
+get1 = input()
+get2 = input()
 m = StripedHashMap(4)
-for k, v in [("apple", 1), ("banana", 2), ("cherry", 3), ("date", 4)]:
+for k, v in zip(keys, vals):
     m.put(k, v)
-print(m.get("apple"), m.get("cherry"))                 # 1 3
-print(m.get("grape"))                                  # None
-print({k: m.stripe_of(k) for k in ["apple", "banana", "cherry", "date"]})   # which stripe each lands in
+v1 = m.get(get1)
+v3 = m.get(keys[2])
+print(str(v1) + " " + str(v3))
+v2 = m.get(get2)
+print(v2 if v2 is not None else "null")
+print(" ".join(f"{k}={m.stripe_of(k)}" for k in sorted(keys)))
 ```
 
 ```java run viz=array
@@ -60,18 +67,41 @@ public class Main {
         Integer get(String k) { return stripes[stripeOf(k)].get(k); }   // reads are lock-free
     }
     public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String[] keys = sc.nextLine().trim().split("\\s+");
+        String[] valStrs = sc.nextLine().trim().split("\\s+");
+        String get1 = sc.nextLine().trim();
+        String get2 = sc.nextLine().trim();
         StripedHashMap m = new StripedHashMap(4);
-        m.put("apple", 1); m.put("banana", 2); m.put("cherry", 3); m.put("date", 4);
-        System.out.println(m.get("apple") + " " + m.get("cherry"));    // 1 3
-        System.out.println(m.get("grape"));                            // null
+        for (int i = 0; i < keys.length; i++) m.put(keys[i], Integer.parseInt(valStrs[i]));
+        System.out.println(m.get(get1) + " " + m.get(keys[2]));
+        Integer v2 = m.get(get2);
+        System.out.println(v2 != null ? v2 : "null");
+        List<String> sortedKeys = new ArrayList<>(Arrays.asList(keys));
+        Collections.sort(sortedKeys);
         StringBuilder sb = new StringBuilder();
-        for (String k : new String[]{"apple", "banana", "cherry", "date"}) sb.append(k).append("=").append(m.stripeOf(k)).append(" ");
-        System.out.println(sb.toString().trim());
+        for (int i = 0; i < sortedKeys.size(); i++) { if (i > 0) sb.append(" "); sb.append(sortedKeys.get(i)).append("=").append(m.stripeOf(sortedKeys.get(i))); }
+        System.out.println(sb.toString());
     }
 }
 ```
 
-Both print `1 3`, then `None`/`null`, then the stripe of each key (`apple=3 banana=2 cherry=1 date=2`). Correctness is identical to a plain hash map; the win is that `apple` (stripe 3) and `banana` (stripe 2) live in *separate* stripes, so concurrent writers to them never block each other.
+```testcases
+{
+  "args": [
+    { "id": "keys", "label": "keys (space-separated)", "type": "string", "placeholder": "apple banana cherry date" },
+    { "id": "vals", "label": "values (space-separated)", "type": "string", "placeholder": "1 2 3 4" },
+    { "id": "get1", "label": "first get key", "type": "string", "placeholder": "apple" },
+    { "id": "get2", "label": "missing key", "type": "string", "placeholder": "grape" }
+  ],
+  "cases": [
+    { "args": { "keys": "apple banana cherry date", "vals": "1 2 3 4", "get1": "apple", "get2": "grape" }, "expected": "1 3\nnull\napple=3 banana=2 cherry=1 date=2" },
+    { "args": { "keys": "fig grape kiwi lime", "vals": "5 6 7 8", "get1": "fig", "get2": "orange" }, "expected": "5 7\nnull\nfig=0 grape=1 kiwi=0 lime=1" }
+  ]
+}
+```
+
+Both print `1 3`, then `null`, then the stripe of each key (`apple=3 banana=2 cherry=1 date=2`). Correctness is identical to a plain hash map; the win is that `apple` (stripe 3) and `banana` (stripe 2) live in *separate* stripes, so concurrent writers to them never block each other.
 
 ## How It Works
 
@@ -129,15 +159,92 @@ print(f"same stripe -> SERIALIZE: {same[0]}, {same[1]}  (both stripe {stripe[sam
 <details>
 <summary><strong>Reveal</strong></summary>
 
-It **depends on whether the two keys hash to the same stripe.** With 4 stripes and 8 keys, the assignment is uneven (`apple→3`, `banana→2`, `cherry→1`, `date→2`, ...): some stripes hold one key, others hold several. `apple` and `banana` land on *different* stripes (3 and 2), so two threads writing them lock *different* locks and proceed **concurrently** — exactly the speedup striping promises. But `banana` and `date` both hash to stripe 2, so two threads writing them contend on the *same* lock and **serialize**, no better than the global-lock case for that pair. That's the fundamental limit of striping: it reduces the *probability* of contention by a factor of `N`, but two keys that collide on a stripe still block each other. With random keys and `N` stripes, you get roughly `N`-way concurrency *on average*, never a guarantee for any specific pair. This is precisely why Java 8 moved to **per-bucket** granularity — the "stripe" shrank to a single bucket, so two writers collide only if their keys land in the *same bucket* (far rarer than the same stripe), and even then it's a short CAS or a brief bin lock rather than a coarse segment lock.
+It **depends on whether the two keys hash to the same stripe.** With 4 stripes and 8 keys, the assignment is uneven (`apple->3`, `banana->2`, `cherry->1`, `date->2`, ...): some stripes hold one key, others hold several. `apple` and `banana` land on *different* stripes (3 and 2), so two threads writing them lock *different* locks and proceed **concurrently** — exactly the speedup striping promises. But `banana` and `date` both hash to stripe 2, so two threads writing them contend on the *same* lock and **serialize**, no better than the global-lock case for that pair. That's the fundamental limit of striping: it reduces the *probability* of contention by a factor of `N`, but two keys that collide on a stripe still block each other. With random keys and `N` stripes, you get roughly `N`-way concurrency *on average*, never a guarantee for any specific pair. This is precisely why Java 8 moved to **per-bucket** granularity — the "stripe" shrank to a single bucket, so two writers collide only if their keys land in the *same bucket* (far rarer than the same stripe), and even then it's a short CAS or a brief bin lock rather than a coarse segment lock.
 
 </details>
 
 ## Your Turn
 
-**Profile the concurrency** as you add stripes. Spread the same keys over `1`, `4`, and `16` stripes and watch the per-stripe load fall and the achievable parallelism rise.
+**Profile the concurrency** as you add stripes. Spread the same keys over a given number of stripes and measure the busiest stripe load and the number of occupied stripes (= maximum achievable parallelism).
 
 ```python run viz=array
+import ast
+
+def _hash(key):
+    h = 0
+    for c in str(key):
+        h = (h * 131 + ord(c)) % (2**31 - 1)
+    return h
+
+class StripedHashMap:
+    def __init__(self, n_stripes):
+        self.n = n_stripes
+        self.stripes = [dict() for _ in range(n_stripes)]
+    def put(self, key, value):
+        # Your code goes here
+        return
+
+def profile(num_keys, n_stripes):
+    m = StripedHashMap(n_stripes)
+    for i in range(num_keys):
+        m.put(f"key{i}", i)
+    loads = [len(s) for s in m.stripes]
+    distinct = sum(1 for L in loads if L > 0)
+    return max(loads), distinct
+
+num_keys = ast.literal_eval(input())
+n = ast.literal_eval(input())
+max_load, distinct = profile(num_keys, n)
+print(f"{n} stripes: busiest {max_load} keys, {distinct} used -> up to {distinct}-way")
+```
+
+```java run viz=array
+import java.util.*;
+public class Main {
+    static final long MOD = (1L << 31) - 1;
+    static long hash(String key) {
+        long h = 0;
+        for (int i = 0; i < key.length(); i++) h = (h * 131 + key.charAt(i)) % MOD;
+        return h;
+    }
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int numKeys = sc.nextInt();
+        int n = sc.nextInt();
+        @SuppressWarnings("unchecked")
+        Map<String, Integer>[] stripes = new HashMap[n];
+        // Your code goes here — fill stripes, then compute max and distinct
+        int max = 0, distinct = 0;
+        System.out.println(n + " stripes: busiest " + max + " keys, " + distinct + " used -> up to " + distinct + "-way");
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "num_keys", "label": "number of keys", "type": "integer", "placeholder": "64" },
+    { "id": "n", "label": "number of stripes", "type": "integer", "placeholder": "4" }
+  ],
+  "cases": [
+    { "args": { "num_keys": 64, "n": 1 }, "expected": "1 stripes: busiest 64 keys, 1 used -> up to 1-way" },
+    { "args": { "num_keys": 64, "n": 4 }, "expected": "4 stripes: busiest 17 keys, 4 used -> up to 4-way" },
+    { "args": { "num_keys": 64, "n": 16 }, "expected": "16 stripes: busiest 5 keys, 16 used -> up to 16-way" },
+    { "args": { "num_keys": 32, "n": 8 }, "expected": "8 stripes: busiest 5 keys, 8 used -> up to 8-way" }
+  ]
+}
+```
+
+The profile shows: `1 stripe` → 1-way, busiest holds all `64`; `4 stripes` → 4-way, busiest ~`17`; `16 stripes` → 16-way, busiest ~`5`. More stripes spread the keys, so the busiest lock guards fewer keys and more writers run in parallel — at the cost of `N` lock objects and worse cache locality. That trade (concurrency vs memory/locality) is exactly the `concurrencyLevel` knob older `ConcurrentHashMap` exposed, and why Java 8's per-bucket scheme sidesteps it.
+
+<details>
+<summary><strong>Editorial</strong></summary>
+
+Initialize all stripes, hash each key into its stripe, put the entry there, then scan for max load and distinct (non-empty) stripes. The deterministic polynomial hash ensures Python and Java assign keys to the same stripes.
+
+```python solution time=O(num_keys) space=O(num_keys)
+import ast
+
 def _hash(key):
     h = 0
     for c in str(key):
@@ -156,15 +263,16 @@ def profile(num_keys, n_stripes):
     for i in range(num_keys):
         m.put(f"key{i}", i)
     loads = [len(s) for s in m.stripes]
-    distinct = sum(1 for L in loads if L > 0)          # stripes actually used = max parallelism
+    distinct = sum(1 for L in loads if L > 0)
     return max(loads), distinct
 
-for n in (1, 4, 16):
-    max_load, distinct = profile(64, n)
-    print(f"{n:>2} stripes: busiest stripe holds {max_load} keys, {distinct} stripes used -> up to {distinct}-way concurrency")
+num_keys = ast.literal_eval(input())
+n = ast.literal_eval(input())
+max_load, distinct = profile(num_keys, n)
+print(f"{n} stripes: busiest {max_load} keys, {distinct} used -> up to {distinct}-way")
 ```
 
-```java run viz=array
+```java solution
 import java.util.*;
 public class Main {
     static final long MOD = (1L << 31) - 1;
@@ -174,24 +282,25 @@ public class Main {
         return h;
     }
     public static void main(String[] args) {
-        for (int n : new int[]{1, 4, 16}) {
-            @SuppressWarnings("unchecked")
-            Map<String, Integer>[] stripes = new HashMap[n];
-            for (int i = 0; i < n; i++) stripes[i] = new HashMap<>();
-            for (int i = 0; i < 64; i++) stripes[(int) (hash("key" + i) % n)].put("key" + i, i);
-            int max = 0, distinct = 0;
-            for (Map<String, Integer> s : stripes) { max = Math.max(max, s.size()); if (!s.isEmpty()) distinct++; }
-            System.out.println(n + " stripes: busiest " + max + " keys, " + distinct + " used -> up to " + distinct + "-way");
-        }
+        Scanner sc = new Scanner(System.in);
+        int numKeys = sc.nextInt();
+        int n = sc.nextInt();
+        @SuppressWarnings("unchecked")
+        Map<String, Integer>[] stripes = new HashMap[n];
+        for (int i = 0; i < n; i++) stripes[i] = new HashMap<>();
+        for (int i = 0; i < numKeys; i++) stripes[(int) (hash("key" + i) % n)].put("key" + i, i);
+        int max = 0, distinct = 0;
+        for (Map<String, Integer> s : stripes) { max = Math.max(max, s.size()); if (!s.isEmpty()) distinct++; }
+        System.out.println(n + " stripes: busiest " + max + " keys, " + distinct + " used -> up to " + distinct + "-way");
     }
 }
 ```
 
-Both print the same scaling: `1 stripe` → 1-way, busiest holds all `64`; `4 stripes` → 4-way, busiest ~`17`; `16 stripes` → 16-way, busiest ~`5`. More stripes spread the keys, so the busiest lock guards fewer keys and more writers run in parallel — at the cost of `N` lock objects and worse cache locality. That trade (concurrency vs memory/locality) is exactly the `concurrencyLevel` knob older `ConcurrentHashMap` exposed, and why Java 8's per-bucket scheme sidesteps it.
+</details>
 
 ## Reflect & Connect
 
-- **Shrink the lock.** Global lock (1-way) → stripe locks (`N`-way) → per-bucket CAS (Java 8+). Each step narrows the unit of mutual exclusion so more independent operations run at once.
+- **Shrink the lock.** Global lock (1-way) -> stripe locks (`N`-way) -> per-bucket CAS (Java 8+). Each step narrows the unit of mutual exclusion so more independent operations run at once.
 - **Striping's limit is collision on a stripe.** Two keys on different stripes are concurrent; two on the same stripe still serialize. You get `~N`-way concurrency *on average*, never a guarantee — which is why finer (per-bucket) granularity wins.
 - **Reads are lock-free.** A bucket-head read is atomic, so the read-heavy common case never blocks. This alone makes a concurrent map far faster than a synchronized one.
 - **Linearizable, weakly-consistent iterators.** Single operations appear atomic; iterators reflect *some* point in time, never crash, and `size()` is approximate under concurrency. You trade a consistent snapshot for non-blocking traversal.
@@ -234,4 +343,4 @@ Both print the same scaling: `1 stripe` → 1-way, busiest holds all `64`; `4 st
 
 - **Herlihy & Shavit**, *The Art of Multiprocessor Programming* (2nd ed.) — striped/refinable hash sets, lock-free reads, and linearizability.
 - **Doug Lea**, `java.util.concurrent.ConcurrentHashMap` (and its Java 8 rewrite to per-bin CAS + treeification) — the canonical production concurrent map; **Cliff Click**, "A Lock-Free Wait-Free Hash Table" — a fully lock-free design.
-- The `1 3` / `None` gets, the `apple=3 banana=2 cherry=1 date=2` stripe assignments, the concurrent-vs-serialize pair, and the `1`/`4`/`16`-way profile above come from the runnable blocks — the code *simulates* striping single-threaded (real stripes each carry a lock and run in parallel); Python's built-in `hash` is salted, so a fixed polynomial hash is used. Re-run to verify.
+- The `1 3` / `null` gets, the `apple=3 banana=2 cherry=1 date=2` stripe assignments, the concurrent-vs-serialize pair, and the `1`/`4`/`16`-way profile above come from the runnable blocks — the code *simulates* striping single-threaded (real stripes each carry a lock and run in parallel); Python's built-in `hash` is salted, so a fixed polynomial hash is used. Re-run to verify.

@@ -17,6 +17,8 @@ The catch is that it's only sometimes *correct*. Change `14` from denominations 
 **Activity selection** — pick the most non-overlapping activities. The greedy rule: **sort by *end* time, then take each activity that starts after the last one taken ended.**
 
 ```python run viz=array
+import ast
+
 def activity_selection(acts):
     acts = sorted(acts, key=lambda a: a[1])     # sort by END time (not start!)
     selected, last_end = [], float('-inf')
@@ -25,11 +27,14 @@ def activity_selection(acts):
             selected.append((s, e)); last_end = e
     return selected
 
-print(activity_selection([(1,4), (3,5), (0,6), (5,7), (8,9), (5,9), (6,10)]))
+acts = ast.literal_eval(input())
+result = activity_selection(acts)
+print(" ".join(f"({s},{e})" for s, e in result))
 ```
 
 ```java run viz=array
 import java.util.*;
+
 public class Main {
     static List<int[]> activitySelection(int[][] acts) {
         Arrays.sort(acts, (a, b) -> a[1] - b[1]);       // sort by END time
@@ -37,12 +42,54 @@ public class Main {
         for (int[] a : acts) if (a[0] >= lastEnd) { sel.add(a); lastEnd = a[1]; }
         return sel;
     }
-    public static void main(String[] args) {
-        var s = activitySelection(new int[][]{{1,4},{3,5},{0,6},{5,7},{8,9},{5,9},{6,10}});
-        StringBuilder sb = new StringBuilder();
-        for (int[] a : s) sb.append("(").append(a[0]).append(",").append(a[1]).append(") ");
-        System.out.println(sb.toString().trim());
+
+    static int[][] parseIntMatrix(String line) {
+        line = line.trim();
+        if (line.equals("[]")) return new int[0][];
+        line = line.substring(1, line.length() - 1).trim();
+        List<int[]> rows = new ArrayList<>();
+        int depth = 0, start = 0;
+        for (int i = 0; i < line.length(); i++) {
+            char c = line.charAt(i);
+            if (c == '[') { if (depth == 0) start = i; depth++; }
+            else if (c == ']') {
+                depth--;
+                if (depth == 0) {
+                    String row = line.substring(start + 1, i).replaceAll("\\s", "");
+                    String[] parts = row.split(",");
+                    int[] r = new int[parts.length];
+                    for (int j = 0; j < parts.length; j++) r[j] = Integer.parseInt(parts[j]);
+                    rows.add(r);
+                }
+            }
+        }
+        return rows.toArray(new int[0][]);
     }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[][] acts = parseIntMatrix(sc.nextLine());
+        List<int[]> result = activitySelection(acts);
+        StringBuilder sb = new StringBuilder();
+        for (int[] a : result) {
+            if (sb.length() > 0) sb.append(" ");
+            sb.append("(").append(a[0]).append(",").append(a[1]).append(")");
+        }
+        System.out.println(sb.toString());
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "acts", "label": "acts", "type": "int[][]", "placeholder": "[[1,4],[3,5],[0,6],[5,7],[8,9],[5,9],[6,10]]" }
+  ],
+  "cases": [
+    { "args": { "acts": "[[1,4],[3,5],[0,6],[5,7],[8,9],[5,9],[6,10]]" }, "expected": "(1,4) (5,7) (8,9)" },
+    { "args": { "acts": "[[1,2],[3,4],[5,6]]" }, "expected": "(1,2) (3,4) (5,6)" },
+    { "args": { "acts": "[[1,10],[2,3],[4,5]]" }, "expected": "(2,3) (4,5)" }
+  ]
 }
 ```
 
@@ -129,6 +176,80 @@ Greedy uses **5** coins (`10 + 1 + 1 + 1 + 1`); the optimum is **2** (`7 + 7`). 
 A greedy that genuinely works: **Minimum Number of Arrows to Burst Balloons** ([LeetCode 452](https://leetcode.com/problems/minimum-number-of-arrows-to-burst-balloons/)). Balloons are intervals; one arrow at position `x` bursts every interval covering `x`. Minimise arrows. Same shape as activity selection — sort by end, fire at each end you can't skip.
 
 ```python run viz=array
+import ast
+
+def min_arrows(points):
+    # Your code goes here — sort by END; fire an arrow whenever the current
+    # balloon isn't already burst (start > last arrow position).
+    return 0
+
+points = ast.literal_eval(input())
+print(min_arrows(points))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static int minArrows(int[][] pts) {
+        // Your code goes here — sort by END; count a new arrow whenever
+        // the balloon isn't already burst.
+        return 0;
+    }
+
+    static int[][] parseIntMatrix(String line) {
+        line = line.trim();
+        if (line.equals("[]")) return new int[0][];
+        line = line.substring(1, line.length() - 1).trim();
+        List<int[]> rows = new ArrayList<>();
+        int depth = 0, start = 0;
+        for (int i = 0; i < line.length(); i++) {
+            char c = line.charAt(i);
+            if (c == '[') { if (depth == 0) start = i; depth++; }
+            else if (c == ']') {
+                depth--;
+                if (depth == 0) {
+                    String row = line.substring(start + 1, i).replaceAll("\\s", "");
+                    String[] parts = row.split(",");
+                    int[] r = new int[parts.length];
+                    for (int j = 0; j < parts.length; j++) r[j] = Integer.parseInt(parts[j]);
+                    rows.add(r);
+                }
+            }
+        }
+        return rows.toArray(new int[0][]);
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[][] pts = parseIntMatrix(sc.nextLine());
+        System.out.println(minArrows(pts));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "points", "label": "points", "type": "int[][]", "placeholder": "[[10,16],[2,8],[1,6],[7,12]]" }
+  ],
+  "cases": [
+    { "args": { "points": "[[10,16],[2,8],[1,6],[7,12]]" }, "expected": "2" },
+    { "args": { "points": "[[1,2],[3,4],[5,6],[7,8]]" }, "expected": "4" },
+    { "args": { "points": "[[1,2],[2,3],[3,4],[4,5]]" }, "expected": "2" },
+    { "args": { "points": "[[1,10]]" }, "expected": "1" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Both print `2` then `4`: two arrows cover the four overlapping balloons; four disjoint balloons need four arrows. The exchange argument is the same as activity selection's — firing at the earliest end is never wrong.
+
+```python solution time=O(n log n) space=O(1)
+import ast
+
 def min_arrows(points):
     points.sort(key=lambda p: p[1])             # sort by END
     arrows, last = 0, float('-inf')
@@ -137,12 +258,13 @@ def min_arrows(points):
             arrows += 1; last = e               # fire at its end
     return arrows
 
-print(min_arrows([[10,16], [2,8], [1,6], [7,12]]))   # 2
-print(min_arrows([[1,2], [3,4], [5,6], [7,8]]))      # 4
+points = ast.literal_eval(input())
+print(min_arrows(points))
 ```
 
-```java run viz=array
+```java solution
 import java.util.*;
+
 public class Main {
     static int minArrows(int[][] pts) {
         Arrays.sort(pts, (a, b) -> Integer.compare(a[1], b[1]));   // sort by END
@@ -150,14 +272,39 @@ public class Main {
         for (int[] p : pts) if (p[0] > last) { arrows++; last = p[1]; }
         return arrows;
     }
+
+    static int[][] parseIntMatrix(String line) {
+        line = line.trim();
+        if (line.equals("[]")) return new int[0][];
+        line = line.substring(1, line.length() - 1).trim();
+        List<int[]> rows = new ArrayList<>();
+        int depth = 0, start = 0;
+        for (int i = 0; i < line.length(); i++) {
+            char c = line.charAt(i);
+            if (c == '[') { if (depth == 0) start = i; depth++; }
+            else if (c == ']') {
+                depth--;
+                if (depth == 0) {
+                    String row = line.substring(start + 1, i).replaceAll("\\s", "");
+                    String[] parts = row.split(",");
+                    int[] r = new int[parts.length];
+                    for (int j = 0; j < parts.length; j++) r[j] = Integer.parseInt(parts[j]);
+                    rows.add(r);
+                }
+            }
+        }
+        return rows.toArray(new int[0][]);
+    }
+
     public static void main(String[] args) {
-        System.out.println(minArrows(new int[][]{{10,16},{2,8},{1,6},{7,12}}));   // 2
-        System.out.println(minArrows(new int[][]{{1,2},{3,4},{5,6},{7,8}}));      // 4
+        Scanner sc = new Scanner(System.in);
+        int[][] pts = parseIntMatrix(sc.nextLine());
+        System.out.println(minArrows(pts));
     }
 }
 ```
 
-Both print `2` then `4`: two arrows cover the four overlapping balloons; four disjoint balloons need four arrows. The exchange argument is the same as activity selection's — firing at the earliest end is never wrong. (For the heap-driven greedy, see the **Problems** folder and Huffman coding, which repeatedly merges the two least-frequent symbols.)
+</details>
 
 ## Reflect & Connect
 

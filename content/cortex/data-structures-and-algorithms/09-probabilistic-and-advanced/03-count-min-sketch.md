@@ -34,15 +34,19 @@ class CountMinSketch:
     def estimate(self, x):
         return min(self.grid[i][self._pos(x, i)] for i in range(len(self.BASES)))   # MIN of the d cells
 
-cms = CountMinSketch(w=64)
-for x in ["apple"] * 5 + ["banana"] * 3 + ["date"] * 7:
-    cms.add(x)
-print(cms.estimate("apple"))     # 5
-print(cms.estimate("banana"))    # 3
-print(cms.estimate("date"))      # 7
+pairs = input()
+w = int(input())
+queries = input().split(",")
+cms = CountMinSketch(w=w)
+for pair in pairs.split(","):
+    word, count = pair.rsplit(":", 1)
+    cms.add(word, int(count))
+for q in queries:
+    print(cms.estimate(q))
 ```
 
 ```java run viz=grid
+import java.util.*;
 public class Main {
     static final long MOD = (1L << 31) - 1;
     static final int[] BASES = {131, 137, 139};
@@ -62,18 +66,38 @@ public class Main {
         }
     }
     public static void main(String[] args) {
-        CMS cms = new CMS(64);
-        for (int i = 0; i < 5; i++) cms.add("apple", 1);
-        for (int i = 0; i < 3; i++) cms.add("banana", 1);
-        for (int i = 0; i < 7; i++) cms.add("date", 1);
-        System.out.println(cms.estimate("apple"));    // 5
-        System.out.println(cms.estimate("banana"));   // 3
-        System.out.println(cms.estimate("date"));     // 7
+        Scanner sc = new Scanner(System.in);
+        String pairs = sc.nextLine();
+        int w = Integer.parseInt(sc.nextLine().trim());
+        String[] queries = sc.nextLine().split(",");
+        CMS cms = new CMS(w);
+        for (String pair : pairs.split(",")) {
+            int colon = pair.lastIndexOf(':');
+            String word = pair.substring(0, colon);
+            long count = Long.parseLong(pair.substring(colon + 1));
+            cms.add(word, count);
+        }
+        for (String q : queries) System.out.println(cms.estimate(q));
     }
 }
 ```
 
-Both print `5`, `3`, `7` — exact, because a 3×64 grid leaves these few items collision-free. The sketch stores `3 × 64` counters no matter how many distinct items stream through; only the *accuracy* degrades as collisions rise, never the footprint.
+```testcases
+{
+  "args": [
+    { "id": "pairs", "label": "word:count pairs", "type": "string", "placeholder": "apple:5,banana:3,date:7" },
+    { "id": "w", "label": "width (w)", "type": "number", "placeholder": "64" },
+    { "id": "queries", "label": "query words", "type": "string", "placeholder": "apple,banana,date" }
+  ],
+  "cases": [
+    { "args": { "pairs": "apple:5,banana:3,date:7", "w": "64", "queries": "apple,banana,date" }, "expected": "5\n3\n7" },
+    { "args": { "pairs": "foo:10", "w": "32", "queries": "foo,bar" }, "expected": "10\n0" },
+    { "args": { "pairs": "hot:100,cold:1", "w": "64", "queries": "hot,cold" }, "expected": "100\n1" }
+  ]
+}
+```
+
+All three estimates are exact, because a 3×64 grid leaves these few items collision-free. The sketch stores `3 × 64` counters no matter how many distinct items stream through; only the *accuracy* degrades as collisions rise, never the footprint.
 
 ## How It Works
 
@@ -158,16 +182,129 @@ class CountMinSketch:
     def estimate(self, x):
         return min(self.grid[i][self._pos(x, i)] for i in range(len(self.BASES)))
 
-cms = CountMinSketch(w=16)
-truth = {"x": 50, "y": 12, "z": 3, "p": 7, "q": 1}
+def heavy_hitter(truth, w):
+    # Your code goes here
+    return "", 0
+
+pairs = input()
+w = int(input())
+truth = {}
+for pair in pairs.split(","):
+    k, v = pair.split(":")
+    truth[k] = int(v)
+cms = CountMinSketch(w)
 for k, c in truth.items():
     cms.add(k, c)
-print("every estimate >= true?:", all(cms.estimate(k) >= truth[k] for k in truth))   # True
+print("true" if all(cms.estimate(k) >= truth[k] for k in truth) else "false")
 heavy = max(truth, key=cms.estimate)
-print("heavy hitter:", heavy, "->", cms.estimate(heavy))                              # x -> 50
+print(heavy + " -> " + str(cms.estimate(heavy)))
 ```
 
 ```java run viz=grid
+import java.util.*;
+public class Main {
+    static final long MOD = (1L << 31) - 1;
+    static final int[] BASES = {131, 137, 139};
+    static class CMS {
+        int w; long[][] grid;
+        CMS(int w) { this.w = w; grid = new long[BASES.length][w]; }
+        int pos(String x, int i) {
+            long h = 0;
+            for (int j = 0; j < x.length(); j++) h = (h * BASES[i] + x.charAt(j)) % MOD;
+            return (int) (h % w);
+        }
+        void add(String x, long c) { for (int i = 0; i < BASES.length; i++) grid[i][pos(x, i)] += c; }
+        long estimate(String x) {
+            long m = Long.MAX_VALUE;
+            for (int i = 0; i < BASES.length; i++) m = Math.min(m, grid[i][pos(x, i)]);
+            return m;
+        }
+    }
+    // Your code goes here
+    static String heavyHitter(String[] ks, long[] cs, int w) { return ""; }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String pairs = sc.nextLine();
+        int w = Integer.parseInt(sc.nextLine().trim());
+        String[] tokens = pairs.split(",");
+        String[] ks = new String[tokens.length];
+        long[] cs = new long[tokens.length];
+        for (int i = 0; i < tokens.length; i++) {
+            String[] kv = tokens[i].split(":");
+            ks[i] = kv[0]; cs[i] = Long.parseLong(kv[1]);
+        }
+        CMS cms = new CMS(w);
+        for (int i = 0; i < ks.length; i++) cms.add(ks[i], cs[i]);
+        boolean ok = true;
+        String heavy = ks[0];
+        for (int i = 0; i < ks.length; i++) {
+            if (cms.estimate(ks[i]) < cs[i]) ok = false;
+            if (cms.estimate(ks[i]) > cms.estimate(heavy)) heavy = ks[i];
+        }
+        System.out.println(ok);
+        System.out.println(heavy + " -> " + cms.estimate(heavy));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "pairs", "label": "key:count pairs", "type": "string", "placeholder": "x:50,y:12,z:3,p:7,q:1" },
+    { "id": "w", "label": "width (w)", "type": "number", "placeholder": "16" }
+  ],
+  "cases": [
+    { "args": { "pairs": "x:50,y:12,z:3,p:7,q:1", "w": "16" }, "expected": "true\nx -> 50" },
+    { "args": { "pairs": "a:10,b:5,c:1", "w": "16" }, "expected": "true\na -> 10" }
+  ]
+}
+```
+
+Both print `true` then `x -> 50`. Every estimate honours the floor (never below the true count), and the argmax over estimates is the genuine heavy hitter `x`. This is the production pattern: a count-min sketch maintains approximate counts for *every* key in fixed memory, and a small heap of the top estimates surfaces the heavy hitters — exactly how stream processors find the trending hashtag or the IP flooding your servers.
+
+<details>
+<summary><strong>Editorial</strong></summary>
+
+Build the sketch from the stream, then check the one-sided guarantee: for every key, `estimate >= true_count`. Find the heavy hitter by taking the `max` over all keys by estimated count — the argmax over estimates identifies the most frequent item, and since estimates never under-count, the true heavy hitter is never missed.
+
+```python solution time=O(n*d) space=O(d*w)
+MOD = (1 << 31) - 1
+class CountMinSketch:
+    BASES = [131, 137, 139]
+    def __init__(self, w):
+        self.w = w; self.grid = [[0] * w for _ in range(len(self.BASES))]
+    def _pos(self, x, i):
+        h = 0
+        for c in x: h = (h * self.BASES[i] + ord(c)) % MOD
+        return h % self.w
+    def add(self, x, count=1):
+        for i in range(len(self.BASES)): self.grid[i][self._pos(x, i)] += count
+    def estimate(self, x):
+        return min(self.grid[i][self._pos(x, i)] for i in range(len(self.BASES)))
+
+def heavy_hitter(truth, w):
+    cms = CountMinSketch(w)
+    for k, c in truth.items():
+        cms.add(k, c)
+    return max(truth, key=cms.estimate), cms
+
+pairs = input()
+w = int(input())
+truth = {}
+for pair in pairs.split(","):
+    k, v = pair.split(":")
+    truth[k] = int(v)
+cms = CountMinSketch(w)
+for k, c in truth.items():
+    cms.add(k, c)
+print("true" if all(cms.estimate(k) >= truth[k] for k in truth) else "false")
+heavy = max(truth, key=cms.estimate)
+print(heavy + " -> " + str(cms.estimate(heavy)))
+```
+
+```java solution
+import java.util.*;
 public class Main {
     static final long MOD = (1L << 31) - 1;
     static final int[] BASES = {131, 137, 139};
@@ -187,21 +324,31 @@ public class Main {
         }
     }
     public static void main(String[] args) {
-        CMS cms = new CMS(16);
-        String[] ks = {"x", "y", "z", "p", "q"}; long[] cs = {50, 12, 3, 7, 1};
+        Scanner sc = new Scanner(System.in);
+        String pairs = sc.nextLine();
+        int w = Integer.parseInt(sc.nextLine().trim());
+        String[] tokens = pairs.split(",");
+        String[] ks = new String[tokens.length];
+        long[] cs = new long[tokens.length];
+        for (int i = 0; i < tokens.length; i++) {
+            String[] kv = tokens[i].split(":");
+            ks[i] = kv[0]; cs[i] = Long.parseLong(kv[1]);
+        }
+        CMS cms = new CMS(w);
         for (int i = 0; i < ks.length; i++) cms.add(ks[i], cs[i]);
-        boolean ok = true; String heavy = ks[0];
+        boolean ok = true;
+        String heavy = ks[0];
         for (int i = 0; i < ks.length; i++) {
             if (cms.estimate(ks[i]) < cs[i]) ok = false;
             if (cms.estimate(ks[i]) > cms.estimate(heavy)) heavy = ks[i];
         }
-        System.out.println("every estimate >= true?: " + ok);            // true
-        System.out.println("heavy hitter: " + heavy + " -> " + cms.estimate(heavy));   // x -> 50
+        System.out.println(ok);
+        System.out.println(heavy + " -> " + cms.estimate(heavy));
     }
 }
 ```
 
-Both print `True` then `x -> 50`. Every estimate honours the floor (never below the true count), and the argmax over estimates is the genuine heavy hitter `x`. This is the production pattern: a count-min sketch maintains approximate counts for *every* key in fixed memory, and a small heap of the top estimates surfaces the heavy hitters — exactly how stream processors find the trending hashtag or the IP flooding your servers.
+</details>
 
 ## Reflect & Connect
 

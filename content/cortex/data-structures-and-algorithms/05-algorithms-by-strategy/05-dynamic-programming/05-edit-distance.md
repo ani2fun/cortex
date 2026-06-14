@@ -31,10 +31,14 @@ def edit_distance(a, b):
                                    dp[i - 1][j - 1])  # replace        (diagonal)
     return dp[m][n]
 
-print(edit_distance("horse", "ros"))                 # 3
+a = input()
+b = input()
+print(edit_distance(a, b))
 ```
 
 ```java run viz=grid
+import java.util.*;
+
 public class Main {
     static int editDistance(String a, String b) {
         int m = a.length(), n = b.length();
@@ -48,13 +52,30 @@ public class Main {
                     : 1 + Math.min(dp[i - 1][j], Math.min(dp[i][j - 1], dp[i - 1][j - 1]));
         return dp[m][n];
     }
+
     public static void main(String[] args) {
-        System.out.println(editDistance("horse", "ros"));   // 3
+        Scanner sc = new Scanner(System.in);
+        String a = sc.nextLine();
+        String b = sc.nextLine();
+        System.out.println(editDistance(a, b));
     }
 }
 ```
 
-Both print `3`: `horse → rorse` (replace h→r) `→ rose` (delete r) `→ ros` (delete e). Cost `O(m·n)`.
+```testcases
+{
+  "args": [
+    { "id": "a", "label": "a", "type": "string", "placeholder": "horse" },
+    { "id": "b", "label": "b", "type": "string", "placeholder": "ros" }
+  ],
+  "cases": [
+    { "args": { "a": "horse", "b": "ros" }, "expected": "3" },
+    { "args": { "a": "intention", "b": "execution" }, "expected": "5" },
+    { "args": { "a": "abc", "b": "abc" }, "expected": "0" },
+    { "args": { "a": "kitten", "b": "sitting" }, "expected": "3" }
+  ]
+}
+```
 
 ## How It Works
 
@@ -119,6 +140,63 @@ Back to the hook: a tiny **spell-checker**. Given a misspelt query and a diction
 
 ```python run viz=grid
 def edit_distance(a, b):
+    # Your code goes here — the full three-move recurrence with non-zero base cases
+    return 0
+
+def closest_word(query, dictionary):
+    # Your code goes here — use edit_distance to find the closest word
+    return ""
+
+query = input()
+dictionary = input().split(",")
+print(closest_word(query, dictionary))
+```
+
+```java run viz=grid
+import java.util.*;
+
+public class Main {
+    static int editDistance(String a, String b) {
+        // Your code goes here — the full three-move recurrence with non-zero base cases
+        return 0;
+    }
+
+    static String closestWord(String q, String[] dict) {
+        // Your code goes here — use editDistance to find the closest word
+        return "";
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String query = sc.nextLine();
+        String[] dictionary = sc.nextLine().split(",");
+        System.out.println(closestWord(query, dictionary));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "query", "label": "query", "type": "string", "placeholder": "speling" },
+    { "id": "dictionary", "label": "dictionary (comma-separated)", "type": "string", "placeholder": "spelling,ceiling,spell,sapling" }
+  ],
+  "cases": [
+    { "args": { "query": "speling", "dictionary": "spelling,ceiling,spell,sapling" }, "expected": "spelling" },
+    { "args": { "query": "recieve", "dictionary": "receive,relieve,believe,achieve" }, "expected": "relieve" },
+    { "args": { "query": "hors", "dictionary": "horse,hose,horn,hours" }, "expected": "horse" },
+    { "args": { "query": "cat", "dictionary": "bat,hat,sat,cat" }, "expected": "cat" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+One insertion (`l`) puts `speling` one edit from `spelling`, beating `sapling` (2) and `ceiling`/`spell` (3). That's a spell-checker in one `min` over the dictionary. (Production engines index by edit-distance-1 neighbourhoods or BK-trees to avoid scanning every word, but the per-pair cost is exactly this DP.)
+
+```python solution time=O(k·m·n) space=O(m·n)
+def edit_distance(a, b):
     m, n = len(a), len(b); dp = [[0]*(n+1) for _ in range(m+1)]
     for i in range(m+1): dp[i][0] = i
     for j in range(n+1): dp[0][j] = j
@@ -130,10 +208,14 @@ def edit_distance(a, b):
 def closest_word(query, dictionary):
     return min(dictionary, key=lambda w: edit_distance(query, w))
 
-print(closest_word("speling", ["spelling", "ceiling", "spell", "sapling"]))   # spelling (distance 1)
+query = input()
+dictionary = input().split(",")
+print(closest_word(query, dictionary))
 ```
 
-```java run viz=grid
+```java solution
+import java.util.*;
+
 public class Main {
     static int editDistance(String a, String b) {
         int m=a.length(), n=b.length(); int[][] dp=new int[m+1][n+1];
@@ -144,18 +226,23 @@ public class Main {
                      : 1 + Math.min(dp[i-1][j], Math.min(dp[i][j-1], dp[i-1][j-1]));
         return dp[m][n];
     }
+
     static String closestWord(String q, String[] dict) {
         String best = null; int bd = Integer.MAX_VALUE;
         for (String w : dict) { int d = editDistance(q, w); if (d < bd) { bd = d; best = w; } }
         return best;
     }
+
     public static void main(String[] args) {
-        System.out.println(closestWord("speling", new String[]{"spelling","ceiling","spell","sapling"}));   // spelling
+        Scanner sc = new Scanner(System.in);
+        String query = sc.nextLine();
+        String[] dictionary = sc.nextLine().split(",");
+        System.out.println(closestWord(query, dictionary));
     }
 }
 ```
 
-Both print `spelling` — one insertion (`l`) away from `speling`, beating `sapling` (2) and `ceiling`/`spell` (3). That's a spell-checker in one `min` over the dictionary. (Production engines index by edit-distance-1 neighbourhoods or BK-trees to avoid scanning every word, but the per-pair cost is exactly this DP.)
+</details>
 
 ## Reflect & Connect
 

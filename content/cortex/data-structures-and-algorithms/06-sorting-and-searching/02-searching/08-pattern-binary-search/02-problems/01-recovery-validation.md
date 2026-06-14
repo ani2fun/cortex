@@ -4,27 +4,109 @@ summary: "Given a sorted array recoveryCodes and an array attempts, return true 
 prereqs:
   - 08-pattern-binary-search/01-pattern
 difficulty: medium
+kind: problem
+topics: [binary-search, searching]
 ---
 
 # Recovery Validation
 
-A list of valid recovery codes (sorted) and a list of attempts. Did *any* attempt succeed?
+## Problem Statement
 
-## The Problem
+Given a sorted array `recoveryCodes` and an array `attempts`, return `true` if any attempt is in the recovery codes list. **Must run in `O(N log M)`** where `N = len(attempts)`, `M = len(recoveryCodes)`.
 
-Given a sorted array `recoveryCodes` and an array `attempts`, return `true` if any attempt is in the recovery codes list. **Must run in `O(N log N)`** where `N = len(attempts)`, `M = len(recoveryCodes)`.
+## Examples
 
+**Example 1**
 ```
 Input:  recoveryCodes = [1, 4, 7], attempts = [2, 4]
-Output: true   (4 is in recovery codes)
-
-Input:  recoveryCodes = [5, 9, 11, 12], attempts = [2, 9, 12]
 Output: true
-
-Input:  recoveryCodes = [1, 2, 3], attempts = [5, 6]
-Output: false
+Explanation: 4 is found in recoveryCodes via binary search, so at least one attempt succeeded.
 ```
 
+**Example 2**
+```
+Input:  recoveryCodes = [1, 2, 3], attempts = [5, 6]
+Output: false
+Explanation: Neither 5 nor 6 is present in recoveryCodes; binary search returns -1 for each.
+```
+
+## Constraints
+
+- `1 ≤ recoveryCodes.length ≤ 10^5`
+- `0 ≤ attempts.length ≤ 10^5`
+- `-10^9 ≤ recoveryCodes[i], attempts[i] ≤ 10^9`
+- `recoveryCodes` is sorted in ascending order.
+
+```python run viz=array
+import ast
+from typing import List
+
+class Solution:
+    def recovery_validation(
+        self, recovery_codes: List[int], attempts: List[int]
+    ) -> bool:
+        # Your code goes here — for each attempt, binary-search recoveryCodes.
+        # Return True on the first match, False if none found.
+        return False
+
+recovery_codes = ast.literal_eval(input())
+attempts = ast.literal_eval(input())
+print("true" if Solution().recovery_validation(recovery_codes, attempts) else "false")
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public boolean recoveryValidation(int[] recoveryCodes, int[] attempts) {
+            // Your code goes here — for each attempt, binary-search recoveryCodes.
+            // Return true on the first match, false if none found.
+            return false;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] recoveryCodes = parseIntArray(sc.nextLine());
+        int[] attempts = parseIntArray(sc.nextLine());
+        System.out.println(new Solution().recoveryValidation(recoveryCodes, attempts));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "recoveryCodes", "label": "recoveryCodes", "type": "int[]", "placeholder": "[1, 4, 7]" },
+    { "id": "attempts", "label": "attempts", "type": "int[]", "placeholder": "[2, 4]" }
+  ],
+  "cases": [
+    { "args": { "recoveryCodes": "[1, 4, 7]", "attempts": "[2, 4]" }, "expected": "true" },
+    { "args": { "recoveryCodes": "[5, 9, 11, 12]", "attempts": "[2, 9, 12]" }, "expected": "true" },
+    { "args": { "recoveryCodes": "[1, 2, 3]", "attempts": "[5, 6]" }, "expected": "false" },
+    { "args": { "recoveryCodes": "[1, 2, 3]", "attempts": "[]" }, "expected": "false" },
+    { "args": { "recoveryCodes": "[5]", "attempts": "[5]" }, "expected": "true" },
+    { "args": { "recoveryCodes": "[1, 3, 5, 7]", "attempts": "[2, 4, 6]" }, "expected": "false" }
+  ]
+}
+```
+
+<details>
+<summary><h2>Intuition</h2></summary>
+
+The recovery codes are already sorted — that's the signal to binary-search rather than scan. For each attempt, binary-search `recoveryCodes` in `O(log M)` and return `true` on the first hit. The loop over `N` attempts drives the total to `O(N log M)`, which beats the naive `O(N × M)` linear scan. The key insight is that the sorted structure of `recoveryCodes` is an asset: it lets you eliminate half the candidate codes per comparison rather than checking them one by one.
+
+</details>
 <details>
 <summary><h2>Solution &amp; Analysis</h2></summary>
 
@@ -33,7 +115,8 @@ Output: false
 Linear scan over `attempts`; binary-search each one against `recoveryCodes`. Total: `O(N log M)`. Stop on first match.
 
 
-```python run viz=array
+```python solution time=O(N log M) space=O(1)
+import ast
 from typing import List
 
 class Solution:
@@ -82,20 +165,12 @@ class Solution:
         return False
 
 
-# Examples from the problem statement
-print(Solution().recovery_validation([1, 4, 7], [2, 4]))         # True
-print(Solution().recovery_validation([5, 9, 11, 12], [2, 9, 12]))  # True
-print(Solution().recovery_validation([1, 2, 3], [5, 6]))         # False
-
-# Edge cases
-print(Solution().recovery_validation([1, 2, 3], []))              # False — no attempts
-print(Solution().recovery_validation([5], [5]))                   # True  — single code match
-print(Solution().recovery_validation([5], [6]))                   # False — single code miss
-print(Solution().recovery_validation([1, 3, 5, 7], [2, 4, 6]))   # False — all misses
-print(Solution().recovery_validation([10], [10, 20, 30]))         # True  — first attempt matches
+recovery_codes = ast.literal_eval(input())
+attempts = ast.literal_eval(input())
+print("true" if Solution().recovery_validation(recovery_codes, attempts) else "false")
 ```
 
-```java run viz=array
+```java solution
 import java.util.*;
 
 public class Main {
@@ -155,17 +230,19 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().recoveryValidation(new int[]{1, 4, 7}, new int[]{2, 4}));           // true
-        System.out.println(new Solution().recoveryValidation(new int[]{5, 9, 11, 12}, new int[]{2, 9, 12}));  // true
-        System.out.println(new Solution().recoveryValidation(new int[]{1, 2, 3}, new int[]{5, 6}));           // false
+        Scanner sc = new Scanner(System.in);
+        int[] recoveryCodes = parseIntArray(sc.nextLine());
+        int[] attempts = parseIntArray(sc.nextLine());
+        System.out.println(new Solution().recoveryValidation(recoveryCodes, attempts));
+    }
 
-        // Edge cases
-        System.out.println(new Solution().recoveryValidation(new int[]{1, 2, 3}, new int[]{}));               // false — no attempts
-        System.out.println(new Solution().recoveryValidation(new int[]{5}, new int[]{5}));                    // true  — single code match
-        System.out.println(new Solution().recoveryValidation(new int[]{5}, new int[]{6}));                    // false — single code miss
-        System.out.println(new Solution().recoveryValidation(new int[]{1, 3, 5, 7}, new int[]{2, 4, 6}));    // false — all misses
-        System.out.println(new Solution().recoveryValidation(new int[]{10}, new int[]{10, 20, 30}));          // true  — first attempt matches
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

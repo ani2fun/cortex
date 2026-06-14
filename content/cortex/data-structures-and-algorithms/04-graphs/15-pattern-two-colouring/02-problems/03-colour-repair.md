@@ -1,205 +1,197 @@
 ---
 title: "Colour Repair"
-summary: "A graph that's *almost* two-colourable: it can be made bipartite by removing at most one edge. Return true if so, false otherwise."
+summary: "A graph that's almost two-colourable: it can be made bipartite by removing at most one edge. Return true if so, false otherwise."
 prereqs:
   - 15-pattern-two-colouring/01-pattern
 difficulty: medium
+kind: problem
+topics: [two-colouring, graph]
 ---
 
 # Problem: Colour Repair
 
-## The Problem
+## Problem Statement
 
-A graph that's *almost* two-colourable: it can be made bipartite by removing **at most one** edge. Return `true` if so, `false` otherwise.
+Given an undirected graph as an adjacency list, determine whether it can be made bipartite by removing **at most one** edge. Return `true` if so, `false` otherwise.
 
+A graph that is already bipartite (zero conflicts) trivially passes. A graph with exactly one conflicting edge passes after that edge is removed. Two or more distinct conflict edges cannot be fixed with a single removal.
+
+## Examples
+
+**Example 1:**
 ```
 Input:  graph = [[1, 3], [0, 2, 3], [1, 3], [0, 1, 2]]
-Output: true (remove edge 1-3)
+Output: true  (remove edge 1–3)
 ```
 
-<details>
-<summary><h2>Pattern Mapping</h2></summary>
+**Example 2:**
+```
+Input:  graph = [[1, 2, 3], [0, 2, 3], [0, 1, 3], [0, 1, 2]]
+Output: false  (K₄ — two distinct conflict edges remain)
+```
 
+## Constraints
 
-The trick: instead of returning `false` immediately at a colour conflict, **record the conflicting edge** and keep colouring. At the end, count distinct conflicts:
+- `0 ≤ n ≤ 2000` — `n = graph.length`
+- `0 ≤ graph[u].length ≤ n`
+- Graph is undirected — edges appear in both directions in the adjacency list
+- An empty graph (`n = 0`) returns `false` (no valid bipartition)
 
-- 0 conflicts → already two-colourable; trivially repairable.
-- 1 conflict → removing that one edge restores bipartiteness.
-- 2+ conflicts → can't be fixed with a single edge removal.
-
-Because the graph is undirected, each conflict edge gets recorded twice (once from each endpoint). Divide the count by 2 to get distinct conflicts.
-
-</details>
-<details>
-<summary><h2>The Solution</h2></summary>
-
-
-
-```python run viz=graph viz-root=graph
-from typing import List, Dict, Tuple
+```python run viz=graph viz-kind=graph
+import ast
 
 class Solution:
-    def colour_graph(
-        self,
-        graph: List[List[int]],
-        node: int,
-        colour: Dict[int, int],
-        colour_value: int,
-        conflicts: List[Tuple[int, int]],
-    ) -> bool:
+    def colour_repair(self, graph):
+        # Your code goes here — run two-colouring but instead of returning False
+        # at a conflict, record the conflicting edge. After the full traversal,
+        # count distinct conflicts (each undirected edge appears twice → divide by 2).
+        # Return true if distinct_conflicts <= 1.
+        pass
 
-        # Colour the node with colourValue
-        colour[node] = colour_value
-
-        # Traverse all the neighbours of the current node
-        for neighbour in graph[node]:
-
-            # If the neighbour is not coloured, colour it with the
-            # opposite colour
-            if neighbour not in colour:
-                if not self.colour_graph(
-                    graph, neighbour, colour, 1 - colour_value, conflicts
-                ):
-                    return False
-
-            # Else if the neighbour is coloured with the same colour,
-            # record the conflict
-            elif colour.get(neighbour) == colour_value:
-                conflicts.append((node, neighbour))
-
-        return True
-
-    def colour_repair(self, graph: List[List[int]]) -> bool:
-        n = len(graph)
-
-        # If the graph is empty, return false
-        if n == 0:
-            return False
-
-        # Create a map to store the colour of each node
-        colour: Dict[int, int] = {}
-
-        # List to store all edges that cause conflicts (same-coloured
-        # endpoints)
-        conflicts: List[Tuple[int, int]] = []
-
-        # Traverse all nodes in the graph
-        for node in range(n):
-
-            # If a node is not coloured, start colouring its connected
-            # component recursively
-            if node not in colour:
-                self.colour_graph(graph, node, colour, 0, conflicts)
-
-        # The graph can be made bipartite if there is at most one
-        # conflict edge. Divide by 2 to account for double counting
-        # of edges in an undirected graph
-        return len(conflicts) // 2 <= 1
-
-
-# Examples from the problem statement
-print(Solution().colour_repair([[1,3],[0,2,3],[1,3],[0,1,2]]))  # True
-print(Solution().colour_repair([[1,2,3],[0,2],[0,1],[0]]))      # True
-
-# Edge cases
-print(Solution().colour_repair([]))                              # False
-print(Solution().colour_repair([[1],[0]]))                       # True — no conflict
-print(Solution().colour_repair([[1,2],[0,2],[0,1]]))             # True — triangle: 1 conflict edge
-# Two conflict edges — needs 2 removals, not possible
-print(Solution().colour_repair([[1,2,3],[0,2,3],[0,1,3],[0,1,2]]))  # False
-print(Solution().colour_repair([[],[]]))                         # True — no edges
+graph = ast.literal_eval(input())
+result = Solution().colour_repair(graph)
+print("true" if result else "false")
 ```
 
-```java run viz=graph viz-root=graph
+```java run viz=graph viz-kind=graph
 import java.util.*;
 
 public class Main {
     static class Solution {
-        private boolean colourGraph(
-            List<List<Integer>> graph,
-            int node,
-            Map<Integer, Integer> colour,
-            int colourValue,
-            List<List<Integer>> conflicts
-        ) {
+        boolean colourRepair(int[][] graph) {
+            // Your code goes here — run two-colouring but record conflicts
+            // instead of returning false. Return true if distinct conflicts <= 1.
+            return false;
+        }
+    }
 
-            // Colour the node with colourValue
-            colour.put(node, colourValue);
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[][] graph = parseIntMatrix(sc.nextLine());
+        System.out.println(new Solution().colourRepair(graph));
+    }
 
-            // Traverse all the neighbours of the current node
-            for (int neighbour : graph.get(node)) {
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
+    }
+}
+```
 
-                // If the neighbour is not coloured, colour it with the
-                // opposite colour
-                if (!colour.containsKey(neighbour)) {
-                    if (
-                        !colourGraph(
-                            graph,
-                            neighbour,
-                            colour,
-                            1 - colourValue,
-                            conflicts
-                        )
-                    ) {
-                        return false;
-                    }
-                }
+```testcases
+{
+  "args": [
+    { "id": "graph", "label": "graph", "type": "int[][]", "placeholder": "[[1, 3], [0, 2, 3], [1, 3], [0, 1, 2]]" }
+  ],
+  "cases": [
+    { "args": { "graph": "[[1, 3], [0, 2, 3], [1, 3], [0, 1, 2]]" }, "expected": "true" },
+    { "args": { "graph": "[[1, 2, 3], [0, 2, 3], [0, 1, 3], [0, 1, 2]]" }, "expected": "false" },
+    { "args": { "graph": "[[1, 2], [0, 2], [0, 1]]" }, "expected": "true" },
+    { "args": { "graph": "[[1], [0]]" }, "expected": "true" },
+    { "args": { "graph": "[[1, 2, 3], [0, 2], [0, 1], [0]]" }, "expected": "true" },
+    { "args": { "graph": "[[1, 2], [0], [0]]" }, "expected": "true" }
+  ]
+}
+```
 
-                // Else if the neighbour is coloured with the same colour,
-                // record the conflict
-                else if (colour.get(neighbour) == colourValue) {
-                    conflicts.add(Arrays.asList(node, neighbour));
+<details>
+<summary>Editorial</summary>
+
+The trick: instead of returning `false` immediately at a colour conflict, **record the conflicting edge** and continue colouring. At the end, count distinct conflicts — since the graph is undirected, each conflicting edge appears twice (once from each endpoint), so divide by 2. If distinct conflicts ≤ 1, the graph can be made bipartite by removing at most one edge.
+
+```python solution time=O(V + E) space=O(V + E)
+import ast
+
+class Solution:
+    def colour_graph(self, graph, node, colour, colour_value, conflicts):
+        colour[node] = colour_value
+        for neighbour in graph[node]:
+            if neighbour not in colour:
+                if not self.colour_graph(graph, neighbour, colour, 1 - colour_value, conflicts):
+                    return False
+            elif colour.get(neighbour) == colour_value:
+                conflicts.append((node, neighbour))
+        return True
+
+    def colour_repair(self, graph):
+        n = len(graph)
+        if n == 0:
+            return False
+        colour = {}
+        conflicts = []
+        for node in range(n):
+            if node not in colour:
+                self.colour_graph(graph, node, colour, 0, conflicts)
+        return len(conflicts) // 2 <= 1
+
+graph = ast.literal_eval(input())
+result = Solution().colour_repair(graph)
+print("true" if result else "false")
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        private boolean colourGraph(int[][] graph, int node, int[] colour, int colourValue, List<int[]> conflicts) {
+            colour[node] = colourValue;
+            for (int neighbour : graph[node]) {
+                if (colour[neighbour] == -1) {
+                    if (!colourGraph(graph, neighbour, colour, 1 - colourValue, conflicts)) return false;
+                } else if (colour[neighbour] == colourValue) {
+                    conflicts.add(new int[]{node, neighbour});
                 }
             }
-
             return true;
         }
 
-        public boolean colourRepair(List<List<Integer>> graph) {
-            int N = graph.size();
-
-            // If the graph is empty, return false
-            if (N == 0) {
-                return false;
-            }
-
-            // Create a map to store the colour of each node
-            Map<Integer, Integer> colour = new HashMap<>();
-
-            // List to store all edges that cause conflicts (same-coloured
-            // endpoints)
-            List<List<Integer>> conflicts = new ArrayList<>();
-
-            // Traverse all nodes in the graph
-            for (int node = 0; node < N; node++) {
-
-                // If a node is not coloured, start colouring its connected
-                // component recursively
-                if (!colour.containsKey(node)) {
+        boolean colourRepair(int[][] graph) {
+            int n = graph.length;
+            if (n == 0) return false;
+            int[] colour = new int[n];
+            Arrays.fill(colour, -1);
+            List<int[]> conflicts = new ArrayList<>();
+            for (int node = 0; node < n; node++) {
+                if (colour[node] == -1) {
                     colourGraph(graph, node, colour, 0, conflicts);
                 }
             }
-
-            // The graph can be made bipartite if there is at most one
-            // conflict edge. Divide by 2 to account for double counting
-            // of edges in an undirected graph
             return conflicts.size() / 2 <= 1;
         }
     }
 
     public static void main(String[] args) {
-        Solution sol = new Solution();
+        Scanner sc = new Scanner(System.in);
+        int[][] graph = parseIntMatrix(sc.nextLine());
+        System.out.println(new Solution().colourRepair(graph));
+    }
 
-        // Examples from the problem statement
-        System.out.println(sol.colourRepair(List.of(List.of(1,3),List.of(0,2,3),List.of(1,3),List.of(0,1,2))));  // true
-        System.out.println(sol.colourRepair(List.of(List.of(1,2,3),List.of(0,2),List.of(0,1),List.of(0))));      // true
-
-        // Edge cases
-        System.out.println(sol.colourRepair(new ArrayList<>()));                   // false
-        System.out.println(sol.colourRepair(List.of(List.of(1), List.of(0))));     // true
-        System.out.println(sol.colourRepair(List.of(List.of(1,2),List.of(0,2),List.of(0,1))));  // true
-        System.out.println(sol.colourRepair(List.of(List.of(1,2,3),List.of(0,2,3),List.of(0,1,3),List.of(0,1,2))));  // false
-        System.out.println(sol.colourRepair(List.of(new ArrayList<>(), new ArrayList<>())));  // true
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
     }
 }
 ```

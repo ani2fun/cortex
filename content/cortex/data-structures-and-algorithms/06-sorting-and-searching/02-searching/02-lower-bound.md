@@ -18,6 +18,8 @@ That single reframing solves a cluster of problems exact-match search can't: the
 In `[1, 3, 3, 5, 7]`, find the first index `≥ 3` (it's `1`, the leftmost `3`) and the first index `≥ 4` (it's `3`, where `5` sits). Run it.
 
 ```python run viz=array
+import ast
+
 def lower_bound(arr, target):
     lo, hi = 0, len(arr)              # half-open range [lo, hi)
     while lo < hi:
@@ -28,10 +30,57 @@ def lower_bound(arr, target):
             hi = mid                  # arr[mid] >= target → mid is a candidate, look left
     return lo                         # first index with arr[index] >= target
 
-a = [1, 3, 3, 5, 7]
-print(lower_bound(a, 3))   # 1  (leftmost 3)
-print(lower_bound(a, 4))   # 3  (first value >= 4 is 5)
-print(lower_bound(a, 8))   # 5  (none >= 8 → insertion point at the end)
+arr = ast.literal_eval(input())
+target = int(input())
+print(lower_bound(arr, target))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+  static int lowerBound(int[] arr, int target) {
+    int lo = 0, hi = arr.length;       // half-open range [lo, hi)
+    while (lo < hi) {
+      int mid = lo + (hi - lo) / 2;
+      if (arr[mid] < target) lo = mid + 1; // mid is too small → answer is strictly right
+      else hi = mid;                   // arr[mid] >= target → mid is a candidate, look left
+    }
+    return lo;                         // first index with arr[index] >= target
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());
+    int target = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(lowerBound(arr, target));
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's array
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[1, 3, 3, 5, 7]" },
+    { "id": "target", "label": "target", "type": "number", "placeholder": "3" }
+  ],
+  "cases": [
+    { "args": { "arr": "[1, 3, 3, 5, 7]", "target": "3" }, "expected": "1" },
+    { "args": { "arr": "[1, 3, 3, 5, 7]", "target": "4" }, "expected": "3" },
+    { "args": { "arr": "[1, 3, 3, 5, 7]", "target": "8" }, "expected": "5" },
+    { "args": { "arr": "[1, 3, 3, 5, 7]", "target": "0" }, "expected": "0" }
+  ]
+}
 ```
 
 ## How It Works
@@ -81,9 +130,70 @@ Because lower bound wants the *boundary*, not just *a* match. When `arr[mid] == 
 
 ## Your Turn
 
-The reusable lower bound:
+Implement lower bound: use a half-open `[lo, hi)` range (`hi = len(arr)`); on `arr[mid] < target` go right (`lo = mid + 1`); otherwise keep `mid` as a candidate and look left (`hi = mid`). Return `lo` when the range collapses.
 
 ```python run viz=array
+import ast
+
+def lower_bound(arr, target):
+    # Your code goes here — half-open [lo, hi), hi=len; < target → lo=mid+1; else hi=mid.
+    return 0
+
+arr = ast.literal_eval(input())
+target = int(input())
+print(lower_bound(arr, target))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+  static int lowerBound(int[] arr, int target) {
+    // Your code goes here — half-open [lo, hi), hi=len; < target → lo=mid+1; else hi=mid.
+    return 0;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());
+    int target = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(lowerBound(arr, target));
+  }
+
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[1, 3, 3, 5, 7]" },
+    { "id": "target", "label": "target", "type": "number", "placeholder": "3" }
+  ],
+  "cases": [
+    { "args": { "arr": "[1, 3, 3, 5, 7]", "target": "3" }, "expected": "1" },
+    { "args": { "arr": "[1, 3, 3, 5, 7]", "target": "4" }, "expected": "3" },
+    { "args": { "arr": "[1, 3, 3, 5, 7]", "target": "8" }, "expected": "5" },
+    { "args": { "arr": "[1, 3, 3, 5, 7]", "target": "0" }, "expected": "0" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Set `lo = 0`, `hi = len(arr)` (half-open). Each step: `mid = lo + (hi - lo) // 2`; if `arr[mid] < target` set `lo = mid + 1` (mid is too small); otherwise set `hi = mid` (mid is a candidate — keep it and look left). When `lo == hi`, return `lo`. No `==` branch; `hi = mid` (not `mid - 1`) is the invariant. `O(log n)` time, `O(1)` space. Returns `len` if every element is smaller than target.
+
+```python solution time=O(log n) space=O(1)
+import ast
+
 def lower_bound(arr, target):
     lo, hi = 0, len(arr)
     while lo < hi:
@@ -94,29 +204,44 @@ def lower_bound(arr, target):
             hi = mid
     return lo
 
-a = [1, 3, 3, 5, 7]
-print(lower_bound(a, 0), lower_bound(a, 3), lower_bound(a, 6), lower_bound(a, 8))   # 0 1 4 5
+arr = ast.literal_eval(input())
+target = int(input())
+print(lower_bound(arr, target))
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
   static int lowerBound(int[] arr, int target) {
-    int lo = 0, hi = arr.length;          // half-open [lo, hi)
+    int lo = 0, hi = arr.length;
     while (lo < hi) {
       int mid = lo + (hi - lo) / 2;
       if (arr[mid] < target) lo = mid + 1;
-      else hi = mid;                      // keep mid as a candidate
+      else hi = mid;
     }
     return lo;
   }
+
   public static void main(String[] args) {
-    int[] a = {1, 3, 3, 5, 7};
-    System.out.println(lowerBound(a, 3) + " " + lowerBound(a, 4) + " " + lowerBound(a, 8));   // 1 3 5
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());
+    int target = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(lowerBound(arr, target));
+  }
+
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
   }
 }
 ```
 
-This is a structural lesson — drill searching in the pattern sets.
+</details>
 
 ## Reflect & Connect
 
@@ -170,4 +295,4 @@ Lower bound is the boundary-finding half of binary search:
 
 - **Sedgewick & Wayne**, *Algorithms*, 4th ed., §3.1 — rank/floor/ceiling queries in ordered symbol tables (lower-bound semantics).
 - **C++ STL / Python `bisect`** — `lower_bound` / `bisect_left` define this exact "first index ≥ target" contract.
-- The half-open lower-bound template and its counting corollary are standard; both runnable blocks are verified by running (`3 ⇒ 1`, `4 ⇒ 3`, `8 ⇒ 5`; `0,3,6,8 ⇒ 0,1,4,5`).
+- The half-open lower-bound template and its counting corollary are standard; both runnable blocks are verified by running (`[1,3,3,5,7], 3 ⇒ 1`; `[1,3,3,5,7], 4 ⇒ 3`; `[1,3,3,5,7], 8 ⇒ 5`).

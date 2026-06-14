@@ -42,18 +42,41 @@ def binom(n, k):
         return 1
     return binom(n - 1, k - 1) + binom(n - 1, k)   # reduce along two axes
 
-print("C(5,2):", binom(5, 2))
+n = int(input())
+k = int(input())
+print(binom(n, k))
 ```
 
 ```java run viz=array
+import java.util.*;
+
 public class Main {
     static int binom(int n, int k) {
         if (k == 0 || k == n) return 1;                  // two boundary base cases
         return binom(n - 1, k - 1) + binom(n - 1, k);    // reduce along two axes
     }
+
     public static void main(String[] args) {
-        System.out.println("C(5,2): " + binom(5, 2));
+        Scanner sc = new Scanner(System.in);
+        int n = Integer.parseInt(sc.nextLine().trim());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(binom(n, k));
     }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "n", "label": "n", "type": "int", "placeholder": "5" },
+    { "id": "k", "label": "k", "type": "int", "placeholder": "2" }
+  ],
+  "cases": [
+    { "args": { "n": "5", "k": "2" }, "expected": "10" },
+    { "args": { "n": "4", "k": "2" }, "expected": "6" },
+    { "args": { "n": "0", "k": "0" }, "expected": "1" },
+    { "args": { "n": "6", "k": "3" }, "expected": "20" }
+  ]
 }
 ```
 
@@ -133,26 +156,83 @@ It raises `RecursionError`. Follow the column edge: `paths(1, 0)` isn't a base c
 
 ```python run viz=array
 def paths(r, c):
+    # Your code goes here — base cases on BOTH boundaries (r == 0 or c == 0 returns 1);
+    # recursive case: paths(r-1, c) + paths(r, c-1)
+    return 0
+
+r = int(input())
+c = int(input())
+print(paths(r, c))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static int paths(int r, int c) {
+        // Your code goes here — base cases on BOTH boundaries;
+        // recursive case: paths(r-1, c) + paths(r, c-1)
+        return 0;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int r = Integer.parseInt(sc.nextLine().trim());
+        int c = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(paths(r, c));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "r", "label": "rows", "type": "int", "placeholder": "2" },
+    { "id": "c", "label": "cols", "type": "int", "placeholder": "2" }
+  ],
+  "cases": [
+    { "args": { "r": "2", "c": "2" }, "expected": "6" },
+    { "args": { "r": "3", "c": "3" }, "expected": "20" },
+    { "args": { "r": "0", "c": "0" }, "expected": "1" },
+    { "args": { "r": "1", "c": "5" }, "expected": "6" },
+    { "args": { "r": "4", "c": "2" }, "expected": "15" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+```python solution time=O(2^(r+c)) space=O(r+c)
+def paths(r, c):
     if r == 0 or c == 0:                     # base cases on BOTH boundaries
         return 1
     return paths(r - 1, c) + paths(r, c - 1) # move down or right
 
-print("paths(2,2):", paths(2, 2))            # 6
-print("paths(3,3):", paths(3, 3))            # 20
+r = int(input())
+c = int(input())
+print(paths(r, c))
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
     static int paths(int r, int c) {
         if (r == 0 || c == 0) return 1;              // both boundaries
         return paths(r - 1, c) + paths(r, c - 1);    // down or right
     }
+
     public static void main(String[] args) {
-        System.out.println("paths(2,2): " + paths(2, 2));   // 6
-        System.out.println("paths(3,3): " + paths(3, 3));   // 20
+        Scanner sc = new Scanner(System.in);
+        int r = Integer.parseInt(sc.nextLine().trim());
+        int c = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(paths(r, c));
     }
 }
 ```
+
+</details>
 
 Both print `6` then `20` — these are central binomial coefficients (`paths(r,c) = C(r+c, r)`), the same Pascal grid as the See-It. The four problems in this section's **Problems** folder — binomial coefficient, lattice paths, Ackermann, egg dropping — all navigate a multi-axis state space.
 

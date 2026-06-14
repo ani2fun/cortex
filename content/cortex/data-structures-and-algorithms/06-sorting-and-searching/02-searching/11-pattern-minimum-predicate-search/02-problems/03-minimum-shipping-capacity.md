@@ -4,11 +4,13 @@ summary: "Given package weights weights[] (in order) and days, find the minimum 
 prereqs:
   - 11-pattern-minimum-predicate-search/01-pattern
 difficulty: medium
+kind: problem
+topics: [minimum-predicate-search, searching]
 ---
 
 # Minimum Shipping Capacity
 
-## The Problem
+## Problem Statement
 
 Given package weights `weights[]` (in order) and `days`, find the minimum ship capacity that allows all packages to be shipped within `days`. Packages must be shipped in input order.
 
@@ -20,9 +22,105 @@ Input:  weights = [20, 10, 40, 30], days = 3
 Output: 40
 
 Input:  weights = [6, 3, 9], days = 3
-Output: 18
+Output: 9   (was 18 in source — corrected by execution)
 ```
 
+---
+
+## Examples
+
+**Example 1**
+```
+Input:  weights = [20, 10, 25, 35], days = 3
+Output: 35
+Explanation: With capacity 35 we can load [20,10] on day 1, [25] on day 2, [35] on day 3 — exactly 3 days.
+```
+
+**Example 2**
+```
+Input:  weights = [6, 3, 9], days = 3
+Output: 9
+Explanation: With capacity 9 we load [6,3] on day 1 (sum=9 ≤ 9) and [9] on day 2 — only 2 days needed, well within the 3-day budget. The minimum feasible capacity is 9 (the heaviest package, which must fit in a single shipment).
+```
+
+## Constraints
+
+- `1 ≤ weights.length ≤ 5 × 10^4`
+- `1 ≤ weights[i] ≤ 500`
+- `1 ≤ days ≤ weights.length`
+
+```python run viz=array viz-root=weights
+import ast
+
+class Solution:
+    def minimum_shipping_capacity(self, weights, days):
+        # Your code goes here — binary-search the capacity in [max(weights), sum(weights)].
+        # For a candidate capacity, greedily pack packages in order; when the next
+        # package would overflow, start a new day. Return the minimum feasible capacity.
+        return -1
+
+
+weights = ast.literal_eval(input())
+days = int(input())
+print(Solution().minimum_shipping_capacity(weights, days))
+```
+
+```java run viz=array viz-root=weights
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int minimumShippingCapacity(int[] weights, int days) {
+            // Your code goes here — binary-search the capacity in [max(weights), sum(weights)].
+            // For a candidate capacity, greedily pack packages in order; when the next
+            // package would overflow, start a new day. Return the minimum feasible capacity.
+            return -1;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] weights = parseIntArray(sc.nextLine());
+        int days = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().minimumShippingCapacity(weights, days));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "weights", "label": "weights", "type": "int[]", "placeholder": "[20, 10, 25, 35]" },
+    { "id": "days", "label": "days", "type": "int", "placeholder": "3" }
+  ],
+  "cases": [
+    { "args": { "weights": "[20, 10, 25, 35]", "days": "3" }, "expected": "35" },
+    { "args": { "weights": "[20, 10, 40, 30]", "days": "3" }, "expected": "40" },
+    { "args": { "weights": "[6, 3, 9]", "days": "3" }, "expected": "9" },
+    { "args": { "weights": "[1]", "days": "1" }, "expected": "1" },
+    { "args": { "weights": "[5]", "days": "1" }, "expected": "5" },
+    { "args": { "weights": "[1, 2, 3, 4, 5]", "days": "5" }, "expected": "5" },
+    { "args": { "weights": "[1, 2, 3, 4, 5]", "days": "1" }, "expected": "15" },
+    { "args": { "weights": "[3, 2, 2, 4, 1, 4]", "days": "3" }, "expected": "6" }
+  ]
+}
+```
+
+<details>
+<summary><h2>Intuition</h2></summary>
+
+The capacity needed is monotone: below the minimum feasible capacity we can't finish in time, above it we can — a clean `false…false, true…true` structure. Binary-search `[max(weights), sum(weights)]`: the lower bound because every package must fit on a single day, and the upper bound because one day suffices for everything. For each candidate capacity, a greedy simulation (keep adding packages until the next would overflow, then start a new day) tells us how many days are needed.
+
+</details>
 <details>
 <summary><h2>The Solution</h2></summary>
 
@@ -30,7 +128,8 @@ Output: 18
 Predicate: "can we ship within `days` days at capacity `cap`?" — greedy: sum weights into a bucket; when adding next would exceed `cap`, start a new day. Count days. Binary-search `cap` in `[max(weights), sum(weights)]`.
 
 
-```python run viz=array viz-root=weights
+```python solution time=O(n log(sum(weights))) space=O(1)
+import ast
 from typing import List
 
 class Solution:
@@ -95,20 +194,12 @@ class Solution:
         return low
 
 
-# Examples from the problem statement
-print(Solution().minimum_shipping_capacity([20, 10, 25, 35], 3))  # 35
-print(Solution().minimum_shipping_capacity([20, 10, 40, 30], 3))  # 40
-print(Solution().minimum_shipping_capacity([6, 3, 9], 3))         # 18
-
-# Edge cases
-print(Solution().minimum_shipping_capacity([1], 1))               # 1   (single package)
-print(Solution().minimum_shipping_capacity([5], 1))               # 5   (single heavy package)
-print(Solution().minimum_shipping_capacity([1, 2, 3, 4, 5], 5))   # 5   (one package per day)
-print(Solution().minimum_shipping_capacity([1, 2, 3, 4, 5], 1))   # 15  (all in one day)
-print(Solution().minimum_shipping_capacity([3, 2, 2, 4, 1, 4], 3))  # 6
+weights = ast.literal_eval(input())
+days = int(input())
+print(Solution().minimum_shipping_capacity(weights, days))
 ```
 
-```java run viz=array viz-root=weights
+```java solution
 import java.util.*;
 
 public class Main {
@@ -184,17 +275,19 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().minimumShippingCapacity(new int[]{20, 10, 25, 35}, 3));  // 35
-        System.out.println(new Solution().minimumShippingCapacity(new int[]{20, 10, 40, 30}, 3));  // 40
-        System.out.println(new Solution().minimumShippingCapacity(new int[]{6, 3, 9}, 3));         // 18
+        Scanner sc = new Scanner(System.in);
+        int[] weights = parseIntArray(sc.nextLine());
+        int days = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().minimumShippingCapacity(weights, days));
+    }
 
-        // Edge cases
-        System.out.println(new Solution().minimumShippingCapacity(new int[]{1}, 1));               // 1
-        System.out.println(new Solution().minimumShippingCapacity(new int[]{5}, 1));               // 5
-        System.out.println(new Solution().minimumShippingCapacity(new int[]{1, 2, 3, 4, 5}, 5));   // 5
-        System.out.println(new Solution().minimumShippingCapacity(new int[]{1, 2, 3, 4, 5}, 1));   // 15
-        System.out.println(new Solution().minimumShippingCapacity(new int[]{3, 2, 2, 4, 1, 4}, 3));  // 6
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

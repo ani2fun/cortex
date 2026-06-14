@@ -4,33 +4,118 @@ summary: "Given an array of bucket water amounts and a loss% for transfers, find
 prereqs:
   - 12-pattern-maximum-predicate-search/01-pattern
 difficulty: hard
+kind: problem
+topics: [maximum-predicate-search, searching]
 ---
 
 # Equalise Water
 
-## The Problem
+## Problem Statement
 
-Given an array of bucket water amounts and a `loss%` for transfers, find the maximum equal-water level achievable across all buckets.
+Given an array of bucket water amounts and an integer `loss` (percentage lost during each transfer), find the maximum equal-water level achievable across all buckets. Water can be poured from buckets that have more than the target into buckets that have less, but `loss%` is wasted in each such transfer.
 
+## Examples
+
+**Example 1**
 ```
 Input:  buckets = [1, 5, 10], loss = 20
-Output: 5.00000
+Output: 5.0
+Explanation: The two full buckets (5 and 10) have excess. Excess from bucket[2] after 20% loss
+             can fill bucket[0]'s deficit at level 5.0.
+```
 
+**Example 2**
+```
 Input:  buckets = [2, 4, 6], loss = 50
-Output: 3.50000
+Output: 3.5
+Explanation: At 3.5, bucket[2] has 2.5 excess → after 50% loss only 1.25 usable;
+             deficit = (3.5-2) + (3.5-4) = 1.5 + 0 = 1.5 — checking shows 3.5 is the highest feasible level.
+```
 
-Input:  buckets = [10, 10, 10, 10], loss = 40
-Output: 10.00000
+## Constraints
+
+- `1 ≤ buckets.length ≤ 10^4`
+- `0 ≤ buckets[i] ≤ 10^5`
+- `0 ≤ loss ≤ 99` (integer percentage)
+- The answer is accurate to `10^-5`.
+
+```python run viz=array viz-root=buckets
+import ast
+from typing import List
+
+class Solution:
+    def equalise_water(self, buckets: List[int], loss: int) -> float:
+        # Your code goes here — binary-search the target level scaled by 1e5
+        # to stay in integer space. Predicate: total_excess*(1-loss/100) >= total_deficit.
+        return -1.0
+
+buckets = ast.literal_eval(input())
+loss = int(input())
+print(Solution().equalise_water(buckets, loss))
+```
+
+```java run viz=array viz-root=buckets
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public double equaliseWater(int[] buckets, int loss) {
+            // Your code goes here — binary-search the target level scaled by 1e5
+            // to stay in integer space. Predicate: totalExcess*(1-loss/100) >= totalDeficit.
+            return -1.0;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] buckets = parseIntArray(sc.nextLine());
+        int loss = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().equaliseWater(buckets, loss));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "buckets", "label": "buckets", "type": "int[]", "placeholder": "[1, 5, 10]" },
+    { "id": "loss", "label": "loss %", "type": "int", "placeholder": "20" }
+  ],
+  "cases": [
+    { "args": { "buckets": "[1, 5, 10]", "loss": "20" }, "expected": "5.0" },
+    { "args": { "buckets": "[2, 4, 6]", "loss": "50" }, "expected": "3.5" },
+    { "args": { "buckets": "[10, 10, 10, 10]", "loss": "40" }, "expected": "10.0" },
+    { "args": { "buckets": "[5]", "loss": "0" }, "expected": "5.0" },
+    { "args": { "buckets": "[5]", "loss": "100" }, "expected": "5.0" },
+    { "args": { "buckets": "[1, 1]", "loss": "0" }, "expected": "1.0" },
+    { "args": { "buckets": "[0, 10]", "loss": "0" }, "expected": "5.0" },
+    { "args": { "buckets": "[0, 10]", "loss": "100" }, "expected": "0.0" }
+  ]
+}
 ```
 
 <details>
-<summary><h2>The Solution</h2></summary>
+<summary><h2>Intuition</h2></summary>
 
+The question is: what is the highest level `T` such that the water available from buckets above `T` (after `loss%` transfer waste) covers all the deficit from buckets below `T`? As `T` grows, deficits grow and surpluses shrink — feasibility is monotone-decreasing. Binary-search the answer in integer space by scaling by `10^5` (avoiding floating-point drift), then divide back at the end. The predicate runs in `O(n)` and the binary search over `max(buckets)*10^5` steps costs `O(log(max*10^5))`.
+
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 Binary-search the target water level (scaled to avoid floating-point precision). Predicate: total available excess (after loss) ≥ total deficit. Use integer arithmetic with a scale factor of `1e5`.
 
-
-```python run viz=array viz-root=buckets
+```python solution time=O(n log(max*1e5)) space=O(1)
+import ast
 from typing import List
 
 class Solution:
@@ -43,7 +128,7 @@ class Solution:
     # Predicate: checks if it's possible to make all buckets contain at
     # least 'target' liters of water
     def can_achieve_target(
-        self, buckets: List[int], loss: float, target: int
+        self, buckets: List[int], loss: int, target: int
     ) -> bool:
         total_excess = 0
         total_deficit = 0
@@ -68,7 +153,7 @@ class Solution:
         # equal to total_deficit
         return total_excess >= total_deficit
 
-    def equalise_water(self, buckets: List[int], loss: float) -> float:
+    def equalise_water(self, buckets: List[int], loss: int) -> float:
 
         # Binary search range is [0, max(bucket) * SCALE]
         low = 0
@@ -95,20 +180,12 @@ class Solution:
         return high / self.SCALE
 
 
-# Examples from the problem statement
-print(Solution().equalise_water([1, 5, 10], 20))       # 5.0
-print(Solution().equalise_water([2, 4, 6], 50))        # 3.5
-print(Solution().equalise_water([10, 10, 10, 10], 40)) # 10.0
-
-# Edge cases
-print(Solution().equalise_water([5], 0))               # 5.0  (single bucket)
-print(Solution().equalise_water([5], 100))             # 5.0  (single bucket, any loss)
-print(Solution().equalise_water([1, 1], 0))            # 1.0  (already equal, no loss)
-print(Solution().equalise_water([0, 10], 0))           # 5.0  (no loss, perfect split)
-print(Solution().equalise_water([0, 10], 100))         # 0.0  (100% loss — can't transfer)
+buckets = ast.literal_eval(input())
+loss = int(input())
+print(Solution().equalise_water(buckets, loss))
 ```
 
-```java run viz=array viz-root=buckets
+```java solution
 import java.util.*;
 
 public class Main {
@@ -123,7 +200,7 @@ public class Main {
         // least 'target' liters of water
         private boolean canAchieveTarget(
             int[] buckets,
-            double loss,
+            int loss,
             int target
         ) {
             long totalExcess = 0;
@@ -157,7 +234,7 @@ public class Main {
             return totalExcess >= totalDeficit;
         }
 
-        public double equaliseWater(int[] buckets, double loss) {
+        public double equaliseWater(int[] buckets, int loss) {
 
             // Binary search range is [0, max(bucket) * SCALE]
             int low = 0;
@@ -189,17 +266,19 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().equaliseWater(new int[]{1, 5, 10}, 20));       // 5.0
-        System.out.println(new Solution().equaliseWater(new int[]{2, 4, 6}, 50));        // 3.5
-        System.out.println(new Solution().equaliseWater(new int[]{10, 10, 10, 10}, 40)); // 10.0
+        Scanner sc = new Scanner(System.in);
+        int[] buckets = parseIntArray(sc.nextLine());
+        int loss = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().equaliseWater(buckets, loss));
+    }
 
-        // Edge cases
-        System.out.println(new Solution().equaliseWater(new int[]{5}, 0));               // 5.0
-        System.out.println(new Solution().equaliseWater(new int[]{5}, 100));             // 5.0
-        System.out.println(new Solution().equaliseWater(new int[]{1, 1}, 0));            // 1.0
-        System.out.println(new Solution().equaliseWater(new int[]{0, 10}, 0));           // 5.0
-        System.out.println(new Solution().equaliseWater(new int[]{0, 10}, 100));         // 0.0
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```
@@ -207,7 +286,6 @@ public class Main {
 </details>
 <details>
 <summary><h2>Key Takeaway</h2></summary>
-
 
 Maximum-predicate-search is the dual of the Minimum Predicate Search Pattern lesson. Same algorithm shell, mirrored direction; the `+ 1` in the mid calculation prevents the infinite-loop pitfall when `low` and `high` become adjacent. The four problems showed integer square root (predicate: `mid² ≤ num`), staircase building (`k(k+1)/2 ≤ n`), ribbon cutting, and water equalisation.
 

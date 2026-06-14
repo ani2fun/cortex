@@ -18,6 +18,8 @@ The trigger is simple. If the data is **sorted** (or you can decide, in `O(1)`, 
 The classic template, finding a target's index in a sorted array. Run it.
 
 ```python run viz=array
+import ast
+
 def binary_search(arr, target):
     lo, hi = 0, len(arr) - 1
     while lo <= hi:
@@ -30,8 +32,57 @@ def binary_search(arr, target):
             hi = mid - 1                 # discard the right half
     return -1
 
-print(binary_search([2, 4, 6, 8, 10, 12], 8))   # 3
-print(binary_search([2, 4, 6, 8, 10, 12], 7))   # -1
+arr = ast.literal_eval(input())
+target = int(input())
+print(binary_search(arr, target))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static int binarySearch(int[] arr, int target) {
+        int lo = 0, hi = arr.length - 1;
+        while (lo <= hi) {
+            int mid = lo + (hi - lo) / 2;        // overflow-safe midpoint
+            if (arr[mid] == target) return mid;
+            else if (arr[mid] < target) lo = mid + 1;  // discard the left half
+            else hi = mid - 1;                          // discard the right half
+        }
+        return -1;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int target = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(binarySearch(arr, target));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[2, 4, 6, 8, 10, 12]" },
+    { "id": "target", "label": "target", "type": "int", "placeholder": "8" }
+  ],
+  "cases": [
+    { "args": { "arr": "[2, 4, 6, 8, 10, 12]", "target": "8" }, "expected": "3" },
+    { "args": { "arr": "[2, 4, 6, 8, 10, 12]", "target": "7" }, "expected": "-1" },
+    { "args": { "arr": "[2, 4, 6, 8, 10, 12]", "target": "2" }, "expected": "0" },
+    { "args": { "arr": "[2, 4, 6, 8, 10, 12]", "target": "12" }, "expected": "5" }
+  ]
+}
 ```
 
 ## How It Works
@@ -79,43 +130,123 @@ Because binary search doesn't require *one array* — it requires an ordered sea
 
 ## Your Turn
 
-The reusable binary-search template:
+Implement `binary_search(arr, target)` that returns the target's index in a sorted array, or `-1` if absent.
 
 ```python run viz=array
+import ast
+
 def binary_search(arr, target):
-    lo, hi = 0, len(arr) - 1
-    while lo <= hi:
-        mid = lo + (hi - lo) // 2
-        if arr[mid] == target:
-            return mid
-        elif arr[mid] < target:
-            lo = mid + 1
-        else:
-            hi = mid - 1
+    # Your code goes here — set lo=0, hi=len(arr)-1; loop while lo<=hi;
+    # compute mid overflow-safe; test arr[mid] vs target; return -1 if not found.
     return -1
 
-a = [2, 4, 6, 8, 10, 12]
-print(binary_search(a, 2), binary_search(a, 12), binary_search(a, 5))   # 0 5 -1
+arr = ast.literal_eval(input())
+target = int(input())
+print(binary_search(arr, target))
 ```
 
 ```java run viz=array
+import java.util.*;
+
 public class Main {
-  static int binarySearch(int[] arr, int target) {
-    int lo = 0, hi = arr.length - 1;
-    while (lo <= hi) {
-      int mid = lo + (hi - lo) / 2;
-      if (arr[mid] == target) return mid;
-      else if (arr[mid] < target) lo = mid + 1;
-      else hi = mid - 1;
+    static int binarySearch(int[] arr, int target) {
+        // Your code goes here — set lo=0, hi=arr.length-1; loop while lo<=hi;
+        // compute mid overflow-safe; test arr[mid] vs target; return -1 if not found.
+        return -1;
     }
-    return -1;
-  }
-  public static void main(String[] args) {
-    int[] a = {2, 4, 6, 8, 10, 12};
-    System.out.println(binarySearch(a, 8) + " " + binarySearch(a, 7));   // 3 -1
-  }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int target = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(binarySearch(arr, target));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
 }
 ```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[2, 4, 6, 8, 10, 12]" },
+    { "id": "target", "label": "target", "type": "int", "placeholder": "8" }
+  ],
+  "cases": [
+    { "args": { "arr": "[2, 4, 6, 8, 10, 12]", "target": "8" }, "expected": "3" },
+    { "args": { "arr": "[2, 4, 6, 8, 10, 12]", "target": "7" }, "expected": "-1" },
+    { "args": { "arr": "[2, 4, 6, 8, 10, 12]", "target": "2" }, "expected": "0" },
+    { "args": { "arr": "[2, 4, 6, 8, 10, 12]", "target": "12" }, "expected": "5" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Classic inclusive-bounds binary search: `lo=0`, `hi=len-1`; loop while `lo <= hi`; compute `mid = lo + (hi-lo)//2` (overflow-safe); return `mid` on a hit, advance `lo` on a miss-left, retreat `hi` on a miss-right. `O(log n)` time, `O(1)` space.
+
+```python solution time=O(log n) space=O(1)
+import ast
+
+def binary_search(arr, target):
+    lo, hi = 0, len(arr) - 1
+    while lo <= hi:
+        mid = lo + (hi - lo) // 2        # overflow-safe midpoint
+        if arr[mid] == target:
+            return mid
+        elif arr[mid] < target:
+            lo = mid + 1                 # discard the left half
+        else:
+            hi = mid - 1                 # discard the right half
+    return -1
+
+arr = ast.literal_eval(input())
+target = int(input())
+print(binary_search(arr, target))
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+    static int binarySearch(int[] arr, int target) {
+        int lo = 0, hi = arr.length - 1;
+        while (lo <= hi) {
+            int mid = lo + (hi - lo) / 2;        // overflow-safe midpoint
+            if (arr[mid] == target) return mid;
+            else if (arr[mid] < target) lo = mid + 1;  // discard the left half
+            else hi = mid - 1;                          // discard the right half
+        }
+        return -1;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int target = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(binarySearch(arr, target));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+</details>
 
 Drill the family in **Practice** — [Recovery Validation](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/pattern-binary-search/problems/recovery-validation), [Reverse Binary Search](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/pattern-binary-search/problems/reverse-binary-search), [Minimum Shared Element](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/pattern-binary-search/problems/minimum-shared-element), and [Intersecting Elements](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/pattern-binary-search/problems/intersecting-elements).
 
@@ -171,4 +302,4 @@ This pattern is the umbrella; the rest of the section is its variants:
 
 - **Bentley**, *Programming Pearls*, ch. 4 — binary search, its variants, and the discipline that prevents bugs.
 - **Sedgewick & Wayne**, *Algorithms*, 4th ed., §1.4 / §3.1 — binary search and ordered symbol tables.
-- The recognition trigger and one-template-many-variants framing are standard; both runnable blocks are verified by running (`8 ⇒ 3`, `7 ⇒ -1`; ends `⇒ 0, 5, -1`).
+- The recognition trigger and one-template-many-variants framing are standard; both runnable blocks are verified by running (`8 ⇒ 3`, `7 ⇒ -1`).

@@ -18,6 +18,8 @@ The tell-tale phrasing is **"maximize the minimum"** (or "minimize the maximum")
 Aggressive cows: place `c = 3` cows in stalls at positions `[1, 2, 4, 8, 9]` to **maximize the minimum** distance between any two. Run it.
 
 ```python run viz=array
+import ast
+
 def max_min_distance(stalls, c):
     stalls = sorted(stalls)
     def feasible(d):                        # can we place all c cows with min gap >= d?
@@ -37,8 +39,64 @@ def max_min_distance(stalls, c):
             hi = mid - 1                    # too large → must shrink
     return best
 
-print(max_min_distance([1, 2, 4, 8, 9], 3))   # 3
-print(max_min_distance([1, 5, 9], 3))         # 4
+stalls = ast.literal_eval(input())
+c = int(input())
+print(max_min_distance(stalls, c))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static boolean feasible(int[] stalls, int c, int d) {
+        int count = 1, last = stalls[0];
+        for (int i = 1; i < stalls.length; i++)
+            if (stalls[i] - last >= d) { count++; last = stalls[i]; if (count == c) return true; }
+        return count >= c;
+    }
+
+    static int maxMinDistance(int[] stalls, int c) {
+        Arrays.sort(stalls);
+        int lo = 0, hi = stalls[stalls.length - 1] - stalls[0], best = 0;
+        while (lo <= hi) {
+            int mid = lo + (hi - lo) / 2;
+            if (feasible(stalls, c, mid)) { best = mid; lo = mid + 1; }
+            else hi = mid - 1;
+        }
+        return best;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] stalls = parseIntArray(sc.nextLine());
+        int c = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(maxMinDistance(stalls, c));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "stalls", "label": "stalls", "type": "int[]", "placeholder": "[1, 2, 4, 8, 9]" },
+    { "id": "c", "label": "c", "type": "int", "placeholder": "3" }
+  ],
+  "cases": [
+    { "args": { "stalls": "[1, 2, 4, 8, 9]", "c": "3" }, "expected": "3" },
+    { "args": { "stalls": "[1, 5, 9]", "c": "3" }, "expected": "4" },
+    { "args": { "stalls": "[5, 1, 9]", "c": "2" }, "expected": "8" },
+    { "args": { "stalls": "[1, 2, 3]", "c": "2" }, "expected": "2" }
+  ]
+}
 ```
 
 ## How It Works
@@ -87,9 +145,89 @@ Because of *where the loop lands relative to the answer*. The minimum version fi
 
 ## Your Turn
 
-The reusable maximum-feasible search:
+Implement `max_min_distance(stalls, c)` — the reusable maximum-feasible search.
 
 ```python run viz=array
+import ast
+
+def max_min_distance(stalls, c):
+    stalls = sorted(stalls)
+    def feasible(d):
+        # Your code goes here — can we place c cows with minimum gap >= d?
+        return False
+    lo, hi, best = 0, stalls[-1] - stalls[0], 0
+    while lo <= hi:
+        mid = lo + (hi - lo) // 2
+        # Your code goes here — update best and move lo/hi
+        hi = mid - 1
+    return best
+
+stalls = ast.literal_eval(input())
+c = int(input())
+print(max_min_distance(stalls, c))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static boolean feasible(int[] stalls, int c, int d) {
+        // Your code goes here — can we place c cows with minimum gap >= d?
+        return false;
+    }
+
+    static int maxMinDistance(int[] stalls, int c) {
+        Arrays.sort(stalls);
+        int lo = 0, hi = stalls[stalls.length - 1] - stalls[0], best = 0;
+        while (lo <= hi) {
+            int mid = lo + (hi - lo) / 2;
+            // Your code goes here — update best and move lo/hi
+            hi = mid - 1;
+        }
+        return best;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] stalls = parseIntArray(sc.nextLine());
+        int c = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(maxMinDistance(stalls, c));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "stalls", "label": "stalls", "type": "int[]", "placeholder": "[1, 2, 8, 4, 9]" },
+    { "id": "c", "label": "c", "type": "int", "placeholder": "3" }
+  ],
+  "cases": [
+    { "args": { "stalls": "[1, 2, 8, 4, 9]", "c": "3" }, "expected": "3" },
+    { "args": { "stalls": "[5, 1, 9]", "c": "2" }, "expected": "8" },
+    { "args": { "stalls": "[1, 2, 3, 4, 5]", "c": "2" }, "expected": "4" },
+    { "args": { "stalls": "[1, 100]", "c": "2" }, "expected": "99" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Feasibility is monotone-decreasing in `d`: placing cows with gap `≥ d` gets harder as `d` grows. Binary-search `[0, max−min]` for the last `d` where placement succeeds; record `best` because the loop overshoots. `O(n log(max−min))` total.
+
+```python solution time=O(n log(max-min)) space=O(1)
+import ast
+
 def max_min_distance(stalls, c):
     stalls = sorted(stalls)
     def feasible(d):
@@ -109,35 +247,52 @@ def max_min_distance(stalls, c):
             hi = mid - 1
     return best
 
-print(max_min_distance([1, 2, 8, 4, 9], 3))   # 3
-print(max_min_distance([5, 1, 9], 2))         # 8
+stalls = ast.literal_eval(input())
+c = int(input())
+print(max_min_distance(stalls, c))
 ```
 
-```java run viz=array
+```java solution
 import java.util.*;
 
 public class Main {
-  static boolean feasible(int[] stalls, int c, int d) {
-    int count = 1, last = stalls[0];
-    for (int i = 1; i < stalls.length; i++)
-      if (stalls[i] - last >= d) { count++; last = stalls[i]; if (count == c) return true; }
-    return count >= c;
-  }
-  static int maxMinDistance(int[] stalls, int c) {
-    Arrays.sort(stalls);
-    int lo = 0, hi = stalls[stalls.length - 1] - stalls[0], best = 0;
-    while (lo <= hi) {
-      int mid = lo + (hi - lo) / 2;
-      if (feasible(stalls, c, mid)) { best = mid; lo = mid + 1; }
-      else hi = mid - 1;
+    static boolean feasible(int[] stalls, int c, int d) {
+        int count = 1, last = stalls[0];
+        for (int i = 1; i < stalls.length; i++)
+            if (stalls[i] - last >= d) { count++; last = stalls[i]; if (count == c) return true; }
+        return count >= c;
     }
-    return best;
-  }
-  public static void main(String[] args) {
-    System.out.println(maxMinDistance(new int[]{1, 2, 4, 8, 9}, 3) + " " + maxMinDistance(new int[]{5, 1, 9}, 2));   // 3 8
-  }
+
+    static int maxMinDistance(int[] stalls, int c) {
+        Arrays.sort(stalls);
+        int lo = 0, hi = stalls[stalls.length - 1] - stalls[0], best = 0;
+        while (lo <= hi) {
+            int mid = lo + (hi - lo) / 2;
+            if (feasible(stalls, c, mid)) { best = mid; lo = mid + 1; }
+            else hi = mid - 1;
+        }
+        return best;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] stalls = parseIntArray(sc.nextLine());
+        int c = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(maxMinDistance(stalls, c));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
 }
 ```
+
+</details>
 
 Drill the family in **Practice** — [Calculate Square Root](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/pattern-maximum-predicate-search/problems/calculate-square-root), [Build Staircase](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/pattern-maximum-predicate-search/problems/build-staircase), [K Ribbons](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/pattern-maximum-predicate-search/problems/k-ribbons), and [Equalise Water](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/pattern-maximum-predicate-search/problems/equalise-water).
 

@@ -59,10 +59,10 @@ def build(s):
         sam.extend(c)
     return sam
 
-sam = build("abcbc")
-print(sam.contains("bcb"))   # True
-print(sam.contains("abc"))   # True
-print(sam.contains("cba"))   # False
+text = input()
+pattern = input()
+sam = build(text)
+print("true" if sam.contains(pattern) else "false")
 ```
 
 ```java run viz=array
@@ -103,11 +103,28 @@ public class Main {
         return true;
     }
     public static void main(String[] args) {
-        build("abcbc");
-        System.out.println(contains("bcb"));   // true
-        System.out.println(contains("abc"));   // true
-        System.out.println(contains("cba"));   // false
+        Scanner sc = new Scanner(System.in);
+        String text = sc.nextLine();
+        String pattern = sc.nextLine();
+        build(text);
+        System.out.println(contains(pattern));
     }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "text", "label": "text", "type": "string", "placeholder": "abcbc" },
+    { "id": "pattern", "label": "pattern", "type": "string", "placeholder": "bcb" }
+  ],
+  "cases": [
+    { "args": { "text": "abcbc", "pattern": "bcb" }, "expected": "true" },
+    { "args": { "text": "abcbc", "pattern": "abc" }, "expected": "true" },
+    { "args": { "text": "abcbc", "pattern": "cba" }, "expected": "false" },
+    { "args": { "text": "banana", "pattern": "ana" }, "expected": "true" },
+    { "args": { "text": "banana", "pattern": "xyz" }, "expected": "false" }
+  ]
 }
 ```
 
@@ -218,16 +235,106 @@ class SuffixAutomaton:
         self.last = cur
 
 def distinct_substrings(s):
+    # Your code goes here
+    return 0
+
+s = input()
+print(distinct_substrings(s))
+```
+
+```java run viz=array
+import java.util.*;
+public class Main {
+    static List<Map<Character,Integer>> trans = new ArrayList<>();
+    static List<Integer> link = new ArrayList<>(), length = new ArrayList<>();
+    static int last;
+    static void init() { trans.clear(); link.clear(); length.clear(); trans.add(new HashMap<>()); link.add(-1); length.add(0); last = 0; }
+    static void extend(char c) {
+        int cur = trans.size();
+        trans.add(new HashMap<>()); link.add(-1); length.add(length.get(last) + 1);
+        int p = last;
+        while (p != -1 && !trans.get(p).containsKey(c)) { trans.get(p).put(c, cur); p = link.get(p); }
+        if (p == -1) link.set(cur, 0);
+        else {
+            int q = trans.get(p).get(c);
+            if (length.get(p) + 1 == length.get(q)) link.set(cur, q);
+            else {
+                int clone = trans.size();
+                trans.add(new HashMap<>(trans.get(q))); link.add(link.get(q)); length.add(length.get(p) + 1);
+                while (p != -1 && Objects.equals(trans.get(p).get(c), q)) { trans.get(p).put(c, clone); p = link.get(p); }
+                link.set(q, clone); link.set(cur, clone);
+            }
+        }
+        last = cur;
+    }
+    static long distinctSubstrings(String s) {
+        // Your code goes here
+        return 0;
+    }
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String s = sc.nextLine();
+        System.out.println(distinctSubstrings(s));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "string", "type": "string", "placeholder": "banana" }
+  ],
+  "cases": [
+    { "args": { "s": "banana" }, "expected": "15" },
+    { "args": { "s": "aaa" }, "expected": "3" },
+    { "args": { "s": "abcd" }, "expected": "10" },
+    { "args": { "s": "abcbc" }, "expected": "12" }
+  ]
+}
+```
+
+Both print `15` then `3` — the *same* numbers the [suffix array](/cortex/data-structures-and-algorithms/strings/suffix-array) lesson got from `n(n+1)/2 − Σ lcp`. Two completely different indexes (sorted suffixes vs. an automaton) compute the identical distinct-substring count, which is a satisfying cross-check that both are capturing the same underlying structure. Here the SAM's per-state length-range *directly* counts the new substrings each class introduces.
+
+<details>
+<summary><strong>Editorial</strong></summary>
+
+Each non-root state in the suffix automaton represents an equivalence class that owns a contiguous range of substring lengths: `length[v] − length[link[v]]` new distinct substrings. Sum over all non-root states — no duplicates because each substring belongs to exactly one class.
+
+```python solution time=O(n) space=O(n)
+class SuffixAutomaton:
+    def __init__(self):
+        self.trans = [{}]; self.link = [-1]; self.length = [0]; self.last = 0
+    def extend(self, c):
+        cur = len(self.trans)
+        self.trans.append({}); self.link.append(-1); self.length.append(self.length[self.last] + 1)
+        p = self.last
+        while p != -1 and c not in self.trans[p]:
+            self.trans[p][c] = cur; p = self.link[p]
+        if p == -1:
+            self.link[cur] = 0
+        else:
+            q = self.trans[p][c]
+            if self.length[p] + 1 == self.length[q]:
+                self.link[cur] = q
+            else:
+                clone = len(self.trans)
+                self.trans.append(dict(self.trans[q])); self.link.append(self.link[q]); self.length.append(self.length[p] + 1)
+                while p != -1 and self.trans[p].get(c) == q:
+                    self.trans[p][c] = clone; p = self.link[p]
+                self.link[q] = clone; self.link[cur] = clone
+        self.last = cur
+
+def distinct_substrings(s):
     sam = SuffixAutomaton()
     for c in s:
         sam.extend(c)
     return sum(sam.length[v] - sam.length[sam.link[v]] for v in range(1, len(sam.trans)))
 
-print(distinct_substrings("banana"))   # 15
-print(distinct_substrings("aaa"))      # 3
+s = input()
+print(distinct_substrings(s))
 ```
 
-```java run viz=array
+```java solution
 import java.util.*;
 public class Main {
     static List<Map<Character,Integer>> trans = new ArrayList<>();
@@ -260,13 +367,14 @@ public class Main {
         return total;
     }
     public static void main(String[] args) {
-        System.out.println(distinctSubstrings("banana"));   // 15
-        System.out.println(distinctSubstrings("aaa"));      // 3
+        Scanner sc = new Scanner(System.in);
+        String s = sc.nextLine();
+        System.out.println(distinctSubstrings(s));
     }
 }
 ```
 
-Both print `15` then `3` — the *same* numbers the [suffix array](/cortex/data-structures-and-algorithms/strings/suffix-array) lesson got from `n(n+1)/2 − Σ lcp`. Two completely different indexes (sorted suffixes vs. an automaton) compute the identical distinct-substring count, which is a satisfying cross-check that both are capturing the same underlying structure. Here the SAM's per-state length-range *directly* counts the new substrings each class introduces.
+</details>
 
 ## Reflect & Connect
 

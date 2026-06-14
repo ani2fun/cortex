@@ -4,6 +4,8 @@ summary: "Given a binary matrix, find the size (number of cells) of the largest 
 prereqs:
   - 18-pattern-2d-grid/01-pattern
 difficulty: hard
+kind: problem
+topics: [2d-grid, dynamic-programming]
 ---
 
 # Largest Plus of 1s
@@ -25,6 +27,105 @@ Input:  grid = [[1, 1, 1, 1, 1],
                 [1, 1, 1, 1, 1],
                 [1, 1, 1, 1, 1]]
 Output: 9                       Plus of arm length 2: centre + 8 arm cells
+```
+
+---
+
+## Examples
+
+**Example 1**
+```
+Input:  grid = [[0, 1, 0], [1, 1, 1], [0, 1, 0]]
+Output: 5
+Explanation: Classic plus centred at (1,1) with arm length 1: 4×1+1 = 5 cells.
+```
+
+**Example 2**
+```
+Input:  grid = [[1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 1, 1, 1]]
+Output: 9
+Explanation: Centre (2,2), arm length 2: 4×2+1 = 9 cells.
+```
+
+```quiz
+{
+  "prompt": "For a plus of arm length k (arms exclude the centre), how many cells does it contain?",
+  "options": ["4k", "4k + 1", "k + 4", "2k + 1"],
+  "answer": "4k + 1"
+}
+```
+
+## Constraints
+
+- `1 ≤ rows, cols ≤ 300`
+- `grid[i][j]` is `0` or `1`.
+- Output is the number of cells in the largest plus; the minimum is 1 (a single centre cell when arm=0, giving `0 × 4 + 1 = 1`).
+
+```python run viz=grid
+import ast
+
+class Solution:
+    def largest_plus_of1s(self, grid):
+        # Your code goes here — build four direction arrays (left, right,
+        # top, bottom) for each cell, then the arm length at (r,c) is
+        # min(left, right, top, bottom). Return arm*4+1.
+        return 0
+
+grid = ast.literal_eval(input())   # the test case's grid
+print(Solution().largest_plus_of1s(grid))
+```
+
+```java run viz=grid
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int largestPlusOf1s(int[][] grid) {
+            // Your code goes here — build four direction arrays (left, right,
+            // top, bottom) for each cell, then the arm length at (r,c) is
+            // min(left, right, top, bottom). Return arm*4+1.
+            return 0;
+        }
+    }
+
+    public static void main(String[] args) {
+        int[][] grid = parseIntMatrix(new Scanner(System.in).nextLine());
+        System.out.println(new Solution().largestPlusOf1s(grid));
+    }
+
+    // "[[1, 0, 1], [0, 1, 0]]" → int[][] — reads the test case's grid
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "grid", "label": "grid", "type": "int[][]", "placeholder": "[[1, 1, 0], [0, 1, 1]]" }
+  ],
+  "cases": [
+    { "args": { "grid": "[[1, 1, 1, 0], [0, 1, 1, 1], [1, 1, 1, 1], [1, 0, 1, 0]]" }, "expected": "5" },
+    { "args": { "grid": "[[1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 1, 1, 1]]" }, "expected": "9" },
+    { "args": { "grid": "[[1, 1, 1, 0], [0, 1, 0, 1], [1, 1, 1, 1], [1, 0, 1, 0]]" }, "expected": "5" },
+    { "args": { "grid": "[[0, 1, 0], [1, 1, 1], [0, 1, 0]]" }, "expected": "5" },
+    { "args": { "grid": "[[0, 0, 0], [0, 0, 0], [0, 0, 0]]" }, "expected": "1" },
+    { "args": { "grid": "[[0, 0, 1, 0, 0], [0, 0, 1, 0, 0], [1, 1, 1, 1, 1], [0, 0, 1, 0, 0], [0, 0, 1, 0, 0]]" }, "expected": "9" }
+  ]
+}
 ```
 
 <details>
@@ -75,7 +176,8 @@ Here `arm` counts only the run on each side, *not* the centre cell. Four arms co
 
 ### The Solution
 
-```python run viz=graph viz-root=grid
+```python solution time=O(rows × cols) space=O(rows × cols)
+import ast
 from typing import List
 
 class Solution:
@@ -148,19 +250,11 @@ class Solution:
         return max_size * 4 + 1
 
 
-# Examples from the problem statement
-print(Solution().largest_plus_of1s([[1,1,1,0],[0,1,1,1],[1,1,1,1],[1,0,1,0]]))           # 5
-print(Solution().largest_plus_of1s([[1,1,1,1,1],[1,1,1,1,1],[1,1,1,1,1],[1,1,1,1,1],[1,1,1,1,1]]))  # 9
-print(Solution().largest_plus_of1s([[1,1,1,0],[0,1,0,1],[1,1,1,1],[1,0,1,0]]))           # 5
-
-# Edge cases
-print(Solution().largest_plus_of1s([[1]]))                                                # 1  — 1x1
-print(Solution().largest_plus_of1s([[0]]))                                                # 1  — 0x0 plus (0*4+1=1 is output for size=0)
-print(Solution().largest_plus_of1s([[0,0],[0,0]]))                                        # 1
-print(Solution().largest_plus_of1s([[0,1,0],[1,1,1],[0,1,0]]))                            # 5  — classic plus
+grid = ast.literal_eval(input())   # the test case's grid
+print(Solution().largest_plus_of1s(grid))
 ```
 
-```java run viz=graph viz-root=grid
+```java solution
 import java.util.*;
 
 public class Main {
@@ -249,16 +343,24 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().largestPlusOf1s(new int[][]{{1,1,1,0},{0,1,1,1},{1,1,1,1},{1,0,1,0}}));           // 5
-        System.out.println(new Solution().largestPlusOf1s(new int[][]{{1,1,1,1,1},{1,1,1,1,1},{1,1,1,1,1},{1,1,1,1,1},{1,1,1,1,1}}));  // 9
-        System.out.println(new Solution().largestPlusOf1s(new int[][]{{1,1,1,0},{0,1,0,1},{1,1,1,1},{1,0,1,0}}));           // 5
+        int[][] grid = parseIntMatrix(new Scanner(System.in).nextLine());
+        System.out.println(new Solution().largestPlusOf1s(grid));
+    }
 
-        // Edge cases
-        System.out.println(new Solution().largestPlusOf1s(new int[][]{{1}}));                                                // 1
-        System.out.println(new Solution().largestPlusOf1s(new int[][]{{0}}));                                                // 1
-        System.out.println(new Solution().largestPlusOf1s(new int[][]{{0,0},{0,0}}));                                        // 1
-        System.out.println(new Solution().largestPlusOf1s(new int[][]{{0,1,0},{1,1,1},{0,1,0}}));                            // 5
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
     }
 }
 ```

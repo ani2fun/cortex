@@ -4,6 +4,8 @@ summary: "Given a positive integer n, return a list containing the numbers from 
 prereqs:
   - 05-pattern-head-recursion/01-pattern
 difficulty: easy
+kind: problem
+topics: [head-recursion, recursion]
 ---
 
 # Forward Sequence
@@ -16,18 +18,86 @@ Our first worked problem. Deliberately easy — this is where you watch the temp
 
 Given a positive integer `n`, return a list containing the numbers from `1` to `n` in order. You **must** solve this recursively.
 
+---
+
+## Examples
+
+**Example 1**
 ```
 Input:  n = 5
 Output: [1, 2, 3, 4, 5]
-
-Input:  n = 1
-Output: [1]
-
-Input:  n = 3
-Output: [1, 2, 3]
+Explanation: Numbers 1 through 5 in ascending order.
 ```
 
----
+**Example 2**
+```
+Input:  n = 3
+Output: [1, 2, 3]
+Explanation: Numbers 1 through 3 in ascending order.
+```
+
+## Constraints
+
+- `1 ≤ n ≤ 10⁴`
+- Must be solved recursively (no loop over integers).
+
+```python run viz=array viz-root=result
+from typing import List
+
+class Solution:
+    def helper(self, n: int, result: List[int]):
+        # Your code goes here — base case n <= 0 returns; otherwise
+        # recurse on n-1 and append n on the way back up.
+        if n <= 0:
+            return
+
+    def forward_sequence(self, n: int) -> List[int]:
+        result: List[int] = []
+        self.helper(n, result)
+        return result
+
+n = int(input())
+print(Solution().forward_sequence(n))
+```
+
+```java run viz=array viz-root=result
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        private void helper(int N, List<Integer> result) {
+            // Your code goes here — base case N <= 0 returns; otherwise
+            // recurse on N-1 and add N on the way back up.
+            if (N <= 0) return;
+        }
+
+        public List<Integer> forwardSequence(int N) {
+            List<Integer> result = new ArrayList<>();
+            helper(N, result);
+            return result;
+        }
+    }
+
+    public static void main(String[] args) {
+        int n = Integer.parseInt(new Scanner(System.in).nextLine().trim());
+        System.out.println(new Solution().forwardSequence(n));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "n", "label": "n", "type": "int", "placeholder": "5" }
+  ],
+  "cases": [
+    { "args": { "n": "5" }, "expected": "[1, 2, 3, 4, 5]" },
+    { "args": { "n": "1" }, "expected": "[1]" },
+    { "args": { "n": "3" }, "expected": "[1, 2, 3]" },
+    { "args": { "n": "10" }, "expected": "[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]" }
+  ]
+}
+```
 
 <details>
 <summary><h2>What Does "Build a List Recursively" Mean?</h2></summary>
@@ -136,7 +206,7 @@ state: "forward(5) appends 5 — final" {
 
 ### The Solution
 
-```python run viz=array viz-root=result
+```python solution time=O(n) space=O(n)
 from typing import List
 
 class Solution:
@@ -171,16 +241,11 @@ class Solution:
         return result
 
 
-# Examples from the problem statement
-print(Solution().forward_sequence(5))   # [1, 2, 3, 4, 5]
-
-# Edge cases
-print(Solution().forward_sequence(1))   # [1]
-print(Solution().forward_sequence(3))   # [1, 2, 3]
-print(Solution().forward_sequence(10))  # [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+n = int(input())
+print(Solution().forward_sequence(n))
 ```
 
-```java run viz=array viz-root=result
+```java solution
 import java.util.*;
 
 public class Main {
@@ -220,13 +285,8 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().forwardSequence(5));   // [1, 2, 3, 4, 5]
-
-        // Edge cases
-        System.out.println(new Solution().forwardSequence(1));   // [1]
-        System.out.println(new Solution().forwardSequence(3));   // [1, 2, 3]
-        System.out.println(new Solution().forwardSequence(10));  // [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+        int n = Integer.parseInt(new Scanner(System.in).nextLine().trim());
+        System.out.println(new Solution().forwardSequence(n));
     }
 }
 ```

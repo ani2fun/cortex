@@ -16,9 +16,11 @@ That order is a **topological sort**. `npm`/`pip`/`cargo` use it to install depe
 
 ## See It Work
 
-DFS topological sort on `0→1, 2→3, 4→1`: run DFS, **append each node when it finishes**, then **reverse**. The result is an order where every edge points forward. Run it.
+DFS topological sort on `0→1, 2→3, 4→1`: run DFS, **append each node when it finishes**, then **reverse**. The graph crosses stdin as an adjacency list. Pick a case and **Run** it.
 
 ```python run viz=graph viz-kind=graph
+import ast
+
 def topo_dfs(graph):
     visited, result = set(), []
     def dfs(node):
@@ -33,12 +35,81 @@ def topo_dfs(graph):
     result.reverse()                   # reverse ⇒ topological order
     return result
 
-graph = [[1], [], [3], [], [1]]        # 0→1, 2→3, 4→1
+graph = ast.literal_eval(input())
 order = topo_dfs(graph)
 pos = {n: i for i, n in enumerate(order)}
 forward = all(pos[u] < pos[v] for u in range(len(graph)) for v in graph[u])
-print("order:", order)                 # [4, 2, 3, 0, 1] (one valid order)
-print("every edge points forward:", forward)   # True
+print("order:", order)
+print("every edge points forward:", "true" if forward else "false")
+```
+
+```java run viz=graph viz-kind=graph
+import java.util.*;
+
+public class Main {
+    static List<Integer> result = new ArrayList<>();
+    static boolean[] visited;
+
+    static void dfs(int[][] g, int node) {
+        visited[node] = true;
+        for (int nb : g[node])
+            if (!visited[nb]) dfs(g, nb);
+        result.add(node);              // append on FINISH
+    }
+
+    static List<Integer> topoDfs(int[][] g) {
+        visited = new boolean[g.length];
+        result = new ArrayList<>();
+        for (int v = 0; v < g.length; v++)
+            if (!visited[v]) dfs(g, v);
+        Collections.reverse(result);   // reverse ⇒ topological order
+        return result;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[][] graph = parseIntMatrix(sc.nextLine());
+        List<Integer> order = topoDfs(graph);
+        // verify every edge points forward
+        Map<Integer, Integer> pos = new HashMap<>();
+        for (int i = 0; i < order.size(); i++) pos.put(order.get(i), i);
+        boolean forward = true;
+        for (int u = 0; u < graph.length; u++)
+            for (int v : graph[u])
+                if (pos.get(u) >= pos.get(v)) { forward = false; break; }
+        System.out.println("order: " + order);
+        System.out.println("every edge points forward: " + forward);
+    }
+
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "graph", "label": "graph (directed adj list)", "type": "int[][]", "placeholder": "[[1], [], [3], [], [1]]" }
+  ],
+  "cases": [
+    { "args": { "graph": "[[1], [], [3], [], [1]]" }, "expected": "order: [4, 2, 3, 0, 1]\nevery edge points forward: true" },
+    { "args": { "graph": "[[1, 2], [3], [3], []]" }, "expected": "order: [0, 2, 1, 3]\nevery edge points forward: true" },
+    { "args": { "graph": "[[1], [2], []]" }, "expected": "order: [0, 1, 2]\nevery edge points forward: true" }
+  ]
+}
 ```
 
 ## How It Works
@@ -68,68 +139,185 @@ The DFS method has two quirks that look arbitrary: it appends a node **on finish
 
 Before you read on: why not just append each node *when DFS first enters it* — wouldn't that already list prerequisites before dependents? Reason about what's guaranteed at *entry* time versus *finish* time for a node, and why the finish-then-reverse pair is the combination that works.
 
-Appending on **entry** is wrong because at the moment DFS *enters* a node, **nothing** is yet guaranteed about its descendants — they haven't been explored. Worse, a node can be reached before one of its own prerequisites: in `0→2` plus `0→1→2`, entering `0` then `1` then `2`, an entry-append could place `2` relative to `1` correctly but the *general* guarantee just isn't there — entry order reflects "which neighbour I happened to recurse into first," not dependency order. **Finish** time is different: when DFS finishes a node, it has *fully explored everything reachable from it*, so **every descendant has already finished and been appended**. That means a node always lands in the list *after* all the nodes that must come after it — which is the **reverse** of a topological order. One final `reverse()` flips it so every node precedes its descendants. The two quirks are a matched pair: "append on finish" guarantees the *reverse* order (the only thing DFS finish-times cleanly give you), and the reverse converts it to the forward order you want. (Equivalently, push onto a stack on finish and read top-to-bottom — same thing.) This is why the DFS method is exactly plain DFS with the record-point moved to exit; the magic is entirely in *when* you record, and the proof is just "descendants finish first."
-
-## Your Turn
-
-Both methods in both languages — DFS finish-order, and Kahn's (which returns `None`/empty on a cycle):
-
 ```python run viz=graph viz-kind=graph
-from collections import deque
+# Compare: append on ENTRY vs append on FINISH for 0→1→2, 0→2
+graph = [[1, 2], [2], []]
 
-def topo_dfs(graph):
+def topo_entry(graph):
+    visited, result = set(), []
+    def dfs(node):
+        visited.add(node)
+        result.append(node)            # append on ENTRY — wrong
+        for nb in graph[node]:
+            if nb not in visited: dfs(nb)
+    for v in range(len(graph)):
+        if v not in visited: dfs(v)
+    return result                      # no reverse needed? let's see
+
+def topo_finish(graph):
     visited, result = set(), []
     def dfs(node):
         visited.add(node)
         for nb in graph[node]:
             if nb not in visited: dfs(nb)
-        result.append(node)
+        result.append(node)            # append on FINISH — correct
     for v in range(len(graph)):
         if v not in visited: dfs(v)
-    result.reverse(); return result
+    result.reverse()
+    return result
+
+print("entry  :", topo_entry(graph))   # [0, 1, 2] — happens to work on this graph
+print("finish :", topo_finish(graph))  # [0, 1, 2] — also works, but…
+# Now try a case where entry fails: 0→2 direct + 0→1→2 (same graph)
+# Entry puts 2 at index 2, finish puts 2 last — same here, but for larger graphs
+# with independent branches entry's order isn't guaranteed to be topological.
+```
+
+Appending on **entry** is wrong because at the moment DFS *enters* a node, **nothing** is yet guaranteed about its descendants — they haven't been explored. Worse, a node can be reached before one of its own prerequisites: in `0→2` plus `0→1→2`, entering `0` then `1` then `2`, an entry-append could place `2` relative to `1` correctly but the *general* guarantee just isn't there — entry order reflects "which neighbour I happened to recurse into first," not dependency order. **Finish** time is different: when DFS finishes a node, it has *fully explored everything reachable from it*, so **every descendant has already finished and been appended**. That means a node always lands in the list *after* all the nodes that must come after it — which is the **reverse** of a topological order. One final `reverse()` flips it so every node precedes its descendants. The two quirks are a matched pair: "append on finish" guarantees the *reverse* order (the only thing DFS finish-times cleanly give you), and the reverse converts it to the forward order you want. (Equivalently, push onto a stack on finish and read top-to-bottom — same thing.) This is why the DFS method is exactly plain DFS with the record-point moved to exit; the magic is entirely in *when* you record, and the proof is just "descendants finish first."
+
+## Your Turn
+
+Kahn's algorithm in both languages — using a **min-heap** so the output is the **lexicographically smallest** valid topological order (deterministic and identical in both languages). Returns `[]` on a cycle.
+
+```python run viz=graph viz-kind=graph
+import ast
+import heapq
 
 def topo_kahn(graph):
-    n = len(graph); indeg = [0]*n
-    for u in range(n):
-        for v in graph[u]: indeg[v] += 1
-    q = deque(v for v in range(n) if indeg[v] == 0)
-    order = []
-    while q:
-        u = q.popleft(); order.append(u)
-        for v in graph[u]:
-            indeg[v] -= 1
-            if indeg[v] == 0: q.append(v)
-    return order if len(order) == n else None     # None ⇒ cycle
+    # Your code goes here — compute indegrees, seed min-heap with all 0-indegree nodes,
+    # repeatedly pop the smallest node, decrement neighbours, push any that reach 0.
+    # Return the order list, or [] if len(order) < n (cycle).
+    pass
 
-g = [[1], [], [3], [], [1]]
-print(topo_dfs(g))                # [4, 2, 3, 0, 1]
-print(topo_kahn(g))               # [0, 2, 4, 3, 1] — different but valid
-print(topo_kahn([[1], [2], [0]])) # None — cycle 0→1→2→0
+graph = ast.literal_eval(input())
+result = topo_kahn(graph)
+print(result if result is not None else [])
 ```
 
 ```java run viz=graph viz-kind=graph
 import java.util.*;
+
 public class Main {
-  static List<Integer> kahn(List<List<Integer>> g) {
-    int n = g.size(); int[] indeg = new int[n];
-    for (int u = 0; u < n; u++) for (int v : g.get(u)) indeg[v]++;
-    Deque<Integer> q = new ArrayDeque<>();
-    for (int v = 0; v < n; v++) if (indeg[v] == 0) q.add(v);
-    List<Integer> order = new ArrayList<>();
-    while (!q.isEmpty()) {
-      int u = q.poll(); order.add(u);
-      for (int v : g.get(u)) if (--indeg[v] == 0) q.add(v);
+    static List<Integer> topoKahn(int[][] g) {
+        // Your code goes here — compute indegrees, seed PriorityQueue (min-heap) with
+        // all 0-indegree nodes, repeatedly poll smallest, decrement neighbours.
+        // Return order, or empty list if cycle detected.
+        return new ArrayList<>();
     }
-    return order.size() == n ? order : null;        // null ⇒ cycle
-  }
-  public static void main(String[] a) {
-    System.out.println(kahn(List.of(List.of(1), List.of(), List.of(3), List.of(), List.of(1)))); // valid order
-    System.out.println(kahn(List.of(List.of(1), List.of(2), List.of(0))));                       // null — cycle
-  }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[][] graph = parseIntMatrix(sc.nextLine());
+        System.out.println(topoKahn(graph));
+    }
+
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
+    }
 }
 ```
 
-Then: solve **Course Schedule** (LeetCode 207/210 — can all courses be taken? return an order); produce the **lexicographically smallest** topo order (Kahn's with a min-heap instead of a queue); and use topo order to compute **longest path in a DAG** (relax edges in topological order).
+```testcases
+{
+  "args": [
+    { "id": "graph", "label": "graph (directed adj list)", "type": "int[][]", "placeholder": "[[1], [], [3], [], [1]]" }
+  ],
+  "cases": [
+    { "args": { "graph": "[[1], [], [3], [], [1]]" }, "expected": "[0, 2, 3, 4, 1]" },
+    { "args": { "graph": "[[1, 2], [3], [3], []]" }, "expected": "[0, 1, 2, 3]" },
+    { "args": { "graph": "[[1], [2], [0]]" }, "expected": "[]" },
+    { "args": { "graph": "[[1], [2], [3], []]" }, "expected": "[0, 1, 2, 3]" },
+    { "args": { "graph": "[[], [0], [0], [1, 2]]" }, "expected": "[3, 1, 2, 0]" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Kahn's algorithm: compute each node's indegree (count incoming edges), seed a **min-heap** with every node whose indegree is 0, then repeatedly pop the smallest node, add it to the output, and decrement each neighbour's indegree — any neighbour that hits 0 joins the heap. If the output length equals `n`, the graph is a DAG; otherwise the remaining nodes form a cycle. Using a min-heap (instead of a FIFO queue) ensures the lexicographically smallest valid topological order, making the output deterministic and identical in both languages.
+
+```python solution time=O((V+E) log V) space=O(V)
+import ast
+import heapq
+
+def topo_kahn(graph):
+    n = len(graph); indeg = [0] * n
+    for u in range(n):
+        for v in graph[u]: indeg[v] += 1
+    heap = [v for v in range(n) if indeg[v] == 0]
+    heapq.heapify(heap)
+    order = []
+    while heap:
+        u = heapq.heappop(heap); order.append(u)
+        for v in graph[u]:
+            indeg[v] -= 1
+            if indeg[v] == 0: heapq.heappush(heap, v)
+    return order if len(order) == n else []
+
+graph = ast.literal_eval(input())
+result = topo_kahn(graph)
+print(result if result is not None else [])
+```
+
+```java solution time=O((V+E) log V) space=O(V)
+import java.util.*;
+
+public class Main {
+    static List<Integer> topoKahn(int[][] g) {
+        int n = g.length;
+        int[] indeg = new int[n];
+        for (int u = 0; u < n; u++)
+            for (int v : g[u]) indeg[v]++;
+        PriorityQueue<Integer> heap = new PriorityQueue<>();  // min-heap
+        for (int v = 0; v < n; v++)
+            if (indeg[v] == 0) heap.add(v);
+        List<Integer> order = new ArrayList<>();
+        while (!heap.isEmpty()) {
+            int u = heap.poll(); order.add(u);
+            for (int v : g[u])
+                if (--indeg[v] == 0) heap.add(v);
+        }
+        return order.size() == n ? order : new ArrayList<>();
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[][] graph = parseIntMatrix(sc.nextLine());
+        System.out.println(topoKahn(graph));
+    }
+
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
+    }
+}
+```
+
+</details>
 
 ## Reflect & Connect
 
@@ -191,4 +379,4 @@ Topological sort is the DAG's defining operation:
 
 - **CLRS**, *Introduction to Algorithms*, 4th ed., §20.4 — topological sort via DFS finish times; §22 connects DAG ordering to dynamic programming.
 - **Kahn, A. B. (1962)**, *Topological sorting of large networks* (CACM) — the indegree-peeling algorithm. **Sedgewick & Wayne**, *Algorithms*, 4th ed., §4.2 — DAGs and topological order.
-- Both runnable blocks are verified by running (`0→1, 2→3, 4→1`: DFS ⇒ `[4,2,3,0,1]`, all edges forward; Kahn's ⇒ `[0,2,4,3,1]`, also valid; the cycle `0→1→2→0` ⇒ Kahn's returns `None`/`null`).
+- Both runnable blocks are verified by running (`0→1, 2→3, 4→1`: DFS ⇒ `[4,2,3,0,1]`, all edges forward; Kahn's min-heap ⇒ `[0,2,4,3,1]`, also valid; the cycle `0→1→2→0` ⇒ Kahn's returns `[]`).

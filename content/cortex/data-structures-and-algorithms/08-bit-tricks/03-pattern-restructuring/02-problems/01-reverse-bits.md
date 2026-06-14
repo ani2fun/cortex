@@ -4,25 +4,86 @@ summary: "Given a 32-bit unsigned integer num, return the integer formed by reve
 prereqs:
   - 03-pattern-restructuring/01-pattern
 difficulty: medium
+kind: problem
+topics: [restructuring, bit-manipulation]
 ---
 
 # Reverse Bits
 
-## The Problem
+Reversal is the simplest *restructuring* move: walk all 32 positions and mirror each one end-to-end. The loop count is bound to the bit-width, not to the value.
+
+## Problem Statement
 
 Given a 32-bit unsigned integer `num`, return the integer formed by reversing its 32 bits — bit 1 becomes bit 32, bit 2 becomes bit 31, and so on.
 
+## Examples
+
+**Example 1**
 ```
 Input:  num = 28
 Output: 939524096
-        Binary  00000000 00000000 00000000 00011100
-        Reversed 00111000 00000000 00000000 00000000
+Explanation: 00000000 00000000 00000000 00011100  reversed end-to-end is
+             00111000 00000000 00000000 00000000  = 939524096.
+```
 
+**Example 2**
+```
 Input:  num = 1
-Output: 2147483648            (highest bit becomes set)
+Output: 2147483648
+Explanation: The lowest bit migrates to the highest position (bit 32).
+```
 
-Input:  num = 3415
-Output: 3937402880
+## Constraints
+
+- `0 ≤ num ≤ 2^32 - 1` — `num` is treated as an unsigned 32-bit value, so the result can exceed `2^31` (it occupies the full unsigned range `0 .. 4294967295`).
+- The reversal always processes exactly 32 bit positions, regardless of `num`'s magnitude.
+
+```python run viz=array
+class Solution:
+    def reverse_bits(self, num: int) -> int:
+        # Your code goes here
+        return 0
+
+
+num = int(input())
+print(Solution().reverse_bits(num))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int reverseBits(int num) {
+            // Your code goes here
+            return 0;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        // num can be up to 2^32 - 1 (> Integer.MAX_VALUE): read as long, cast
+        // to int so the bit pattern matches Python's value exactly.
+        int num = (int) Long.parseLong(sc.nextLine().trim());
+        // Print the unsigned interpretation (0 .. 2^32-1) to match Python.
+        System.out.println(Integer.toUnsignedLong(new Solution().reverseBits(num)));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "num", "label": "num", "type": "int", "placeholder": "28" }
+  ],
+  "cases": [
+    { "args": { "num": "28" }, "expected": "939524096" },
+    { "args": { "num": "1" }, "expected": "2147483648" },
+    { "args": { "num": "2147483648" }, "expected": "1" },
+    { "args": { "num": "0" }, "expected": "0" },
+    { "args": { "num": "4294967295" }, "expected": "4294967295" }
+  ]
+}
 ```
 
 <details>
@@ -68,7 +129,9 @@ Because the integer has 32 bits — every position must be processed for the rev
 
 ### The Solution
 
-```python run viz=array
+Walk all 32 positions, peeling `num`'s lowest bit each round and stacking it onto `result`. The Python result is naturally a non-negative value in `0 .. 2^32-1`; in Java the same 32-bit pattern is a signed `int`, so the driver prints `Integer.toUnsignedLong(result)` to render the unsigned value — and reads `num` via `(int) Long.parseLong` so inputs above `2^31` (like `2147483648`) survive the cast as the right bit pattern.
+
+```python solution time=O(1) space=O(1)
 class Solution:
     def reverse_bits(self, num: int) -> int:
 
@@ -94,19 +157,13 @@ class Solution:
         return result
 
 
-# Examples from the problem statement
-print(Solution().reverse_bits(28))      # 939524096
-print(Solution().reverse_bits(3415))    # 3937402880
-print(Solution().reverse_bits(1))       # 2147483648
-
-# Edge cases
-print(Solution().reverse_bits(0))       # 0
-print(Solution().reverse_bits(2))       # 1073741824
-print(Solution().reverse_bits(4))       # 536870912
-print(Solution().reverse_bits(2147483648))  # 1
+num = int(input())
+print(Solution().reverse_bits(num))
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
     static class Solution {
         public int reverseBits(int num) {
@@ -136,21 +193,15 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        // Note: Java int is signed; we print as unsigned long for clarity
-        System.out.println(Integer.toUnsignedLong(new Solution().reverseBits(28)));     // 939524096
-        System.out.println(Integer.toUnsignedLong(new Solution().reverseBits(3415)));   // 3937402880
-        System.out.println(Integer.toUnsignedLong(new Solution().reverseBits(1)));      // 2147483648
-
-        // Edge cases
-        System.out.println(Integer.toUnsignedLong(new Solution().reverseBits(0)));              // 0
-        System.out.println(Integer.toUnsignedLong(new Solution().reverseBits(2)));              // 1073741824
-        System.out.println(Integer.toUnsignedLong(new Solution().reverseBits(4)));              // 536870912
-        System.out.println(Integer.toUnsignedLong(new Solution().reverseBits(-2147483648)));     // 1
+        Scanner sc = new Scanner(System.in);
+        // num can be up to 2^32 - 1 (> Integer.MAX_VALUE): read as long, cast
+        // to int so the bit pattern matches Python's value exactly.
+        int num = (int) Long.parseLong(sc.nextLine().trim());
+        // Print the unsigned interpretation (0 .. 2^32-1) to match Python.
+        System.out.println(Integer.toUnsignedLong(new Solution().reverseBits(num)));
     }
 }
 ```
-
 
 <details>
 <summary><strong>Trace — num = 28 (0b11100)</strong></summary>

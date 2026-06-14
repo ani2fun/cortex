@@ -15,20 +15,63 @@ Its worst case is `O(n²)` like the other elementary sorts, but it has two prope
 
 ## See It Work
 
-Sort `[5, 2, 8, 1, 9, 3]` by inserting each element into the growing sorted prefix. Run it, then **Visualise** the prefix grow as each element slides into place.
+Sort an array by inserting each element into the growing sorted prefix. Run it, then **Visualise** the prefix grow as each element slides into place.
 
 > ▶ Run it, then click **Visualise** — each new element shifts the larger prefix values right, then drops into the gap.
 
 ```python run viz=array viz-root=arr
-arr = [5, 2, 8, 1, 9, 3]
+import ast
+
+arr = ast.literal_eval(input())         # the test case's array
 for i in range(1, len(arr)):
-    key = arr[i]                      # the element to insert
+    key = arr[i]                        # the element to insert
     j = i - 1
-    while j >= 0 and arr[j] > key:    # shift larger prefix elements right
+    while j >= 0 and arr[j] > key:     # shift larger prefix elements right
         arr[j + 1] = arr[j]
         j -= 1
-    arr[j + 1] = key                  # drop key into the opened gap
-print(arr)                            # [1, 2, 3, 5, 8, 9]
+    arr[j + 1] = key                   # drop key into the opened gap
+print(arr)                             # [1, 2, 3, 5, 8, 9]
+```
+
+```java run viz=array viz-root=arr
+import java.util.*;
+
+public class Main {
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());   // the test case's array
+    for (int i = 1; i < arr.length; i++) {
+      int key = arr[i], j = i - 1;
+      while (j >= 0 && arr[j] > key) { arr[j + 1] = arr[j]; j--; }
+      arr[j + 1] = key;
+    }
+    System.out.println(Arrays.toString(arr));   // [1, 2, 3, 5, 8, 9]
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's array
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[5, 2, 8, 1, 9, 3]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[5, 2, 8, 1, 9, 3]" }, "expected": "[1, 2, 3, 5, 8, 9]" },
+    { "args": { "arr": "[1, 2, 3, 4]" }, "expected": "[1, 2, 3, 4]" },
+    { "args": { "arr": "[3, 3, 1, 2, 3]" }, "expected": "[1, 2, 3, 3, 3]" },
+    { "args": { "arr": "[1]" }, "expected": "[1]" }
+  ]
+}
 ```
 
 ## How It Works
@@ -76,9 +119,69 @@ On a sorted array, `arr[i]` is always `≥ arr[i-1]`, so the `while` condition (
 
 ## Your Turn
 
-The reusable insertion sort:
+Implement insertion sort: grow a sorted prefix by taking each new element as `key`, shifting larger prefix elements one slot right, and dropping `key` into the gap. Return the sorted array.
 
 ```python run viz=array
+import ast
+
+def insertion_sort(arr):
+    # Your code goes here — for each i, save key=arr[i], shift larger prefix
+    # elements right, then drop key into the gap.
+    return arr
+
+arr = ast.literal_eval(input())      # the test case's array
+print(insertion_sort(arr))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+  static int[] insertionSort(int[] arr) {
+    // Your code goes here — for each i, save key=arr[i], shift larger prefix
+    // elements right, then drop key into the gap.
+    return arr;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());
+    System.out.println(Arrays.toString(insertionSort(arr)));
+  }
+
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[5, 2, 8, 1, 9, 3]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[5, 2, 8, 1, 9, 3]" }, "expected": "[1, 2, 3, 5, 8, 9]" },
+    { "args": { "arr": "[1, 2, 3, 4]" }, "expected": "[1, 2, 3, 4]" },
+    { "args": { "arr": "[9, 7, 5, 3, 1]" }, "expected": "[1, 3, 5, 7, 9]" },
+    { "args": { "arr": "[2, 1]" }, "expected": "[1, 2]" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Maintain the loop invariant `arr[0..i-1]` is sorted. For each `i`, save `key = arr[i]`, then walk left shifting any element greater than `key` one slot right; the shift opens a gap exactly where `key` belongs. Drop `key` in. One assignment per shifted element (not three like a swap). `O(n²)` worst/average, `O(n)` adaptive on nearly-sorted input, `O(1)` space, stable.
+
+```python solution time=O(n^2) space=O(1)
+import ast
+
 def insertion_sort(arr):
     for i in range(1, len(arr)):
         key = arr[i]
@@ -89,11 +192,11 @@ def insertion_sort(arr):
         arr[j + 1] = key
     return arr
 
-print(insertion_sort([5, 2, 8, 1, 9, 3]))   # [1, 2, 3, 5, 8, 9]
-print(insertion_sort([1, 2, 3, 4]))         # [1, 2, 3, 4]  (O(n), no shifts)
+arr = ast.literal_eval(input())      # the test case's array
+print(insertion_sort(arr))
 ```
 
-```java run viz=array
+```java solution
 import java.util.*;
 
 public class Main {
@@ -107,12 +210,23 @@ public class Main {
   }
 
   public static void main(String[] args) {
-    System.out.println(Arrays.toString(insertionSort(new int[]{5, 2, 8, 1, 9, 3})));   // [1, 2, 3, 5, 8, 9]
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());
+    System.out.println(Arrays.toString(insertionSort(arr)));
+  }
+
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
   }
 }
 ```
 
-This is a structural lesson — drill sorting in the pattern sets.
+</details>
 
 ## Reflect & Connect
 

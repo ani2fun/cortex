@@ -29,10 +29,14 @@ def lcsubstr(a, b):
                 dp[i][j] = 0                      # mismatch RESETS — no gaps allowed
     return best
 
-print(lcsubstr("abcdxyz", "xyzabcd"))             # 4  ("abcd")
+a = input()
+b = input()
+print(lcsubstr(a, b))
 ```
 
 ```java run viz=grid
+import java.util.*;
+
 public class Main {
     static int lcsubstr(String a, String b) {
         int m = a.length(), n = b.length();
@@ -48,13 +52,30 @@ public class Main {
                 }
         return best;
     }
+
     public static void main(String[] args) {
-        System.out.println(lcsubstr("abcdxyz", "xyzabcd"));   // 4
+        Scanner sc = new Scanner(System.in);
+        String a = sc.nextLine();
+        String b = sc.nextLine();
+        System.out.println(lcsubstr(a, b));
     }
 }
 ```
 
-Both print `4` — the run `"abcd"`, which is contiguous in both strings. Cost `O(m·n)`, like LCS.
+```testcases
+{
+  "args": [
+    { "id": "a", "label": "a", "type": "string", "placeholder": "abcdxyz" },
+    { "id": "b", "label": "b", "type": "string", "placeholder": "xyzabcd" }
+  ],
+  "cases": [
+    { "args": { "a": "abcdxyz", "b": "xyzabcd" }, "expected": "4" },
+    { "args": { "a": "abcde", "b": "abfce" }, "expected": "2" },
+    { "args": { "a": "abc", "b": "def" }, "expected": "0" },
+    { "args": { "a": "aabcc", "b": "dbbca" }, "expected": "2" }
+  ]
+}
+```
 
 ## How It Works
 
@@ -125,6 +146,67 @@ Subsequence is `4` (`"abce"` — skip the `d`/`f` mismatch and keep going); subs
 **Maximum Length of Repeated Subarray** ([LeetCode 718](https://leetcode.com/problems/maximum-length-of-repeated-subarray/)) — the longest *contiguous* subarray common to two integer arrays. It's longest-common-substring on numbers instead of characters: identical recurrence, reset-on-mismatch, answer in the best cell.
 
 ```python run viz=grid
+import ast
+
+def find_length(a, b):
+    # Your code goes here — identical to lcsubstr but on int arrays
+    return 0
+
+a = ast.literal_eval(input())
+b = ast.literal_eval(input())
+print(find_length(a, b))
+```
+
+```java run viz=grid
+import java.util.*;
+
+public class Main {
+    static int findLength(int[] a, int[] b) {
+        // Your code goes here — identical to lcsubstr but on int arrays
+        return 0;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] a = parseIntArray(sc.nextLine());
+        int[] b = parseIntArray(sc.nextLine());
+        System.out.println(findLength(a, b));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "a", "label": "a", "type": "int[]", "placeholder": "[1,2,3,2,1]" },
+    { "id": "b", "label": "b", "type": "int[]", "placeholder": "[3,2,1,4,7]" }
+  ],
+  "cases": [
+    { "args": { "a": "[1,2,3,2,1]", "b": "[3,2,1,4,7]" }, "expected": "3" },
+    { "args": { "a": "[0,0,0,0,0]", "b": "[0,0,0,0,0]" }, "expected": "5" },
+    { "args": { "a": "[1,2,3]", "b": "[4,5,6]" }, "expected": "0" },
+    { "args": { "a": "[1,2,3,4,5]", "b": "[3,4,5,6,7]" }, "expected": "3" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+The common run `[3, 2, 1]` is contiguous in both; the all-zeros case matches end to end. It's the exact LC-substring table with `==` on ints — a reminder that "substring DP" generalises to any sequence of comparable elements.
+
+```python solution time=O(m·n) space=O(m·n)
+import ast
+
 def find_length(a, b):
     m, n = len(a), len(b)
     dp = [[0] * (n + 1) for _ in range(m + 1)]
@@ -136,11 +218,14 @@ def find_length(a, b):
                 best = max(best, dp[i][j])
     return best
 
-print(find_length([1, 2, 3, 2, 1], [3, 2, 1, 4, 7]))     # 3   ([3, 2, 1])
-print(find_length([0, 0, 0, 0, 0], [0, 0, 0, 0, 0]))     # 5
+a = ast.literal_eval(input())
+b = ast.literal_eval(input())
+print(find_length(a, b))
 ```
 
-```java run viz=grid
+```java solution
+import java.util.*;
+
 public class Main {
     static int findLength(int[] a, int[] b) {
         int m = a.length, n = b.length;
@@ -150,14 +235,26 @@ public class Main {
                 if (a[i - 1] == b[j - 1]) { dp[i][j] = dp[i - 1][j - 1] + 1; best = Math.max(best, dp[i][j]); }
         return best;
     }
+
     public static void main(String[] args) {
-        System.out.println(findLength(new int[]{1,2,3,2,1}, new int[]{3,2,1,4,7}));   // 3
-        System.out.println(findLength(new int[]{0,0,0,0,0}, new int[]{0,0,0,0,0}));   // 5
+        Scanner sc = new Scanner(System.in);
+        int[] a = parseIntArray(sc.nextLine());
+        int[] b = parseIntArray(sc.nextLine());
+        System.out.println(findLength(a, b));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```
 
-Both print `3` then `5`. The common run `[3, 2, 1]` is contiguous in both; the all-zeros case matches end to end. It's the exact LC-substring table with `==` on ints — a reminder that "substring DP" generalises to any sequence of comparable elements.
+</details>
 
 ## Reflect & Connect
 

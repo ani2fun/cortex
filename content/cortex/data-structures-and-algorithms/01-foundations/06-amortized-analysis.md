@@ -27,13 +27,13 @@ def total_copies(n):                 # doubling dynamic array: count element-cop
         size += 1
     return copies
 
-print(f"{'n':>6} {'copies':>8} {'copies/n':>9} {'2n (bound)':>11}")
-for n in [16, 17, 1024, 1025]:
-    c = total_copies(n)
-    print(f"{n:>6} {c:>8} {c/n:>9.3f} {2 * n:>11}")
+n = int(input())
+c = total_copies(n)
+print(f"n={n} copies={c} ratio={c/n:.3f} bound={2*n}")
 ```
 
 ```java run viz=array
+import java.util.*;
 public class Main {
     static long totalCopies(int n) {                 // doubling array: count element-copies over n pushes
         long cap = 1, size = 0, copies = 0;
@@ -43,17 +43,30 @@ public class Main {
         }
         return copies;
     }
-    public static void main(String[] x) {
-        System.out.printf("%6s %8s %9s %11s%n", "n", "copies", "copies/n", "2n (bound)");
-        for (int n : new int[]{16, 17, 1024, 1025}) {
-            long c = totalCopies(n);
-            System.out.printf("%6d %8d %9.3f %11d%n", n, c, (double) c / n, 2 * n);
-        }
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = Integer.parseInt(sc.nextLine().trim());
+        long c = totalCopies(n);
+        System.out.printf("n=%d copies=%d ratio=%.3f bound=%d%n", n, c, (double) c / n, 2 * n);
     }
 }
 ```
 
-Both print the same table: total copies of `15 / 31 / 1023 / 2047` at `n = 16 / 17 / 1024 / 1025`, and crucially the `copies/n` column never exceeds **2** (`0.938`, `1.824`, `0.999`, `1.997`). The ratio oscillates — it's near 1 just before a resize and near 2 just after — but it's *bounded by a constant* no matter how large `n` gets. That's amortized `O(1)`: the per-push copying cost averages to at most 2, because the resize costs form the geometric series `1 + 2 + 4 + … ≤ 2n`, not the `n²` you'd fear from "every push might copy everything."
+```testcases
+{
+  "args": [
+    { "id": "n", "label": "n (push count)", "type": "number", "placeholder": "16" }
+  ],
+  "cases": [
+    { "args": { "n": "16" },   "expected": "n=16 copies=15 ratio=0.938 bound=32" },
+    { "args": { "n": "17" },   "expected": "n=17 copies=31 ratio=1.824 bound=34" },
+    { "args": { "n": "1024" }, "expected": "n=1024 copies=1023 ratio=0.999 bound=2048" },
+    { "args": { "n": "1025" }, "expected": "n=1025 copies=2047 ratio=1.997 bound=2050" }
+  ]
+}
+```
+
+Total copies of `15 / 31 / 1023 / 2047` at `n = 16 / 17 / 1024 / 1025`, and crucially the `ratio` column never exceeds **2** (`0.938`, `1.824`, `0.999`, `1.997`). The ratio oscillates — it's near 1 just before a resize and near 2 just after — but it's *bounded by a constant* no matter how large `n` gets. That's amortized `O(1)`: the per-push copying cost averages to at most 2, because the resize costs form the geometric series `1 + 2 + 4 + … ≤ 2n`, not the `n²` you'd fear from "every push might copy everything."
 
 ## How It Works
 
@@ -110,6 +123,54 @@ The accounting method's whole argument is one invariant: **the credit bank never
 
 ```python run viz=array
 def accounting(n, charge):           # accounting method: charge fixed credits/push, bank the surplus
+    # Your code goes here
+    return 0
+
+n = int(input())
+for charge in [3, 2]:
+    lo = accounting(n, charge)
+    print(f"charge={charge}/push -> lowest bank balance ever = {lo}  (stays >= 0? {'true' if lo >= 0 else 'false'})")
+```
+
+```java run viz=array
+import java.util.*;
+public class Main {
+    static long accounting(int n, int charge) {       // charge fixed credits/push, bank the surplus
+        // Your code goes here
+        return 0;
+    }
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = Integer.parseInt(sc.nextLine().trim());
+        for (int charge : new int[]{3, 2}) {
+            long lo = accounting(n, charge);
+            System.out.println("charge=" + charge + "/push -> lowest bank balance ever = " + lo + "  (stays >= 0? " + (lo >= 0) + ")");
+        }
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "n", "label": "n (push count)", "type": "number", "placeholder": "1000" }
+  ],
+  "cases": [
+    { "args": { "n": "1000" }, "expected": "charge=3/push -> lowest bank balance ever = 0  (stays >= 0? true)\ncharge=2/push -> lowest bank balance ever = -510  (stays >= 0? false)" },
+    { "args": { "n": "16" },   "expected": "charge=3/push -> lowest bank balance ever = 0  (stays >= 0? true)\ncharge=2/push -> lowest bank balance ever = -6  (stays >= 0? false)" }
+  ]
+}
+```
+
+`charge=3` → lowest balance **0** (stays ≥ 0 ✓), and `charge=2` → lowest balance **−510** (goes negative ✗). Charging 3 is exactly enough — the bank skims down to 0 right after the biggest resize and never dips below, which is the accounting method's proof that amortized cost ≤ 3 = `O(1)`. Charging only 2 leaves the bank `510` credits short by the time the array has grown to ~1000: the cheap pushes didn't save enough to cover the copies, so the "amortized O(1)" claim would be false at charge 2. The magic number 3 isn't arbitrary — it's `1` (place the new element) + `2` (each new element banks enough to move *itself and one older element* at the next resize). Watch the bank, and the proof stops being abstract.
+
+<details>
+<summary><strong>Editorial</strong></summary>
+
+Simulate the doubling array's accounting: charge `charge` credits per push, spend `size` credits on each resize (copying all existing elements), spend 1 credit to place the new element. Track the running minimum — if it ever goes negative, the charge is too low and the proof breaks.
+
+```python solution time=O(n) space=O(1)
+def accounting(n, charge):           # accounting method: charge fixed credits/push, bank the surplus
     cap, size, bank, min_bank = 1, 0, 0, 0
     for _ in range(n):
         bank += charge               # 1. charge this push
@@ -121,14 +182,16 @@ def accounting(n, charge):           # accounting method: charge fixed credits/p
         min_bank = min(min_bank, bank)
     return min_bank
 
+n = int(input())
 for charge in [3, 2]:
-    lo = accounting(1000, charge)
-    print(f"charge={charge}/push -> lowest bank balance ever = {lo:>5}  (stays >= 0? {lo >= 0})")
+    lo = accounting(n, charge)
+    print(f"charge={charge}/push -> lowest bank balance ever = {lo}  (stays >= 0? {'true' if lo >= 0 else 'false'})")
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
 public class Main {
-    static long accounting(int n, int charge) {       // charge fixed credits/push, bank the surplus
+    static long accounting(int n, int charge) {
         long cap = 1, size = 0, bank = 0, minBank = 0;
         for (int i = 0; i < n; i++) {
             bank += charge;                            // 1. charge this push
@@ -138,16 +201,18 @@ public class Main {
         }
         return minBank;
     }
-    public static void main(String[] x) {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = Integer.parseInt(sc.nextLine().trim());
         for (int charge : new int[]{3, 2}) {
-            long lo = accounting(1000, charge);
+            long lo = accounting(n, charge);
             System.out.println("charge=" + charge + "/push -> lowest bank balance ever = " + lo + "  (stays >= 0? " + (lo >= 0) + ")");
         }
     }
 }
 ```
 
-Both print: `charge=3` → lowest balance **0** (stays ≥ 0 ✓), and `charge=2` → lowest balance **−510** (goes negative ✗). Charging 3 is exactly enough — the bank skims down to 0 right after the biggest resize and never dips below, which is the accounting method's proof that amortized cost ≤ 3 = `O(1)`. Charging only 2 leaves the bank `510` credits short by the time the array has grown to ~1000: the cheap pushes didn't save enough to cover the copies, so the "amortized O(1)" claim would be false at charge 2. The magic number 3 isn't arbitrary — it's `1` (place the new element) + `2` (each new element banks enough to move *itself and one older element* at the next resize). Watch the bank, and the proof stops being abstract.
+</details>
 
 ## Reflect & Connect
 

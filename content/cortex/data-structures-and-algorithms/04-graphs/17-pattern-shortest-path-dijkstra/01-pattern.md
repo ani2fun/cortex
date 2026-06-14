@@ -5,6 +5,8 @@ prereqs:
   - 04-graphs/08-single-source-shortest-path
 ---
 
+# Pattern: Shortest Path (Dijkstra)
+
 ## Why It Exists
 
 BFS gives the shortest path in *number of hops*. Dijkstra gives the shortest path in *cumulative weight*. The dividing line is simple: does each edge cost the same (1), or a varying real cost?
@@ -45,12 +47,13 @@ dij: "Dijkstra — minimum cumulative weight" {
 
 ## See It Work
 
-Single-source shortest weighted distances. Note the cheapest route to node 1 is the *two-hop* `0 → 2 → 1` (cost 3), not the direct edge `0 → 1` (cost 4) — exactly the case BFS would get wrong.
+Single-source shortest weighted distances. The graph crosses stdin as a **weighted adjacency list** — `graph[u]` is a list of `[neighbour, weight]` pairs. Note the cheapest route to node 1 is the *two-hop* `0 → 2 → 1` (cost 3), not the direct edge `0 → 1` (cost 4) — exactly the case BFS would get wrong. Pick a case and **Run** it.
 
 ```python run viz=graph viz-kind=graph
-import heapq
+import ast, heapq
 
-def dijkstra(adj, n, src):
+def dijkstra(graph, src):
+    n = len(graph)
     dist = [float('inf')] * n
     dist[src] = 0
     heap = [(0, src)]                                   # (cumulative cost, node)
@@ -58,22 +61,24 @@ def dijkstra(adj, n, src):
         d, u = heapq.heappop(heap)                      # settle the cheapest open node
         if d > dist[u]:                                 # lazy stale-entry skip
             continue
-        for v, w in adj[u]:
+        for v, w in graph[u]:
             nd = d + w
             if nd < dist[v]:                            # weight-aware relaxation
                 dist[v] = nd
                 heapq.heappush(heap, (nd, v))
     return dist
 
-adj = {0: [(1, 4), (2, 1)], 1: [(3, 1)], 2: [(1, 2), (3, 5)], 3: []}
-print("distances:", dijkstra(adj, 4, 0))                # [0, 3, 1, 4]
+graph = ast.literal_eval(input())   # weighted adjacency: graph[u] = [[nbr, wt], ...]
+src = int(input())
+print(dijkstra(graph, src))
 ```
 
 ```java run viz=graph viz-kind=graph
 import java.util.*;
 
 public class Main {
-    static int[] dijkstra(Map<Integer, int[][]> adj, int n, int src) {
+    static int[] dijkstra(int[][][] graph, int src) {
+        int n = graph.length;
         int[] dist = new int[n];
         Arrays.fill(dist, Integer.MAX_VALUE);
         dist[src] = 0;
@@ -83,7 +88,7 @@ public class Main {
             int[] cur = heap.poll();
             int d = cur[0], u = cur[1];
             if (d > dist[u]) continue;                  // lazy stale-entry skip
-            for (int[] e : adj.getOrDefault(u, new int[0][])) {
+            for (int[] e : graph[u]) {
                 int v = e[0], w = e[1], nd = d + w;
                 if (nd < dist[v]) {                     // weight-aware relaxation
                     dist[v] = nd;
@@ -95,15 +100,61 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        Map<Integer, int[][]> adj = Map.of(
-            0, new int[][]{{1, 4}, {2, 1}}, 1, new int[][]{{3, 1}},
-            2, new int[][]{{1, 2}, {3, 5}}, 3, new int[][]{});
-        System.out.println("distances: " + Arrays.toString(dijkstra(adj, 4, 0)));  // [0, 3, 1, 4]
+        Scanner sc = new Scanner(System.in);
+        int[][][] graph = parseWeightedAdj(sc.nextLine());
+        int src = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(Arrays.toString(dijkstra(graph, src)));
+    }
+
+    // "[[[1, 4], [2, 1]], [[3, 1]], []]" → graph[u] = list of {neighbour, weight}
+    static int[][][] parseWeightedAdj(String line) {
+        List<int[][]> g = new ArrayList<>();
+        int i = 0, n = line.length();
+        while (i < n && line.charAt(i) != '[') i++;
+        i++;                                             // consume outer '['
+        while (i < n) {
+            while (i < n && (line.charAt(i) == ' ' || line.charAt(i) == ',')) i++;
+            if (i >= n || line.charAt(i) == ']') break;  // end of outer list
+            i++;                                         // consume a node group's '['
+            List<int[]> node = new ArrayList<>();
+            while (i < n) {
+                while (i < n && (line.charAt(i) == ' ' || line.charAt(i) == ',')) i++;
+                if (line.charAt(i) == ']') { i++; break; }   // end of this node group
+                i++;                                     // consume a pair's '['
+                int[] pair = new int[2]; int k = 0;
+                while (i < n && line.charAt(i) != ']') {
+                    while (i < n && (line.charAt(i) == ' ' || line.charAt(i) == ',')) i++;
+                    if (line.charAt(i) == ']') break;
+                    int start = i;
+                    while (i < n && (Character.isDigit(line.charAt(i)) || line.charAt(i) == '-')) i++;
+                    pair[k++] = Integer.parseInt(line.substring(start, i));
+                }
+                i++;                                     // consume the pair's ']'
+                node.add(pair);
+            }
+            g.add(node.toArray(new int[0][]));
+        }
+        return g.toArray(new int[0][][]);
     }
 }
 ```
 
-Both print `[0, 3, 1, 4]`: node 1 settles at cost 3 (via 2), node 3 at cost 4 (`0 → 2 → 1 → 3`).
+```testcases
+{
+  "args": [
+    { "id": "graph", "label": "graph", "type": "int[][]", "placeholder": "[[[1, 4], [2, 1]], [[3, 1]], [[1, 2], [3, 5]], []]" },
+    { "id": "src", "label": "src", "type": "int", "placeholder": "0" }
+  ],
+  "cases": [
+    { "args": { "graph": "[[[1, 4], [2, 1]], [[3, 1]], [[1, 2], [3, 5]], []]", "src": "0" }, "expected": "[0, 3, 1, 4]" },
+    { "args": { "graph": "[[[1, 1], [2, 4]], [[2, 2], [3, 2]], [[3, 1]], []]", "src": "0" }, "expected": "[0, 1, 3, 3]" },
+    { "args": { "graph": "[[[1, 5]], []]", "src": "0" }, "expected": "[0, 5]" },
+    { "args": { "graph": "[[]]", "src": "0" }, "expected": "[0]" }
+  ]
+}
+```
+
+Both print `[0, 3, 1, 4]`: node 1 settles at cost 3 (via 2), node 3 at cost 4 (`0 → 2 → 1 → 3`). The `[neighbour, weight]` pairs reach Java through a small `parseWeightedAdj` helper; Python reads them directly with `ast.literal_eval`. (These test graphs are fully connected from the source — when a node can be unreachable, replace `float('inf')` / `Integer.MAX_VALUE` with a shared sentinel so the two languages print the same thing.)
 
 ## How It Works
 
@@ -141,7 +192,7 @@ The min-heap's *ordering key* is the whole point. Take a graph with an expensive
 import heapq
 from collections import deque
 
-graph = {0: [(1, 1), (2, 10)], 1: [(2, 1)], 2: []}      # cheap detour vs expensive direct
+graph = [[[1, 1], [2, 10]], [[2, 1]], []]              # cheap detour vs expensive direct
 
 def by_cost(src, tgt):                                  # Dijkstra: min-heap by cumulative cost
     dist = {src: 0}; heap = [(0, src)]
@@ -175,10 +226,81 @@ Dijkstra reports `2`; BFS reports `10`. BFS reaches node 2 in *one hop* via the 
 
 ## Your Turn
 
-The canonical drill: **Network Delay Time** ([LeetCode 743](https://leetcode.com/problems/network-delay-time/)). A signal starts at node `k`; each directed edge `(u, v, w)` takes `w` time. Return the time for *all* `n` nodes to receive it — the maximum of the shortest distances — or `-1` if some node is unreachable.
+The canonical drill: **Network Delay Time** ([LeetCode 743](https://leetcode.com/problems/network-delay-time/)). A signal starts at node `k`; each directed edge `[u, v, w]` takes `w` time. Return the time for *all* `n` nodes to receive it — the maximum of the shortest distances — or `-1` if some node is unreachable. Here the graph arrives as a flat **edge list** (`times`), so you build the adjacency yourself before running Dijkstra. Write it.
 
 ```python run viz=graph viz-kind=graph
-import heapq
+import ast, heapq
+
+def network_delay_time(times, n, k):
+    # Your code goes here — build adjacency from the edge list, run Dijkstra from k,
+    # then return max(distances) if every node was reached, else -1.
+    pass
+
+times = ast.literal_eval(input())   # directed weighted edges [u, v, w] (nodes 1..n)
+n = int(input())
+k = int(input())
+print(network_delay_time(times, n, k))
+```
+
+```java run viz=graph viz-kind=graph
+import java.util.*;
+
+public class Main {
+    static int networkDelayTime(int[][] times, int n, int k) {
+        // Your code goes here — build adjacency from the edge list, run Dijkstra from k,
+        // then return max(distances) if every node was reached, else -1.
+        return 0;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[][] times = parseIntMatrix(sc.nextLine());
+        int n = Integer.parseInt(sc.nextLine().trim());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(networkDelayTime(times, n, k));
+    }
+
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "times", "label": "times", "type": "int[][]", "placeholder": "[[2, 1, 1], [2, 3, 1], [3, 4, 1]]" },
+    { "id": "n", "label": "n", "type": "int", "placeholder": "4" },
+    { "id": "k", "label": "k", "type": "int", "placeholder": "2" }
+  ],
+  "cases": [
+    { "args": { "times": "[[2, 1, 1], [2, 3, 1], [3, 4, 1]]", "n": "4", "k": "2" }, "expected": "2" },
+    { "args": { "times": "[[1, 2, 1]]", "n": "2", "k": "2" }, "expected": "-1" },
+    { "args": { "times": "[[1, 2, 1], [2, 3, 2], [1, 3, 4]]", "n": "3", "k": "1" }, "expected": "3" },
+    { "args": { "times": "[[1, 2, 1], [2, 3, 7], [1, 3, 4]]", "n": "3", "k": "1" }, "expected": "4" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+The graph arrives 1-indexed as `times`, so the first job is to turn the edge list into adjacency: a map from each node to its `(neighbour, weight)` pairs. Then it's textbook Dijkstra from `k`, using the *settled-set* form of the stale-entry skip (`if u in dist: continue`) instead of the `d > dist[u]` form — equivalent, and natural when `dist` is a dict you fill on first settle. The answer is the largest settled distance, because the signal arrives everywhere only once the farthest node hears it; if fewer than `n` nodes settle, one is unreachable and the answer is `-1`. The unreachable case returns `-1` in both languages, so there's no `inf`-vs-`MAX_VALUE` divergence to worry about.
+
+```python solution time=O((V + E) log V) space=O(V + E)
+import ast, heapq
 
 def network_delay_time(times, n, k):
     adj = {i: [] for i in range(1, n + 1)}
@@ -192,11 +314,13 @@ def network_delay_time(times, n, k):
             if v not in dist: heapq.heappush(heap, (d + w, v))
     return max(dist.values()) if len(dist) == n else -1
 
-print(network_delay_time([[2,1,1],[2,3,1],[3,4,1]], 4, 2))   # 2
-print(network_delay_time([[1,2,1]], 2, 2))                   # -1
+times = ast.literal_eval(input())   # directed weighted edges [u, v, w] (nodes 1..n)
+n = int(input())
+k = int(input())
+print(network_delay_time(times, n, k))
 ```
 
-```java run viz=graph viz-kind=graph
+```java solution
 import java.util.*;
 
 public class Main {
@@ -222,15 +346,36 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        System.out.println(networkDelayTime(new int[][]{{2,1,1},{2,3,1},{3,4,1}}, 4, 2)); // 2
-        System.out.println(networkDelayTime(new int[][]{{1,2,1}}, 2, 2));                 // -1
+        Scanner sc = new Scanner(System.in);
+        int[][] times = parseIntMatrix(sc.nextLine());
+        int n = Integer.parseInt(sc.nextLine().trim());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(networkDelayTime(times, n, k));
+    }
+
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
     }
 }
 ```
 
-Both print `2` then `-1`: from node 2 the farthest node is 2 time units away, and a node with no inbound path is unreachable. The four problems in this section's **Problems** folder push further — minimum-cost paths, cheapest flights *with a stop limit* (which needs an extra `(cost, node, stops)` state), and weighted-grid routing.
+</details>
 
 ## Reflect & Connect
+
+The four problems in this section's **Problems** folder push further — minimum-cost paths, cheapest flights *with a stop limit* (which needs an extra `(cost, node, stops)` state), and weighted-grid routing.
 
 - **Dijkstra is weighted BFS.** With all weights equal, the min-heap reduces to a FIFO queue and Dijkstra *is* BFS (just with a `log` factor of heap overhead). Reach for [BFS](/cortex/data-structures-and-algorithms/graphs-pattern-shortest-path-breadth-first-search) when every edge costs the same — it's simpler and faster.
 - **Negative weights break it.** The greedy "first pop is final" invariant assumes no later edge can lower a settled distance — false with negatives. Use Bellman-Ford (`O(VE)`), covered in the SSSP lesson.

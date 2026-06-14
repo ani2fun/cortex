@@ -20,6 +20,8 @@ Postgres's answer is two production ideas layered onto the B-tree. The **Write-A
 The write path in miniature: an insert appends to the WAL first, *then* applies to the in-memory page. Crash the process — the page buffer evaporates — and replaying the WAL reconstructs it exactly.
 
 ```python run viz=array
+import ast
+
 class Database:
     def __init__(self):
         self.wal = []            # durable, append-only log (survives a crash)
@@ -32,8 +34,11 @@ class Database:
         for key, tid in self.wal:     # ...replay the WAL to rebuild it
             self.page[key] = tid
 
+keys = ast.literal_eval(input())   # list of integer keys to insert
+
 db = Database()
-db.insert(42, "row-A"); db.insert(17, "row-B"); db.insert(99, "row-C")
+for i, key in enumerate(keys):
+    db.insert(key, f"row-{i}")
 print("before crash:", sorted(db.page))
 db.page = {}                          # CRASH: in-memory buffer gone; the WAL is safe on disk
 print("after crash:", sorted(db.page))
@@ -58,14 +63,34 @@ public class Main {
         }
     }
     public static void main(String[] x) {
+        Scanner sc = new Scanner(System.in);
+        String line = sc.nextLine().trim();
+        line = line.substring(1, line.length() - 1);   // strip [ ]
+        String[] parts = line.split(",\\s*");
         Database db = new Database();
-        db.insert(42, "row-A"); db.insert(17, "row-B"); db.insert(99, "row-C");
+        for (int i = 0; i < parts.length; i++) {
+            int key = Integer.parseInt(parts[i].trim());
+            db.insert(key, "row-" + i);
+        }
         System.out.println("before crash: " + db.page.keySet());
         db.page = new TreeMap<>();                          // CRASH: buffer gone, WAL safe on disk
         System.out.println("after crash: " + db.page.keySet());
         db.recover();                                       // replay the WAL
         System.out.println("after WAL replay: " + db.page.keySet());
     }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "keys", "label": "keys", "type": "string", "placeholder": "[42, 17, 99]" }
+  ],
+  "cases": [
+    { "args": { "keys": "[42, 17, 99]" }, "expected": "before crash: [17, 42, 99]\nafter crash: []\nafter WAL replay: [17, 42, 99]" },
+    { "args": { "keys": "[5, 3, 8, 1]" }, "expected": "before crash: [1, 3, 5, 8]\nafter crash: []\nafter WAL replay: [1, 3, 5, 8]" },
+    { "args": { "keys": "[100]" }, "expected": "before crash: [100]\nafter crash: []\nafter WAL replay: [100]" }
+  ]
 }
 ```
 
@@ -80,7 +105,7 @@ direction: right
 ins: "INSERT (key, TID)" {style.fill: "#fef9c3"}
 wal: "1. WAL — append the change\n(sequential write, fsync'd to disk)\nDURABLE, survives a crash" {style.fill: "#bbf7d0"; style.stroke: "#16a34a"}
 page: "2. B-tree page — apply the change\n(random 8 KB write, in the buffer pool)\nFAST, but lost on crash" {style.fill: "#dbeafe"; style.stroke: "#3b82f6"}
-crash: "💥 CRASH\nbuffer pool gone" {style.fill: "#fecaca"; style.stroke: "#dc2626"}
+crash: "CRASH\nbuffer pool gone" {style.fill: "#fecaca"; style.stroke: "#dc2626"}
 recover: "RECOVERY: replay the WAL\nfrom the last checkpoint\n-> pages reconstructed" {style.fill: "#e9d5ff"; style.stroke: "#9333ea"}
 ins -> wal: first
 wal -> page: then
@@ -135,16 +160,79 @@ The no-WAL engine prints `[]` — **everything is gone**. Its only record of the
 
 ## Your Turn
 
-**The B-link rescue.** A leaf holding `[10, 20, 30, 40]` overflowed and split: `10, 20` stay on the original page, `30, 40` move to a new right sibling, and the original's right-link points at it. A concurrent reader descended through a now-stale parent and landed on the *original* page, searching for `30` — which just moved.
+**The B-link rescue.** A leaf holding `[10, 20, 30, 40]` overflowed and split: `10, 20` stay on the original page, `30, 40` move to a new right sibling, and the original's right-link points at it. A concurrent reader descended through a now-stale parent and landed on the *original* page, searching for a key — which may have just moved to the right sibling.
 
-**Predict:** does the reader find `30`, or wrongly report "not found"?
+**Implement `search(left, key)`** — traverse the B-link chain, following `right` pointers when the search key is past the current page's high key, and return whether the key exists.
 
 ```python run viz=array
+import ast
+
 class Leaf:
     def __init__(self, keys): self.keys = keys; self.right = None
 
-left = Leaf([10, 20]); right = Leaf([30, 40])   # the leaf [10,20,30,40] split in two
-left.right = right                               # the B-LINK: old page -> new right sibling
+# Fixed B-link structure: leaf [10,20,30,40] split into left=[10,20], right=[30,40]
+left = Leaf([10, 20]); right = Leaf([30, 40])
+left.right = right
+
+def search(leaf, key):
+    # Your code goes here
+    return False
+
+key = ast.literal_eval(input())
+result = search(left, key)
+print("true" if result else "false")
+```
+
+```java run viz=array
+import java.util.*;
+public class Main {
+    static class Leaf {
+        List<Integer> keys; Leaf right = null;
+        Leaf(Integer... ks) { keys = Arrays.asList(ks); }
+    }
+    static boolean search(Leaf leaf, int key) {
+        // Your code goes here
+        return false;
+    }
+    public static void main(String[] x) {
+        Leaf left = new Leaf(10, 20), right = new Leaf(30, 40);
+        left.right = right;
+        Scanner sc = new Scanner(System.in);
+        int key = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(search(left, key));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "key", "label": "key", "type": "string", "placeholder": "30" }
+  ],
+  "cases": [
+    { "args": { "key": "30" }, "expected": "true" },
+    { "args": { "key": "99" }, "expected": "false" },
+    { "args": { "key": "10" }, "expected": "true" },
+    { "args": { "key": "20" }, "expected": "true" },
+    { "args": { "key": "15" }, "expected": "false" }
+  ]
+}
+```
+
+<details>
+<summary><strong>Editorial</strong></summary>
+
+Walk the B-link chain: at each page, if the key is present return true; if the key is past the page's high key and a right sibling exists, follow the link; otherwise return false. The right-link is the safety net for any reader caught mid-split — it turns a local split into a globally-correct traversal.
+
+```python solution time=O(n) space=O(1)
+import ast
+
+class Leaf:
+    def __init__(self, keys): self.keys = keys; self.right = None
+
+# Fixed B-link structure: leaf [10,20,30,40] split into left=[10,20], right=[30,40]
+left = Leaf([10, 20]); right = Leaf([30, 40])
+left.right = right
 
 def search(leaf, key):
     while leaf is not None:
@@ -156,13 +244,12 @@ def search(leaf, key):
             return False
     return False
 
-# A concurrent reader landed (via a stale parent) on the OLD page `left`,
-# searching for 30 -- which the split just relocated to the new sibling:
-print("found 30 via B-link?", search(left, 30))
-print("found 99 (absent)?", search(left, 99))
+key = ast.literal_eval(input())
+result = search(left, key)
+print("true" if result else "false")
 ```
 
-```java run viz=array
+```java solution
 import java.util.*;
 public class Main {
     static class Leaf {
@@ -180,15 +267,16 @@ public class Main {
         return false;
     }
     public static void main(String[] x) {
-        Leaf left = new Leaf(10, 20), right = new Leaf(30, 40);  // leaf [10,20,30,40] split in two
-        left.right = right;                                      // B-LINK: old page -> new sibling
-        System.out.println("found 30 via B-link? " + search(left, 30));
-        System.out.println("found 99 (absent)? " + search(left, 99));
+        Leaf left = new Leaf(10, 20), right = new Leaf(30, 40);
+        left.right = right;
+        Scanner sc = new Scanner(System.in);
+        int key = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(search(left, key));
     }
 }
 ```
 
-Both print `found 30 via B-link? true` then `found 99 (absent)? false`. The reader landed on the stale page, saw that `30` is greater than the page's high key (`20`), and followed the right-link to the new sibling — finding the key the split had relocated. A genuinely-absent key like `99` still returns false: the link is only followed when the target could plausibly have moved right. This is the Lehman-Yao insight that lets a split be a *local* edit no one has to lock the tree for — the right-link is a safety net for any reader caught mid-split.
+</details>
 
 ## Reflect & Connect
 
@@ -227,7 +315,7 @@ Both print `found 30 via B-link? true` then `found 99 (absent)? false`. The read
 <details>
 <summary><strong>Q:</strong> Roughly how tall is a Postgres B+-tree over a billion-row table, and why?</summary>
 
-**A:** About 4–5 levels. With 8 KB pages, internal nodes hold ~200 routing keys, so `log₂₀₀(10⁹) ≈ 4`. A worst-case lookup is therefore only 4–5 page reads.
+**A:** About 4–5 levels. With 8 KB pages, internal nodes hold ~200 routing keys, so `log200(10^9) approx 4`. A worst-case lookup is therefore only 4–5 page reads.
 
 </details>
 
@@ -236,4 +324,4 @@ Both print `found 30 via B-link? true` then `found 99 (absent)? false`. The read
 - **Lehman & Yao** (1981), "Efficient Locking for Concurrent Operations on B-Trees", *ACM TODS* — the B-link tree and its right-link concurrency invariant.
 - **Postgres source**: `src/backend/access/nbtree/` — `nbtinsert.c` (`_bt_doinsert`, `_bt_split`), `nbtsearch.c` (`_bt_search`), `nbtxlog.c` (WAL replay), and the `README` design notes. **Mohan et al.** (1992), "ARIES" — the write-ahead logging and recovery model Postgres follows.
 - **Hellerstein, Stonebraker & Hamilton**, "Architecture of a Database System" — buffer pool, WAL, and access methods in context; the [Postgres docs on WAL](https://www.postgresql.org/docs/current/wal-intro.html).
-- The crash-and-replay (`[17, 42, 99] → [] → [17, 42, 99]`), the no-WAL-vs-WAL contrast (`[]` vs `[10, 20, 30]`), and the B-link rescue (`30` found, `99` not) all come from the runnable blocks above (deterministic models of the WAL write path and a B-link split) — re-run to verify.
+- The crash-and-replay (`[17, 42, 99] -> [] -> [17, 42, 99]`), the no-WAL-vs-WAL contrast (`[]` vs `[10, 20, 30]`), and the B-link rescue (`30` found, `99` not) all come from the runnable blocks above (deterministic models of the WAL write path and a B-link split) — re-run to verify.

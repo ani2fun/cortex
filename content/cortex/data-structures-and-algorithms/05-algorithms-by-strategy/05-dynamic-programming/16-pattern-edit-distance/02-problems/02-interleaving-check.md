@@ -4,6 +4,8 @@ summary: "Given three strings s1, s2, s3, return true if s3 is an interleaving o
 prereqs:
   - 16-pattern-edit-distance/01-pattern
 difficulty: hard
+kind: problem
+topics: [edit-distance, dynamic-programming]
 ---
 
 # Interleaving Check
@@ -26,6 +28,88 @@ Output: true
 Input:  s1 = "abc", s2 = "def", s3 = "adcebf"
 Output: false
         s3 has c before b — violates s1's internal order.
+```
+
+---
+
+## Examples
+
+**Example 1**
+```
+Input:  s1 = "abc", s2 = "def", s3 = "adbecf"
+Output: true
+Explanation: a(s1) d(s2) b(s1) e(s2) c(s1) f(s2) — strict alternation preserving both orders.
+```
+
+**Example 2**
+```
+Input:  s1 = "abc", s2 = "def", s3 = "adcebf"
+Output: false
+Explanation: s3 has c before b, violating s1's internal order.
+```
+
+**Example 3**
+```
+Input:  s1 = "ab", s2 = "cd", s3 = "acbd"
+Output: true
+Explanation: a(s1) c(s2) b(s1) d(s2).
+```
+
+## Constraints
+
+- `0 ≤ s1.length, s2.length ≤ 100`
+- `0 ≤ s3.length ≤ 200`
+- `s1`, `s2`, and `s3` consist of lowercase English letters.
+
+```python run viz=grid viz-root=dp
+class Solution:
+    def interleaving_check(self, s1: str, s2: str, s3: str) -> bool:
+        # Your code goes here
+        return False
+
+s1 = input()
+s2 = input()
+s3 = input()
+print("true" if Solution().interleaving_check(s1, s2, s3) else "false")
+```
+
+```java run viz=grid viz-root=dp
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public boolean interleavingCheck(String s1, String s2, String s3) {
+            // Your code goes here
+            return false;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String s1 = sc.nextLine();
+        String s2 = sc.nextLine();
+        String s3 = sc.nextLine();
+        System.out.println(new Solution().interleavingCheck(s1, s2, s3));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "s1", "label": "s1", "type": "string", "placeholder": "abc" },
+    { "id": "s2", "label": "s2", "type": "string", "placeholder": "def" },
+    { "id": "s3", "label": "s3", "type": "string", "placeholder": "adbecf" }
+  ],
+  "cases": [
+    { "args": { "s1": "code", "s2": "intuition", "s3": "cointuitionde" }, "expected": "true" },
+    { "args": { "s1": "abc", "s2": "def", "s3": "adbecf" }, "expected": "true" },
+    { "args": { "s1": "abc", "s2": "def", "s3": "adcebf" }, "expected": "false" },
+    { "args": { "s1": "ab", "s2": "cd", "s3": "abcd" }, "expected": "true" },
+    { "args": { "s1": "ab", "s2": "cd", "s3": "acbd" }, "expected": "true" },
+    { "args": { "s1": "ab", "s2": "cd", "s3": "abdc" }, "expected": "false" }
+  ]
+}
 ```
 
 <details>
@@ -58,7 +142,7 @@ Because each character of `s3` must come from *exactly one* of `s1` or `s2` — 
 
 ### The Solution
 
-```python run viz=grid viz-root=dp
+```python solution time=O(n×m) space=O(n×m)
 from typing import List
 
 class Solution:
@@ -99,21 +183,13 @@ class Solution:
         return dp[n][m]
 
 
-# Examples from the problem statement
-print(Solution().interleaving_check("code", "intuition", "cointuitionde"))  # True
-print(Solution().interleaving_check("abc", "def", "adbecf"))                # True
-print(Solution().interleaving_check("abc", "def", "adcebf"))                # False
-
-# Edge cases
-print(Solution().interleaving_check("", "", ""))                            # True  — all empty
-print(Solution().interleaving_check("a", "", "a"))                          # True  — s2 empty
-print(Solution().interleaving_check("", "b", "b"))                          # True  — s1 empty
-print(Solution().interleaving_check("ab", "cd", "abcd"))                    # True  — s1 then s2
-print(Solution().interleaving_check("ab", "cd", "acbd"))                    # True  — interleaved
-print(Solution().interleaving_check("ab", "cd", "abdc"))                    # False — wrong order
+s1 = input()
+s2 = input()
+s3 = input()
+print("true" if Solution().interleaving_check(s1, s2, s3) else "false")
 ```
 
-```java run viz=grid viz-root=dp
+```java solution
 import java.util.*;
 
 public class Main {
@@ -162,18 +238,11 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().interleavingCheck("code", "intuition", "cointuitionde"));  // true
-        System.out.println(new Solution().interleavingCheck("abc", "def", "adbecf"));                // true
-        System.out.println(new Solution().interleavingCheck("abc", "def", "adcebf"));                // false
-
-        // Edge cases
-        System.out.println(new Solution().interleavingCheck("", "", ""));                            // true
-        System.out.println(new Solution().interleavingCheck("a", "", "a"));                          // true
-        System.out.println(new Solution().interleavingCheck("", "b", "b"));                          // true
-        System.out.println(new Solution().interleavingCheck("ab", "cd", "abcd"));                    // true
-        System.out.println(new Solution().interleavingCheck("ab", "cd", "acbd"));                    // true
-        System.out.println(new Solution().interleavingCheck("ab", "cd", "abdc"));                    // false
+        Scanner sc = new Scanner(System.in);
+        String s1 = sc.nextLine();
+        String s2 = sc.nextLine();
+        String s3 = sc.nextLine();
+        System.out.println(new Solution().interleavingCheck(s1, s2, s3));
     }
 }
 ```

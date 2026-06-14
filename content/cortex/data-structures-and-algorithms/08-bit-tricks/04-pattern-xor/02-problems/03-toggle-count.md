@@ -4,22 +4,98 @@ summary: "Given two integers num1 and num2, return the number of bits that need 
 prereqs:
   - 04-pattern-xor/01-pattern
 difficulty: easy
+kind: problem
+topics: [xor, bit-manipulation]
 ---
 
 # Toggle Count
 
-## The Problem
+XOR lights up exactly the positions where two bit-strings differ — count those lit positions and you have the toggle count.
 
-Given two integers `num1` and `num2`, return the number of bits that need to be flipped to convert one into the other.
+## Problem Statement
 
+Given two non-negative integers `num1` and `num2`, return the number of bits that need to be flipped to convert one into the other.
+
+## Examples
+
+**Example 1**
 ```
-Input:  num1 = 10, num2 = 1   →  3       Binary 1010 vs 0001 — 3 differing positions
-Input:  num1 = 2, num2 = 3    →  1       Binary 10 vs 11 — only LSB differs
+Input:  num1 = 10, num2 = 1
+Output: 3
+Explanation: Binary 1010 vs 0001 — bits 0, 1, and 3 differ (3 positions).
+```
+
+**Example 2**
+```
+Input:  num1 = 2, num2 = 3
+Output: 1
+Explanation: Binary 10 vs 11 — only the LSB differs.
+```
+
+**Example 3**
+```
+Input:  num1 = 0, num2 = 7
+Output: 3
+Explanation: 000 vs 111 — all three low bits differ.
+```
+
+## Constraints
+
+- `0 ≤ num1, num2 ≤ 2^31 - 1` — non-negative signed 32-bit integers.
+
+```python run viz=array
+class Solution:
+    def toggle_count(self, num1: int, num2: int) -> int:
+        # Your code goes here
+        return 0
+
+
+num1 = int(input())
+num2 = int(input())
+print(Solution().toggle_count(num1, num2))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int toggleCount(int num1, int num2) {
+            // Your code goes here
+            return 0;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int num1 = Integer.parseInt(sc.nextLine().trim());
+        int num2 = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().toggleCount(num1, num2));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "num1", "label": "num1", "type": "int", "placeholder": "10" },
+    { "id": "num2", "label": "num2", "type": "int", "placeholder": "1" }
+  ],
+  "cases": [
+    { "args": { "num1": "10", "num2": "1" }, "expected": "3" },
+    { "args": { "num1": "2", "num2": "3" }, "expected": "1" },
+    { "args": { "num1": "9", "num2": "1" }, "expected": "1" },
+    { "args": { "num1": "0", "num2": "0" }, "expected": "0" },
+    { "args": { "num1": "5", "num2": "5" }, "expected": "0" },
+    { "args": { "num1": "0", "num2": "7" }, "expected": "3" },
+    { "args": { "num1": "15", "num2": "0" }, "expected": "4" },
+    { "args": { "num1": "7", "num2": "1" }, "expected": "2" }
+  ]
+}
 ```
 
 <details>
 <summary><h2>The Recurrence — XOR Then Popcount</h2></summary>
-
 
 `num1 ^ num2` has a 1 in every position where `num1` and `num2` *differ*. Counting set bits in the XOR gives the number of differing positions — exactly the toggle count.
 
@@ -33,9 +109,11 @@ It runs in **O(set-bit count)** rather than O(bit-width). For sparse integers (f
 <details>
 <summary><h2>The Solution</h2></summary>
 
+### The Solution
 
+XOR the two numbers (marking each differing bit), then count set bits with Brian Kernighan's algorithm. Both inputs are non-negative in-range `int`s, so `^` and `& (n-1)` agree in Python and Java.
 
-```python run viz=array
+```python solution time=O(1) space=O(1)
 class Solution:
     def toggle_count(self, num1: int, num2: int) -> int:
 
@@ -55,20 +133,14 @@ class Solution:
         return count
 
 
-# Examples from the problem statement
-print(Solution().toggle_count(10, 1))     # 3
-print(Solution().toggle_count(2, 3))      # 1
-print(Solution().toggle_count(9, 1))      # 1
-
-# Edge cases
-print(Solution().toggle_count(0, 0))      # 0
-print(Solution().toggle_count(5, 5))      # 0
-print(Solution().toggle_count(0, 7))      # 3
-print(Solution().toggle_count(15, 0))     # 4
-print(Solution().toggle_count(7, 1))      # 2
+num1 = int(input())
+num2 = int(input())
+print(Solution().toggle_count(num1, num2))
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
     static class Solution {
         public int toggleCount(int num1, int num2) {
@@ -92,17 +164,10 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().toggleCount(10, 1));     // 3
-        System.out.println(new Solution().toggleCount(2, 3));      // 1
-        System.out.println(new Solution().toggleCount(9, 1));      // 1
-
-        // Edge cases
-        System.out.println(new Solution().toggleCount(0, 0));      // 0
-        System.out.println(new Solution().toggleCount(5, 5));      // 0
-        System.out.println(new Solution().toggleCount(0, 7));      // 3
-        System.out.println(new Solution().toggleCount(15, 0));     // 4
-        System.out.println(new Solution().toggleCount(7, 1));      // 2
+        Scanner sc = new Scanner(System.in);
+        int num1 = Integer.parseInt(sc.nextLine().trim());
+        int num2 = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().toggleCount(num1, num2));
     }
 }
 ```

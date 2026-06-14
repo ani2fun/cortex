@@ -4,33 +4,100 @@ summary: "Given n coins, build a staircase where the ith stair needs i coins. Re
 prereqs:
   - 12-pattern-maximum-predicate-search/01-pattern
 difficulty: medium
+kind: problem
+topics: [maximum-predicate-search, searching]
 ---
 
 # Build Staircase
 
-## The Problem
+## Problem Statement
 
-Given `n` coins, build a staircase where the `i`th stair needs `i` coins. Return the number of complete stairs.
+Given `n` coins, build a staircase where the `i`th stair needs `i` coins. Return the number of complete stairs you can build.
 
+## Examples
+
+**Example 1**
 ```
 Input:  n = 6
-Output: 3   (1 + 2 + 3 = 6)
+Output: 3
+Explanation: 1 + 2 + 3 = 6 coins, so 3 complete stairs.
+```
 
+**Example 2**
+```
 Input:  n = 5
-Output: 2   (1 + 2 = 3; can't build 3rd stair)
+Output: 2
+Explanation: 1 + 2 = 3 coins builds 2 stairs; the 3rd stair needs 3 more coins (only 2 remain).
+```
 
-Input:  n = 7
-Output: 3   (1 + 2 + 3 = 6; 1 coin left over, not enough for 4th)
+## Constraints
+
+- `1 ≤ n ≤ 2^31 - 1`
+- The answer fits in a 32-bit integer.
+
+```python run viz=array
+class Solution:
+    def build_staircase(self, n: int) -> int:
+        # Your code goes here — binary-search k in [0, n].
+        # Predicate: k*(k+1)//2 <= n.
+        # Return the largest k satisfying the predicate.
+        return -1
+
+n = int(input())
+print(Solution().build_staircase(n))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int buildStaircase(int n) {
+            // Your code goes here — binary-search k in [0, n].
+            // Predicate: k*(k+1)/2 <= n.
+            // Return the largest k satisfying the predicate.
+            return -1;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().buildStaircase(n));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "n", "label": "n", "type": "int", "placeholder": "6" }
+  ],
+  "cases": [
+    { "args": { "n": "6" }, "expected": "3" },
+    { "args": { "n": "5" }, "expected": "2" },
+    { "args": { "n": "7" }, "expected": "3" },
+    { "args": { "n": "0" }, "expected": "0" },
+    { "args": { "n": "1" }, "expected": "1" },
+    { "args": { "n": "3" }, "expected": "2" },
+    { "args": { "n": "10" }, "expected": "4" },
+    { "args": { "n": "11" }, "expected": "4" }
+  ]
+}
 ```
 
 <details>
-<summary><h2>The Solution</h2></summary>
+<summary><h2>Intuition</h2></summary>
 
+The number of coins to build `k` stairs is `k*(k+1)/2` — the triangular number formula. This grows monotonically in `k`, so the predicate `k*(k+1)/2 ≤ n` is true for small `k` and false once `k` is too large. Binary-search `[0, n]` for the largest `k` that fits, recording the best candidate as the search moves right on success. The `+1` in the midpoint formula prevents an infinite loop when `lo` and `hi` are adjacent.
+
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 Binary-search `k` in `[0, n]`. Predicate: `k(k+1)/2 <= n`.
 
-
-```python run viz=array
+```python solution time=O(log n) space=O(1)
 class Solution:
 
     # Predicate: Checks if mid rows can fit within n blocks
@@ -66,21 +133,13 @@ class Solution:
         return low
 
 
-# Examples from the problem statement
-print(Solution().build_staircase(6))   # 3
-print(Solution().build_staircase(5))   # 2
-print(Solution().build_staircase(7))   # 3
-
-# Edge cases
-print(Solution().build_staircase(0))   # 0   (no coins)
-print(Solution().build_staircase(1))   # 1   (exactly one stair)
-print(Solution().build_staircase(2))   # 1   (1 coin short of 2 stairs)
-print(Solution().build_staircase(3))   # 2   (1+2=3 coins)
-print(Solution().build_staircase(10))  # 4   (1+2+3+4=10)
-print(Solution().build_staircase(11))  # 4   (11 coins, 5th stair needs 5)
+n = int(input())
+print(Solution().build_staircase(n))
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
     static class Solution {
 
@@ -123,18 +182,9 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().buildStaircase(6));   // 3
-        System.out.println(new Solution().buildStaircase(5));   // 2
-        System.out.println(new Solution().buildStaircase(7));   // 3
-
-        // Edge cases
-        System.out.println(new Solution().buildStaircase(0));   // 0
-        System.out.println(new Solution().buildStaircase(1));   // 1
-        System.out.println(new Solution().buildStaircase(2));   // 1
-        System.out.println(new Solution().buildStaircase(3));   // 2
-        System.out.println(new Solution().buildStaircase(10));  // 4
-        System.out.println(new Solution().buildStaircase(11));  // 4
+        Scanner sc = new Scanner(System.in);
+        int n = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().buildStaircase(n));
     }
 }
 ```

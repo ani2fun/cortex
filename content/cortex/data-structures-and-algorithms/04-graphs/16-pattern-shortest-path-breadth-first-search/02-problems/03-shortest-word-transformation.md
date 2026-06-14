@@ -1,129 +1,62 @@
 ---
 title: "Shortest Word Transformation"
-summary: "Given two words source and target and a wordList, find the minimum number of words in a transformation chain source → s1 → s2 → … → target, where:"
+summary: "Given two words source and target and a wordList, find the minimum number of words in a transformation chain source → s1 → s2 → … → target where each consecutive pair differs by exactly one letter."
 prereqs:
   - 16-pattern-shortest-path-breadth-first-search/01-pattern
 difficulty: hard
+kind: problem
+topics: [shortest-path-bfs, implicit-graph]
 ---
 
 # Problem: Shortest Word Transformation
 
-## The Problem
+## Problem Statement
 
 Given two words `source` and `target` and a `wordList`, find the minimum number of words in a transformation chain `source → s1 → s2 → … → target`, where:
 
-- Each consecutive pair differs by exactly one letter.
-- Every word `s1, s2, …, target` is in `wordList`.
+- Each consecutive pair differs by exactly **one** letter.
+- Every word `s1, s2, …, target` must be in `wordList`.
 
-Return 0 if no transformation exists.
+Return `0` if no transformation exists.
 
+## Examples
+
+**Example 1:**
 ```
-Input:  source = "hit", target = "cog", wordList = ["hot", "dot", "dog", "lot", "log", "cog"]
-Output: 5  (hit → hot → dot → dog → cog)
+Input:  source = "hit", target = "cog",
+        wordList = ["hot", "dot", "dog", "lot", "log", "cog"]
+Output: 5   (hit → hot → dot → dog → cog)
 ```
 
-<details>
-<summary><h2>Pattern Mapping</h2></summary>
+**Example 2:**
+```
+Input:  source = "hit", target = "mad",
+        wordList = ["hot", "dot", "dog", "lot", "log", "cog"]
+Output: 0   (target not reachable)
+```
 
+## Constraints
 
-The graph is **implicit**:
-
-- Node = a word.
-- Edge = "differ by exactly one letter".
-
-The graph is unweighted (each transformation costs 1), and we want minimum hops. **BFS shortest path.**
-
-The trick is generating neighbours efficiently. Two main approaches:
-
-1. **Per-position substitution.** For each character position, try every other letter; check if the mutated word is in `wordList`. O(L × 26) neighbours per word, where L = word length.
-2. **Pattern keys.** Pre-build a map from "h*t" → ["hit", "hot", "hat", …]. Each word has L neighbour-pattern keys.
-
-We'll use approach 1 — simpler to code, still fast for typical inputs. The implementation builds the adjacency on the fly during BFS.
-
-</details>
-<details>
-<summary><h2>The Solution (per-position substitution)</h2></summary>
-
-
+- `1 ≤ source.length, target.length ≤ 10`
+- All words have the same length
+- All words consist of lowercase English letters
+- `0 ≤ wordList.length ≤ 5000`
+- `0 ≤ O(N × L × 26)` time — per-position character substitution BFS
 
 ```python run viz=graph viz-root=queue
-from collections import deque
-from typing import List
+import ast
 
 class Solution:
-    def shortest_word_transformation(
-        self, source: str, target: str, word_list: List[str]
-    ) -> int:
-
-        # Create a set to store the words for efficient lookup
-        word_set = set(word_list)
-
-        # If the target word is not in the word set, return 0
-        if target not in word_set:
-            return 0
-
-        # Create a queue for BFS traversal
-        queue = deque([source])
-
-        # Create a visited set to keep track of visited words
-        visited = set([source])
-
-        # Starting level is 1 (source word is at level 1)
-        level = 1
-
-        while queue:
-            level_size = len(queue)
-
-            # Traverse all words at the current level
-            for _ in range(level_size):
-                current_word = queue.popleft()
-
-                # Check if the current word matches the target
-                if current_word == target:
-                    return level
-
-                # Generate all possible adjacent words
-                for j in range(len(current_word)):
-                    original_char = current_word[j]
-                    for ch in "abcdefghijklmnopqrstuvwxyz":
-
-                        # Skip if the character is the same as the
-                        # original
-                        if ch == original_char:
-                            continue
-
-                        # Change the character at position j
-                        new_word = (
-                            current_word[:j] + ch + current_word[j + 1:]
-                        )
-
-                        # Check if the new word is in the word set and
-                        # has not been visited
-                        if (
-                            new_word in word_set
-                            and new_word not in visited
-                        ):
-                            queue.append(new_word)
-                            visited.add(new_word)
-
-            # Increment the level after traversing all words at the
-            # current level
-            level += 1
-
-        # No transformation sequence exists, return 0
+    def shortest_word_transformation(self, source, target, word_list):
+        # Your code goes here — the graph is implicit: nodes are words, edges connect
+        # words that differ by exactly one character. BFS from source; level = chain length.
+        # Return 0 if target is unreachable or not in word_list.
         return 0
 
-
-# Examples from the problem statement
-print(Solution().shortest_word_transformation("hit", "cog", ["hot","dot","dog","lot","log","cog"]))  # 5
-print(Solution().shortest_word_transformation("hit", "mad", ["hot","dot","dog","lot","log","cog"]))  # 0
-print(Solution().shortest_word_transformation("red", "tax", ["tan","apple","banana","blue","rose"]))  # 0
-
-# Edge cases
-print(Solution().shortest_word_transformation("hit", "hot", ["hot"]))                                # 2 — one step
-print(Solution().shortest_word_transformation("abc", "abc", ["abc"]))                                # 1 — source equals target
-print(Solution().shortest_word_transformation("hit", "cog", []))                                     # 0 — empty word list
-print(Solution().shortest_word_transformation("a", "c", ["b","c"]))                                  # 2 — single-char chain
+source = input()
+target = input()
+word_list = ast.literal_eval(input())
+print(Solution().shortest_word_transformation(source, target, word_list))
 ```
 
 ```java run viz=graph viz-root=queue
@@ -131,110 +64,154 @@ import java.util.*;
 
 public class Main {
     static class Solution {
-        public int shortestWordTransformation(
-            String source,
-            String target,
-            List<String> wordList
-        ) {
+        public int shortestWordTransformation(String source, String target, List<String> wordList) {
+            // Your code goes here — the graph is implicit: nodes are words, edges connect
+            // words that differ by exactly one character. BFS from source; level = chain length.
+            // Return 0 if target is unreachable or not in wordList.
+            return 0;
+        }
+    }
 
-            // Create a set to store the words for efficient lookup
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String source = sc.nextLine().trim();
+        String target = sc.nextLine().trim();
+        List<String> wordList = parseStringList(sc.nextLine().trim());
+        System.out.println(new Solution().shortestWordTransformation(source, target, wordList));
+    }
+
+    // Parses ["hot","dot","dog"] → List<String>
+    static List<String> parseStringList(String line) {
+        List<String> result = new ArrayList<>();
+        String inner = line.trim();
+        if (inner.equals("[]")) return result;
+        inner = inner.substring(1, inner.length() - 1);  // strip outer [ ]
+        String[] parts = inner.split(",");
+        for (String p : parts) {
+            String word = p.trim().replaceAll("^\"|\"$", "");
+            if (!word.isEmpty()) result.add(word);
+        }
+        return result;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "source", "label": "source", "type": "string", "placeholder": "hit" },
+    { "id": "target", "label": "target", "type": "string", "placeholder": "cog" },
+    { "id": "word_list", "label": "wordList", "type": "string[]", "placeholder": "[\"hot\", \"dot\", \"dog\", \"lot\", \"log\", \"cog\"]" }
+  ],
+  "cases": [
+    { "args": { "source": "hit", "target": "cog", "word_list": "[\"hot\", \"dot\", \"dog\", \"lot\", \"log\", \"cog\"]" }, "expected": "5" },
+    { "args": { "source": "hit", "target": "mad", "word_list": "[\"hot\", \"dot\", \"dog\", \"lot\", \"log\", \"cog\"]" }, "expected": "0" },
+    { "args": { "source": "hit", "target": "hot", "word_list": "[\"hot\"]" }, "expected": "2" },
+    { "args": { "source": "abc", "target": "abc", "word_list": "[\"abc\"]" }, "expected": "1" },
+    { "args": { "source": "a", "target": "c", "word_list": "[\"b\", \"c\"]" }, "expected": "2" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+The word graph is implicit: each word is a node and an edge exists between words that differ by exactly one character. Because every transformation costs 1 step (unweighted), BFS finds the shortest chain. Process one level at a time — all words reachable in `level` steps before advancing to `level + 1`. When the target is dequeued, `level` is the answer. Generate neighbours by substituting each character position with every letter `a–z`; check membership in a `wordSet` in O(1). If the target is not in `wordList`, return `0` immediately.
+
+Note: the chain counts words, not edges, so `source` contributes 1 to the count — that's why a one-step transformation returns 2, not 1.
+
+```python solution time=O(N*L*26) space=O(N*L)
+import ast
+from collections import deque
+
+class Solution:
+    def shortest_word_transformation(self, source, target, word_list):
+        word_set = set(word_list)
+        if target not in word_set:
+            return 0
+        queue = deque([source])
+        visited = {source}
+        level = 1
+        while queue:
+            for _ in range(len(queue)):
+                current_word = queue.popleft()
+                if current_word == target:
+                    return level
+                for j in range(len(current_word)):
+                    original_char = current_word[j]
+                    for ch in "abcdefghijklmnopqrstuvwxyz":
+                        if ch == original_char:
+                            continue
+                        new_word = current_word[:j] + ch + current_word[j + 1:]
+                        if new_word in word_set and new_word not in visited:
+                            queue.append(new_word)
+                            visited.add(new_word)
+            level += 1
+        return 0
+
+source = input()
+target = input()
+word_list = ast.literal_eval(input())
+print(Solution().shortest_word_transformation(source, target, word_list))
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int shortestWordTransformation(String source, String target, List<String> wordList) {
             Set<String> wordSet = new HashSet<>(wordList);
-
-            // If the target word is not in the word set, return 0
-            if (!wordSet.contains(target)) {
-                return 0;
-            }
-
-            // Create a queue for BFS traversal
+            if (!wordSet.contains(target)) return 0;
             Queue<String> queue = new LinkedList<>();
             queue.add(source);
-
-            // Create a visited set to keep track of visited words
             Set<String> visited = new HashSet<>();
             visited.add(source);
-
-            // Starting level is 1 (source word is at level 1)
             int level = 1;
-
             while (!queue.isEmpty()) {
                 int levelSize = queue.size();
-
-                // Traverse all words at the current level
                 for (int i = 0; i < levelSize; i++) {
                     String currentWord = queue.poll();
-
-                    // Check if the current word matches the target
-                    if (currentWord.equals(target)) {
-                        return level;
-                    }
-
-                    // Generate all possible adjacent words
+                    if (currentWord.equals(target)) return level;
                     for (int j = 0; j < currentWord.length(); j++) {
                         char originalChar = currentWord.charAt(j);
-
                         for (char ch = 'a'; ch <= 'z'; ch++) {
-
-                            // Skip if the character is the same as the
-                            // original
                             if (ch == originalChar) continue;
-
-                            // Change the character at position j
-                            String newWord =
-                                currentWord.substring(0, j) +
-                                ch +
-                                currentWord.substring(j + 1);
-
-                            // Check if the new word is in the word set and
-                            // has not been visited
-                            if (
-                                wordSet.contains(newWord) &&
-                                !visited.contains(newWord)
-                            ) {
+                            String newWord = currentWord.substring(0, j) + ch + currentWord.substring(j + 1);
+                            if (wordSet.contains(newWord) && !visited.contains(newWord)) {
                                 queue.add(newWord);
                                 visited.add(newWord);
                             }
                         }
                     }
                 }
-
-                // Increment the level after traversing all words at the
-                // current level
                 level++;
             }
-
-            // No transformation sequence exists, return 0
             return 0;
         }
     }
 
     public static void main(String[] args) {
-        Solution sol = new Solution();
+        Scanner sc = new Scanner(System.in);
+        String source = sc.nextLine().trim();
+        String target = sc.nextLine().trim();
+        List<String> wordList = parseStringList(sc.nextLine().trim());
+        System.out.println(new Solution().shortestWordTransformation(source, target, wordList));
+    }
 
-        // Examples from the problem statement
-        System.out.println(sol.shortestWordTransformation("hit", "cog", List.of("hot","dot","dog","lot","log","cog")));  // 5
-        System.out.println(sol.shortestWordTransformation("hit", "mad", List.of("hot","dot","dog","lot","log","cog")));  // 0
-        System.out.println(sol.shortestWordTransformation("red", "tax", List.of("tan","apple","banana","blue","rose")));  // 0
-
-        // Edge cases
-        System.out.println(sol.shortestWordTransformation("hit", "hot", List.of("hot")));         // 2
-        System.out.println(sol.shortestWordTransformation("abc", "abc", List.of("abc")));         // 1
-        System.out.println(sol.shortestWordTransformation("hit", "cog", new ArrayList<>()));      // 0
-        System.out.println(sol.shortestWordTransformation("a", "c", List.of("b","c")));           // 2
+    static List<String> parseStringList(String line) {
+        List<String> result = new ArrayList<>();
+        String inner = line.trim();
+        if (inner.equals("[]")) return result;
+        inner = inner.substring(1, inner.length() - 1);
+        String[] parts = inner.split(",");
+        for (String p : parts) {
+            String word = p.trim().replaceAll("^\"|\"$", "");
+            if (!word.isEmpty()) result.add(word);
+        }
+        return result;
     }
 }
 ```
-
-</details>
-<details>
-<summary><h2>Complexity Analysis</h2></summary>
-
-
-| Problem | Time | Space |
-|---|---|---|
-| Minimum steps in a grid | O(R × C) | O(R × C) |
-| Nearest distance (multi-source) | O(R × C) | O(R × C) |
-| Shortest word transformation | O(N × L × 26) | O(N × L) |
-
-Where N = words, L = word length. The word problem is dominated by the per-word neighbour generation (L positions × 26 letters).
 
 </details>

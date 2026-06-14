@@ -48,18 +48,36 @@ def sum_of_digits(n):
         return 0
     return sum_of_digits(n // 10) + n % 10      # recurse FIRST, combine AFTER
 
-print("sum_of_digits(523):", sum_of_digits(523))
+n = int(input())
+print(sum_of_digits(n))
 ```
 
 ```java run viz=array
+import java.util.*;
+
 public class Main {
     static int sumOfDigits(int n) {
         if (n == 0) return 0;                       // base case
         return sumOfDigits(n / 10) + n % 10;        // recurse first, combine after
     }
     public static void main(String[] args) {
-        System.out.println("sumOfDigits(523): " + sumOfDigits(523));
+        int n = Integer.parseInt(new Scanner(System.in).nextLine().trim());
+        System.out.println(sumOfDigits(n));
     }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "n", "label": "n", "type": "int", "placeholder": "523" }
+  ],
+  "cases": [
+    { "args": { "n": "523" }, "expected": "10" },
+    { "args": { "n": "1005" }, "expected": "6" },
+    { "args": { "n": "0" }, "expected": "0" },
+    { "args": { "n": "9" }, "expected": "9" }
+  ]
 }
 ```
 
@@ -148,24 +166,72 @@ Factorial is head recursion too: `fact(n) = n · fact(n−1)`, base `fact(1) = 1
 def factorial(n):
     if n <= 1:                          # base case (reachable from 0 and 1)
         return 1
-    return n * factorial(n - 1)         # multiply on the ascent
+    # Your code goes here — recurse on n-1 and multiply on the ascent
+    return 0
 
-print("factorial(5):", factorial(5))    # 120
+n = int(input())
+print(factorial(n))
 ```
 
 ```java run viz=array
+import java.util.*;
+
+public class Main {
+    static long factorial(int n) {
+        if (n <= 1) return 1;               // base case
+        // Your code goes here — recurse on n-1 and multiply on the ascent
+        return 0;
+    }
+    public static void main(String[] args) {
+        int n = Integer.parseInt(new Scanner(System.in).nextLine().trim());
+        System.out.println(factorial(n));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "n", "label": "n", "type": "int", "placeholder": "5" }
+  ],
+  "cases": [
+    { "args": { "n": "5" }, "expected": "120" },
+    { "args": { "n": "0" }, "expected": "1" },
+    { "args": { "n": "1" }, "expected": "1" },
+    { "args": { "n": "7" }, "expected": "5040" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+```python solution time=O(n) space=O(n)
+def factorial(n):
+    if n <= 1:                          # base case (reachable from 0 and 1)
+        return 1
+    return n * factorial(n - 1)         # multiply on the ascent
+
+n = int(input())
+print(factorial(n))
+```
+
+```java solution
+import java.util.*;
+
 public class Main {
     static long factorial(int n) {
         if (n <= 1) return 1;               // base case
         return n * factorial(n - 1);        // multiply on the ascent
     }
     public static void main(String[] args) {
-        System.out.println("factorial(5): " + factorial(5));   // 120
+        int n = Integer.parseInt(new Scanner(System.in).nextLine().trim());
+        System.out.println(factorial(n));
     }
 }
 ```
 
-Both print `120`. The descent reaches `fact(1) = 1`, then the multiplications fire on the way up: `1 → 2·1 → 3·2 → 4·6 → 5·24 = 120`. The four problems in this section's **Problems** folder — forward sequence, factorial, sum of digits, reverse a queue — are all this same "recurse first, combine after" shape.
+</details>
 
 ## Reflect & Connect
 

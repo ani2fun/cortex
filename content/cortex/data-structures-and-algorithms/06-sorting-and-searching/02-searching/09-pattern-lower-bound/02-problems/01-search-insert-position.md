@@ -4,35 +4,116 @@ summary: "Given a sorted array arr and target, return target's index if present;
 prereqs:
   - 09-pattern-lower-bound/01-pattern
 difficulty: easy
+kind: problem
+topics: [lower-bound, searching]
 ---
 
 # Search Insert Position
 
 Direct lower-bound application.
 
-## The Problem
+## Problem Statement
 
 Given a sorted array `arr` and `target`, return target's index if present; otherwise return the index where target would be inserted to keep the array sorted.
 
+## Examples
+
+**Example 1**
 ```
 Input:  arr = [1, 2, 3, 4, 5, 6], target = 3
 Output: 2
+Explanation: 3 is at index 2 in the array.
+```
 
+**Example 2**
+```
 Input:  arr = [1, 2, 7, 8, 9, 10], target = 3
-Output: 2   (would insert before 7)
+Output: 2
+Explanation: 3 is not present; it would be inserted before the 7 at index 2.
+```
 
-Input:  arr = [1, 2, 7, 9, 10, 11], target = 8
-Output: 3
+## Constraints
+
+- `1 ≤ arr.length ≤ 10^4`
+- `-10^4 ≤ arr[i], target ≤ 10^4`
+- `arr` is sorted in ascending order with distinct values.
+
+```python run viz=array
+import ast
+from typing import List
+
+class Solution:
+    def search_insert_position(self, arr: List[int], target: int) -> int:
+        # Your code goes here — lower_bound: half-open [lo, hi),
+        # move lo=mid+1 while arr[mid] < target, else hi=mid; return lo.
+        return -1
+
+arr = ast.literal_eval(input())
+target = int(input())
+print(Solution().search_insert_position(arr, target))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int searchInsertPosition(int[] arr, int target) {
+            // Your code goes here — lower_bound: half-open [lo, hi),
+            // move lo=mid+1 while arr[mid] < target, else hi=mid; return lo.
+            return -1;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int target = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().searchInsertPosition(arr, target));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[1, 2, 3, 4, 5, 6]" },
+    { "id": "target", "label": "target", "type": "int", "placeholder": "3" }
+  ],
+  "cases": [
+    { "args": { "arr": "[1, 2, 3, 4, 5, 6]", "target": "3" }, "expected": "2" },
+    { "args": { "arr": "[1, 2, 7, 8, 9, 10]", "target": "3" }, "expected": "2" },
+    { "args": { "arr": "[1, 2, 7, 9, 10, 11]", "target": "8" }, "expected": "3" },
+    { "args": { "arr": "[5]", "target": "5" }, "expected": "0" },
+    { "args": { "arr": "[5]", "target": "3" }, "expected": "0" },
+    { "args": { "arr": "[5]", "target": "7" }, "expected": "1" },
+    { "args": { "arr": "[1, 2, 3, 4, 5, 6]", "target": "7" }, "expected": "6" }
+  ]
+}
 ```
 
 <details>
-<summary><h2>The Solution</h2></summary>
+<summary><h2>Intuition</h2></summary>
 
+The insert position is exactly the lower bound: the first index where `arr[i] >= target`. If `target` is already in the array, lower bound lands on its first occurrence; if it's absent, lower bound lands on the first element larger than it — which is exactly where `target` would slot in to keep the array sorted. One call, two jobs, no special-casing.
+
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 Just lower bound.
 
-
-```python run viz=array
+```python solution time=O(log n) space=O(1)
+import ast
 from typing import List
 
 class Solution:
@@ -73,20 +154,12 @@ class Solution:
         return self.lower_bound(arr, target)
 
 
-# Examples from the problem statement
-print(Solution().search_insert_position([1, 2, 3, 4, 5, 6], 3))   # 2
-print(Solution().search_insert_position([1, 2, 7, 8, 9, 10], 3))  # 2
-print(Solution().search_insert_position([1, 2, 7, 9, 10, 11], 8)) # 3
-
-# Edge cases
-print(Solution().search_insert_position([], 5))                    # 0 — empty array
-print(Solution().search_insert_position([5], 5))                   # 0 — single element match
-print(Solution().search_insert_position([5], 3))                   # 0 — insert before only element
-print(Solution().search_insert_position([5], 7))                   # 1 — insert after only element
-print(Solution().search_insert_position([1, 2, 3, 4, 5, 6], 7))   # 6 — insert at end
+arr = ast.literal_eval(input())
+target = int(input())
+print(Solution().search_insert_position(arr, target))
 ```
 
-```java run viz=array
+```java solution
 import java.util.*;
 
 public class Main {
@@ -136,21 +209,22 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().searchInsertPosition(new int[]{1, 2, 3, 4, 5, 6}, 3));   // 2
-        System.out.println(new Solution().searchInsertPosition(new int[]{1, 2, 7, 8, 9, 10}, 3));  // 2
-        System.out.println(new Solution().searchInsertPosition(new int[]{1, 2, 7, 9, 10, 11}, 8)); // 3
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int target = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().searchInsertPosition(arr, target));
+    }
 
-        // Edge cases
-        System.out.println(new Solution().searchInsertPosition(new int[]{}, 5));                    // 0 — empty array
-        System.out.println(new Solution().searchInsertPosition(new int[]{5}, 5));                   // 0 — single element match
-        System.out.println(new Solution().searchInsertPosition(new int[]{5}, 3));                   // 0 — insert before only element
-        System.out.println(new Solution().searchInsertPosition(new int[]{5}, 7));                   // 1 — insert after only element
-        System.out.println(new Solution().searchInsertPosition(new int[]{1, 2, 3, 4, 5, 6}, 7));   // 6 — insert at end
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```
-
 
 `O(log n)` time, `O(1)` space.
 

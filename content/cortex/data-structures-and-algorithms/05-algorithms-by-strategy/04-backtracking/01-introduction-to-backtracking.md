@@ -17,6 +17,8 @@ That algorithm is **backtracking**: brute force reshaped as a depth-first walk o
 Generate all permutations of `[1, 2, 3]`. The skeleton is **make a choice → recurse → undo the choice** — the undo (`used[i] = False; path.pop()`) is what frees that element for sibling branches.
 
 ```python run viz=array
+import ast
+
 def permutations(nums):
     res, path, used = [], [], [False] * len(nums)
     def backtrack():
@@ -30,7 +32,8 @@ def permutations(nums):
     backtrack()
     return res
 
-perms = permutations([1, 2, 3])
+nums = ast.literal_eval(input())     # the test case's nums
+perms = permutations(nums)
 print(perms)
 print("count:", len(perms))
 ```
@@ -48,11 +51,35 @@ public class Main {
         }
     }
     public static void main(String[] args) {
+        int[] nums = parseIntArray(new Scanner(System.in).nextLine());
         List<List<Integer>> res = new ArrayList<>();
-        backtrack(new int[]{1,2,3}, new ArrayList<>(), new boolean[3], res);
+        backtrack(nums, new ArrayList<>(), new boolean[nums.length], res);
         System.out.println(res);
         System.out.println("count: " + res.size());
     }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's nums
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "nums", "label": "nums", "type": "int[]", "placeholder": "[1, 2, 3]" }
+  ],
+  "cases": [
+    { "args": { "nums": "[1, 2, 3]" }, "expected": "[[1, 2, 3], [1, 3, 2], [2, 1, 3], [2, 3, 1], [3, 1, 2], [3, 2, 1]]\ncount: 6" },
+    { "args": { "nums": "[1, 2]" }, "expected": "[[1, 2], [2, 1]]\ncount: 2" },
+    { "args": { "nums": "[1]" }, "expected": "[[1]]\ncount: 1" }
+  ]
 }
 ```
 
@@ -133,6 +160,8 @@ It returns just **one** permutation, `[[1, 2, 3]]`. The first descent marks `use
 **All subsets** of `[1, 2, 3]` — the other canonical enumeration. The choice at each element is binary: *exclude* it or *include* it (then undo the include). `2³ = 8` leaves.
 
 ```python run viz=array
+import ast
+
 def subsets(nums):
     res, path = [], []
     def backtrack(i):
@@ -145,7 +174,8 @@ def subsets(nums):
     backtrack(0)
     return res
 
-s = subsets([1, 2, 3])
+nums = ast.literal_eval(input())     # the test case's nums
+s = subsets(nums)
 print(s)
 print("count:", len(s))
 ```
@@ -159,11 +189,35 @@ public class Main {
         path.add(nums[i]); sub(nums, i + 1, path, res); path.remove(path.size() - 1);  // INCLUDE + UNDO
     }
     public static void main(String[] args) {
+        int[] nums = parseIntArray(new Scanner(System.in).nextLine());
         List<List<Integer>> res = new ArrayList<>();
-        sub(new int[]{1,2,3}, 0, new ArrayList<>(), res);
+        sub(nums, 0, new ArrayList<>(), res);
         System.out.println(res);
         System.out.println("count: " + res.size());
     }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's nums
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "nums", "label": "nums", "type": "int[]", "placeholder": "[1, 2, 3]" }
+  ],
+  "cases": [
+    { "args": { "nums": "[1, 2, 3]" }, "expected": "[[], [3], [2], [2, 3], [1], [1, 3], [1, 2], [1, 2, 3]]\ncount: 8" },
+    { "args": { "nums": "[1, 2]" }, "expected": "[[], [2], [1], [1, 2]]\ncount: 4" },
+    { "args": { "nums": "[]" }, "expected": "[[]]\ncount: 1" }
+  ]
 }
 ```
 

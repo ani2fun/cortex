@@ -4,6 +4,8 @@ summary: "Given an array of non-negative integers, return true if it can be part
 prereqs:
   - 17-pattern-subset-sum/01-pattern
 difficulty: medium
+kind: problem
+topics: [subset-sum, dynamic-programming]
 ---
 
 # Partition with Equal Sum
@@ -21,6 +23,107 @@ Output: true                       Subsets [1, 3, 4] (sum 8) and [2, 6] (sum 8)
 
 Input:  arr = [1, 2]
 Output: false                      Total = 3 — odd; no equal split possible
+```
+
+---
+
+## Examples
+
+**Example 1**
+```
+Input:  arr = [1, 5, 4, 10]
+Output: true
+Explanation: [1, 5, 4] sums to 10 and [10] sums to 10.
+```
+
+**Example 2**
+```
+Input:  arr = [1, 2]
+Output: false
+Explanation: Total = 3, which is odd — no equal partition is possible.
+```
+
+**Example 3**
+```
+Input:  arr = [2, 2]
+Output: true
+Explanation: Each subset gets one element summing to 2.
+```
+
+```quiz
+{
+  "prompt": "What is the fast-fail condition before running the DP?",
+  "options": [
+    "If total sum is odd, return false immediately",
+    "If any element equals total/2, return true immediately",
+    "If the array has odd length, return false",
+    "If the maximum element exceeds total/2, return true"
+  ],
+  "answer": "If total sum is odd, return false immediately"
+}
+```
+
+## Constraints
+
+- `1 ≤ arr.length ≤ 200`
+- `1 ≤ arr[i] ≤ 100`
+
+```python run viz=graph viz-root=dp
+import ast
+from typing import List
+
+class Solution:
+    def partition_with_equal_sum(self, arr: List[int]) -> bool:
+        # Your code goes here
+        return False
+
+arr = ast.literal_eval(input())
+print("true" if Solution().partition_with_equal_sum(arr) else "false")
+```
+
+```java run viz=graph viz-root=dp
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public boolean partitionWithEqualSum(int[] arr) {
+            // Your code goes here
+            return false;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        System.out.println(new Solution().partitionWithEqualSum(arr));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[1, 5, 4, 10]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[1, 5, 4, 10]" }, "expected": "true" },
+    { "args": { "arr": "[1, 2, 3, 4, 6]" }, "expected": "true" },
+    { "args": { "arr": "[1, 2]" }, "expected": "false" },
+    { "args": { "arr": "[2, 2]" }, "expected": "true" },
+    { "args": { "arr": "[1, 1, 1, 1]" }, "expected": "true" },
+    { "args": { "arr": "[3, 1, 1, 2, 2, 1]" }, "expected": "true" },
+    { "args": { "arr": "[1, 3, 5]" }, "expected": "false" }
+  ]
+}
 ```
 
 <details>
@@ -66,7 +169,8 @@ Yes — `{4, 5}` sums to 9, leaving `{3, 3, 3}` summing to 9. So partition is po
 
 ### The Solution
 
-```python run viz=graph viz-root=dp
+```python solution time=O(n×total) space=O(n×total)
+import ast
 from typing import List
 
 class Solution:
@@ -110,20 +214,11 @@ class Solution:
         return dp[n][target]
 
 
-# Examples from the problem statement
-print(Solution().partition_with_equal_sum([1, 5, 4, 10]))   # True
-print(Solution().partition_with_equal_sum([1, 2, 3, 4, 6])) # True
-print(Solution().partition_with_equal_sum([1, 2]))           # False
-
-# Edge cases
-print(Solution().partition_with_equal_sum([1]))              # False — single element, odd
-print(Solution().partition_with_equal_sum([2, 2]))           # True  — two equal elements
-print(Solution().partition_with_equal_sum([1, 1, 1, 1]))     # True  — all same
-print(Solution().partition_with_equal_sum([3, 1, 1, 2, 2, 1])) # True
-print(Solution().partition_with_equal_sum([1, 3, 5]))        # False — odd total
+arr = ast.literal_eval(input())
+print("true" if Solution().partition_with_equal_sum(arr) else "false")
 ```
 
-```java run viz=graph viz-root=dp
+```java solution
 import java.util.*;
 
 public class Main {
@@ -177,17 +272,18 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().partitionWithEqualSum(new int[]{1, 5, 4, 10}));   // true
-        System.out.println(new Solution().partitionWithEqualSum(new int[]{1, 2, 3, 4, 6})); // true
-        System.out.println(new Solution().partitionWithEqualSum(new int[]{1, 2}));           // false
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        System.out.println(new Solution().partitionWithEqualSum(arr));
+    }
 
-        // Edge cases
-        System.out.println(new Solution().partitionWithEqualSum(new int[]{1}));              // false
-        System.out.println(new Solution().partitionWithEqualSum(new int[]{2, 2}));           // true
-        System.out.println(new Solution().partitionWithEqualSum(new int[]{1, 1, 1, 1}));     // true
-        System.out.println(new Solution().partitionWithEqualSum(new int[]{3, 1, 1, 2, 2, 1})); // true
-        System.out.println(new Solution().partitionWithEqualSum(new int[]{1, 3, 5}));        // false
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

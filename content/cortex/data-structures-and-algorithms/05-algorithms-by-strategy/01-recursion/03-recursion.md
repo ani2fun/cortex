@@ -21,18 +21,36 @@ def find_position(n):
         return 1
     return 1 + find_position(n - 1)         # recursive relation: one behind the person ahead
 
-print("find_position(4):", find_position(4))
+n = int(input())                            # the test case's n
+print("findPosition(" + str(n) + "): " + str(find_position(n)))
 ```
 
 ```java run viz=array
+import java.util.*;
+
 public class Main {
     static int findPosition(int n) {
         if (n == 1) return 1;               // base case
         return 1 + findPosition(n - 1);     // recursive relation
     }
     public static void main(String[] args) {
-        System.out.println("findPosition(4): " + findPosition(4));
+        int n = Integer.parseInt(new Scanner(System.in).nextLine().trim());
+        System.out.println("findPosition(" + n + "): " + findPosition(n));
     }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "n", "label": "n", "type": "int", "placeholder": "4" }
+  ],
+  "cases": [
+    { "args": { "n": "4" }, "expected": "findPosition(4): 4" },
+    { "args": { "n": "1" }, "expected": "findPosition(1): 1" },
+    { "args": { "n": "7" }, "expected": "findPosition(7): 7" },
+    { "args": { "n": "10" }, "expected": "findPosition(10): 10" }
+  ]
 }
 ```
 
@@ -130,6 +148,61 @@ Two more relations, same two-piece recipe. **Sum to n:** base `sum(0) = 0`, rela
 
 ```python run viz=array
 def sum_to(n):
+    # Your code goes here — base case n == 0 returns 0;
+    # recursive relation: n + sum_to(n - 1).
+    return 0
+
+def factorial(n):
+    # Your code goes here — base case n <= 1 returns 1
+    # (reachable from both 0 and 1); recursive relation: n * factorial(n - 1).
+    return 0
+
+n = int(input())                   # the test case's n
+print("sum_to(" + str(n) + "): " + str(sum_to(n)))
+print("factorial(" + str(n) + "): " + str(factorial(n)))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static int sumTo(int n) {
+        // Your code goes here — base case 0; recursive relation n + sumTo(n - 1).
+        return 0;
+    }
+    static long factorial(int n) {
+        // Your code goes here — base case n <= 1; recursive relation n * factorial(n - 1).
+        return 0;
+    }
+    public static void main(String[] args) {
+        int n = Integer.parseInt(new Scanner(System.in).nextLine().trim());
+        System.out.println("sum_to(" + n + "): " + sumTo(n));
+        System.out.println("factorial(" + n + "): " + factorial(n));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "n", "label": "n", "type": "int", "placeholder": "5" }
+  ],
+  "cases": [
+    { "args": { "n": "5" }, "expected": "sum_to(5): 15\nfactorial(5): 120" },
+    { "args": { "n": "0" }, "expected": "sum_to(0): 0\nfactorial(0): 1" },
+    { "args": { "n": "10" }, "expected": "sum_to(10): 55\nfactorial(10): 3628800" },
+    { "args": { "n": "1" }, "expected": "sum_to(1): 1\nfactorial(1): 1" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Each is three lines because each *is* its recursive relation — find the relation and the code writes itself. Note `factorial`'s `n <= 1` base case is reachable from both `0` and `1`, dodging the `find_position(0)` trap above.
+
+```python solution time=O(n) space=O(n)
+def sum_to(n):
     if n == 0: return 0                     # base case
     return n + sum_to(n - 1)                # recursive relation
 
@@ -137,11 +210,14 @@ def factorial(n):
     if n <= 1: return 1                     # base case (reachable from 0 and 1)
     return n * factorial(n - 1)             # recursive relation
 
-print("sum_to(5):", sum_to(5))              # 15
-print("factorial(5):", factorial(5))        # 120
+n = int(input())
+print("sum_to(" + str(n) + "): " + str(sum_to(n)))
+print("factorial(" + str(n) + "): " + str(factorial(n)))
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
     static int sumTo(int n) {
         if (n == 0) return 0;                       // base case
@@ -152,13 +228,14 @@ public class Main {
         return n * factorial(n - 1);                // recursive relation
     }
     public static void main(String[] args) {
-        System.out.println("sum_to(5): " + sumTo(5));        // 15
-        System.out.println("factorial(5): " + factorial(5)); // 120
+        int n = Integer.parseInt(new Scanner(System.in).nextLine().trim());
+        System.out.println("sum_to(" + n + "): " + sumTo(n));
+        System.out.println("factorial(" + n + "): " + factorial(n));
     }
 }
 ```
 
-Both print `15` then `120`. Each is three lines because each *is* its recursive relation — find the relation and the code writes itself. (Note `factorial`'s `n <= 1` base case is reachable from both `0` and `1`, dodging the `find_position(0)` trap above.)
+</details>
 
 ## Reflect & Connect
 

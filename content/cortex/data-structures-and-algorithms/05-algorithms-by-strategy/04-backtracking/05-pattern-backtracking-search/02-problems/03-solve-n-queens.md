@@ -4,6 +4,8 @@ summary: "Given n, return all distinct solutions to the n-queens problem. Each s
 prereqs:
   - 05-pattern-backtracking-search/01-pattern
 difficulty: hard
+kind: problem
+topics: [backtracking-search, backtracking]
 ---
 
 # Solve N Queens
@@ -14,19 +16,96 @@ The classic. Place `n` queens on an `n × n` board so no two attack each other. 
 
 ## The Problem
 
-Given `n`, return all distinct solutions to the n-queens problem. Each solution is a list of `n` strings, each of length `n`, where `Q` is a queen and `.` is empty. Two queens attack iff they share a row, column, or diagonal.
+Given `n`, return all distinct solutions to the n-queens problem. Each solution is a list of `n` integers representing the column position of the queen in each row (row `i` → `solution[i]`). Two queens attack iff they share a row, column, or diagonal.
 
 ```
 Input:  n = 4
-Output: [
-  [".Q..", "...Q", "Q...", "..Q."],
-  ["..Q.", "Q...", "...Q", ".Q.."]
-]
+Output: [[1, 3, 0, 2], [2, 0, 3, 1]]
 ```
 
-There are exactly two solutions for `n = 4`. For `n = 8`, the famous answer is 92 solutions (12 if you account for symmetry).
+There are exactly two solutions for `n = 4`. For `n = 8`, the famous answer is 92 solutions.
 
 ---
+
+## Examples
+
+**Example 1**
+```
+Input:  n = 4
+Output: [[1, 3, 0, 2], [2, 0, 3, 1]]
+Explanation: Each inner list gives queen columns per row.
+  [1,3,0,2] → row0:col1, row1:col3, row2:col0, row3:col2  =  .Q.. / ...Q / Q... / ..Q.
+  [2,0,3,1] → row0:col2, row1:col0, row2:col3, row3:col1  =  ..Q. / Q... / ...Q / .Q..
+```
+
+**Example 2**
+```
+Input:  n = 1
+Output: [[0]]
+Explanation: One queen on a 1×1 board — trivially placed in column 0.
+```
+
+```quiz
+{
+  "prompt": "How many solutions exist for n = 8?",
+  "options": ["12", "42", "92", "184"],
+  "answer": "92"
+}
+```
+
+## Constraints
+
+- `1 ≤ n ≤ 9`
+- `n = 2` and `n = 3` have no solutions (output `[]`).
+- Results are returned in natural backtracking order (column 0 first at each row) — no sorting.
+
+```python run viz=array viz-root=board
+from typing import List
+
+class Solution:
+    def solve_n_queens(self, n: int) -> List[List[int]]:
+        # Your code goes here — place one queen per row, track columns/diagonals
+        # Return list of queen-column-per-row solutions in natural order
+        return []
+
+n = int(input())
+print(Solution().solve_n_queens(n))
+```
+
+```java run viz=array viz-root=board
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public List<List<Integer>> solveNQueens(int n) {
+            // Your code goes here — place one queen per row, track columns/diagonals
+            // Return list of queen-column-per-row solutions in natural order
+            return new ArrayList<>();
+        }
+    }
+
+    public static void main(String[] args) {
+        int n = Integer.parseInt(new Scanner(System.in).nextLine().trim());
+        System.out.println(new Solution().solveNQueens(n));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "n", "label": "n", "type": "int", "placeholder": "4" }
+  ],
+  "cases": [
+    { "args": { "n": "4" }, "expected": "[[1, 3, 0, 2], [2, 0, 3, 1]]" },
+    { "args": { "n": "1" }, "expected": "[[0]]" },
+    { "args": { "n": "2" }, "expected": "[]" },
+    { "args": { "n": "3" }, "expected": "[]" },
+    { "args": { "n": "5" }, "expected": "[[0, 2, 4, 1, 3], [0, 3, 1, 4, 2], [1, 3, 0, 2, 4], [1, 4, 2, 0, 3], [2, 0, 3, 1, 4], [2, 4, 1, 3, 0], [3, 0, 2, 4, 1], [3, 1, 4, 2, 0], [4, 1, 3, 0, 2], [4, 2, 0, 3, 1]]" },
+    { "args": { "n": "6" }, "expected": "[[1, 3, 5, 0, 2, 4], [2, 5, 1, 4, 0, 3], [3, 0, 4, 1, 5, 2], [4, 2, 0, 5, 3, 1]]" }
+  ]
+}
+```
 
 <details>
 <summary><h2>Why This Is a Search With "Find All"</h2></summary>
@@ -67,7 +146,7 @@ After fully exploring "what configurations exist with the queen for row 0 in col
 
 ### The Solution
 
-```python run viz=array viz-root=board
+```python solution time=O(n!) space=O(n)
 from typing import List
 
 class Solution:
@@ -88,40 +167,21 @@ class Solution:
                 return False
         return True
 
-    # Helper function to convert the current state list into a board
-    # representation
-    def make_solution(
-        self, queen_positions: List[int], n: int
-    ) -> List[str]:
-
-        # Create an n x n board initialized with '.'
-        board = []
-        for i in range(n):
-            row = ["."] * n
-
-            # Place queens on the board based on the state list
-            row[queen_positions[i]] = "Q"
-            board.append("".join(row))
-
-        # Return the board representation
-        return board
-
     def search_solutions(
         self,
         queen_positions: List[int],
         row: int,
         n: int,
-        solutions: List[List[str]],
+        solutions: List[List[int]],
     ) -> None:
 
         # Check if all queens have been successfully placed
         if row == n:
 
-            # Current state represents a valid solution, convert it to
-            # board format and store
-            solutions.append(self.make_solution(queen_positions, n))
+            # Record the queen column positions as the solution
+            solutions.append(list(queen_positions))
 
-            # Stop searching further as we found a valid solution
+            # Continue to find all solutions
             return
 
         # Loop through each column in the current row to try placing a
@@ -144,10 +204,10 @@ class Solution:
                 # try the next column (revert choice)
                 queen_positions[row] = -1
 
-    def solve_n_queens(self, n: int) -> List[List[str]]:
+    def solve_n_queens(self, n: int) -> List[List[int]]:
 
-        # List to store all valid board configurations (solution states)
-        solutions: List[List[str]] = []
+        # List to store all valid queen-column-per-row configurations
+        solutions: List[List[int]] = []
 
         # State list: queen_positions[i] stores the column index of the
         # queen placed in row i
@@ -160,22 +220,11 @@ class Solution:
         return solutions
 
 
-# Example from the problem statement
-result4 = Solution().solve_n_queens(4)
-print(len(result4))                                   # 2
-for board in sorted(result4):
-    print(board)
-
-# Edge cases
-print(len(Solution().solve_n_queens(1)))              # 1
-print(Solution().solve_n_queens(1))                   # [['Q']]
-print(len(Solution().solve_n_queens(2)))              # 0 — no solution for n=2
-print(len(Solution().solve_n_queens(3)))              # 0 — no solution for n=3
-print(len(Solution().solve_n_queens(5)))              # 10
-print(len(Solution().solve_n_queens(6)))              # 4
+n = int(input())
+print(Solution().solve_n_queens(n))
 ```
 
-```java run viz=array viz-root=board
+```java solution
 import java.util.*;
 
 public class Main {
@@ -203,40 +252,22 @@ public class Main {
             return true;
         }
 
-        // Helper function to convert the current state list into a board
-        // representation
-        private List<String> makeSolution(int[] queenPositions, int n) {
-
-            // Create an n x n board initialized with '.'
-            List<String> board = new ArrayList<>();
-            for (int i = 0; i < n; i++) {
-                char[] row = new char[n];
-                Arrays.fill(row, '.');
-
-                // Place queens on the board based on the state list
-                row[queenPositions[i]] = 'Q';
-                board.add(new String(row));
-            }
-
-            // Return the board representation
-            return board;
-        }
-
         private void searchSolutions(
             int[] queenPositions,
             int row,
             int n,
-            List<List<String>> solutions
+            List<List<Integer>> solutions
         ) {
 
             // Check if all queens have been successfully placed
             if (row == n) {
 
-                // Current state represents a valid solution, convert it to
-                // board format and store
-                solutions.add(makeSolution(queenPositions, n));
+                // Record the queen column positions as the solution
+                List<Integer> sol = new ArrayList<>();
+                for (int c : queenPositions) sol.add(c);
+                solutions.add(sol);
 
-                // Stop searching further as we found a valid solution
+                // Continue to find all solutions
                 return;
             }
 
@@ -261,10 +292,10 @@ public class Main {
             }
         }
 
-        public List<List<String>> solveNQueens(int n) {
+        public List<List<Integer>> solveNQueens(int n) {
 
-            // List to store all valid board configurations (solution states)
-            List<List<String>> solutions = new ArrayList<>();
+            // List to store all valid queen-column-per-row configurations
+            List<List<Integer>> solutions = new ArrayList<>();
 
             // State list: queenPositions[i] stores the column index of the
             // queen placed in row i
@@ -280,18 +311,8 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Example from the problem statement
-        List<List<String>> result4 = new Solution().solveNQueens(4);
-        System.out.println(result4.size());                           // 2
-        result4.stream().map(Object::toString).sorted().forEach(System.out::println);
-
-        // Edge cases
-        System.out.println(new Solution().solveNQueens(1).size());    // 1
-        System.out.println(new Solution().solveNQueens(1));           // [[Q]]
-        System.out.println(new Solution().solveNQueens(2).size());    // 0 — no solution for n=2
-        System.out.println(new Solution().solveNQueens(3).size());    // 0 — no solution for n=3
-        System.out.println(new Solution().solveNQueens(5).size());    // 10
-        System.out.println(new Solution().solveNQueens(6).size());    // 4
+        int n = Integer.parseInt(new Scanner(System.in).nextLine().trim());
+        System.out.println(new Solution().solveNQueens(n));
     }
 }
 ```
@@ -311,7 +332,7 @@ Place row 0:
 
 (Full trace would take many lines; the algorithm finds 2 solutions for n=4.)
 
-Result for n=4: 2 solutions, matching the expected.
+Result for n=4: [[1, 3, 0, 2], [2, 0, 3, 1]]
 ```
 
 </details>
@@ -322,7 +343,7 @@ Result for n=4: 2 solutions, matching the expected.
 |---|---|---|
 | **Time** | `O(n!)` worst case | Each row has up to `n` columns; pruning reduces this in practice. |
 | **Space (stack)** | `O(n)` | Recursion depth = number of rows. |
-| **Space (output)** | `O(num_solutions × n²)` | Each solution is `n` strings of length `n`. |
+| **Space (output)** | `O(num_solutions × n)` | Each solution is a list of `n` column positions. |
 
 For `n = 8`, the algorithm finds 92 solutions; for `n = 12`, 14,200; growth is super-exponential.
 
@@ -330,7 +351,7 @@ For `n = 8`, the algorithm finds 92 solutions; for `n = 12`, 14,200; growth is s
 
 | Case | Example | Expected |
 |---|---|---|
-| `n = 1` | n = 1 | `[["Q"]]` (one solution). |
+| `n = 1` | n = 1 | `[[0]]` (one solution). |
 | `n = 2, 3` | n = 2 or 3 | `[]` (no valid configurations). |
 | `n = 4` | n = 4 | 2 solutions. |
 | `n = 8` | n = 8 | 92 solutions. |

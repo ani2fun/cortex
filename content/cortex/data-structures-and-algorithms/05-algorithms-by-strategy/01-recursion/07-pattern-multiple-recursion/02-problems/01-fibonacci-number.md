@@ -4,6 +4,8 @@ summary: "Given a non-negative integer n, return the n-th Fibonacci number, wher
 prereqs:
   - 07-pattern-multiple-recursion/01-pattern
 difficulty: easy
+kind: problem
+topics: [multiple-recursion, recursion]
 ---
 
 # Fibonacci Number
@@ -22,19 +24,81 @@ Given a non-negative integer `n`, return the `n`-th Fibonacci number, where:
 
 You **must** solve this recursively (we'll fix the exponential cost in the dynamic-programming chapter later).
 
+---
+
+## Examples
+
+**Example 1**
 ```
 Input:  n = 3
 Output: 2
 Explanation: F(3) = F(2) + F(1) = 1 + 1 = 2
-
-Input:  n = 2
-Output: 1
-
-Input:  n = 0
-Output: 0
 ```
 
----
+**Example 2**
+```
+Input:  n = 2
+Output: 1
+Explanation: F(2) = F(1) + F(0) = 1 + 0 = 1
+```
+
+```quiz
+{
+  "prompt": "How many recursive calls does naive fib(5) make in total?",
+  "options": ["5", "9", "15", "25"],
+  "answer": "15"
+}
+```
+
+## Constraints
+
+- `0 ≤ n ≤ 30` (naive recursion; larger values are infeasible without memoisation)
+- Must be solved recursively.
+
+```python run viz=array
+class Solution:
+    def fibonacci(self, n: int) -> int:
+        # Your code goes here
+        return 0
+
+n = int(input())
+print(Solution().fibonacci(n))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int fibonacci(int n) {
+            // Your code goes here
+            return 0;
+        }
+    }
+
+    public static void main(String[] args) {
+        int n = Integer.parseInt(new Scanner(System.in).nextLine().trim());
+        System.out.println(new Solution().fibonacci(n));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "n", "label": "n", "type": "int", "placeholder": "3" }
+  ],
+  "cases": [
+    { "args": { "n": "3" },  "expected": "2" },
+    { "args": { "n": "2" },  "expected": "1" },
+    { "args": { "n": "0" },  "expected": "0" },
+    { "args": { "n": "1" },  "expected": "1" },
+    { "args": { "n": "5" },  "expected": "5" },
+    { "args": { "n": "7" },  "expected": "13" },
+    { "args": { "n": "10" }, "expected": "55" }
+  ]
+}
+```
 
 <details>
 <summary><h2>What Does the Fibonacci Recurrence Mean?</h2></summary>
@@ -131,7 +195,7 @@ flowchart TB
 
 ### The Solution
 
-```python run viz=array
+```python solution time=O(φ^n) space=O(n)
 class Solution:
     def fibonacci(self, n: int) -> int:
 
@@ -149,19 +213,13 @@ class Solution:
         return self.fibonacci(n - 1) + self.fibonacci(n - 2)
 
 
-# Examples from the problem statement
-print(Solution().fibonacci(3))   # 2
-print(Solution().fibonacci(2))   # 1
-print(Solution().fibonacci(0))   # 0
-
-# Edge cases
-print(Solution().fibonacci(1))   # 1
-print(Solution().fibonacci(5))   # 5
-print(Solution().fibonacci(7))   # 13
-print(Solution().fibonacci(10))  # 55
+n = int(input())
+print(Solution().fibonacci(n))
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
     static class Solution {
         public int fibonacci(int N) {
@@ -184,16 +242,8 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().fibonacci(3));   // 2
-        System.out.println(new Solution().fibonacci(2));   // 1
-        System.out.println(new Solution().fibonacci(0));   // 0
-
-        // Edge cases
-        System.out.println(new Solution().fibonacci(1));   // 1
-        System.out.println(new Solution().fibonacci(5));   // 5
-        System.out.println(new Solution().fibonacci(7));   // 13
-        System.out.println(new Solution().fibonacci(10));  // 55
+        int n = Integer.parseInt(new Scanner(System.in).nextLine().trim());
+        System.out.println(new Solution().fibonacci(n));
     }
 }
 ```

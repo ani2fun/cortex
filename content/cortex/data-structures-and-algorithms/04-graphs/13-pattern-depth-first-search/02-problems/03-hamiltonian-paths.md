@@ -4,217 +4,195 @@ summary: "A Hamiltonian path visits *every* vertex of the graph exactly once. Gi
 prereqs:
   - 13-pattern-depth-first-search/01-pattern
 difficulty: hard
+kind: problem
+topics: [depth-first-search, graph]
 ---
 
-# Problem: Hamiltonian Paths
+# Hamiltonian Paths
 
-## The Problem
+## Problem Statement
 
-A **Hamiltonian path** visits *every* vertex of the graph exactly once. Given a directed graph, source, and destination, find all Hamiltonian paths from source to destination.
+A **Hamiltonian path** visits every vertex of the graph **exactly once**. Given a directed graph as an adjacency list, a source, and a destination, find all Hamiltonian paths from source to destination.
 
+## Examples
+
+**Example 1:**
 ```
-Input:  graph = [[1, 2], [0, 2, 3], [0, 1, 3], [1, 2]], source = 0, destination = 3
+Input:  graph = [[1, 2], [0, 2, 3], [0, 1, 3], [1, 2]],
+        source = 0, destination = 3
 Output: [[0, 1, 2, 3], [0, 2, 1, 3]]
 ```
 
-<details>
-<summary><h2>Pattern Mapping</h2></summary>
+Both paths visit all four nodes (`0, 1, 2, 3`) exactly once and end at `3`.
 
+**Example 2:**
+```
+Input:  graph = [[1], [0, 2], [1, 3], [2]],
+        source = 0, destination = 3
+Output: [[0, 1, 2, 3]]
+```
 
-- `f`: same as before (append to path).
-- `g`: record the path *only if* destination is reached **and** every node has been visited.
-- `f⁻¹`: same as before.
+## Constraints
 
-The only twist: the destination check now requires `path.length == N`.
+- `2 ≤ N ≤ 12` (Hamiltonian path is NP-hard; DFS is tractable for small N)
+- source and destination are valid node indices (`0 ≤ source, destination < N`)
+- A valid path must visit every node exactly once; the `on_path` set enforces this
 
-> *Before reading on — Hamiltonian path detection is famously **NP-hard**. Why is it still tractable here? What property of the input keeps the algorithm fast?*
-
-It's tractable because we're enumerating, not deciding existence faster than brute force. DFS with the "in_path" pruning has worst case O(N!) in pathological cases — but for typical small graphs (N ≤ ~20) it's fast enough. The intractability shows up when N gets larger; below that, DFS is the only sane approach.
-
-</details>
-<details>
-<summary><h2>The Solution</h2></summary>
-
-
+> *Before coding — Hamiltonian path detection is NP-hard in general. Why is DFS-enumeration still reasonable here?* Because NP-hardness shows up at large N. For small graphs (N ≤ ~12) the DFS-with-pruning tree is small enough in practice. The intractability is visible at N ≈ 20+ where path counts explode.
 
 ```python run viz=graph viz-root=graph
-from typing import List, Set
+import ast
 
-class Solution:
-    def dfs(
-        self,
-        graph: List[List[int]],
-        node: int,
-        destination: int,
-        path: List[int],
-        paths: List[List[int]],
-        nodes_in_path: Set[int],
-    ) -> None:
+def hamiltonian_paths(graph, source, destination):
+    # Your code goes here — DFS from source.
+    # The destination check: node == destination AND len(on_path) == len(graph).
+    # "Hamiltonian" = every node visited = on_path covers all N nodes.
+    pass
 
-        # Insert the current node into the set of nodes in the current
-        # path to avoid revisiting the same node
-        nodes_in_path.add(node)
-
-        # Add the current node to the path
-        path.append(node)
-
-        # If the current node is the destination node and all nodes
-        # have been visited, we have found a valid Hamiltonian Path
-        if node == destination and len(nodes_in_path) == len(graph):
-            paths.append(path.copy())
-
-        # Else, recursively explore all the neighbours of the current
-        # node
-        else:
-            for neighbour in graph[node]:
-
-                # Perform DFS on the neighbour node if it is not already
-                # in the current path to avoid cycles
-                if neighbour not in nodes_in_path:
-                    self.dfs(
-                        graph,
-                        neighbour,
-                        destination,
-                        path,
-                        paths,
-                        nodes_in_path,
-                    )
-
-        # Remove the current node from the path as we are done exploring
-        # it
-        path.pop()
-
-        # Remove the current node from the set of nodes in the current
-        # path to allow it to be visited again in other possible paths
-        nodes_in_path.remove(node)
-
-    def hamiltonian_paths(
-        self, graph: List[List[int]], source: int, destination: int
-    ) -> List[List[int]]:
-
-        # Result list to store all the Hamiltonian paths
-        paths: List[List[int]] = []
-
-        # List to store the current path being explored
-        path: List[int] = []
-
-        # Set to keep track of nodes currently in the path
-        nodes_in_path: Set[int] = set()
-
-        # Perform DFS starting from the source node
-        self.dfs(graph, source, destination, path, paths, nodes_in_path)
-
-        # Return the list of all valid Hamiltonian paths
-        return paths
-
-
-# Examples from the problem statement
-print(Solution().hamiltonian_paths([[1,2],[0,2,3],[0,1,3],[1,2]], 0, 3))  # [[0,1,2,3],[0,2,1,3]]
-print(Solution().hamiltonian_paths([[1],[0,2],[1,3],[2]], 0, 3))           # [[0,1,2,3]]
-
-# Edge cases
-print(Solution().hamiltonian_paths([[]], 0, 0))                            # [[0]] — single node
-print(Solution().hamiltonian_paths([[1],[]], 0, 1))                        # [[0,1]]
-# No Hamiltonian path (missing edges to visit all)
-print(Solution().hamiltonian_paths([[1],[2],[]], 0, 2))                    # [[0,1,2]]
-# Disconnected — no path
-print(Solution().hamiltonian_paths([[],[2],[]], 0, 2))                     # []
-# src == dst but must visit all
-print(Solution().hamiltonian_paths([[1],[0]], 0, 0))                       # [[0,1,0]] — visits all
+graph = ast.literal_eval(input())
+source = int(input())
+destination = int(input())
+print(hamiltonian_paths(graph, source, destination))
 ```
 
 ```java run viz=graph viz-root=graph
 import java.util.*;
 
 public class Main {
-    static class Solution {
-        private void dfs(
-            List<List<Integer>> graph,
-            int node,
-            int destination,
-            List<Integer> path,
-            List<List<Integer>> paths,
-            Set<Integer> nodesInPath
-        ) {
+    static int[][] graph;
+    static List<List<Integer>> res;
+    static List<Integer> path;
+    static Set<Integer> onPath;
+    static int destination;
 
-            // Insert the current node into the set of nodes in the current
-            // path to avoid revisiting the same node
-            nodesInPath.add(node);
-
-            // Add the current node to the path
-            path.add(node);
-
-            // If the current node is the destination node and all nodes
-            // have been visited, we have found a valid Hamiltonian Path
-            if (node == destination && nodesInPath.size() == graph.size()) {
-                paths.add(new ArrayList<>(path));
-            }
-
-            // Else, recursively explore all the neighbours of the current
-            // node
-            else {
-                for (int neighbour : graph.get(node)) {
-
-                    // Perform DFS on the neighbour node if it is not already
-                    // in the current path to avoid cycles
-                    if (!nodesInPath.contains(neighbour)) {
-                        dfs(
-                            graph,
-                            neighbour,
-                            destination,
-                            path,
-                            paths,
-                            nodesInPath
-                        );
-                    }
-                }
-            }
-
-            // Remove the current node from the path as we are done exploring
-            // it
-            path.remove(path.size() - 1);
-
-            // Remove the current node from the set of nodes in the current
-            // path to allow it to be visited again in other possible paths
-            nodesInPath.remove(node);
-        }
-
-        public List<List<Integer>> hamiltonianPaths(
-            List<List<Integer>> graph,
-            int source,
-            int destination
-        ) {
-
-            // Result list to store all the Hamiltonian paths
-            List<List<Integer>> paths = new ArrayList<>();
-
-            // List to store the current path being explored
-            List<Integer> path = new ArrayList<>();
-
-            // Set to keep track of nodes currently in the path
-            Set<Integer> nodesInPath = new HashSet<>();
-
-            // Perform DFS starting from the source node
-            dfs(graph, source, destination, path, paths, nodesInPath);
-
-            // Return the list of all valid Hamiltonian paths
-            return paths;
-        }
+    static void dfs(int node) {
+        // Your code goes here — enter: onPath.add(node); path.add(node);
+        // if node == destination && onPath.size() == graph.length record copy;
+        // else recurse each neighbour not in onPath;
+        // exit: onPath.remove(node); path.remove(last).
     }
 
     public static void main(String[] args) {
-        Solution sol = new Solution();
+        Scanner sc = new Scanner(System.in);
+        graph = parseIntMatrix(sc.nextLine());
+        int source = Integer.parseInt(sc.nextLine().trim());
+        destination = Integer.parseInt(sc.nextLine().trim());
+        res = new ArrayList<>(); path = new ArrayList<>(); onPath = new HashSet<>();
+        dfs(source);
+        System.out.println(res);
+    }
 
-        // Examples from the problem statement
-        System.out.println(sol.hamiltonianPaths(List.of(List.of(1,2),List.of(0,2,3),List.of(0,1,3),List.of(1,2)), 0, 3));  // [[0,1,2,3],[0,2,1,3]]
-        System.out.println(sol.hamiltonianPaths(List.of(List.of(1),List.of(0,2),List.of(1,3),List.of(2)), 0, 3));            // [[0,1,2,3]]
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
+    }
+}
+```
 
-        // Edge cases
-        System.out.println(sol.hamiltonianPaths(List.of(new ArrayList<>()), 0, 0));  // [[0]]
-        System.out.println(sol.hamiltonianPaths(List.of(List.of(1), new ArrayList<>()), 0, 1));  // [[0,1]]
-        System.out.println(sol.hamiltonianPaths(List.of(List.of(1), List.of(2), new ArrayList<>()), 0, 2));  // [[0,1,2]]
-        System.out.println(sol.hamiltonianPaths(List.of(new ArrayList<>(), List.of(2), new ArrayList<>()), 0, 2));  // []
-        System.out.println(sol.hamiltonianPaths(List.of(List.of(1), List.of(0)), 0, 0));  // [[0,1,0]]
+```testcases
+{
+  "args": [
+    { "id": "graph", "label": "graph", "type": "int[][]", "placeholder": "[[1, 2], [0, 2, 3], [0, 1, 3], [1, 2]]" },
+    { "id": "source", "label": "source", "type": "int", "placeholder": "0" },
+    { "id": "destination", "label": "destination", "type": "int", "placeholder": "3" }
+  ],
+  "cases": [
+    { "args": { "graph": "[[1, 2], [0, 2, 3], [0, 1, 3], [1, 2]]", "source": "0", "destination": "3" }, "expected": "[[0, 1, 2, 3], [0, 2, 1, 3]]" },
+    { "args": { "graph": "[[1], [0, 2], [1, 3], [2]]", "source": "0", "destination": "3" }, "expected": "[[0, 1, 2, 3]]" },
+    { "args": { "graph": "[[], [2], []]", "source": "0", "destination": "2" }, "expected": "[]" },
+    { "args": { "graph": "[[1, 2], [2, 0], [0, 1]]", "source": "0", "destination": "2" }, "expected": "[[0, 1, 2]]" },
+    { "args": { "graph": "[[1], [0]]", "source": "0", "destination": "1" }, "expected": "[[0, 1]]" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+The Hamiltonian condition adds one extra check to the standard path-enumeration skeleton: instead of recording any path that reaches the destination, record only those that reach the destination **and** have visited every node (`len(on_path) == len(graph)`). Because `on_path` already ensures no node repeats, checking its size against `n` is the complete Hamiltonian condition.
+
+The DFS structure is otherwise identical: add on entry, recurse into unvisited neighbours, remove on exit. The `on_path` pruning also prunes the exponential search space heavily — any branch that cannot possibly cover all remaining nodes is abandoned the moment its path gets blocked.
+
+```python solution time=O(N!) space=O(N)
+import ast
+
+def hamiltonian_paths(graph, source, destination):
+    n = len(graph)
+    paths, path, on_path = [], [], set()
+    def dfs(node):
+        on_path.add(node); path.append(node)
+        if node == destination and len(on_path) == n:
+            paths.append(path[:])
+        else:
+            for neighbour in graph[node]:
+                if neighbour not in on_path:
+                    dfs(neighbour)
+        path.pop(); on_path.remove(node)
+    dfs(source)
+    return paths
+
+graph = ast.literal_eval(input())
+source = int(input())
+destination = int(input())
+print(hamiltonian_paths(graph, source, destination))
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+    static int[][] graph;
+    static List<List<Integer>> res;
+    static List<Integer> path;
+    static Set<Integer> onPath;
+    static int destination;
+
+    static void dfs(int node) {
+        onPath.add(node); path.add(node);
+        if (node == destination && onPath.size() == graph.length) {
+            res.add(new ArrayList<>(path));
+        } else {
+            for (int neighbour : graph[node])
+                if (!onPath.contains(neighbour)) dfs(neighbour);
+        }
+        path.remove(path.size() - 1); onPath.remove(node);
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        graph = parseIntMatrix(sc.nextLine());
+        int source = Integer.parseInt(sc.nextLine().trim());
+        destination = Integer.parseInt(sc.nextLine().trim());
+        res = new ArrayList<>(); path = new ArrayList<>(); onPath = new HashSet<>();
+        dfs(source);
+        System.out.println(res);
+    }
+
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
     }
 }
 ```

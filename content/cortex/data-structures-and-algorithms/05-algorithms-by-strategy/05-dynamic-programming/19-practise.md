@@ -99,16 +99,8 @@ class Solution:
         return dp[distance]
 
 
-# Examples from the problem statement
-print(Solution().covering_distance(3))   # 4
-print(Solution().covering_distance(2))   # 2
-print(Solution().covering_distance(1))   # 1
-
-# Edge cases
-print(Solution().covering_distance(4))   # 7
-print(Solution().covering_distance(5))   # 13
-print(Solution().covering_distance(6))   # 24
-print(Solution().covering_distance(10))  # 274
+distance = int(input())
+print(Solution().covering_distance(distance))
 ```
 
 ```java run viz=array viz-root=dp
@@ -158,17 +150,25 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().coveringDistance(3));   // 4
-        System.out.println(new Solution().coveringDistance(2));   // 2
-        System.out.println(new Solution().coveringDistance(1));   // 1
-
-        // Edge cases
-        System.out.println(new Solution().coveringDistance(4));   // 7
-        System.out.println(new Solution().coveringDistance(5));   // 13
-        System.out.println(new Solution().coveringDistance(6));   // 24
-        System.out.println(new Solution().coveringDistance(10));  // 274
+        Scanner sc = new Scanner(System.in);
+        int distance = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().coveringDistance(distance));
     }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "distance", "label": "distance", "type": "int", "placeholder": "3" }
+  ],
+  "cases": [
+    { "args": { "distance": "3" }, "expected": "4" },
+    { "args": { "distance": "2" }, "expected": "2" },
+    { "args": { "distance": "1" }, "expected": "1" },
+    { "args": { "distance": "5" }, "expected": "13" },
+    { "args": { "distance": "10" }, "expected": "274" }
+  ]
 }
 ```
 
@@ -212,6 +212,7 @@ Output: false              Stuck at index 1 with arr[1] = 0
 
 ```python run viz=array viz-root=dp
 from typing import List
+import ast
 
 class Solution:
     def reachability_check(self, arr: List[int]) -> bool:
@@ -242,17 +243,9 @@ class Solution:
         return dp[0]
 
 
-# Examples from the problem statement
-print(Solution().reachability_check([1, 5, 8, 9]))  # True
-print(Solution().reachability_check([2, 0, 1, 1]))  # True
-print(Solution().reachability_check([2, 0, 0, 1]))  # False
-
-# Edge cases
-print(Solution().reachability_check([0]))            # True  — single element, already at last
-print(Solution().reachability_check([1, 0]))         # True  — two elements, jump 1
-print(Solution().reachability_check([0, 1]))         # False — stuck at 0
-print(Solution().reachability_check([3, 0, 0, 0]))   # True  — jump over zeros
-print(Solution().reachability_check([1, 1, 1, 1]))   # True  — chain of 1-steps
+arr = ast.literal_eval(input())
+result = Solution().reachability_check(arr)
+print("true" if result else "false")
 ```
 
 ```java run viz=array viz-root=dp
@@ -292,19 +285,36 @@ public class Main {
         }
     }
 
-    public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().reachabilityCheck(new int[]{1, 5, 8, 9}));  // true
-        System.out.println(new Solution().reachabilityCheck(new int[]{2, 0, 1, 1}));  // true
-        System.out.println(new Solution().reachabilityCheck(new int[]{2, 0, 0, 1}));  // false
-
-        // Edge cases
-        System.out.println(new Solution().reachabilityCheck(new int[]{0}));            // true
-        System.out.println(new Solution().reachabilityCheck(new int[]{1, 0}));         // true
-        System.out.println(new Solution().reachabilityCheck(new int[]{0, 1}));         // false
-        System.out.println(new Solution().reachabilityCheck(new int[]{3, 0, 0, 0}));   // true
-        System.out.println(new Solution().reachabilityCheck(new int[]{1, 1, 1, 1}));   // true
+    static int[] parseIntArray(String s) {
+        s = s.trim();
+        if (s.equals("[]")) return new int[0];
+        s = s.substring(1, s.length() - 1);
+        String[] parts = s.split(",");
+        int[] arr = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) arr[i] = Integer.parseInt(parts[i].trim());
+        return arr;
     }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine().trim());
+        System.out.println(new Solution().reachabilityCheck(arr));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[1, 5, 8, 9]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[1, 5, 8, 9]" }, "expected": "true" },
+    { "args": { "arr": "[2, 0, 1, 1]" }, "expected": "true" },
+    { "args": { "arr": "[2, 0, 0, 1]" }, "expected": "false" },
+    { "args": { "arr": "[0]" }, "expected": "true" },
+    { "args": { "arr": "[0, 1]" }, "expected": "false" }
+  ]
 }
 ```
 
@@ -346,6 +356,7 @@ For each peak candidate `i`, the bitonic length through `i` = `LIS_ending_at(i) 
 
 ```python run viz=array viz-root=arr
 from typing import List
+import ast
 
 class Solution:
     def longest_bitonic_subsequence(self, arr: List[int]) -> int:
@@ -401,17 +412,8 @@ class Solution:
         return max_bitonic_len
 
 
-# Examples from the problem statement
-print(Solution().longest_bitonic_subsequence([1, 7, 3, 5, 9, 8, 6]))  # 6
-print(Solution().longest_bitonic_subsequence([1, 2, 3]))               # 3
-print(Solution().longest_bitonic_subsequence([3, 2, 1]))               # 3
-
-# Edge cases
-print(Solution().longest_bitonic_subsequence([1]))                     # 1  — single element
-print(Solution().longest_bitonic_subsequence([1, 2]))                  # 2  — two elements increasing
-print(Solution().longest_bitonic_subsequence([2, 1]))                  # 2  — two elements decreasing
-print(Solution().longest_bitonic_subsequence([1, 3, 1]))               # 3  — classic V-up-V shape
-print(Solution().longest_bitonic_subsequence([5, 5, 5, 5]))            # 1  — all same
+arr = ast.literal_eval(input())
+print(Solution().longest_bitonic_subsequence(arr))
 ```
 
 ```java run viz=array viz-root=arr
@@ -482,19 +484,36 @@ public class Main {
         }
     }
 
-    public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().longestBitonicSubsequence(new int[]{1, 7, 3, 5, 9, 8, 6}));  // 6
-        System.out.println(new Solution().longestBitonicSubsequence(new int[]{1, 2, 3}));               // 3
-        System.out.println(new Solution().longestBitonicSubsequence(new int[]{3, 2, 1}));               // 3
-
-        // Edge cases
-        System.out.println(new Solution().longestBitonicSubsequence(new int[]{1}));                     // 1
-        System.out.println(new Solution().longestBitonicSubsequence(new int[]{1, 2}));                  // 2
-        System.out.println(new Solution().longestBitonicSubsequence(new int[]{2, 1}));                  // 2
-        System.out.println(new Solution().longestBitonicSubsequence(new int[]{1, 3, 1}));               // 3
-        System.out.println(new Solution().longestBitonicSubsequence(new int[]{5, 5, 5, 5}));            // 1
+    static int[] parseIntArray(String s) {
+        s = s.trim();
+        if (s.equals("[]")) return new int[0];
+        s = s.substring(1, s.length() - 1);
+        String[] parts = s.split(",");
+        int[] arr = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) arr[i] = Integer.parseInt(parts[i].trim());
+        return arr;
     }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine().trim());
+        System.out.println(new Solution().longestBitonicSubsequence(arr));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[1, 7, 3, 5, 9, 8, 6]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[1, 7, 3, 5, 9, 8, 6]" }, "expected": "6" },
+    { "args": { "arr": "[1, 2, 3]" }, "expected": "3" },
+    { "args": { "arr": "[3, 2, 1]" }, "expected": "3" },
+    { "args": { "arr": "[1, 3, 1]" }, "expected": "3" },
+    { "args": { "arr": "[5, 5, 5, 5]" }, "expected": "1" }
+  ]
 }
 ```
 
@@ -542,6 +561,7 @@ Answer: max over `i` of `max(dp[i][0], dp[i][1])`.
 
 ```python run viz=grid viz-root=dp
 from typing import List
+import ast
 
 class Solution:
     def longest_alternating_subsequence(self, arr: List[int]) -> int:
@@ -592,17 +612,8 @@ class Solution:
         return max_length
 
 
-# Examples from the problem statement
-print(Solution().longest_alternating_subsequence([1, 7, 3, 5, 4, 8, 6]))  # 7
-print(Solution().longest_alternating_subsequence([1, 4, 5, 3]))            # 3
-print(Solution().longest_alternating_subsequence([3, 2, 1]))               # 2
-
-# Edge cases
-print(Solution().longest_alternating_subsequence([]))                      # 0  — empty
-print(Solution().longest_alternating_subsequence([5]))                     # 1  — single element
-print(Solution().longest_alternating_subsequence([1, 2]))                  # 2  — two elements
-print(Solution().longest_alternating_subsequence([5, 5, 5]))               # 1  — all same
-print(Solution().longest_alternating_subsequence([1, 2, 1, 2, 1]))         # 5  — perfect alternating
+arr = ast.literal_eval(input())
+print(Solution().longest_alternating_subsequence(arr))
 ```
 
 ```java run viz=grid viz-root=dp
@@ -672,19 +683,36 @@ public class Main {
         }
     }
 
-    public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().longestAlternatingSubsequence(new int[]{1, 7, 3, 5, 4, 8, 6}));  // 7
-        System.out.println(new Solution().longestAlternatingSubsequence(new int[]{1, 4, 5, 3}));            // 3
-        System.out.println(new Solution().longestAlternatingSubsequence(new int[]{3, 2, 1}));               // 2
-
-        // Edge cases
-        System.out.println(new Solution().longestAlternatingSubsequence(new int[]{}));                      // 0
-        System.out.println(new Solution().longestAlternatingSubsequence(new int[]{5}));                     // 1
-        System.out.println(new Solution().longestAlternatingSubsequence(new int[]{1, 2}));                  // 2
-        System.out.println(new Solution().longestAlternatingSubsequence(new int[]{5, 5, 5}));               // 1
-        System.out.println(new Solution().longestAlternatingSubsequence(new int[]{1, 2, 1, 2, 1}));         // 5
+    static int[] parseIntArray(String s) {
+        s = s.trim();
+        if (s.equals("[]")) return new int[0];
+        s = s.substring(1, s.length() - 1);
+        String[] parts = s.split(",");
+        int[] arr = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) arr[i] = Integer.parseInt(parts[i].trim());
+        return arr;
     }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine().trim());
+        System.out.println(new Solution().longestAlternatingSubsequence(arr));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[1, 7, 3, 5, 4, 8, 6]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[1, 7, 3, 5, 4, 8, 6]" }, "expected": "7" },
+    { "args": { "arr": "[1, 4, 5, 3]" }, "expected": "3" },
+    { "args": { "arr": "[3, 2, 1]" }, "expected": "2" },
+    { "args": { "arr": "[5, 5, 5]" }, "expected": "1" },
+    { "args": { "arr": "[1, 2, 1, 2, 1]" }, "expected": "5" }
+  ]
 }
 ```
 
@@ -775,17 +803,9 @@ class Solution:
         return dp[m][n]
 
 
-# Examples from the problem statement
-print(Solution().pattern_as_subsequence("abacdebgc", "abc"))  # 4
-print(Solution().pattern_as_subsequence("xyzabc", "xzc"))     # 1
-print(Solution().pattern_as_subsequence("abc", "def"))         # 0
-
-# Edge cases
-print(Solution().pattern_as_subsequence("", ""))               # 1  — empty both
-print(Solution().pattern_as_subsequence("abc", ""))            # 1  — empty pattern
-print(Solution().pattern_as_subsequence("", "a"))              # 0  — empty string
-print(Solution().pattern_as_subsequence("aaa", "a"))           # 3  — repeated chars
-print(Solution().pattern_as_subsequence("abc", "abc"))         # 1  — identical
+s = input()
+pattern = input()
+print(Solution().pattern_as_subsequence(s, pattern))
 ```
 
 ```java run viz=grid viz-root=dp
@@ -842,18 +862,27 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().patternAsSubsequence("abacdebgc", "abc"));  // 4
-        System.out.println(new Solution().patternAsSubsequence("xyzabc", "xzc"));     // 1
-        System.out.println(new Solution().patternAsSubsequence("abc", "def"));         // 0
-
-        // Edge cases
-        System.out.println(new Solution().patternAsSubsequence("", ""));               // 1
-        System.out.println(new Solution().patternAsSubsequence("abc", ""));            // 1
-        System.out.println(new Solution().patternAsSubsequence("", "a"));              // 0
-        System.out.println(new Solution().patternAsSubsequence("aaa", "a"));           // 3
-        System.out.println(new Solution().patternAsSubsequence("abc", "abc"));         // 1
+        Scanner sc = new Scanner(System.in);
+        String s = sc.nextLine();
+        String pattern = sc.nextLine();
+        System.out.println(new Solution().patternAsSubsequence(s, pattern));
     }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "s", "type": "string", "placeholder": "abacdebgc" },
+    { "id": "pattern", "label": "pattern", "type": "string", "placeholder": "abc" }
+  ],
+  "cases": [
+    { "args": { "s": "abacdebgc", "pattern": "abc" }, "expected": "4" },
+    { "args": { "s": "xyzabc", "pattern": "xzc" }, "expected": "1" },
+    { "args": { "s": "abc", "pattern": "def" }, "expected": "0" },
+    { "args": { "s": "aaa", "pattern": "a" }, "expected": "3" },
+    { "args": { "s": "abc", "pattern": "abc" }, "expected": "1" }
+  ]
 }
 ```
 
@@ -943,17 +972,9 @@ class Solution:
         return dp[n][m]
 
 
-# Examples from the problem statement
-print(Solution().shortest_common_supersequence("abc", "abe"))  # 4
-print(Solution().shortest_common_supersequence("lmn", "opq"))  # 6
-print(Solution().shortest_common_supersequence("aab", "aab"))  # 3
-
-# Edge cases
-print(Solution().shortest_common_supersequence("", ""))        # 0  — both empty
-print(Solution().shortest_common_supersequence("abc", ""))     # 3  — s2 empty
-print(Solution().shortest_common_supersequence("", "xyz"))     # 3  — s1 empty
-print(Solution().shortest_common_supersequence("a", "a"))      # 1  — identical single chars
-print(Solution().shortest_common_supersequence("a", "b"))      # 2  — completely different single chars
+s1 = input()
+s2 = input()
+print(Solution().shortest_common_supersequence(s1, s2))
 ```
 
 ```java run viz=grid viz-root=dp
@@ -1012,18 +1033,27 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().shortestCommonSupersequence("abc", "abe"));  // 4
-        System.out.println(new Solution().shortestCommonSupersequence("lmn", "opq"));  // 6
-        System.out.println(new Solution().shortestCommonSupersequence("aab", "aab"));  // 3
-
-        // Edge cases
-        System.out.println(new Solution().shortestCommonSupersequence("", ""));        // 0
-        System.out.println(new Solution().shortestCommonSupersequence("abc", ""));     // 3
-        System.out.println(new Solution().shortestCommonSupersequence("", "xyz"));     // 3
-        System.out.println(new Solution().shortestCommonSupersequence("a", "a"));      // 1
-        System.out.println(new Solution().shortestCommonSupersequence("a", "b"));      // 2
+        Scanner sc = new Scanner(System.in);
+        String s1 = sc.nextLine();
+        String s2 = sc.nextLine();
+        System.out.println(new Solution().shortestCommonSupersequence(s1, s2));
     }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "s1", "label": "s1", "type": "string", "placeholder": "abc" },
+    { "id": "s2", "label": "s2", "type": "string", "placeholder": "abe" }
+  ],
+  "cases": [
+    { "args": { "s1": "abc", "s2": "abe" }, "expected": "4" },
+    { "args": { "s1": "lmn", "s2": "opq" }, "expected": "6" },
+    { "args": { "s1": "aab", "s2": "aab" }, "expected": "3" },
+    { "args": { "s1": "a", "s2": "a" }, "expected": "1" },
+    { "args": { "s1": "a", "s2": "b" }, "expected": "2" }
+  ]
 }
 ```
 
@@ -1136,17 +1166,8 @@ class Solution:
         return lrs
 
 
-# Examples from the problem statement
-print(Solution().longest_repeated_subsequence("abxcdalbc"))  # abc
-print(Solution().longest_repeated_subsequence("xyzlynkz"))   # yz
-print(Solution().longest_repeated_subsequence("abbcc"))      # bc
-
-# Edge cases
-print(Solution().longest_repeated_subsequence(""))           # ""  — empty string
-print(Solution().longest_repeated_subsequence("a"))          # ""  — single char, no repeat possible
-print(Solution().longest_repeated_subsequence("aa"))         # a   — simplest repeat
-print(Solution().longest_repeated_subsequence("abcd"))       # ""  — all unique, no repeating subsequence
-print(Solution().longest_repeated_subsequence("aabb"))       # ab  — two pairs
+s = input()
+print(Solution().longest_repeated_subsequence(s))
 ```
 
 ```java run viz=graph viz-root=dp
@@ -1225,18 +1246,25 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().longestRepeatedSubsequence("abxcdalbc"));  // abc
-        System.out.println(new Solution().longestRepeatedSubsequence("xyzlynkz"));   // yz
-        System.out.println(new Solution().longestRepeatedSubsequence("abbcc"));      // bc
-
-        // Edge cases
-        System.out.println(new Solution().longestRepeatedSubsequence(""));           // ""
-        System.out.println(new Solution().longestRepeatedSubsequence("a"));          // ""
-        System.out.println(new Solution().longestRepeatedSubsequence("aa"));         // a
-        System.out.println(new Solution().longestRepeatedSubsequence("abcd"));       // ""
-        System.out.println(new Solution().longestRepeatedSubsequence("aabb"));       // ab
+        Scanner sc = new Scanner(System.in);
+        String s = sc.nextLine();
+        System.out.println(new Solution().longestRepeatedSubsequence(s));
     }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "s", "type": "string", "placeholder": "abxcdalbc" }
+  ],
+  "cases": [
+    { "args": { "s": "abxcdalbc" }, "expected": "abc" },
+    { "args": { "s": "xyzlynkz" }, "expected": "yz" },
+    { "args": { "s": "abbcc" }, "expected": "bc" },
+    { "args": { "s": "aa" }, "expected": "a" },
+    { "args": { "s": "aabb" }, "expected": "ab" }
+  ]
 }
 ```
 

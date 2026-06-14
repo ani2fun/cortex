@@ -4,23 +4,91 @@ summary: "Given a 32-bit integer num, find the position (1-indexed) of the only 
 prereqs:
   - 02-pattern-set-bit-finder/01-pattern
 difficulty: easy
+kind: problem
+topics: [set-bit-finder, bit-manipulation]
 ---
 
 # Only Set Bit
 
-## The Problem
+Use `n & (n - 1)` to validate that exactly one bit is set, then find its 1-indexed position.
+
+## Problem Statement
 
 Given a 32-bit integer `num`, find the position (1-indexed) of the only set bit. If `num` has more than one set bit, return `-1`.
 
+## Examples
+
+**Example 1**
 ```
 Input:  num = 16
-Output: 5                    Binary 0001 0000 — only bit 5 is set
+Output: 5
+Explanation: Binary 0001 0000 — only bit 5 is set.
+```
 
+**Example 2**
+```
 Input:  num = 2
-Output: 2                    Binary 0010
+Output: 2
+Explanation: Binary 0010 — only bit 2 is set.
+```
 
+**Example 3**
+```
 Input:  num = 10
-Output: -1                   Binary 1010 — two set bits
+Output: -1
+Explanation: Binary 1010 — two set bits, so no unique position.
+```
+
+## Constraints
+
+- `1 ≤ num ≤ 2^31 - 1` — positive integers only; `num = 0` has no set bits and is excluded.
+- Return `-1` if `num` has more than one set bit.
+
+```python run viz=array
+import math
+
+class Solution:
+    def only_set_bit(self, num: int) -> int:
+        # Your code goes here
+        return 0
+
+
+num = int(input())
+print(Solution().only_set_bit(num))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int onlySetBit(int num) {
+            // Your code goes here
+            return 0;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int num = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().onlySetBit(num));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "num", "label": "num", "type": "int", "placeholder": "16" }
+  ],
+  "cases": [
+    { "args": { "num": "16" }, "expected": "5" },
+    { "args": { "num": "2" },  "expected": "2" },
+    { "args": { "num": "10" }, "expected": "-1" },
+    { "args": { "num": "1" },  "expected": "1" },
+    { "args": { "num": "4" },  "expected": "3" }
+  ]
+}
 ```
 
 <details>
@@ -42,7 +110,9 @@ For `num = 0`, `num - 1` wraps to `-1` (or all-1s in two's-complement), so `num 
 
 ### The Solution
 
-```python run viz=array
+Check `num & (num - 1)`: if non-zero, more than one bit is set — return `-1`. Otherwise `num` is a power of 2, so its 1-indexed position is `log₂(num) + 1`. Both languages stay in-range for non-negative inputs; plain `int` I/O, no masking needed.
+
+```python solution time=O(1) space=O(1)
 import math
 
 class Solution:
@@ -59,20 +129,13 @@ class Solution:
         return int(math.log2(num) + 1)
 
 
-# Examples from the problem statement
-print(Solution().only_set_bit(16))    # 5
-print(Solution().only_set_bit(2))     # 2
-print(Solution().only_set_bit(10))    # -1
-
-# Edge cases
-print(Solution().only_set_bit(1))     # 1
-print(Solution().only_set_bit(4))     # 3
-print(Solution().only_set_bit(8))     # 4
-print(Solution().only_set_bit(7))     # -1
-print(Solution().only_set_bit(3))     # -1
+num = int(input())
+print(Solution().only_set_bit(num))
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
     static class Solution {
         public int onlySetBit(int num) {
@@ -91,17 +154,9 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().onlySetBit(16));    // 5
-        System.out.println(new Solution().onlySetBit(2));     // 2
-        System.out.println(new Solution().onlySetBit(10));    // -1
-
-        // Edge cases
-        System.out.println(new Solution().onlySetBit(1));     // 1
-        System.out.println(new Solution().onlySetBit(4));     // 3
-        System.out.println(new Solution().onlySetBit(8));     // 4
-        System.out.println(new Solution().onlySetBit(7));     // -1
-        System.out.println(new Solution().onlySetBit(3));     // -1
+        Scanner sc = new Scanner(System.in);
+        int num = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().onlySetBit(num));
     }
 }
 ```

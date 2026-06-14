@@ -4,35 +4,118 @@ summary: "Given a sorted array and target, return the closest element. Ties brok
 prereqs:
   - 09-pattern-lower-bound/01-pattern
 difficulty: medium
+kind: problem
+topics: [lower-bound, searching]
 ---
 
 # Closest Element
 
 Use lower bound to find the threshold position; the answer is either at the threshold or just before it.
 
-## The Problem
+## Problem Statement
 
 Given a sorted array and target, return the closest element. Ties broken by smaller value.
 
+## Examples
+
+**Example 1**
 ```
 Input:  arr = [1, 2, 3, 4, 5, 6], target = 4
 Output: 4
+Explanation: 4 is in the array; the closest element is 4 itself.
+```
 
+**Example 2**
+```
 Input:  arr = [2, 4, 6, 8, 10, 12], target = 5
-Output: 4   (4 and 6 are equidistant; smaller wins)
+Output: 4
+Explanation: 4 and 6 are equidistant from 5; ties broken by smaller value, so 4 wins.
+```
 
-Input:  arr = [1, 10], target = 7
-Output: 10
+## Constraints
+
+- `1 ≤ arr.length ≤ 10^4`
+- `-10^4 ≤ arr[i], target ≤ 10^4`
+- `arr` is sorted in ascending order with distinct values.
+
+```python run viz=array
+import ast
+from typing import List
+
+class Solution:
+    def closest_element(self, arr: List[int], target: int) -> int:
+        # Your code goes here — lower_bound(target) gives index i with
+        # arr[i] >= target; answer is arr[i] or arr[i-1], whichever is closer
+        # (ties: smaller wins). Handle edge cases (i=0 or i=len).
+        return -1
+
+arr = ast.literal_eval(input())
+target = int(input())
+print(Solution().closest_element(arr, target))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int closestElement(int[] arr, int target) {
+            // Your code goes here — lowerBound(target) gives index i with
+            // arr[i] >= target; answer is arr[i] or arr[i-1], whichever is
+            // closer (ties: smaller wins). Handle edge cases (i=0 or i=arr.length).
+            return -1;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int target = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().closestElement(arr, target));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[1, 2, 3, 4, 5, 6]" },
+    { "id": "target", "label": "target", "type": "int", "placeholder": "4" }
+  ],
+  "cases": [
+    { "args": { "arr": "[1, 2, 3, 4, 5, 6]", "target": "4" }, "expected": "4" },
+    { "args": { "arr": "[2, 4, 6, 8, 10, 12]", "target": "5" }, "expected": "4" },
+    { "args": { "arr": "[1, 10]", "target": "7" }, "expected": "10" },
+    { "args": { "arr": "[5]", "target": "5" }, "expected": "5" },
+    { "args": { "arr": "[5]", "target": "1" }, "expected": "5" },
+    { "args": { "arr": "[5]", "target": "9" }, "expected": "5" },
+    { "args": { "arr": "[1, 2, 3, 4, 5, 6]", "target": "0" }, "expected": "1" }
+  ]
+}
 ```
 
 <details>
-<summary><h2>The Solution</h2></summary>
+<summary><h2>Intuition</h2></summary>
 
+`lower_bound(target)` splits the sorted array at the first element `>= target`. The closest element must be either that element (`arr[i]`) or its left neighbour (`arr[i-1]`), because every other element is farther away. Comparing just these two candidates — handling the boundary cases where `i == 0` or `i == len` — gives the answer in `O(log n)` total.
+
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 `lower_bound(target)` gives the smallest index `i` with `arr[i] >= target`. The closest element is either `arr[i]` or `arr[i - 1]` — compare distances.
 
-
-```python run viz=array
+```python solution time=O(log n) space=O(1)
+import ast
 from typing import List
 
 class Solution:
@@ -103,20 +186,12 @@ class Solution:
                 return upper_element
 
 
-# Examples from the problem statement
-print(Solution().closest_element([1, 2, 3, 4, 5, 6], 4))    # 4
-print(Solution().closest_element([2, 4, 6, 8, 10, 12], 5))  # 4
-print(Solution().closest_element([1, 10], 7))                # 10
-
-# Edge cases
-print(Solution().closest_element([], 5))                     # -1 — empty array
-print(Solution().closest_element([5], 5))                    # 5  — single element match
-print(Solution().closest_element([5], 1))                    # 5  — single element, target before
-print(Solution().closest_element([5], 9))                    # 5  — single element, target after
-print(Solution().closest_element([1, 2, 3, 4, 5, 6], 0))    # 1  — target before all elements
+arr = ast.literal_eval(input())
+target = int(input())
+print(Solution().closest_element(arr, target))
 ```
 
-```java run viz=array
+```java solution
 import java.util.*;
 
 public class Main {
@@ -201,17 +276,19 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().closestElement(new int[]{1, 2, 3, 4, 5, 6}, 4));    // 4
-        System.out.println(new Solution().closestElement(new int[]{2, 4, 6, 8, 10, 12}, 5));  // 4
-        System.out.println(new Solution().closestElement(new int[]{1, 10}, 7));                // 10
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int target = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().closestElement(arr, target));
+    }
 
-        // Edge cases
-        System.out.println(new Solution().closestElement(new int[]{}, 5));                     // -1 — empty array
-        System.out.println(new Solution().closestElement(new int[]{5}, 5));                    // 5  — single element match
-        System.out.println(new Solution().closestElement(new int[]{5}, 1));                    // 5  — single element, target before
-        System.out.println(new Solution().closestElement(new int[]{5}, 9));                    // 5  — single element, target after
-        System.out.println(new Solution().closestElement(new int[]{1, 2, 3, 4, 5, 6}, 0));    // 1  — target before all elements
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

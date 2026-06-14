@@ -4,15 +4,15 @@ summary: "Given a string s, return it with characters reordered: highest-frequen
 prereqs:
   - 13-pattern-custom-compare/01-pattern
 difficulty: medium
+kind: problem
+topics: [custom-compare, sorting]
 ---
 
 # Sort Characters by Frequency
 
 Sort a string's characters by frequency (descending), with lexicographic tiebreaks.
 
----
-
-## The Problem
+## Problem Statement
 
 Given a string `s`, return it with characters reordered: highest-frequency first, then lexicographic order on ties.
 
@@ -22,25 +22,92 @@ Output: "aaaeeebc"
 
 Input:  s = "zzzxxyyyb"
 Output: "yyyzzzxxb"
-
-Input:  s = "zzzxxyyb"
-Output: "zzzxxyyb"
 ```
 
----
+## Examples
+
+**Example 1**
+```
+Input:  s = "eeeaaabc"
+Output: "aaaeeebc"
+Explanation: 'a' appears 3 times, 'e' 3 times (tie broken lex: 'a' < 'e'), 'b' once, 'c' once (tie broken lex: 'b' < 'c').
+```
+
+**Example 2**
+```
+Input:  s = "zzzxxyyyb"
+Output: "yyyzzzxxb"
+Explanation: 'y' appears 3 times, 'z' 3 times (tie broken lex: 'y' < 'z'), 'x' 2 times, 'b' once.
+```
+
+## Constraints
+
+- `1 ≤ s.length ≤ 5 × 10^5`
+- `s` consists of uppercase and lowercase English letters and digits.
+
+```python run viz=hashmap viz-root=frequency
+class Solution:
+    def sort_characters_by_frequency(self, s: str) -> str:
+        # Your code goes here — count frequencies, sort by (-freq, char),
+        # then rebuild the string by repeating each char freq times.
+        return s
+
+s = input()
+print(Solution().sort_characters_by_frequency(s))
+```
+
+```java run viz=hashmap viz-root=frequency
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public String sortCharactersByFrequency(String s) {
+            // Your code goes here — count frequencies into a map, build a list
+            // of entries, sort by (-freq, char), then append each char freq times.
+            return s;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String s = sc.nextLine();
+        System.out.println(new Solution().sortCharactersByFrequency(s));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "s", "type": "string", "placeholder": "eeeaaabc" }
+  ],
+  "cases": [
+    { "args": { "s": "eeeaaabc" }, "expected": "aaaeeebc" },
+    { "args": { "s": "zzzxxyyyb" }, "expected": "yyyzzzxxb" },
+    { "args": { "s": "zzzxxyyb" }, "expected": "zzzxxyyb" },
+    { "args": { "s": "aabb" }, "expected": "aabb" }
+  ]
+}
+```
 
 <details>
-<summary><h2>The Custom Compare</h2></summary>
+<summary><h2>Intuition</h2></summary>
 
+Build a frequency map, then sort the unique characters by `(-frequency, char)` — the negative flips to descending frequency, while the character itself breaks ties lexicographically. Because each character's sort key is entirely self-contained, a key function suffices (no pairwise comparator needed). Finally, expand each character back into its repeated form and join. The comparator guarantees a total order — same-frequency characters with different letters always resolve deterministically.
+
+</details>
+<details>
+<summary><h2>The Custom Compare</h2></summary>
 
 Transform: `t(c) = (-frequency[c], c)`. The negative sign reverses the order on frequency (we want descending). The tuple's second element gives lex tiebreaks ascending.
 
 </details>
 <details>
-<summary><h2>The Solution</h2></summary>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
+### The Solution
 
-```python run viz=hashmap viz-root=frequency
+```python solution time=O(n log n) space=O(n)
 from collections import Counter
 
 class Solution:
@@ -65,20 +132,11 @@ class Solution:
         return "".join([ch * freq for ch, freq in char_freq])
 
 
-# Examples from the problem statement
-print(Solution().sort_characters_by_frequency("eeeaaabc"))    # aaaeeebc
-print(Solution().sort_characters_by_frequency("zzzxxyyyb"))   # yyyzzzxxb
-print(Solution().sort_characters_by_frequency("zzzxxyyb"))    # zzzxxyyb
-
-# Edge cases
-print(Solution().sort_characters_by_frequency("a"))           # a
-print(Solution().sort_characters_by_frequency("aa"))          # aa
-print(Solution().sort_characters_by_frequency("ab"))          # ab
-print(Solution().sort_characters_by_frequency("aabb"))        # aabb
-print(Solution().sort_characters_by_frequency("ccbbaa"))      # aabbcc
+s = input()
+print(Solution().sort_characters_by_frequency(s))
 ```
 
-```java run viz=hashmap viz-root=frequency
+```java solution
 import java.util.*;
 
 public class Main {
@@ -131,21 +189,18 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().sortCharactersByFrequency("eeeaaabc"));   // aaaeeebc
-        System.out.println(new Solution().sortCharactersByFrequency("zzzxxyyyb"));  // yyyzzzxxb
-        System.out.println(new Solution().sortCharactersByFrequency("zzzxxyyb"));   // zzzxxyyb
-
-        // Edge cases
-        System.out.println(new Solution().sortCharactersByFrequency("a"));          // a
-        System.out.println(new Solution().sortCharactersByFrequency("aa"));         // aa
-        System.out.println(new Solution().sortCharactersByFrequency("ab"));         // ab
-        System.out.println(new Solution().sortCharactersByFrequency("aabb"));       // aabb
-        System.out.println(new Solution().sortCharactersByFrequency("ccbbaa"));     // aabbcc
+        Scanner sc = new Scanner(System.in);
+        String s = sc.nextLine();
+        System.out.println(new Solution().sortCharactersByFrequency(s));
     }
 }
 ```
 
 The Python and Java implementations follow the same pattern: build a frequency map, sort the keys (or pairs) by `(-freq, char)`, then expand. The exact comparator syntax differs per language (lambda, comparator class, etc.) but the transform `(-freq, char)` is universal.
+
+### Complexity
+
+- Time: `O(n log n)` — building the frequency map is `O(n)`; sorting the distinct characters is `O(k log k)` where `k` is the number of unique characters; rebuilding the string is `O(n)`. Dominates at `O(n log n)`.
+- Space: `O(n)` for the frequency map and output string.
 
 </details>

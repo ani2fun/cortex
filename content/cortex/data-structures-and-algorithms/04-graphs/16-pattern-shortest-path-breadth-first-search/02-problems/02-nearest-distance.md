@@ -1,17 +1,22 @@
 ---
 title: "Nearest Distance"
-summary: "Grid of 0s and 1s. For *every* cell, return its distance to the nearest 1 (Manhattan distance, only horizontal/vertical movement)."
+summary: "Grid of 0s and 1s. For every cell, return its distance to the nearest 1 (Manhattan distance, only horizontal/vertical movement)."
 prereqs:
   - 16-pattern-shortest-path-breadth-first-search/01-pattern
 difficulty: medium
+kind: problem
+topics: [shortest-path-bfs, multi-source-bfs, graph]
 ---
 
 # Problem: Nearest Distance (Multi-Source BFS)
 
-## The Problem
+## Problem Statement
 
-Grid of `0`s and `1`s. For *every* cell, return its distance to the nearest `1` (Manhattan distance, only horizontal/vertical movement).
+Given a grid of `0`s and `1`s, for *every* cell return its shortest distance to the nearest `1` (horizontal/vertical moves only). Cells containing `1` have distance `0`.
 
+## Examples
+
+**Example 1:**
 ```
 Input:  grid = [[0, 0, 0, 0],
                 [0, 0, 1, 0],
@@ -23,232 +28,206 @@ Output: [[3, 2, 1, 2],
          [4, 3, 2, 3]]
 ```
 
-<details>
-<summary><h2>Pattern Mapping — Multi-Source BFS</h2></summary>
-
-
-The trick: instead of running BFS from each `1` separately (`O(N * (R*C))`), **enqueue every `1` simultaneously at distance 0**, then BFS once. This is **multi-source BFS** — and it's a beautiful, common, often-missed pattern.
-
-The wavefront expands from *all* the 1s in lockstep. The first time any wave reaches a cell, that's the distance to the nearest 1.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    Step0["Initial:<br/>queue = [all 1s @ d=0]<br/>result = grid<br/>(0s = INF)"] --> Step1["Pop a cell, look at 4 neighbours.<br/>If new dist is better, update and push."]
-    Step1 --> Step2["Wavefront spreads outward.<br/>Each cell's first wave hit = answer."]
+**Example 2:**
+```
+Input:  grid = [[1, 0, 0],
+                [0, 1, 0],
+                [0, 0, 0]]
+Output: [[0, 1, 2],
+         [1, 0, 1],
+         [2, 1, 2]]
 ```
 
-<p align="center"><strong>Multi-source BFS. Seed all 1s at distance 0; the unified wavefront races outward and fills the rest of the grid.</strong></p>
+## Constraints
 
-> *Before reading on — why does enqueueing every 1 at distance 0 work? Why doesn't it confuse the algorithm?*
-
-Because BFS is **breadth-first** — it dequeues all distance-0 nodes before any distance-1 node, all distance-1 before any distance-2, and so on. The starting set is just bigger than usual; the order property still holds. Every cell still gets reached at its true minimum distance to *any* 1.
-
-</details>
-<details>
-<summary><h2>The Solution</h2></summary>
-
-
+- `1 ≤ rows, cols ≤ 100`
+- Every cell in the grid is `0` or `1`
+- At least one cell contains `1` (so every cell is reachable)
+- `O(rows × cols)` time — multi-source BFS, not repeated single-source BFS
 
 ```python run viz=grid viz-root=grid
-from typing import List, Tuple
-from queue import Queue
-
-class Cell:
-    def __init__(self, row: int, col: int, distance: int):
-        self.row = row
-        self.col = col
-        self.distance = distance
+import ast
+from collections import deque
 
 class Solution:
-    def is_valid_cell(
-        self, row: int, col: int, rows: int, cols: int
-    ) -> bool:
-        return 0 <= row < rows and 0 <= col < cols
+    def nearest_distance(self, grid):
+        # Your code goes here — seed BFS with ALL cells containing 1 at distance 0
+        # simultaneously, then expand outward. The first time any wave reaches a cell,
+        # that's its distance to the nearest 1. Return the result grid.
+        return grid
 
-    def nearest_distance(self, grid: List[List[int]]) -> List[List[int]]:
-        rows = len(grid)
-        cols = len(grid[0])
-
-        # Create a result matrix to store the nearest distances
-        result = [[float("inf")] * cols for _ in range(rows)]
-
-        # Create a queue for BFS traversal
-        queue = Queue()
-
-        # Enqueue all the cells with value 1 and initialize their
-        # distance as 0
-        for row in range(rows):
-            for col in range(cols):
-                if grid[row][col] == 1:
-                    queue.put(Cell(row, col, 0))
-                    result[row][col] = 0
-
-        # Define the possible movements: up, right, down, left
-        directions: List[Tuple[int, int]] = [
-            (-1, 0),  # up
-            (0, 1),   # right
-            (1, 0),   # down
-            (0, -1)   # left
-        ]
-
-        while not queue.empty():
-            curr_cell = queue.get()
-
-            curr_row = curr_cell.row
-            curr_col = curr_cell.col
-            curr_distance = curr_cell.distance
-
-            # Explore the neighbours
-            for dr, dc in directions:
-                new_row = curr_row + dr
-                new_col = curr_col + dc
-
-                # Check if the new cell is within the grid boundaries
-                # and has a greater distance than the current distance
-                if self.is_valid_cell(new_row, new_col, rows, cols) and \
-                   curr_distance + 1 < result[new_row][new_col]:
-
-                    # Update the distance for the new cell
-                    result[new_row][new_col] = curr_distance + 1
-
-                    # Add the new cell to the queue    
-                    queue.put(
-                        Cell(new_row, new_col, curr_distance + 1)
-                    )
-
-        return result
-
-
-# Examples from the problem statement
-print(Solution().nearest_distance([[0,0,0,0],[0,0,1,0],[0,0,0,0],[0,0,0,0]]))
-# [[3,2,1,2],[2,1,0,1],[3,2,1,2],[4,3,2,3]]
-print(Solution().nearest_distance([[1,0,0],[0,1,0],[0,0,0]]))
-# [[0,1,2],[1,0,1],[2,1,2]]
-
-# Edge cases
-print(Solution().nearest_distance([[1]]))               # [[0]] — single cell is 1
-print(Solution().nearest_distance([[0]]))               # [[inf]] — single cell is 0
-print(Solution().nearest_distance([[1,1],[1,1]]))       # [[0,0],[0,0]] — all 1s
-print(Solution().nearest_distance([[1,0],[0,0]]))       # [[0,1],[1,2]] — one source corner
-print(Solution().nearest_distance([[0,0],[0,1]]))       # [[2,1],[1,0]] — one source far corner
+grid = ast.literal_eval(input())
+print(Solution().nearest_distance(grid))
 ```
 
 ```java run viz=grid viz-root=grid
 import java.util.*;
 
 public class Main {
-    static class Cell {
-
-        int row;
-        int col;
-        int distance;
-
-        Cell(int row, int col, int distance) {
-            this.row = row;
-            this.col = col;
-            this.distance = distance;
+    static class Solution {
+        public int[][] nearestDistance(int[][] grid) {
+            // Your code goes here — seed BFS with ALL cells containing 1 at distance 0
+            // simultaneously, then expand outward. The first time any wave reaches a cell,
+            // that's its distance to the nearest 1. Return the result grid.
+            return grid;
         }
     }
 
-    static class Solution {
-        private boolean isValidCell(int row, int col, int rows, int cols) {
-            return row >= 0 && row < rows && col >= 0 && col < cols;
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[][] grid = parseIntMatrix(sc.nextLine());
+        int[][] result = new Solution().nearestDistance(grid);
+        // print as list-of-lists matching Python's print(list_of_lists)
+        StringBuilder sb = new StringBuilder("[");
+        for (int i = 0; i < result.length; i++) {
+            sb.append("[");
+            for (int j = 0; j < result[i].length; j++) {
+                sb.append(result[i][j]);
+                if (j < result[i].length - 1) sb.append(", ");
+            }
+            sb.append("]");
+            if (i < result.length - 1) sb.append(", ");
         }
+        sb.append("]");
+        System.out.println(sb);
+    }
 
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "grid", "label": "grid", "type": "int[][]", "placeholder": "[[0, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 0], [0, 0, 0, 0]]" }
+  ],
+  "cases": [
+    { "args": { "grid": "[[0, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 0], [0, 0, 0, 0]]" }, "expected": "[[3, 2, 1, 2], [2, 1, 0, 1], [3, 2, 1, 2], [4, 3, 2, 3]]" },
+    { "args": { "grid": "[[1, 0, 0], [0, 1, 0], [0, 0, 0]]" }, "expected": "[[0, 1, 2], [1, 0, 1], [2, 1, 2]]" },
+    { "args": { "grid": "[[1]]" }, "expected": "[[0]]" },
+    { "args": { "grid": "[[1, 1], [1, 1]]" }, "expected": "[[0, 0], [0, 0]]" },
+    { "args": { "grid": "[[1, 0], [0, 0]]" }, "expected": "[[0, 1], [1, 2]]" },
+    { "args": { "grid": "[[0, 0], [0, 1]]" }, "expected": "[[2, 1], [1, 0]]" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+The key insight is **multi-source BFS**: instead of running BFS separately from each `1` cell (O(K × R × C)), enqueue *all* `1` cells at distance 0 simultaneously and BFS once (O(R × C)). The wave expands outward from every source at once; the first time any wave reaches a cell, that cell's distance to its nearest source is settled. Initialize a result grid to all-zeros (the `1` cells are already correct); update each `0` cell's distance when first reached. Mark on push (updating the result is the mark) to avoid re-enqueueing.
+
+```python solution time=O(R*C) space=O(R*C)
+import ast
+from collections import deque
+
+class Solution:
+    def nearest_distance(self, grid):
+        rows, cols = len(grid), len(grid[0])
+        result = [[0] * cols for _ in range(rows)]
+        queue = deque()
+        for r in range(rows):
+            for c in range(cols):
+                if grid[r][c] == 1:
+                    queue.append((r, c, 0))
+                else:
+                    result[r][c] = -1           # unvisited marker
+        dirs = [(-1, 0), (0, 1), (1, 0), (0, -1)]
+        while queue:
+            r, c, d = queue.popleft()
+            for dr, dc in dirs:
+                nr, nc = r + dr, c + dc
+                if 0 <= nr < rows and 0 <= nc < cols and result[nr][nc] == -1:
+                    result[nr][nc] = d + 1
+                    queue.append((nr, nc, d + 1))
+        return result
+
+grid = ast.literal_eval(input())
+print(Solution().nearest_distance(grid))
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+    static class Solution {
         public int[][] nearestDistance(int[][] grid) {
-            int rows = grid.length;
-            int cols = grid[0].length;
-
-            // Create a result matrix to store the nearest distances
+            int rows = grid.length, cols = grid[0].length;
             int[][] result = new int[rows][cols];
-            for (int row = 0; row < rows; row++) {
-                Arrays.fill(result[row], Integer.MAX_VALUE);
-            }
-
-            // Create a queue for BFS traversal
-            Queue<Cell> queue = new LinkedList<>();
-
-            // Enqueue all the cells with value 1 and initialize their
-            // distance as 0
-            for (int row = 0; row < rows; row++) {
-                for (int col = 0; col < cols; col++) {
-                    if (grid[row][col] == 1) {
-                        queue.add(new Cell(row, col, 0));
-                        result[row][col] = 0;
+            Deque<int[]> queue = new ArrayDeque<>();
+            for (int r = 0; r < rows; r++) {
+                for (int c = 0; c < cols; c++) {
+                    if (grid[r][c] == 1) {
+                        queue.add(new int[]{r, c, 0});
+                    } else {
+                        result[r][c] = -1;          // unvisited marker
                     }
                 }
             }
-
-            // Define the possible movements: up, right, down, left
-            int[][] directions = {
-                {-1, 0}, // up
-                {0, 1},  // right
-                {1, 0},  // down
-                {0, -1}  // left
-            };
-
+            int[][] dirs = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
             while (!queue.isEmpty()) {
-                Cell currCell = queue.poll();
-
-                int currRow = currCell.row;
-                int currCol = currCell.col;
-                int currDistance = currCell.distance;
-
-                // Explore the neighbours
-                for (int[] dir : directions) {
-                    int newRow = currRow + dir[0];
-                    int newCol = currCol + dir[1];
-
-                    // Check if the new cell is within the grid boundaries 
-                    // and has a greater distance than the current distance
-                    if (isValidCell(newRow, newCol, rows, cols) &&
-                        currDistance + 1 < result[newRow][newCol]) {
-
-                        // Update the distance for the new cell
-                        result[newRow][newCol] = currDistance + 1;
-
-                        // Add the new cell to the queue
-                        queue.add(
-                            new Cell(newRow, newCol, currDistance + 1)
-                        );
+                int[] cur = queue.poll();
+                int r = cur[0], c = cur[1], d = cur[2];
+                for (int[] dir : dirs) {
+                    int nr = r + dir[0], nc = c + dir[1];
+                    if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && result[nr][nc] == -1) {
+                        result[nr][nc] = d + 1;
+                        queue.add(new int[]{nr, nc, d + 1});
                     }
                 }
             }
-
             return result;
         }
     }
 
     public static void main(String[] args) {
-        Solution sol = new Solution();
+        Scanner sc = new Scanner(System.in);
+        int[][] grid = parseIntMatrix(sc.nextLine());
+        int[][] result = new Solution().nearestDistance(grid);
+        StringBuilder sb = new StringBuilder("[");
+        for (int i = 0; i < result.length; i++) {
+            sb.append("[");
+            for (int j = 0; j < result[i].length; j++) {
+                sb.append(result[i][j]);
+                if (j < result[i].length - 1) sb.append(", ");
+            }
+            sb.append("]");
+            if (i < result.length - 1) sb.append(", ");
+        }
+        sb.append("]");
+        System.out.println(sb);
+    }
 
-        // Examples from the problem statement
-        System.out.println(Arrays.deepToString(sol.nearestDistance(new int[][]{{0,0,0,0},{0,0,1,0},{0,0,0,0},{0,0,0,0}})));
-        // [[3,2,1,2],[2,1,0,1],[3,2,1,2],[4,3,2,3]]
-        System.out.println(Arrays.deepToString(sol.nearestDistance(new int[][]{{1,0,0},{0,1,0},{0,0,0}})));
-        // [[0,1,2],[1,0,1],[2,1,2]]
-
-        // Edge cases
-        System.out.println(Arrays.deepToString(sol.nearestDistance(new int[][]{{1}})));               // [[0]]
-        System.out.println(Arrays.deepToString(sol.nearestDistance(new int[][]{{1,1},{1,1}})));       // [[0,0],[0,0]]
-        System.out.println(Arrays.deepToString(sol.nearestDistance(new int[][]{{1,0},{0,0}})));       // [[0,1],[1,2]]
-        System.out.println(Arrays.deepToString(sol.nearestDistance(new int[][]{{0,0},{0,1}})));       // [[2,1],[1,0]]
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
     }
 }
 ```
-
-
-The multi-source pattern is **massively** more efficient than running BFS once per source (`O(K * R*C)` where K = number of sources). Multi-source BFS is `O(R*C)` regardless of how many sources you start with. Same algorithm, fundamentally better complexity.
 
 </details>

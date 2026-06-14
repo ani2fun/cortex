@@ -18,6 +18,8 @@ The key observation: split at the midpoint and **at least one half is always ful
 Find `0` in the rotated array `[4, 5, 6, 7, 0, 1, 2]`. Run it.
 
 ```python run viz=array
+import ast
+
 def search(arr, target):
     lo, hi = 0, len(arr) - 1
     while lo <= hi:
@@ -36,8 +38,63 @@ def search(arr, target):
                 hi = mid - 1
     return -1
 
-print(search([4, 5, 6, 7, 0, 1, 2], 0))   # 4
-print(search([4, 5, 6, 7, 0, 1, 2], 3))   # -1
+arr = ast.literal_eval(input())
+target = int(input())
+print(search(arr, target))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+  static int search(int[] arr, int target) {
+    int lo = 0, hi = arr.length - 1;
+    while (lo <= hi) {
+      int mid = lo + (hi - lo) / 2;
+      if (arr[mid] == target) return mid;
+      if (arr[lo] <= arr[mid]) {                                   // left sorted
+        if (arr[lo] <= target && target < arr[mid]) hi = mid - 1;
+        else lo = mid + 1;
+      } else {                                                      // right sorted
+        if (arr[mid] < target && target <= arr[hi]) lo = mid + 1;
+        else hi = mid - 1;
+      }
+    }
+    return -1;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());
+    int target = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(search(arr, target));
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3}
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[4, 5, 6, 7, 0, 1, 2]" },
+    { "id": "target", "label": "target", "type": "number", "placeholder": "0" }
+  ],
+  "cases": [
+    { "args": { "arr": "[4, 5, 6, 7, 0, 1, 2]", "target": "0" }, "expected": "4" },
+    { "args": { "arr": "[4, 5, 6, 7, 0, 1, 2]", "target": "3" }, "expected": "-1" },
+    { "args": { "arr": "[4, 5, 6, 7, 0, 1, 2]", "target": "4" }, "expected": "0" },
+    { "args": { "arr": "[4, 5, 6, 7, 0, 1, 2]", "target": "2" }, "expected": "6" }
+  ]
+}
 ```
 
 ## How It Works
@@ -86,9 +143,74 @@ The rotation introduces exactly *one* "drop" point (where the larger pre-rotatio
 
 ## Your Turn
 
-The reusable rotated-array search:
+Implement the rotated-array search: determine which half is sorted, check if the target falls in its range, and discard the other half.
 
 ```python run viz=array
+import ast
+
+def search(arr, target):
+    # Your code goes here — lo=0, hi=len-1; probe mid; decide which half is
+    # sorted (arr[lo] <= arr[mid]?); check if target is in that half's range;
+    # move lo/hi accordingly; return -1 if not found.
+    return -1
+
+arr = ast.literal_eval(input())
+target = int(input())
+print(search(arr, target))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+  static int search(int[] arr, int target) {
+    // Your code goes here — lo=0, hi=len-1; probe mid; decide which half is
+    // sorted (arr[lo] <= arr[mid]?); check if target is in that half's range;
+    // move lo/hi accordingly; return -1 if not found.
+    return -1;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());
+    int target = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(search(arr, target));
+  }
+
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[4, 5, 6, 7, 0, 1, 2]" },
+    { "id": "target", "label": "target", "type": "number", "placeholder": "0" }
+  ],
+  "cases": [
+    { "args": { "arr": "[4, 5, 6, 7, 0, 1, 2]", "target": "0" }, "expected": "4" },
+    { "args": { "arr": "[4, 5, 6, 7, 0, 1, 2]", "target": "3" }, "expected": "-1" },
+    { "args": { "arr": "[1, 2, 3, 4, 5]", "target": "3" }, "expected": "2" },
+    { "args": { "arr": "[6, 7, 1, 2, 3, 4, 5]", "target": "7" }, "expected": "1" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Maintain `lo = 0`, `hi = len - 1`. Each step: if `arr[mid] == target` return `mid`. Otherwise, check which half is sorted with `arr[lo] <= arr[mid]`. If the left half is sorted and the target lies in `[arr[lo], arr[mid])`, set `hi = mid - 1`; else set `lo = mid + 1`. If the right half is sorted and the target lies in `(arr[mid], arr[hi]]`, set `lo = mid + 1`; else set `hi = mid - 1`. Return `-1` when `lo > hi`.
+
+```python solution time=O(log n) space=O(1)
+import ast
+
 def search(arr, target):
     lo, hi = 0, len(arr) - 1
     while lo <= hi:
@@ -107,35 +229,50 @@ def search(arr, target):
                 hi = mid - 1
     return -1
 
-a = [4, 5, 6, 7, 0, 1, 2]
-print(search(a, 4), search(a, 2), search(a, 8))   # 0 6 -1
+arr = ast.literal_eval(input())
+target = int(input())
+print(search(arr, target))
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
   static int search(int[] arr, int target) {
     int lo = 0, hi = arr.length - 1;
     while (lo <= hi) {
       int mid = lo + (hi - lo) / 2;
       if (arr[mid] == target) return mid;
-      if (arr[lo] <= arr[mid]) {                                   // left sorted
+      if (arr[lo] <= arr[mid]) {
         if (arr[lo] <= target && target < arr[mid]) hi = mid - 1;
         else lo = mid + 1;
-      } else {                                                      // right sorted
+      } else {
         if (arr[mid] < target && target <= arr[hi]) lo = mid + 1;
         else hi = mid - 1;
       }
     }
     return -1;
   }
+
   public static void main(String[] args) {
-    int[] a = {4, 5, 6, 7, 0, 1, 2};
-    System.out.println(search(a, 0) + " " + search(a, 3));   // 4 -1
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());
+    int target = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(search(arr, target));
+  }
+
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
   }
 }
 ```
 
-This is a structural lesson — drill searching in the pattern sets.
+</details>
 
 ## Reflect & Connect
 
@@ -188,4 +325,4 @@ Rotated-array search shows binary search applies beyond strictly sorted data:
 
 - **Sedgewick / interview canon** — "Search in Rotated Sorted Array" is the standard problem; the "one half is sorted" invariant is the textbook approach.
 - **CLRS**, *Introduction to Algorithms*, 4th ed. — binary search and divide-and-conquer decision arguments.
-- The `O(log n)` rotated search and the duplicate `O(n)` caveat are standard; both runnable blocks are verified by running (`0 ⇒ 4`, `3 ⇒ -1`; `4,2,8 ⇒ 0, 6, -1`).
+- The `O(log n)` rotated search and the duplicate `O(n)` caveat are standard; both runnable blocks are verified by running (`[4,5,6,7,0,1,2], 0 ⇒ 4`; `[4,5,6,7,0,1,2], 3 ⇒ -1`).

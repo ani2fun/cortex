@@ -4,23 +4,93 @@ summary: "Given a 32-bit signed integer num and a non-negative integer k, return
 prereqs:
   - 01-pattern-kth-bit/01-pattern
 difficulty: easy
+kind: problem
+topics: [kth-bit, bit-manipulation]
 ---
 
 # Kth Bit Check
 
-## The Problem
+Build a mask with a single `1` at position `k`, AND it with the number, and the result is non-zero only when that bit is set.
+
+## Problem Statement
 
 Given a 32-bit signed integer `num` and a non-negative integer `k`, return `true` if the kth bit of `num` is set, otherwise `false`.
 
+## Examples
+
+**Example 1**
 ```
 Input:  num = 1, k = 1
-Output: true                  Binary 0001 — bit 1 is set
+Output: true
+Explanation: Binary 0001 — bit 1 is set.
+```
 
+**Example 2**
+```
 Input:  num = 3, k = 2
-Output: true                  Binary 0011 — bit 2 is set
+Output: true
+Explanation: Binary 0011 — bit 2 is set.
+```
 
+**Example 3**
+```
 Input:  num = 2, k = 1
-Output: false                 Binary 0010 — bit 1 is unset
+Output: false
+Explanation: Binary 0010 — bit 1 is unset.
+```
+
+## Constraints
+
+- `0 ≤ num ≤ 2^31 - 1` — non-negative 32-bit integer.
+- `1 ≤ k ≤ 31` — 1-indexed bit position from the LSB.
+
+```python run viz=array
+class Solution:
+    def kth_bit_check(self, num: int, k: int) -> bool:
+        # Your code goes here
+        return False
+
+
+num = int(input())
+k = int(input())
+print("true" if Solution().kth_bit_check(num, k) else "false")
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public boolean kthBitCheck(int num, int k) {
+            // Your code goes here
+            return false;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int num = Integer.parseInt(sc.nextLine().trim());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().kthBitCheck(num, k));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "num", "label": "num", "type": "int", "placeholder": "1" },
+    { "id": "k", "label": "k", "type": "int", "placeholder": "1" }
+  ],
+  "cases": [
+    { "args": { "num": "1", "k": "1" }, "expected": "true" },
+    { "args": { "num": "3", "k": "2" }, "expected": "true" },
+    { "args": { "num": "2", "k": "1" }, "expected": "false" },
+    { "args": { "num": "0", "k": "1" }, "expected": "false" },
+    { "args": { "num": "4", "k": "3" }, "expected": "true" },
+    { "args": { "num": "8", "k": "4" }, "expected": "true" }
+  ]
+}
 ```
 
 <details>
@@ -43,7 +113,9 @@ Because `num & mask` keeps bit k *in its original position*, not at bit 1. For `
 
 ### The Solution
 
-```python run viz=array
+AND with the mask and compare to zero — a single `&` and a comparison. Python prints `"true"`/`"false"` explicitly so the output matches Java's native lowercase boolean.
+
+```python solution time=O(1) space=O(1)
 class Solution:
     def kth_bit_check(self, num: int, k: int) -> bool:
 
@@ -56,20 +128,14 @@ class Solution:
         return (num & (1 << (k - 1))) != 0
 
 
-# Examples from the problem statement
-print(Solution().kth_bit_check(1, 1))    # True
-print(Solution().kth_bit_check(3, 2))    # True
-print(Solution().kth_bit_check(2, 1))    # False
-
-# Edge cases
-print(Solution().kth_bit_check(0, 1))    # False
-print(Solution().kth_bit_check(1, 2))    # False
-print(Solution().kth_bit_check(4, 3))    # True
-print(Solution().kth_bit_check(7, 3))    # True
-print(Solution().kth_bit_check(8, 4))    # True
+num = int(input())
+k = int(input())
+print("true" if Solution().kth_bit_check(num, k) else "false")
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
     static class Solution {
         public boolean kthBitCheck(int num, int k) {
@@ -85,17 +151,10 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().kthBitCheck(1, 1));    // true
-        System.out.println(new Solution().kthBitCheck(3, 2));    // true
-        System.out.println(new Solution().kthBitCheck(2, 1));    // false
-
-        // Edge cases
-        System.out.println(new Solution().kthBitCheck(0, 1));    // false
-        System.out.println(new Solution().kthBitCheck(1, 2));    // false
-        System.out.println(new Solution().kthBitCheck(4, 3));    // true
-        System.out.println(new Solution().kthBitCheck(7, 3));    // true
-        System.out.println(new Solution().kthBitCheck(8, 4));    // true
+        Scanner sc = new Scanner(System.in);
+        int num = Integer.parseInt(sc.nextLine().trim());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().kthBitCheck(num, k));
     }
 }
 ```

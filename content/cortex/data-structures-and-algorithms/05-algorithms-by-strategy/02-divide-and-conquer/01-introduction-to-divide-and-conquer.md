@@ -17,6 +17,8 @@ That one move — **split the input, recurse on the pieces, recombine** — is *
 **Maximum subarray** — the largest-sum contiguous slice. Its D&C version is the canonical "you can't *just* recurse on halves" example: the best slice might straddle the midpoint, so a third case scans outward from `mid`.
 
 ```python run viz=array
+import ast
+
 def max_crossing(A, lo, mid, hi):           # best slice that MUST include mid and mid+1
     left = float('-inf'); s = 0
     for i in range(mid, lo - 1, -1):
@@ -33,11 +35,13 @@ def max_subarray(A, lo, hi):
                max_subarray(A, mid + 1, hi),# entirely in the right half
                max_crossing(A, lo, mid, hi))# crossing the midpoint
 
-A = [-2, 1, -3, 4, -1, 2, 1, -5, 4]
-print("max subarray sum =", max_subarray(A, 0, len(A) - 1))   # 6, from [4, -1, 2, 1]
+A = ast.literal_eval(input())
+print(max_subarray(A, 0, len(A) - 1))
 ```
 
 ```java run viz=array
+import java.util.*;
+
 public class Main {
     static int maxCrossing(int[] A, int lo, int mid, int hi) {
         int left = Integer.MIN_VALUE, s = 0;
@@ -52,14 +56,39 @@ public class Main {
         return Math.max(Math.max(maxSubarray(A, lo, mid), maxSubarray(A, mid + 1, hi)),
                         maxCrossing(A, lo, mid, hi));
     }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+
     public static void main(String[] args) {
-        int[] A = {-2, 1, -3, 4, -1, 2, 1, -5, 4};
-        System.out.println("max subarray sum = " + maxSubarray(A, 0, A.length - 1));   // 6
+        Scanner sc = new Scanner(System.in);
+        int[] A = parseIntArray(sc.nextLine());
+        System.out.println(maxSubarray(A, 0, A.length - 1));
     }
 }
 ```
 
-Both print `6`. The recurrence is `T(n) = 2T(n/2) + n → Θ(n log n)`: two half-size recursions plus an `O(n)` cross-midpoint scan.
+```testcases
+{
+  "args": [
+    { "id": "A", "label": "A", "type": "int[]", "placeholder": "[-2, 1, -3, 4, -1, 2, 1, -5, 4]" }
+  ],
+  "cases": [
+    { "args": { "A": "[-2, 1, -3, 4, -1, 2, 1, -5, 4]" }, "expected": "6" },
+    { "args": { "A": "[1, 2, 3, 4, 5]" }, "expected": "15" },
+    { "args": { "A": "[-1]" }, "expected": "-1" },
+    { "args": { "A": "[-2, -3, -1, -4]" }, "expected": "-1" }
+  ]
+}
+```
+
+The recurrence is `T(n) = 2T(n/2) + n → Θ(n log n)`: two half-size recursions plus an `O(n)` cross-midpoint scan.
 
 ## How It Works
 
@@ -127,6 +156,8 @@ It returns `4`, not `6` — and worse, `4` is just the largest *single element*.
 D&C does more than sort. **Count inversions** — pairs `(i, j)` with `i < j` but `A[i] > A[j]` — by piggy-backing on merge sort: when the merge step takes an element from the *right* half, every element still waiting in the *left* half forms an inversion with it.
 
 ```python run viz=array
+import ast
+
 def count_inversions(A):
     def sort_count(a):
         if len(a) <= 1: return a, 0
@@ -143,12 +174,95 @@ def count_inversions(A):
         return merged, cl + cr + inv
     return sort_count(A)[1]
 
-print("inversions [2,4,1,3,5]:", count_inversions([2, 4, 1, 3, 5]))   # 3
-print("inversions [5,4,3,2,1]:", count_inversions([5, 4, 3, 2, 1]))   # 10
+# Your code goes here — implement count_inversions(A) above
+A = ast.literal_eval(input())
+print(count_inversions(A))
 ```
 
 ```java run viz=array
 import java.util.*;
+
+public class Main {
+    static long sortCount(int[] a, int lo, int hi) {
+        // Your code goes here — merge-sort a[lo:hi] in place, return inversion count
+        if (hi - lo <= 1) return 0;
+        int mid = (lo + hi) / 2;
+        long inv = sortCount(a, lo, mid) + sortCount(a, mid, hi);
+        int[] merged = new int[hi - lo]; int i = lo, j = mid, k = 0;
+        while (i < mid && j < hi) {
+            if (a[i] <= a[j]) merged[k++] = a[i++];
+            else { merged[k++] = a[j++]; inv += mid - i; }
+        }
+        while (i < mid) merged[k++] = a[i++];
+        while (j < hi) merged[k++] = a[j++];
+        System.arraycopy(merged, 0, a, lo, merged.length);
+        return inv;
+    }
+    static long countInversions(int[] A) { int[] c = A.clone(); return sortCount(c, 0, c.length); }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] A = parseIntArray(sc.nextLine());
+        System.out.println(countInversions(A));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "A", "label": "A", "type": "int[]", "placeholder": "[2, 4, 1, 3, 5]" }
+  ],
+  "cases": [
+    { "args": { "A": "[2, 4, 1, 3, 5]" }, "expected": "3" },
+    { "args": { "A": "[5, 4, 3, 2, 1]" }, "expected": "10" },
+    { "args": { "A": "[1, 2, 3, 4, 5]" }, "expected": "0" },
+    { "args": { "A": "[1]" }, "expected": "0" },
+    { "args": { "A": "[3, 1, 2]" }, "expected": "2" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+The merge — D&C's combine step — counts cross-half inversions *for free* in the `O(n)` pass, giving `O(n log n)` total versus the naive `O(n²)` double loop. A fully reversed array of length `n` has `n·(n−1)/2` inversions — `[5,4,3,2,1]` has `5·4/2 = 10`.
+
+```python solution time=O(n log n) space=O(n)
+import ast
+
+def count_inversions(A):
+    def sort_count(a):
+        if len(a) <= 1: return a, 0
+        m = len(a) // 2
+        left, cl = sort_count(a[:m]); right, cr = sort_count(a[m:])
+        merged, i, j, inv = [], 0, 0, 0
+        while i < len(left) and j < len(right):
+            if left[i] <= right[j]:
+                merged.append(left[i]); i += 1
+            else:
+                merged.append(right[j]); j += 1
+                inv += len(left) - i                 # left[i:] all exceed right[j]
+        merged += left[i:]; merged += right[j:]
+        return merged, cl + cr + inv
+    return sort_count(A)[1]
+
+A = ast.literal_eval(input())
+print(count_inversions(A))
+```
+
+```java solution
+import java.util.*;
+
 public class Main {
     static long sortCount(int[] a, int lo, int hi) {
         if (hi - lo <= 1) return 0;
@@ -157,7 +271,7 @@ public class Main {
         int[] merged = new int[hi - lo]; int i = lo, j = mid, k = 0;
         while (i < mid && j < hi) {
             if (a[i] <= a[j]) merged[k++] = a[i++];
-            else { merged[k++] = a[j++]; inv += mid - i; }   // a[i:mid] all exceed a[j]
+            else { merged[k++] = a[j++]; inv += mid - i; }
         }
         while (i < mid) merged[k++] = a[i++];
         while (j < hi) merged[k++] = a[j++];
@@ -165,14 +279,25 @@ public class Main {
         return inv;
     }
     static long countInversions(int[] A) { int[] c = A.clone(); return sortCount(c, 0, c.length); }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+
     public static void main(String[] args) {
-        System.out.println("inversions [2,4,1,3,5]: " + countInversions(new int[]{2,4,1,3,5}));   // 3
-        System.out.println("inversions [5,4,3,2,1]: " + countInversions(new int[]{5,4,3,2,1}));   // 10
+        Scanner sc = new Scanner(System.in);
+        int[] A = parseIntArray(sc.nextLine());
+        System.out.println(countInversions(A));
     }
 }
 ```
 
-Both print `3` then `10` (a fully reversed array of 5 has `5·4/2 = 10` inversions). The merge — D&C's combine step — counts cross-half inversions *for free* in the `O(n)` pass, giving `O(n log n)` total versus the naive `O(n²)` double loop.
+</details>
 
 ## Reflect & Connect
 

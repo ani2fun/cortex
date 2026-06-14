@@ -15,20 +15,72 @@ The second, and the star of this lesson, is **a subset encoded as bits**. With `
 
 ## See It Work
 
-Enumerate every subset of `['a', 'b', 'c']` by counting masks `0..7` and decoding each. Run it.
+Enumerate every subset of `[1, 2, 3]` by counting masks `0..7` and decoding each. Run it.
 
 ```python run viz=array
-def all_subsets(items):
-    n = len(items)
+import ast
+
+def all_subsets(arr):
+    n = len(arr)
     result = []
     for mask in range(1 << n):                          # 0 .. 2^n - 1 — one per subset
-        subset = [items[j] for j in range(n) if mask & (1 << j)]   # bit j set ⇒ item j in
+        subset = [arr[j] for j in range(n) if mask & (1 << j)]   # bit j set ⇒ item j in
         result.append(subset)
     return result
 
-out = all_subsets(['a', 'b', 'c'])
-print(len(out))   # 8
-print(out)        # [[], ['a'], ['b'], ['a','b'], ['c'], ['a','c'], ['b','c'], ['a','b','c']]
+arr = ast.literal_eval(input())
+out = all_subsets(arr)
+print(len(out))
+print(out)
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+  static int[] parseIntArray(String s) {
+    s = s.trim();
+    if (s.equals("[]")) return new int[0];
+    s = s.substring(1, s.length() - 1);
+    String[] parts = s.split(",");
+    int[] a = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) a[i] = Integer.parseInt(parts[i].trim());
+    return a;
+  }
+
+  static List<List<Integer>> allSubsets(int[] arr) {
+    int n = arr.length;
+    List<List<Integer>> result = new ArrayList<>();
+    for (int mask = 0; mask < (1 << n); mask++) {
+      List<Integer> subset = new ArrayList<>();
+      for (int j = 0; j < n; j++)
+        if ((mask & (1 << j)) != 0) subset.add(arr[j]);
+      result.add(subset);
+    }
+    return result;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine().trim());
+    List<List<Integer>> out = allSubsets(arr);
+    System.out.println(out.size());
+    System.out.println(out);
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "array", "placeholder": "[1, 2, 3]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[1, 2, 3]" }, "expected": "8\n[[], [1], [2], [1, 2], [3], [1, 3], [2, 3], [1, 2, 3]]" },
+    { "args": { "arr": "[1, 2]" }, "expected": "4\n[[], [1], [2], [1, 2]]" },
+    { "args": { "arr": "[5]" }, "expected": "2\n[[], [5]]" }
+  ]
+}
 ```
 
 ## How It Works
@@ -93,41 +145,129 @@ Because `2^n` grows explosively: at `n = 30` you're already near a billion masks
 
 ## Your Turn
 
-The reusable power-set enumerator:
+The reusable power-set enumerator — fill in both, then Run. The driver reads `n` integers on one line (space-separated), prints the count then the full list of subsets in natural bitmask order:
 
 ```python run viz=array
-def all_subsets(items):
-    n = len(items)
+import ast
+
+def all_subsets(arr):
+    n = len(arr)
     result = []
     for mask in range(1 << n):
-        subset = [items[j] for j in range(n) if mask & (1 << j)]
-        result.append(subset)
+        # Your code goes here
+        result.append([])
     return result
 
-print(all_subsets([1, 2]))   # [[], [1], [2], [1, 2]]
+arr = ast.literal_eval(input())
+out = all_subsets(arr)
+print(len(out))
+print(out)
 ```
 
 ```java run viz=array
 import java.util.*;
 
 public class Main {
-  static List<List<Integer>> allSubsets(int[] items) {
-    int n = items.length;
+  static int[] parseIntArray(String s) {
+    s = s.trim();
+    if (s.equals("[]")) return new int[0];
+    s = s.substring(1, s.length() - 1);
+    String[] parts = s.split(",");
+    int[] a = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) a[i] = Integer.parseInt(parts[i].trim());
+    return a;
+  }
+
+  static List<List<Integer>> allSubsets(int[] arr) {
+    int n = arr.length;
+    List<List<Integer>> result = new ArrayList<>();
+    for (int mask = 0; mask < (1 << n); mask++) {
+      // Your code goes here
+      result.add(new ArrayList<>());
+    }
+    return result;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine().trim());
+    List<List<Integer>> out = allSubsets(arr);
+    System.out.println(out.size());
+    System.out.println(out);
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "array", "placeholder": "[1, 2]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[1, 2]" }, "expected": "4\n[[], [1], [2], [1, 2]]" },
+    { "args": { "arr": "[1]" }, "expected": "2\n[[], [1]]" },
+    { "args": { "arr": "[]" }, "expected": "1\n[[]]" }
+  ]
+}
+```
+
+<details>
+<summary><strong>Editorial</strong></summary>
+
+```python solution
+import ast
+
+def all_subsets(arr):
+    n = len(arr)
+    result = []
+    for mask in range(1 << n):
+        subset = [arr[j] for j in range(n) if mask & (1 << j)]
+        result.append(subset)
+    return result
+
+arr = ast.literal_eval(input())
+out = all_subsets(arr)
+print(len(out))
+print(out)
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+  static int[] parseIntArray(String s) {
+    s = s.trim();
+    if (s.equals("[]")) return new int[0];
+    s = s.substring(1, s.length() - 1);
+    String[] parts = s.split(",");
+    int[] a = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) a[i] = Integer.parseInt(parts[i].trim());
+    return a;
+  }
+
+  static List<List<Integer>> allSubsets(int[] arr) {
+    int n = arr.length;
     List<List<Integer>> result = new ArrayList<>();
     for (int mask = 0; mask < (1 << n); mask++) {
       List<Integer> subset = new ArrayList<>();
       for (int j = 0; j < n; j++)
-        if ((mask & (1 << j)) != 0) subset.add(items[j]);   // bit j set ⇒ item j in
+        if ((mask & (1 << j)) != 0) subset.add(arr[j]);
       result.add(subset);
     }
     return result;
   }
 
   public static void main(String[] args) {
-    System.out.println(allSubsets(new int[]{1, 2}));   // [[], [1], [2], [1, 2]]
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine().trim());
+    List<List<Integer>> out = allSubsets(arr);
+    System.out.println(out.size());
+    System.out.println(out);
   }
 }
 ```
+
+</details>
 
 Drill the family in **Practice** — [Pairwise Bits Swap](/cortex/data-structures-and-algorithms/bit-tricks/pattern-bitmasking/problems/pairwise-bits-swap) and [Unique Subsets](/cortex/data-structures-and-algorithms/bit-tricks/pattern-bitmasking/problems/unique-subsets).
 

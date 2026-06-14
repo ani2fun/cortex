@@ -4,6 +4,8 @@ summary: "Given a string s and a pattern that may include wildcards:"
 prereqs:
   - 16-pattern-edit-distance/01-pattern
 difficulty: hard
+kind: problem
+topics: [edit-distance, dynamic-programming]
 ---
 
 # Wildcard Pattern Matching
@@ -25,6 +27,101 @@ Output: true                          * matches "cdef"
 
 Input:  s = "abcdef", pattern = "ab?"
 Output: false                         Pattern length 3, but ? matches 1 char — too short
+```
+
+---
+
+## Examples
+
+**Example 1**
+```
+Input:  s = "abcdef", pattern = "abc??f"
+Output: true
+Explanation: ?? matches "de"; the rest matches literally.
+```
+
+**Example 2**
+```
+Input:  s = "abcdef", pattern = "ab?"
+Output: false
+Explanation: ? matches exactly one character; "ab?" has length 3 but "abcdef" has length 6.
+```
+
+**Example 3**
+```
+Input:  s = "", pattern = "*"
+Output: true
+Explanation: * matches the empty string.
+```
+
+```quiz
+{
+  "prompt": "What does dp[i][j] represent in this DP?",
+  "options": [
+    "Whether pattern[0..j-1] matches s[0..i-1]",
+    "The number of ways pattern[0..j-1] matches s[0..i-1]",
+    "The edit distance between s[0..i-1] and pattern[0..j-1]",
+    "Whether s[i] equals pattern[j]"
+  ],
+  "answer": "Whether pattern[0..j-1] matches s[0..i-1]"
+}
+```
+
+## Constraints
+
+- `0 ≤ s.length ≤ 2000`
+- `0 ≤ pattern.length ≤ 2000`
+- `s` contains only lowercase English letters.
+- `pattern` contains only lowercase English letters, `?`, and `*`.
+
+```python run viz=grid viz-root=dp
+class Solution:
+    def wildcard_pattern_matching(self, s: str, pattern: str) -> bool:
+        # Your code goes here
+        return False
+
+s = input()
+pattern = input()
+print("true" if Solution().wildcard_pattern_matching(s, pattern) else "false")
+```
+
+```java run viz=grid viz-root=dp
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public boolean wildcardPatternMatching(String s, String pattern) {
+            // Your code goes here
+            return false;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String s = sc.nextLine();
+        String pattern = sc.nextLine();
+        System.out.println(new Solution().wildcardPatternMatching(s, pattern));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "s", "type": "string", "placeholder": "abcdef" },
+    { "id": "pattern", "label": "pattern", "type": "string", "placeholder": "abc??f" }
+  ],
+  "cases": [
+    { "args": { "s": "abcdef", "pattern": "abc??f" }, "expected": "true" },
+    { "args": { "s": "abcdef", "pattern": "ab*" }, "expected": "true" },
+    { "args": { "s": "abcdef", "pattern": "ab?" }, "expected": "false" },
+    { "args": { "s": "", "pattern": "*" }, "expected": "true" },
+    { "args": { "s": "abc", "pattern": "" }, "expected": "false" },
+    { "args": { "s": "abc", "pattern": "???" }, "expected": "true" },
+    { "args": { "s": "abc", "pattern": "a*c" }, "expected": "true" },
+    { "args": { "s": "abc", "pattern": "a*d" }, "expected": "false" }
+  ]
+}
 ```
 
 <details>
@@ -56,7 +153,7 @@ Because the same `*` can keep matching more characters. After consuming one `s[i
 
 ### The Solution
 
-```python run viz=grid viz-root=dp
+```python solution time=O(n×m) space=O(n×m)
 from typing import List
 
 class Solution:
@@ -101,22 +198,12 @@ class Solution:
         return dp[n][m]
 
 
-# Examples from the problem statement
-print(Solution().wildcard_pattern_matching("abcdef", "abc??f"))   # True
-print(Solution().wildcard_pattern_matching("abcdef", "ab*"))      # True
-print(Solution().wildcard_pattern_matching("abcdef", "ab?"))      # False
-
-# Edge cases
-print(Solution().wildcard_pattern_matching("", ""))               # True  — empty matches empty
-print(Solution().wildcard_pattern_matching("", "*"))              # True  — star matches empty
-print(Solution().wildcard_pattern_matching("abc", ""))            # False — empty pattern, non-empty string
-print(Solution().wildcard_pattern_matching("abc", "abc"))         # True  — exact match
-print(Solution().wildcard_pattern_matching("abc", "???"))         # True  — all question marks
-print(Solution().wildcard_pattern_matching("abc", "a*c"))         # True  — star in middle
-print(Solution().wildcard_pattern_matching("abc", "a*d"))         # False — star can't fix tail mismatch
+s = input()
+pattern = input()
+print("true" if Solution().wildcard_pattern_matching(s, pattern) else "false")
 ```
 
-```java run viz=grid viz-root=dp
+```java solution
 import java.util.*;
 
 public class Main {
@@ -173,19 +260,10 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().wildcardPatternMatching("abcdef", "abc??f"));   // true
-        System.out.println(new Solution().wildcardPatternMatching("abcdef", "ab*"));      // true
-        System.out.println(new Solution().wildcardPatternMatching("abcdef", "ab?"));      // false
-
-        // Edge cases
-        System.out.println(new Solution().wildcardPatternMatching("", ""));               // true
-        System.out.println(new Solution().wildcardPatternMatching("", "*"));              // true
-        System.out.println(new Solution().wildcardPatternMatching("abc", ""));            // false
-        System.out.println(new Solution().wildcardPatternMatching("abc", "abc"));         // true
-        System.out.println(new Solution().wildcardPatternMatching("abc", "???"));         // true
-        System.out.println(new Solution().wildcardPatternMatching("abc", "a*c"));         // true
-        System.out.println(new Solution().wildcardPatternMatching("abc", "a*d"));         // false
+        Scanner sc = new Scanner(System.in);
+        String s = sc.nextLine();
+        String pattern = sc.nextLine();
+        System.out.println(new Solution().wildcardPatternMatching(s, pattern));
     }
 }
 ```

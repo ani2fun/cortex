@@ -4,6 +4,8 @@ summary: "Given a positive integer n, return all combinations of well-formed par
 prereqs:
   - 04-pattern-conditional-enumeration/01-pattern
 difficulty: medium
+kind: problem
+topics: [conditional-enumeration, backtracking]
 ---
 
 # Generate Parentheses
@@ -18,16 +20,92 @@ Given a positive integer `n`, return all combinations of well-formed parentheses
 
 ```
 Input:  n = 2
-Output: ["(())", "()()"]
+Output: [(())), ()()] or any valid order
 
 Input:  n = 1
-Output: ["()"]
+Output: [()]
 
-Input:  n = 0
-Output: []
+Input:  n = 3
+Output: [((())), (()()), (())(), ()(()), ()()()]
 ```
 
 ---
+
+## Examples
+
+**Example 1**
+```
+Input:  n = 2
+Output: [(()), ()()]
+Explanation: There are C(2) = 2 balanced strings of length 4. The pruned DFS visits them in this order.
+```
+
+**Example 2**
+```
+Input:  n = 3
+Output: [((())), (()()), (())(), ()(()), ()()()]
+Explanation: There are C(3) = 5 balanced strings of length 6 — the 3rd Catalan number.
+```
+
+```quiz
+{
+  "prompt": "How many balanced strings exist for n = 4?",
+  "options": ["5", "10", "14", "16"],
+  "answer": "14"
+}
+```
+
+## Constraints
+
+- `1 ≤ n ≤ 8`
+- Output may be in any order; these tests use the DFS visit order (open-first).
+
+```python run viz=array viz-root=choices
+from typing import List
+
+class Solution:
+    def generate_parentheses(self, n: int) -> List[str]:
+        # Your code goes here — track opens and closes counts,
+        # add '(' when opens < n, add ')' when closes < opens
+        return []
+
+n = int(input())
+result = Solution().generate_parentheses(n)
+print('[' + ', '.join(result) + ']')
+```
+
+```java run viz=array viz-root=choices
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public List<String> generateParentheses(int n) {
+            // Your code goes here — track opens and closes counts,
+            // add '(' when opens < n, add ')' when closes < opens
+            return new ArrayList<>();
+        }
+    }
+
+    public static void main(String[] args) {
+        int n = Integer.parseInt(new Scanner(System.in).nextLine().trim());
+        System.out.println(new Solution().generateParentheses(n));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "n", "label": "n", "type": "int", "placeholder": "2" }
+  ],
+  "cases": [
+    { "args": { "n": "1" }, "expected": "[()]" },
+    { "args": { "n": "2" }, "expected": "[(()), ()()]" },
+    { "args": { "n": "3" }, "expected": "[((())), (()()), (())(), ()(()), ()()()]" },
+    { "args": { "n": "4" }, "expected": "[(((()))), ((()())), ((())()), ((()))(), (()(())), (()()()), (()())(), (())(()), (())()(), ()((())), ()(()()), ()(())(), ()()(()), ()()()()]" }
+  ]
+}
+```
 
 <details>
 <summary><h2>What Does "Well-Formed" Mean Recursively?</h2></summary>
@@ -110,9 +188,9 @@ If neither is viable (which never happens during a properly running search but i
 
 ### The Solution
 
-The implementation was already shown in the [Implementation](#implementation) section above (where we used Generate Parentheses as the canonical example for the conditional-enumeration template). We restate the Python here to keep this section self-contained, then provide the trace.
+The implementation was already shown in the pattern page (where we used Generate Parentheses as the canonical example for the conditional-enumeration template). We restate the Python here to keep this section self-contained, then provide the trace.
 
-```python run viz=array viz-root=choices
+```python solution time=O(n · C(n)) space=O(n)
 from typing import List
 
 class Solution:
@@ -194,17 +272,12 @@ class Solution:
         return combinations
 
 
-# Examples from the problem statement
-print(Solution().generate_parentheses(2))   # ['(())', '()()']
-print(Solution().generate_parentheses(1))   # ['()']
-print(Solution().generate_parentheses(0))   # []
-
-# Edge cases
-print(len(Solution().generate_parentheses(3)))   # 5
-print(len(Solution().generate_parentheses(4)))   # 14
+n = int(input())
+result = Solution().generate_parentheses(n)
+print('[' + ', '.join(result) + ']')
 ```
 
-```java run viz=array viz-root=choices
+```java solution
 import java.util.*;
 
 public class Main {
@@ -304,19 +377,11 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().generateParentheses(2));   // [(()), ()()]
-        System.out.println(new Solution().generateParentheses(1));   // [()]
-        System.out.println(new Solution().generateParentheses(0));   // []
-
-        // Edge cases
-        System.out.println(new Solution().generateParentheses(3).size());   // 5
-        System.out.println(new Solution().generateParentheses(4).size());   // 14
+        int n = Integer.parseInt(new Scanner(System.in).nextLine().trim());
+        System.out.println(new Solution().generateParentheses(n));
     }
 }
 ```
-
-For the implementations in the other 9 languages, see the [Implementation](#implementation) section at the top of this lesson (the function name there is `generateBalanced` — same logic).
 
 <details>
 <summary><strong>Trace — n = 2</strong></summary>
@@ -361,9 +426,8 @@ Catalan numbers: `C(0)=1, C(1)=1, C(2)=2, C(3)=5, C(4)=14, C(5)=42, C(6)=132, ..
 
 | Case | Example | Expected |
 |---|---|---|
-| `n = 0` | `[]` | No pairs, no balanced strings (or `[""]` depending on convention; we return `[]`). |
-| `n = 1` | `["()"]` | Only one balanced sequence. |
-| `n = 3` | `["((()))", "(()())", "(())()", "()(())", "()()()"]` | 5 sequences = `C(3)`. |
+| `n = 1` | `[()]` | Only one balanced sequence. |
+| `n = 3` | `[((())), (()())), (())()), ()(())), ()()()]` | 5 sequences = `C(3)`. |
 
 </details>
 <details>

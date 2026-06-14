@@ -43,9 +43,11 @@ flowchart LR
 
 ## See It Work
 
-Walk the graph (DFS here), painting each node and giving every neighbour the opposite colour. The decisive line is the *check*: when you meet an already-coloured neighbour, it had better be the opposite colour.
+Walk the graph (DFS here), painting each node and giving every neighbour the opposite colour. The decisive line is the *check*: when you meet an already-coloured neighbour, it had better be the opposite colour. Pick a case and **Run** it.
 
 ```python run viz=graph viz-kind=graph
+import ast
+
 def colour(graph, node, col, value):
     col[node] = value
     for nb in graph[node]:
@@ -63,42 +65,76 @@ def is_two_colourable(graph):
             return False
     return True
 
-print(is_two_colourable([[1, 3], [0, 2], [1, 3], [0, 2]]))   # True  — 4-cycle
-print(is_two_colourable([[1, 2], [0, 2], [0, 1]]))           # False — triangle (odd cycle)
+graph = ast.literal_eval(input())   # adjacency list: graph[u] = u's neighbours
+print("true" if is_two_colourable(graph) else "false")
 ```
 
 ```java run viz=graph viz-kind=graph
 import java.util.*;
 
 public class Main {
-    static boolean colour(List<List<Integer>> graph, int node, Map<Integer, Integer> col, int value) {
-        col.put(node, value);
-        for (int nb : graph.get(node)) {
-            if (!col.containsKey(nb)) {                 // uncoloured → opposite colour
+    static boolean colour(int[][] graph, int node, int[] col, int value) {
+        col[node] = value;
+        for (int nb : graph[node]) {
+            if (col[nb] == -1) {                        // uncoloured → opposite colour
                 if (!colour(graph, nb, col, 1 - value)) return false;
-            } else if (col.get(nb) == value) {          // coloured the SAME → contradiction
+            } else if (col[nb] == value) {              // coloured the SAME → contradiction
                 return false;
             }
         }
         return true;
     }
 
-    static boolean isTwoColourable(List<List<Integer>> graph) {
-        if (graph.isEmpty()) return false;
-        Map<Integer, Integer> col = new HashMap<>();
-        for (int node = 0; node < graph.size(); node++)  // outer loop: cover every component
-            if (!col.containsKey(node) && !colour(graph, node, col, 1)) return false;
+    static boolean isTwoColourable(int[][] graph) {
+        if (graph.length == 0) return false;
+        int[] col = new int[graph.length];
+        Arrays.fill(col, -1);
+        for (int node = 0; node < graph.length; node++) // outer loop: cover every component
+            if (col[node] == -1 && !colour(graph, node, col, 1)) return false;
         return true;
     }
 
     public static void main(String[] args) {
-        System.out.println(isTwoColourable(List.of(List.of(1,3), List.of(0,2), List.of(1,3), List.of(0,2)))); // true
-        System.out.println(isTwoColourable(List.of(List.of(1,2), List.of(0,2), List.of(0,1))));               // false
+        Scanner sc = new Scanner(System.in);
+        int[][] graph = parseIntMatrix(sc.nextLine());
+        System.out.println(isTwoColourable(graph));
+    }
+
+    // "[[1, 2], [4], [3, 4]]" → adjacency list graph[u] = u's neighbours
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
     }
 }
 ```
 
-Both print `True` then `False`: the 4-cycle alternates cleanly, the triangle hits a same-colour clash.
+```testcases
+{
+  "args": [
+    { "id": "graph", "label": "graph", "type": "int[][]", "placeholder": "[[1, 3], [0, 2], [1, 3], [0, 2]]" }
+  ],
+  "cases": [
+    { "args": { "graph": "[[1, 3], [0, 2], [1, 3], [0, 2]]" }, "expected": "true" },
+    { "args": { "graph": "[[1, 2], [0, 2], [0, 1]]" }, "expected": "false" },
+    { "args": { "graph": "[[1], [0, 2], [1]]" }, "expected": "true" },
+    { "args": { "graph": "[[1], [0]]" }, "expected": "true" },
+    { "args": { "graph": "[[1, 2, 3], [0, 2], [0, 1], [0]]" }, "expected": "false" }
+  ]
+}
+```
+
+Both print `true` then `false`: the 4-cycle alternates cleanly, the triangle hits a same-colour clash.
 
 ## How It Works
 
@@ -152,6 +188,87 @@ It prints `True` — but the triangle is **not** 2-colourable. Without the check
 Back to the opening puzzle: **Possible Bipartition** ([LeetCode 886](https://leetcode.com/problems/possible-bipartition/)). Given `n` people (1-indexed) and a list of dislike pairs, can you split them into two groups with no enemies together? Build the dislike graph and ask: is it 2-colourable?
 
 ```python run viz=graph viz-kind=graph
+import ast
+
+def possible_bipartition(n, dislikes):
+    # Your code goes here — build an adjacency list (graph[a-1] ↔ graph[b-1] for each [a,b]),
+    # then run the two-colouring DFS over all components.
+    # Return True if 2-colourable, False otherwise.
+    pass
+
+n = int(input())
+dislikes = ast.literal_eval(input())   # 1-indexed pairs [[a, b], ...]
+print("true" if possible_bipartition(n, dislikes) else "false")
+```
+
+```java run viz=graph viz-kind=graph
+import java.util.*;
+
+public class Main {
+    static boolean colour(List<List<Integer>> g, int node, int[] col, int value) {
+        col[node] = value;
+        for (int nb : g.get(node)) {
+            if (col[nb] == -1) { if (!colour(g, nb, col, 1 - value)) return false; }
+            else if (col[nb] == value) return false;
+        }
+        return true;
+    }
+
+    static boolean possibleBipartition(int n, int[][] dislikes) {
+        // Your code goes here — build adjacency from 1-indexed dislikes,
+        // then two-colour all components. Return true if 2-colourable.
+        return false;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = Integer.parseInt(sc.nextLine().trim());
+        int[][] dislikes = parseIntMatrix(sc.nextLine());
+        System.out.println(possibleBipartition(n, dislikes));
+    }
+
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "n", "label": "n", "type": "int", "placeholder": "4" },
+    { "id": "dislikes", "label": "dislikes", "type": "int[][]", "placeholder": "[[1, 2], [1, 3], [2, 4]]" }
+  ],
+  "cases": [
+    { "args": { "n": "4", "dislikes": "[[1, 2], [1, 3], [2, 4]]" }, "expected": "true" },
+    { "args": { "n": "3", "dislikes": "[[1, 2], [1, 3], [2, 3]]" }, "expected": "false" },
+    { "args": { "n": "5", "dislikes": "[[1, 2], [3, 4], [4, 5], [3, 5]]" }, "expected": "false" },
+    { "args": { "n": "4", "dislikes": "[]" }, "expected": "true" },
+    { "args": { "n": "2", "dislikes": "[[1, 2]]" }, "expected": "true" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Build an adjacency list from the 1-indexed dislike pairs (subtract 1 from each to get 0-indexed nodes), then run the same DFS two-colouring over every uncoloured component. If any component fails the colour check, return false.
+
+```python solution time=O(V + E) space=O(V + E)
+import ast
+
 def colour(graph, node, col, value):
     col[node] = value
     for nb in graph[node]:
@@ -171,39 +288,61 @@ def possible_bipartition(n, dislikes):
             return False
     return True
 
-print(possible_bipartition(4, [[1, 2], [1, 3], [2, 4]]))   # True
-print(possible_bipartition(3, [[1, 2], [1, 3], [2, 3]]))   # False — mutual triangle of enemies
+n = int(input())
+dislikes = ast.literal_eval(input())   # 1-indexed pairs [[a, b], ...]
+print("true" if possible_bipartition(n, dislikes) else "false")
 ```
 
-```java run viz=graph viz-kind=graph
+```java solution
 import java.util.*;
 
 public class Main {
-    static boolean colour(List<List<Integer>> g, int node, Map<Integer, Integer> col, int value) {
-        col.put(node, value);
+    static boolean colour(List<List<Integer>> g, int node, int[] col, int value) {
+        col[node] = value;
         for (int nb : g.get(node)) {
-            if (!col.containsKey(nb)) { if (!colour(g, nb, col, 1 - value)) return false; }
-            else if (col.get(nb) == value) return false;
+            if (col[nb] == -1) { if (!colour(g, nb, col, 1 - value)) return false; }
+            else if (col[nb] == value) return false;
         }
         return true;
     }
+
     static boolean possibleBipartition(int n, int[][] dislikes) {
         List<List<Integer>> g = new ArrayList<>();
         for (int i = 0; i < n; i++) g.add(new ArrayList<>());
         for (int[] d : dislikes) { g.get(d[0]-1).add(d[1]-1); g.get(d[1]-1).add(d[0]-1); }
-        Map<Integer, Integer> col = new HashMap<>();
+        int[] col = new int[n];
+        Arrays.fill(col, -1);
         for (int node = 0; node < n; node++)
-            if (!col.containsKey(node) && !colour(g, node, col, 1)) return false;
+            if (col[node] == -1 && !colour(g, node, col, 1)) return false;
         return true;
     }
+
     public static void main(String[] args) {
-        System.out.println(possibleBipartition(4, new int[][]{{1,2},{1,3},{2,4}}));  // true
-        System.out.println(possibleBipartition(3, new int[][]{{1,2},{1,3},{2,3}}));  // false
+        Scanner sc = new Scanner(System.in);
+        int n = Integer.parseInt(sc.nextLine().trim());
+        int[][] dislikes = parseIntMatrix(sc.nextLine());
+        System.out.println(possibleBipartition(n, dislikes));
+    }
+
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
     }
 }
 ```
 
-Both print `True` then `False`: four people with a chain of dislikes split fine; three people who all dislike each other form an odd cycle and can't. The four problems in this section's **Problems** folder drill the variants — direct 2-colouring, dislike pairs, repairing a partial colouring, and group assignment.
+</details>
 
 ## Reflect & Connect
 
@@ -250,4 +389,4 @@ Both print `True` then `False`: four people with a chain of dislikes split fine;
 - **CLRS** (Cormen, Leiserson, Rivest, Stein), *Introduction to Algorithms*, 3rd ed., §22.2 (BFS) and the bipartite-graph exercises — the BFS-colouring test and the odd-cycle characterisation.
 - **Sedgewick & Wayne**, *Algorithms*, 4th ed., §4.1 — the `Bipartite` / two-colourability client built on DFS, with the odd-cycle proof.
 - **Skiena**, *The Algorithm Design Manual*, 3rd ed., §5.7.2 — two-colouring via BFS and its place in graph-colouring (and why `k ≥ 3` is hard).
-- **LeetCode 785** "Is Graph Bipartite?" and **886** "Possible Bipartition" are the canonical drills. The `True`/`False`, buggy-triangle, and bipartition outputs above come from the runnable blocks — re-run to verify.
+- **LeetCode 785** "Is Graph Bipartite?" and **886** "Possible Bipartition" are the canonical drills. The `true`/`false`, buggy-triangle, and bipartition outputs above come from the runnable blocks — re-run to verify.

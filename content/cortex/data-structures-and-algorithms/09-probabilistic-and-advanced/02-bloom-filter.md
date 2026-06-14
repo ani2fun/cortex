@@ -37,12 +37,13 @@ class BloomFilter:
     def contains(self, x):
         return all(self.bits[p] for p in self._positions(x))   # present only if ALL k bits are set
 
+adds = input().split(",")
+queries = input().split(",")
 bf = BloomFilter(m=64, k=3)
-for w in ["apple", "banana", "cherry"]:
+for w in adds:
     bf.add(w)
-print(bf.contains("apple"))     # True
-print(bf.contains("banana"))    # True
-print(bf.contains("grape"))     # False
+for q in queries:
+    print("true" if bf.contains(q) else "false")
 ```
 
 ```java run viz=array
@@ -66,16 +67,31 @@ public class Main {
         boolean contains(String x) { for (int p : positions(x)) if (!bits[p]) return false; return true; }
     }
     public static void main(String[] args) {
+        java.util.Scanner sc = new java.util.Scanner(System.in);
+        String[] adds = sc.nextLine().split(",");
+        String[] queries = sc.nextLine().split(",");
         BloomFilter bf = new BloomFilter(64, 3);
-        for (String w : new String[]{"apple", "banana", "cherry"}) bf.add(w);
-        System.out.println(bf.contains("apple"));    // true
-        System.out.println(bf.contains("banana"));   // true
-        System.out.println(bf.contains("grape"));    // false
+        for (String w : adds) bf.add(w);
+        for (String q : queries) System.out.println(bf.contains(q));
     }
 }
 ```
 
-Both print `true`, `true`, `false`. The three added fruits are found; `"grape"` isn't (here a true negative). The filter stores no fruit names — only 64 bits — yet answers membership. (We use a homemade polynomial hash because Python's built-in `hash` is randomized per process; a real filter uses a fixed, well-mixed hash.)
+```testcases
+{
+  "args": [
+    { "id": "adds", "label": "words to add", "type": "string", "placeholder": "apple,banana,cherry" },
+    { "id": "queries", "label": "words to query", "type": "string", "placeholder": "apple,banana,grape" }
+  ],
+  "cases": [
+    { "args": { "adds": "apple,banana,cherry", "queries": "apple,banana,grape" }, "expected": "true\ntrue\nfalse" },
+    { "args": { "adds": "fox", "queries": "fox,cat" }, "expected": "true\nfalse" },
+    { "args": { "adds": "red,green,blue", "queries": "red,green,yellow" }, "expected": "true\ntrue\nfalse" }
+  ]
+}
+```
+
+All three added fruits are found; `"grape"` isn't (here a true negative). The filter stores no fruit names — only 64 bits — yet answers membership. (We use a homemade polynomial hash because Python's built-in `hash` is randomized per process; a real filter uses a fixed, well-mixed hash.)
 
 ## How It Works
 
@@ -168,15 +184,15 @@ class BloomFilter:
         return all(self.bits[p] for p in self._positions(x))
 
 def empirical_fp(m, k, n, queries):
-    bf = BloomFilter(m, k)
-    for i in range(n):
-        bf.add(f"item{i}")
-    fp = sum(1 for j in range(queries) if bf.contains(f"query{j}"))
-    return fp / queries
+    # Your code goes here
+    return 0.0
 
-m, k, n, q = 1000, 3, 100, 10000
-print(f"empirical FP rate : {empirical_fp(m, k, n, q):.4f}")          # ~0.0219
-print(f"theoretical       : {(1 - math.exp(-k*n/m))**k:.4f}")          # ~0.0174
+m = int(input())
+k = int(input())
+n = int(input())
+q = int(input())
+print(f"empirical FP rate : {empirical_fp(m, k, n, q):.4f}")
+print(f"theoretical       : {(1 - math.exp(-k*n/m))**k:.4f}")
 ```
 
 ```java run viz=array
@@ -199,19 +215,118 @@ public class Main {
         void add(String x) { for (int p : positions(x)) bits[p] = true; }
         boolean contains(String x) { for (int p : positions(x)) if (!bits[p]) return false; return true; }
     }
+    static double empiricalFp(int m, int k, int n, int queries) {
+        // Your code goes here
+        return 0.0;
+    }
     public static void main(String[] args) {
-        int m = 1000, k = 3, n = 100, q = 10000;
-        BloomFilter bf = new BloomFilter(m, k);
-        for (int i = 0; i < n; i++) bf.add("item" + i);
-        int fp = 0;
-        for (int j = 0; j < q; j++) if (bf.contains("query" + j)) fp++;
-        System.out.printf("empirical FP rate : %.4f%n", (double) fp / q);              // ~0.0219
-        System.out.printf("theoretical       : %.4f%n", Math.pow(1 - Math.exp(-(double)k*n/m), k));  // ~0.0174
+        java.util.Scanner sc = new java.util.Scanner(System.in);
+        int m = Integer.parseInt(sc.nextLine().trim());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        int n = Integer.parseInt(sc.nextLine().trim());
+        int q = Integer.parseInt(sc.nextLine().trim());
+        System.out.printf("empirical FP rate : %.4f%n", empiricalFp(m, k, n, q));
+        System.out.printf("theoretical       : %.4f%n", Math.pow(1 - Math.exp(-(double)k*n/m), k));
     }
 }
 ```
 
-Both report an empirical rate near **2.2%**, close to the theoretical **1.7%** — the small gap is because double-hashing approximates `k` truly-independent hashes. The point is that the false-positive rate is a *knob*: more bits (`m`) or a tuned `k` drives it down predictably, so you size a bloom filter to whatever error budget you can afford. (False negatives stay at zero regardless — they're not a knob, they're impossible.)
+```testcases
+{
+  "args": [
+    { "id": "m", "label": "m (bits)", "type": "number", "placeholder": "1000" },
+    { "id": "k", "label": "k (hashes)", "type": "number", "placeholder": "3" },
+    { "id": "n", "label": "n (items added)", "type": "number", "placeholder": "100" },
+    { "id": "q", "label": "q (queries)", "type": "number", "placeholder": "10000" }
+  ],
+  "cases": [
+    { "args": { "m": "1000", "k": "3", "n": "100", "q": "10000" }, "expected": "empirical FP rate : 0.0219\ntheoretical       : 0.0174" },
+    { "args": { "m": "500", "k": "2", "n": "50", "q": "5000" }, "expected": "empirical FP rate : 0.0378\ntheoretical       : 0.0329" }
+  ]
+}
+```
+
+The empirical rate is near the theoretical prediction — the small gap is because double-hashing approximates `k` truly-independent hashes. The point is that the false-positive rate is a *knob*: more bits (`m`) or a tuned `k` drives it down predictably, so you size a bloom filter to whatever error budget you can afford. (False negatives stay at zero regardless — they're not a knob, they're impossible.)
+
+<details>
+<summary><strong>Editorial</strong></summary>
+
+Fill the filter with `n` items named `"item0"`, `"item1"`, …; then probe `q` items named `"query0"`, `"query1"`, … (none of which were added). Count how many of those probes return `contains = True` and divide by `q` to get the empirical rate. Compare against the closed-form `(1 − e^{−kn/m})^k`.
+
+```python solution time=O(n+q) space=O(m)
+import math
+MOD = (1 << 31) - 1
+def _h(s, base):
+    h = 0
+    for c in s:
+        h = (h * base + ord(c)) % MOD
+    return h
+class BloomFilter:
+    def __init__(self, m, k):
+        self.m, self.k = m, k; self.bits = [0] * m
+    def _positions(self, x):
+        h1, h2 = _h(x, 131), _h(x, 137) | 1
+        return [(h1 + i * h2) % self.m for i in range(self.k)]
+    def add(self, x):
+        for p in self._positions(x): self.bits[p] = 1
+    def contains(self, x):
+        return all(self.bits[p] for p in self._positions(x))
+
+def empirical_fp(m, k, n, queries):
+    bf = BloomFilter(m, k)
+    for i in range(n):
+        bf.add(f"item{i}")
+    fp = sum(1 for j in range(queries) if bf.contains(f"query{j}"))
+    return fp / queries
+
+m = int(input())
+k = int(input())
+n = int(input())
+q = int(input())
+print(f"empirical FP rate : {empirical_fp(m, k, n, q):.4f}")
+print(f"theoretical       : {(1 - math.exp(-k*n/m))**k:.4f}")
+```
+
+```java solution
+public class Main {
+    static final long MOD = (1L << 31) - 1;
+    static long h(String s, long base) {
+        long v = 0;
+        for (int i = 0; i < s.length(); i++) v = (v * base + s.charAt(i)) % MOD;
+        return v;
+    }
+    static class BloomFilter {
+        int m, k; boolean[] bits;
+        BloomFilter(int m, int k) { this.m = m; this.k = k; bits = new boolean[m]; }
+        int[] positions(String x) {
+            long h1 = h(x, 131), h2 = h(x, 137) | 1;
+            int[] p = new int[k];
+            for (int i = 0; i < k; i++) p[i] = (int) ((h1 + (long) i * h2) % m);
+            return p;
+        }
+        void add(String x) { for (int p : positions(x)) bits[p] = true; }
+        boolean contains(String x) { for (int p : positions(x)) if (!bits[p]) return false; return true; }
+    }
+    static double empiricalFp(int m, int k, int n, int queries) {
+        BloomFilter bf = new BloomFilter(m, k);
+        for (int i = 0; i < n; i++) bf.add("item" + i);
+        int fp = 0;
+        for (int j = 0; j < queries; j++) if (bf.contains("query" + j)) fp++;
+        return (double) fp / queries;
+    }
+    public static void main(String[] args) {
+        java.util.Scanner sc = new java.util.Scanner(System.in);
+        int m = Integer.parseInt(sc.nextLine().trim());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        int n = Integer.parseInt(sc.nextLine().trim());
+        int q = Integer.parseInt(sc.nextLine().trim());
+        System.out.printf("empirical FP rate : %.4f%n", empiricalFp(m, k, n, q));
+        System.out.printf("theoretical       : %.4f%n", Math.pow(1 - Math.exp(-(double)k*n/m), k));
+    }
+}
+```
+
+</details>
 
 ## Reflect & Connect
 

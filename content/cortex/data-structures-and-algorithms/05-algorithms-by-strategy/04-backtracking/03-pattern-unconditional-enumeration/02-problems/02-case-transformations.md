@@ -4,6 +4,8 @@ summary: "Given a string s, return every possible string formed by transforming 
 prereqs:
   - 03-pattern-unconditional-enumeration/01-pattern
 difficulty: easy
+kind: problem
+topics: [unconditional-enumeration, backtracking]
 ---
 
 # Case Transformations
@@ -28,6 +30,86 @@ Output: ["a", "A"]
 ```
 
 ---
+
+## Examples
+
+**Example 1**
+```
+Input:  s = "a1b2"
+Output: [A1B2, A1b2, a1B2, a1b2]
+Explanation: Two letters (a, b) each have 2 choices → 2² = 4 results; the digit 1 is forced.
+```
+
+**Example 2**
+```
+Input:  s = "3z4"
+Output: [3Z4, 3z4]
+Explanation: One letter (z) has 2 choices; the digits are forced → 2¹ = 2 results.
+```
+
+```quiz
+{
+  "prompt": "How many outputs does case_transformations produce for a string with L letters and D digits?",
+  "options": ["2^(L+D)", "2^L", "2^D", "L × D"],
+  "answer": "2^L"
+}
+```
+
+## Constraints
+
+- `1 ≤ s.length ≤ 12`
+- `s` consists of lower-case English letters, upper-case English letters, and digits.
+- No empty-string test case (avoids stdin EOF crash).
+
+```python run viz=graph viz-root=transformations
+from typing import List
+
+class Solution:
+    def case_transformations(self, s: str) -> List[str]:
+        # Your code goes here — backtrack over each character:
+        # if it's a letter, two choices (toggle or keep); otherwise one choice (keep).
+        # Record a joined string at the leaf.
+        return []
+
+s = input().strip()     # the test case's s
+r = Solution().case_transformations(s)
+print("[" + ", ".join(r) + "]")
+```
+
+```java run viz=graph viz-root=transformations
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public List<String> caseTransformations(String s) {
+            // Your code goes here — backtrack over each character:
+            // if it's a letter, two choices (toggle or keep); otherwise one choice (keep).
+            // Record the joined string at the leaf.
+            return new ArrayList<>();
+        }
+    }
+
+    public static void main(String[] args) {
+        String s = new Scanner(System.in).nextLine().trim();
+        System.out.println(new Solution().caseTransformations(s));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "s", "type": "string", "placeholder": "a1b2" }
+  ],
+  "cases": [
+    { "args": { "s": "a1b2" }, "expected": "[A1B2, A1b2, a1B2, a1b2]" },
+    { "args": { "s": "3z4" }, "expected": "[3Z4, 3z4]" },
+    { "args": { "s": "a" }, "expected": "[A, a]" },
+    { "args": { "s": "1" }, "expected": "[1]" },
+    { "args": { "s": "ab" }, "expected": "[AB, Ab, aB, ab]" }
+  ]
+}
+```
 
 <details>
 <summary><h2>What's Different About This Problem?</h2></summary>
@@ -94,7 +176,7 @@ Per-slot branching is either 1 or 2 — bounded by 2. The tree is finite and wal
 
 ### The Solution
 
-```python run viz=graph viz-root=transformations
+```python solution time=O(n · 2^L) space=O(n)
 from typing import List
 
 class Solution:
@@ -178,18 +260,12 @@ class Solution:
         return transformations
 
 
-# Examples from the problem statement
-print(sorted(Solution().case_transformations("a1b2")))   # ['A1B2', 'A1b2', 'a1B2', 'a1b2']
-print(sorted(Solution().case_transformations("3z4")))    # ['3Z4', '3z4']
-print(sorted(Solution().case_transformations("a")))      # ['A', 'a']
-
-# Edge cases
-print(sorted(Solution().case_transformations("1")))      # ['1']
-print(sorted(Solution().case_transformations("ab")))     # ['AB', 'Ab', 'aB', 'ab']
-print(len(Solution().case_transformations("abc")))       # 8
+s = input().strip()     # the test case's s
+r = Solution().case_transformations(s)
+print("[" + ", ".join(r) + "]")
 ```
 
-```java run viz=graph viz-root=transformations
+```java solution
 import java.util.*;
 
 public class Main {
@@ -296,24 +372,8 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        List<String> r1 = new Solution().caseTransformations("a1b2");
-        Collections.sort(r1); System.out.println(r1);   // [A1B2, A1b2, a1B2, a1b2]
-
-        List<String> r2 = new Solution().caseTransformations("3z4");
-        Collections.sort(r2); System.out.println(r2);   // [3Z4, 3z4]
-
-        List<String> r3 = new Solution().caseTransformations("a");
-        Collections.sort(r3); System.out.println(r3);   // [A, a]
-
-        // Edge cases
-        List<String> r4 = new Solution().caseTransformations("1");
-        Collections.sort(r4); System.out.println(r4);   // [1]
-
-        List<String> r5 = new Solution().caseTransformations("ab");
-        Collections.sort(r5); System.out.println(r5);   // [AB, Ab, aB, ab]
-
-        System.out.println(new Solution().caseTransformations("abc").size());  // 8
+        String s = new Scanner(System.in).nextLine().trim();
+        System.out.println(new Solution().caseTransformations(s));
     }
 }
 ```
@@ -354,7 +414,6 @@ Notice: the exponent is the *letter count*, not the string length. Strings with 
 |---|---|---|
 | All letters | `"abc"` | 8 outputs (`2³`). |
 | No letters | `"123"` | 1 output (`["123"]`). |
-| Empty | `""` | `[""]` — single empty result. |
 | Mixed | `"a1b"` | 4 outputs. |
 | Already mixed-case | `"aA"` | 4 outputs (each letter toggled independently). |
 

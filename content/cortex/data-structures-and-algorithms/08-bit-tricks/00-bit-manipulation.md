@@ -90,30 +90,147 @@ Before you read on: from that result `1110`, what does `x & ~(1 << 1)` give?
 
 ## Your Turn
 
-The four moves, on a value with bits 2 and 5 already set (`0b00100100` = 36):
+The four moves — set, clear, toggle, and test — on a value you choose. The driver reads `x`, then prints the set-bit-0, clear-bit-2, toggle-bit-5, and test-bit-2 results (first three as 8-bit binary, last as an integer):
 
 ```python run viz=array
 def show(x): return f"{x:08b}"
 
-x = 0b00100100               # bits 2 and 5 set
-print(show(x | (1 << 0)))    # SET bit 0    → 00100101
-print(show(x & ~(1 << 2)))   # CLEAR bit 2  → 00100000
-print(show(x ^ (1 << 5)))    # TOGGLE bit 5 → 00000100
-print((x >> 2) & 1)          # TEST bit 2   → 1
+def set_bit(x, i):
+    # Your code goes here
+    return 0
+
+def clear_bit(x, i):
+    # Your code goes here
+    return 0
+
+def toggle_bit(x, i):
+    # Your code goes here
+    return 0
+
+def test_bit(x, i):
+    # Your code goes here
+    return 0
+
+x = int(input())
+print(show(set_bit(x, 0)))
+print(show(clear_bit(x, 2)))
+print(show(toggle_bit(x, 5)))
+print(test_bit(x, 2))
 ```
 
 ```java run viz=array
+import java.util.*;
+
 public class Main {
-  static String show(int x) { return String.format("%8s", Integer.toBinaryString(x)).replace(' ', '0'); }
+  static String show(int x) {
+    return String.format("%8s", Integer.toBinaryString(x)).replace(' ', '0');
+  }
+
+  static int setBit(int x, int i) {
+    // Your code goes here
+    return 0;
+  }
+
+  static int clearBit(int x, int i) {
+    // Your code goes here
+    return 0;
+  }
+
+  static int toggleBit(int x, int i) {
+    // Your code goes here
+    return 0;
+  }
+
+  static int testBit(int x, int i) {
+    // Your code goes here
+    return 0;
+  }
+
   public static void main(String[] args) {
-    int x = 0b00100100;                       // bits 2 and 5 set
-    System.out.println(show(x | (1 << 0)));   // SET bit 0    → 00100101
-    System.out.println(show(x & ~(1 << 2)));  // CLEAR bit 2  → 00100000
-    System.out.println(show(x ^ (1 << 5)));   // TOGGLE bit 5 → 00000100
-    System.out.println((x >> 2) & 1);         // TEST bit 2   → 1
+    Scanner sc = new Scanner(System.in);
+    int x = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(show(setBit(x, 0)));
+    System.out.println(show(clearBit(x, 2)));
+    System.out.println(show(toggleBit(x, 5)));
+    System.out.println(testBit(x, 2));
   }
 }
 ```
+
+```testcases
+{
+  "args": [
+    { "id": "x", "label": "x", "type": "int", "placeholder": "36" }
+  ],
+  "cases": [
+    { "args": { "x": "36" }, "expected": "00100101\n00100000\n00000100\n1" },
+    { "args": { "x": "0" }, "expected": "00000001\n00000000\n00100000\n0" },
+    { "args": { "x": "255" }, "expected": "11111111\n11111011\n11011111\n1" }
+  ]
+}
+```
+
+<details>
+<summary><strong>Editorial</strong></summary>
+
+```python solution
+def show(x): return f"{x:08b}"
+
+def set_bit(x, i):
+    return x | (1 << i)
+
+def clear_bit(x, i):
+    return x & ~(1 << i)
+
+def toggle_bit(x, i):
+    return x ^ (1 << i)
+
+def test_bit(x, i):
+    return (x >> i) & 1
+
+x = int(input())
+print(show(set_bit(x, 0)))
+print(show(clear_bit(x, 2)))
+print(show(toggle_bit(x, 5)))
+print(test_bit(x, 2))
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+  static String show(int x) {
+    return String.format("%8s", Integer.toBinaryString(x)).replace(' ', '0');
+  }
+
+  static int setBit(int x, int i) {
+    return x | (1 << i);
+  }
+
+  static int clearBit(int x, int i) {
+    return x & ~(1 << i);
+  }
+
+  static int toggleBit(int x, int i) {
+    return x ^ (1 << i);
+  }
+
+  static int testBit(int x, int i) {
+    return (x >> i) & 1;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int x = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(show(setBit(x, 0)));
+    System.out.println(show(clearBit(x, 2)));
+    System.out.println(show(toggleBit(x, 5)));
+    System.out.println(testBit(x, 2));
+  }
+}
+```
+
+</details>
 
 ## Reflect & Connect
 

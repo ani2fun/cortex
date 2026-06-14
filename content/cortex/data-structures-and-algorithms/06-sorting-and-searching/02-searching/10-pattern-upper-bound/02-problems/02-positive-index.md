@@ -4,11 +4,13 @@ summary: "Sorted array. Return the index of the first positive element, or -1 if
 prereqs:
   - 10-pattern-upper-bound/01-pattern
 difficulty: medium
+kind: problem
+topics: [upper-bound, searching]
 ---
 
 # Positive Index
 
-## The Problem
+## Problem Statement
 
 Sorted array. Return the index of the first positive element, or `-1` if none.
 
@@ -23,6 +25,92 @@ Input:  arr = [-1, -2]
 Output: -1
 ```
 
+## Examples
+
+**Example 1**
+```
+Input:  arr = [-5, -3, -1, 0, 2, 4, 6]
+Output: 4
+Explanation: arr[4] = 2 is the first element strictly greater than 0.
+```
+
+**Example 2**
+```
+Input:  arr = [-1, -2]
+Output: -1
+Explanation: No element is positive; the array contains only negative values.
+```
+
+## Constraints
+
+- `0 ≤ arr.length ≤ 10^5`
+- `-10^9 ≤ arr[i] ≤ 10^9`, array is sorted in non-decreasing order
+
+```python run viz=array
+import ast
+from typing import List
+
+class Solution:
+    def positive_index(self, arr: List[int]) -> int:
+        # Your code goes here — upper_bound(arr, 0) gives the first index
+        # where arr[i] > 0. Return -1 if that index equals len(arr).
+        return -1
+
+arr = ast.literal_eval(input())
+print(Solution().positive_index(arr))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int positiveIndex(int[] arr) {
+            // Your code goes here — upper_bound(arr, 0) gives the first index
+            // where arr[i] > 0. Return -1 if that index equals arr.length.
+            return -1;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        System.out.println(new Solution().positiveIndex(arr));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[-5, -3, -1, 0, 2, 4, 6]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[-5, -3, -1, 0, 2, 4, 6]" }, "expected": "4" },
+    { "args": { "arr": "[-1, 2, 2, 2, 3, 4]" }, "expected": "1" },
+    { "args": { "arr": "[-1, -2]" }, "expected": "-1" },
+    { "args": { "arr": "[1]" }, "expected": "0" },
+    { "args": { "arr": "[-5]" }, "expected": "-1" },
+    { "args": { "arr": "[0, 0, 0]" }, "expected": "-1" }
+  ]
+}
+```
+
+<details>
+<summary><h2>Intuition</h2></summary>
+
+"First positive" means "first element strictly greater than 0" — the classic upper-bound trigger. `upper_bound(arr, 0)` runs the `≤` binary search against 0: it steps past every element `≤ 0` (negatives and zeros) and lands on the first `> 0`. If the returned index equals the array length, no positive element exists and we return `-1`. One call, `O(log n)`.
+
+</details>
 <details>
 <summary><h2>The Solution</h2></summary>
 
@@ -30,7 +118,8 @@ Output: -1
 `upper_bound(arr, 0)` returns the first index where `arr[i] > 0` — exactly the first positive element. Return `-1` if it's `n`.
 
 
-```python run viz=array
+```python solution time=O(log n) space=O(1)
+import ast
 from typing import List
 
 class Solution:
@@ -81,21 +170,11 @@ class Solution:
         return upper_bound_index
 
 
-# Examples from the problem statement
-print(Solution().positive_index([-5, -3, -1, 0, 2, 4, 6]))  # 4
-print(Solution().positive_index([-1, 2, 2, 2, 3, 4]))        # 1
-print(Solution().positive_index([-1, -2]))                    # -1
-
-# Edge cases
-print(Solution().positive_index([]))                          # -1  (empty)
-print(Solution().positive_index([1]))                         # 0   (single positive)
-print(Solution().positive_index([-5]))                        # -1  (single negative)
-print(Solution().positive_index([0, 0, 0]))                   # -1  (all zero)
-print(Solution().positive_index([-3, -2, -1, 0, 1]))          # 4   (positive at last)
-print(Solution().positive_index([5, 10, 15]))                 # 0   (all positive)
+arr = ast.literal_eval(input())
+print(Solution().positive_index(arr))
 ```
 
-```java run viz=array
+```java solution
 import java.util.*;
 
 public class Main {
@@ -156,18 +235,18 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().positiveIndex(new int[]{-5, -3, -1, 0, 2, 4, 6}));  // 4
-        System.out.println(new Solution().positiveIndex(new int[]{-1, 2, 2, 2, 3, 4}));        // 1
-        System.out.println(new Solution().positiveIndex(new int[]{-1, -2}));                    // -1
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        System.out.println(new Solution().positiveIndex(arr));
+    }
 
-        // Edge cases
-        System.out.println(new Solution().positiveIndex(new int[]{}));                          // -1  (empty)
-        System.out.println(new Solution().positiveIndex(new int[]{1}));                         // 0   (single positive)
-        System.out.println(new Solution().positiveIndex(new int[]{-5}));                        // -1  (single negative)
-        System.out.println(new Solution().positiveIndex(new int[]{0, 0, 0}));                   // -1  (all zero)
-        System.out.println(new Solution().positiveIndex(new int[]{-3, -2, -1, 0, 1}));          // 4   (positive at last)
-        System.out.println(new Solution().positiveIndex(new int[]{5, 10, 15}));                 // 0   (all positive)
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

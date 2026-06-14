@@ -27,8 +27,9 @@ def naive_search(text, pattern):
             hits.append(i)
     return hits
 
-print(naive_search("abxabcabcaby", "abcaby"))   # [6]
-print(naive_search("aaaaa", "aa"))              # [0, 1, 2, 3]
+text = input()                                    # the test case's text
+pattern = input()                                 # the test case's pattern
+print(naive_search(text, pattern))
 ```
 
 ```java run viz=array
@@ -45,13 +46,30 @@ public class Main {
         return hits;
     }
     public static void main(String[] args) {
-        System.out.println(naiveSearch("abxabcabcaby", "abcaby"));   // [6]
-        System.out.println(naiveSearch("aaaaa", "aa"));              // [0, 1, 2, 3]
+        Scanner sc = new Scanner(System.in);
+        String text = sc.nextLine();              // the test case's text
+        String pattern = sc.nextLine();           // the test case's pattern
+        System.out.println(naiveSearch(text, pattern));
     }
 }
 ```
 
-Both print `[6]` then `[0, 1, 2, 3]`. The pattern `"abcaby"` starts only at index 6; `"aa"` overlaps itself, matching at 0, 1, 2, 3. Each alignment does up to `m` comparisons, and there are `n − m + 1` of them — hence `O(n·m)`.
+```testcases
+{
+  "args": [
+    { "id": "text", "label": "text", "type": "string", "placeholder": "abxabcabcaby" },
+    { "id": "pattern", "label": "pattern", "type": "string", "placeholder": "abcaby" }
+  ],
+  "cases": [
+    { "args": { "text": "abxabcabcaby", "pattern": "abcaby" }, "expected": "[6]" },
+    { "args": { "text": "aaaaa", "pattern": "aa" }, "expected": "[0, 1, 2, 3]" },
+    { "args": { "text": "abcabcabc", "pattern": "abc" }, "expected": "[0, 3, 6]" },
+    { "args": { "text": "hello", "pattern": "xyz" }, "expected": "[]" }
+  ]
+}
+```
+
+The first two cases print `[6]` then `[0, 1, 2, 3]`. The pattern `"abcaby"` starts only at index 6; `"aa"` overlaps itself, matching at 0, 1, 2, 3. Each alignment does up to `m` comparisons, and there are `n − m + 1` of them — hence `O(n·m)`.
 
 ## How It Works
 
@@ -114,6 +132,54 @@ The adversarial case does **80** comparisons — exactly the `(n − m + 1)·m =
 
 ```python run viz=array
 def str_str(haystack, needle):
+    # Your code goes here — the naive scan with an early return on the first full match
+    return -1
+
+haystack = input()
+needle = input()
+print(str_str(haystack, needle))
+```
+
+```java run viz=array
+import java.util.*;
+public class Main {
+    static int strStr(String haystack, String needle) {
+        // Your code goes here — the naive scan with an early return on the first full match
+        return -1;
+    }
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String haystack = sc.nextLine();
+        String needle = sc.nextLine();
+        System.out.println(strStr(haystack, needle));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "haystack", "label": "haystack", "type": "string", "placeholder": "sadbutsad" },
+    { "id": "needle", "label": "needle", "type": "string", "placeholder": "sad" }
+  ],
+  "cases": [
+    { "args": { "haystack": "sadbutsad", "needle": "sad" }, "expected": "0" },
+    { "args": { "haystack": "leetcode", "needle": "leeto" }, "expected": "-1" },
+    { "args": { "haystack": "mississippi", "needle": "issip" }, "expected": "4" },
+    { "args": { "haystack": "aaa", "needle": "a" }, "expected": "0" }
+  ]
+}
+```
+
+The first two cases print `0` then `-1`. `"sad"` appears first at index 0; `"leeto"` never appears (it almost matches `"leetcode"` at index 0 — `leet` lines up — then fails at the fifth character, the exact near-match waste from above). This is the most-asked "implement substring search" interview question, and the naive answer is correct and often expected first — the optimisation to KMP is the follow-up.
+
+<details>
+<summary><strong>Editorial</strong></summary>
+
+The naive scan with an early return: at each alignment, compare char by char; the instant the whole pattern matches, return that index. No preprocessing, `O(n·m)` worst case — and correct, which is what the interview asks for first.
+
+```python solution time=O(n*m) space=O(1)
+def str_str(haystack, needle):
     n, m = len(haystack), len(needle)
     for i in range(n - m + 1):
         j = 0
@@ -123,11 +189,13 @@ def str_str(haystack, needle):
             return i                                  # first match — stop here
     return -1
 
-print(str_str("sadbutsad", "sad"))     # 0
-print(str_str("leetcode", "leeto"))    # -1
+haystack = input()
+needle = input()
+print(str_str(haystack, needle))
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
 public class Main {
     static int strStr(String haystack, String needle) {
         int n = haystack.length(), m = needle.length();
@@ -139,13 +207,15 @@ public class Main {
         return -1;
     }
     public static void main(String[] args) {
-        System.out.println(strStr("sadbutsad", "sad"));    // 0
-        System.out.println(strStr("leetcode", "leeto"));   // -1
+        Scanner sc = new Scanner(System.in);
+        String haystack = sc.nextLine();
+        String needle = sc.nextLine();
+        System.out.println(strStr(haystack, needle));
     }
 }
 ```
 
-Both print `0` then `-1`. `"sad"` appears first at index 0; `"leeto"` never appears (it almost matches `"leetcode"` at index 0 — `leet` lines up — then fails at the fifth character, the exact near-match waste from above). This is the most-asked "implement substring search" interview question, and the naive answer is correct and often expected first — the optimisation to KMP is the follow-up.
+</details>
 
 ## Reflect & Connect
 

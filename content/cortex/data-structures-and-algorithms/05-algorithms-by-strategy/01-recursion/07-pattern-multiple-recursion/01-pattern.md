@@ -52,10 +52,14 @@ def fib(n):
         return n
     return fib(n - 1) + fib(n - 2)          # TWO recursive calls → branching tree
 
-print("fib(10):", fib(10), "in", calls, "calls")
+n = int(input())
+result = fib(n)
+print(f"fib({n}): {result} in {calls} calls")
 ```
 
 ```java run viz=array
+import java.util.*;
+
 public class Main {
     static int calls = 0;
     static int fib(int n) {
@@ -64,9 +68,24 @@ public class Main {
         return fib(n - 1) + fib(n - 2);         // two recursive calls
     }
     public static void main(String[] args) {
-        int r = fib(10);
-        System.out.println("fib(10): " + r + " in " + calls + " calls");
+        int n = Integer.parseInt(new Scanner(System.in).nextLine().trim());
+        int result = fib(n);
+        System.out.println("fib(" + n + "): " + result + " in " + calls + " calls");
     }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "n", "label": "n", "type": "int", "placeholder": "10" }
+  ],
+  "cases": [
+    { "args": { "n": "10" }, "expected": "fib(10): 55 in 177 calls" },
+    { "args": { "n": "5" },  "expected": "fib(5): 5 in 15 calls" },
+    { "args": { "n": "0" },  "expected": "fib(0): 0 in 1 calls" },
+    { "args": { "n": "1" },  "expected": "fib(1): 1 in 1 calls" }
+  ]
 }
 ```
 
@@ -153,13 +172,62 @@ Naive `fib(30)` makes **2,692,537** calls; memoised `fib(30)` makes **59**. Same
 def climb(n):
     if n < 0: return 0                      # overshot the top
     if n == 0: return 1                     # one way: do nothing
-    return climb(n - 1) + climb(n - 2)      # first move: 1 step or 2
+    # Your code goes here
+    return 0
 
-print("climb(4):", climb(4))                # 5
-print("climb(5):", climb(5))                # 8
+n = int(input())
+print(climb(n))
 ```
 
 ```java run viz=array
+import java.util.*;
+
+public class Main {
+    static int climb(int n) {
+        if (n < 0) return 0;                    // overshot
+        if (n == 0) return 1;                   // one way: do nothing
+        // Your code goes here
+        return 0;
+    }
+    public static void main(String[] args) {
+        int n = Integer.parseInt(new Scanner(System.in).nextLine().trim());
+        System.out.println(climb(n));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "n", "label": "n", "type": "int", "placeholder": "4" }
+  ],
+  "cases": [
+    { "args": { "n": "4" }, "expected": "5" },
+    { "args": { "n": "5" }, "expected": "8" },
+    { "args": { "n": "0" }, "expected": "1" },
+    { "args": { "n": "1" }, "expected": "1" },
+    { "args": { "n": "2" }, "expected": "2" },
+    { "args": { "n": "3" }, "expected": "3" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+```python solution
+def climb(n):
+    if n < 0: return 0                      # overshot the top
+    if n == 0: return 1                     # one way: do nothing
+    return climb(n - 1) + climb(n - 2)      # first move: 1 step or 2
+
+n = int(input())
+print(climb(n))
+```
+
+```java solution
+import java.util.*;
+
 public class Main {
     static int climb(int n) {
         if (n < 0) return 0;                    // overshot
@@ -167,11 +235,13 @@ public class Main {
         return climb(n - 1) + climb(n - 2);     // 1 step or 2
     }
     public static void main(String[] args) {
-        System.out.println("climb(4): " + climb(4));   // 5
-        System.out.println("climb(5): " + climb(5));   // 8
+        int n = Integer.parseInt(new Scanner(System.in).nextLine().trim());
+        System.out.println(climb(n));
     }
 }
 ```
+
+</details>
 
 Both print `5` then `8` — the Fibonacci sequence, shifted. (The five ways to climb 4: `1111`, `112`, `121`, `211`, `22`.) Like naive Fibonacci, this recomputes overlaps and is exponential without a cache. The four problems in this section's **Problems** folder — Fibonacci, zigzag, climbing stairs, Catalan number — are all branching recurrences of exactly this shape.
 

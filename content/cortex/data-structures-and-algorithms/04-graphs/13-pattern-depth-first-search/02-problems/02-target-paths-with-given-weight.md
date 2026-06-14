@@ -4,249 +4,232 @@ summary: "Given a weighted directed graph, source, destination, and target weigh
 prereqs:
   - 13-pattern-depth-first-search/01-pattern
 difficulty: medium
+kind: problem
+topics: [depth-first-search, graph]
 ---
 
-# Problem: Target Paths With Given Weight
+# Target Paths with Given Weight
 
-## The Problem
+## Problem Statement
 
-Given a **weighted** directed graph, source, destination, and target weight, return all paths from source to destination whose **edge weights sum to exactly the target**.
+Given a **weighted** directed graph, a source, a destination, and a target weight, return all paths from source to destination whose **edge weights sum to exactly the target**. A path cannot visit any node more than once.
 
+The weighted adjacency list has the form `graph[u] = [[nbr, wt], ...]` — each entry is a `[neighbour, weight]` pair.
+
+## Examples
+
+**Example 1:**
 ```
-Input:  graph = [[(1,2),(3,5)], [(4,2)], [(4,1)], [(2,2)], [(3,1)]],
+Input:  graph = [[[1, 2], [3, 5]], [[4, 2]], [[4, 1]], [[2, 2]], [[3, 1]]],
         source = 0, destination = 3, target = 5
-Output: [[0,1,4,3], [0,3]]
+Output: [[0, 1, 4, 3], [0, 3]]
 ```
 
-<details>
-<summary><h2>Pattern Mapping</h2></summary>
+Path `0→1→4→3` costs `2+2+1 = 5`. Path `0→3` costs `5`. Both qualify.
 
+**Example 2:**
+```
+Input:  graph = [[[4, 2]], [[3, 3], [0, 4]], [[4, 3], [0, 1]], [[2, 1], [4, 4]], [[1, 5]]],
+        source = 3, destination = 4, target = 4
+Output: [[3, 2, 4], [3, 2, 0, 4], [3, 4]]
+```
 
-- `f`: append node to path list AND add edge weight to running sum.
-- `g`: append the path *only if* the running sum equals target.
-- `f⁻¹`: pop node AND subtract the edge weight on exit.
+## Constraints
 
-The only twist from the previous problem is the running edge-weight sum carried alongside the path.
-
-</details>
-<details>
-<summary><h2>The Solution</h2></summary>
-
-
+- `1 ≤ N ≤ 15`
+- All edge weights are positive integers.
+- source and destination are valid node indices.
+- No node may appear more than once in a path; the source node at position 0 counts as the first visit.
 
 ```python run viz=graph viz-root=graph
-from typing import List, Set, Tuple
+import ast
 
-class Solution:
-    def dfs(
-        self,
-        graph: List[List[Tuple[int, int]]],
-        node: int,
-        destination: int,
-        current_sum: int,
-        target: int,
-        path: List[int],
-        paths: List[List[int]],
-        nodes_in_path: Set[int],
-    ) -> None:
+def target_paths(graph, source, destination, target):
+    # Your code goes here — DFS from source to destination, tracking running weight sum.
+    # On entry: add node to on_path, append to path.
+    # At destination: if current_sum == target, record path copy.
+    # For each [nbr, wt] in graph[node]: if nbr not in on_path, recurse with sum + wt.
+    # On exit: remove from on_path, pop path.
+    pass
 
-        # Insert the current node into the set of nodes in the current
-        # path to avoid revisiting the same node
-        nodes_in_path.add(node)
-
-        # Add the current node to the path
-        path.append(node)
-
-        # If the current node is the destination and the path sum equals
-        # the target sum, store the current path
-        if node == destination and current_sum == target:
-            paths.append(path.copy())
-
-        # Else, explore all the neighbours of the current node
-        else:
-            for neighbour, weight in graph[node]:
-
-                # Perform DFS on the neighbour node if it is not already
-                # in the current path to avoid cycles
-                if neighbour not in nodes_in_path:
-
-                    # Explore neighbour and add its edge weight to the
-                    # current sum
-                    self.dfs(
-                        graph,
-                        neighbour,
-                        destination,
-                        current_sum + weight,
-                        target,
-                        path,
-                        paths,
-                        nodes_in_path,
-                    )
-
-        # Remove the current node from the path as we are done exploring
-        # it
-        path.pop()
-
-        # Remove the current node from the set of nodes in the current
-        # path to allow it to be visited again in other paths
-        nodes_in_path.remove(node)
-
-    def target_paths(
-        self,
-        graph: List[List[Tuple[int, int]]],
-        source: int,
-        destination: int,
-        target: int,
-    ) -> List[List[int]]:
-
-        # Result list to store all the Hamiltonian paths
-        paths: List[List[int]] = []
-
-        # List to store the current path being explored
-        path: List[int] = []
-
-        # Set to keep track of nodes currently in the path
-        nodes_in_path: Set[int] = set()
-
-        # Perform DFS starting from the source node with an initial sum
-        # of 0
-        self.dfs(
-            graph,
-            source,
-            destination,
-            0,
-            target,
-            path,
-            paths,
-            nodes_in_path,
-        )
-
-        # Return the list of valid paths with the given sum
-        return paths
-
-
-# Examples from the problem statement
-print(Solution().target_paths([[[1,2],[3,5]],[[4,2]],[[4,1]],[[2,2]],[[3,1]]], 0, 3, 5))  # [[0,1,4,3],[0,3]]
-print(Solution().target_paths([[[4,2]],[[3,3],[0,4]],[[4,3],[0,1]],[[2,1],[4,4]],[[1,5]]], 3, 4, 4))  # [[3,2,4],[3,2,0,4],[3,4]]
-
-# Edge cases
-print(Solution().target_paths([], 0, 0, 0))                           # []
-print(Solution().target_paths([[]], 0, 0, 0))                         # [[0]]
-print(Solution().target_paths([[[1,3]],[]], 0, 1, 3))                 # [[0,1]]
-print(Solution().target_paths([[[1,3]],[]], 0, 1, 5))                 # [] — wrong weight
-print(Solution().target_paths([[[1,2],[2,3]],[[2,1]],[]], 0, 2, 3))   # [[0,2],[0,1,2]]
+graph = ast.literal_eval(input())   # weighted adjacency: graph[u] = [[nbr, wt], ...]
+source = int(input())
+destination = int(input())
+target = int(input())
+print(target_paths(graph, source, destination, target))
 ```
 
 ```java run viz=graph viz-root=graph
 import java.util.*;
 
 public class Main {
-    static class Solution {
-        private void dfs(
-            List<List<List<Integer>>> graph,
-            int node,
-            int destination,
-            int currentSum,
-            int target,
-            List<Integer> path,
-            List<List<Integer>> paths,
-            Set<Integer> nodesInPath
-        ) {
+    static int[][][] graph;
+    static List<List<Integer>> res;
+    static List<Integer> path;
+    static Set<Integer> onPath;
+    static int destination, target;
 
-            // Insert the current node into the set of nodes in the current
-            // path to avoid revisiting the same node
-            nodesInPath.add(node);
-
-            // Add the current node to the path
-            path.add(node);
-
-            // If the current node is the destination and the path sum equals
-            // the target sum, store the current path
-            if (node == destination && currentSum == target) {
-                paths.add(new ArrayList<>(path));
-            }
-
-            // Else, explore all the neighbours of the current node
-            else {
-                for (List<Integer> edge : graph.get(node)) {
-                    int neighbour = edge.get(0);
-                    int weight = edge.get(1);
-
-                    // Perform DFS on the neighbour node if it is not already
-                    // in the current path to avoid cycles
-                    if (!nodesInPath.contains(neighbour)) {
-
-                        // Explore neighbour and add its edge weight to the
-                        // current sum
-                        dfs(
-                            graph,
-                            neighbour,
-                            destination,
-                            currentSum + weight,
-                            target,
-                            path,
-                            paths,
-                            nodesInPath
-                        );
-                    }
-                }
-            }
-
-            // Remove the current node from the path as we are done exploring
-            // it
-            path.remove(path.size() - 1);
-
-            // Remove the current node from the set of nodes in the current
-            // path to allow it to be visited again in other paths
-            nodesInPath.remove(node);
-        }
-
-        public List<List<Integer>> targetPaths(
-            List<List<List<Integer>>> graph,
-            int source,
-            int destination,
-            int target
-        ) {
-
-            // Result list to store all the Hamiltonian paths
-            List<List<Integer>> paths = new ArrayList<>();
-
-            // List to store the current path being explored
-            List<Integer> path = new ArrayList<>();
-
-            // Set to keep track of nodes currently in the path
-            Set<Integer> nodesInPath = new HashSet<>();
-
-            // Perform DFS starting from the source node with an initial sum
-            // of 0
-            dfs(
-                graph,
-                source,
-                destination,
-                0,
-                target,
-                path,
-                paths,
-                nodesInPath
-            );
-
-            // Return the list of valid paths with the given sum
-            return paths;
-        }
+    static void dfs(int node, int currentSum) {
+        // Your code goes here — enter: onPath.add(node); path.add(node);
+        // if node == destination && currentSum == target record a copy;
+        // else for each int[] edge in graph[node]: if edge[0] not in onPath recurse(edge[0], currentSum+edge[1]);
+        // exit: onPath.remove(node); path.remove(last).
     }
 
     public static void main(String[] args) {
-        Solution sol = new Solution();
+        Scanner sc = new Scanner(System.in);
+        graph = parseWeightedAdj(sc.nextLine());
+        int source = Integer.parseInt(sc.nextLine().trim());
+        destination = Integer.parseInt(sc.nextLine().trim());
+        target = Integer.parseInt(sc.nextLine().trim());
+        res = new ArrayList<>(); path = new ArrayList<>(); onPath = new HashSet<>();
+        dfs(source, 0);
+        System.out.println(res);
+    }
 
-        // Examples from the problem statement
-        System.out.println(sol.targetPaths(List.of(List.of(List.of(1,2),List.of(3,5)),List.of(List.of(4,2)),List.of(List.of(4,1)),List.of(List.of(2,2)),List.of(List.of(3,1))), 0, 3, 5));  // [[0,1,4,3],[0,3]]
-        System.out.println(sol.targetPaths(List.of(List.of(List.of(4,2)),List.of(List.of(3,3),List.of(0,4)),List.of(List.of(4,3),List.of(0,1)),List.of(List.of(2,1),List.of(4,4)),List.of(List.of(1,5))), 3, 4, 4));  // [[3,2,4],[3,2,0,4],[3,4]]
+    static int[][][] parseWeightedAdj(String line) {
+        List<int[][]> g = new ArrayList<>();
+        int i = 0, n = line.length();
+        while (i < n && line.charAt(i) != '[') i++;
+        i++;                                             // consume outer '['
+        while (i < n) {
+            while (i < n && (line.charAt(i) == ' ' || line.charAt(i) == ',')) i++;
+            if (i >= n || line.charAt(i) == ']') break;  // end of outer list
+            i++;                                         // consume a node group's '['
+            List<int[]> node = new ArrayList<>();
+            while (i < n) {
+                while (i < n && (line.charAt(i) == ' ' || line.charAt(i) == ',')) i++;
+                if (line.charAt(i) == ']') { i++; break; } // end of this node group
+                i++;                                     // consume a pair's '['
+                int[] pair = new int[2]; int k = 0;
+                while (i < n && line.charAt(i) != ']') {
+                    while (i < n && (line.charAt(i) == ' ' || line.charAt(i) == ',')) i++;
+                    if (line.charAt(i) == ']') break;
+                    int start = i;
+                    while (i < n && (Character.isDigit(line.charAt(i)) || line.charAt(i) == '-')) i++;
+                    pair[k++] = Integer.parseInt(line.substring(start, i));
+                }
+                i++;                                     // consume the pair's ']'
+                node.add(pair);
+            }
+            g.add(node.toArray(new int[0][]));
+        }
+        return g.toArray(new int[0][][]);
+    }
+}
+```
 
-        // Edge cases
-        System.out.println(sol.targetPaths(List.of(new ArrayList<>()), 0, 0, 0));  // [[0]]
-        System.out.println(sol.targetPaths(List.of(List.of(List.of(1,3)), new ArrayList<>()), 0, 1, 3));  // [[0,1]]
-        System.out.println(sol.targetPaths(List.of(List.of(List.of(1,3)), new ArrayList<>()), 0, 1, 5));  // []
-        System.out.println(sol.targetPaths(List.of(List.of(List.of(1,2),List.of(2,3)),List.of(List.of(2,1)),new ArrayList<>()), 0, 2, 3));  // [[0,2],[0,1,2]]
+```testcases
+{
+  "args": [
+    { "id": "graph", "label": "graph", "type": "int[][]", "placeholder": "[[[1, 2], [3, 5]], [[4, 2]], [[4, 1]], [[2, 2]], [[3, 1]]]" },
+    { "id": "source", "label": "source", "type": "int", "placeholder": "0" },
+    { "id": "destination", "label": "destination", "type": "int", "placeholder": "3" },
+    { "id": "target", "label": "target weight", "type": "int", "placeholder": "5" }
+  ],
+  "cases": [
+    { "args": { "graph": "[[[1, 2], [3, 5]], [[4, 2]], [[4, 1]], [[2, 2]], [[3, 1]]]", "source": "0", "destination": "3", "target": "5" }, "expected": "[[0, 1, 4, 3], [0, 3]]" },
+    { "args": { "graph": "[[[4, 2]], [[3, 3], [0, 4]], [[4, 3], [0, 1]], [[2, 1], [4, 4]], [[1, 5]]]", "source": "3", "destination": "4", "target": "4" }, "expected": "[[3, 2, 4], [3, 2, 0, 4], [3, 4]]" },
+    { "args": { "graph": "[[[1, 3]], []]", "source": "0", "destination": "1", "target": "3" }, "expected": "[[0, 1]]" },
+    { "args": { "graph": "[[[1, 2], [2, 3]], [[2, 1]], []]", "source": "0", "destination": "2", "target": "3" }, "expected": "[[0, 1, 2], [0, 2]]" },
+    { "args": { "graph": "[[[1, 3]], []]", "source": "0", "destination": "1", "target": "5" }, "expected": "[]" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Extend the standard DFS path-enumeration skeleton with a running weight sum. On entry, add the node to `on_path` and append it to `path`. When the current node is the destination **and** the accumulated sum equals the target, record a copy of the path. Otherwise, iterate over each `[nbr, wt]` pair in `graph[node]`: if `nbr` is not already `on_path`, recurse with `currentSum + wt`. On exit, remove the node from `on_path` and pop it from `path` — same backtrack as the unweighted version.
+
+The key difference from source-to-target-paths: the check at the destination is a conjunction (`node == destination AND sum == target`), not a simple equality. A path that overshoots the target can still backtrack and contribute another path through a different route.
+
+```python solution time=O(2^N · N) space=O(N)
+import ast
+
+def target_paths(graph, source, destination, target):
+    paths, path, on_path = [], [], set()
+    def dfs(node, current_sum):
+        on_path.add(node); path.append(node)
+        if node == destination and current_sum == target:
+            paths.append(path[:])
+        else:
+            for neighbour, weight in graph[node]:
+                if neighbour not in on_path:
+                    dfs(neighbour, current_sum + weight)
+        path.pop(); on_path.remove(node)
+    dfs(source, 0)
+    return paths
+
+graph = ast.literal_eval(input())   # weighted adjacency: graph[u] = [[nbr, wt], ...]
+source = int(input())
+destination = int(input())
+target = int(input())
+print(target_paths(graph, source, destination, target))
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+    static int[][][] graph;
+    static List<List<Integer>> res;
+    static List<Integer> path;
+    static Set<Integer> onPath;
+    static int destination, target;
+
+    static void dfs(int node, int currentSum) {
+        onPath.add(node); path.add(node);
+        if (node == destination && currentSum == target) {
+            res.add(new ArrayList<>(path));
+        } else {
+            for (int[] edge : graph[node]) {
+                int nbr = edge[0], wt = edge[1];
+                if (!onPath.contains(nbr)) dfs(nbr, currentSum + wt);
+            }
+        }
+        path.remove(path.size() - 1); onPath.remove(node);
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        graph = parseWeightedAdj(sc.nextLine());
+        int source = Integer.parseInt(sc.nextLine().trim());
+        destination = Integer.parseInt(sc.nextLine().trim());
+        target = Integer.parseInt(sc.nextLine().trim());
+        res = new ArrayList<>(); path = new ArrayList<>(); onPath = new HashSet<>();
+        dfs(source, 0);
+        System.out.println(res);
+    }
+
+    static int[][][] parseWeightedAdj(String line) {
+        List<int[][]> g = new ArrayList<>();
+        int i = 0, n = line.length();
+        while (i < n && line.charAt(i) != '[') i++;
+        i++;                                             // consume outer '['
+        while (i < n) {
+            while (i < n && (line.charAt(i) == ' ' || line.charAt(i) == ',')) i++;
+            if (i >= n || line.charAt(i) == ']') break;  // end of outer list
+            i++;                                         // consume a node group's '['
+            List<int[]> node = new ArrayList<>();
+            while (i < n) {
+                while (i < n && (line.charAt(i) == ' ' || line.charAt(i) == ',')) i++;
+                if (line.charAt(i) == ']') { i++; break; } // end of this node group
+                i++;                                     // consume a pair's '['
+                int[] pair = new int[2]; int k = 0;
+                while (i < n && line.charAt(i) != ']') {
+                    while (i < n && (line.charAt(i) == ' ' || line.charAt(i) == ',')) i++;
+                    if (line.charAt(i) == ']') break;
+                    int start = i;
+                    while (i < n && (Character.isDigit(line.charAt(i)) || line.charAt(i) == '-')) i++;
+                    pair[k++] = Integer.parseInt(line.substring(start, i));
+                }
+                i++;                                     // consume the pair's ']'
+                node.add(pair);
+            }
+            g.add(node.toArray(new int[0][]));
+        }
+        return g.toArray(new int[0][][]);
     }
 }
 ```

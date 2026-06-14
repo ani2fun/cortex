@@ -4,11 +4,13 @@ summary: "Given an array times[] (each plane's per-trip duration) and totalTrips
 prereqs:
   - 11-pattern-minimum-predicate-search/01-pattern
 difficulty: hard
+kind: problem
+topics: [minimum-predicate-search, searching]
 ---
 
 # Trip Completion Frenzy
 
-## The Problem
+## Problem Statement
 
 Given an array `times[]` (each plane's per-trip duration) and `totalTrips`, find the minimum time required for the planes (operating independently) to complete `totalTrips` trips total.
 
@@ -23,6 +25,102 @@ Input:  times = [1], totalTrips = 5
 Output: 5
 ```
 
+---
+
+## Examples
+
+**Example 1**
+```
+Input:  times = [3, 4, 5], totalTrips = 4
+Output: 6
+Explanation: At time 6 the planes complete 2 + 1 + 1 = 4 trips (floor(6/3)=2, floor(6/4)=1, floor(6/5)=1), meeting the target.
+```
+
+**Example 2**
+```
+Input:  times = [1, 2, 3], totalTrips = 5
+Output: 3
+Explanation: At time 3 the planes complete 3 + 1 + 1 = 5 trips (floor(3/1)=3, floor(3/2)=1, floor(3/3)=1), exactly meeting the target.
+```
+
+## Constraints
+
+- `1 ≤ times.length ≤ 10^5`
+- `1 ≤ times[i] ≤ 10^7`
+- `1 ≤ totalTrips ≤ 10^7`
+
+```python run viz=array viz-root=times
+import ast
+
+class Solution:
+    def trip_completion_frenzy(self, times, total_trips):
+        # Your code goes here — binary-search the time in [0, max(times) * totalTrips].
+        # For a candidate time t, each plane with duration d completes t // d trips.
+        # Return the minimum t at which the total trips >= totalTrips.
+        return -1
+
+
+times = ast.literal_eval(input())
+total_trips = int(input())
+print(Solution().trip_completion_frenzy(times, total_trips))
+```
+
+```java run viz=array viz-root=times
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int tripCompletionFrenzy(int[] times, int totalTrips) {
+            // Your code goes here — binary-search the time in [0, max(times) * totalTrips].
+            // For a candidate time t, each plane with duration d completes t / d trips.
+            // Return the minimum t at which the total trips >= totalTrips.
+            return -1;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] times = parseIntArray(sc.nextLine());
+        int totalTrips = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().tripCompletionFrenzy(times, totalTrips));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "times", "label": "times", "type": "int[]", "placeholder": "[3, 4, 5]" },
+    { "id": "totalTrips", "label": "totalTrips", "type": "int", "placeholder": "4" }
+  ],
+  "cases": [
+    { "args": { "times": "[3, 4, 5]", "totalTrips": "4" }, "expected": "6" },
+    { "args": { "times": "[1, 2, 3]", "totalTrips": "5" }, "expected": "3" },
+    { "args": { "times": "[1]", "totalTrips": "5" }, "expected": "5" },
+    { "args": { "times": "[1]", "totalTrips": "1" }, "expected": "1" },
+    { "args": { "times": "[2]", "totalTrips": "3" }, "expected": "6" },
+    { "args": { "times": "[1, 1]", "totalTrips": "4" }, "expected": "2" },
+    { "args": { "times": "[5, 10]", "totalTrips": "1" }, "expected": "5" },
+    { "args": { "times": "[1, 2, 3]", "totalTrips": "10" }, "expected": "6" }
+  ]
+}
+```
+
+<details>
+<summary><h2>Intuition</h2></summary>
+
+The number of trips completed is monotone in time — the more time elapses, the more trips every plane can fit. This gives a clean `false…false, true…true` boundary over candidate times, which binary search can exploit. The answer range is `[0, max(times) × totalTrips]` (the slowest plane finishing all trips alone), and the predicate is `sum(t // times[i]) >= totalTrips`. Finding the first time that crosses the threshold is a standard lower-bound search.
+
+</details>
 <details>
 <summary><h2>The Solution</h2></summary>
 
@@ -30,7 +128,8 @@ Output: 5
 Predicate: "in time `t`, can we complete `totalTrips`?" — each plane finishes `t / times[i]` trips. Sum and check ≥ totalTrips. Binary-search `t` in `[0, max(times) * totalTrips]` (the slowest plane finishing every trip alone is a safe upper bound).
 
 
-```python run viz=array viz-root=times
+```python solution time=O(n log(max*totalTrips)) space=O(1)
+import ast
 from typing import List
 
 class Solution:
@@ -81,20 +180,12 @@ class Solution:
         return low
 
 
-# Examples from the problem statement
-print(Solution().trip_completion_frenzy([3, 4, 5], 4))   # 6
-print(Solution().trip_completion_frenzy([1, 2, 3], 5))   # 3
-print(Solution().trip_completion_frenzy([1], 5))         # 5
-
-# Edge cases
-print(Solution().trip_completion_frenzy([1], 1))         # 1   (single plane, one trip)
-print(Solution().trip_completion_frenzy([2], 3))         # 6   (single slow plane)
-print(Solution().trip_completion_frenzy([1, 1], 4))      # 2   (two identical fast planes)
-print(Solution().trip_completion_frenzy([5, 10], 1))     # 5   (fastest plane handles single trip)
-print(Solution().trip_completion_frenzy([1, 2, 3], 10))  # 6
+times = ast.literal_eval(input())
+total_trips = int(input())
+print(Solution().trip_completion_frenzy(times, total_trips))
 ```
 
-```java run viz=array viz-root=times
+```java solution
 import java.util.*;
 
 public class Main {
@@ -153,17 +244,19 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().tripCompletionFrenzy(new int[]{3, 4, 5}, 4));   // 6
-        System.out.println(new Solution().tripCompletionFrenzy(new int[]{1, 2, 3}, 5));   // 3
-        System.out.println(new Solution().tripCompletionFrenzy(new int[]{1}, 5));         // 5
+        Scanner sc = new Scanner(System.in);
+        int[] times = parseIntArray(sc.nextLine());
+        int totalTrips = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().tripCompletionFrenzy(times, totalTrips));
+    }
 
-        // Edge cases
-        System.out.println(new Solution().tripCompletionFrenzy(new int[]{1}, 1));         // 1
-        System.out.println(new Solution().tripCompletionFrenzy(new int[]{2}, 3));         // 6
-        System.out.println(new Solution().tripCompletionFrenzy(new int[]{1, 1}, 4));      // 2
-        System.out.println(new Solution().tripCompletionFrenzy(new int[]{5, 10}, 1));     // 5
-        System.out.println(new Solution().tripCompletionFrenzy(new int[]{1, 2, 3}, 10));  // 6
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

@@ -31,25 +31,40 @@ def count_logarithmic(n):            # keep halving until 1            -> O(log 
     while n > 1: n //= 2; steps += 1
     return steps
 
+n = int(input())
 print(f"{'n':>6} {'O(n)':>8} {'O(n^2)':>10} {'O(log n)':>10}")
-for n in [10, 100, 1000]:
-    print(f"{n:>6} {count_linear(n):>8} {count_quadratic(n):>10} {count_logarithmic(n):>10}")
+print(f"{n:>6} {count_linear(n):>8} {count_quadratic(n):>10} {count_logarithmic(n):>10}")
 ```
 
 ```java run viz=array
+import java.util.*;
 public class Main {
     static long countLinear(int n) { long s = 0; for (int i = 0; i < n; i++) s++; return s; }            // O(n)
     static long countQuadratic(int n) { long s = 0; for (int i = 0; i < n; i++) for (int j = i + 1; j < n; j++) s++; return s; }  // O(n^2)
     static long countLogarithmic(int n) { long s = 0; while (n > 1) { n /= 2; s++; } return s; }          // O(log n)
     public static void main(String[] a) {
+        Scanner sc = new Scanner(System.in);
+        int n = sc.nextInt();
         System.out.printf("%6s %8s %10s %10s%n", "n", "O(n)", "O(n^2)", "O(log n)");
-        for (int n : new int[]{10, 100, 1000})
-            System.out.printf("%6d %8d %10d %10d%n", n, countLinear(n), countQuadratic(n), countLogarithmic(n));
+        System.out.printf("%6d %8d %10d %10d%n", n, countLinear(n), countQuadratic(n), countLogarithmic(n));
     }
 }
 ```
 
-Both print the same table: at `n = 10/100/1000` the linear column is `10/100/1000`, the quadratic is `45/4950/499500`, the logarithmic is `3/6/9`. Watch the *growth*, not the numbers: each ×10 in `n` multiplies the linear column by 10, the quadratic column by ~100, and *adds 3* to the logarithmic column. Those three rhythms — scales-with-`n`, scales-with-`n²`, barely-grows — are what "linear," "quadratic," and "logarithmic" mean, read straight off the step counts.
+```testcases
+{
+  "args": [
+    { "id": "n", "label": "n", "type": "int", "placeholder": "100" }
+  ],
+  "cases": [
+    { "args": { "n": "10" },   "expected": "     n     O(n)     O(n^2)   O(log n)\n    10       10         45          3" },
+    { "args": { "n": "100" },  "expected": "     n     O(n)     O(n^2)   O(log n)\n   100      100       4950          6" },
+    { "args": { "n": "1000" }, "expected": "     n     O(n)     O(n^2)   O(log n)\n  1000     1000     499500          9" }
+  ]
+}
+```
+
+Watch the *growth*, not the numbers: each ×10 in `n` multiplies the linear column by 10, the quadratic column by ~100, and *adds 3* to the logarithmic column. Those three rhythms — scales-with-`n`, scales-with-`n²`, barely-grows — are what "linear," "quadratic," and "logarithmic" mean, read straight off the step counts.
 
 ## How It Works
 
@@ -99,32 +114,82 @@ For `n = 10` and `n = 50` the **quadratic** algorithm is faster (`100` and `2500
 
 The "drop lower-order terms and constants" rule can feel like cheating — you're throwing away most of the formula. Watch *why* it's justified: track what fraction of the total work the dominant term accounts for as `n` grows.
 
-**Predict:** an algorithm does exactly `3n² + 5n + 7` steps. As `n` grows, what share of the total comes from the `3n²` term alone — does it stay around a fifth, or climb toward all of it?
+**Predict:** an algorithm does exactly `3n² + 5n + 7` steps. As `n` grows, what share of the total comes from the `3n²` term alone — does it stay around a fifth, or climb toward all of it? Implement `dominant(n)` — return the `3n²` term only.
 
 ```python run viz=array
 def total_ops(n): return 3*n*n + 5*n + 7    # exact step count of some algorithm
-def dominant(n):  return 3*n*n              # just the n^2 term
-print(f"{'n':>7} {'3n^2+5n+7':>12} {'3n^2':>12} {'n^2 share':>11}")
-for n in [1, 10, 100, 10000]:
-    t, d = total_ops(n), dominant(n)
-    print(f"{n:>7} {t:>12} {d:>12} {d/t:>11.4f}")
+
+def dominant(n):
+    # Your code goes here — return just the 3*n^2 dominant term
+    return 0
+
+n = int(input())
+t, d = total_ops(n), dominant(n)
+print(f"{n:>7} {t:>12} {d:>12} {d/t:>11.4f}")
 ```
 
 ```java run viz=array
+import java.util.*;
 public class Main {
     static long totalOps(long n) { return 3*n*n + 5*n + 7; }   // exact step count of some algorithm
-    static long dominant(long n) { return 3*n*n; }             // just the n^2 term
+    static long dominant(long n) {
+        // Your code goes here — return just the 3*n^2 dominant term
+        return 0;
+    }
     public static void main(String[] a) {
-        System.out.printf("%7s %12s %12s %11s%n", "n", "3n^2+5n+7", "3n^2", "n^2 share");
-        for (long n : new long[]{1, 10, 100, 10000}) {
-            long t = totalOps(n), d = dominant(n);
-            System.out.printf("%7d %12d %12d %11.4f%n", n, t, d, (double) d / t);
-        }
+        Scanner sc = new Scanner(System.in);
+        long n = sc.nextLong();
+        long t = totalOps(n), d = dominant(n);
+        System.out.printf("%7d %12d %12d %11.4f%n", n, t, d, (double) d / t);
     }
 }
 ```
 
-Both print the `n²` term's share climbing `0.2000 → 0.8403 → 0.9834 → 0.9998` as `n` goes `1 → 10 → 100 → 10000`. At `n = 1` the `5n + 7` terms are most of the work; by `n = 10000` they're 0.02% of it. That's the whole justification for the drop rule: the lower-order terms become a vanishing fraction, so for predicting *scale* they're noise — and even the constant `3` only rescales the curve without changing its shape, which is why `3n² + 5n + 7` is simply `O(n²)`. The rule isn't hand-waving; it's the limit you just watched converge.
+```testcases
+{
+  "args": [
+    { "id": "n", "label": "n", "type": "int", "placeholder": "10" }
+  ],
+  "cases": [
+    { "args": { "n": "1" },     "expected": "      1           15            3      0.2000" },
+    { "args": { "n": "10" },    "expected": "     10          357          300      0.8403" },
+    { "args": { "n": "100" },   "expected": "    100        30507        30000      0.9834" },
+    { "args": { "n": "10000" }, "expected": "  10000    300050007    300000000      0.9998" }
+  ]
+}
+```
+
+The `n²` term's share climbs `0.2000 → 0.8403 → 0.9834 → 0.9998` as `n` goes `1 → 10 → 100 → 10000`. At `n = 1` the lower-order terms are most of the work; by `n = 10000` they're 0.02% of it. That's the whole justification for the drop rule: lower-order terms become a vanishing fraction, so for predicting *scale* they're noise — and even the constant `3` only rescales the curve without changing its shape, which is why `3n² + 5n + 7` is simply `O(n²)`. The rule isn't hand-waving; it's the limit you just watched converge.
+
+<details>
+<summary><strong>Editorial</strong></summary>
+
+The dominant term of `3n² + 5n + 7` is `3n²` — the fastest-growing piece. Drop constants and lower-order terms: `5n` and `7` vanish relative to `n²` for large `n`, which is exactly what the fraction column confirms.
+
+```python solution time=O(1) space=O(1)
+def total_ops(n): return 3*n*n + 5*n + 7    # exact step count of some algorithm
+def dominant(n):  return 3*n*n              # just the n^2 term
+
+n = int(input())
+t, d = total_ops(n), dominant(n)
+print(f"{n:>7} {t:>12} {d:>12} {d/t:>11.4f}")
+```
+
+```java solution
+import java.util.*;
+public class Main {
+    static long totalOps(long n) { return 3*n*n + 5*n + 7; }
+    static long dominant(long n) { return 3*n*n; }             // just the n^2 term
+    public static void main(String[] a) {
+        Scanner sc = new Scanner(System.in);
+        long n = sc.nextLong();
+        long t = totalOps(n), d = dominant(n);
+        System.out.printf("%7d %12d %12d %11.4f%n", n, t, d, (double) d / t);
+    }
+}
+```
+
+</details>
 
 ## Reflect & Connect
 

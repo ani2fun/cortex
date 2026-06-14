@@ -4,27 +4,127 @@ summary: "Given an N × M matrix where each row is sorted ascending, return the 
 prereqs:
   - 08-pattern-binary-search/01-pattern
 difficulty: medium
+kind: problem
+topics: [binary-search, searching]
 ---
 
 # Minimum Shared Element
 
-Multi-row sorted matrix. Find the smallest element that appears in *every* row.
-
-## The Problem
+## Problem Statement
 
 Given an `N × M` matrix where each row is sorted ascending, return the smallest element present in all rows. Return `-1` if no such element exists. **Must run in `O(N log M)`.**
 
-```
-Input:  matrix = [[1, 2, 3]]
-Output: 1   (only one row; smallest element is 1)
+## Examples
 
+**Example 1**
+```
 Input:  matrix = [[2, 3, 4], [1, 3, 5], [1, 2, 3]]
-Output: 3   (only 3 is in every row; rows have [2,3,4], [1,3,5], [1,2,3])
-
-Input:  matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
-Output: -1   (no shared element)
+Output: 3
+Explanation: Iterating the first row left-to-right: 2 is absent from row 2; 3 is found in every row — it is the smallest common element.
 ```
 
+**Example 2**
+```
+Input:  matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+Output: -1
+Explanation: No element appears in all three rows; the disjoint ranges share nothing.
+```
+
+## Constraints
+
+- `1 ≤ N, M ≤ 500`
+- `-10^9 ≤ matrix[i][j] ≤ 10^9`
+- Each row is sorted in strictly ascending order.
+
+```python run viz=array
+import ast
+from typing import List
+
+class Solution:
+    def minimum_shared_element(self, matrix: List[List[int]]) -> int:
+        # Your code goes here — iterate over the first row left-to-right;
+        # for each candidate, binary-search every other row. Return the
+        # first element found in all rows, or -1.
+        return -1
+
+matrix = ast.literal_eval(input())
+print(Solution().minimum_shared_element(matrix))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int minimumSharedElement(int[][] matrix) {
+            // Your code goes here — iterate over the first row left-to-right;
+            // for each candidate, binary-search every other row. Return the
+            // first element found in all rows, or -1.
+            return -1;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[][] matrix = parseIntMatrix(sc.nextLine());
+        System.out.println(new Solution().minimumSharedElement(matrix));
+    }
+
+    static int[][] parseIntMatrix(String line) {
+        line = line.trim();
+        // Strip outer brackets: [[1,2],[3,4]] → [1,2],[3,4]
+        line = line.substring(1, line.length() - 1).trim();
+        if (line.isEmpty()) return new int[0][];
+        List<int[]> rows = new ArrayList<>();
+        // Split on "]," to find row boundaries
+        int depth = 0, start = 0;
+        for (int i = 0; i < line.length(); i++) {
+            char c = line.charAt(i);
+            if (c == '[') depth++;
+            else if (c == ']') {
+                depth--;
+                if (depth == 0) {
+                    rows.add(parseIntArray(line.substring(start, i + 1)));
+                    start = i + 2; // skip ","
+                }
+            }
+        }
+        return rows.toArray(new int[0][]);
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "matrix", "label": "matrix", "type": "int[][]", "placeholder": "[[2, 3, 4], [1, 3, 5], [1, 2, 3]]" }
+  ],
+  "cases": [
+    { "args": { "matrix": "[[1, 2, 3]]" }, "expected": "1" },
+    { "args": { "matrix": "[[2, 3, 4], [1, 3, 5], [1, 2, 3]]" }, "expected": "3" },
+    { "args": { "matrix": "[[1, 2, 3], [4, 5, 6], [7, 8, 9]]" }, "expected": "-1" },
+    { "args": { "matrix": "[[5], [5], [5]]" }, "expected": "5" },
+    { "args": { "matrix": "[[5], [6]]" }, "expected": "-1" },
+    { "args": { "matrix": "[[1, 2, 3], [1, 2, 3]]" }, "expected": "1" }
+  ]
+}
+```
+
+<details>
+<summary><h2>Intuition</h2></summary>
+
+The key insight is that the first row is sorted ascending, so iterating it left-to-right checks candidates in ascending order — the first element that appears in every other row is automatically the smallest shared element. For each candidate, the other rows are also sorted, so you can binary-search them in `O(log M)` rather than scanning in `O(M)`. The outer loop over the first row's `M` elements combined with binary search over the remaining `N-1` rows gives `O(M · N · log M)`, but since we stop at the first match this is `O(N log M)` in the best case.
+
+</details>
 <details>
 <summary><h2>Solution &amp; Analysis</h2></summary>
 
@@ -33,7 +133,8 @@ Output: -1   (no shared element)
 Iterate over the elements of the first row (left to right, ascending). For each, binary-search every other row. The first element that's found in all rows is the answer (smallest because the first row is sorted).
 
 
-```python run viz=array
+```python solution time=O(M * N * log M) space=O(1)
+import ast
 from typing import List
 
 class Solution:
@@ -101,19 +202,11 @@ class Solution:
         return -1
 
 
-# Examples from the problem statement
-print(Solution().minimum_shared_element([[1, 2, 3]]))                         # 1
-print(Solution().minimum_shared_element([[2, 3, 4], [1, 3, 5], [1, 2, 3]]))  # 3
-print(Solution().minimum_shared_element([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))  # -1
-
-# Edge cases
-print(Solution().minimum_shared_element([[]]))                                # -1 — empty row
-print(Solution().minimum_shared_element([[5], [5], [5]]))                     # 5  — single-col all same
-print(Solution().minimum_shared_element([[5], [6]]))                          # -1 — single-col no match
-print(Solution().minimum_shared_element([[1, 2, 3], [1, 2, 3]]))              # 1  — identical rows
+matrix = ast.literal_eval(input())
+print(Solution().minimum_shared_element(matrix))
 ```
 
-```java run viz=array
+```java solution
 import java.util.*;
 
 public class Main {
@@ -195,15 +288,38 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().minimumSharedElement(new int[][]{{1, 2, 3}}));                               // 1
-        System.out.println(new Solution().minimumSharedElement(new int[][]{{2, 3, 4}, {1, 3, 5}, {1, 2, 3}}));        // 3
-        System.out.println(new Solution().minimumSharedElement(new int[][]{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}));        // -1
+        Scanner sc = new Scanner(System.in);
+        int[][] matrix = parseIntMatrix(sc.nextLine());
+        System.out.println(new Solution().minimumSharedElement(matrix));
+    }
 
-        // Edge cases
-        System.out.println(new Solution().minimumSharedElement(new int[][]{{5}, {5}, {5}}));                           // 5  — single-col all same
-        System.out.println(new Solution().minimumSharedElement(new int[][]{{5}, {6}}));                                // -1 — single-col no match
-        System.out.println(new Solution().minimumSharedElement(new int[][]{{1, 2, 3}, {1, 2, 3}}));                    // 1  — identical rows
+    static int[][] parseIntMatrix(String line) {
+        line = line.trim();
+        line = line.substring(1, line.length() - 1).trim();
+        if (line.isEmpty()) return new int[0][];
+        List<int[]> rows = new ArrayList<>();
+        int depth = 0, start = 0;
+        for (int i = 0; i < line.length(); i++) {
+            char c = line.charAt(i);
+            if (c == '[') depth++;
+            else if (c == ']') {
+                depth--;
+                if (depth == 0) {
+                    rows.add(parseIntArray(line.substring(start, i + 1)));
+                    start = i + 2;
+                }
+            }
+        }
+        return rows.toArray(new int[0][]);
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

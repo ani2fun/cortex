@@ -4,6 +4,8 @@ summary: "Given a non-negative integer n and an array steps (each entry less tha
 prereqs:
   - 07-pattern-multiple-recursion/01-pattern
 difficulty: medium
+kind: problem
+topics: [multiple-recursion, recursion]
 ---
 
 # Climb Stairs
@@ -16,21 +18,89 @@ The branching factor varies. Each frame makes one recursive call per allowed ste
 
 Given a non-negative integer `n` and an array `steps` (each entry less than `n`), return the number of distinct ways to climb `n` stairs using only the step sizes in `steps`. You **must** solve this recursively.
 
+---
+
+## Examples
+
+**Example 1**
 ```
 Input:  n = 3, steps = [1, 2, 3]
 Output: 4
 Explanation: ways = (1,1,1), (1,2), (2,1), (3) — four total
+```
 
+**Example 2**
+```
 Input:  n = 2, steps = [2, 5, 6, 8]
 Output: 1
 Explanation: only (2)
-
-Input:  n = 2, steps = [8, 3, 6, 5]
-Output: 0
-Explanation: no allowed step size ≤ 2
 ```
 
----
+## Constraints
+
+- `0 ≤ n ≤ 20`
+- `steps` is a non-empty array of positive integers
+- Must be solved recursively.
+
+```python run viz=array
+import ast
+
+class Solution:
+    def climb_stairs(self, n, steps):
+        # Your code goes here
+        return 0
+
+n = int(input())
+steps = ast.literal_eval(input())
+print(Solution().climb_stairs(n, steps))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static int[] parseIntArray(String line) {
+        String s = line.replaceAll("[\\[\\]\\s]", "");
+        if (s.isEmpty()) return new int[0];
+        String[] p = s.split(",");
+        int[] a = new int[p.length];
+        for (int i = 0; i < p.length; i++) a[i] = Integer.parseInt(p[i].trim());
+        return a;
+    }
+
+    static class Solution {
+        public int climbStairs(int n, int[] steps) {
+            // Your code goes here
+            return 0;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = Integer.parseInt(sc.nextLine().trim());
+        int[] steps = parseIntArray(sc.nextLine().trim());
+        System.out.println(new Solution().climbStairs(n, steps));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "n",     "label": "n",     "type": "int",   "placeholder": "3" },
+    { "id": "steps", "label": "steps", "type": "int[]", "placeholder": "[1, 2, 3]" }
+  ],
+  "cases": [
+    { "args": { "n": "3", "steps": "[1, 2, 3]" },      "expected": "4" },
+    { "args": { "n": "2", "steps": "[2, 5, 6, 8]" },   "expected": "1" },
+    { "args": { "n": "2", "steps": "[8, 3, 6, 5]" },   "expected": "0" },
+    { "args": { "n": "0", "steps": "[1, 2]" },          "expected": "1" },
+    { "args": { "n": "1", "steps": "[1]" },             "expected": "1" },
+    { "args": { "n": "4", "steps": "[1, 2]" },          "expected": "5" },
+    { "args": { "n": "5", "steps": "[1, 2, 3]" },       "expected": "13" }
+  ]
+}
+```
 
 <details>
 <summary><h2>Why Multiple Recursion?</h2></summary>
@@ -109,11 +179,11 @@ flowchart TB
 
 ### The Solution
 
-```python run viz=array
-from typing import List
+```python solution time=O(k^n) space=O(n)
+import ast
 
 class Solution:
-    def climb_stairs(self, n: int, steps: List[int]) -> int:
+    def climb_stairs(self, n, steps):
 
         # Base case: If n is negative, there are no ways to
         # reach the ground
@@ -141,24 +211,26 @@ class Solution:
         return total_ways
 
 
-# Examples from the problem statement
-print(Solution().climb_stairs(3, [1, 2, 3]))      # 4
-print(Solution().climb_stairs(2, [2, 5, 6, 8]))   # 1
-print(Solution().climb_stairs(2, [8, 3, 6, 5]))   # 0
-
-# Edge cases
-print(Solution().climb_stairs(0, [1, 2]))          # 1
-print(Solution().climb_stairs(1, [1]))             # 1
-print(Solution().climb_stairs(4, [1, 2]))          # 5
-print(Solution().climb_stairs(5, [1, 2, 3]))       # 13
+n = int(input())
+steps = ast.literal_eval(input())
+print(Solution().climb_stairs(n, steps))
 ```
 
-```java run viz=array
+```java solution
 import java.util.*;
 
 public class Main {
+    static int[] parseIntArray(String line) {
+        String s = line.replaceAll("[\\[\\]\\s]", "");
+        if (s.isEmpty()) return new int[0];
+        String[] p = s.split(",");
+        int[] a = new int[p.length];
+        for (int i = 0; i < p.length; i++) a[i] = Integer.parseInt(p[i].trim());
+        return a;
+    }
+
     static class Solution {
-        public int climbStairs(int N, List<Integer> steps) {
+        public int climbStairs(int N, int[] steps) {
 
             // Base case: If N is negative, there are no ways to
             // reach the ground
@@ -191,16 +263,10 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().climbStairs(3, Arrays.asList(1, 2, 3)));      // 4
-        System.out.println(new Solution().climbStairs(2, Arrays.asList(2, 5, 6, 8)));   // 1
-        System.out.println(new Solution().climbStairs(2, Arrays.asList(8, 3, 6, 5)));   // 0
-
-        // Edge cases
-        System.out.println(new Solution().climbStairs(0, Arrays.asList(1, 2)));          // 1
-        System.out.println(new Solution().climbStairs(1, Arrays.asList(1)));             // 1
-        System.out.println(new Solution().climbStairs(4, Arrays.asList(1, 2)));          // 5
-        System.out.println(new Solution().climbStairs(5, Arrays.asList(1, 2, 3)));       // 13
+        Scanner sc = new Scanner(System.in);
+        int n = Integer.parseInt(sc.nextLine().trim());
+        int[] steps = parseIntArray(sc.nextLine().trim());
+        System.out.println(new Solution().climbStairs(n, steps));
     }
 }
 ```

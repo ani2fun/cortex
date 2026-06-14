@@ -16,16 +16,18 @@ Two threads run `count++` on a shared counter. That's three steps — read, add,
 CAS succeeds only if the value is *still* what you expected. (Python has no real CAS — the GIL serialises bytecode — so we *simulate* the semantics with a function; Java's `java.util.concurrent.atomic` gives the genuine hardware-backed operation.)
 
 ```python run viz=array
+import ast
+
 def cas(cell, expected, new):                          # SIMULATED: real CAS is one atomic HW instruction
     if cell[0] == expected:                            # compare...
         cell[0] = new                                  # ...and swap, indivisibly
         return True
     return False                                       # value changed first -> fail, change nothing
 
-cell = [0]
-print(cas(cell, 0, 1), cell[0])                        # True 1   (0 was there, now 1)
-print(cas(cell, 0, 5), cell[0])                        # False 1  (current is 1, not 0 -> no change)
-print(cas(cell, 1, 2), cell[0])                        # True 2
+cell = [ast.literal_eval(input())]
+print(("true" if cas(cell, 0, 1) else "false"), cell[0])   # True 1   (0 was there, now 1)
+print(("true" if cas(cell, 0, 5) else "false"), cell[0])   # False 1  (current is 1, not 0 -> no change)
+print(("true" if cas(cell, 1, 2) else "false"), cell[0])   # True 2
 
 def atomic_inc(cell):                                  # lock-free increment: read, compute, CAS, retry
     while True:
@@ -37,9 +39,12 @@ print(atomic_inc(cell))                                # 3
 
 ```java run viz=array
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Scanner;
 public class Main {
     public static void main(String[] args) {
-        AtomicInteger cell = new AtomicInteger(0);     // REAL CAS via compareAndSet
+        Scanner sc = new Scanner(System.in);
+        int init = sc.nextInt();
+        AtomicInteger cell = new AtomicInteger(init);  // REAL CAS via compareAndSet
         System.out.println(cell.compareAndSet(0, 1) + " " + cell.get());   // true 1
         System.out.println(cell.compareAndSet(0, 5) + " " + cell.get());   // false 1
         System.out.println(cell.compareAndSet(1, 2) + " " + cell.get());   // true 2
@@ -50,7 +55,19 @@ public class Main {
 }
 ```
 
-Both print `true 1`, `false 1`, `true 2`, then `3`. The second CAS fails because the value moved to `1` — exactly the protection you want: if another thread changed the value out from under you, your CAS *refuses* to clobber it, and you retry with the fresh value. Single-threaded here it's deterministic; under real contention the retry loop is what makes the increment correct without a lock.
+```testcases
+{
+  "args": [
+    { "id": "init", "label": "initial value", "type": "integer", "placeholder": "0" }
+  ],
+  "cases": [
+    { "args": { "init": 0 }, "expected": "true 1\nfalse 1\ntrue 2\n3" },
+    { "args": { "init": 5 }, "expected": "false 5\nfalse 5\nfalse 5\n6" }
+  ]
+}
+```
+
+Both print `true 1`, `false 1`, `true 2`, then `3` (for initial value 0). The second CAS fails because the value moved to `1` — exactly the protection you want: if another thread changed the value out from under you, your CAS *refuses* to clobber it, and you retry with the fresh value. Single-threaded here it's deterministic; under real contention the retry loop is what makes the increment correct without a lock.
 
 ## How It Works
 
@@ -126,6 +143,66 @@ The versioned CAS **fails** (`False`), correctly. By stamping every value with a
 **Lock-free update-to-max** — atomically raise a shared value to `x` only if `x` is larger, with no lock. It's the read-compute-CAS-retry loop with a comparison: read the current max, bail if `x` isn't bigger, else CAS it in (retrying if someone else updated first).
 
 ```python run viz=array
+import ast
+
+def cas(cell, expected, new):
+    if cell[0] == expected:
+        cell[0] = new
+        return True
+    return False
+
+def atomic_max(cell, x):
+    # Your code goes here
+    return 0
+
+cell = [ast.literal_eval(input())]
+x = ast.literal_eval(input())
+print(atomic_max(cell, x))
+```
+
+```java run viz=array
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Scanner;
+public class Main {
+    static int atomicMax(AtomicInteger cell, int x) {
+        // Your code goes here
+        return 0;
+    }
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int init = sc.nextInt();
+        int x = sc.nextInt();
+        AtomicInteger cell = new AtomicInteger(init);
+        System.out.println(atomicMax(cell, x));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "init", "label": "initial value", "type": "integer", "placeholder": "0" },
+    { "id": "x", "label": "candidate max", "type": "integer", "placeholder": "5" }
+  ],
+  "cases": [
+    { "args": { "init": 0, "x": 5 }, "expected": "5" },
+    { "args": { "init": 5, "x": 3 }, "expected": "5" },
+    { "args": { "init": 0, "x": 9 }, "expected": "9" },
+    { "args": { "init": 7, "x": 7 }, "expected": "7" }
+  ]
+}
+```
+
+The first case returns `5` (raises from 0). The second returns `5` (3 is not larger — no update). The third raises from 0 to 9. The fourth returns `7` because `x <= old` when they are equal — no unnecessary CAS. The pattern generalises: any read-modify-write you can express as "compute a candidate, then commit it if the input hasn't moved" becomes lock-free this way. Single-threaded the CAS never fails; the loop earns its keep only under contention.
+
+<details>
+<summary><strong>Editorial</strong></summary>
+
+Read the current max, bail if `x` is not strictly larger, else CAS it in; retry if a competitor updated first. The `x <= old` guard avoids a wasted CAS on equal values and also handles the case where a concurrent write already raised the max past `x`.
+
+```python solution time=O(1) space=O(1)
+import ast
+
 def cas(cell, expected, new):
     if cell[0] == expected:
         cell[0] = new
@@ -140,14 +217,14 @@ def atomic_max(cell, x):
         if cas(cell, old, x):                          # try to raise it; retry if a competitor won
             return x
 
-cell = [0]
-print(atomic_max(cell, 5))     # 5
-print(atomic_max(cell, 3))     # 5   (3 isn't larger -> no update)
-print(atomic_max(cell, 9))     # 9
+cell = [ast.literal_eval(input())]
+x = ast.literal_eval(input())
+print(atomic_max(cell, x))
 ```
 
-```java run viz=array
+```java solution
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Scanner;
 public class Main {
     static int atomicMax(AtomicInteger cell, int x) {
         while (true) {
@@ -157,20 +234,21 @@ public class Main {
         }
     }
     public static void main(String[] args) {
-        AtomicInteger cell = new AtomicInteger(0);
-        System.out.println(atomicMax(cell, 5));   // 5
-        System.out.println(atomicMax(cell, 3));   // 5
-        System.out.println(atomicMax(cell, 9));   // 9
+        Scanner sc = new Scanner(System.in);
+        int init = sc.nextInt();
+        int x = sc.nextInt();
+        AtomicInteger cell = new AtomicInteger(init);
+        System.out.println(atomicMax(cell, x));
     }
 }
 ```
 
-Both print `5`, `5`, `9`. The middle call returns early because `3 ≤ 5` — no wasted CAS. The pattern generalises: any read-modify-write you can express as "compute a candidate, then commit it if the input hasn't moved" becomes lock-free this way. (`AtomicInteger` ships `updateAndGet`/`accumulateAndGet`, which *are* this loop wrapped up.) Single-threaded the CAS never fails; the loop earns its keep only under contention, where a losing thread silently re-reads and tries again — making progress, never blocking.
+</details>
 
 ## Reflect & Connect
 
 - **One primitive, one pattern.** `CAS(addr, expected, new)` plus the read-compute-CAS-retry loop is the foundation of all lock-free programming. A failed CAS means "a competitor committed; re-read and retry" — optimistic concurrency, no locks.
-- **Atomic ≠ ordered.** CAS gives atomicity; *memory ordering* (acquire/release/seq-cst) gives cross-thread visibility. Lock-free correctness needs both, and the ordering bugs are the subtle ones.
+- **Atomic != ordered.** CAS gives atomicity; *memory ordering* (acquire/release/seq-cst) gives cross-thread visibility. Lock-free correctness needs both, and the ordering bugs are the subtle ones.
 - **ABA: value-equality isn't change-absence.** CAS can be fooled by `A→B→A`. Fix with a version stamp (`AtomicStampedReference`), hazard pointers / [RCU](/cortex/data-structures-and-algorithms/concurrency-and-systems/rcu-and-hazard-pointers), or LL/SC hardware that fails on *any* intervening write.
 - **Lock-free vs lock-based.** Locks block (a descheduled holder stalls everyone); lock-free guarantees *some* thread always progresses. CAS trades the lock's simplicity for non-blocking progress and the retry-loop discipline.
 - **It's the base of the next lessons.** Treiber's [lock-free queue/stack](/cortex/data-structures-and-algorithms/concurrency-and-systems/lock-free-queue) and [concurrent hash maps](/cortex/data-structures-and-algorithms/concurrency-and-systems/concurrent-hash-map) are CAS retry loops on a `head`/bucket pointer. Master CAS + ABA and the rest of Part 10 is variations on this theme.
@@ -204,7 +282,7 @@ Both print `5`, `5`, `9`. The middle call returns early because `3 ≤ 5` — no
 <details>
 <summary><strong>Q:</strong> How do you fix ABA?</summary>
 
-**A:** Attach a monotonically increasing version stamp and CAS the `(value, version)` pair (e.g. `AtomicStampedReference`), so `A@0 ≠ A@2`. Alternatives: hazard pointers / RCU reclamation, or LL/SC hardware whose store-conditional fails on *any* intervening write.
+**A:** Attach a monotonically increasing version stamp and CAS the `(value, version)` pair (e.g. `AtomicStampedReference`), so `A@0 != A@2`. Alternatives: hazard pointers / RCU reclamation, or LL/SC hardware whose store-conditional fails on *any* intervening write.
 
 </details>
 
@@ -212,4 +290,4 @@ Both print `5`, `5`, `9`. The middle call returns early because `3 ≤ 5` — no
 
 - **Herlihy & Shavit**, *The Art of Multiprocessor Programming* (2nd ed., 2020) — CAS, lock-free progress, the ABA problem, and memory consistency.
 - **Treiber** (1986), "Systems programming: coping with parallelism" — the CAS-based lock-free stack; **Java** `java.util.concurrent.atomic` (`AtomicInteger`, `AtomicStampedReference`, `VarHandle`) and **C++** `std::atomic<T>::compare_exchange_*` are the production APIs.
-- The `true/false/true` CAS results, the `atomic_inc → 3`, the naive-vs-versioned ABA `True`/`False`, and the `5/5/9` atomic-max above come from the runnable blocks — the Python ones *simulate* CAS (Python has no real atomic due to the GIL); the Java ones use genuine hardware-backed atomics. Re-run to verify.
+- The `true/false/true` CAS results, the `atomic_inc -> 3`, the naive-vs-versioned ABA `True`/`False`, and the `5/5/9` atomic-max above come from the runnable blocks — the Python ones *simulate* CAS (Python has no real atomic due to the GIL); the Java ones use genuine hardware-backed atomics. Re-run to verify.

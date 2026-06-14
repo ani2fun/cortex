@@ -41,9 +41,8 @@ t = Trie()
 t.insert("", "eth0")                                 # 0.0.0.0/0  default route
 t.insert(ip_to_bits("192.168.0.0")[:16], "eth1")     # 192.168.0.0/16
 t.insert(ip_to_bits("192.168.1.0")[:24], "eth2")     # 192.168.1.0/24
-print("192.168.1.42 ->", t.lookup(ip_to_bits("192.168.1.42")))   # /24
-print("192.168.5.5  ->", t.lookup(ip_to_bits("192.168.5.5")))    # /16
-print("8.8.8.8      ->", t.lookup(ip_to_bits("8.8.8.8")))        # default
+dest = input()
+print(dest + " ->", t.lookup(ip_to_bits(dest)))
 ```
 
 ```java run viz=array
@@ -74,14 +73,28 @@ public class Main {
         }
     }
     public static void main(String[] x) {
+        Scanner sc = new Scanner(System.in);
         Trie t = new Trie();
         t.insert("", "eth0");                                          // 0.0.0.0/0 default
         t.insert(ipToBits("192.168.0.0").substring(0, 16), "eth1");    // /16
         t.insert(ipToBits("192.168.1.0").substring(0, 24), "eth2");    // /24
-        System.out.println("192.168.1.42 -> " + t.lookup(ipToBits("192.168.1.42")));
-        System.out.println("192.168.5.5  -> " + t.lookup(ipToBits("192.168.5.5")));
-        System.out.println("8.8.8.8      -> " + t.lookup(ipToBits("8.8.8.8")));
+        String dest = sc.nextLine();
+        System.out.println(dest + " -> " + t.lookup(ipToBits(dest)));
     }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "dest", "label": "destination IP", "type": "string", "placeholder": "192.168.1.42" }
+  ],
+  "cases": [
+    { "args": { "dest": "192.168.1.42" }, "expected": "192.168.1.42 -> eth2" },
+    { "args": { "dest": "192.168.5.5"  }, "expected": "192.168.5.5 -> eth1" },
+    { "args": { "dest": "8.8.8.8"      }, "expected": "8.8.8.8 -> eth0" },
+    { "args": { "dest": "10.0.0.1"     }, "expected": "10.0.0.1 -> eth0" }
+  ]
 }
 ```
 
@@ -165,29 +178,98 @@ class Router:
     def read_snapshot(self): return self.table           # rcu_dereference: grab the current version
     def publish(self, new_table): self.table = new_table # rcu_assign_pointer: atomic swap (old freed after grace period)
 
-r = Router({"10.0.0.0/8": "old-eth1"})
-reader = r.read_snapshot()                                # a packet lookup grabs the current table
-r.publish({"10.0.0.0/8": "new-eth2"})                     # control plane swaps in a new table mid-lookup
-print("in-flight reader sees:", reader["10.0.0.0/8"])     # consistent OLD snapshot
-print("new reader sees:      ", r.read_snapshot()["10.0.0.0/8"])
+def rcu_demo(prefix, old_hop, new_hop):
+    # Your code goes here — create a Router, grab a snapshot, publish a new table, print both views
+    pass
+
+prefix  = input()
+old_hop = input()
+new_hop = input()
+rcu_demo(prefix, old_hop, new_hop)
 ```
 
 ```java run viz=array
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 public class Main {
+    static void rcuDemo(String prefix, String oldHop, String newHop) {
+        // Your code goes here — create a Router (AtomicReference), grab a snapshot,
+        // publish a new table, then print both the in-flight and new-reader views
+    }
     public static void main(String[] x) {
-        AtomicReference<Map<String,String>> table =
-            new AtomicReference<>(Map.of("10.0.0.0/8", "old-eth1"));   // the published RCU pointer
-        Map<String,String> reader = table.get();                       // rcu_dereference: grab current version
-        table.set(Map.of("10.0.0.0/8", "new-eth2"));                   // rcu_assign_pointer: atomic swap
-        System.out.println("in-flight reader sees: " + reader.get("10.0.0.0/8"));        // consistent OLD snapshot
-        System.out.println("new reader sees:       " + table.get().get("10.0.0.0/8"));
+        Scanner sc = new Scanner(System.in);
+        String prefix  = sc.nextLine();
+        String oldHop  = sc.nextLine();
+        String newHop  = sc.nextLine();
+        rcuDemo(prefix, oldHop, newHop);
     }
 }
 ```
 
-Both print `in-flight reader sees: old-eth1`, then `new reader sees: new-eth2`. The in-flight lookup grabbed a reference to the *old* table and keeps using that whole consistent snapshot — it never sees a half-updated table, because the update doesn't mutate the old structure, it builds a *new* one and flips a single pointer. Any lookup that started before the flip finishes against the old version; any that starts after sees the new one. The old table can't be freed until every pre-existing reader has finished — its **grace period** — which is exactly the RCU guarantee from the [reclamation chapter](/cortex/data-structures-and-algorithms/concurrency-and-systems/rcu-and-hazard-pointers). That's how a router swaps its forwarding table millions of packets deep without a single lock on the read path or a single torn lookup.
+```testcases
+{
+  "args": [
+    { "id": "prefix",  "label": "route prefix",  "type": "string", "placeholder": "10.0.0.0/8" },
+    { "id": "old_hop", "label": "old next-hop",  "type": "string", "placeholder": "old-eth1" },
+    { "id": "new_hop", "label": "new next-hop",  "type": "string", "placeholder": "new-eth2" }
+  ],
+  "cases": [
+    { "args": { "prefix": "10.0.0.0/8",     "old_hop": "old-eth1",  "new_hop": "new-eth2"  }, "expected": "in-flight reader sees: old-eth1\nnew reader sees:       new-eth2" },
+    { "args": { "prefix": "192.168.1.0/24", "old_hop": "gw-primary","new_hop": "gw-backup"  }, "expected": "in-flight reader sees: gw-primary\nnew reader sees:       gw-backup" },
+    { "args": { "prefix": "0.0.0.0/0",      "old_hop": "isp-a",     "new_hop": "isp-b"      }, "expected": "in-flight reader sees: isp-a\nnew reader sees:       isp-b" }
+  ]
+}
+```
+
+Both print `in-flight reader sees: old-eth1`, then `new reader sees: new-eth2`.
+
+<details>
+<summary><strong>Editorial</strong></summary>
+
+Create the Router (or `AtomicReference`) with the old table, immediately grab a reference (`read_snapshot` / `.get()`), then publish the new table. The in-flight reference still points to the old snapshot — the update built a *new* object and swapped a single pointer; it never mutated the structure the reader holds.
+
+```python solution time=O(1) space=O(1)
+class Router:
+    def __init__(self, table): self.table = table       # the "published" RCU-protected pointer
+    def read_snapshot(self): return self.table           # rcu_dereference: grab the current version
+    def publish(self, new_table): self.table = new_table # rcu_assign_pointer: atomic swap (old freed after grace period)
+
+def rcu_demo(prefix, old_hop, new_hop):
+    r = Router({prefix: old_hop})
+    reader = r.read_snapshot()                          # packet lookup grabs the current table
+    r.publish({prefix: new_hop})                        # control plane swaps in a new table mid-lookup
+    print("in-flight reader sees:", reader[prefix])     # consistent OLD snapshot
+    print("new reader sees:      ", r.read_snapshot()[prefix])
+
+prefix  = input()
+old_hop = input()
+new_hop = input()
+rcu_demo(prefix, old_hop, new_hop)
+```
+
+```java solution
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
+public class Main {
+    static void rcuDemo(String prefix, String oldHop, String newHop) {
+        AtomicReference<Map<String,String>> table =
+            new AtomicReference<>(Map.of(prefix, oldHop));   // the published RCU pointer
+        Map<String,String> reader = table.get();             // rcu_dereference: grab current version
+        table.set(Map.of(prefix, newHop));                   // rcu_assign_pointer: atomic swap
+        System.out.println("in-flight reader sees: " + reader.get(prefix));       // consistent OLD snapshot
+        System.out.println("new reader sees:       " + table.get().get(prefix));
+    }
+    public static void main(String[] x) {
+        Scanner sc = new Scanner(System.in);
+        String prefix  = sc.nextLine();
+        String oldHop  = sc.nextLine();
+        String newHop  = sc.nextLine();
+        rcuDemo(prefix, oldHop, newHop);
+    }
+}
+```
+
+</details>
 
 ## Reflect & Connect
 

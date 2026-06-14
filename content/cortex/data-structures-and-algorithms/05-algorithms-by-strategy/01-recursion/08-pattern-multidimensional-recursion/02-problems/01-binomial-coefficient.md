@@ -4,6 +4,8 @@ summary: "Given non-negative integers n and k with 0 ≤ k ≤ n, return the bin
 prereqs:
   - 08-pattern-multidimensional-recursion/01-pattern
 difficulty: medium
+kind: problem
+topics: [multidimensional-recursion, recursion]
 ---
 
 # Binomial Coefficient
@@ -16,19 +18,87 @@ Pascal's triangle, recursion-style. The recurrence `C(n, k) = C(n-1, k-1) + C(n-
 
 Given non-negative integers `n` and `k` with `0 ≤ k ≤ n`, return the binomial coefficient `C(n, k)` — the number of ways to choose `k` elements from a set of `n`.
 
+---
+
+## Examples
+
+**Example 1**
 ```
 Input:  n = 5, k = 3
 Output: 10
 Explanation: C(5, 3) = 5! / (3! × 2!) = 10
-
-Input:  n = 10, k = 4
-Output: 210
-
-Input:  n = 0, k = 0
-Output: 1
 ```
 
----
+**Example 2**
+```
+Input:  n = 10, k = 4
+Output: 210
+Explanation: C(10, 4) = 10! / (4! × 6!) = 210
+```
+
+```quiz
+{
+  "prompt": "What are the two boundary base cases for the binomial recurrence C(n, k)?",
+  "options": ["k = 0 and k = n", "n = 0 and k = 0", "n = 1 and k = 1", "k = 0 and n = 1"],
+  "answer": "k = 0 and k = n"
+}
+```
+
+## Constraints
+
+- `0 ≤ k ≤ n ≤ 20`
+- Must be solved recursively (no direct factorial formula).
+
+```python run viz=array
+class Solution:
+    def binomial_coefficient(self, n: int, k: int) -> int:
+        # Your code goes here — base cases: n == k or k == 0 returns 1;
+        # recursive step: C(n-1, k-1) + C(n-1, k)
+        return 0
+
+n = int(input())
+k = int(input())
+print(Solution().binomial_coefficient(n, k))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int binomialCoefficient(int n, int k) {
+            // Your code goes here — base cases: n == k or k == 0 returns 1;
+            // recursive step: C(n-1, k-1) + C(n-1, k)
+            return 0;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = Integer.parseInt(sc.nextLine().trim());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().binomialCoefficient(n, k));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "n", "label": "n", "type": "int", "placeholder": "5" },
+    { "id": "k", "label": "k", "type": "int", "placeholder": "3" }
+  ],
+  "cases": [
+    { "args": { "n": "5", "k": "3" }, "expected": "10" },
+    { "args": { "n": "10", "k": "4" }, "expected": "210" },
+    { "args": { "n": "0", "k": "0" }, "expected": "1" },
+    { "args": { "n": "5", "k": "0" }, "expected": "1" },
+    { "args": { "n": "5", "k": "5" }, "expected": "1" },
+    { "args": { "n": "6", "k": "2" }, "expected": "15" },
+    { "args": { "n": "7", "k": "3" }, "expected": "35" }
+  ]
+}
+```
 
 <details>
 <summary><h2>What Does the Recurrence Mean?</h2></summary>
@@ -123,7 +193,7 @@ table: "C(n, k) recursion grid (Pascal's triangle)" {
 
 ### The Solution
 
-```python run viz=array
+```python solution time=O(2^n) space=O(n)
 class Solution:
     def binomial_coefficient(self, n: int, k: int) -> int:
 
@@ -141,19 +211,14 @@ class Solution:
         ) + self.binomial_coefficient(n - 1, k)
 
 
-# Examples from the problem statement
-print(Solution().binomial_coefficient(5, 3))    # 10
-print(Solution().binomial_coefficient(10, 4))   # 210
-print(Solution().binomial_coefficient(0, 0))    # 1
-
-# Edge cases
-print(Solution().binomial_coefficient(5, 0))    # 1
-print(Solution().binomial_coefficient(5, 5))    # 1
-print(Solution().binomial_coefficient(6, 2))    # 15
-print(Solution().binomial_coefficient(7, 3))    # 35
+n = int(input())
+k = int(input())
+print(Solution().binomial_coefficient(n, k))
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
     static class Solution {
         public int binomialCoefficient(int N, int K) {
@@ -176,16 +241,10 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().binomialCoefficient(5, 3));    // 10
-        System.out.println(new Solution().binomialCoefficient(10, 4));   // 210
-        System.out.println(new Solution().binomialCoefficient(0, 0));    // 1
-
-        // Edge cases
-        System.out.println(new Solution().binomialCoefficient(5, 0));    // 1
-        System.out.println(new Solution().binomialCoefficient(5, 5));    // 1
-        System.out.println(new Solution().binomialCoefficient(6, 2));    // 15
-        System.out.println(new Solution().binomialCoefficient(7, 3));    // 35
+        Scanner sc = new Scanner(System.in);
+        int n = Integer.parseInt(sc.nextLine().trim());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().binomialCoefficient(n, k));
     }
 }
 ```

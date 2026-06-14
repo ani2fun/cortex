@@ -36,12 +36,13 @@ def min_cut(s):
             cuts[i] = min(cuts[j - 1] + 1 for j in range(1, i + 1) if is_pal[j][i])
     return cuts[n - 1]
 
-print(min_cut("aab"))   # 1   ("aa" | "b")
-print(min_cut("a"))     # 0
-print(min_cut("ab"))    # 1
+s = input()
+print(min_cut(s))
 ```
 
 ```java run viz=array
+import java.util.*;
+
 public class Main {
     static int minCut(String s) {
         int n = s.length();
@@ -64,10 +65,24 @@ public class Main {
         return cuts[n - 1];
     }
     public static void main(String[] args) {
-        System.out.println(minCut("aab"));   // 1
-        System.out.println(minCut("a"));     // 0
-        System.out.println(minCut("ab"));    // 1
+        Scanner sc = new Scanner(System.in);
+        String s = sc.nextLine();
+        System.out.println(minCut(s));
     }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "s", "type": "string", "placeholder": "aab" }
+  ],
+  "cases": [
+    { "args": { "s": "aab" }, "expected": "1" },
+    { "args": { "s": "a" }, "expected": "0" },
+    { "args": { "s": "ab" }, "expected": "1" },
+    { "args": { "s": "aaabaa" }, "expected": "1" }
+  ]
 }
 ```
 
@@ -159,6 +174,60 @@ def min_cut_partition(s):
             j = i + length - 1
             if s[i] == s[j] and (length == 2 or is_pal[i + 1][j - 1]):
                 is_pal[i][j] = True
+    # Your code goes here — fill cuts[] and prev[], then walk back
+    return []
+
+s = input()
+result = min_cut_partition(s)
+print('[' + ', '.join(result) + ']')
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static List<String> minCutPartition(String s) {
+        // Your code goes here
+        return new ArrayList<>();
+    }
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String s = sc.nextLine();
+        System.out.println(minCutPartition(s));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "s", "type": "string", "placeholder": "aab" }
+  ],
+  "cases": [
+    { "args": { "s": "aab" }, "expected": "[aa, b]" },
+    { "args": { "s": "aaabaa" }, "expected": "[a, aabaa]" },
+    { "args": { "s": "a" }, "expected": "[a]" },
+    { "args": { "s": "racecar" }, "expected": "[racecar]" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Extend the cut DP with a parent pointer: record which `j` gave each `cuts[i]` its minimum, then walk the pointers back to recover the pieces.
+
+```python solution time=O(n²) space=O(n²)
+def min_cut_partition(s):
+    n = len(s)
+    is_pal = [[False] * n for _ in range(n)]
+    for i in range(n):
+        is_pal[i][i] = True
+    for length in range(2, n + 1):
+        for i in range(n - length + 1):
+            j = i + length - 1
+            if s[i] == s[j] and (length == 2 or is_pal[i + 1][j - 1]):
+                is_pal[i][j] = True
     cuts = [0] * n
     prev = [0] * n                                # prev[i] = start index of the last piece ending at i
     for i in range(n):
@@ -177,12 +246,14 @@ def min_cut_partition(s):
         i = start - 1
     return pieces[::-1]
 
-print(min_cut_partition("aab"))      # ['aa', 'b']
-print(min_cut_partition("aaabaa"))   # ['a', 'aabaa']
+s = input()
+result = min_cut_partition(s)
+print('[' + ', '.join(result) + ']')
 ```
 
-```java run viz=array
+```java solution
 import java.util.*;
+
 public class Main {
     static List<String> minCutPartition(String s) {
         int n = s.length();
@@ -210,13 +281,16 @@ public class Main {
         return pieces;
     }
     public static void main(String[] args) {
-        System.out.println(minCutPartition("aab"));      // [aa, b]
-        System.out.println(minCutPartition("aaabaa"));   // [a, aabaa]
+        Scanner sc = new Scanner(System.in);
+        String s = sc.nextLine();
+        System.out.println(minCutPartition(s));
     }
 }
 ```
 
-Both print `[aa, b]` then `[a, aabaa]`. The reconstruction confirms the Trace-It insight: the optimum for `"aaabaa"` really is the short-`"a"`-then-long-`"aabaa"` split that greedy never tried. Recording one parent pointer per cell turns a DP that *counts* into one that *recovers the choices* — the same backtrace move you use for LCS and edit distance.
+</details>
+
+The reconstruction confirms the Trace-It insight: the optimum for `"aaabaa"` really is the short-`"a"`-then-long-`"aabaa"` split that greedy never tried. Recording one parent pointer per cell turns a DP that *counts* into one that *recovers the choices* — the same backtrace move you use for LCS and edit distance.
 
 ## Reflect & Connect
 

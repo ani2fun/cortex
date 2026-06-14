@@ -27,8 +27,46 @@ def fast_pow(base, exp):
         exp >>= 1              # move to the next bit of the exponent
     return result
 
-print(fast_pow(2, 10))         # 1024
-print(fast_pow(3, 5))          # 243
+base = int(input())
+exp = int(input())
+print(fast_pow(base, exp))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static long fastPow(long base, long exp) {
+        long result = 1;
+        while (exp > 0) {
+            if ((exp & 1) == 1) result *= base;
+            base *= base;
+            exp >>= 1;
+        }
+        return result;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        long base = Long.parseLong(sc.nextLine().trim());
+        long exp = Long.parseLong(sc.nextLine().trim());
+        System.out.println(fastPow(base, exp));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "base", "label": "base", "type": "int", "placeholder": "2" },
+    { "id": "exp", "label": "exp", "type": "int", "placeholder": "10" }
+  ],
+  "cases": [
+    { "args": { "base": "2", "exp": "10" }, "expected": "1024" },
+    { "args": { "base": "3", "exp": "5" }, "expected": "243" },
+    { "args": { "base": "5", "exp": "3" }, "expected": "125" }
+  ]
+}
 ```
 
 ## How It Works
@@ -79,9 +117,60 @@ Because `exp` in binary is a sum of distinct powers of two: `5 = 4 + 1 = 2^2 + 2
 
 ## Your Turn
 
-Fast exponentiation plus the one-line companions:
+Fast exponentiation plus the one-line companions — fill in `fast_pow`, `is_power_of_two`, and `is_odd`, then Run. The driver reads `base` and `exp`, prints the result of `fast_pow(base, exp)`:
 
 ```python run viz=array
+def fast_pow(base, exp):
+    # Your code goes here
+    return 0
+
+def is_power_of_two(n): return False
+def is_odd(n):          return False
+
+base = int(input())
+exp = int(input())
+print(fast_pow(base, exp))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static long fastPow(long base, long exp) {
+        // Your code goes here
+        return 0;
+    }
+
+    static boolean isPowerOfTwo(int n) { return false; }
+    static boolean isOdd(int n)        { return false; }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        long base = Long.parseLong(sc.nextLine().trim());
+        long exp = Long.parseLong(sc.nextLine().trim());
+        System.out.println(fastPow(base, exp));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "base", "label": "base", "type": "int", "placeholder": "2" },
+    { "id": "exp", "label": "exp", "type": "int", "placeholder": "16" }
+  ],
+  "cases": [
+    { "args": { "base": "2", "exp": "16" }, "expected": "65536" },
+    { "args": { "base": "3", "exp": "4" }, "expected": "81" },
+    { "args": { "base": "10", "exp": "3" }, "expected": "1000" }
+  ]
+}
+```
+
+<details>
+<summary><strong>Editorial</strong></summary>
+
+```python solution
 def fast_pow(base, exp):
     result = 1
     while exp > 0:
@@ -94,28 +183,38 @@ def fast_pow(base, exp):
 def is_power_of_two(n): return n > 0 and (n & (n - 1)) == 0
 def is_odd(n):          return (n & 1) == 1
 
-print(fast_pow(2, 16), is_power_of_two(64), is_odd(7))   # 65536 True True
+base = int(input())
+exp = int(input())
+print(fast_pow(base, exp))
 ```
 
-```java run viz=array
-public class Main {
-  static long fastPow(long base, long exp) {
-    long result = 1;
-    while (exp > 0) {
-      if ((exp & 1) == 1) result *= base;
-      base *= base;
-      exp >>= 1;
-    }
-    return result;
-  }
-  static boolean isPowerOfTwo(int n) { return n > 0 && (n & (n - 1)) == 0; }
-  static boolean isOdd(int n)        { return (n & 1) == 1; }
+```java solution
+import java.util.*;
 
-  public static void main(String[] args) {
-    System.out.println(fastPow(2, 16) + " " + isPowerOfTwo(64) + " " + isOdd(7));   // 65536 true true
-  }
+public class Main {
+    static long fastPow(long base, long exp) {
+        long result = 1;
+        while (exp > 0) {
+            if ((exp & 1) == 1) result *= base;
+            base *= base;
+            exp >>= 1;
+        }
+        return result;
+    }
+
+    static boolean isPowerOfTwo(int n) { return n > 0 && (n & (n - 1)) == 0; }
+    static boolean isOdd(int n)        { return (n & 1) == 1; }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        long base = Long.parseLong(sc.nextLine().trim());
+        long exp = Long.parseLong(sc.nextLine().trim());
+        System.out.println(fastPow(base, exp));
+    }
 }
 ```
+
+</details>
 
 Drill the family in **Practice** — [Parity Checker](/cortex/data-structures-and-algorithms/bit-tricks/pattern-applications/problems/parity-checker), [Power of 2](/cortex/data-structures-and-algorithms/bit-tricks/pattern-applications/problems/power-of-2), [Set-Bit Parity](/cortex/data-structures-and-algorithms/bit-tricks/pattern-applications/problems/parity-checker-ii-set-bit-parity), and [Fast Exponentiation](/cortex/data-structures-and-algorithms/bit-tricks/pattern-applications/problems/power-function-fast-exponentiation).
 
@@ -173,4 +272,4 @@ This closes the bit-manipulation toolkit: six patterns — kth-bit, set-bit-find
 
 - **CLRS**, *Introduction to Algorithms*, 4th ed., §31 — modular exponentiation (repeated squaring).
 - **Warren**, *Hacker's Delight*, 2nd ed. — parity, power-of-two, population count.
-- Binary exponentiation and the bit-test one-liners are standard; both runnable blocks are verified by running (`2^10 = 1024`, `3^5 = 243`, `2^16 = 65536`; parity / power-of-two checks).
+- Binary exponentiation and the bit-test one-liners are standard; both runnable blocks are verified by running.

@@ -4,18 +4,91 @@ summary: "Given an integer num, return "odd" if its set bit count is odd, "even"
 prereqs:
   - 06-pattern-applications/01-pattern
 difficulty: medium
+kind: problem
+topics: [applications, bit-manipulation]
 ---
 
 # Parity Checker II — Set-Bit Parity
 
-## The Problem
+Count the set bits — Kernighan's loop strips one per iteration in `O(set bits)`.
 
-Given an integer `num`, return `"odd"` if its **set bit count** is odd, `"even"` otherwise. (This is *bit parity*, distinct from numerical parity from earlier.)
+## Problem Statement
 
+Given a non-negative integer `num`, return `"odd"` if its **set bit count** is odd, `"even"` otherwise. (This is *bit parity*, distinct from numerical parity from earlier.)
+
+## Examples
+
+**Example 1**
 ```
-Input:  num = 10   →  "even"   Binary 1010 — 2 set bits → even
-Input:  num = 13   →  "odd"    Binary 1101 — 3 set bits → odd
-Input:  num = 1    →  "odd"    1 set bit → odd
+Input:  num = 10
+Output: even
+Explanation: 10 in binary is 1010 — 2 set bits, count is even.
+```
+
+**Example 2**
+```
+Input:  num = 13
+Output: odd
+Explanation: 13 in binary is 1101 — 3 set bits, count is odd.
+```
+
+**Example 3**
+```
+Input:  num = 1
+Output: odd
+Explanation: 1 in binary is 1 — 1 set bit, count is odd.
+```
+
+## Constraints
+
+- `0 ≤ num ≤ 2^31 - 1` — non-negative 32-bit integer.
+
+```python run viz=array
+class Solution:
+    def parity_checker_ii(self, num: int) -> str:
+        # Your code goes here
+        return ""
+
+
+num = int(input())
+print(Solution().parity_checker_ii(num))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public String parityCheckerII(int num) {
+            // Your code goes here
+            return "";
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int num = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().parityCheckerII(num));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "num", "label": "num", "type": "int", "placeholder": "10" }
+  ],
+  "cases": [
+    { "args": { "num": "10" }, "expected": "even" },
+    { "args": { "num": "13" }, "expected": "odd" },
+    { "args": { "num": "1" }, "expected": "odd" },
+    { "args": { "num": "0" }, "expected": "even" },
+    { "args": { "num": "7" }, "expected": "odd" },
+    { "args": { "num": "15" }, "expected": "even" },
+    { "args": { "num": "3" }, "expected": "even" },
+    { "args": { "num": "5" }, "expected": "even" }
+  ]
+}
 ```
 
 <details>
@@ -40,9 +113,7 @@ Both work. Kernighan's runs in O(set-bit count); the shift-and-count loop runs i
 <details>
 <summary><h2>The Solution</h2></summary>
 
-
-
-```python run viz=array
+```python solution time=O(set bits) space=O(1)
 class Solution:
     def parity_checker_ii(self, num: int) -> str:
 
@@ -66,20 +137,13 @@ class Solution:
             return "even"
 
 
-# Examples from the problem statement
-print(Solution().parity_checker_ii(10))    # even
-print(Solution().parity_checker_ii(13))    # odd
-print(Solution().parity_checker_ii(1))     # odd
-
-# Edge cases
-print(Solution().parity_checker_ii(0))     # even
-print(Solution().parity_checker_ii(7))     # odd
-print(Solution().parity_checker_ii(15))    # even
-print(Solution().parity_checker_ii(3))     # even
-print(Solution().parity_checker_ii(5))     # even
+num = int(input())
+print(Solution().parity_checker_ii(num))
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
     static class Solution {
         public String parityCheckerII(int num) {
@@ -108,17 +172,9 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().parityCheckerII(10));    // even
-        System.out.println(new Solution().parityCheckerII(13));    // odd
-        System.out.println(new Solution().parityCheckerII(1));     // odd
-
-        // Edge cases
-        System.out.println(new Solution().parityCheckerII(0));     // even
-        System.out.println(new Solution().parityCheckerII(7));     // odd
-        System.out.println(new Solution().parityCheckerII(15));    // even
-        System.out.println(new Solution().parityCheckerII(3));     // even
-        System.out.println(new Solution().parityCheckerII(5));     // even
+        Scanner sc = new Scanner(System.in);
+        int num = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().parityCheckerII(num));
     }
 }
 ```

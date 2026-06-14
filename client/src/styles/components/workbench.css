@@ -705,12 +705,21 @@
     .yt-inline__head {
         @apply mb-2.5 flex flex-wrap items-center justify-between gap-2;
     }
+    /* Renders as a peer of the prose section headings (.chapter-content h2 —
+       Newsreader 30px/500): rehypePackageYourTurn consumes the `## Your Turn`
+       heading, so this kicker IS that section's heading and must read at the
+       same prominence, not as a small eyebrow label. Keeps the primary colour +
+       Target icon as the "interactive exercise" accent. */
     .yt-inline__kicker {
-        @apply inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase
-               tracking-[0.14em] text-primary;
+        @apply inline-flex items-center gap-2 text-primary;
+        font-family: var(--font-head);
+        font-weight: 500;
+        font-size: 30px;
+        line-height: 1.16;
+        letter-spacing: -0.01em;
     }
     .yt-inline__kicker-icon {
-        @apply h-3.5 w-3.5;
+        @apply h-6 w-6;
     }
     .yt-inline__meta {
         @apply font-mono text-[11.5px] text-muted-foreground;

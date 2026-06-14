@@ -20,19 +20,69 @@ Sort `[2, 0, 2, 1, 1, 0]` (values `0`/`1`/`2`, pivot `1`) into the three regions
 > ▶ Run it, then click **Visualise** — `<pivot` collects on the left, `>pivot` on the right, `==pivot` in the middle, all in one pass.
 
 ```python run viz=array viz-root=arr
-arr = [2, 0, 2, 1, 1, 0]
-pivot = 1
+import ast
+
+arr = ast.literal_eval(input())           # the test case's array
+pivot = int(input())                      # the pivot value
 low, mid, high = 0, 0, len(arr) - 1
 while mid <= high:
-    if arr[mid] < pivot:                      # belongs in the left region
+    if arr[mid] < pivot:                  # belongs in the left region
         arr[low], arr[mid] = arr[mid], arr[low]
         low += 1; mid += 1
-    elif arr[mid] > pivot:                     # belongs in the right region
+    elif arr[mid] > pivot:                # belongs in the right region
         arr[mid], arr[high] = arr[high], arr[mid]
-        high -= 1                              # do NOT advance mid (see below)
-    else:                                      # equals pivot — already in the middle
+        high -= 1                         # do NOT advance mid (see below)
+    else:                                 # equals pivot — already in the middle
         mid += 1
-print(arr)                                     # [0, 0, 1, 1, 2, 2]
+print(arr)                                # [0, 0, 1, 1, 2, 2]
+```
+
+```java run viz=array viz-root=arr
+import java.util.*;
+
+public class Main {
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());   // the test case's array
+    int pivot = Integer.parseInt(sc.nextLine().trim());  // the pivot value
+    int low = 0, mid = 0, high = arr.length - 1;
+    while (mid <= high) {
+      if (arr[mid] < pivot) {
+        int t = arr[low]; arr[low] = arr[mid]; arr[mid] = t;
+        low++; mid++;
+      } else if (arr[mid] > pivot) {
+        int t = arr[mid]; arr[mid] = arr[high]; arr[high] = t;
+        high--;                         // do NOT advance mid
+      } else mid++;
+    }
+    System.out.println(Arrays.toString(arr));   // [0, 0, 1, 1, 2, 2]
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's array
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr",   "label": "arr",   "type": "int[]", "placeholder": "[2, 0, 2, 1, 1, 0]" },
+    { "id": "pivot", "label": "pivot", "type": "int",   "placeholder": "1" }
+  ],
+  "cases": [
+    { "args": { "arr": "[2, 0, 2, 1, 1, 0]",    "pivot": "1" }, "expected": "[0, 0, 1, 1, 2, 2]" },
+    { "args": { "arr": "[2, 2, 0, 0, 1, 1, 2, 0]", "pivot": "1" }, "expected": "[0, 0, 0, 1, 1, 2, 2, 2]" },
+    { "args": { "arr": "[0, 0, 0]",              "pivot": "0" }, "expected": "[0, 0, 0]" },
+    { "args": { "arr": "[2, 1, 0]",              "pivot": "1" }, "expected": "[0, 1, 2]" }
+  ]
+}
 ```
 
 ## How It Works
@@ -89,10 +139,77 @@ Because of *where the swapped-in element comes from*. On a `< pivot` swap, `arr[
 
 ## Your Turn
 
-The reusable three-way partition:
+Implement the three-way partition: use three pointers `low`, `mid`, `high` to sort the array into `< pivot`, `== pivot`, `> pivot` regions in a single pass. Remember: on a `> pivot` swap, don't advance `mid`. Return the sorted array.
 
 ```python run viz=array
-def dutch_flag(arr, pivot=1):
+import ast
+
+def dutch_flag(arr, pivot):
+    # Your code goes here — low=mid=0, high=len-1;
+    # < pivot: swap low↔mid, low++, mid++;
+    # > pivot: swap mid↔high, high-- (mid stays!);
+    # == pivot: mid++.
+    return arr
+
+arr   = ast.literal_eval(input())   # the test case's array
+pivot = int(input())                 # the pivot value
+print(dutch_flag(arr, pivot))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+  static int[] dutchFlag(int[] arr, int pivot) {
+    // Your code goes here — low=mid=0, high=arr.length-1;
+    // < pivot: swap low↔mid, low++, mid++;
+    // > pivot: swap mid↔high, high-- (mid stays!);
+    // == pivot: mid++.
+    return arr;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());
+    int pivot = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(Arrays.toString(dutchFlag(arr, pivot)));
+  }
+
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr",   "label": "arr",   "type": "int[]", "placeholder": "[2, 0, 2, 1, 1, 0]" },
+    { "id": "pivot", "label": "pivot", "type": "int",   "placeholder": "1" }
+  ],
+  "cases": [
+    { "args": { "arr": "[2, 0, 2, 1, 1, 0]",    "pivot": "1" }, "expected": "[0, 0, 1, 1, 2, 2]" },
+    { "args": { "arr": "[2, 2, 0, 0, 1, 1, 2, 0]", "pivot": "1" }, "expected": "[0, 0, 0, 1, 1, 2, 2, 2]" },
+    { "args": { "arr": "[0, 0, 0]",              "pivot": "0" }, "expected": "[0, 0, 0]" },
+    { "args": { "arr": "[2, 1, 0]",              "pivot": "1" }, "expected": "[0, 1, 2]" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Three pointers `low = mid = 0`, `high = len - 1`. Examine `arr[mid]`: if `< pivot`, swap `low↔mid` and advance both; if `> pivot`, swap `mid↔high` and shrink `high` without advancing `mid` (the incoming element from `high` is unexamined); if `== pivot`, just advance `mid`. Stop when `mid > high`. `O(n)` time, `O(1)` space, one pass.
+
+```python solution time=O(n) space=O(1)
+import ast
+
+def dutch_flag(arr, pivot):
     low, mid, high = 0, 0, len(arr) - 1
     while mid <= high:
         if arr[mid] < pivot:
@@ -105,11 +222,12 @@ def dutch_flag(arr, pivot=1):
             mid += 1
     return arr
 
-print(dutch_flag([2, 0, 2, 1, 1, 0]))        # [0, 0, 1, 1, 2, 2]
-print(dutch_flag([2, 2, 0, 0, 1, 1, 2, 0]))  # [0, 0, 0, 1, 1, 2, 2, 2]
+arr   = ast.literal_eval(input())   # the test case's array
+pivot = int(input())                 # the pivot value
+print(dutch_flag(arr, pivot))
 ```
 
-```java run viz=array
+```java solution
 import java.util.*;
 
 public class Main {
@@ -124,12 +242,24 @@ public class Main {
   }
 
   public static void main(String[] args) {
-    System.out.println(Arrays.toString(dutchFlag(new int[]{2, 0, 2, 1, 1, 0}, 1)));   // [0, 0, 1, 1, 2, 2]
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());
+    int pivot = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(Arrays.toString(dutchFlag(arr, pivot)));
+  }
+
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
   }
 }
 ```
 
-This is a structural lesson — drill sorting in the pattern sets.
+</details>
 
 ## Reflect & Connect
 

@@ -4,23 +4,93 @@ summary: "Given num and k, flip the kth bit — 0 becomes 1, 1 becomes 0."
 prereqs:
   - 01-pattern-kth-bit/01-pattern
 difficulty: easy
+kind: problem
+topics: [kth-bit, bit-manipulation]
 ---
 
 # Toggle Kth Bit
 
-## The Problem
+XOR a mask with a single `1` at position `k` against the number — that bit flips, and every other bit is unchanged.
+
+## Problem Statement
 
 Given `num` and `k`, flip the kth bit — 0 becomes 1, 1 becomes 0.
 
+## Examples
+
+**Example 1**
 ```
 Input:  num = 1, k = 1
-Output: 0                        0001 → 0000
+Output: 0
+Explanation: 0001 → 0000 — bit 1 flipped from 1 to 0.
+```
 
+**Example 2**
+```
 Input:  num = 3, k = 1
-Output: 2                        0011 → 0010
+Output: 2
+Explanation: 0011 → 0010 — bit 1 flipped from 1 to 0.
+```
 
+**Example 3**
+```
 Input:  num = 3, k = 2
-Output: 1                        0011 → 0001
+Output: 1
+Explanation: 0011 → 0001 — bit 2 flipped from 1 to 0.
+```
+
+## Constraints
+
+- `0 ≤ num ≤ 2^31 - 1` — non-negative 32-bit integer.
+- `1 ≤ k ≤ 31` — 1-indexed bit position from the LSB.
+
+```python run viz=array
+class Solution:
+    def toggle_kth_bit(self, num: int, k: int) -> int:
+        # Your code goes here
+        return 0
+
+
+num = int(input())
+k = int(input())
+print(Solution().toggle_kth_bit(num, k))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int toggleKthBit(int num, int k) {
+            // Your code goes here
+            return 0;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int num = Integer.parseInt(sc.nextLine().trim());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().toggleKthBit(num, k));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "num", "label": "num", "type": "int", "placeholder": "1" },
+    { "id": "k", "label": "k", "type": "int", "placeholder": "1" }
+  ],
+  "cases": [
+    { "args": { "num": "1", "k": "1" }, "expected": "0" },
+    { "args": { "num": "3", "k": "1" }, "expected": "2" },
+    { "args": { "num": "3", "k": "2" }, "expected": "1" },
+    { "args": { "num": "0", "k": "1" }, "expected": "1" },
+    { "args": { "num": "7", "k": "3" }, "expected": "3" },
+    { "args": { "num": "8", "k": "4" }, "expected": "0" }
+  ]
+}
 ```
 
 <details>
@@ -41,9 +111,11 @@ XOR's truth table: `0 ^ 0 = 0`, `1 ^ 0 = 1`, `0 ^ 1 = 1`, `1 ^ 1 = 0`. XORing wi
 <details>
 <summary><h2>The Solution</h2></summary>
 
+### The Solution
 
+XOR `num` with the mask `1 << (k - 1)` — wherever the mask is `1` (only bit k), XOR flips the bit; everywhere else the mask is `0` and the original bit is preserved.
 
-```python run viz=array
+```python solution time=O(1) space=O(1)
 class Solution:
     def toggle_kth_bit(self, num: int, k: int) -> int:
 
@@ -55,20 +127,14 @@ class Solution:
         return num ^ (1 << (k - 1))
 
 
-# Examples from the problem statement
-print(Solution().toggle_kth_bit(1, 1))    # 0
-print(Solution().toggle_kth_bit(3, 1))    # 2
-print(Solution().toggle_kth_bit(3, 2))    # 1
-
-# Edge cases
-print(Solution().toggle_kth_bit(0, 1))    # 1
-print(Solution().toggle_kth_bit(0, 3))    # 4
-print(Solution().toggle_kth_bit(7, 1))    # 6
-print(Solution().toggle_kth_bit(7, 3))    # 3
-print(Solution().toggle_kth_bit(8, 4))    # 0
+num = int(input())
+k = int(input())
+print(Solution().toggle_kth_bit(num, k))
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
     static class Solution {
         public int toggleKthBit(int num, int k) {
@@ -83,17 +149,10 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().toggleKthBit(1, 1));    // 0
-        System.out.println(new Solution().toggleKthBit(3, 1));    // 2
-        System.out.println(new Solution().toggleKthBit(3, 2));    // 1
-
-        // Edge cases
-        System.out.println(new Solution().toggleKthBit(0, 1));    // 1
-        System.out.println(new Solution().toggleKthBit(0, 3));    // 4
-        System.out.println(new Solution().toggleKthBit(7, 1));    // 6
-        System.out.println(new Solution().toggleKthBit(7, 3));    // 3
-        System.out.println(new Solution().toggleKthBit(8, 4));    // 0
+        Scanner sc = new Scanner(System.in);
+        int num = Integer.parseInt(sc.nextLine().trim());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().toggleKthBit(num, k));
     }
 }
 ```

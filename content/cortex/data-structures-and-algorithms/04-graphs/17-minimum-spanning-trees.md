@@ -19,10 +19,10 @@ Every "connect everything as cheaply as possible" problem has this shape: power 
 
 ## See It Work
 
-Both algorithms on the same 4-vertex graph. They may pick different edges when weights tie, but the *total* is identical — that's the theorem at the heart of MSTs.
+Both algorithms on the same graph — input is the number of vertices `n` and a weighted edge list `[[u, v, w], ...]`. Kruskal sorts edges and uses union-find; Prim builds an adjacency list then uses a min-heap. They may pick different edges when weights tie, but the *total* is identical — that's the theorem at the heart of MSTs.
 
 ```python run viz=graph viz-kind=graph
-import heapq
+import ast, heapq
 
 class DSU:                                              # union-find: "same component?"
     def __init__(self, n): self.parent = list(range(n)); self.rank = [0] * n
@@ -57,13 +57,12 @@ def prim(n, adj, start=0):
             if not seen[v]: heapq.heappush(pq, (wt, v))
     return total
 
-edges = [(0, 1, 1), (0, 2, 3), (1, 2, 2), (1, 3, 4), (2, 3, 5)]   # A=0 B=1 C=2 D=3
-n = 4
-adj = [[] for _ in range(n)]
+n     = int(input())
+edges = ast.literal_eval(input())
+adj   = [[] for _ in range(n)]
 for u, v, w in edges: adj[u].append((v, w)); adj[v].append((u, w))
-
-print("Kruskal MST total =", kruskal(n, edges))
-print("Prim MST total    =", prim(n, adj))
+print(kruskal(n, edges))
+print(prim(n, adj))
 ```
 
 ```java run viz=graph viz-kind=graph
@@ -108,20 +107,51 @@ public class Main {
         return total;
     }
 
-    public static void main(String[] args) {
-        int n = 4;
-        int[][] edges = {{0,1,1}, {0,2,3}, {1,2,2}, {1,3,4}, {2,3,5}};
-        System.out.println("Kruskal MST total = " + kruskal(n, edges));
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
+    }
 
+    @SuppressWarnings("unchecked")
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = Integer.parseInt(sc.nextLine().trim());
+        int[][] edges = parseIntMatrix(sc.nextLine());
         List<int[]>[] adj = new List[n];
         for (int i = 0; i < n; i++) adj[i] = new ArrayList<>();
         for (int[] e : edges) { adj[e[0]].add(new int[]{e[1], e[2]}); adj[e[1]].add(new int[]{e[0], e[2]}); }
-        System.out.println("Prim MST total    = " + prim(n, adj, 0));
+        System.out.println(kruskal(n, edges));
+        System.out.println(prim(n, adj, 0));
     }
 }
 ```
 
-Both print `7`. The MST takes edges A–B (1), B–C (2), and B–D (4); it skips A–C (3) and C–D (5) because cheaper edges already connect those vertices.
+```testcases
+{
+  "args": [
+    { "id": "n",     "label": "vertices", "type": "int",    "placeholder": "4" },
+    { "id": "edges", "label": "edges [[u,v,w],...]", "type": "int[][]", "placeholder": "[[0,1,1],[0,2,3],[1,2,2],[1,3,4],[2,3,5]]" }
+  ],
+  "cases": [
+    { "args": { "n": "4", "edges": "[[0,1,1],[0,2,3],[1,2,2],[1,3,4],[2,3,5]]" }, "expected": "7\n7" },
+    { "args": { "n": "3", "edges": "[[0,1,2],[1,2,3],[0,2,6]]" }, "expected": "5\n5" },
+    { "args": { "n": "4", "edges": "[[0,1,4],[0,2,4],[1,2,2],[1,3,3],[2,3,3]]" }, "expected": "9\n9" }
+  ]
+}
+```
+
+Both print `7\n7`. The MST takes edges A–B (1), B–C (2), and B–D (4); it skips A–C (3) and C–D (5) because cheaper edges already connect those vertices.
 
 ## How It Works
 
@@ -217,9 +247,71 @@ It prints `total = 20 from 7 pops`. Without the guard, every stale heap copy get
 
 ## Your Turn
 
-The classic MST application: **Min Cost to Connect All Points** ([LeetCode 1584](https://leetcode.com/problems/min-cost-to-connect-all-points/)). Given 2D points, the cost to connect two of them is their Manhattan distance. Build the complete graph and run Kruskal.
+The classic MST application: **Min Cost to Connect All Points** ([LeetCode 1584](https://leetcode.com/problems/min-cost-to-connect-all-points/)). Given 2D points, the cost to connect two of them is their Manhattan distance. Build the complete graph and run Kruskal. Input is a list of 2D points `[[x, y], ...]`; output the integer minimum total cost.
 
 ```python run viz=graph viz-kind=graph
+import ast
+
+def min_cost_connect(points):
+    # Your code goes here
+    pass
+
+points = ast.literal_eval(input())
+print(min_cost_connect(points))
+```
+
+```java run viz=graph viz-kind=graph
+import java.util.*;
+
+public class Main {
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
+    }
+
+    static int minCostConnect(int[][] points) {
+        // Your code goes here
+        return 0;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[][] points = parseIntMatrix(sc.nextLine());
+        System.out.println(minCostConnect(points));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "points", "label": "points [[x,y],...]", "type": "int[][]", "placeholder": "[[0,0],[2,2],[3,10],[5,2],[7,0]]" }
+  ],
+  "cases": [
+    { "args": { "points": "[[0,0],[2,2],[3,10],[5,2],[7,0]]" }, "expected": "20" },
+    { "args": { "points": "[[0,0],[1,1],[2,2]]" }, "expected": "4" },
+    { "args": { "points": "[[0,0],[3,0],[0,4]]" }, "expected": "7" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+```python solution time=O(N²·log(N²)) space=O(N²)
+import ast
+
 class DSU:
     def __init__(self, n): self.parent = list(range(n)); self.rank = [0] * n
     def find(self, x):
@@ -247,11 +339,11 @@ def min_cost_connect(points):
             if picked == m - 1: break
     return total
 
-print(min_cost_connect([[0, 0], [2, 2], [3, 10], [5, 2], [7, 0]]))   # 20
-print(min_cost_connect([[0, 0], [1, 1], [2, 2]]))                    # 4
+points = ast.literal_eval(input())
+print(min_cost_connect(points))
 ```
 
-```java run viz=graph viz-kind=graph
+```java solution time=O(N²·log(N²)) space=O(N²)
 import java.util.*;
 
 public class Main {
@@ -285,12 +377,31 @@ public class Main {
         return total;
     }
 
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
+    }
+
     public static void main(String[] args) {
-        System.out.println(minCostConnect(new int[][]{{0,0},{2,2},{3,10},{5,2},{7,0}}));   // 20
-        System.out.println(minCostConnect(new int[][]{{0,0},{1,1},{2,2}}));                // 4
+        Scanner sc = new Scanner(System.in);
+        int[][] points = parseIntMatrix(sc.nextLine());
+        System.out.println(minCostConnect(points));
     }
 }
 ```
+
+</details>
 
 Both print `20` then `4`. When you're ready for more: **Connecting Cities With Minimum Cost** (LeetCode 1135 — return `-1` if fewer than `n − 1` edges get taken, i.e. the graph is disconnected), and **Optimize Water Distribution** (LeetCode 1168 — model each well as an edge from a virtual vertex 0).
 

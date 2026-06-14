@@ -63,33 +63,96 @@ Now contrast that with finding a value by its *contents* — "where is the `5`?"
 
 ## Your Turn
 
-Enough pictures — let's see the bytes for real. A 32-bit integer is exactly 4 bytes. Run this and watch numbers break apart into the bytes that live in memory:
+Enough pictures — let's see the bytes for real. A 32-bit integer is exactly 4 bytes. Given an integer `n`, return its four big-endian byte values as a list — the bytes that would actually live in memory.
 
 ```python run viz=array
 import struct
 
-for n in [0, 1, 65, 1000]:
-    raw = struct.pack(">i", n)   # pack n as a 4-byte (32-bit) integer
-    print(n, "→", list(raw))
+def bytes_of(n):
+    # Your code goes here
+    return [0, 0, 0, 0]
+
+n = int(input())
+print(n, "->", bytes_of(n))
 ```
 
 ```java run viz=array
+import java.util.*;
 public class Main {
-  public static void main(String[] args) {
-    for (int n : new int[]{0, 1, 65, 1000}) {
-      byte[] raw = java.nio.ByteBuffer.allocate(4).putInt(n).array();
-      StringBuilder sb = new StringBuilder();
-      for (int i = 0; i < raw.length; i++) {
-        sb.append(raw[i] & 0xFF);
-        if (i < raw.length - 1) sb.append(", ");
-      }
-      System.out.println(n + " → [" + sb + "]");
+    static int[] bytesOf(int n) {
+        // Your code goes here
+        return new int[]{0, 0, 0, 0};
     }
-  }
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = sc.nextInt();
+        int[] raw = bytesOf(n);
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < raw.length; i++) {
+            sb.append(raw[i]);
+            if (i < raw.length - 1) sb.append(", ");
+        }
+        System.out.println(n + " -> [" + sb + "]");
+    }
 }
 ```
 
-`1000 → [0, 0, 3, 232]` — the number `1000` really does occupy four byte-boxes (`3 × 256 + 232 = 1000`). Try changing `1000` to `256` and predicting the bytes before you run it.
+```testcases
+{
+  "args": [
+    { "id": "n", "label": "n", "type": "int", "placeholder": "1000" }
+  ],
+  "cases": [
+    { "args": { "n": "1" },    "expected": "1 -> [0, 0, 0, 1]" },
+    { "args": { "n": "65" },   "expected": "65 -> [0, 0, 0, 65]" },
+    { "args": { "n": "256" },  "expected": "256 -> [0, 0, 1, 0]" },
+    { "args": { "n": "1000" }, "expected": "1000 -> [0, 0, 3, 232]" }
+  ]
+}
+```
+
+`1000 -> [0, 0, 3, 232]` — the number `1000` really does occupy four byte-boxes (`3 × 256 + 232 = 1000`). Predict the bytes for `256` before you check.
+
+<details>
+<summary><strong>Editorial</strong></summary>
+
+Pack the integer as a 4-byte big-endian value and extract each unsigned byte. Python's `struct.pack(">i", n)` does both in one call; Java's `ByteBuffer` is the equivalent. The key is the big-endian byte order: the most-significant byte comes first, so `256 = 0x00000100` splits into `[0, 0, 1, 0]`.
+
+```python solution time=O(1) space=O(1)
+import struct
+
+def bytes_of(n):
+    raw = struct.pack(">i", n)   # pack n as a 4-byte big-endian integer
+    return list(raw)
+
+n = int(input())
+print(n, "->", bytes_of(n))
+```
+
+```java solution
+import java.util.*;
+public class Main {
+    static int[] bytesOf(int n) {
+        byte[] raw = java.nio.ByteBuffer.allocate(4).putInt(n).array();
+        int[] result = new int[4];
+        for (int i = 0; i < 4; i++) result[i] = raw[i] & 0xFF;  // unsigned
+        return result;
+    }
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = sc.nextInt();
+        int[] raw = bytesOf(n);
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < raw.length; i++) {
+            sb.append(raw[i]);
+            if (i < raw.length - 1) sb.append(", ");
+        }
+        System.out.println(n + " -> [" + sb + "]");
+    }
+}
+```
+
+</details>
 
 ## Reflect & Connect
 

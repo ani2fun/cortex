@@ -15,21 +15,20 @@ So graph traversal needs three things a tree walk doesn't: (1) a **sensible visi
 
 ## See It Work
 
-The same 5-node graph, walked both ways from node 0. DFS dives deep; BFS ripples outward — watch the orders diverge. Run it.
+The same 5-node graph, walked both ways from node 0. DFS dives deep; BFS ripples outward — watch the orders diverge. Pick a case and **Run** it.
 
 ```python run viz=graph viz-kind=graph
+import ast
 from collections import deque
-
-graph = [[1, 2], [0, 2, 3], [0, 1, 4], [1, 4], [2, 3]]   # undirected adjacency list
 
 def dfs_traversal(g):
     visited, result = set(), []
-    def dfs(node):                          # recursion = the backtrack trail
+    def dfs(node):                           # recursion = the backtrack trail
         visited.add(node); result.append(node)
         for nb in g[node]:
             if nb not in visited:
                 dfs(nb)
-    for v in range(len(g)):                 # outer loop → reach every component
+    for v in range(len(g)):                  # outer loop → reach every component
         if v not in visited:
             dfs(v)
     return result
@@ -37,7 +36,7 @@ def dfs_traversal(g):
 def bfs_traversal(g):
     visited, result = set(), []
     def bfs(src):
-        q = deque([src]); visited.add(src)  # mark on ENQUEUE
+        q = deque([src]); visited.add(src)   # mark on ENQUEUE
         while q:
             node = q.popleft(); result.append(node)
             for nb in g[node]:
@@ -48,8 +47,85 @@ def bfs_traversal(g):
             bfs(v)
     return result
 
-print("DFS:", dfs_traversal(graph))     # [0, 1, 2, 4, 3]  — deep first
-print("BFS:", bfs_traversal(graph))     # [0, 1, 2, 3, 4]  — level by level
+g = ast.literal_eval(input())   # adjacency list: g[u] = u's neighbours
+print(dfs_traversal(g))
+print(bfs_traversal(g))
+```
+
+```java run viz=graph viz-kind=graph
+import java.util.*;
+
+public class Main {
+    static List<Integer> dfsResult = new ArrayList<>();
+    static boolean[] dfsSeen;
+
+    static void dfs(int[][] g, int node) {
+        dfsSeen[node] = true; dfsResult.add(node);
+        for (int nb : g[node])
+            if (!dfsSeen[nb]) dfs(g, nb);
+    }
+
+    static List<Integer> dfsTraversal(int[][] g) {
+        dfsResult = new ArrayList<>();
+        dfsSeen = new boolean[g.length];
+        for (int v = 0; v < g.length; v++)
+            if (!dfsSeen[v]) dfs(g, v);
+        return dfsResult;
+    }
+
+    static List<Integer> bfsTraversal(int[][] g) {
+        boolean[] seen = new boolean[g.length];
+        List<Integer> result = new ArrayList<>();
+        for (int s = 0; s < g.length; s++) {
+            if (seen[s]) continue;
+            Deque<Integer> q = new ArrayDeque<>(); q.add(s); seen[s] = true;  // mark on enqueue
+            while (!q.isEmpty()) {
+                int node = q.poll(); result.add(node);
+                for (int nb : g[node])
+                    if (!seen[nb]) { seen[nb] = true; q.add(nb); }
+            }
+        }
+        return result;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[][] g = parseIntMatrix(sc.nextLine());
+        System.out.println(dfsTraversal(g));
+        System.out.println(bfsTraversal(g));
+    }
+
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "g", "label": "graph", "type": "int[][]", "placeholder": "[[1, 2], [0, 2, 3], [0, 1, 4], [1, 4], [2, 3]]" }
+  ],
+  "cases": [
+    { "args": { "g": "[[1, 2], [0, 2, 3], [0, 1, 4], [1, 4], [2, 3]]" }, "expected": "[0, 1, 2, 4, 3]\n[0, 1, 2, 3, 4]" },
+    { "args": { "g": "[[1], [0], [3], [2]]" }, "expected": "[0, 1, 2, 3]\n[0, 1, 2, 3]" },
+    { "args": { "g": "[[1, 2], [3], [3], []]" }, "expected": "[0, 1, 3, 2]\n[0, 1, 2, 3]" },
+    { "args": { "g": "[[1], [2], [3], []]" }, "expected": "[0, 1, 2, 3]\n[0, 1, 2, 3]" },
+    { "args": { "g": "[[], [], []]" }, "expected": "[0, 1, 2]\n[0, 1, 2]" }
+  ]
+}
 ```
 
 ## How It Works
@@ -87,9 +163,96 @@ The traversal still *finishes* correctly, but nodes get **enqueued multiple time
 
 ## Your Turn
 
-DFS and BFS traversal in both languages, on the same graph:
+Implement DFS and BFS traversal in both languages. Both print their result as a list; the driver calls them on the same graph.
 
 ```python run viz=graph viz-kind=graph
+import ast
+from collections import deque
+
+def dfs_traversal(g):
+    # Your code goes here — visited set + outer loop + recursive DFS.
+    pass
+
+def bfs_traversal(g):
+    # Your code goes here — visited set + outer loop + BFS queue (mark on enqueue!).
+    pass
+
+g = ast.literal_eval(input())
+print(dfs_traversal(g))
+print(bfs_traversal(g))
+```
+
+```java run viz=graph viz-kind=graph
+import java.util.*;
+
+public class Main {
+    static List<Integer> dfsResult;
+    static boolean[] dfsSeen;
+
+    static void dfs(int[][] g, int node) {
+        // Your code goes here — mark seen, add to result, recurse unvisited neighbours.
+    }
+
+    static List<Integer> dfsTraversal(int[][] g) {
+        dfsResult = new ArrayList<>();
+        dfsSeen = new boolean[g.length];
+        for (int v = 0; v < g.length; v++)
+            if (!dfsSeen[v]) dfs(g, v);
+        return dfsResult;
+    }
+
+    static List<Integer> bfsTraversal(int[][] g) {
+        // Your code goes here — outer loop + BFS queue, mark on enqueue.
+        return new ArrayList<>();
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[][] g = parseIntMatrix(sc.nextLine());
+        System.out.println(dfsTraversal(g));
+        System.out.println(bfsTraversal(g));
+    }
+
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "g", "label": "graph", "type": "int[][]", "placeholder": "[[1, 2], [0, 2, 3], [0, 1, 4], [1, 4], [2, 3]]" }
+  ],
+  "cases": [
+    { "args": { "g": "[[1, 2], [0, 2, 3], [0, 1, 4], [1, 4], [2, 3]]" }, "expected": "[0, 1, 2, 4, 3]\n[0, 1, 2, 3, 4]" },
+    { "args": { "g": "[[1], [0], [3], [2]]" }, "expected": "[0, 1, 2, 3]\n[0, 1, 2, 3]" },
+    { "args": { "g": "[[1, 2], [3], [3], []]" }, "expected": "[0, 1, 3, 2]\n[0, 1, 2, 3]" },
+    { "args": { "g": "[[1], [2], [3], []]" }, "expected": "[0, 1, 2, 3]\n[0, 1, 2, 3]" },
+    { "args": { "g": "[[], [], []]" }, "expected": "[0, 1, 2]\n[0, 1, 2]" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Both traversals share the same outer loop: iterate over every node `0…N-1`; if it hasn't been visited, launch the inner search from it (catching disconnected components). The difference is the data structure for the frontier. DFS uses the **call stack** (recursion): mark on entry, recurse into unvisited neighbours, `return` backtracks automatically. BFS uses a **queue**: enqueue the source with `visited.add(src)` *before* the while-loop (mark on enqueue, not on dequeue — otherwise a shared sink gets enqueued once per neighbour that reaches it, bloating the queue to `O(E)` in a dense graph).
+
+```python solution time=O(V + E) space=O(V + E)
+import ast
 from collections import deque
 
 def dfs_traversal(g):
@@ -113,43 +276,70 @@ def bfs_traversal(g):
                 if nb not in visited: visited.add(nb); q.append(nb)
     return result
 
-g = [[1, 2], [0, 2, 3], [0, 1, 4], [1, 4], [2, 3]]
-print(dfs_traversal(g))   # [0, 1, 2, 4, 3]
-print(bfs_traversal(g))   # [0, 1, 2, 3, 4]
-print(bfs_traversal([[1], [0], [3], [2]]))   # [0, 1, 2, 3] — two components
+g = ast.literal_eval(input())
+print(dfs_traversal(g))
+print(bfs_traversal(g))
 ```
 
-```java run viz=graph viz-kind=graph
+```java solution
 import java.util.*;
+
 public class Main {
-  static void dfs(List<List<Integer>> g, int node, boolean[] seen, List<Integer> out) {
-    seen[node] = true; out.add(node);
-    for (int nb : g.get(node)) if (!seen[nb]) dfs(g, nb, seen, out);
-  }
-  static List<Integer> dfsTraversal(List<List<Integer>> g) {
-    boolean[] seen = new boolean[g.size()]; List<Integer> out = new ArrayList<>();
-    for (int v = 0; v < g.size(); v++) if (!seen[v]) dfs(g, v, seen, out);
-    return out;
-  }
-  static List<Integer> bfsTraversal(List<List<Integer>> g) {
-    boolean[] seen = new boolean[g.size()]; List<Integer> out = new ArrayList<>();
-    for (int s = 0; s < g.size(); s++) {
-      if (seen[s]) continue;
-      Deque<Integer> q = new ArrayDeque<>(); q.add(s); seen[s] = true;   // mark on enqueue
-      while (!q.isEmpty()) {
-        int node = q.poll(); out.add(node);
-        for (int nb : g.get(node)) if (!seen[nb]) { seen[nb] = true; q.add(nb); }
-      }
+    static List<Integer> dfsResult;
+    static boolean[] dfsSeen;
+
+    static void dfs(int[][] g, int node) {
+        dfsSeen[node] = true; dfsResult.add(node);
+        for (int nb : g[node]) if (!dfsSeen[nb]) dfs(g, nb);
     }
-    return out;
-  }
-  public static void main(String[] a) {
-    List<List<Integer>> g = List.of(List.of(1,2), List.of(0,2,3), List.of(0,1,4), List.of(1,4), List.of(2,3));
-    System.out.println(dfsTraversal(g));   // [0, 1, 2, 4, 3]
-    System.out.println(bfsTraversal(g));   // [0, 1, 2, 3, 4]
-  }
+
+    static List<Integer> dfsTraversal(int[][] g) {
+        dfsResult = new ArrayList<>();
+        dfsSeen = new boolean[g.length];
+        for (int v = 0; v < g.length; v++) if (!dfsSeen[v]) dfs(g, v);
+        return dfsResult;
+    }
+
+    static List<Integer> bfsTraversal(int[][] g) {
+        boolean[] seen = new boolean[g.length];
+        List<Integer> result = new ArrayList<>();
+        for (int s = 0; s < g.length; s++) {
+            if (seen[s]) continue;
+            Deque<Integer> q = new ArrayDeque<>(); q.add(s); seen[s] = true;
+            while (!q.isEmpty()) {
+                int node = q.poll(); result.add(node);
+                for (int nb : g[node]) if (!seen[nb]) { seen[nb] = true; q.add(nb); }
+            }
+        }
+        return result;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[][] g = parseIntMatrix(sc.nextLine());
+        System.out.println(dfsTraversal(g));
+        System.out.println(bfsTraversal(g));
+    }
+
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
+    }
 }
 ```
+
+</details>
 
 Then: write the **iterative** DFS with an explicit stack; count **connected components** (how many times the outer loop fires the inner search); record each node's **BFS distance** from the source (the fewest-hops number); and detect a **cycle** by spotting an already-visited neighbour that isn't the parent.
 

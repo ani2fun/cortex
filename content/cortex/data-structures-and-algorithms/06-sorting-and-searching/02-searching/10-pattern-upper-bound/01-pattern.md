@@ -15,16 +15,10 @@ The triggers: "**first index `>` x**", "**just past the last** occurrence", "**h
 
 ## See It Work
 
-In `[1, 3, 3, 5, 7]`, find the first index `> 3` and use the pair to count the 3s. Run it.
+In `[1, 3, 3, 5, 7]`, find the first index `> 3` using upper bound. Run it.
 
 ```python run viz=array
-def lower_bound(arr, t):
-    lo, hi = 0, len(arr)
-    while lo < hi:
-        mid = lo + (hi - lo) // 2
-        if arr[mid] < t: lo = mid + 1
-        else: hi = mid
-    return lo
+import ast
 
 def upper_bound(arr, target):
     lo, hi = 0, len(arr)
@@ -36,9 +30,56 @@ def upper_bound(arr, target):
             hi = mid
     return lo                            # first index with arr[index] > target
 
-a = [1, 3, 3, 5, 7]
-print(upper_bound(a, 3))                          # 3  (just past the last 3)
-print(upper_bound(a, 3) - lower_bound(a, 3))      # 2  (count of 3s)
+arr = ast.literal_eval(input())
+target = int(input())
+print(upper_bound(arr, target))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static int upperBound(int[] arr, int target) {
+        int lo = 0, hi = arr.length;
+        while (lo < hi) {
+            int mid = lo + (hi - lo) / 2;
+            if (arr[mid] <= target) lo = mid + 1;  // <= : step past equals
+            else hi = mid;
+        }
+        return lo;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int target = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(upperBound(arr, target));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[1, 3, 3, 5, 7]" },
+    { "id": "target", "label": "target", "type": "int", "placeholder": "3" }
+  ],
+  "cases": [
+    { "args": { "arr": "[1, 3, 3, 5, 7]", "target": "3" }, "expected": "3" },
+    { "args": { "arr": "[1, 3, 3, 5, 7]", "target": "5" }, "expected": "4" },
+    { "args": { "arr": "[1, 3, 3, 5, 7]", "target": "0" }, "expected": "0" },
+    { "args": { "arr": "[1, 3, 3, 5, 7]", "target": "7" }, "expected": "5" }
+  ]
+}
 ```
 
 ## How It Works
@@ -82,9 +123,91 @@ Because you want everything `≥ 3` **and** `≤ 5`. `lower_bound(3)` is the fir
 
 ## Your Turn
 
-The reusable upper bound + range count:
+Implement `count_in_range(arr, a, b)` — count of elements in the closed range `[a, b]` — using upper bound and lower bound.
 
 ```python run viz=array
+import ast
+
+def lower_bound(arr, t):
+    # Your code goes here — first index where arr[i] >= t
+    return 0
+
+def upper_bound(arr, t):
+    # Your code goes here — first index where arr[i] > t
+    return len(arr)
+
+def count_in_range(arr, a, b):
+    # Your code goes here — upper_bound(b) - lower_bound(a)
+    return 0
+
+arr = ast.literal_eval(input())
+a = int(input())
+b = int(input())
+print(count_in_range(arr, a, b))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static int lowerBound(int[] arr, int t) {
+        // Your code goes here — first index where arr[i] >= t
+        return 0;
+    }
+
+    static int upperBound(int[] arr, int t) {
+        // Your code goes here — first index where arr[i] > t
+        return arr.length;
+    }
+
+    static int countInRange(int[] arr, int a, int b) {
+        // Your code goes here — upperBound(b) - lowerBound(a)
+        return 0;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int a = Integer.parseInt(sc.nextLine().trim());
+        int b = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(countInRange(arr, a, b));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[1, 3, 3, 5, 7, 7, 7]" },
+    { "id": "a", "label": "a", "type": "int", "placeholder": "3" },
+    { "id": "b", "label": "b", "type": "int", "placeholder": "5" }
+  ],
+  "cases": [
+    { "args": { "arr": "[1, 3, 3, 5, 7, 7, 7]", "a": "3", "b": "5" }, "expected": "3" },
+    { "args": { "arr": "[1, 3, 3, 5, 7, 7, 7]", "a": "7", "b": "7" }, "expected": "3" },
+    { "args": { "arr": "[1, 3, 3, 5, 7, 7, 7]", "a": "1", "b": "7" }, "expected": "7" },
+    { "args": { "arr": "[1, 3, 3, 5, 7]", "a": "3", "b": "3" }, "expected": "2" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Lower bound (`<`) skips past elements smaller than `t` and lands on the first `≥ t`; upper bound (`≤`) additionally skips equals and lands on the first `> t`. `count_in_range(arr, a, b)` is the width of the half-open span `[lb(a), ub(b))`. `O(log n)` per query, `O(1)` space.
+
+```python solution time=O(log n) space=O(1)
+import ast
+
 def lower_bound(arr, t):
     lo, hi = 0, len(arr)
     while lo < hi:
@@ -104,28 +227,51 @@ def upper_bound(arr, t):
 def count_in_range(arr, a, b):           # number of elements in [a, b]
     return upper_bound(arr, b) - lower_bound(arr, a)
 
-a = [1, 3, 3, 5, 7, 7, 7]
-print(upper_bound(a, 7), count_in_range(a, 3, 5), count_in_range(a, 7, 7))   # 7 3 3
+arr = ast.literal_eval(input())
+a = int(input())
+b = int(input())
+print(count_in_range(arr, a, b))
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
-  static int lowerBound(int[] a, int t) {
-    int lo = 0, hi = a.length;
-    while (lo < hi) { int m = lo + (hi - lo) / 2; if (a[m] < t) lo = m + 1; else hi = m; }
-    return lo;
-  }
-  static int upperBound(int[] a, int t) {
-    int lo = 0, hi = a.length;
-    while (lo < hi) { int m = lo + (hi - lo) / 2; if (a[m] <= t) lo = m + 1; else hi = m; }
-    return lo;
-  }
-  public static void main(String[] args) {
-    int[] a = {1, 3, 3, 5, 7, 7, 7};
-    System.out.println(upperBound(a, 7) + " " + (upperBound(a, 5) - lowerBound(a, 3)));   // 7 3
-  }
+    static int lowerBound(int[] a, int t) {
+        int lo = 0, hi = a.length;
+        while (lo < hi) { int m = lo + (hi - lo) / 2; if (a[m] < t) lo = m + 1; else hi = m; }
+        return lo;
+    }
+    static int upperBound(int[] a, int t) {
+        int lo = 0, hi = a.length;
+        while (lo < hi) { int m = lo + (hi - lo) / 2; if (a[m] <= t) lo = m + 1; else hi = m; }
+        return lo;
+    }
+
+    static int countInRange(int[] arr, int a, int b) {
+        return upperBound(arr, b) - lowerBound(arr, a);
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int a = Integer.parseInt(sc.nextLine().trim());
+        int b = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(countInRange(arr, a, b));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
 }
 ```
+
+</details>
 
 Drill the family in **Practice** — [Limit Count](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/pattern-upper-bound/problems/limit-count), [Positive Index](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/pattern-upper-bound/problems/positive-index), [Ceiling Index](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/pattern-upper-bound/problems/ceiling-index), and [Breaking Index](/cortex/data-structures-and-algorithms/sorting-and-searching/searching/pattern-upper-bound/problems/breaking-index).
 
@@ -180,4 +326,4 @@ Upper bound completes the boundary-search toolkit:
 
 - **Sedgewick & Wayne**, *Algorithms*, 4th ed., §3.1 — rank / range queries in ordered symbol tables.
 - **C++ STL / Python `bisect`** — `upper_bound` / `bisect_right` and `equal_range` define these contracts.
-- The recognition triggers and range-count pairing are standard; both runnable blocks are verified by running (`upper_bound(·,3)=3`, count of 3s `=2`; `[1,3,3,5,7,7,7]` ⇒ `7, 3, 3`).
+- The recognition triggers and range-count pairing are standard; both runnable blocks are verified by running (`upper_bound([1,3,3,5,7],3)=3`; `count_in_range([1,3,3,5,7,7,7],3,5)=3`).

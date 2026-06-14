@@ -16,6 +16,8 @@ Structurally, this is the [palindrome-partitioning](/cortex/data-structures-and-
 `dp[i]` = "can the first `i` characters be segmented?" The empty prefix is trivially yes (`dp[0] = True`). For each end `i`, look for a split point `j` where the prefix `s[0..j-1]` is already segmentable **and** the last chunk `s[j..i-1]` is a dictionary word.
 
 ```python run viz=array
+import ast
+
 def word_break(s, words):
     word_set = set(words)                         # hash set -> O(1) membership
     n = len(s)
@@ -28,12 +30,15 @@ def word_break(s, words):
                 break
     return dp[n]
 
-print(word_break("leetcode", ["leet", "code"]))                          # True
-print(word_break("catsandog", ["cats", "dog", "sand", "and", "cat"]))    # False
+s = input()
+words = ast.literal_eval(input())
+result = word_break(s, words)
+print("true" if result else "false")
 ```
 
 ```java run viz=array
 import java.util.*;
+
 public class Main {
     static boolean wordBreak(String s, String[] words) {
         Set<String> dict = new HashSet<>(Arrays.asList(words));   // O(1) membership
@@ -45,10 +50,36 @@ public class Main {
                 if (dp[j] && dict.contains(s.substring(j, i))) { dp[i] = true; break; }
         return dp[n];
     }
-    public static void main(String[] args) {
-        System.out.println(wordBreak("leetcode", new String[]{"leet", "code"}));                       // true
-        System.out.println(wordBreak("catsandog", new String[]{"cats","dog","sand","and","cat"}));     // false
+    static String[] parseStringArray(String line) {
+        line = line.trim();
+        if (line.equals("[]")) return new String[0];
+        line = line.substring(1, line.length() - 1);
+        String[] parts = line.split(",\\s*");
+        String[] result = new String[parts.length];
+        for (int i = 0; i < parts.length; i++) result[i] = parts[i].trim().replaceAll("^\"|\"$", "");
+        return result;
     }
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String s = sc.nextLine().trim();
+        String[] words = parseStringArray(sc.nextLine());
+        System.out.println(wordBreak(s, words));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "s", "type": "string", "placeholder": "leetcode" },
+    { "id": "words", "label": "words", "type": "string[]", "placeholder": "[\"leet\", \"code\"]" }
+  ],
+  "cases": [
+    { "args": { "s": "leetcode", "words": "[\"leet\", \"code\"]" }, "expected": "true" },
+    { "args": { "s": "catsandog", "words": "[\"cats\", \"dog\", \"sand\", \"and\", \"cat\"]" }, "expected": "false" },
+    { "args": { "s": "apple", "words": "[\"app\", \"le\", \"apple\"]" }, "expected": "true" },
+    { "args": { "s": "ab", "words": "[\"a\", \"b\"]" }, "expected": "true" }
+  ]
 }
 ```
 
@@ -126,6 +157,69 @@ The naïve recursion makes **266,079** calls; the memoised version makes **58**.
 Same skeleton, third aggregator. **Count** the distinct segmentations instead of asking whether one exists: flip `dp` from booleans to integers, seed `dp[0] = 1`, and **add** the ways instead of OR-ing existence.
 
 ```python run viz=array
+import ast
+
+def count_ways(s, words):
+    word_set = set(words)
+    n = len(s)
+    dp = [0] * (n + 1)
+    dp[0] = 1                                      # one way to segment the empty prefix
+    # Your code goes here — SUM the ways for each valid last word
+    return dp[n]
+
+s = input()
+words = ast.literal_eval(input())
+print(count_ways(s, words))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static int countWays(String s, String[] words) {
+        // Your code goes here — seed dp[0]=1, add dp[j] for each valid last word
+        return 0;
+    }
+    static String[] parseStringArray(String line) {
+        line = line.trim();
+        if (line.equals("[]")) return new String[0];
+        line = line.substring(1, line.length() - 1);
+        String[] parts = line.split(",\\s*");
+        String[] result = new String[parts.length];
+        for (int i = 0; i < parts.length; i++) result[i] = parts[i].trim().replaceAll("^\"|\"$", "");
+        return result;
+    }
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String s = sc.nextLine().trim();
+        String[] words = parseStringArray(sc.nextLine());
+        System.out.println(countWays(s, words));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "s", "type": "string", "placeholder": "aaa" },
+    { "id": "words", "label": "words", "type": "string[]", "placeholder": "[\"a\", \"aa\"]" }
+  ],
+  "cases": [
+    { "args": { "s": "aaa", "words": "[\"a\", \"aa\"]" }, "expected": "3" },
+    { "args": { "s": "leetcode", "words": "[\"leet\", \"code\"]" }, "expected": "1" },
+    { "args": { "s": "ab", "words": "[\"a\", \"b\", \"ab\"]" }, "expected": "2" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Same skeleton as word break — flip `dp` from booleans to integers, seed `dp[0] = 1`, and **add** the ways instead of OR-ing existence.
+
+```python solution time=O(n²·L) space=O(n)
+import ast
+
 def count_ways(s, words):
     word_set = set(words)
     n = len(s)
@@ -137,12 +231,14 @@ def count_ways(s, words):
                 dp[i] += dp[j]                     # SUM the ways (vs OR for existence)
     return dp[n]
 
-print(count_ways("aaa", ["a", "aa"]))                  # 3   (a|a|a, a|aa, aa|a)
-print(count_ways("leetcode", ["leet", "code"]))        # 1
+s = input()
+words = ast.literal_eval(input())
+print(count_ways(s, words))
 ```
 
-```java run viz=array
+```java solution
 import java.util.*;
+
 public class Main {
     static int countWays(String s, String[] words) {
         Set<String> dict = new HashSet<>(Arrays.asList(words));
@@ -154,14 +250,27 @@ public class Main {
                 if (dp[j] > 0 && dict.contains(s.substring(j, i))) dp[i] += dp[j];
         return dp[n];
     }
+    static String[] parseStringArray(String line) {
+        line = line.trim();
+        if (line.equals("[]")) return new String[0];
+        line = line.substring(1, line.length() - 1);
+        String[] parts = line.split(",\\s*");
+        String[] result = new String[parts.length];
+        for (int i = 0; i < parts.length; i++) result[i] = parts[i].trim().replaceAll("^\"|\"$", "");
+        return result;
+    }
     public static void main(String[] args) {
-        System.out.println(countWays("aaa", new String[]{"a", "aa"}));        // 3
-        System.out.println(countWays("leetcode", new String[]{"leet","code"}));  // 1
+        Scanner sc = new Scanner(System.in);
+        String s = sc.nextLine().trim();
+        String[] words = parseStringArray(sc.nextLine());
+        System.out.println(countWays(s, words));
     }
 }
 ```
 
-Both print `3` then `1`. `"aaa"` segments three ways with `{a, aa}` (`a|a|a`, `a|aa`, `aa|a`); `"leetcode"` has exactly one. You changed *one operator* — `dp[i] = True` became `dp[i] += dp[j]` — and the boolean "can we?" became the counting "how many ways?". OR for existence, MIN for cost, SUM for count: the aggregator is the only thing that ever changes.
+</details>
+
+`"aaa"` segments three ways with `{a, aa}` (`a|a|a`, `a|aa`, `aa|a`); `"leetcode"` has exactly one. You changed *one operator* — `dp[i] = True` became `dp[i] += dp[j]` — and the boolean "can we?" became the counting "how many ways?". OR for existence, MIN for cost, SUM for count: the aggregator is the only thing that ever changes.
 
 ## Reflect & Connect
 

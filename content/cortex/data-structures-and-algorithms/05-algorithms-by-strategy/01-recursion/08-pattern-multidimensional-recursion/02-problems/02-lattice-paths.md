@@ -1,9 +1,11 @@
 ---
 title: "Lattice Paths"
-summary: "Given two positive integers rows and cols (the dimensions of a grid), return the number of distinct paths from the top-left corner to the bottom-right corner if you can only move right or down at any "
+summary: "Given two positive integers rows and cols (the dimensions of a grid), return the number of distinct paths from the top-left corner to the bottom-right corner if you can only move right or down at any step."
 prereqs:
   - 08-pattern-multidimensional-recursion/01-pattern
 difficulty: medium
+kind: problem
+topics: [multidimensional-recursion, recursion]
 ---
 
 # Lattice Paths
@@ -16,20 +18,87 @@ The same recurrence as binomial coefficient, dressed up as grid navigation. Usef
 
 Given two positive integers `rows` and `cols` (the dimensions of a grid), return the number of distinct paths from the top-left corner to the bottom-right corner if you can only move **right** or **down** at any step. You **must** solve this recursively.
 
+---
+
+## Examples
+
+**Example 1**
 ```
 Input:  rows = 2, cols = 2
 Output: 6
 Explanation: 6 distinct paths through a 2×2 grid
-
-Input:  rows = 3, cols = 3
-Output: 20
-
-Input:  rows = 0, cols = 0
-Output: 1
-Explanation: already at the bottom-right corner — exactly one "do-nothing" path
 ```
 
----
+**Example 2**
+```
+Input:  rows = 3, cols = 3
+Output: 20
+Explanation: C(6, 3) = 20 — paths(r, c) = C(r+c, r)
+```
+
+```quiz
+{
+  "prompt": "What is paths(0, 5)?",
+  "options": ["0", "1", "5", "6"],
+  "answer": "1"
+}
+```
+
+## Constraints
+
+- `0 ≤ rows, cols ≤ 12`
+- Must be solved recursively.
+
+```python run viz=grid
+class Solution:
+    def lattice_paths(self, rows: int, cols: int) -> int:
+        # Your code goes here — base case: rows == 0 or cols == 0 returns 1;
+        # recursive case: lattice_paths(rows-1, cols) + lattice_paths(rows, cols-1)
+        return 0
+
+rows = int(input())
+cols = int(input())
+print(Solution().lattice_paths(rows, cols))
+```
+
+```java run viz=grid
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int latticePaths(int rows, int cols) {
+            // Your code goes here — base case: rows == 0 or cols == 0 returns 1;
+            // recursive case: latticePaths(rows-1, cols) + latticePaths(rows, cols-1)
+            return 0;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int rows = Integer.parseInt(sc.nextLine().trim());
+        int cols = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().latticePaths(rows, cols));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "rows", "label": "rows", "type": "int", "placeholder": "2" },
+    { "id": "cols", "label": "cols", "type": "int", "placeholder": "2" }
+  ],
+  "cases": [
+    { "args": { "rows": "2", "cols": "2" }, "expected": "6" },
+    { "args": { "rows": "3", "cols": "3" }, "expected": "20" },
+    { "args": { "rows": "0", "cols": "0" }, "expected": "1" },
+    { "args": { "rows": "1", "cols": "1" }, "expected": "2" },
+    { "args": { "rows": "0", "cols": "5" }, "expected": "1" },
+    { "args": { "rows": "5", "cols": "0" }, "expected": "1" },
+    { "args": { "rows": "2", "cols": "3" }, "expected": "10" }
+  ]
+}
+```
 
 <details>
 <summary><h2>What Does "Only Right or Down" Mean Recursively?</h2></summary>
@@ -101,7 +170,7 @@ table: "Cells of paths(r, c) — number of paths from (0,0) to (r,c)" {
 
 ### The Solution
 
-```python run viz=grid
+```python solution time=O(2^(rows+cols)) space=O(rows+cols)
 class Solution:
     def lattice_paths(self, rows: int, cols: int) -> int:
 
@@ -118,19 +187,14 @@ class Solution:
         )
 
 
-# Examples from the problem statement
-print(Solution().lattice_paths(2, 2))   # 6
-print(Solution().lattice_paths(3, 3))   # 20
-print(Solution().lattice_paths(0, 0))   # 1
-
-# Edge cases
-print(Solution().lattice_paths(1, 1))   # 2
-print(Solution().lattice_paths(0, 5))   # 1
-print(Solution().lattice_paths(5, 0))   # 1
-print(Solution().lattice_paths(2, 3))   # 10
+rows = int(input())
+cols = int(input())
+print(Solution().lattice_paths(rows, cols))
 ```
 
-```java run viz=grid
+```java solution
+import java.util.*;
+
 public class Main {
     static class Solution {
         public int latticePaths(int rows, int cols) {
@@ -151,16 +215,10 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().latticePaths(2, 2));   // 6
-        System.out.println(new Solution().latticePaths(3, 3));   // 20
-        System.out.println(new Solution().latticePaths(0, 0));   // 1
-
-        // Edge cases
-        System.out.println(new Solution().latticePaths(1, 1));   // 2
-        System.out.println(new Solution().latticePaths(0, 5));   // 1
-        System.out.println(new Solution().latticePaths(5, 0));   // 1
-        System.out.println(new Solution().latticePaths(2, 3));   // 10
+        Scanner sc = new Scanner(System.in);
+        int rows = Integer.parseInt(sc.nextLine().trim());
+        int cols = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().latticePaths(rows, cols));
     }
 }
 ```

@@ -17,6 +17,7 @@ The naïve way — copy the whole structure on every update — is `O(n)` per ve
 A persistent BST insert returns a *new* root and leaves the old tree completely untouched. Both versions answer queries independently.
 
 ```python run viz=binary-tree viz-root=root
+import ast
 class Node:
     __slots__ = ("key", "left", "right")
     def __init__(self, key, left=None, right=None):
@@ -40,14 +41,18 @@ def contains(node, key):
 def inorder(node, out):
     if node: inorder(node.left, out); out.append(node.key); inorder(node.right, out)
 
+v1_keys = ast.literal_eval(input())                   # initial keys for version 1
+new_key = ast.literal_eval(input())                   # key to insert to get version 2
+search_key = ast.literal_eval(input())                # key to search in both versions
+
 v1 = None
-for k in [5, 3, 8, 2, 4]:
-    v1 = insert(v1, k)                                 # version 1
-v2 = insert(v1, 7)                                     # version 2 = v1 + key 7
+for k in v1_keys:
+    v1 = insert(v1, k)                                # version 1
+v2 = insert(v1, new_key)                              # version 2 = v1 + new_key
 
 o1 = []; inorder(v1, o1); o2 = []; inorder(v2, o2)
-print(o1, "contains 7:", contains(v1, 7))              # [2,3,4,5,8] False  -- v1 unchanged
-print(o2, "contains 7:", contains(v2, 7))              # [2,3,4,5,7,8] True
+print(o1, "contains " + str(search_key) + ":", "true" if contains(v1, search_key) else "false")
+print(o2, "contains " + str(search_key) + ":", "true" if contains(v2, search_key) else "false")
 ```
 
 ```java run viz=binary-tree viz-root=root
@@ -71,18 +76,36 @@ public class Main {
         if (n != null) { inorder(n.left, out); out.add(n.key); inorder(n.right, out); }
     }
     public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String[] v1Parts = sc.nextLine().trim().replaceAll("[\\[\\]]", "").split(",\\s*");
+        int newKey = Integer.parseInt(sc.nextLine().trim());
+        int searchKey = Integer.parseInt(sc.nextLine().trim());
         Node v1 = null;
-        for (int k : new int[]{5, 3, 8, 2, 4}) v1 = insert(v1, k);
-        Node v2 = insert(v1, 7);
+        for (String s : v1Parts) v1 = insert(v1, Integer.parseInt(s.trim()));
+        Node v2 = insert(v1, newKey);
         List<Integer> o1 = new ArrayList<>(), o2 = new ArrayList<>();
         inorder(v1, o1); inorder(v2, o2);
-        System.out.println(o1 + " contains 7: " + contains(v1, 7));   // [2,3,4,5,8] false
-        System.out.println(o2 + " contains 7: " + contains(v2, 7));   // [2,3,4,5,7,8] true
+        System.out.println(o1 + " contains " + searchKey + ": " + contains(v1, searchKey));
+        System.out.println(o2 + " contains " + searchKey + ": " + contains(v2, searchKey));
     }
 }
 ```
 
-Both print `[2, 3, 4, 5, 8] contains 7: False` then `[2, 3, 4, 5, 7, 8] contains 7: True`. `v2` has the new key, `v1` is exactly as it was — two independent versions from one `insert`, no copying of the whole tree.
+```testcases
+{
+  "args": [
+    { "id": "v1_keys",    "label": "v1 keys (list)",  "type": "string", "placeholder": "[5, 3, 8, 2, 4]" },
+    { "id": "new_key",    "label": "insert key (v2)", "type": "number", "placeholder": "7" },
+    { "id": "search_key", "label": "search key",      "type": "number", "placeholder": "7" }
+  ],
+  "cases": [
+    { "args": { "v1_keys": "[5, 3, 8, 2, 4]", "new_key": "7", "search_key": "7" }, "expected": "[2, 3, 4, 5, 8] contains 7: false\n[2, 3, 4, 5, 7, 8] contains 7: true" },
+    { "args": { "v1_keys": "[10, 5, 15, 3]",  "new_key": "6", "search_key": "6" }, "expected": "[3, 5, 10, 15] contains 6: false\n[3, 5, 6, 10, 15] contains 6: true" }
+  ]
+}
+```
+
+Both print `[2, 3, 4, 5, 8] contains 7: false` then `[2, 3, 4, 5, 7, 8] contains 7: true`. `v2` has the new key, `v1` is exactly as it was — two independent versions from one `insert`, no copying of the whole tree.
 
 ## How It Works
 
@@ -161,6 +184,82 @@ Inserting one key allocates just **5** new nodes — the four on the root-to-lea
 **Persistent cons-list** — the simplest persistent structure, and the one functional languages use for their default list. `prepend` makes a new head pointing at the *entire* old list as its shared tail: `O(1)` per version, and every old version stays intact.
 
 ```python run viz=array
+import ast
+class Cons:
+    __slots__ = ("head", "tail")
+    def __init__(self, head, tail):
+        self.head, self.tail = head, tail
+
+def prepend(lst, x):
+    # Your code goes here — return a new Cons node pointing at the old list
+    return None
+
+def to_list(lst):
+    out = []
+    while lst:
+        out.append(lst.head); lst = lst.tail
+    return out
+
+items = ast.literal_eval(input())
+new_head = ast.literal_eval(input())
+
+v1 = None
+for x in items:
+    v1 = prepend(v1, x)
+v2 = prepend(v1, new_head)
+
+print(to_list(v1))
+print(to_list(v2))
+print("v2.tail is v1 (shared):", "true" if v2.tail is v1 else "false")
+```
+
+```java run viz=array
+import java.util.*;
+public class Main {
+    static class Cons { int head; Cons tail; Cons(int h, Cons t) { head = h; tail = t; } }
+    static Cons prepend(Cons l, int x) {
+        // Your code goes here — return a new Cons node pointing at the old list
+        return null;
+    }
+    static List<Integer> toList(Cons l) {
+        List<Integer> out = new ArrayList<>();
+        for (; l != null; l = l.tail) out.add(l.head);
+        return out;
+    }
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String[] parts = sc.nextLine().trim().replaceAll("[\\[\\]]", "").split(",\\s*");
+        int newHead = Integer.parseInt(sc.nextLine().trim());
+        Cons v1 = null;
+        for (String s : parts) v1 = prepend(v1, Integer.parseInt(s.trim()));
+        Cons v2 = prepend(v1, newHead);
+        System.out.println(toList(v1));
+        System.out.println(toList(v2));
+        System.out.println("v2.tail is v1 (shared): " + (v2.tail == v1));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "items",    "label": "items to prepend (list)", "type": "string", "placeholder": "[1, 2, 3]" },
+    { "id": "new_head", "label": "new head value",          "type": "number", "placeholder": "4" }
+  ],
+  "cases": [
+    { "args": { "items": "[1, 2, 3]",   "new_head": "4" }, "expected": "[3, 2, 1]\n[4, 3, 2, 1]\nv2.tail is v1 (shared): true" },
+    { "args": { "items": "[5, 10, 15]", "new_head": "1" }, "expected": "[15, 10, 5]\n[1, 15, 10, 5]\nv2.tail is v1 (shared): true" }
+  ]
+}
+```
+
+<details>
+<summary><strong>Editorial</strong></summary>
+
+`prepend` is the entire point of structural sharing: a new `Cons` node stores the value and points to the old list as its tail — O(1) time and space, the old list untouched. The `v2.tail is v1` check confirms object identity: it is literally the same object in memory, not a copy.
+
+```python solution time=O(1) space=O(1)
+import ast
 class Cons:
     __slots__ = ("head", "tail")
     def __init__(self, head, tail):
@@ -175,17 +274,20 @@ def to_list(lst):
         out.append(lst.head); lst = lst.tail
     return out
 
-v1 = None
-for x in [1, 2, 3]:
-    v1 = prepend(v1, x)                                # v1 = [3, 2, 1]
-v2 = prepend(v1, 4)                                    # v2 = [4, 3, 2, 1]
+items = ast.literal_eval(input())
+new_head = ast.literal_eval(input())
 
-print(to_list(v1))                                     # [3, 2, 1]  -- unchanged
-print(to_list(v2))                                     # [4, 3, 2, 1]
-print("v2.tail is v1 (shared):", v2.tail is v1)        # True
+v1 = None
+for x in items:
+    v1 = prepend(v1, x)
+v2 = prepend(v1, new_head)
+
+print(to_list(v1))
+print(to_list(v2))
+print("v2.tail is v1 (shared):", "true" if v2.tail is v1 else "false")
 ```
 
-```java run viz=array
+```java solution
 import java.util.*;
 public class Main {
     static class Cons { int head; Cons tail; Cons(int h, Cons t) { head = h; tail = t; } }
@@ -196,17 +298,22 @@ public class Main {
         return out;
     }
     public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String[] parts = sc.nextLine().trim().replaceAll("[\\[\\]]", "").split(",\\s*");
+        int newHead = Integer.parseInt(sc.nextLine().trim());
         Cons v1 = null;
-        for (int x : new int[]{1, 2, 3}) v1 = prepend(v1, x);   // [3, 2, 1]
-        Cons v2 = prepend(v1, 4);                               // [4, 3, 2, 1]
-        System.out.println(toList(v1));                         // [3, 2, 1]
-        System.out.println(toList(v2));                         // [4, 3, 2, 1]
-        System.out.println("v2.tail is v1 (shared): " + (v2.tail == v1));   // true
+        for (String s : parts) v1 = prepend(v1, Integer.parseInt(s.trim()));
+        Cons v2 = prepend(v1, newHead);
+        System.out.println(toList(v1));
+        System.out.println(toList(v2));
+        System.out.println("v2.tail is v1 (shared): " + (v2.tail == v1));
     }
 }
 ```
 
-Both print `[3, 2, 1]`, `[4, 3, 2, 1]`, then `True`. `v2` shares `v1` *entirely* as its tail — one new node holds the prepended value and a reference to the old list. This is structural sharing in its purest form: `O(1)` updates, the full history retained, and it's why an immutable linked list is the workhorse of functional programming. (The flip side: sharing the *tail* is cheap, but appending to the *end* would force copying, which is why functional lists prepend.)
+</details>
+
+Both print `[3, 2, 1]`, `[4, 3, 2, 1]`, then `v2.tail is v1 (shared): true`. `v2` shares `v1` *entirely* as its tail — one new node holds the prepended value and a reference to the old list. This is structural sharing in its purest form: `O(1)` updates, the full history retained, and it's why an immutable linked list is the workhorse of functional programming. (The flip side: sharing the *tail* is cheap, but appending to the *end* would force copying, which is why functional lists prepend.)
 
 ## Reflect & Connect
 

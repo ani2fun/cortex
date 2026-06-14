@@ -15,12 +15,12 @@ Two algorithms cover the cases. **Dijkstra** generalises BFS by replacing the qu
 
 ## See It Work
 
-Dijkstra from source 0: a min-heap of `(distance, node)`, popping the closest node and relaxing its neighbours. Run it.
+Dijkstra from source 0: a min-heap of `(distance, node)`, popping the closest node and relaxing its neighbours. The graph crosses stdin as a **weighted adjacency list** — `graph[u] = [[nbr, wt], ...]`. Unreachable nodes appear as `-1`. Pick a case and **Run** it.
 
 ```python run viz=graph viz-kind=graph
-import heapq
+import ast, heapq
 
-def dijkstra(graph, src):              # graph[u] = list of (neighbour, weight)
+def dijkstra(graph, src):              # graph[u] = list of [neighbour, weight]
     n = len(graph)
     dist = [float('inf')] * n
     dist[src] = 0
@@ -35,9 +35,91 @@ def dijkstra(graph, src):              # graph[u] = list of (neighbour, weight)
                 heapq.heappush(pq, (dist[nb], nb))   # lazy push, no decrease-key
     return [x if x != float('inf') else -1 for x in dist]
 
-# 0:[(1,2),(3,5)] 1:[(4,6)] 2:[(4,1)] 3:[(2,2)] 4:[(3,7)]
-graph = [[(1,2),(3,5)], [(4,6)], [(4,1)], [(2,2)], [(3,7)]]
-print(dijkstra(graph, 0))     # [0, 2, 7, 5, 8]
+graph = ast.literal_eval(input())   # weighted adjacency: graph[u] = [[nbr, wt], ...]
+src = int(input())
+print(dijkstra(graph, src))
+```
+
+```java run viz=graph viz-kind=graph
+import java.util.*;
+
+public class Main {
+    static int[] dijkstra(int[][][] graph, int src) {
+        int n = graph.length;
+        int[] dist = new int[n];
+        Arrays.fill(dist, Integer.MAX_VALUE);
+        dist[src] = 0;
+        PriorityQueue<int[]> pq = new PriorityQueue<>((a, b) -> a[0] - b[0]);
+        pq.add(new int[]{0, src});
+        while (!pq.isEmpty()) {
+            int[] cur = pq.poll();
+            int d = cur[0], node = cur[1];
+            if (d > dist[node]) continue;          // stale
+            for (int[] e : graph[node]) {
+                int nb = e[0], w = e[1];
+                if (dist[node] + w < dist[nb]) {
+                    dist[nb] = dist[node] + w;
+                    pq.add(new int[]{dist[nb], nb});
+                }
+            }
+        }
+        for (int i = 0; i < n; i++) if (dist[i] == Integer.MAX_VALUE) dist[i] = -1;
+        return dist;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[][][] graph = parseWeightedAdj(sc.nextLine());
+        int src = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(Arrays.toString(dijkstra(graph, src)));
+    }
+
+    // "[[[1, 4], [2, 1]], [[3, 1]], []]" → graph[u] = list of {nbr, wt}
+    static int[][][] parseWeightedAdj(String line) {
+        List<int[][]> g = new ArrayList<>();
+        int i = 0, n = line.length();
+        while (i < n && line.charAt(i) != '[') i++;
+        i++;                                             // consume outer '['
+        while (i < n) {
+            while (i < n && (line.charAt(i) == ' ' || line.charAt(i) == ',')) i++;
+            if (i >= n || line.charAt(i) == ']') break;  // end of outer list
+            i++;                                         // consume a node group's '['
+            List<int[]> node = new ArrayList<>();
+            while (i < n) {
+                while (i < n && (line.charAt(i) == ' ' || line.charAt(i) == ',')) i++;
+                if (line.charAt(i) == ']') { i++; break; }   // end of this node group
+                i++;                                     // consume a pair's '['
+                int[] pair = new int[2]; int k = 0;
+                while (i < n && line.charAt(i) != ']') {
+                    while (i < n && (line.charAt(i) == ' ' || line.charAt(i) == ',')) i++;
+                    if (line.charAt(i) == ']') break;
+                    int start = i;
+                    while (i < n && (Character.isDigit(line.charAt(i)) || line.charAt(i) == '-')) i++;
+                    pair[k++] = Integer.parseInt(line.substring(start, i));
+                }
+                i++;                                     // consume the pair's ']'
+                node.add(pair);
+            }
+            g.add(node.toArray(new int[0][]));
+        }
+        return g.toArray(new int[0][][]);
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "graph", "label": "graph (weighted adj list)", "type": "int[][]", "placeholder": "[[[1, 2], [3, 5]], [[4, 6]], [[4, 1]], [[2, 2]], [[3, 7]]]" },
+    { "id": "src", "label": "src", "type": "int", "placeholder": "0" }
+  ],
+  "cases": [
+    { "args": { "graph": "[[[1, 2], [3, 5]], [[4, 6]], [[4, 1]], [[2, 2]], [[3, 7]]]", "src": "0" }, "expected": "[0, 2, 7, 5, 8]" },
+    { "args": { "graph": "[[[1, 1], [2, 4]], [[2, 2], [3, 2]], [[3, 1]], []]", "src": "0" }, "expected": "[0, 1, 3, 3]" },
+    { "args": { "graph": "[[[1, 5]], []]", "src": "0" }, "expected": "[0, 5]" },
+    { "args": { "graph": "[[]]", "src": "0" }, "expected": "[0]" }
+  ]
+}
 ```
 
 ## How It Works
@@ -65,7 +147,7 @@ A shortest path has at most `V−1` edges, so after round `k` every node reachab
 
 ### Key Takeaway
 
-Weighted shortest path orders by accumulated weight, not hops. **Dijkstra:** min-heap, pop-the-closest, relax; final-on-pop *only with non-negative weights*; `O((V+E) log V)`. **Bellman-Ford:** relax all edges `V−1` times; handles negatives and detects negative cycles (one extra round); `O(VE)`. Non-negative → Dijkstra; negative → Bellman-Ford.
+Weighted shortest path orders by accumulated weight, not hops. **Dijkstra:** min-heap, pop-the-closest, relax; final-on-pop *only with non-negative weights*; `O((V+E) log V)`. **Bellman-Ford:** relax all edges `V−1` rounds; handles negatives and detects negative cycles (one extra round); `O(VE)`. Non-negative → Dijkstra; negative → Bellman-Ford.
 
 ## Trace It
 
@@ -73,14 +155,146 @@ Dijkstra's whole speed comes from one promise: **when you pop a node, its distan
 
 Before you read on: on `0→1 (1), 1→3 (1), 0→2 (4), 2→1 (−4)` (no cycle), the true shortest distance to `3` is **1** (via `0→2→1→3 = 4 − 4 + 1`). Run finalize-on-pop Dijkstra and it reports `dist[3] = 2`. Where does the greedy "final on pop" promise break?
 
+```python run viz=graph viz-kind=graph
+import heapq
+
+# 0→1(1), 1→3(1), 0→2(4), 2→1(−4) — a negative edge, no cycle
+graph = [[[1,1],[2,4]], [[3,1]], [[1,-4]], []]
+
+def dijkstra_naive(graph, src):
+    """Finalize-on-pop — INCORRECT with negative edges."""
+    n = len(graph); dist = [float('inf')]*n; dist[src] = 0
+    visited = set(); pq = [(0, src)]
+    while pq:
+        d, u = heapq.heappop(pq)
+        if u in visited: continue
+        visited.add(u)                        # finalize — wrong with negatives!
+        for v, w in graph[u]:
+            if d + w < dist[v]:
+                dist[v] = d + w; heapq.heappush(pq, (dist[v], v))
+    return [x if x != float('inf') else -1 for x in dist]
+
+def bellman_ford(graph, src):
+    """V-1 rounds of relaxation — correct even with negative edges."""
+    n = len(graph); dist = [float('inf')]*n; dist[src] = 0
+    for _ in range(n - 1):
+        for u in range(n):
+            for v, w in graph[u]:
+                if dist[u] != float('inf') and dist[u] + w < dist[v]:
+                    dist[v] = dist[u] + w
+    return [x if x != float('inf') else -1 for x in dist]
+
+print("Dijkstra (wrong):", dijkstra_naive(graph, 0))   # [0, 1, 4, 2] — dist[3] wrong
+print("Bellman-Ford:    ", bellman_ford(graph, 0))     # [0, 0, 4, 1] — correct
+```
+
 It breaks at node `1`. Dijkstra pops in increasing distance, so it reaches `1` with the cheap direct edge `0→1 = 1` and **finalises `dist[1] = 1`** — then immediately expands `1`, setting `dist[3] = 1 + 1 = 2` and finalising `3` too. Only *later* does it pop node `2` (distance 4) and discover `2→1 = −4`, which would make `dist[1] = 0` and therefore `dist[3] = 1`. But `1` and `3` are already in the finalized set, so the visited check blocks the fix — the answer is stuck at the too-high `dist[3] = 2`. The greedy promise ("nothing reached later can be cheaper") is **only true when every edge is non-negative**: with non-negative weights, any unpopped node already has distance `≥` the one just popped, so adding more (non-negative) edges can't beat it. A **negative** edge violates exactly that — a node popped far away can route *backward* and lower a node you already finalised. (The lazy, no-visited-set variant happens to self-correct here by re-pushing the improved `(0,1)`, but it loses Dijkstra's guarantee and can do exponential work on adversarial graphs — it is *not* a fix.) The real fix is to **change algorithm**: Bellman-Ford makes no finality assumption — it just relaxes every edge `V−1` times, so the `2→1 = −4` improvement propagates to `3` on a later round, yielding the correct `1`. The rule to bank: *negative edge anywhere ⇒ Dijkstra is unsafe, reach for Bellman-Ford.*
 
 ## Your Turn
 
-Both algorithms in both languages — Dijkstra for the non-negative graph, Bellman-Ford for the negative one (and its `−1` negative-cycle signal):
+Both algorithms in both languages — Dijkstra for the non-negative graph, Bellman-Ford for the negative one (and its `−1` negative-cycle signal). The graph arrives as a weighted adjacency list (3-D); a second line selects the algorithm: `'d'` = Dijkstra, `'b'` = Bellman-Ford.
 
 ```python run viz=graph viz-kind=graph
-import heapq
+import ast, heapq
+
+def dijkstra(graph, src):
+    # Your code goes here — min-heap, relax, return dist[] with -1 for unreachable.
+    pass
+
+def bellman_ford(graph, src):
+    # Your code goes here — V-1 rounds of relaxation; one extra round detects negative
+    # cycles (return [-1]*n); return dist[] with -1 for unreachable.
+    pass
+
+graph = ast.literal_eval(input())
+src = int(input())
+algo = input().strip()
+if algo == 'd':
+    print(dijkstra(graph, src))
+else:
+    print(bellman_ford(graph, src))
+```
+
+```java run viz=graph viz-kind=graph
+import java.util.*;
+
+public class Main {
+    static int[] dijkstra(int[][][] g, int src) {
+        // Your code goes here — min-heap PriorityQueue, relax, return dist[] with -1 for unreachable.
+        return new int[0];
+    }
+
+    static int[] bellmanFord(int[][][] g, int src) {
+        // Your code goes here — V-1 rounds; extra round detects negative cycle (return all -1).
+        return new int[0];
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[][][] graph = parseWeightedAdj(sc.nextLine());
+        int src = Integer.parseInt(sc.nextLine().trim());
+        String algo = sc.nextLine().trim();
+        int[] result = algo.equals("d") ? dijkstra(graph, src) : bellmanFord(graph, src);
+        System.out.println(Arrays.toString(result));
+    }
+
+    static int[][][] parseWeightedAdj(String line) {
+        List<int[][]> g = new ArrayList<>();
+        int i = 0, n = line.length();
+        while (i < n && line.charAt(i) != '[') i++;
+        i++;
+        while (i < n) {
+            while (i < n && (line.charAt(i) == ' ' || line.charAt(i) == ',')) i++;
+            if (i >= n || line.charAt(i) == ']') break;
+            i++;
+            List<int[]> node = new ArrayList<>();
+            while (i < n) {
+                while (i < n && (line.charAt(i) == ' ' || line.charAt(i) == ',')) i++;
+                if (line.charAt(i) == ']') { i++; break; }
+                i++;
+                int[] pair = new int[2]; int k = 0;
+                while (i < n && line.charAt(i) != ']') {
+                    while (i < n && (line.charAt(i) == ' ' || line.charAt(i) == ',')) i++;
+                    if (line.charAt(i) == ']') break;
+                    int start = i;
+                    while (i < n && (Character.isDigit(line.charAt(i)) || line.charAt(i) == '-')) i++;
+                    pair[k++] = Integer.parseInt(line.substring(start, i));
+                }
+                i++;
+                node.add(pair);
+            }
+            g.add(node.toArray(new int[0][]));
+        }
+        return g.toArray(new int[0][][]);
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "graph", "label": "graph (weighted adj list)", "type": "int[][]", "placeholder": "[[[1, 2], [3, 5]], [[4, 6]], [[4, 1]], [[2, 2]], [[3, 7]]]" },
+    { "id": "src", "label": "src", "type": "int", "placeholder": "0" },
+    { "id": "algo", "label": "algo ('d' or 'b')", "type": "string", "placeholder": "d" }
+  ],
+  "cases": [
+    { "args": { "graph": "[[[1, 2], [3, 5]], [[4, 6]], [[4, 1]], [[2, 2]], [[3, 7]]]", "src": "0", "algo": "d" }, "expected": "[0, 2, 7, 5, 8]" },
+    { "args": { "graph": "[[[1, 4], [2, 5]], [[2, -3], [3, 6]], [[3, 4]], []]", "src": "0", "algo": "b" }, "expected": "[0, 4, 1, 5]" },
+    { "args": { "graph": "[[[1, 1]], [[2, -3]], [[0, 1]]]", "src": "0", "algo": "b" }, "expected": "[-1, -1, -1]" },
+    { "args": { "graph": "[[[1, 1], [2, 4]], [[2, 2], [3, 2]], [[3, 1]], []]", "src": "0", "algo": "d" }, "expected": "[0, 1, 3, 3]" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+**Dijkstra** uses a min-heap keyed by `(distance, node)`. Start with `dist[src] = 0` and all others `∞`. Pop the cheapest node; skip if stale (`d > dist[node]`); relax each neighbour by comparing `dist[node] + w` to the current best. Map `∞` to `-1` on output — no `inf`/`MAX_VALUE` divergence issue since both langs share the `-1` sentinel.
+
+**Bellman-Ford** runs `V−1` rounds of "relax every edge." In each round it skips unreachable sources (`dist[u] == ∞`). After `V−1` rounds, all shortest paths are finalised. A `V`-th round that still improves any distance proves a negative cycle (distances could decrease forever) — return `[-1]*n`. Map remaining `∞` to `-1` on output.
+
+```python solution time=O((V+E)logV) / O(VE) space=O(V+E)
+import ast, heapq
 
 def dijkstra(graph, src):
     n = len(graph); dist = [float('inf')]*n; dist[src] = 0; pq = [(0, src)]
@@ -105,39 +319,97 @@ def bellman_ford(graph, src):
                 return [-1]*n
     return [x if x != float('inf') else -1 for x in dist]
 
-print(dijkstra([[(1,2),(3,5)], [(4,6)], [(4,1)], [(2,2)], [(3,7)]], 0))   # [0, 2, 7, 5, 8]
-print(bellman_ford([[(1,4),(2,5)], [(2,-3),(3,6)], [(3,4)], []], 0))       # [0, 4, 1, 5]
-print(bellman_ford([[(1,1)], [(2,-3)], [(0,1)]], 0))                       # [-1,-1,-1] cycle
+graph = ast.literal_eval(input())
+src = int(input())
+algo = input().strip()
+if algo == 'd':
+    print(dijkstra(graph, src))
+else:
+    print(bellman_ford(graph, src))
 ```
 
-```java run viz=graph viz-kind=graph
+```java solution time=O((V+E)logV) / O(VE) space=O(V+E)
 import java.util.*;
+
 public class Main {
-  static int[] bellmanFord(int[][][] g, int src) {
-    int n = g.length; int[] dist = new int[n];
-    Arrays.fill(dist, Integer.MAX_VALUE); dist[src] = 0;
-    for (int i = 0; i < n - 1; i++)
-      for (int u = 0; u < n; u++)
-        if (dist[u] != Integer.MAX_VALUE)
-          for (int[] e : g[u])
-            if (dist[u] + e[1] < dist[e[0]]) dist[e[0]] = dist[u] + e[1];
-    for (int u = 0; u < n; u++)
-      if (dist[u] != Integer.MAX_VALUE)
-        for (int[] e : g[u])
-          if (dist[u] + e[1] < dist[e[0]]) { Arrays.fill(dist, -1); return dist; }
-    for (int i = 0; i < n; i++) if (dist[i] == Integer.MAX_VALUE) dist[i] = -1;
-    return dist;
-  }
-  public static void main(String[] a) {
-    int[][][] neg = {{{1,4},{2,5}}, {{2,-3},{3,6}}, {{3,4}}, {}};
-    System.out.println(Arrays.toString(bellmanFord(neg, 0)));        // [0, 4, 1, 5]
-    int[][][] cyc = {{{1,1}}, {{2,-3}}, {{0,1}}};
-    System.out.println(Arrays.toString(bellmanFord(cyc, 0)));        // [-1, -1, -1]
-  }
+    static int[] dijkstra(int[][][] g, int src) {
+        int n = g.length; int[] dist = new int[n];
+        Arrays.fill(dist, Integer.MAX_VALUE); dist[src] = 0;
+        PriorityQueue<int[]> pq = new PriorityQueue<>((a, b) -> a[0] - b[0]);
+        pq.add(new int[]{0, src});
+        while (!pq.isEmpty()) {
+            int[] cur = pq.poll(); int d = cur[0], node = cur[1];
+            if (d > dist[node]) continue;
+            for (int[] e : g[node]) {
+                int nb = e[0], w = e[1];
+                if (dist[node] + w < dist[nb]) {
+                    dist[nb] = dist[node] + w;
+                    pq.add(new int[]{dist[nb], nb});
+                }
+            }
+        }
+        for (int i = 0; i < n; i++) if (dist[i] == Integer.MAX_VALUE) dist[i] = -1;
+        return dist;
+    }
+
+    static int[] bellmanFord(int[][][] g, int src) {
+        int n = g.length; int[] dist = new int[n];
+        Arrays.fill(dist, Integer.MAX_VALUE); dist[src] = 0;
+        for (int i = 0; i < n - 1; i++)
+            for (int u = 0; u < n; u++)
+                if (dist[u] != Integer.MAX_VALUE)
+                    for (int[] e : g[u])
+                        if (dist[u] + e[1] < dist[e[0]]) dist[e[0]] = dist[u] + e[1];
+        for (int u = 0; u < n; u++)
+            if (dist[u] != Integer.MAX_VALUE)
+                for (int[] e : g[u])
+                    if (dist[u] + e[1] < dist[e[0]]) { Arrays.fill(dist, -1); return dist; }
+        for (int i = 0; i < n; i++) if (dist[i] == Integer.MAX_VALUE) dist[i] = -1;
+        return dist;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[][][] graph = parseWeightedAdj(sc.nextLine());
+        int src = Integer.parseInt(sc.nextLine().trim());
+        String algo = sc.nextLine().trim();
+        int[] result = algo.equals("d") ? dijkstra(graph, src) : bellmanFord(graph, src);
+        System.out.println(Arrays.toString(result));
+    }
+
+    static int[][][] parseWeightedAdj(String line) {
+        List<int[][]> g = new ArrayList<>();
+        int i = 0, n = line.length();
+        while (i < n && line.charAt(i) != '[') i++;
+        i++;
+        while (i < n) {
+            while (i < n && (line.charAt(i) == ' ' || line.charAt(i) == ',')) i++;
+            if (i >= n || line.charAt(i) == ']') break;
+            i++;
+            List<int[]> node = new ArrayList<>();
+            while (i < n) {
+                while (i < n && (line.charAt(i) == ' ' || line.charAt(i) == ',')) i++;
+                if (line.charAt(i) == ']') { i++; break; }
+                i++;
+                int[] pair = new int[2]; int k = 0;
+                while (i < n && line.charAt(i) != ']') {
+                    while (i < n && (line.charAt(i) == ' ' || line.charAt(i) == ',')) i++;
+                    if (line.charAt(i) == ']') break;
+                    int start = i;
+                    while (i < n && (Character.isDigit(line.charAt(i)) || line.charAt(i) == '-')) i++;
+                    pair[k++] = Integer.parseInt(line.substring(start, i));
+                }
+                i++;
+                node.add(pair);
+            }
+            g.add(node.toArray(new int[0][]));
+        }
+        return g.toArray(new int[0][][]);
+    }
 }
 ```
 
-Then: reconstruct the actual *path* (store a `parent[]` and walk it back); implement **0-1 BFS** (a deque for graphs with weights only 0/1, `O(V+E)`); add an **A\*** heuristic to Dijkstra for goal-directed search; and use **Floyd-Warshall** when you need *all-pairs* distances.
+</details>
 
 ## Reflect & Connect
 

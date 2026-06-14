@@ -46,10 +46,14 @@ class AhoCorasick:
                 node = self.fail[node]
             node = self.goto[node].get(c, 0)
             for p in self.out[node]:
-                hits.append((p, i - len(p) + 1))           # (pattern, start index)
+                hits.append(p + '@' + str(i - len(p) + 1))
         return sorted(hits)
 
-print(AhoCorasick(["he", "she", "his", "hers"]).search("ushers"))   # she@1, he@2, hers@2
+n = int(input())
+patterns = [input() for _ in range(n)]
+text = input()
+result = AhoCorasick(patterns).search(text)
+print('[' + ', '.join(result) + ']')
 ```
 
 ```java run viz=array
@@ -96,9 +100,29 @@ public class Main {
         return hits;
     }
     public static void main(String[] args) {
-        build(new String[]{"he", "she", "his", "hers"});
-        System.out.println(search("ushers"));   // [he@2, hers@2, she@1]
+        Scanner sc = new Scanner(System.in);
+        int n = Integer.parseInt(sc.nextLine());
+        String[] patterns = new String[n];
+        for (int i = 0; i < n; i++) patterns[i] = sc.nextLine();
+        String text = sc.nextLine();
+        build(patterns);
+        System.out.println(search(text));
     }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "n", "label": "# patterns", "type": "string", "placeholder": "4" },
+    { "id": "patterns", "label": "patterns (one per line)", "type": "string", "placeholder": "he\nshe\nhis\nhers" },
+    { "id": "text", "label": "text", "type": "string", "placeholder": "ushers" }
+  ],
+  "cases": [
+    { "args": { "n": "4", "patterns": "he\nshe\nhis\nhers", "text": "ushers" }, "expected": "[he@2, hers@2, she@1]" },
+    { "args": { "n": "4", "patterns": "he\nshe\nhis\nhers", "text": "ahishers" }, "expected": "[he@4, hers@4, his@1, she@3]" },
+    { "args": { "n": "2", "patterns": "ab\nabc", "text": "abcab" }, "expected": "[ab@0, ab@3, abc@0]" }
+  ]
 }
 ```
 
@@ -208,6 +232,110 @@ class AhoCorasick:
                 self.fail[v] = self.goto[f].get(c, 0)
                 self.out[v] += self.out[self.fail[v]]
     def count(self, text):
+        # Your code goes here
+        return 0
+
+n = int(input())
+patterns = [input() for _ in range(n)]
+text = input()
+print(AhoCorasick(patterns).count(text))
+```
+
+```java run viz=array
+import java.util.*;
+public class Main {
+    static List<Map<Character,Integer>> go = new ArrayList<>();
+    static List<Integer> fail = new ArrayList<>();
+    static List<Integer> outCount = new ArrayList<>();
+    static void build(String[] patterns) {
+        go.clear(); fail.clear(); outCount.clear();
+        go.add(new HashMap<>()); fail.add(0); outCount.add(0);
+        for (String p : patterns) {
+            int node = 0;
+            for (char c : p.toCharArray()) {
+                if (!go.get(node).containsKey(c)) {
+                    go.add(new HashMap<>()); fail.add(0); outCount.add(0);
+                    go.get(node).put(c, go.size() - 1);
+                }
+                node = go.get(node).get(c);
+            }
+            outCount.set(node, outCount.get(node) + 1);
+        }
+        Deque<Integer> q = new ArrayDeque<>(go.get(0).values());
+        while (!q.isEmpty()) {
+            int u = q.poll();
+            for (var e : go.get(u).entrySet()) {
+                char c = e.getKey(); int v = e.getValue(); q.add(v);
+                int f = fail.get(u);
+                while (f != 0 && !go.get(f).containsKey(c)) f = fail.get(f);
+                fail.set(v, go.get(f).getOrDefault(c, 0));
+                outCount.set(v, outCount.get(v) + outCount.get(fail.get(v)));
+            }
+        }
+    }
+    static int count(String text) {
+        // Your code goes here
+        return 0;
+    }
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = Integer.parseInt(sc.nextLine());
+        String[] patterns = new String[n];
+        for (int i = 0; i < n; i++) patterns[i] = sc.nextLine();
+        String text = sc.nextLine();
+        build(patterns);
+        System.out.println(count(text));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "n", "label": "# patterns", "type": "string", "placeholder": "3" },
+    { "id": "patterns", "label": "patterns (one per line)", "type": "string", "placeholder": "is\nsi\nssi" },
+    { "id": "text", "label": "text", "type": "string", "placeholder": "mississippi" }
+  ],
+  "cases": [
+    { "args": { "n": "3", "patterns": "is\nsi\nssi", "text": "mississippi" }, "expected": "6" },
+    { "args": { "n": "3", "patterns": "ab\nbc\nca", "text": "abcab" }, "expected": "4" },
+    { "args": { "n": "4", "patterns": "he\nshe\nhis\nhers", "text": "ushers" }, "expected": "3" },
+    { "args": { "n": "3", "patterns": "a\naa\naaa", "text": "aaaa" }, "expected": "9" }
+  ]
+}
+```
+
+Both print `6` then `4`. In `"mississippi"`, the overlapping patterns `is`, `si`, `ssi` total six occurrences; in `"abcab"`, `ab` (twice), `bc`, and `ca` total four. The single scan handles the heavy overlap (`ssi` contains `si`) without re-reading the text — which is exactly the payoff over `k` separate KMP runs.
+
+<details>
+<summary><strong>Editorial</strong></summary>
+
+Walk the text once. At each position, the active node's `outCount` tells you how many patterns end here (its own count plus the chained failure-link counts). Accumulate the total — no re-reading, no per-pattern scan.
+
+```python solution time=O(n + sum_patterns + matches) space=O(sum_patterns)
+from collections import deque
+class AhoCorasick:
+    def __init__(self, patterns):
+        self.goto = [{}]; self.fail = [0]; self.out = [[]]
+        for p in patterns:
+            node = 0
+            for c in p:
+                if c not in self.goto[node]:
+                    self.goto.append({}); self.fail.append(0); self.out.append([])
+                    self.goto[node][c] = len(self.goto) - 1
+                node = self.goto[node][c]
+            self.out[node].append(p)
+        q = deque(self.goto[0].values())
+        while q:
+            u = q.popleft()
+            for c, v in self.goto[u].items():
+                q.append(v)
+                f = self.fail[u]
+                while f and c not in self.goto[f]:
+                    f = self.fail[f]
+                self.fail[v] = self.goto[f].get(c, 0)
+                self.out[v] += self.out[self.fail[v]]
+    def count(self, text):
         node, total = 0, 0
         for c in text:
             while node and c not in self.goto[node]:
@@ -216,11 +344,13 @@ class AhoCorasick:
             total += len(self.out[node])
         return total
 
-print(AhoCorasick(["is", "si", "ssi"]).count("mississippi"))   # 6
-print(AhoCorasick(["ab", "bc", "ca"]).count("abcab"))          # 4
+n = int(input())
+patterns = [input() for _ in range(n)]
+text = input()
+print(AhoCorasick(patterns).count(text))
 ```
 
-```java run viz=array
+```java solution
 import java.util.*;
 public class Main {
     static List<Map<Character,Integer>> go = new ArrayList<>();
@@ -263,15 +393,18 @@ public class Main {
         return total;
     }
     public static void main(String[] args) {
-        build(new String[]{"is", "si", "ssi"});
-        System.out.println(count("mississippi"));   // 6
-        build(new String[]{"ab", "bc", "ca"});
-        System.out.println(count("abcab"));          // 4
+        Scanner sc = new Scanner(System.in);
+        int n = Integer.parseInt(sc.nextLine());
+        String[] patterns = new String[n];
+        for (int i = 0; i < n; i++) patterns[i] = sc.nextLine();
+        String text = sc.nextLine();
+        build(patterns);
+        System.out.println(count(text));
     }
 }
 ```
 
-Both print `6` then `4`. In `"mississippi"`, the overlapping patterns `is`, `si`, `ssi` total six occurrences; in `"abcab"`, `ab` (twice), `bc`, and `ca` total four. The single scan handles the heavy overlap (`ssi` contains `si`) without re-reading the text — which is exactly the payoff over `k` separate KMP runs.
+</details>
 
 ## Reflect & Connect
 

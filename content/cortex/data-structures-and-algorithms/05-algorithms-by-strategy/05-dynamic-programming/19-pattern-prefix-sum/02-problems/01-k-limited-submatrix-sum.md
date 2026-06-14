@@ -4,6 +4,8 @@ summary: "Given an n × m matrix and an integer k, find the maximum sum among al
 prereqs:
   - 19-pattern-prefix-sum/01-pattern
 difficulty: medium
+kind: problem
+topics: [prefix-sum, dynamic-programming]
 ---
 
 # K-Limited Submatrix Sum
@@ -26,6 +28,98 @@ Input:  matrix = [[1, 2, 3],
 Output: 45                         The whole matrix is the only k × k submatrix
 ```
 
+## Examples
+
+**Example 1**
+```
+Input:  matrix = [[1, 2, 9], [5, 3, 8], [4, 6, 7]], k = 2
+Output: 24
+Explanation: The 2×2 submatrix at rows 1–2, cols 1–2 gives 3 + 8 + 6 + 7 = 24,
+             which is the largest among all four 2×2 windows.
+```
+
+**Example 2**
+```
+Input:  matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]], k = 3
+Output: 45
+Explanation: k = n = m = 3, so the only 3×3 submatrix is the whole matrix: sum = 45.
+```
+
+## Constraints
+
+- `1 ≤ k ≤ min(n, m)`
+- Matrix values can be negative.
+
+```python run viz=grid viz-root=matrix
+import ast
+
+class Solution:
+    def k_limited_submatrix_sum(self, matrix, k):
+        # Your code goes here — build a 2-D prefix sum table, then slide
+        # every k×k window using the four-corner formula and track the max.
+        return 0
+
+matrix = ast.literal_eval(input())
+k = int(input())
+print(Solution().k_limited_submatrix_sum(matrix, k))
+```
+
+```java run viz=grid viz-root=matrix
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int kLimitedSubmatrixSum(int[][] matrix, int k) {
+            // Your code goes here — build a 2-D prefix sum table, then slide
+            // every k×k window using the four-corner formula and track the max.
+            return 0;
+        }
+    }
+
+    // "[1, 2, 3], [4, 5, 6]]" → int[][] — reads a 2-D matrix from one stdin line
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[][] matrix = parseIntMatrix(sc.nextLine());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().kLimitedSubmatrixSum(matrix, k));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "matrix", "label": "matrix", "type": "int[][]", "placeholder": "[[1,2,9],[5,3,8],[4,6,7]]" },
+    { "id": "k", "label": "k", "type": "int", "placeholder": "2" }
+  ],
+  "cases": [
+    { "args": { "matrix": "[[1,2,9],[5,3,8],[4,6,7]]", "k": "2" }, "expected": "24" },
+    { "args": { "matrix": "[[1,2,3],[4,5,6],[7,8,9]]", "k": "3" }, "expected": "45" },
+    { "args": { "matrix": "[[5]]", "k": "1" }, "expected": "5" },
+    { "args": { "matrix": "[[1,2],[3,4]]", "k": "1" }, "expected": "4" },
+    { "args": { "matrix": "[[1,2],[3,4]]", "k": "2" }, "expected": "10" },
+    { "args": { "matrix": "[[-1,-2],[-3,-4]]", "k": "1" }, "expected": "-1" },
+    { "args": { "matrix": "[[1,2,3],[4,5,6],[7,8,9]]", "k": "2" }, "expected": "28" }
+  ]
+}
+```
+
 <details>
 <summary><h2>The Approach</h2></summary>
 
@@ -38,7 +132,8 @@ Naively: enumerate every `k × k` submatrix (there are `(n-k+1) × (m-k+1)` of t
 
 ### The Solution
 
-```python run viz=grid viz-root=matrix
+```python solution time=O(n × m) space=O(n × m)
+import ast
 from typing import List
 import sys
 
@@ -66,7 +161,6 @@ class Solution:
                 )
 
         max_sum: int = -sys.maxsize
-        max_sum_submatrix: List[List[int]] = [[0] * k for _ in range(k)]
 
         # Find the maximum sum submatrix
         for i in range(rows - k + 1):
@@ -85,20 +179,12 @@ class Solution:
                     max_sum = sum_
         return max_sum
 
-
-# Examples from the problem statement
-print(Solution().k_limited_submatrix_sum([[1,2,9],[5,3,8],[4,6,7]], 2))   # 24
-print(Solution().k_limited_submatrix_sum([[1,2,3],[4,5,6],[7,8,9]], 3))   # 45
-
-# Edge cases
-print(Solution().k_limited_submatrix_sum([[5]], 1))                        # 5  — 1x1 matrix, k=1
-print(Solution().k_limited_submatrix_sum([[1,2],[3,4]], 1))                # 4  — k=1, max element
-print(Solution().k_limited_submatrix_sum([[1,2],[3,4]], 2))                # 10 — whole 2x2
-print(Solution().k_limited_submatrix_sum([[-1,-2],[-3,-4]], 1))            # -1 — negative matrix
-print(Solution().k_limited_submatrix_sum([[1,2,3],[4,5,6],[7,8,9]], 2))   # 28 — bottom-right 2x2
+matrix = ast.literal_eval(input())
+k = int(input())
+print(Solution().k_limited_submatrix_sum(matrix, k))
 ```
 
-```java run viz=grid viz-root=matrix
+```java solution
 import java.util.*;
 
 public class Main {
@@ -123,7 +209,6 @@ public class Main {
             }
 
             int maxSum = Integer.MIN_VALUE;
-            int[][] maxSumSubmatrix = new int[k][k];
 
             // Find the maximum sum submatrix
             for (int i = 0; i <= rows - k; i++) {
@@ -147,17 +232,27 @@ public class Main {
         }
     }
 
-    public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().kLimitedSubmatrixSum(new int[][]{{1,2,9},{5,3,8},{4,6,7}}, 2));   // 24
-        System.out.println(new Solution().kLimitedSubmatrixSum(new int[][]{{1,2,3},{4,5,6},{7,8,9}}, 3));   // 45
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
+    }
 
-        // Edge cases
-        System.out.println(new Solution().kLimitedSubmatrixSum(new int[][]{{5}}, 1));                        // 5
-        System.out.println(new Solution().kLimitedSubmatrixSum(new int[][]{{1,2},{3,4}}, 1));                // 4
-        System.out.println(new Solution().kLimitedSubmatrixSum(new int[][]{{1,2},{3,4}}, 2));                // 10
-        System.out.println(new Solution().kLimitedSubmatrixSum(new int[][]{{-1,-2},{-3,-4}}, 1));            // -1
-        System.out.println(new Solution().kLimitedSubmatrixSum(new int[][]{{1,2,3},{4,5,6},{7,8,9}}, 2));   // 28
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[][] matrix = parseIntMatrix(sc.nextLine());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().kLimitedSubmatrixSum(matrix, k));
     }
 }
 ```

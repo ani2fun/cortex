@@ -23,11 +23,14 @@ def unique_paths(m, n):
             dp[i][j] = dp[i - 1][j] + dp[i][j - 1]   # arrive from TOP + from LEFT
     return dp[m - 1][n - 1]
 
-print(unique_paths(3, 7))   # 28
-print(unique_paths(3, 3))   # 6
+m = int(input())
+n = int(input())
+print(unique_paths(m, n))
 ```
 
 ```java run viz=grid
+import java.util.*;
+
 public class Main {
     static int uniquePaths(int m, int n) {
         int[][] dp = new int[m][n];
@@ -39,13 +42,31 @@ public class Main {
         return dp[m - 1][n - 1];
     }
     public static void main(String[] args) {
-        System.out.println(uniquePaths(3, 7));   // 28
-        System.out.println(uniquePaths(3, 3));   // 6
+        Scanner sc = new Scanner(System.in);
+        int m = Integer.parseInt(sc.nextLine().trim());
+        int n = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(uniquePaths(m, n));
     }
 }
 ```
 
-Both print `28` then `6`. A `3×7` grid has 28 monotone routes; a `3×3` has 6. Cost `O(m·n)` time, reducible to one row of space.
+```testcases
+{
+  "args": [
+    { "id": "m", "label": "m", "type": "int", "placeholder": "3" },
+    { "id": "n", "label": "n", "type": "int", "placeholder": "7" }
+  ],
+  "cases": [
+    { "args": { "m": "3", "n": "7" }, "expected": "28" },
+    { "args": { "m": "3", "n": "3" }, "expected": "6" },
+    { "args": { "m": "1", "n": "1" }, "expected": "1" },
+    { "args": { "m": "2", "n": "2" }, "expected": "2" },
+    { "args": { "m": "5", "n": "5" }, "expected": "70" }
+  ]
+}
+```
+
+Both `3×7` and `3×3` match the pattern. A `3×7` grid has 28 monotone routes; a `3×3` has 6. Cost `O(m·n)` time, reducible to one row of space.
 
 ## How It Works
 
@@ -115,6 +136,71 @@ Correct (`min`) gives side `1`; the buggy `max` claims side `3`. The true answer
 **Minimum Path Sum** ([LeetCode 64](https://leetcode.com/problems/minimum-path-sum/)) — find the cheapest top-left-to-bottom-right path through a grid of costs, moving only right or down. Same traversal as unique paths, but the aggregator is `grid[i][j] + min(top, left)`, and the boundary is *cumulative* (only one way to reach an edge cell).
 
 ```python run viz=grid
+import ast
+
+def min_path_sum(grid):
+    # Your code goes here — dp[i][j] = grid[i][j] + min(dp[i-1][j], dp[i][j-1]).
+    # Seed boundary row/col cumulatively.
+    return 0
+
+grid = ast.literal_eval(input())
+print(min_path_sum(grid))
+```
+
+```java run viz=grid
+import java.util.*;
+
+public class Main {
+    static int minPathSum(int[][] grid) {
+        // Your code goes here — dp[i][j] = grid[i][j] + min(dp[i-1][j], dp[i][j-1]).
+        // Seed boundary row/col cumulatively.
+        return 0;
+    }
+
+    public static void main(String[] args) {
+        int[][] grid = parseIntMatrix(new Scanner(System.in).nextLine());
+        System.out.println(minPathSum(grid));
+    }
+
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "grid", "label": "grid", "type": "int[][]", "placeholder": "[[1, 3, 1], [1, 5, 1], [4, 2, 1]]" }
+  ],
+  "cases": [
+    { "args": { "grid": "[[1, 3, 1], [1, 5, 1], [4, 2, 1]]" }, "expected": "7" },
+    { "args": { "grid": "[[1, 2, 3], [4, 5, 6]]" }, "expected": "12" },
+    { "args": { "grid": "[[1]]" }, "expected": "1" },
+    { "args": { "grid": "[[1, 2], [3, 4]]" }, "expected": "7" },
+    { "args": { "grid": "[[5, 1], [1, 5]]" }, "expected": "11" }
+  ]
+}
+```
+
+<details>
+<summary><strong>Editorial</strong></summary>
+
+```python solution time=O(m·n) space=O(m·n)
+import ast
+
 def min_path_sum(grid):
     m, n = len(grid), len(grid[0])
     dp = [[0] * n for _ in range(m)]
@@ -128,11 +214,13 @@ def min_path_sum(grid):
             dp[i][j] = grid[i][j] + min(dp[i - 1][j], dp[i][j - 1])
     return dp[m - 1][n - 1]
 
-print(min_path_sum([[1, 3, 1], [1, 5, 1], [4, 2, 1]]))   # 7
-print(min_path_sum([[1, 2, 3], [4, 5, 6]]))              # 12
+grid = ast.literal_eval(input())
+print(min_path_sum(grid))
 ```
 
-```java run viz=grid
+```java solution
+import java.util.*;
+
 public class Main {
     static int minPathSum(int[][] grid) {
         int m = grid.length, n = grid[0].length;
@@ -145,14 +233,33 @@ public class Main {
                 dp[i][j] = grid[i][j] + Math.min(dp[i - 1][j], dp[i][j - 1]);
         return dp[m - 1][n - 1];
     }
+
     public static void main(String[] args) {
-        System.out.println(minPathSum(new int[][]{{1, 3, 1}, {1, 5, 1}, {4, 2, 1}}));   // 7
-        System.out.println(minPathSum(new int[][]{{1, 2, 3}, {4, 5, 6}}));              // 12
+        int[][] grid = parseIntMatrix(new Scanner(System.in).nextLine());
+        System.out.println(minPathSum(grid));
+    }
+
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
     }
 }
 ```
 
-Both print `7` then `12`. The cheapest route through the first grid is `1→3→1→1→1 = 7`; the second is `1→2→3→6 = 12`. Notice it's *byte-for-byte* the unique-paths structure with `+` swapped for `grid[i][j] + min` and a cumulative boundary — the clearest sign you've internalised the pattern, not the problem.
+The cheapest route through `[[1, 3, 1], [1, 5, 1], [4, 2, 1]]` is `1→3→1→1→1 = 7`; through `[[1, 2, 3], [4, 5, 6]]` it is `1→2→3→6 = 12`. Notice it's *byte-for-byte* the unique-paths structure with `+` swapped for `grid[i][j] + min` and a cumulative boundary — the clearest sign you've internalised the pattern, not the problem.
+
+</details>
 
 ## Reflect & Connect
 

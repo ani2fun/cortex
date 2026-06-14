@@ -17,6 +17,8 @@ In a garbage-collected language this is the GC's job — it won't reclaim an obj
 Hazard pointers in miniature: a reader publishes the node it holds; `retire` frees a node only if it isn't hazarded, else defers it for a later `scan`. (Single-threaded simulation for determinism; real implementations run this across threads with atomic slots.)
 
 ```python run viz=array
+import ast
+
 class Node:
     def __init__(self, value): self.value = value; self.freed = False
 
@@ -38,13 +40,14 @@ class Reclaimer:
             else: self._free(n)
         self.retired = keep
 
+val = ast.literal_eval(input())
 r = Reclaimer()
-x = Node(42)
+x = Node(val)
 r.publish(x)                                               # a reader is holding x
-print(r.retire(x), x.freed)                                # deferred False  (can't free a hazarded node)
+print(r.retire(x), "true" if x.freed else "false")        # deferred false  (can't free a hazarded node)
 r.clear(x)                                                 # reader finishes
 r.scan()
-print(x.freed)                                             # True  (now safe to free)
+print("true" if x.freed else "false")                      # true  (now safe to free)
 ```
 
 ```java run viz=array
@@ -65,8 +68,10 @@ public class Main {
         }
     }
     public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int val = sc.nextInt();
         Reclaimer r = new Reclaimer();
-        Node x = new Node(42);
+        Node x = new Node(val);
         r.publish(x);
         System.out.println(r.retire(x) + " " + x.freed);   // deferred false
         r.clear(x); r.scan();
@@ -75,7 +80,19 @@ public class Main {
 }
 ```
 
-Both print `deferred False`/`deferred false` then `True`/`true`. While a reader's hazard pointer references `x`, `retire` *refuses* to free it and queues it; once the reader clears its hazard and a later `scan` runs, the node is finally reclaimed. The node never gets freed out from under a live reader.
+```testcases
+{
+  "args": [
+    { "id": "val", "label": "node value", "type": "number", "placeholder": "42" }
+  ],
+  "cases": [
+    { "args": { "val": "42" }, "expected": "deferred false\ntrue" },
+    { "args": { "val": "7"  }, "expected": "deferred false\ntrue" }
+  ]
+}
+```
+
+While a reader's hazard pointer references `x`, `retire` *refuses* to free it and queues it; once the reader clears its hazard and a later `scan` runs, the node is finally reclaimed. The node never gets freed out from under a live reader.
 
 ## How It Works
 
@@ -153,17 +170,17 @@ class RCU:
     def synchronize(self):                                 # grace period: snapshot the readers we must wait for
         return set(self.active)
 
+def can_free(grace, active):
+    # Your code goes here
+    return False
+
 rcu = RCU()
 a = rcu.read_lock()                                        # reader A enters (might hold the old node)
 grace = rcu.synchronize()                                  # updater unlinks, then waits for {A} to exit
 b = rcu.read_lock()                                        # reader B enters AFTER the unlink -> can't see old node
-
-def can_free():
-    return grace.isdisjoint(rcu.active)                    # safe once every snapshot-reader has exited
-
-print("A in, B in:", can_free())                           # False  (A from the snapshot is still active)
+print("true" if can_free(grace, rcu.active) else "false")  # false  (A from the snapshot is still active)
 rcu.read_unlock(a)                                         # A exits -> grace period complete
-print("A out, B in:", can_free())                          # True   (B was not in the snapshot, so it's irrelevant)
+print("true" if can_free(grace, rcu.active) else "false")  # true   (B was not in the snapshot, so it's irrelevant)
 ```
 
 ```java run viz=array
@@ -175,19 +192,84 @@ public class Main {
         void readUnlock(int id) { active.remove(id); }
         Set<Integer> synchronize() { return new HashSet<>(active); }   // grace-period snapshot
     }
+    static boolean canFree(Set<Integer> grace, Set<Integer> active) {
+        // Your code goes here
+        return false;
+    }
     public static void main(String[] args) {
         RCU rcu = new RCU();
         int a = rcu.readLock();                            // reader A enters
         Set<Integer> grace = rcu.synchronize();            // wait for {A}
         int b = rcu.readLock();                            // reader B enters AFTER unlink
-        System.out.println("A in, B in: " + Collections.disjoint(grace, rcu.active));   // false
+        System.out.println(canFree(grace, rcu.active));    // false
         rcu.readUnlock(a);                                 // A exits
-        System.out.println("A out, B in: " + Collections.disjoint(grace, rcu.active));  // true
+        System.out.println(canFree(grace, rcu.active));    // true
     }
 }
 ```
 
-Both print `False`/`false` then `True`/`true`. While reader `A` (captured in the grace-period snapshot) is active, the free must wait. The moment `A` exits, the grace period is complete and freeing is safe — *even though reader `B` is still running*, because `B` entered after the unlink and so could never have obtained the old node's pointer. That's the elegance of RCU: readers pay almost nothing, and the updater only ever waits for the bounded set of readers that were already in flight.
+```testcases
+{
+  "args": [],
+  "cases": [
+    { "args": {}, "expected": "false\ntrue" }
+  ]
+}
+```
+
+<details>
+<summary><strong>Editorial</strong></summary>
+
+The grace period is complete when every reader captured in the `synchronize()` snapshot has exited. A reader that entered *after* the unlink was never in the snapshot and so can never have obtained the old node's pointer — it doesn't delay the free. The check is simply whether the snapshot set and the current active set are disjoint.
+
+```python solution time=O(k) space=O(1)
+class RCU:
+    def __init__(self): self.active = {}; self.next_id = 0
+    def read_lock(self):
+        rid = self.next_id; self.next_id += 1; self.active[rid] = True; return rid
+    def read_unlock(self, rid): self.active.pop(rid, None)
+    def synchronize(self):
+        return set(self.active)
+
+def can_free(grace, active):
+    return grace.isdisjoint(active)                        # safe once every snapshot-reader has exited
+
+rcu = RCU()
+a = rcu.read_lock()
+grace = rcu.synchronize()
+b = rcu.read_lock()
+print("true" if can_free(grace, rcu.active) else "false")
+rcu.read_unlock(a)
+print("true" if can_free(grace, rcu.active) else "false")
+```
+
+```java solution
+import java.util.*;
+public class Main {
+    static class RCU {
+        Set<Integer> active = new HashSet<>(); int nextId = 0;
+        int readLock() { int id = nextId++; active.add(id); return id; }
+        void readUnlock(int id) { active.remove(id); }
+        Set<Integer> synchronize() { return new HashSet<>(active); }
+    }
+    static boolean canFree(Set<Integer> grace, Set<Integer> active) {
+        return Collections.disjoint(grace, active);        // true when no snapshot reader is still running
+    }
+    public static void main(String[] args) {
+        RCU rcu = new RCU();
+        int a = rcu.readLock();
+        Set<Integer> grace = rcu.synchronize();
+        int b = rcu.readLock();
+        System.out.println(canFree(grace, rcu.active));
+        rcu.readUnlock(a);
+        System.out.println(canFree(grace, rcu.active));
+    }
+}
+```
+
+</details>
+
+While reader `A` (captured in the grace-period snapshot) is active, the free must wait. The moment `A` exits, the grace period is complete and freeing is safe — *even though reader `B` is still running*, because `B` entered after the unlink and so could never have obtained the old node's pointer. That's the elegance of RCU: readers pay almost nothing, and the updater only ever waits for the bounded set of readers that were already in flight.
 
 ## Reflect & Connect
 

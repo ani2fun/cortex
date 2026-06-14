@@ -4,17 +4,19 @@ summary: "Sorted array, integer k. Return the count of elements ≤ k."
 prereqs:
   - 10-pattern-upper-bound/01-pattern
 difficulty: easy
+kind: problem
+topics: [upper-bound, searching]
 ---
 
 # Limit Count
 
-## The Problem
+## Problem Statement
 
-Sorted array, integer `k`. Return the count of elements `≤ k`.
+Sorted array `arr` and integer `k`. Return the count of elements `≤ k`.
 
 ```
 Input:  arr = [1, 3, 5, 8, 9], k = 7
-Output: 3   (elements 1, 3, 5)
+Output: 3
 
 Input:  arr = [1, 2, 2, 2, 3, 4], k = 3
 Output: 5
@@ -23,6 +25,96 @@ Input:  arr = [1, 2, 2, 2, 3, 4], k = 8
 Output: 6
 ```
 
+## Examples
+
+**Example 1**
+```
+Input:  arr = [1, 3, 5, 8, 9], k = 7
+Output: 3
+Explanation: Elements 1, 3, 5 are ≤ 7; elements 8 and 9 are not.
+```
+
+**Example 2**
+```
+Input:  arr = [1, 2, 2, 2, 3, 4], k = 3
+Output: 5
+Explanation: All elements up to and including the three 2s and the 3 qualify; only 4 does not.
+```
+
+## Constraints
+
+- `1 ≤ arr.length ≤ 10^5`
+- `-10^9 ≤ arr[i] ≤ 10^9`, array is sorted in non-decreasing order
+- `-10^9 ≤ k ≤ 10^9`
+
+```python run viz=array
+import ast
+from typing import List
+
+class Solution:
+    def limit_count(self, arr: List[int], k: int) -> int:
+        # Your code goes here — upper_bound(arr, k) gives the first index
+        # strictly greater than k, which equals the count of elements ≤ k.
+        return 0
+
+arr = ast.literal_eval(input())
+k = int(input())
+print(Solution().limit_count(arr, k))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int limitCount(int[] arr, int k) {
+            // Your code goes here — upper_bound(arr, k) gives the first index
+            // strictly greater than k, which equals the count of elements ≤ k.
+            return 0;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().limitCount(arr, k));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[1, 3, 5, 8, 9]" },
+    { "id": "k", "label": "k", "type": "int", "placeholder": "7" }
+  ],
+  "cases": [
+    { "args": { "arr": "[1, 3, 5, 8, 9]", "k": "7" }, "expected": "3" },
+    { "args": { "arr": "[1, 2, 2, 2, 3, 4]", "k": "3" }, "expected": "5" },
+    { "args": { "arr": "[1, 2, 2, 2, 3, 4]", "k": "8" }, "expected": "6" },
+    { "args": { "arr": "[5]", "k": "5" }, "expected": "1" },
+    { "args": { "arr": "[5]", "k": "3" }, "expected": "0" },
+    { "args": { "arr": "[1, 2, 2, 2, 3, 4]", "k": "0" }, "expected": "0" }
+  ]
+}
+```
+
+<details>
+<summary><h2>Intuition</h2></summary>
+
+The count of elements `≤ k` in a sorted array is exactly the index of the first element `> k` — because everything before that index satisfies the condition. Upper bound computes that boundary index in `O(log n)` by searching with `arr[mid] <= target` to step past equal elements. No loop over elements needed; the count falls out of the search position itself.
+
+</details>
 <details>
 <summary><h2>The Solution</h2></summary>
 
@@ -30,7 +122,8 @@ Output: 6
 The count of elements `≤ k` is exactly `upper_bound(arr, k)` — that's the first index strictly greater than `k`, which equals the number of elements `≤ k`.
 
 
-```python run viz=array
+```python solution time=O(log n) space=O(1)
+import ast
 from typing import List
 
 class Solution:
@@ -74,20 +167,12 @@ class Solution:
         return self.upper_bound(arr, k)
 
 
-# Examples from the problem statement
-print(Solution().limit_count([1, 3, 5, 8, 9], 7))       # 3
-print(Solution().limit_count([1, 2, 2, 2, 3, 4], 3))    # 5
-print(Solution().limit_count([1, 2, 2, 2, 3, 4], 8))    # 6
-
-# Edge cases
-print(Solution().limit_count([], 5))                     # 0 — empty array
-print(Solution().limit_count([5], 5))                    # 1 — single element equal to k
-print(Solution().limit_count([5], 3))                    # 0 — single element greater than k
-print(Solution().limit_count([5], 7))                    # 1 — single element less than k
-print(Solution().limit_count([1, 2, 2, 2, 3, 4], 0))    # 0 — none qualify
+arr = ast.literal_eval(input())
+k = int(input())
+print(Solution().limit_count(arr, k))
 ```
 
-```java run viz=array
+```java solution
 import java.util.*;
 
 public class Main {
@@ -140,17 +225,19 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().limitCount(new int[]{1, 3, 5, 8, 9}, 7));       // 3
-        System.out.println(new Solution().limitCount(new int[]{1, 2, 2, 2, 3, 4}, 3));    // 5
-        System.out.println(new Solution().limitCount(new int[]{1, 2, 2, 2, 3, 4}, 8));    // 6
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().limitCount(arr, k));
+    }
 
-        // Edge cases
-        System.out.println(new Solution().limitCount(new int[]{}, 5));                     // 0 — empty array
-        System.out.println(new Solution().limitCount(new int[]{5}, 5));                    // 1 — single element equal to k
-        System.out.println(new Solution().limitCount(new int[]{5}, 3));                    // 0 — single element greater than k
-        System.out.println(new Solution().limitCount(new int[]{5}, 7));                    // 1 — single element less than k
-        System.out.println(new Solution().limitCount(new int[]{1, 2, 2, 2, 3, 4}, 0));    // 0 — none qualify
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

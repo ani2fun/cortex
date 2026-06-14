@@ -16,6 +16,8 @@ The transferable skill isn't four algorithms — it's *recognising the shape* an
 **Coin Change** ([LeetCode 322](https://leetcode.com/problems/coin-change/)) — the minimum number of coins to make `amount`, with unlimited copies of each coin. Coins are reusable, so this is *unbounded* knapsack (the ascending capacity sweep from last lesson), and the aggregator is **min**: `dp[a] = 1 + min(dp[a - c])` over coins `c` that fit.
 
 ```python run viz=array
+import ast
+
 def coin_change(coins, amount):
     INF = float('inf')
     dp = [0] + [INF] * amount                     # dp[a] = fewest coins to make a; dp[0] = 0
@@ -25,12 +27,14 @@ def coin_change(coins, amount):
                 dp[a] = dp[a - c] + 1             # take one coin c, add to best for (a - c)
     return dp[amount] if dp[amount] != INF else -1
 
-print(coin_change([1, 2, 5], 11))   # 3   (5 + 5 + 1)
-print(coin_change([2], 3))          # -1  (odd amount, only even coins)
+coins = ast.literal_eval(input())
+amount = int(input())
+print(coin_change(coins, amount))
 ```
 
 ```java run viz=array
 import java.util.*;
+
 public class Main {
     static int coinChange(int[] coins, int amount) {
         int INF = Integer.MAX_VALUE;
@@ -42,10 +46,37 @@ public class Main {
                 if (c <= a && dp[a - c] != INF) dp[a] = Math.min(dp[a], dp[a - c] + 1);
         return dp[amount] == INF ? -1 : dp[amount];
     }
+
     public static void main(String[] args) {
-        System.out.println(coinChange(new int[]{1, 2, 5}, 11));   // 3
-        System.out.println(coinChange(new int[]{2}, 3));          // -1
+        Scanner sc = new Scanner(System.in);
+        int[] coins = parseIntArray(sc.nextLine());
+        int amount = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(coinChange(coins, amount));
     }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "coins", "label": "coins", "type": "int[]", "placeholder": "[1, 2, 5]" },
+    { "id": "amount", "label": "amount", "type": "int", "placeholder": "11" }
+  ],
+  "cases": [
+    { "args": { "coins": "[1, 2, 5]", "amount": "11" }, "expected": "3" },
+    { "args": { "coins": "[2]", "amount": "3" }, "expected": "-1" },
+    { "args": { "coins": "[1]", "amount": "0" }, "expected": "0" },
+    { "args": { "coins": "[1, 5, 10, 25]", "amount": "41" }, "expected": "4" }
+  ]
 }
 ```
 
@@ -117,6 +148,67 @@ Why the loop order decides this: with **coins outer**, by the time you start usi
 **Rod Cutting** (CLRS §15.1) — given prices for each length, cut a length-`n` rod to maximise total revenue. The "items" are cut-lengths, reusable (you can make many length-2 pieces), so it's unbounded knapsack with a **max** aggregator: `dp[L] = max(price[cut] + dp[L - cut])` over every first-cut length.
 
 ```python run viz=array
+import ast
+
+def rod_cutting(prices, n):
+    # Your code goes here
+    return 0
+
+prices = ast.literal_eval(input())
+n = int(input())
+print(rod_cutting(prices, n))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static int rodCutting(int[] prices, int n) {
+        // Your code goes here
+        return 0;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] prices = parseIntArray(sc.nextLine());
+        int n = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(rodCutting(prices, n));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "prices", "label": "prices", "type": "int[]", "placeholder": "[1, 5, 8, 9, 10, 17, 17, 20]" },
+    { "id": "n", "label": "n", "type": "int", "placeholder": "8" }
+  ],
+  "cases": [
+    { "args": { "prices": "[1, 5, 8, 9, 10, 17, 17, 20]", "n": "8" }, "expected": "22" },
+    { "args": { "prices": "[1, 5, 8, 9, 10, 17, 17, 20]", "n": "4" }, "expected": "10" },
+    { "args": { "prices": "[3, 5, 8, 9]", "n": "3" }, "expected": "9" },
+    { "args": { "prices": "[1]", "n": "1" }, "expected": "1" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Both languages print `22` then `10`. The length-8 rod earns most as a 2 + 6 split (`5 + 17`), beating selling it whole for `20`; length-4 is best as 2 + 2 (`5 + 5 = 10`), beating `9` whole. It's coin change's twin — `max` instead of `min`, "revenue" instead of "coin count" — which is exactly the point: you wrote it without learning a new algorithm.
+
+```python solution time=O(n²) space=O(n)
+import ast
+
 def rod_cutting(prices, n):                       # prices[i] = price of a length-(i+1) piece
     dp = [0] * (n + 1)                            # dp[L] = max revenue from a length-L rod
     for L in range(1, n + 1):
@@ -124,12 +216,14 @@ def rod_cutting(prices, n):                       # prices[i] = price of a lengt
             dp[L] = max(dp[L], prices[cut - 1] + dp[L - cut])   # first piece = cut, rest optimal
     return dp[n]
 
-prices = [1, 5, 8, 9, 10, 17, 17, 20]             # length 1..8
-print(rod_cutting(prices, 8))   # 22   (cut 2 + 6 -> 5 + 17)
-print(rod_cutting(prices, 4))   # 10   (cut 2 + 2 -> 5 + 5)
+prices = ast.literal_eval(input())
+n = int(input())
+print(rod_cutting(prices, n))
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
     static int rodCutting(int[] prices, int n) {
         int[] dp = new int[n + 1];
@@ -138,15 +232,26 @@ public class Main {
                 dp[L] = Math.max(dp[L], prices[cut - 1] + dp[L - cut]);
         return dp[n];
     }
+
     public static void main(String[] args) {
-        int[] prices = {1, 5, 8, 9, 10, 17, 17, 20};
-        System.out.println(rodCutting(prices, 8));   // 22
-        System.out.println(rodCutting(prices, 4));   // 10
+        Scanner sc = new Scanner(System.in);
+        int[] prices = parseIntArray(sc.nextLine());
+        int n = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(rodCutting(prices, n));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```
 
-Both print `22` then `10`. The length-8 rod earns most as a 2 + 6 split (`5 + 17`), beating selling it whole for `20`; length-4 is best as 2 + 2 (`5 + 5 = 10`), beating `9` whole. It's coin change's twin — `max` instead of `min`, "revenue" instead of "coin count" — which is exactly the point: you wrote it without learning a new algorithm.
+</details>
 
 ## Reflect & Connect
 

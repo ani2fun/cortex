@@ -4,6 +4,8 @@ summary: "Given an array of non-negative integers, partition it into two subsets
 prereqs:
   - 17-pattern-subset-sum/01-pattern
 difficulty: hard
+kind: problem
+topics: [subset-sum, dynamic-programming]
 ---
 
 # Sets With Smallest Discrepancy
@@ -21,6 +23,93 @@ Output: 1                          [5, 3] (sum 8) and [1, 2, 4] (sum 7) → diff
 
 Input:  arr = [1, 1]
 Output: 0                          Both [1] subsets → diff 0
+```
+
+---
+
+## Examples
+
+**Example 1**
+```
+Input:  arr = [1, 5, 3, 10]
+Output: 1
+Explanation: [1, 5, 3] sums to 9 and [10] sums to 10; |9 − 10| = 1.
+```
+
+**Example 2**
+```
+Input:  arr = [1, 2, 3, 4, 5]
+Output: 1
+Explanation: [5, 3] sums to 8 and [1, 2, 4] sums to 7; |8 − 7| = 1.
+```
+
+**Example 3**
+```
+Input:  arr = [1, 1]
+Output: 0
+Explanation: Both subsets get one element summing to 1; |1 − 1| = 0.
+```
+
+## Constraints
+
+- `1 ≤ arr.length ≤ 200`
+- `0 ≤ arr[i] ≤ 100`
+
+```python run viz=graph viz-root=dp
+import ast
+from typing import List
+
+class Solution:
+    def sets_with_smallest_discrepancy(self, arr: List[int]) -> int:
+        # Your code goes here
+        return 0
+
+arr = ast.literal_eval(input())
+print(Solution().sets_with_smallest_discrepancy(arr))
+```
+
+```java run viz=graph viz-root=dp
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int setsWithSmallestDiscrepancy(int[] arr) {
+            // Your code goes here
+            return 0;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        System.out.println(new Solution().setsWithSmallestDiscrepancy(arr));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[1, 5, 3, 10]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[1, 5, 3, 10]" }, "expected": "1" },
+    { "args": { "arr": "[1, 2, 3, 4, 5]" }, "expected": "1" },
+    { "args": { "arr": "[1, 1]" }, "expected": "0" },
+    { "args": { "arr": "[5, 5]" }, "expected": "0" },
+    { "args": { "arr": "[1, 2, 3]" }, "expected": "0" },
+    { "args": { "arr": "[10, 1, 1, 1]" }, "expected": "7" }
+  ]
+}
 ```
 
 <details>
@@ -68,7 +157,8 @@ Because we want the *largest* feasible `s ≤ total / 2`. Scanning down hits it 
 
 ### The Solution
 
-```python run viz=graph viz-root=dp
+```python solution time=O(n×total) space=O(n×total)
+import ast
 from typing import List
 import sys
 
@@ -118,19 +208,11 @@ class Solution:
         return min_diff
 
 
-# Examples from the problem statement
-print(Solution().sets_with_smallest_discrepancy([1, 5, 3, 10]))   # 1
-print(Solution().sets_with_smallest_discrepancy([1, 2, 3, 4, 5])) # 1
-print(Solution().sets_with_smallest_discrepancy([1, 1]))           # 0
-
-# Edge cases
-print(Solution().sets_with_smallest_discrepancy([1]))              # 1  — single element
-print(Solution().sets_with_smallest_discrepancy([5, 5]))           # 0  — two equal
-print(Solution().sets_with_smallest_discrepancy([1, 2, 3]))        # 0  — [3] vs [1,2]
-print(Solution().sets_with_smallest_discrepancy([10, 1, 1, 1]))    # 7  — 13 total
+arr = ast.literal_eval(input())
+print(Solution().sets_with_smallest_discrepancy(arr))
 ```
 
-```java run viz=graph viz-root=dp
+```java solution
 import java.util.*;
 
 public class Main {
@@ -191,16 +273,18 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().setsWithSmallestDiscrepancy(new int[]{1, 5, 3, 10}));   // 1
-        System.out.println(new Solution().setsWithSmallestDiscrepancy(new int[]{1, 2, 3, 4, 5})); // 1
-        System.out.println(new Solution().setsWithSmallestDiscrepancy(new int[]{1, 1}));           // 0
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        System.out.println(new Solution().setsWithSmallestDiscrepancy(arr));
+    }
 
-        // Edge cases
-        System.out.println(new Solution().setsWithSmallestDiscrepancy(new int[]{1}));              // 1
-        System.out.println(new Solution().setsWithSmallestDiscrepancy(new int[]{5, 5}));           // 0
-        System.out.println(new Solution().setsWithSmallestDiscrepancy(new int[]{1, 2, 3}));        // 0
-        System.out.println(new Solution().setsWithSmallestDiscrepancy(new int[]{10, 1, 1, 1}));    // 7
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

@@ -18,6 +18,7 @@ You can't measure cache effects with a wall clock reliably, but you can *count m
 
 ```python run viz=array
 from collections import OrderedDict
+
 def count_misses(access_order, line_size, capacity_lines):   # fully-associative LRU cache; count misses
     cache = OrderedDict(); misses = 0
     for addr in access_order:
@@ -29,7 +30,9 @@ def count_misses(access_order, line_size, capacity_lines):   # fully-associative
             if len(cache) > capacity_lines: cache.popitem(last=False)  # evict LRU
     return misses
 
-N, LINE, CAP = 8, 8, 4                                        # 8x8 matrix, 8 elems/line, cache holds 4 lines
+N = int(input())     # matrix side length (e.g. 8)
+LINE = int(input())  # elements per cache line (e.g. 8)
+CAP = int(input())   # cache capacity in lines (e.g. 4)
 row_major = [i * N + j for i in range(N) for j in range(N)]  # walk each row fully (contiguous)
 col_major = [i * N + j for j in range(N) for i in range(N)]  # walk each column (stride N)
 r = count_misses(row_major, LINE, CAP)
@@ -56,8 +59,11 @@ public class Main {
         }
         return misses;
     }
-    public static void main(String[] x) {
-        int N = 8, LINE = 8, CAP = 4;
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int N = Integer.parseInt(sc.nextLine().trim());
+        int LINE = Integer.parseInt(sc.nextLine().trim());
+        int CAP = Integer.parseInt(sc.nextLine().trim());
         int[] rowMajor = new int[N * N], colMajor = new int[N * N];
         int r = 0; for (int i = 0; i < N; i++) for (int j = 0; j < N; j++) rowMajor[r++] = i * N + j;
         int c = 0; for (int j = 0; j < N; j++) for (int i = 0; i < N; i++) colMajor[c++] = i * N + j;
@@ -69,7 +75,21 @@ public class Main {
 }
 ```
 
-Both print `row-major misses: 8`, `column-major misses: 64`, `ratio: 8x`. Row-major touches all 8 elements of a line before moving on, so it pays one miss per line — 8 lines, 8 misses, and the other 56 reads are free hits. Column-major touches one element per line and strides to the next line every step; since a full column spans all 8 lines and the cache holds only 4, every access is a miss — 64 of them. The 8× ratio is exactly the number of elements per cache line: that's how much work each fetch does for you when you use the whole line, and how much you throw away when you don't.
+```testcases
+{
+  "args": [
+    { "id": "N",    "label": "N (matrix side)", "type": "number", "placeholder": "8" },
+    { "id": "LINE", "label": "LINE (elems/line)", "type": "number", "placeholder": "8" },
+    { "id": "CAP",  "label": "CAP (cache lines)", "type": "number", "placeholder": "4" }
+  ],
+  "cases": [
+    { "args": { "N": "8", "LINE": "8", "CAP": "4" }, "expected": "row-major misses:    8\ncolumn-major misses: 64\nratio: 8x  (= elements per cache line)" },
+    { "args": { "N": "4", "LINE": "4", "CAP": "2" }, "expected": "row-major misses:    4\ncolumn-major misses: 16\nratio: 4x  (= elements per cache line)" }
+  ]
+}
+```
+
+`row-major misses: 8`, `column-major misses: 64`, `ratio: 8x`. Row-major touches all 8 elements of a line before moving on, so it pays one miss per line — 8 lines, 8 misses, and the other 56 reads are free hits. Column-major touches one element per line and strides to the next line every step; since a full column spans all 8 lines and the cache holds only 4, every access is a miss — 64 of them. The 8× ratio is exactly the number of elements per cache line: that's how much work each fetch does for you when you use the whole line, and how much you throw away when you don't.
 
 ## How It Works
 
@@ -134,37 +154,32 @@ The "arrays beat linked lists by 10×" claim is a cache claim, not an algorithm 
 
 ```python run viz=array
 from collections import OrderedDict
-def count_misses(order, line_size, cap):
-    cache = OrderedDict(); misses = 0
-    for addr in order:
-        line = addr // line_size
-        if line in cache: cache.move_to_end(line)
-        else:
-            misses += 1; cache[line] = True
-            if len(cache) > cap: cache.popitem(last=False)
-    return misses
 
-n, LINE, CAP = 64, 8, 8
-contiguous = list(range(n))                  # array: addresses 0..63 -> 8 lines
-scattered  = [i * LINE for i in range(n)]    # linked-list-style: each node its own line -> 64 lines
-print("contiguous (array) misses:     ", count_misses(contiguous, LINE, CAP))
-print("scattered (linked-list) misses:", count_misses(scattered, LINE, CAP))
+def count_misses(order, line_size, cap):
+    # Your code goes here
+    return 0
+
+n = int(input())
+LINE = int(input())
+CAP = int(input())
+contiguous = list(range(n))                  # array: addresses 0..n-1
+scattered  = [i * LINE for i in range(n)]    # linked-list-style: each node its own line
+print(f"contiguous (array) misses:     {count_misses(contiguous, LINE, CAP)}")
+print(f"scattered (linked-list) misses: {count_misses(scattered, LINE, CAP)}")
 ```
 
 ```java run viz=array
 import java.util.*;
 public class Main {
     static int countMisses(int[] order, int lineSize, int cap) {
-        LinkedList<Integer> cache = new LinkedList<>(); int misses = 0;
-        for (int addr : order) {
-            int line = addr / lineSize;
-            if (cache.remove((Integer) line)) cache.addLast(line);
-            else { misses++; cache.addLast(line); if (cache.size() > cap) cache.removeFirst(); }
-        }
-        return misses;
+        // Your code goes here
+        return 0;
     }
-    public static void main(String[] x) {
-        int n = 64, LINE = 8, CAP = 8;
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = Integer.parseInt(sc.nextLine().trim());
+        int LINE = Integer.parseInt(sc.nextLine().trim());
+        int CAP = Integer.parseInt(sc.nextLine().trim());
         int[] contiguous = new int[n], scattered = new int[n];
         for (int i = 0; i < n; i++) { contiguous[i] = i; scattered[i] = i * LINE; }
         System.out.println("contiguous (array) misses:     " + countMisses(contiguous, LINE, CAP));
@@ -173,7 +188,75 @@ public class Main {
 }
 ```
 
-Both print `contiguous (array) misses: 8` and `scattered (linked-list) misses: 64`. The array sum pays `n / line_size = 8` misses — one per line, then 7 free hits each. The linked-list sum pays `n = 64` — every node is a fresh line, and the prefetcher can't help because the next address isn't a predictable stride, it's wherever the allocator happened to put the node. That 8× (here equal to the line size) is the standing tax on pointer-chasing, and on a real machine the gap is often larger still, because each list miss is a full ~200-cycle DRAM round-trip while the array's misses are hidden by prefetch. Same `O(n)` time, same `O(n)` space — an order of magnitude apart in wall-clock, decided entirely by layout.
+```testcases
+{
+  "args": [
+    { "id": "n",    "label": "n (elements)", "type": "number", "placeholder": "64" },
+    { "id": "LINE", "label": "LINE (elems/line)", "type": "number", "placeholder": "8" },
+    { "id": "CAP",  "label": "CAP (cache lines)", "type": "number", "placeholder": "8" }
+  ],
+  "cases": [
+    { "args": { "n": "64", "LINE": "8", "CAP": "8" }, "expected": "contiguous (array) misses:     8\nscattered (linked-list) misses: 64" },
+    { "args": { "n": "16", "LINE": "4", "CAP": "4" }, "expected": "contiguous (array) misses:     4\nscattered (linked-list) misses: 16" }
+  ]
+}
+```
+
+`contiguous (array) misses: 8` and `scattered (linked-list) misses: 64`. The array pays `n / line_size = 8` misses — one per line, then `LINE-1` free hits each. The linked-list pays `n = 64` — every node is a fresh line, and the prefetcher can't help because the next address isn't a predictable stride. That 8× is the standing tax on pointer-chasing. Same `O(n)` time, same `O(n)` space — an order of magnitude apart in wall-clock, decided entirely by layout.
+
+<details>
+<summary><strong>Editorial</strong></summary>
+
+Simulate a fully-associative LRU cache: on each address access, compute its line number (`addr // line_size`). If the line is already cached, refresh its LRU position (hit). Otherwise count a miss, load the line, and if the cache is over capacity evict the least-recently-used entry. The contiguous access pattern hits `n/LINE` distinct lines; the scattered pattern hits `n` distinct lines (one per element).
+
+```python solution time=O(n) space=O(cap)
+from collections import OrderedDict
+
+def count_misses(order, line_size, cap):
+    cache = OrderedDict(); misses = 0
+    for addr in order:
+        line = addr // line_size
+        if line in cache: cache.move_to_end(line)       # hit -> refresh LRU
+        else:
+            misses += 1; cache[line] = True              # miss -> load the line
+            if len(cache) > cap: cache.popitem(last=False)  # evict LRU
+    return misses
+
+n = int(input())
+LINE = int(input())
+CAP = int(input())
+contiguous = list(range(n))
+scattered  = [i * LINE for i in range(n)]
+print(f"contiguous (array) misses:     {count_misses(contiguous, LINE, CAP)}")
+print(f"scattered (linked-list) misses: {count_misses(scattered, LINE, CAP)}")
+```
+
+```java solution
+import java.util.*;
+public class Main {
+    static int countMisses(int[] order, int lineSize, int cap) {
+        LinkedList<Integer> cache = new LinkedList<>(); int misses = 0;
+        for (int addr : order) {
+            int line = addr / lineSize;
+            if (cache.remove((Integer) line)) cache.addLast(line);  // hit -> refresh LRU
+            else { misses++; cache.addLast(line); if (cache.size() > cap) cache.removeFirst(); }
+        }
+        return misses;
+    }
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = Integer.parseInt(sc.nextLine().trim());
+        int LINE = Integer.parseInt(sc.nextLine().trim());
+        int CAP = Integer.parseInt(sc.nextLine().trim());
+        int[] contiguous = new int[n], scattered = new int[n];
+        for (int i = 0; i < n; i++) { contiguous[i] = i; scattered[i] = i * LINE; }
+        System.out.println("contiguous (array) misses:     " + countMisses(contiguous, LINE, CAP));
+        System.out.println("scattered (linked-list) misses: " + countMisses(scattered, LINE, CAP));
+    }
+}
+```
+
+</details>
 
 ## Reflect & Connect
 

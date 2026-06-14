@@ -35,7 +35,9 @@ def rabin_karp(text, pattern):
             ht = ((ht - ord(text[i]) * high) * BASE + ord(text[i + m])) % MOD
     return hits
 
-print(rabin_karp("abxabcabcaby", "abcaby"))           # [6]
+text = input()
+pattern = input()
+print(rabin_karp(text, pattern))
 ```
 
 ```java run viz=array
@@ -61,8 +63,27 @@ public class Main {
         return hits;
     }
     public static void main(String[] args) {
-        System.out.println(rabinKarp("abxabcabcaby", "abcaby"));   // [6]
+        Scanner sc = new Scanner(System.in);
+        String text = sc.nextLine();
+        String pattern = sc.nextLine();
+        System.out.println(rabinKarp(text, pattern));
     }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "text", "label": "text", "type": "string", "placeholder": "abxabcabcaby" },
+    { "id": "pattern", "label": "pattern", "type": "string", "placeholder": "abcaby" }
+  ],
+  "cases": [
+    { "args": { "text": "abxabcabcaby", "pattern": "abcaby" }, "expected": "[6]" },
+    { "args": { "text": "abcabcabc", "pattern": "abc" }, "expected": "[0, 3, 6]" },
+    { "args": { "text": "aababcaab", "pattern": "aab" }, "expected": "[0, 6]" },
+    { "args": { "text": "ababababab", "pattern": "abab" }, "expected": "[0, 2, 4, 6]" },
+    { "args": { "text": "hello", "pattern": "xyz" }, "expected": "[]" }
+  ]
 }
 ```
 
@@ -130,6 +151,58 @@ Without verification you get `[0, 2]` — a **false match at index 0**, where th
 ```python run viz=array
 BASE, MOD = 256, 1_000_000_007
 def find_repeated(s, k):
+    # Your code goes here
+    return []
+
+s = input()
+k = int(input())
+xs = find_repeated(s, k)
+print('[' + ', '.join(xs) + ']')
+```
+
+```java run viz=array
+import java.util.*;
+public class Main {
+    static final long BASE = 256, MOD = 1_000_000_007L;
+    static List<String> findRepeated(String s, int k) {
+        // Your code goes here
+        return new ArrayList<>();
+    }
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String s = sc.nextLine();
+        int k = Integer.parseInt(sc.nextLine());
+        System.out.println(findRepeated(s, k));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "string", "type": "string", "placeholder": "banana" },
+    { "id": "k", "label": "k (window length)", "type": "number", "placeholder": "3" }
+  ],
+  "cases": [
+    { "args": { "s": "banana", "k": 3 }, "expected": "[ana]" },
+    { "args": { "s": "abcabcabc", "k": 3 }, "expected": "[abc, bca, cab]" },
+    { "args": { "s": "hello", "k": 2 }, "expected": "[]" },
+    { "args": { "s": "aaaa", "k": 2 }, "expected": "[aa]" },
+    { "args": { "s": "abcdef", "k": 3 }, "expected": "[]" }
+  ]
+}
+```
+
+In `"banana"`, only `"ana"` recurs (indices 1 and 3); in `"abcabcabc"`, all three length-3 windows repeat. This is the move KMP and Z can't make in one pass — *every* window's fingerprint is available at once, so "what repeats?" is a hashmap lookup, not a fresh search per candidate.
+
+<details>
+<summary><strong>Editorial</strong></summary>
+
+Roll the polynomial hash across every length-`k` window, bucketted by hash value. When a hash has been seen before, verify by comparing the actual strings; confirmed repeats go into a sorted set. Both Python and Java collect into a sorted structure — Python uses `sorted(repeated)` on a set, Java uses a `TreeSet`. The Python print uses `'[' + ', '.join(xs) + ']'` to match Java's `List<String>` output (no quotes around elements).
+
+```python solution time=O(n) space=O(n)
+BASE, MOD = 256, 1_000_000_007
+def find_repeated(s, k):
     n = len(s)
     if k > n:
         return []
@@ -147,11 +220,13 @@ def find_repeated(s, k):
             h = ((h - ord(s[i]) * high) * BASE + ord(s[i + k])) % MOD
     return sorted(repeated)
 
-print(find_repeated("banana", 3))        # ['ana']
-print(find_repeated("abcabcabc", 3))     # ['abc', 'bca', 'cab']
+s = input()
+k = int(input())
+xs = find_repeated(s, k)
+print('[' + ', '.join(xs) + ']')
 ```
 
-```java run viz=array
+```java solution
 import java.util.*;
 public class Main {
     static final long BASE = 256, MOD = 1_000_000_007L;
@@ -175,13 +250,15 @@ public class Main {
         return new ArrayList<>(repeated);
     }
     public static void main(String[] args) {
-        System.out.println(findRepeated("banana", 3));        // [ana]
-        System.out.println(findRepeated("abcabcabc", 3));     // [abc, bca, cab]
+        Scanner sc = new Scanner(System.in);
+        String s = sc.nextLine();
+        int k = Integer.parseInt(sc.nextLine());
+        System.out.println(findRepeated(s, k));
     }
 }
 ```
 
-Both print `['ana']` then `['abc', 'bca', 'cab']`. In `"banana"`, only `"ana"` recurs (indices 1 and 3); in `"abcabcabc"`, all three length-3 windows repeat. This is the move KMP and Z can't make in one pass — *every* window's fingerprint is available at once, so "what repeats?" is a hashmap lookup, not a fresh search per candidate.
+</details>
 
 ## Reflect & Connect
 

@@ -18,6 +18,7 @@ Insert values in any order; search and in-order traversal are always correct, wh
 
 ```python run viz=array
 import random
+import ast
 MAXLVL = 16
 class Node:
     def __init__(self, val, level):
@@ -60,12 +61,15 @@ class SkipList:
             out.append(x.val); x = x.forward[0]
         return out
 
+vals = ast.literal_eval(input())
+target1 = int(input())
+target2 = int(input())
 sl = SkipList(seed=1)
-for v in [3, 6, 7, 9, 12, 19, 17, 26, 21, 25]:
+for v in vals:
     sl.insert(v)
-print(sl.search(19))                                  # True
-print(sl.search(20))                                  # False
-print(sl.to_list() == sorted([3,6,7,9,12,19,17,26,21,25]))   # True — always sorted
+print("true" if sl.search(target1) else "false")
+print("true" if sl.search(target2) else "false")
+print("true" if sl.to_list() == sorted(vals) else "false")
 ```
 
 ```java run viz=array
@@ -108,15 +112,34 @@ public class Main {
         }
     }
     public static void main(String[] args) {
-        int[] vals = {3, 6, 7, 9, 12, 19, 17, 26, 21, 25};
+        Scanner sc = new Scanner(System.in);
+        String line = sc.nextLine().replaceAll("[^0-9,\\-]", "");
+        int target1 = Integer.parseInt(sc.nextLine().trim());
+        int target2 = Integer.parseInt(sc.nextLine().trim());
+        List<Integer> vals = new ArrayList<>();
+        for (String t : line.split(",")) if (!t.isEmpty()) vals.add(Integer.parseInt(t));
         SkipList sl = new SkipList(1);
         for (int v : vals) sl.insert(v);
-        System.out.println(sl.search(19));            // true
-        System.out.println(sl.search(20));            // false
-        int[] sorted = vals.clone(); Arrays.sort(sorted);
-        List<Integer> s = new ArrayList<>(); for (int v : sorted) s.add(v);
-        System.out.println(sl.toList().equals(s));    // true
+        List<Integer> sorted = new ArrayList<>(vals); Collections.sort(sorted);
+        System.out.println(sl.search(target1));
+        System.out.println(sl.search(target2));
+        System.out.println(sl.toList().equals(sorted));
     }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "vals", "label": "values", "type": "array", "placeholder": "[3, 6, 7, 9, 12, 19, 17, 26, 21, 25]" },
+    { "id": "target1", "label": "search target 1", "type": "number", "placeholder": "19" },
+    { "id": "target2", "label": "search target 2", "type": "number", "placeholder": "20" }
+  ],
+  "cases": [
+    { "args": { "vals": "[3, 6, 7, 9, 12, 19, 17, 26, 21, 25]", "target1": "19", "target2": "20" }, "expected": "true\nfalse\ntrue" },
+    { "args": { "vals": "[5]", "target1": "5", "target2": "1" }, "expected": "true\nfalse\ntrue" },
+    { "args": { "vals": "[1, 2, 3, 4, 5]", "target1": "3", "target2": "6" }, "expected": "true\nfalse\ntrue" }
+  ]
 }
 ```
 
@@ -206,6 +229,101 @@ With `p = ½` the search takes just **2** comparisons; with `p = 0` it takes **6
 
 ```python run viz=array
 import random
+import ast
+MAXLVL = 16
+class Node:
+    def __init__(self, val, level):
+        self.val = val; self.forward = [None] * (level + 1)
+class SkipList:
+    def __init__(self, seed=None):
+        self.head = Node(None, MAXLVL); self.level = 0; self.rng = random.Random(seed)
+    def _random_level(self):
+        lvl = 0
+        while lvl < MAXLVL and self.rng.random() < 0.5: lvl += 1
+        return lvl
+    def insert(self, val):
+        update = [self.head] * (MAXLVL + 1); x = self.head
+        for i in range(self.level, -1, -1):
+            while x.forward[i] and x.forward[i].val < val: x = x.forward[i]
+            update[i] = x
+        lvl = self._random_level(); self.level = max(self.level, lvl)
+        node = Node(val, lvl)
+        for i in range(lvl + 1):
+            node.forward[i] = update[i].forward[i]; update[i].forward[i] = node
+    def range_query(self, lo, hi):
+        # Your code goes here
+        return []
+
+vals = ast.literal_eval(input())
+lo = int(input())
+hi = int(input())
+sl = SkipList(seed=2)
+for v in vals:
+    sl.insert(v)
+print(sl.range_query(lo, hi))
+```
+
+```java run viz=array
+import java.util.*;
+public class Main {
+    static final int MAXLVL = 16;
+    static class Node { int val; Node[] forward; Node(int v, int l) { val = v; forward = new Node[l + 1]; } }
+    static class SkipList {
+        Node head = new Node(Integer.MIN_VALUE, MAXLVL); int level = 0; Random rng;
+        SkipList(long seed) { rng = new Random(seed); }
+        int randomLevel() { int l = 0; while (l < MAXLVL && rng.nextDouble() < 0.5) l++; return l; }
+        void insert(int val) {
+            Node[] update = new Node[MAXLVL + 1]; Arrays.fill(update, head); Node x = head;
+            for (int i = level; i >= 0; i--) { while (x.forward[i] != null && x.forward[i].val < val) x = x.forward[i]; update[i] = x; }
+            int lvl = randomLevel(); level = Math.max(level, lvl);
+            Node node = new Node(val, lvl);
+            for (int i = 0; i <= lvl; i++) { node.forward[i] = update[i].forward[i]; update[i].forward[i] = node; }
+        }
+        List<Integer> rangeQuery(int lo, int hi) {
+            // Your code goes here
+            return new ArrayList<>();
+        }
+    }
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String line = sc.nextLine().replaceAll("[^0-9,\\-]", "");
+        int lo = Integer.parseInt(sc.nextLine().trim());
+        int hi = Integer.parseInt(sc.nextLine().trim());
+        List<Integer> vals = new ArrayList<>();
+        for (String t : line.split(",")) if (!t.isEmpty()) vals.add(Integer.parseInt(t));
+        SkipList sl = new SkipList(2);
+        for (int v : vals) sl.insert(v);
+        System.out.println(sl.rangeQuery(lo, hi));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "vals", "label": "values", "type": "array", "placeholder": "[3, 6, 7, 9, 12, 19, 17, 26, 21, 25]" },
+    { "id": "lo", "label": "lo", "type": "number", "placeholder": "7" },
+    { "id": "hi", "label": "hi", "type": "number", "placeholder": "19" }
+  ],
+  "cases": [
+    { "args": { "vals": "[3, 6, 7, 9, 12, 19, 17, 26, 21, 25]", "lo": "7", "hi": "19" }, "expected": "[7, 9, 12, 17, 19]" },
+    { "args": { "vals": "[3, 6, 7, 9, 12, 19, 17, 26, 21, 25]", "lo": "20", "hi": "30" }, "expected": "[21, 25, 26]" },
+    { "args": { "vals": "[3, 6, 7, 9, 12, 19, 17, 26, 21, 25]", "lo": "1", "hi": "5" }, "expected": "[3]" },
+    { "args": { "vals": "[3, 6, 7, 9, 12, 19, 17, 26, 21, 25]", "lo": "100", "hi": "200" }, "expected": "[]" }
+  ]
+}
+```
+
+The first two cases print `[7, 9, 12, 17, 19]` then `[21, 25, 26]`. The express lanes get you to the range's start in `O(log n)`, and the sorted level-0 chain delivers the results in order — `O(log n + k)` for `k` results. A balanced BST needs explicit in-order successor logic for the same query; the skip list's bottom lane *is* the sorted sequence.
+
+<details>
+<summary><strong>Editorial</strong></summary>
+
+Use the express lanes to land at the first node with value `≥ lo`, then walk level 0 collecting values until you exceed `hi`. The descent is `O(log n)`; the walk is `O(k)` for `k` results returned.
+
+```python solution time=O(log n + k) space=O(k)
+import random
+import ast
 MAXLVL = 16
 class Node:
     def __init__(self, val, level):
@@ -228,23 +346,25 @@ class SkipList:
             node.forward[i] = update[i].forward[i]; update[i].forward[i] = node
     def range_query(self, lo, hi):
         x = self.head
-        for i in range(self.level, -1, -1):              # express-lane descent to the first value >= lo
+        for i in range(self.level, -1, -1):              # express-lane descent to first >= lo
             while x.forward[i] and x.forward[i].val < lo:
                 x = x.forward[i]
         x = x.forward[0]
         out = []
-        while x and x.val <= hi:                          # walk level 0 within the range
+        while x and x.val <= hi:                          # walk level 0 within [lo, hi]
             out.append(x.val); x = x.forward[0]
         return out
 
+vals = ast.literal_eval(input())
+lo = int(input())
+hi = int(input())
 sl = SkipList(seed=2)
-for v in [3, 6, 7, 9, 12, 19, 17, 26, 21, 25]:
+for v in vals:
     sl.insert(v)
-print(sl.range_query(7, 19))     # [7, 9, 12, 17, 19]
-print(sl.range_query(20, 30))    # [21, 25, 26]
+print(sl.range_query(lo, hi))
 ```
 
-```java run viz=array
+```java solution
 import java.util.*;
 public class Main {
     static final int MAXLVL = 16;
@@ -270,15 +390,20 @@ public class Main {
         }
     }
     public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String line = sc.nextLine().replaceAll("[^0-9,\\-]", "");
+        int lo = Integer.parseInt(sc.nextLine().trim());
+        int hi = Integer.parseInt(sc.nextLine().trim());
+        List<Integer> vals = new ArrayList<>();
+        for (String t : line.split(",")) if (!t.isEmpty()) vals.add(Integer.parseInt(t));
         SkipList sl = new SkipList(2);
-        for (int v : new int[]{3, 6, 7, 9, 12, 19, 17, 26, 21, 25}) sl.insert(v);
-        System.out.println(sl.rangeQuery(7, 19));     // [7, 9, 12, 17, 19]
-        System.out.println(sl.rangeQuery(20, 30));    // [21, 25, 26]
+        for (int v : vals) sl.insert(v);
+        System.out.println(sl.rangeQuery(lo, hi));
     }
 }
 ```
 
-Both print `[7, 9, 12, 17, 19]` then `[21, 25, 26]`. The express lanes get you to the range's start in `O(log n)`, and the sorted level-0 chain delivers the results in order — `O(log n + k)` for `k` results. A balanced BST needs explicit in-order successor logic for the same query; the skip list's bottom lane *is* the sorted sequence.
+</details>
 
 ## Reflect & Connect
 

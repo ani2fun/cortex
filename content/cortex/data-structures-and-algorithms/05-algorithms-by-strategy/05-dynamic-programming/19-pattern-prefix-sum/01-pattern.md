@@ -16,6 +16,8 @@ In 1-D, `prefix[i]` = sum of the first `i` elements, and `sum(l..r) = prefix[r+1
 **Range Sum Query 2D** ([LeetCode 304](https://leetcode.com/problems/range-sum-query-2d-immutable/)) — build a prefix matrix once (`O(m·n)`), then answer any rectangle sum in `O(1)`. The `+1` padding row and column let every cell read its neighbours without boundary checks.
 
 ```python run viz=grid
+import ast
+
 def build_2d(matrix):
     m, n = len(matrix), len(matrix[0])
     P = [[0] * (n + 1) for _ in range(m + 1)]            # padded so row 0 / col 0 are zero
@@ -27,13 +29,15 @@ def build_2d(matrix):
 def sum_region(P, r1, c1, r2, c2):
     return P[r2+1][c2+1] - P[r1][c2+1] - P[r2+1][c1] + P[r1][c1]   # four-corner inclusion-exclusion
 
-M = [[3, 0, 1, 4, 2], [5, 6, 3, 2, 1], [1, 2, 0, 1, 5], [4, 1, 0, 1, 7], [1, 0, 3, 0, 5]]
-P = build_2d(M)
-print(sum_region(P, 2, 1, 4, 3))   # 8
-print(sum_region(P, 1, 1, 2, 2))   # 11
+matrix = ast.literal_eval(input())
+r1, c1, r2, c2 = int(input()), int(input()), int(input()), int(input())
+P = build_2d(matrix)
+print(sum_region(P, r1, c1, r2, c2))
 ```
 
 ```java run viz=grid
+import java.util.*;
+
 public class Main {
     static int[][] build2D(int[][] matrix) {
         int m = matrix.length, n = matrix[0].length;
@@ -46,16 +50,56 @@ public class Main {
     static int sumRegion(int[][] P, int r1, int c1, int r2, int c2) {
         return P[r2+1][c2+1] - P[r1][c2+1] - P[r2+1][c1] + P[r1][c1];
     }
+
+    // "[1, 2, 3], [4, 5, 6]]" → int[][] — reads a 2-D matrix from one stdin line
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
+    }
+
     public static void main(String[] args) {
-        int[][] M = {{3,0,1,4,2}, {5,6,3,2,1}, {1,2,0,1,5}, {4,1,0,1,7}, {1,0,3,0,5}};
-        int[][] P = build2D(M);
-        System.out.println(sumRegion(P, 2, 1, 4, 3));   // 8
-        System.out.println(sumRegion(P, 1, 1, 2, 2));   // 11
+        Scanner sc = new Scanner(System.in);
+        int[][] matrix = parseIntMatrix(sc.nextLine());
+        int r1 = Integer.parseInt(sc.nextLine().trim());
+        int c1 = Integer.parseInt(sc.nextLine().trim());
+        int r2 = Integer.parseInt(sc.nextLine().trim());
+        int c2 = Integer.parseInt(sc.nextLine().trim());
+        int[][] P = build2D(matrix);
+        System.out.println(sumRegion(P, r1, c1, r2, c2));
     }
 }
 ```
 
-Both print `8` then `11`. After the one-time build, each rectangle sum is four array reads — independent of the rectangle's size. Build `O(m·n)`, query `O(1)`.
+```testcases
+{
+  "args": [
+    { "id": "matrix", "label": "matrix", "type": "int[][]", "placeholder": "[[3,0,1,4,2],[5,6,3,2,1],[1,2,0,1,5],[4,1,0,1,7],[1,0,3,0,5]]" },
+    { "id": "r1", "label": "r1", "type": "int", "placeholder": "2" },
+    { "id": "c1", "label": "c1", "type": "int", "placeholder": "1" },
+    { "id": "r2", "label": "r2", "type": "int", "placeholder": "4" },
+    { "id": "c2", "label": "c2", "type": "int", "placeholder": "3" }
+  ],
+  "cases": [
+    { "args": { "matrix": "[[3,0,1,4,2],[5,6,3,2,1],[1,2,0,1,5],[4,1,0,1,7],[1,0,3,0,5]]", "r1": "2", "c1": "1", "r2": "4", "c2": "3" }, "expected": "8" },
+    { "args": { "matrix": "[[3,0,1,4,2],[5,6,3,2,1],[1,2,0,1,5],[4,1,0,1,7],[1,0,3,0,5]]", "r1": "1", "c1": "1", "r2": "2", "c2": "2" }, "expected": "11" },
+    { "args": { "matrix": "[[1,2,3],[4,5,6],[7,8,9]]", "r1": "0", "c1": "0", "r2": "2", "c2": "2" }, "expected": "45" },
+    { "args": { "matrix": "[[1,2,3],[4,5,6],[7,8,9]]", "r1": "1", "c1": "1", "r2": "1", "c2": "1" }, "expected": "5" }
+  ]
+}
+```
+
+Both print the rectangle sum. After the one-time build, each rectangle sum is four array reads — independent of the rectangle's size. Build `O(m·n)`, query `O(1)`.
 
 ## How It Works
 
@@ -123,47 +167,132 @@ Correct is `8`; the buggy three-term version returns `0` — too small by exactl
 **Subarray Sum Equals K** ([LeetCode 560](https://leetcode.com/problems/subarray-sum-equals-k/)) — count the contiguous subarrays summing to exactly `K`. The 1-D prefix sum fused with a hashmap: a subarray `(l..r)` sums to `K` iff `prefix[r] − prefix[l-1] = K`, i.e. `prefix[l-1] = prefix[r] − K`. So as you sweep, count how many earlier prefixes equal `currentPrefix − K`.
 
 ```python run viz=array
+import ast
 from collections import defaultdict
 
-def subarray_sum(nums, k):
-    seen = defaultdict(int)
-    seen[0] = 1                                          # the empty prefix (sum 0) — the seed
-    prefix = count = 0
-    for x in nums:
-        prefix += x
-        count += seen[prefix - k]                        # earlier prefixes that close a sum-k subarray
-        seen[prefix] += 1
-    return count
+class Solution:
+    def subarray_sum(self, nums, k):
+        # Your code goes here — seed seen={0:1}, sweep summing prefix,
+        # add seen[prefix-k] to count, then increment seen[prefix].
+        return 0
 
-print(subarray_sum([1, 1, 1], 2))   # 2
-print(subarray_sum([1, 2, 3], 3))   # 2
+nums = ast.literal_eval(input())
+k = int(input())
+print(Solution().subarray_sum(nums, k))
 ```
 
 ```java run viz=array
 import java.util.*;
+
 public class Main {
-    static int subarraySum(int[] nums, int k) {
-        Map<Integer, Integer> seen = new HashMap<>();
-        seen.put(0, 1);                                  // the seed
-        int prefix = 0, count = 0;
-        for (int x : nums) {
-            prefix += x;
-            count += seen.getOrDefault(prefix - k, 0);
-            seen.merge(prefix, 1, Integer::sum);
+    static class Solution {
+        public int subarraySum(int[] nums, int k) {
+            // Your code goes here — seed seen={0:1}, sweep summing prefix,
+            // add seen.get(prefix-k, 0) to count, increment seen[prefix].
+            return 0;
         }
-        return count;
     }
+
     public static void main(String[] args) {
-        System.out.println(subarraySum(new int[]{1, 1, 1}, 2));   // 2
-        System.out.println(subarraySum(new int[]{1, 2, 3}, 3));   // 2
+        Scanner sc = new Scanner(System.in);
+        int[] nums = parseIntArray(sc.nextLine());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().subarraySum(nums, k));
+    }
+
+    // "[1, 2, 3]" → {1, 2, 3} — reads the test case's nums
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```
 
-Both print `2`. In `[1,1,1]` with `K=2`, the subarrays `[0,1]` and `[1,2]` qualify; in `[1,2,3]` with `K=3`, it's `[1,2]` and `[2,3]`... wait — `[3]` and `[1,2]`. The `{0: 1}` seed is what lets a subarray that *starts at index 0* count (its closing prefix equals `K`, and `prefix − K = 0` is already in the map). This is the prefix-sum idea at its most powerful — `O(n)` time, one pass, no nested loop — and it's the [hash-table prefix-sum pattern](/cortex/data-structures-and-algorithms/linear-structures/hash-table/pattern-prefix-sum/pattern) you've seen, viewed through the range lens.
+```testcases
+{
+  "args": [
+    { "id": "nums", "label": "nums", "type": "int[]", "placeholder": "[1, 1, 1]" },
+    { "id": "k", "label": "k", "type": "int", "placeholder": "2" }
+  ],
+  "cases": [
+    { "args": { "nums": "[1, 1, 1]", "k": "2" }, "expected": "2" },
+    { "args": { "nums": "[1, 2, 3]", "k": "3" }, "expected": "2" },
+    { "args": { "nums": "[1, -1, 1, -1]", "k": "0" }, "expected": "4" },
+    { "args": { "nums": "[3, 4, 7, 2, -3, 1, 4, 2]", "k": "7" }, "expected": "4" },
+    { "args": { "nums": "[1]", "k": "1" }, "expected": "1" },
+    { "args": { "nums": "[1]", "k": "2" }, "expected": "0" }
+  ]
+}
+```
+
+<details>
+<summary><h2>Editorial</h2></summary>
+
+```python solution time=O(n) space=O(n)
+import ast
+from collections import defaultdict
+
+class Solution:
+    def subarray_sum(self, nums, k):
+        seen = defaultdict(int)
+        seen[0] = 1                                          # the empty prefix (sum 0) — the seed
+        prefix = count = 0
+        for x in nums:
+            prefix += x
+            count += seen[prefix - k]                        # earlier prefixes that close a sum-k subarray
+            seen[prefix] += 1
+        return count
+
+nums = ast.literal_eval(input())
+k = int(input())
+print(Solution().subarray_sum(nums, k))
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int subarraySum(int[] nums, int k) {
+            Map<Integer, Integer> seen = new HashMap<>();
+            seen.put(0, 1);                                  // the seed
+            int prefix = 0, count = 0;
+            for (int x : nums) {
+                prefix += x;
+                count += seen.getOrDefault(prefix - k, 0);
+                seen.merge(prefix, 1, Integer::sum);
+            }
+            return count;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] nums = parseIntArray(sc.nextLine());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().subarraySum(nums, k));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+</details>
 
 ## Reflect & Connect
 
+- **Practice —** [K-Limited Submatrix Sum](/cortex/data-structures-and-algorithms/algorithms-by-strategy/dynamic-programming/pattern-prefix-sum/k-limited-submatrix-sum), [Maximum Submatrix Sum](/cortex/data-structures-and-algorithms/algorithms-by-strategy/dynamic-programming/pattern-prefix-sum/maximum-submatrix-sum), [Range Sum Finder](/cortex/data-structures-and-algorithms/algorithms-by-strategy/dynamic-programming/pattern-prefix-sum/range-sum-finder).
 - **Precompute, then subtract.** The whole pattern is "cumulative totals make range queries `O(1)`." 1-D is one subtraction; 2-D is four-corner inclusion-exclusion. Worth it only when you query repeatedly.
 - **Inclusion-exclusion is the 2-D crux.** Overlapping cumulative regions double-count their intersection; add it back. Four terms, not three — the most common 2-D prefix bug (it silently undercounts).
 - **Padding removes branches.** A leading zero (1-D) or zero row/column (2-D) keeps every index valid, which is why the formulas carry `+1` offsets.

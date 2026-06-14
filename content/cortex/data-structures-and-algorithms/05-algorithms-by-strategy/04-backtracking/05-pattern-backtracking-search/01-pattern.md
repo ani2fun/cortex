@@ -58,8 +58,8 @@ def n_queens(n):
     place(0)
     return count[0]
 
-print("n=4:", n_queens(4))
-print("n=8:", n_queens(8))
+n = int(input())
+print(n_queens(n))
 ```
 
 ```java run viz=array
@@ -81,13 +81,27 @@ public class Main {
         place(0, n); return count;
     }
     public static void main(String[] args) {
-        System.out.println("n=4: " + nQueens(4));
-        System.out.println("n=8: " + nQueens(8));
+        int n = Integer.parseInt(new Scanner(System.in).nextLine().trim());
+        System.out.println(nQueens(n));
     }
 }
 ```
 
-Both print `n=4: 2` and `n=8: 92` — the classic queen counts. The `diag` (row − col) and `anti` (row + col) sets give `O(1)` threat checks, and the discard-after-recurse restores them for the next column.
+```testcases
+{
+  "args": [
+    { "id": "n", "label": "n", "type": "int", "placeholder": "4" }
+  ],
+  "cases": [
+    { "args": { "n": "4" }, "expected": "2" },
+    { "args": { "n": "8" }, "expected": "92" },
+    { "args": { "n": "1" }, "expected": "1" },
+    { "args": { "n": "6" }, "expected": "4" }
+  ]
+}
+```
+
+Both return the classic queen counts: `n=4 → 2`, `n=8 → 92`. The `diag` (row − col) and `anti` (row + col) sets give `O(1)` threat checks, and the discard-after-recurse restores them for the next column.
 
 ## How It Works
 
@@ -151,6 +165,72 @@ It reports **0** solutions for both — total failure. Without the undo, every q
 **Rat in a Maze** — find *any* path from the top-left to the bottom-right through `0` cells (1 = wall). Mark a cell visited (`-1`) on the way in, recurse over the four neighbours, and undo (`0`) on failure. Success returns `true` and bubbles up.
 
 ```python run viz=array
+import ast
+
+def find_path(maze):
+    # Your code goes here
+    # apply → mark cell -1; recurse; undo → restore cell 0
+    return False
+
+maze = ast.literal_eval(input())
+result = find_path(maze)
+print("true" if result else "false")
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static boolean findPath(int[][] maze) {
+        // Your code goes here
+        // apply → mark cell -1; recurse; undo → restore cell 0
+        return false;
+    }
+
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[][] maze = parseIntMatrix(sc.nextLine());
+        System.out.println(findPath(maze));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "maze", "label": "maze", "type": "int[][]", "placeholder": "[[0,1,0],[0,0,0],[1,0,0]]" }
+  ],
+  "cases": [
+    { "args": { "maze": "[[0,1,0],[0,0,0],[1,0,0]]" }, "expected": "true" },
+    { "args": { "maze": "[[0,1],[1,0]]" }, "expected": "false" },
+    { "args": { "maze": "[[0,0],[0,0]]" }, "expected": "true" },
+    { "args": { "maze": "[[0]]" }, "expected": "true" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+```python solution time=O(4^(R·C)) space=O(R·C)
+import ast
+
 def find_path(maze):
     if not maze or not maze[0]: return False
     R, C = len(maze), len(maze[0])
@@ -167,11 +247,14 @@ def find_path(maze):
         return False
     return search(0, 0)
 
-print(find_path([[0,1,0], [0,0,0], [1,0,0]]))   # True
-print(find_path([[0,1], [1,0]]))                # False — diagonal blocked
+maze = ast.literal_eval(input())
+result = find_path(maze)
+print("true" if result else "false")
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
     static boolean search(int[][] m, int r, int c) {
         int R = m.length, C = m[0].length;
@@ -184,14 +267,34 @@ public class Main {
         return false;
     }
     static boolean findPath(int[][] m) { return m.length > 0 && m[0].length > 0 && search(m, 0, 0); }
+
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
+    }
+
     public static void main(String[] args) {
-        System.out.println(findPath(new int[][]{{0,1,0},{0,0,0},{1,0,0}}));   // true
-        System.out.println(findPath(new int[][]{{0,1},{1,0}}));              // false
+        Scanner sc = new Scanner(System.in);
+        int[][] maze = parseIntMatrix(sc.nextLine());
+        System.out.println(findPath(maze));
     }
 }
 ```
 
-Both print `True` then `False`. The maze cell toggles `0 → -1 → 0` exactly as the queen toggles in/out of the threat sets — same apply/recurse/undo, different world. The four problems in this section's **Problems** folder run the gamut: rat-in-a-maze (find one path), word-search (find one word), N-Queens (find all configurations), and sudoku (fill the whole grid).
+</details>
+
+The maze cell toggles `0 → -1 → 0` exactly as the queen toggles in/out of the threat sets — same apply/recurse/undo, different world. The four problems in this section's **Problems** folder run the gamut: rat-in-a-maze (find one path), word-search (find one word), N-Queens (find all configurations), and sudoku (fill the whole grid).
 
 ## Reflect & Connect
 

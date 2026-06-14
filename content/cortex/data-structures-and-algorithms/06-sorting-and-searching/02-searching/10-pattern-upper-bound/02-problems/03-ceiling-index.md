@@ -4,25 +4,111 @@ summary: "Sorted array arr and a list of queries. For each query, return the sma
 prereqs:
   - 10-pattern-upper-bound/01-pattern
 difficulty: medium
+kind: problem
+topics: [upper-bound, searching]
 ---
 
 # Ceiling Index
 
-## The Problem
+## Problem Statement
 
 Sorted array `arr` and a list of `queries`. For each query, return the smallest index `i` with `arr[i] > query`. Return `-1` for queries with no such index.
 
+## Examples
+
+**Example 1**
 ```
 Input:  arr = [1, 4, 7], queries = [2, 4]
 Output: [1, 2]
-
-Input:  arr = [5], queries = [2]
-Output: [0]
-
-Input:  arr = [5], queries = [6]
-Output: [-1]
+Explanation: For query 2: arr[1]=4 is the first element > 2, index 1. For query 4: arr[2]=7 is the first element > 4, index 2.
 ```
 
+**Example 2**
+```
+Input:  arr = [5], queries = [6]
+Output: [-1]
+Explanation: No element in arr is greater than 6; return -1 for this query.
+```
+
+## Constraints
+
+- `1 ≤ arr.length ≤ 10^4`
+- `1 ≤ queries.length ≤ 10^4`
+- `-10^9 ≤ arr[i], queries[j] ≤ 10^9`
+- `arr` is sorted in ascending order.
+
+```python run viz=array viz-root=result
+import ast
+from typing import List
+
+class Solution:
+    def ceiling_index(self, arr: List[int], queries: List[int]) -> List[int]:
+        # Your code goes here — for each query, run upper_bound(arr, query)
+        # to find the first index where arr[i] > query; if result == len(arr)
+        # append -1, otherwise append the index.
+        return []
+
+arr = ast.literal_eval(input())
+queries = ast.literal_eval(input())
+print(Solution().ceiling_index(arr, queries))
+```
+
+```java run viz=array viz-root=result
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public List<Integer> ceilingIndex(int[] arr, int[] queries) {
+            // Your code goes here — for each query, run upperBound(arr, query)
+            // to find the first index where arr[i] > query; if result == arr.length
+            // add -1, otherwise add the index.
+            return new ArrayList<>();
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int[] queries = parseIntArray(sc.nextLine());
+        System.out.println(new Solution().ceilingIndex(arr, queries));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[1, 4, 7]" },
+    { "id": "queries", "label": "queries", "type": "int[]", "placeholder": "[2, 4]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[1, 4, 7]", "queries": "[2, 4]" }, "expected": "[1, 2]" },
+    { "args": { "arr": "[5]", "queries": "[2]" }, "expected": "[0]" },
+    { "args": { "arr": "[5]", "queries": "[6]" }, "expected": "[-1]" },
+    { "args": { "arr": "[1, 4, 7]", "queries": "[7]" }, "expected": "[-1]" },
+    { "args": { "arr": "[1, 4, 7]", "queries": "[0]" }, "expected": "[0]" },
+    { "args": { "arr": "[2, 2, 2]", "queries": "[1]" }, "expected": "[0]" },
+    { "args": { "arr": "[2, 2, 2]", "queries": "[2]" }, "expected": "[-1]" },
+    { "args": { "arr": "[1, 3, 5, 7]", "queries": "[2, 4, 6, 8]" }, "expected": "[1, 2, 3, -1]" }
+  ]
+}
+```
+
+<details>
+<summary><h2>Intuition</h2></summary>
+
+`upper_bound(query)` finds the first index where `arr[i] > query` in `O(log n)`. That is exactly the definition of the ceiling index. Run it once per query; if the result equals `len(arr)` there is no element larger than the query, so return `-1`; otherwise return the index directly. The problem is a direct application of upper bound with no additional logic.
+
+</details>
 <details>
 <summary><h2>The Solution</h2></summary>
 
@@ -30,7 +116,8 @@ Output: [-1]
 Run `upper_bound` for each query. Return `-1` if the result is `n`.
 
 
-```python run viz=array viz-root=result
+```python solution time=O(Q log N) space=O(Q)
+import ast
 from typing import List
 
 class Solution:
@@ -94,20 +181,12 @@ class Solution:
         return result
 
 
-# Examples from the problem statement
-print(Solution().ceiling_index([1, 4, 7], [2, 4]))  # [1, 2]
-print(Solution().ceiling_index([5], [2]))            # [0]
-print(Solution().ceiling_index([5], [6]))            # [-1]
-
-# Edge cases
-print(Solution().ceiling_index([1, 4, 7], [7]))      # [-1]  (query equals last element)
-print(Solution().ceiling_index([1, 4, 7], [0]))      # [0]   (query less than all)
-print(Solution().ceiling_index([2, 2, 2], [1]))      # [0]   (duplicates, query below)
-print(Solution().ceiling_index([2, 2, 2], [2]))      # [-1]  (duplicates, all equal — no strictly greater)
-print(Solution().ceiling_index([1, 3, 5, 7], [2, 4, 6, 8]))  # [1, 2, 3, -1]
+arr = ast.literal_eval(input())
+queries = ast.literal_eval(input())
+print(Solution().ceiling_index(arr, queries))
 ```
 
-```java run viz=array viz-root=result
+```java solution
 import java.util.*;
 
 public class Main {
@@ -182,17 +261,19 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().ceilingIndex(new int[]{1, 4, 7}, new int[]{2, 4}));  // [1, 2]
-        System.out.println(new Solution().ceilingIndex(new int[]{5}, new int[]{2}));            // [0]
-        System.out.println(new Solution().ceilingIndex(new int[]{5}, new int[]{6}));            // [-1]
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int[] queries = parseIntArray(sc.nextLine());
+        System.out.println(new Solution().ceilingIndex(arr, queries));
+    }
 
-        // Edge cases
-        System.out.println(new Solution().ceilingIndex(new int[]{1, 4, 7}, new int[]{7}));      // [-1]
-        System.out.println(new Solution().ceilingIndex(new int[]{1, 4, 7}, new int[]{0}));      // [0]
-        System.out.println(new Solution().ceilingIndex(new int[]{2, 2, 2}, new int[]{1}));      // [0]
-        System.out.println(new Solution().ceilingIndex(new int[]{2, 2, 2}, new int[]{2}));      // [-1]
-        System.out.println(new Solution().ceilingIndex(new int[]{1, 3, 5, 7}, new int[]{2, 4, 6, 8}));  // [1, 2, 3, -1]
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

@@ -17,7 +17,7 @@ Randomized algorithms split into two families by *what* the randomness affects. 
 Randomized quicksort picks a **random** pivot each call. It's Las Vegas: the output is *always* the fully sorted array — randomness changes the path, never the destination.
 
 ```python run viz=array
-import random
+import ast, random
 
 def quicksort(arr):
     if len(arr) <= 1:
@@ -28,13 +28,15 @@ def quicksort(arr):
     greater = [x for x in arr if x > pivot]
     return quicksort(less) + equal + quicksort(greater)
 
-data = [3, 6, 1, 8, 2, 9, 4]
-print(quicksort(data))                               # always [1, 2, 3, 4, 6, 8, 9]
-print(quicksort(data) == sorted(data))               # always True, whatever the pivots
+arr = ast.literal_eval(input())
+result = quicksort(arr)
+print(result)
+print("true" if result == sorted(arr) else "false")
 ```
 
 ```java run viz=array
 import java.util.*;
+
 public class Main {
     static final Random RNG = new Random();
     static List<Integer> quicksort(List<Integer> arr) {
@@ -47,16 +49,45 @@ public class Main {
         out.addAll(quicksort(gr));
         return out;
     }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+
     public static void main(String[] args) {
-        List<Integer> data = Arrays.asList(3, 6, 1, 8, 2, 9, 4);
-        System.out.println(quicksort(new ArrayList<>(data)));   // [1, 2, 3, 4, 6, 8, 9]
-        List<Integer> s = new ArrayList<>(data); Collections.sort(s);
-        System.out.println(quicksort(new ArrayList<>(data)).equals(s));   // true
+        Scanner sc = new Scanner(System.in);
+        int[] raw = parseIntArray(sc.nextLine());
+        List<Integer> data = new ArrayList<>();
+        for (int x : raw) data.add(x);
+        List<Integer> result = quicksort(new ArrayList<>(data));
+        List<Integer> sortedData = new ArrayList<>(data);
+        Collections.sort(sortedData);
+        System.out.println(result);
+        System.out.println(result.equals(sortedData));
     }
 }
 ```
 
-Both print the sorted array then `true` — run them a thousand times and the output never changes, only the sequence of pivot choices (and the runtime) does. Expected time `O(n log n)`; the `O(n²)` worst case still *exists* but now requires a freak run of unlucky pivots, not a malicious input.
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[3, 6, 1, 8, 2, 9, 4]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[3, 6, 1, 8, 2, 9, 4]" }, "expected": "[1, 2, 3, 4, 6, 8, 9]\ntrue" },
+    { "args": { "arr": "[5, 3, 1]" }, "expected": "[1, 3, 5]\ntrue" },
+    { "args": { "arr": "[1]" }, "expected": "[1]\ntrue" },
+    { "args": { "arr": "[4, 4, 2, 4]" }, "expected": "[2, 4, 4, 4]\ntrue" }
+  ]
+}
+```
+
+Run them a thousand times and the output never changes, only the sequence of pivot choices (and the runtime) does. Expected time `O(n log n)`; the `O(n²)` worst case still *exists* but now requires a freak run of unlucky pivots, not a malicious input.
 
 ## How It Works
 
@@ -105,7 +136,71 @@ It's `(¼)¹⁰ ≈ 0.00000095` — about *one in a million*, not `1/40`. Indepe
 **Kth Largest Element** ([LeetCode 215](https://leetcode.com/problems/kth-largest-element-in-an-array/)) via randomized **quickselect** — quicksort's one-sided cousin. Partition on a random pivot, then recurse into *only* the side that contains the rank you want. Las Vegas again: the answer is always the correct order statistic; the random pivot buys *expected `O(n)`* (versus sorting's `O(n log n)`).
 
 ```python run viz=array
-import random
+import ast, random
+
+def quickselect(arr, k):                             # k = 0-indexed rank (k-th smallest)
+    # Your code goes here — pick a random pivot, partition into less/equal/greater,
+    # then recurse into only the side that contains rank k.
+    return 0
+
+arr = ast.literal_eval(input())
+k = int(input())
+print(quickselect(arr, k))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static final Random RNG = new Random();
+    static int quickselect(List<Integer> arr, int k) {
+        // Your code goes here — pick a random pivot, partition into less/equal/greater,
+        // then recurse into only the side containing rank k.
+        return 0;
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] raw = parseIntArray(sc.nextLine());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        List<Integer> arr = new ArrayList<>();
+        for (int x : raw) arr.add(x);
+        System.out.println(quickselect(arr, k));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[3, 6, 1, 8, 2, 9, 4]" },
+    { "id": "k", "label": "k (0-indexed)", "type": "int", "placeholder": "2" }
+  ],
+  "cases": [
+    { "args": { "arr": "[3, 6, 1, 8, 2, 9, 4]", "k": "0" }, "expected": "1" },
+    { "args": { "arr": "[3, 6, 1, 8, 2, 9, 4]", "k": "2" }, "expected": "3" },
+    { "args": { "arr": "[3, 6, 1, 8, 2, 9, 4]", "k": "6" }, "expected": "9" },
+    { "args": { "arr": "[5]", "k": "0" }, "expected": "5" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Both print `1` then `3`. By recursing into only one side, quickselect expects to do `n + n/2 + n/4 + … ≈ 2n` work — *linear*, beating a full sort when you need just one order statistic. Same Las Vegas guarantee as quicksort: the rank you get back is always correct; only the runtime rolls the dice.
+
+```python solution time=O(n) space=O(n)
+import ast, random
 
 def quickselect(arr, k):                             # k = 0-indexed rank (k-th smallest)
     pivot = arr[random.randrange(len(arr))]
@@ -119,14 +214,14 @@ def quickselect(arr, k):                             # k = 0-indexed rank (k-th 
     else:
         return quickselect(greater, k - len(less) - len(equal))   # recurse RIGHT only
 
-A = [3, 6, 1, 8, 2, 9, 4]
-print(quickselect(A, 0))                             # 1   (smallest)
-print(quickselect(A, 2))                             # 3   (3rd smallest)
-print(quickselect(A, 2) == sorted(A)[2])             # True, regardless of pivots
+arr = ast.literal_eval(input())
+k = int(input())
+print(quickselect(arr, k))
 ```
 
-```java run viz=array
+```java solution
 import java.util.*;
+
 public class Main {
     static final Random RNG = new Random();
     static int quickselect(List<Integer> arr, int k) {
@@ -137,15 +232,28 @@ public class Main {
         if (k < less.size() + eq.size()) return pivot;
         return quickselect(gr, k - less.size() - eq.size());
     }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+
     public static void main(String[] args) {
-        List<Integer> A = Arrays.asList(3, 6, 1, 8, 2, 9, 4);
-        System.out.println(quickselect(new ArrayList<>(A), 0));   // 1
-        System.out.println(quickselect(new ArrayList<>(A), 2));   // 3
+        Scanner sc = new Scanner(System.in);
+        int[] raw = parseIntArray(sc.nextLine());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        List<Integer> arr = new ArrayList<>();
+        for (int x : raw) arr.add(x);
+        System.out.println(quickselect(arr, k));
     }
 }
 ```
 
-Both print `1` then `3`. By recursing into only one side, quickselect expects to do `n + n/2 + n/4 + … ≈ 2n` work — *linear*, beating a full sort when you need just one order statistic. Same Las Vegas guarantee as quicksort: the rank you get back is always correct; only the runtime rolls the dice.
+</details>
 
 ## Reflect & Connect
 

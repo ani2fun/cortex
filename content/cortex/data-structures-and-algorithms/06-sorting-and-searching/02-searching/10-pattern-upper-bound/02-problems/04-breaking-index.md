@@ -4,25 +4,112 @@ summary: "Sorted array and integer delta. Return the first index i where arr[i] 
 prereqs:
   - 10-pattern-upper-bound/01-pattern
 difficulty: medium
+kind: problem
+topics: [upper-bound, searching]
 ---
 
 # Breaking Index
 
-## The Problem
+## Problem Statement
 
 Sorted array and integer `delta`. Return the first index `i` where `arr[i] - arr[0] > delta`, or `-1`.
 
+## Examples
+
+**Example 1**
 ```
 Input:  arr = [1, 5, 10, 15, 20, 25], delta = 6
-Output: 2   (arr[2] - arr[0] = 9 > 6)
-
-Input:  arr = [1, 2, 4, 5], delta = 2
 Output: 2
-
-Input:  arr = [1, 5], delta = 6
-Output: -1
+Explanation: arr[2] - arr[0] = 10 - 1 = 9 > 6; index 2 is the first that exceeds the threshold.
 ```
 
+**Example 2**
+```
+Input:  arr = [1, 5], delta = 6
+Output: -1
+Explanation: arr[1] - arr[0] = 5 - 1 = 4 ≤ 6; no element exceeds the delta, so return -1.
+```
+
+## Constraints
+
+- `1 ≤ arr.length ≤ 10^4`
+- `0 ≤ delta ≤ 10^9`
+- `-10^9 ≤ arr[i] ≤ 10^9`
+- `arr` is sorted in ascending order.
+
+```python run viz=array
+import ast
+from typing import List
+
+class Solution:
+    def breaking_index(self, arr: List[int], delta: int) -> int:
+        # Your code goes here — the condition arr[i] - arr[0] > delta
+        # is equivalent to arr[i] > arr[0] + delta; apply upper_bound
+        # with target = arr[0] + delta; return -1 if the result equals
+        # len(arr), otherwise return the result.
+        return -1
+
+arr = ast.literal_eval(input())
+delta = int(input())
+print(Solution().breaking_index(arr, delta))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int breakingIndex(int[] arr, int delta) {
+            // Your code goes here — the condition arr[i] - arr[0] > delta
+            // is equivalent to arr[i] > arr[0] + delta; apply upperBound
+            // with target = arr[0] + delta; return -1 if the result equals
+            // arr.length, otherwise return the result.
+            return -1;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int delta = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().breakingIndex(arr, delta));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[1, 5, 10, 15, 20, 25]" },
+    { "id": "delta", "label": "delta", "type": "number", "placeholder": "6" }
+  ],
+  "cases": [
+    { "args": { "arr": "[1, 5, 10, 15, 20, 25]", "delta": "6" }, "expected": "2" },
+    { "args": { "arr": "[1, 2, 4, 5]", "delta": "2" }, "expected": "2" },
+    { "args": { "arr": "[1, 5]", "delta": "6" }, "expected": "-1" },
+    { "args": { "arr": "[3]", "delta": "0" }, "expected": "-1" },
+    { "args": { "arr": "[1, 2]", "delta": "0" }, "expected": "1" },
+    { "args": { "arr": "[1, 2, 3, 4, 5]", "delta": "3" }, "expected": "4" },
+    { "args": { "arr": "[0, 0, 0, 0]", "delta": "0" }, "expected": "-1" }
+  ]
+}
+```
+
+<details>
+<summary><h2>Intuition</h2></summary>
+
+The condition `arr[i] - arr[0] > delta` is algebraically equivalent to `arr[i] > arr[0] + delta`. This is exactly the definition of an upper bound query with `target = arr[0] + delta`. Since the array is sorted, `upper_bound(arr[0] + delta)` locates the first index where the difference exceeds `delta` in `O(log n)`. If no such index exists (upper bound returns `len(arr)`), return `-1`.
+
+</details>
 <details>
 <summary><h2>The Solution</h2></summary>
 
@@ -30,7 +117,8 @@ Output: -1
 The condition `arr[i] - arr[0] > delta` is `arr[i] > arr[0] + delta`. So `upper_bound(arr, arr[0] + delta)` gives the answer.
 
 
-```python run viz=array
+```python solution time=O(log n) space=O(1)
+import ast
 from typing import List
 
 class Solution:
@@ -89,21 +177,14 @@ class Solution:
             return upper_bound_index
 
 
-# Examples from the problem statement
-print(Solution().breaking_index([1, 5, 10, 15, 20, 25], 6))  # 2
-print(Solution().breaking_index([1, 2, 4, 5], 2))            # 2
-print(Solution().breaking_index([1, 5], 6))                   # -1
-
-# Edge cases
-print(Solution().breaking_index([], 5))                       # -1  (empty)
-print(Solution().breaking_index([3], 0))                      # -1  (single element)
-print(Solution().breaking_index([1, 2], 0))                   # 1   (delta=0, first i where arr[i]>arr[0])
-print(Solution().breaking_index([1, 2], 5))                   # -1  (diff never exceeds delta)
-print(Solution().breaking_index([1, 2, 3, 4, 5], 3))          # 4   (breaking at last index)
-print(Solution().breaking_index([0, 0, 0, 0], 0))             # -1  (all same)
+arr = ast.literal_eval(input())
+delta = int(input())
+print(Solution().breaking_index(arr, delta))
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
     static class Solution {
         public int upperBound(int[] arr, int target) {
@@ -172,18 +253,19 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().breakingIndex(new int[]{1, 5, 10, 15, 20, 25}, 6));  // 2
-        System.out.println(new Solution().breakingIndex(new int[]{1, 2, 4, 5}, 2));            // 2
-        System.out.println(new Solution().breakingIndex(new int[]{1, 5}, 6));                   // -1
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int delta = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().breakingIndex(arr, delta));
+    }
 
-        // Edge cases
-        System.out.println(new Solution().breakingIndex(new int[]{}, 5));                       // -1  (empty)
-        System.out.println(new Solution().breakingIndex(new int[]{3}, 0));                      // -1  (single element)
-        System.out.println(new Solution().breakingIndex(new int[]{1, 2}, 0));                   // 1   (delta=0)
-        System.out.println(new Solution().breakingIndex(new int[]{1, 2}, 5));                   // -1  (diff never exceeds delta)
-        System.out.println(new Solution().breakingIndex(new int[]{1, 2, 3, 4, 5}, 3));          // 4   (breaking at last index)
-        System.out.println(new Solution().breakingIndex(new int[]{0, 0, 0, 0}, 0));             // -1  (all same)
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
     }
 }
 ```

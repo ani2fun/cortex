@@ -9,48 +9,104 @@ prereqs:
 
 ## Why It Exists
 
-A graph on paper is circles and lines; the CPU only knows **arrays and arithmetic**. The *translation problem* is squeezing that network into a flat block of memory. The simplest answer: number the nodes `0 … N−1`, then build an `N×N` table where cell `[i][j]` is `true` if an edge joins `i` and `j`. That's the **adjacency matrix**.
+A graph on paper is circles and lines; the CPU only knows **arrays and arithmetic**. The *translation problem* is squeezing that network into a flat block of memory. The simplest answer: number the nodes `0 … N−1`, then build an `N×N` table where cell `[i][j]` is `1` if an edge joins `i` and `j`. That's the **adjacency matrix**.
 
 Its appeal is raw speed: "is there an edge between `i` and `j`?" is a single array index — `adj[i][j]` — answered in **`O(1)`**, one instruction, no search. The catch (which the rest of this lesson earns): the matrix always occupies `N²` cells *regardless of how many edges exist*, so it's perfect for dense graphs and ruinous for the large sparse graphs that dominate the real world.
 
 ## See It Work
 
-The 5-node undirected graph below, built into a matrix. Check an edge in `O(1)`, and list a node's neighbours by scanning its row. Run it.
+The 5-node undirected graph below, built into a matrix. Input is `n` and the edge list; the driver builds the matrix and prints it as a list-of-lists. Pick a case and **Run** it.
 
 ```python run viz=graph viz-kind=graph
+import ast
+
 def create_graph(n, edges):
-    adj = [[False] * n for _ in range(n)]      # N×N, all false (see the aliasing note!)
+    adj = [[0] * n for _ in range(n)]      # N×N, all zero (comprehension avoids the aliasing trap!)
     for i, j in edges:
-        adj[i][j] = True
-        adj[j][i] = True                        # undirected ⇒ set BOTH ⇒ symmetric matrix
+        adj[i][j] = 1
+        adj[j][i] = 1                       # undirected ⇒ set BOTH ⇒ symmetric matrix
     return adj
 
-edges = [[0, 1], [0, 2], [1, 2], [1, 3], [2, 4], [3, 4]]
-m = create_graph(5, edges)
-for row in m:
-    print("".join("T" if c else "." for c in row))
-print("edge(1,3)?", m[1][3])                    # True   — O(1) lookup
-print("edge(0,3)?", m[0][3])                    # False
-print("neighbours of 2:", [j for j in range(5) if m[2][j]])   # [0, 1, 4]  — O(N) row scan
+n     = int(input())
+edges = ast.literal_eval(input())
+print(create_graph(n, edges))
+```
+
+```java run viz=graph viz-kind=graph
+import java.util.*;
+
+public class Main {
+    static int[][] createGraph(int n, int[][] edges) {
+        int[][] adj = new int[n][n];        // Java arrays are value-allocated — no aliasing trap
+        for (int[] e : edges) { adj[e[0]][e[1]] = 1; adj[e[1]][e[0]] = 1; }
+        return adj;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n      = Integer.parseInt(sc.nextLine().trim());
+        int[][] edges = parseIntMatrix(sc.nextLine());
+        int[][] m = createGraph(n, edges);
+        List<List<Integer>> rows = new ArrayList<>();
+        for (int[] row : m) {
+            List<Integer> r = new ArrayList<>();
+            for (int v : row) r.add(v);
+            rows.add(r);
+        }
+        System.out.println(rows);
+    }
+
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "n", "label": "n", "type": "int", "placeholder": "5" },
+    { "id": "edges", "label": "edges", "type": "int[][]", "placeholder": "[[0, 1], [0, 2], [1, 2], [1, 3], [2, 4], [3, 4]]" }
+  ],
+  "cases": [
+    { "args": { "n": "5", "edges": "[[0, 1], [0, 2], [1, 2], [1, 3], [2, 4], [3, 4]]" }, "expected": "[[0, 1, 1, 0, 0], [1, 0, 1, 1, 0], [1, 1, 0, 0, 1], [0, 1, 0, 0, 1], [0, 0, 1, 1, 0]]" },
+    { "args": { "n": "3", "edges": "[[0, 1], [1, 2]]" }, "expected": "[[0, 1, 0], [1, 0, 1], [0, 1, 0]]" },
+    { "args": { "n": "4", "edges": "[[0, 1], [0, 2], [0, 3], [1, 2], [1, 3], [2, 3]]" }, "expected": "[[0, 1, 1, 1], [1, 0, 1, 1], [1, 1, 0, 1], [1, 1, 1, 0]]" },
+    { "args": { "n": "3", "edges": "[]" }, "expected": "[[0, 0, 0], [0, 0, 0], [0, 0, 0]]" },
+    { "args": { "n": "2", "edges": "[[0, 1]]" }, "expected": "[[0, 1], [1, 0]]" }
+  ]
+}
 ```
 
 ## How It Works
 
 1. **Enumerate** the nodes `0 … N−1` (zero-based, so the integer *is* the array index).
-2. **Allocate** an `N×N` matrix of `false`.
-3. **For each edge `(i, j)`**, set `adj[i][j] = true`; if undirected, also `adj[j][i] = true`.
+2. **Allocate** an `N×N` matrix of zeros.
+3. **For each edge `(i, j)`**, set `adj[i][j] = 1`; if undirected, also `adj[j][i] = 1`.
 
-That second assignment makes an undirected matrix **symmetric across the diagonal** — symmetry is the visual signature of "undirected." Drop it and you have a **directed** graph (the asymmetry encodes one-way edges). For a **weighted** graph, store the weight in the cell instead of a boolean, with a **sentinel** (e.g. `∞` or `-1`) meaning "no edge" — since any number could be a real weight.
+That second assignment makes an undirected matrix **symmetric across the diagonal** — symmetry is the visual signature of "undirected." Drop it and you have a **directed** graph (the asymmetry encodes one-way edges). For a **weighted** graph, store the weight in the cell instead of a `1`, with a **sentinel** (e.g. `∞` or `-1`) meaning "no edge" — since any number could be a real weight.
 
 For the example graph, the matrix is:
 
 |  | 0 | 1 | 2 | 3 | 4 |
 |---|---|---|---|---|---|
-| **0** | · | T | T | · | · |
-| **1** | T | · | T | T | · |
-| **2** | T | T | · | · | T |
-| **3** | · | T | · | · | T |
-| **4** | · | · | T | T | · |
+| **0** | · | 1 | 1 | · | · |
+| **1** | 1 | · | 1 | 1 | · |
+| **2** | 1 | 1 | · | · | 1 |
+| **3** | · | 1 | · | · | 1 |
+| **4** | · | · | 1 | 1 | · |
 
 ```mermaid
 flowchart LR
@@ -62,9 +118,9 @@ flowchart LR
     D --- E
 ```
 
-<p align="center"><strong>the 5-node graph this matrix encodes; <code>adj[i][j]=T</code> ⇔ an edge joins <code>i</code> and <code>j</code>.</strong></p>
+<p align="center"><strong>the 5-node graph this matrix encodes; <code>adj[i][j]=1</code> ⇔ an edge joins <code>i</code> and <code>j</code>.</strong></p>
 
-`adj[i][j]` is `O(1)` because the 2D array is really one contiguous block: the CPU computes the offset `i*N + j` (row-major) and fetches it directly — the same trick that makes 1D arrays fast. **One Python/JS gotcha:** `[[False] * n] * n` makes `n` references to the *same* inner row, so setting one cell mutates the whole column. Build rows with a comprehension/factory (`[[False]*n for _ in range(n)]`), as above.
+`adj[i][j]` is `O(1)` because the 2D array is really one contiguous block: the CPU computes the offset `i*N + j` (row-major) and fetches it directly — the same trick that makes 1D arrays fast. **One Python/JS gotcha:** `[[0] * n] * n` makes `n` references to the *same* inner row, so setting one cell mutates the whole column. Build rows with a comprehension/factory (`[[0]*n for _ in range(n)]`), as above.
 
 ### Key Takeaway
 
@@ -76,44 +132,162 @@ The matrix gives `O(1)` edge lookups — the fastest possible. So a natural ques
 
 Before you read on: picture a social network — 1 billion users, each averaging ~1,000 friends. Roughly how many cells does the adjacency matrix allocate, how many of them hold a real edge, and what does that ratio tell you about when the matrix is the wrong tool?
 
-The matrix allocates `N² = (10⁹)² = 10¹⁸` cells — an **exabyte-scale** block — while the actual edges number only `~10⁹ × 1,000 = 10¹²`. That's a **factor of a million wasted**: 999,999 of every million cells are `false`, storing "these two strangers are not friends." The space is `O(N²)` *no matter how few edges exist*, because the grid is sized by the node count alone, never the edge count. And almost every real graph is **sparse** — social networks, road maps, the web, dependency graphs all have `E ≪ N²` (each node connects to a tiny fraction of the others), so the matrix is structurally wrong for them: it would exhaust memory long before the algorithm ran. The matrix only earns its `N²` cells when the graph is **dense** (`E` close to `N²`) — tournament results where every team plays every other, full distance matrices, or small graphs (`N ≤ 100`) where the waste is negligible. It also wins when the *bottleneck* is `O(1)` edge-existence checks: Floyd-Warshall's `O(N³)` all-pairs loop hammers `adj[i][j]` and benefits massively. The decision rule that falls out: **dense or edge-query-bound → matrix; large and sparse → adjacency list** (the next lesson). The `O(1)` lookup is real, but you pay for it in `O(N²)` space — and on sparse data that bill is unpayable.
+The matrix allocates `N² = (10⁹)² = 10¹⁸` cells — an **exabyte-scale** block — while the actual edges number only `~10⁹ × 1,000 = 10¹²`. That's a **factor of a million wasted**: 999,999 of every million cells are `0`, storing "these two strangers are not friends." The space is `O(N²)` *no matter how few edges exist*, because the grid is sized by the node count alone, never the edge count. And almost every real graph is **sparse** — social networks, road maps, the web, dependency graphs all have `E ≪ N²` (each node connects to a tiny fraction of the others), so the matrix is structurally wrong for them: it would exhaust memory long before the algorithm ran. The matrix only earns its `N²` cells when the graph is **dense** (`E` close to `N²`) — tournament results where every team plays every other, full distance matrices, or small graphs (`N ≤ 100`) where the waste is negligible. It also wins when the *bottleneck* is `O(1)` edge-existence checks: Floyd-Warshall's `O(N³)` all-pairs loop hammers `adj[i][j]` and benefits massively. The decision rule that falls out: **dense or edge-query-bound → matrix; large and sparse → adjacency list** (the next lesson). The `O(1)` lookup is real, but you pay for it in `O(N²)` space — and on sparse data that bill is unpayable.
 
 ## Your Turn
 
-Build the matrix, query an edge, and list neighbours — in both languages:
+Build the adjacency matrix from `n` and edges, then query an edge and list neighbours — implement `create_graph` in both languages.
 
 ```python run viz=graph viz-kind=graph
-def create_graph(n, edges):
-    adj = [[False] * n for _ in range(n)]       # comprehension avoids the shared-row trap
-    for i, j in edges:
-        adj[i][j] = True; adj[j][i] = True
-    return adj
+import ast
 
-edges = [[0, 1], [0, 2], [1, 2], [1, 3], [2, 4], [3, 4]]
-m = create_graph(5, edges)
-print(m[1][3], m[0][3])                          # True False
-print([j for j in range(5) if m[2][j]])          # [0, 1, 4]
-print(all(m[i][j] == m[j][i] for i in range(5) for j in range(5)))   # True (symmetric)
+def create_graph(n, edges):
+    # Your code goes here — allocate an n×n matrix of zeros (use a comprehension!),
+    # then for each edge [i, j] set adj[i][j] = adj[j][i] = 1.
+    pass
+
+n     = int(input())
+edges = ast.literal_eval(input())
+m = create_graph(n, edges)
+print(m)
+print(m[1][3])                         # 1 for a real edge
+print(m[0][3])                         # 0 for no edge
+print([j for j in range(n) if m[2][j]])  # neighbours of node 2
 ```
 
 ```java run viz=graph viz-kind=graph
 import java.util.*;
+
 public class Main {
-  static boolean[][] createGraph(int n, int[][] edges) {
-    boolean[][] adj = new boolean[n][n];          // Java arrays are value-allocated — no aliasing trap
-    for (int[] e : edges) { adj[e[0]][e[1]] = true; adj[e[1]][e[0]] = true; }
-    return adj;
-  }
-  public static void main(String[] a) {
-    int[][] edges = {{0,1}, {0,2}, {1,2}, {1,3}, {2,4}, {3,4}};
-    boolean[][] m = createGraph(5, edges);
-    System.out.println(m[1][3] + " " + m[0][3]);  // true false
-    List<Integer> nbrs = new ArrayList<>();
-    for (int j = 0; j < 5; j++) if (m[2][j]) nbrs.add(j);
-    System.out.println(nbrs);                     // [0, 1, 4]
-  }
+    static int[][] createGraph(int n, int[][] edges) {
+        // Your code goes here — allocate int[n][n], then for each edge set both cells to 1.
+        return new int[n][n];
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n      = Integer.parseInt(sc.nextLine().trim());
+        int[][] edges = parseIntMatrix(sc.nextLine());
+        int[][] m = createGraph(n, edges);
+        List<List<Integer>> rows = new ArrayList<>();
+        for (int[] row : m) {
+            List<Integer> r = new ArrayList<>();
+            for (int v : row) r.add(v);
+            rows.add(r);
+        }
+        System.out.println(rows);
+        System.out.println(m[1][3]);    // 1 for a real edge
+        System.out.println(m[0][3]);    // 0 for no edge
+        List<Integer> nbrs = new ArrayList<>();
+        for (int j = 0; j < n; j++) if (m[2][j] == 1) nbrs.add(j);
+        System.out.println(nbrs);       // neighbours of node 2
+    }
+
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
+    }
 }
 ```
+
+```testcases
+{
+  "args": [
+    { "id": "n", "label": "n", "type": "int", "placeholder": "5" },
+    { "id": "edges", "label": "edges", "type": "int[][]", "placeholder": "[[0, 1], [0, 2], [1, 2], [1, 3], [2, 4], [3, 4]]" }
+  ],
+  "cases": [
+    { "args": { "n": "5", "edges": "[[0, 1], [0, 2], [1, 2], [1, 3], [2, 4], [3, 4]]" }, "expected": "[[0, 1, 1, 0, 0], [1, 0, 1, 1, 0], [1, 1, 0, 0, 1], [0, 1, 0, 0, 1], [0, 0, 1, 1, 0]]\n1\n0\n[0, 1, 4]" },
+    { "args": { "n": "5", "edges": "[[0, 1], [0, 4], [1, 2], [2, 3], [3, 4]]" }, "expected": "[[0, 1, 0, 0, 1], [1, 0, 1, 0, 0], [0, 1, 0, 1, 0], [0, 0, 1, 0, 1], [1, 0, 0, 1, 0]]\n0\n0\n[1, 3]" },
+    { "args": { "n": "5", "edges": "[[0, 1], [0, 2], [0, 3], [0, 4], [1, 2], [1, 3], [1, 4], [2, 3], [2, 4], [3, 4]]" }, "expected": "[[0, 1, 1, 1, 1], [1, 0, 1, 1, 1], [1, 1, 0, 1, 1], [1, 1, 1, 0, 1], [1, 1, 1, 1, 0]]\n1\n1\n[0, 1, 3, 4]" },
+    { "args": { "n": "5", "edges": "[]" }, "expected": "[[0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0]]\n0\n0\n[]" },
+    { "args": { "n": "5", "edges": "[[1, 3], [2, 0], [2, 4]]" }, "expected": "[[0, 0, 1, 0, 0], [0, 0, 0, 1, 0], [1, 0, 0, 0, 1], [0, 1, 0, 0, 0], [0, 0, 1, 0, 0]]\n1\n0\n[0, 4]" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Allocate `n × n` zeros using a comprehension (the `[[0]*n]*n` shorthand shares rows — one mutation stomps the whole column). Iterate the edge list once, setting `adj[i][j] = adj[j][i] = 1` for each undirected edge. Reading a cell is a direct `O(1)` index; listing neighbours is a row scan — `O(n)` regardless of how many actual neighbours exist.
+
+```python solution time=O(N²) space=O(N²)
+import ast
+
+def create_graph(n, edges):
+    adj = [[0] * n for _ in range(n)]       # comprehension avoids the shared-row trap
+    for i, j in edges:
+        adj[i][j] = 1; adj[j][i] = 1
+    return adj
+
+n     = int(input())
+edges = ast.literal_eval(input())
+m = create_graph(n, edges)
+print(m)
+print(m[1][3])
+print(m[0][3])
+print([j for j in range(n) if m[2][j]])
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+    static int[][] createGraph(int n, int[][] edges) {
+        int[][] adj = new int[n][n];         // Java arrays are value-allocated — no aliasing trap
+        for (int[] e : edges) { adj[e[0]][e[1]] = 1; adj[e[1]][e[0]] = 1; }
+        return adj;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n      = Integer.parseInt(sc.nextLine().trim());
+        int[][] edges = parseIntMatrix(sc.nextLine());
+        int[][] m = createGraph(n, edges);
+        List<List<Integer>> rows = new ArrayList<>();
+        for (int[] row : m) {
+            List<Integer> r = new ArrayList<>();
+            for (int v : row) r.add(v);
+            rows.add(r);
+        }
+        System.out.println(rows);
+        System.out.println(m[1][3]);
+        System.out.println(m[0][3]);
+        List<Integer> nbrs = new ArrayList<>();
+        for (int j = 0; j < n; j++) if (m[2][j] == 1) nbrs.add(j);
+        System.out.println(nbrs);
+    }
+
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
+    }
+}
+```
+
+</details>
 
 Then: store a **weighted** graph (cells hold weights, with `∞`/`-1` as the no-edge sentinel); build a **directed** version (drop the second assignment — the matrix loses its symmetry); and write `add_node`, noticing it costs `O(N²)` (reallocate + copy the whole grid).
 
@@ -157,7 +331,7 @@ The matrix is one half of the representation choice every graph program makes:
 <details>
 <summary><strong>Q:</strong> Why is the matrix wrong for large sparse graphs?</summary>
 
-**A:** Space is `O(N²)` regardless of edge count — a billion-node sparse graph would need `10¹⁸` cells, almost all `false`.
+**A:** Space is `O(N²)` regardless of edge count — a billion-node sparse graph would need `10¹⁸` cells, almost all `0`.
 
 </details>
 <details>
@@ -167,7 +341,7 @@ The matrix is one half of the representation choice every graph program makes:
 
 </details>
 <details>
-<summary><strong>Q:</strong> What's the `[[False]*n]*n` trap?</summary>
+<summary><strong>Q:</strong> What's the `[[0]*n]*n` trap?</summary>
 
 **A:** It makes `n` references to one shared row, so editing a cell mutates the whole column; build rows with a comprehension/factory.
 
@@ -177,4 +351,4 @@ The matrix is one half of the representation choice every graph program makes:
 
 - **CLRS**, *Introduction to Algorithms*, 4th ed., §20.1 — adjacency-matrix vs adjacency-list representations and their space/time trade-offs.
 - **Sedgewick & Wayne**, *Algorithms*, 4th ed., ch. 4 — graph representations.
-- Both runnable blocks are verified by running (5-node graph: `edge(1,3)=True`, `edge(0,3)=False`, neighbours of 2 = `[0,1,4]`, matrix symmetric; the `[[False]*3]*3` aliasing trap reproduced — one assignment mutates all rows).
+- Both runnable blocks are verified by running (5-node graph: matrix `[[0,1,1,0,0],...]`; `adj[1][3]=1`, `adj[0][3]=0`, neighbours of 2 = `[0,1,4]`; the `[[0]*3]*3` aliasing trap produces one shared row).

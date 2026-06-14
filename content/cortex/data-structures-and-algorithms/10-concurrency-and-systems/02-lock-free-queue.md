@@ -17,6 +17,8 @@ The **Michael-Scott queue** is the classic answer, built entirely on [CAS](/cort
 Enqueue links a node and (best-effort) advances the tail; dequeue swings `head` past the dummy and returns the next value. (Python has no real CAS — the GIL serialises bytecode — so we *simulate* it; Java's `AtomicReference` gives genuine CAS on references.)
 
 ```python run viz=array
+import ast
+
 class Node:
     __slots__ = ("value", "next")
     def __init__(self, value=None):
@@ -54,15 +56,19 @@ class MSQueue:
                     if cas(self, "head", head, nxt):   # swing head past the old dummy
                         return value
 
+items = ast.literal_eval(input())
 q = MSQueue()
-for x in [1, 2, 3]:
+for x in items:
     q.enqueue(x)
-print(q.dequeue(), q.dequeue(), q.dequeue())           # 1 2 3  (FIFO)
-print(q.dequeue())                                     # None   (empty)
+results = " ".join(str(q.dequeue()) for _ in items)
+print(results)
+d = q.dequeue()
+print(d if d is not None else "null")
 ```
 
 ```java run viz=array
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.*;
 public class Main {
     static class Node {
         Integer value;
@@ -101,15 +107,34 @@ public class Main {
         }
     }
     public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String line = sc.nextLine().replaceAll("[\\[\\]]", "").trim();
+        String[] parts = line.split(",\\s*");
         MSQueue q = new MSQueue();
-        for (int x : new int[]{1, 2, 3}) q.enqueue(x);
-        System.out.println(q.dequeue() + " " + q.dequeue() + " " + q.dequeue());   // 1 2 3
-        System.out.println(q.dequeue());                                           // null
+        for (String p : parts) q.enqueue(Integer.parseInt(p.trim()));
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < parts.length; i++) { if (i > 0) sb.append(" "); sb.append(q.dequeue()); }
+        System.out.println(sb.toString());
+        Integer d = q.dequeue();
+        System.out.println(d != null ? d : "null");
     }
 }
 ```
 
-Both print `1 2 3` then `None`/`null` — first-in-first-out, no locks. The retry loops never spin here because there's only one thread; under real contention, a thread whose CAS loses simply re-reads the fresh `head`/`tail` and tries again, always making progress.
+```testcases
+{
+  "args": [
+    { "id": "items", "label": "items to enqueue", "type": "string", "placeholder": "[1, 2, 3]" }
+  ],
+  "cases": [
+    { "args": { "items": "[1, 2, 3]" }, "expected": "1 2 3\nnull" },
+    { "args": { "items": "[5, 10, 15]" }, "expected": "5 10 15\nnull" },
+    { "args": { "items": "[42, 7, 99]" }, "expected": "42 7 99\nnull" }
+  ]
+}
+```
+
+Both print `1 2 3` then `null` — first-in-first-out, no locks. The retry loops never spin here because there's only one thread; under real contention, a thread whose CAS loses simply re-reads the fresh `head`/`tail` and tries again, always making progress.
 
 ## How It Works
 
@@ -201,6 +226,95 @@ print("drain:", q.dequeue(), q.dequeue(), q.dequeue())
 **Interleave** producers and consumers and confirm FIFO holds through a mixed sequence — enqueue some, dequeue some, repeat, and drain to empty.
 
 ```python run viz=array
+import ast
+
+class Node:
+    __slots__ = ("value", "next")
+    def __init__(self, value=None):
+        self.value = value; self.next = None
+def cas(obj, field, expected, new):
+    if getattr(obj, field) is expected:
+        setattr(obj, field, new); return True
+    return False
+class MSQueue:
+    def __init__(self):
+        dummy = Node(); self.head = dummy; self.tail = dummy
+    def enqueue(self, x):
+        # Your code goes here
+        return
+    def dequeue(self):
+        # Your code goes here
+        return None
+
+items = ast.literal_eval(input())
+q = MSQueue()
+out = []
+q.enqueue(items[0]); q.enqueue(items[1])
+out.append(q.dequeue())
+q.enqueue(items[2])
+out.append(q.dequeue())
+out.append(q.dequeue())
+d = q.dequeue()
+out.append(d if d is not None else "null")
+print("[" + ", ".join(str(x) for x in out) + "]")
+```
+
+```java run viz=array
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
+public class Main {
+    static class Node { Integer value; AtomicReference<Node> next = new AtomicReference<>(null); Node(Integer v){value=v;} }
+    static class MSQueue {
+        AtomicReference<Node> head, tail;
+        MSQueue() { Node d = new Node(null); head = new AtomicReference<>(d); tail = new AtomicReference<>(d); }
+        void enqueue(int x) {
+            // Your code goes here
+        }
+        Integer dequeue() {
+            // Your code goes here
+            return null;
+        }
+    }
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String line = sc.nextLine().replaceAll("[\\[\\]]", "").trim();
+        String[] parts = line.split(",\\s*");
+        int[] items = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) items[i] = Integer.parseInt(parts[i].trim());
+        MSQueue q = new MSQueue();
+        List<String> out = new ArrayList<>();
+        q.enqueue(items[0]); q.enqueue(items[1]); out.add(String.valueOf(q.dequeue()));
+        q.enqueue(items[2]); out.add(String.valueOf(q.dequeue())); out.add(String.valueOf(q.dequeue()));
+        Integer d = q.dequeue();
+        out.add(d != null ? String.valueOf(d) : "null");
+        System.out.println("[" + String.join(", ", out) + "]");
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "items", "label": "items to interleave", "type": "string", "placeholder": "[1, 2, 3]" }
+  ],
+  "cases": [
+    { "args": { "items": "[1, 2, 3]" }, "expected": "[1, 2, 3, null]" },
+    { "args": { "items": "[7, 8, 9]" }, "expected": "[7, 8, 9, null]" },
+    { "args": { "items": "[100, 200, 300]" }, "expected": "[100, 200, 300, null]" }
+  ]
+}
+```
+
+The first case prints `[1, 2, 3, null]`. The mixed order in, the same order out, and a clean `null` once the dummy is all that's left. The structure never special-cases "queue became empty" with a flag — the `head == tail` (both at the sentinel) condition handles it, which is exactly the kind of invariant a sentinel node buys you.
+
+<details>
+<summary><strong>Editorial</strong></summary>
+
+Implement the two-step enqueue (link then advance tail) and the head-swing dequeue. The sentinel always lives at `head`; an empty queue is `head == tail` with `head.next == null`. The retry loops are what make both operations lock-free — a failed CAS means a competitor committed, so re-read and try again.
+
+```python solution time=O(1) space=O(1)
+import ast
+
 class Node:
     __slots__ = ("value", "next")
     def __init__(self, value=None):
@@ -233,18 +347,20 @@ class MSQueue:
                     value = nxt.value
                     if cas(self, "head", head, nxt): return value
 
+items = ast.literal_eval(input())
 q = MSQueue()
 out = []
-q.enqueue(1); q.enqueue(2)
-out.append(q.dequeue())        # 1
-q.enqueue(3)
-out.append(q.dequeue())        # 2
-out.append(q.dequeue())        # 3
-out.append(q.dequeue())        # None (empty)
-print(out)                     # [1, 2, 3, None]
+q.enqueue(items[0]); q.enqueue(items[1])
+out.append(q.dequeue())
+q.enqueue(items[2])
+out.append(q.dequeue())
+out.append(q.dequeue())
+d = q.dequeue()
+out.append(d if d is not None else "null")
+print("[" + ", ".join(str(x) for x in out) + "]")
 ```
 
-```java run viz=array
+```java solution
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 public class Main {
@@ -273,21 +389,28 @@ public class Main {
         }
     }
     public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String line = sc.nextLine().replaceAll("[\\[\\]]", "").trim();
+        String[] parts = line.split(",\\s*");
+        int[] items = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) items[i] = Integer.parseInt(parts[i].trim());
         MSQueue q = new MSQueue();
-        List<Integer> out = new ArrayList<>();
-        q.enqueue(1); q.enqueue(2); out.add(q.dequeue());
-        q.enqueue(3); out.add(q.dequeue()); out.add(q.dequeue()); out.add(q.dequeue());
-        System.out.println(out);   // [1, 2, 3, null]
+        List<String> out = new ArrayList<>();
+        q.enqueue(items[0]); q.enqueue(items[1]); out.add(String.valueOf(q.dequeue()));
+        q.enqueue(items[2]); out.add(String.valueOf(q.dequeue())); out.add(String.valueOf(q.dequeue()));
+        Integer d = q.dequeue();
+        out.add(d != null ? String.valueOf(d) : "null");
+        System.out.println("[" + String.join(", ", out) + "]");
     }
 }
 ```
 
-Both print `[1, 2, 3, None]`/`[1, 2, 3, null]`. The mixed order in, the same order out, and a clean `None`/`null` once the dummy is all that's left. The structure never special-cases "queue became empty" with a flag — the `head == tail` (both at the sentinel) condition handles it, which is exactly the kind of invariant a sentinel node buys you.
+</details>
 
 ## Reflect & Connect
 
 - **CAS on `head`/`tail`, decoupled by a dummy.** Enqueue touches the tail, dequeue the head; the sentinel keeps them on different words so producers and consumers don't contend, and empty-queue handling falls out of `head == tail`.
-- **Two-step enqueue → tail lag → helping.** Link the node, then advance the tail; in between, `tail.next != null` signals a lagging tail, and any thread *helps* finish the advance. That cooperative completion is what makes the queue lock-free (no thread blocks on a slow one).
+- **Two-step enqueue -> tail lag -> helping.** Link the node, then advance the tail; in between, `tail.next != null` signals a lagging tail, and any thread *helps* finish the advance. That cooperative completion is what makes the queue lock-free (no thread blocks on a slow one).
 - **It's ABA-prone.** Reused node pointers can fool a CAS (the [ABA problem](/cortex/data-structures-and-algorithms/concurrency-and-systems/cas-and-atomics)); safe memory reclamation needs hazard pointers or [RCU/epochs](/cortex/data-structures-and-algorithms/concurrency-and-systems/rcu-and-hazard-pointers) — you can't just `free` a dequeued node while another thread might still hold a pointer to it.
 - **Lock-free, not wait-free.** Some thread always progresses, but an individual thread can retry indefinitely under heavy contention. That's the usual, practical guarantee — and far better than a lock that can stall everyone.
 - **It's the production default.** Java's `ConcurrentLinkedQueue`, .NET's `ConcurrentQueue`, and many brokers are Michael-Scott queues. Master the dummy node + two-step enqueue + helping, and concurrent stacks (Treiber) and skip-list maps are the same CAS-retry ideas on a different shape.
@@ -329,4 +452,4 @@ Both print `[1, 2, 3, None]`/`[1, 2, 3, null]`. The mixed order in, the same ord
 
 - **Michael & Scott** (1996), "Simple, fast, and practical non-blocking and blocking concurrent queue algorithms", *PODC* — the original two-lock and lock-free queues, the dummy node, and the helping mechanism.
 - **Herlihy & Shavit**, *The Art of Multiprocessor Programming* (2nd ed.) — the M-S queue with correctness and ABA/reclamation discussion.
-- **Java** `java.util.concurrent.ConcurrentLinkedQueue` and **.NET** `ConcurrentQueue<T>` are production Michael-Scott queues; the `1 2 3` / `None` FIFO, the tail-lag (`tail.value 10`, `tail.next.value 20`) trace, and the `[1, 2, 3, None]` interleave above come from the runnable blocks — the Python ones *simulate* CAS (GIL = no real atomic); the Java ones use real `AtomicReference`. Re-run to verify.
+- **Java** `java.util.concurrent.ConcurrentLinkedQueue` and **.NET** `ConcurrentQueue<T>` are production Michael-Scott queues; the `1 2 3` / `null` FIFO, the tail-lag (`tail.value 10`, `tail.next.value 20`) trace, and the `[1, 2, 3, null]` interleave above come from the runnable blocks — the Python ones *simulate* CAS (GIL = no real atomic); the Java ones use real `AtomicReference`. Re-run to verify.

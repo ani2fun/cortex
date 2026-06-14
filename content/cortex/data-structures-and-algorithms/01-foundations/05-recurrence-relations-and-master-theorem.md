@@ -22,6 +22,7 @@ The cleanest way to believe `T(n)=2T(n/2)+n` solves to `n log n` is to *count*. 
 
 ```python run viz=array
 import math
+
 work = 0; max_depth = 0
 def merge_sort(a, depth=0):
     global work, max_depth
@@ -39,11 +40,10 @@ def merge_sort(a, depth=0):
     while j < len(right): out.append(right[j]); j += 1; work += 1
     return out
 
-print(f"{'n':>6} {'merge work':>11} {'depth':>6} {'n*log2(n)':>10}")
-for n in [8, 16, 32]:
-    work = 0; max_depth = 0
-    merge_sort(list(range(n, 0, -1)))             # reverse-sorted: deterministic
-    print(f"{n:>6} {work:>11} {max_depth:>6} {int(n * math.log2(n)):>10}")
+n = int(input())                                  # power of 2 (e.g. 8, 16, 32)
+work = 0; max_depth = 0
+merge_sort(list(range(n, 0, -1)))                 # reverse-sorted: deterministic
+print(f"n={n} merge_work={work} depth={max_depth} n_log2_n={int(n * math.log2(n))}")
 ```
 
 ```java run viz=array
@@ -63,20 +63,33 @@ public class Main {
         while (j < right.length) { out[k++] = right[j++]; work++; }
         return out;
     }
-    public static void main(String[] x) {
-        System.out.printf("%6s %11s %6s %10s%n", "n", "merge work", "depth", "n*log2(n)");
-        for (int n : new int[]{8, 16, 32}) {
-            work = 0; maxDepth = 0;
-            int[] a = new int[n]; for (int i = 0; i < n; i++) a[i] = n - i;   // reverse-sorted
-            mergeSort(a, 0);
-            int lg = 0; for (int t = n; t > 1; t >>= 1) lg++;                  // exact log2 for powers of 2
-            System.out.printf("%6d %11d %6d %10d%n", n, work, maxDepth, (long) n * lg);
-        }
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = Integer.parseInt(sc.nextLine().trim());   // power of 2 (e.g. 8, 16, 32)
+        work = 0; maxDepth = 0;
+        int[] a = new int[n]; for (int i = 0; i < n; i++) a[i] = n - i;  // reverse-sorted
+        mergeSort(a, 0);
+        int lg = 0; for (int t = n; t > 1; t >>= 1) lg++;                // exact log2 for powers of 2
+        System.out.println("n=" + n + " merge_work=" + work + " depth=" + maxDepth + " n_log2_n=" + ((long) n * lg));
     }
 }
 ```
 
-Both print merge work of `24 / 64 / 160` at `n = 8 / 16 / 32` — *exactly* `n·log₂n` — and a recursion depth of `3 / 4 / 5` = `log₂n`. That's the recurrence made visible: there are `log n` levels of recursion, and each level's merges touch all `n` elements once, so the total is `n × log n`. The `n log n` was never in a single loop — it's the product of the tree's *height* and its *per-level work*.
+```testcases
+{
+  "args": [
+    { "id": "n", "label": "n (power of 2)", "type": "number", "placeholder": "8" }
+  ],
+  "cases": [
+    { "args": { "n": "8" },  "expected": "n=8 merge_work=24 depth=3 n_log2_n=24" },
+    { "args": { "n": "16" }, "expected": "n=16 merge_work=64 depth=4 n_log2_n=64" },
+    { "args": { "n": "32" }, "expected": "n=32 merge_work=160 depth=5 n_log2_n=160" },
+    { "args": { "n": "4" },  "expected": "n=4 merge_work=8 depth=2 n_log2_n=8" }
+  ]
+}
+```
+
+At `n = 8`: merge work = `24 = 8 × 3 = n · log₂n`, depth = 3 = log₂8. At `n = 16`: `64 = 16 × 4`, depth 4. At `n = 32`: `160 = 32 × 5`, depth 5. That's the recurrence made visible: there are `log n` levels of recursion, and each level's merges touch all `n` elements once, so the total is `n × log n`. The `n log n` was never in a single loop — it's the product of the tree's *height* and its *per-level work*.
 
 ## How It Works
 
@@ -132,38 +145,88 @@ The case names ("leaves win," "root wins") are claims about the *shape* of the w
 
 ```python run viz=array
 def work_per_level(n, f_exp):        # f(n)=n^f_exp; total work at each recursion-tree level
-    out = []; k = 0; size = n
-    while size >= 1:
-        out.append((2 ** k) * (size ** f_exp))    # 2^k nodes, each of size n/2^k
-        size //= 2; k += 1
-    return out
+    # Your code goes here
+    return []
 
-n = 16
-print("balanced  2T(n/2)+n    (f=n)  :", work_per_level(n, 1), "-> flat: every level = n")
-print("top-heavy 2T(n/2)+n^2  (f=n^2):", work_per_level(n, 2), "-> geometric: root dominates")
+n = int(input())
+f_exp = int(input())
+print(work_per_level(n, f_exp))
 ```
 
 ```java run viz=array
 import java.util.*;
 public class Main {
     static List<Long> workPerLevel(int n, int fExp) {     // f(n)=n^fExp; total work at each level
-        List<Long> out = new ArrayList<>(); int k = 0, size = n;
-        while (size >= 1) {
-            long nodes = 1L << k;
-            long perNode = (fExp == 2) ? (long) size * size : size;
-            out.add(nodes * perNode);                      // 2^k nodes, each of size n/2^k
-            size /= 2; k++;
-        }
-        return out;
+        // Your code goes here
+        return new ArrayList<>();
     }
-    public static void main(String[] x) {
-        System.out.println("balanced  2T(n/2)+n    (f=n)  : " + workPerLevel(16, 1) + " -> flat: every level = n");
-        System.out.println("top-heavy 2T(n/2)+n^2  (f=n^2): " + workPerLevel(16, 2) + " -> geometric: root dominates");
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = Integer.parseInt(sc.nextLine().trim());
+        int fExp = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(workPerLevel(n, fExp));
     }
 }
 ```
 
-Both print `[16, 16, 16, 16, 16]` for the balanced recurrence and `[256, 128, 64, 32, 16]` for the top-heavy one. The balanced profile is **flat** — every level totals `n = 16`, because the `2^k` nodes each shrink exactly as fast as they multiply (`2^k · n/2^k = n`); summed over `log n + 1` levels that's `Θ(n log n)`, Case 2. The top-heavy profile **halves each level** — a geometric series `256 + 128 + … ` dominated by its first term, the root's `256 = n²`; summed it's `Θ(n²)`, Case 3, where the recursive work is asymptotically free. The Master case is just a name for which way this profile tilts: flat (Case 2), bottom-heavy toward the leaves (Case 1), or top-heavy toward the root (Case 3).
+```testcases
+{
+  "args": [
+    { "id": "n",     "label": "n (power of 2)", "type": "number", "placeholder": "16" },
+    { "id": "f_exp", "label": "f_exp (0=const, 1=linear, 2=quad)", "type": "number", "placeholder": "1" }
+  ],
+  "cases": [
+    { "args": { "n": "16", "f_exp": "1" }, "expected": "[16, 16, 16, 16, 16]" },
+    { "args": { "n": "16", "f_exp": "2" }, "expected": "[256, 128, 64, 32, 16]" },
+    { "args": { "n": "8",  "f_exp": "1" }, "expected": "[8, 8, 8, 8]" },
+    { "args": { "n": "4",  "f_exp": "2" }, "expected": "[16, 8, 4]" }
+  ]
+}
+```
+
+The first case `[16, 16, 16, 16, 16]` for `f_exp=1` (balanced): every level totals `n = 16`, because `2^k` nodes each of size `n/2^k` give `2^k · n/2^k = n`; summed over `log n + 1` levels that's `Θ(n log n)`, Case 2. The second case `[256, 128, 64, 32, 16]` for `f_exp=2` (top-heavy): each level halves — a geometric series dominated by its first term `n²`; summed it's `Θ(n²)`, Case 3. The Master case is just a name for which way this profile tilts: flat (Case 2), bottom-heavy toward the leaves (Case 1), or top-heavy toward the root (Case 3).
+
+<details>
+<summary><strong>Editorial</strong></summary>
+
+At each recursion-tree level `k` there are `2^k` nodes, each processing a subproblem of size `n/2^k`. The total work at that level is `(2^k) · (n/2^k)^f_exp`. Walk levels from 0 until `size < 1`.
+
+```python solution time=O(log n) space=O(log n)
+def work_per_level(n, f_exp):        # f(n)=n^f_exp; total work at each recursion-tree level
+    out = []; k = 0; size = n
+    while size >= 1:
+        out.append((2 ** k) * (size ** f_exp))    # 2^k nodes, each of size n/2^k
+        size //= 2; k += 1
+    return out
+
+n = int(input())
+f_exp = int(input())
+print(work_per_level(n, f_exp))
+```
+
+```java solution
+import java.util.*;
+public class Main {
+    static List<Long> workPerLevel(int n, int fExp) {
+        List<Long> out = new ArrayList<>(); int k = 0, size = n;
+        while (size >= 1) {
+            long nodes = 1L << k;
+            long perNode = (fExp == 2) ? (long) size * size : size;   // handles f_exp 1 and 2
+            out.add(nodes * perNode);
+            size /= 2; k++;
+        }
+        return out;
+    }
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = Integer.parseInt(sc.nextLine().trim());
+        int fExp = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(workPerLevel(n, fExp));
+    }
+}
+```
+
+</details>
 
 ## Reflect & Connect
 

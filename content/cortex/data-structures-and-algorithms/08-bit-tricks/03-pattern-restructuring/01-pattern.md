@@ -15,10 +15,13 @@ A plain shift won't do it, because shifting *loses* the bits that drop off the e
 
 ## See It Work
 
-Reverse an 8-bit number and rotate one left. `0b00001011` reversed is `0b11010000`; rotating `0b10000001` left by 1 wraps the top bit down to give `0b00000011`. Run it.
+Work in an 8-bit window so the bits are easy to read. Reverse `n` end-to-end and rotate it left by 1; `0b00001011` (`11`) reverses to `0b11010000` and rotates-left-1 to `0b00010110`. Run it.
 
 ```python run viz=array
 WIDTH = 8
+
+def show(x):                               # 8-bit binary string, zero-padded
+    return format(x, '08b')
 
 def reverse_bits(n, width=WIDTH):
     result = 0
@@ -32,8 +35,53 @@ def rotate_left(n, k, width=WIDTH):
     mask = (1 << width) - 1
     return ((n << k) | (n >> (width - k))) & mask
 
-print(bin(reverse_bits(0b00001011)))       # 0b11010000
-print(bin(rotate_left(0b10000001, 1)))     # 0b11  (top bit wrapped to the bottom)
+n = int(input())
+print(show(reverse_bits(n)))               # bits reversed end-to-end
+print(show(rotate_left(n, 1)))             # rotated left by 1, top bit wraps down
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+  static final int WIDTH = 8;
+
+  static String show(int x) {              // 8-bit binary string, zero-padded
+    return String.format("%" + WIDTH + "s", Integer.toBinaryString(x)).replace(' ', '0');
+  }
+
+  static int reverseBits(int n) {
+    int result = 0;
+    for (int i = 0; i < WIDTH; i++) { result = (result << 1) | (n & 1); n >>= 1; }
+    return result;
+  }
+
+  static int rotateLeft(int n, int k) {
+    k %= WIDTH;
+    int mask = (1 << WIDTH) - 1;
+    return ((n << k) | (n >>> (WIDTH - k))) & mask;   // >>> : unsigned, no sign-extension
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int n = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(show(reverseBits(n)));
+    System.out.println(show(rotateLeft(n, 1)));
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "n", "label": "n", "type": "int", "placeholder": "11" }
+  ],
+  "cases": [
+    { "args": { "n": "11" }, "expected": "11010000\n00010110" },
+    { "args": { "n": "1" }, "expected": "10000000\n00000010" },
+    { "args": { "n": "255" }, "expected": "11111111\n11111111" }
+  ]
+}
 ```
 
 ## How It Works
@@ -80,26 +128,92 @@ The left shift `n << k` produces bits *above* position `width` — for an 8-bit 
 
 ## Your Turn
 
-The reusable reverse and rotate:
+The reusable reverse and rotate — fill in both, then Run. The driver reads `n` and `k`, prints `reverse_bits(n)` then `rotate_left(n, k)` (8-bit window, decimal):
 
 ```python run viz=array
-def reverse_bits(n, width=8):
+WIDTH = 8
+
+def reverse_bits(n, width=WIDTH):
+    # Your code goes here
+    return 0
+
+def rotate_left(n, k, width=WIDTH):
+    # Your code goes here
+    return 0
+
+n = int(input())
+k = int(input())
+print(reverse_bits(n))
+print(rotate_left(n, k))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+  static final int WIDTH = 8;
+
+  static int reverseBits(int n) {
+    // Your code goes here
+    return 0;
+  }
+
+  static int rotateLeft(int n, int k) {
+    // Your code goes here
+    return 0;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int n = Integer.parseInt(sc.nextLine().trim());
+    int k = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(reverseBits(n));
+    System.out.println(rotateLeft(n, k));
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "n", "label": "n", "type": "int", "placeholder": "1" },
+    { "id": "k", "label": "k", "type": "int", "placeholder": "1" }
+  ],
+  "cases": [
+    { "args": { "n": "1", "k": "1" }, "expected": "128\n2" },
+    { "args": { "n": "15", "k": "2" }, "expected": "240\n60" },
+    { "args": { "n": "11", "k": "3" }, "expected": "208\n88" }
+  ]
+}
+```
+
+<details>
+<summary><strong>Editorial</strong></summary>
+
+```python solution
+WIDTH = 8
+
+def reverse_bits(n, width=WIDTH):
     result = 0
     for _ in range(width):
         result = (result << 1) | (n & 1)
         n >>= 1
     return result
 
-def rotate_left(n, k, width=8):
+def rotate_left(n, k, width=WIDTH):
     k %= width
     mask = (1 << width) - 1
     return ((n << k) | (n >> (width - k))) & mask
 
-print(reverse_bits(0b00000001))        # 128
-print(rotate_left(0b00001111, 2))      # 60  (0b00111100)
+n = int(input())
+k = int(input())
+print(reverse_bits(n))
+print(rotate_left(n, k))
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
   static final int WIDTH = 8;
 
@@ -116,11 +230,16 @@ public class Main {
   }
 
   public static void main(String[] args) {
-    System.out.println(reverseBits(0b00000001));   // 128
-    System.out.println(rotateLeft(0b00001111, 2)); // 60
+    Scanner sc = new Scanner(System.in);
+    int n = Integer.parseInt(sc.nextLine().trim());
+    int k = Integer.parseInt(sc.nextLine().trim());
+    System.out.println(reverseBits(n));
+    System.out.println(rotateLeft(n, k));
   }
 }
 ```
+
+</details>
 
 Drill the family in **Practice** — [Reverse Bits](/cortex/data-structures-and-algorithms/bit-tricks/pattern-restructuring/problems/reverse-bits) and [Circular Shift Bits](/cortex/data-structures-and-algorithms/bit-tricks/pattern-restructuring/problems/circular-shift-bits).
 
@@ -130,7 +249,7 @@ Restructuring is "lossless bit movement," and it recurs in low-level code:
 
 - **The family** — reverse all bits, rotate left/right by `k`, swap byte order (endianness conversion), and extract/insert a multi-bit field. Each moves bits without dropping them.
 - **OR-of-complementary-shifts is the rotate idiom** — it appears verbatim in cryptographic round functions (many ciphers rotate state each round) and hash mixing. Recognize it and rotations stop looking like magic.
-- **Mind the width** — `k %= width` before rotating, mask after shifting, and use Java's `>>>` (unsigned) rather than `>>` (sign-extending) when the top bit might be set. A faster, loop-free reversal exists via divide-and-conquer with magic masks (`0x55555555`, `0x33333333`, …) — `O(log width)` — but the LSB loop is the readable default.
+- **Mind the width** — `k %= width` before rotating, mask after shifting, and use Java's `>>>` (unsigned) rather than `>>` (sign-extending) when the top bit might be set. The full-width (32-bit) versions in the problems print `Integer.toUnsignedLong(result)` so a set top bit reads as an unsigned value, matching Python. A faster, loop-free reversal exists via divide-and-conquer with magic masks (`0x55555555`, `0x33333333`, …) — `O(log width)` — but the LSB loop is the readable default.
 
 **Prerequisites:** [Kth-Bit Operations](/cortex/data-structures-and-algorithms/bit-tricks/pattern-kth-bit/pattern).
 **What's next:** the single most useful bitwise identity — [XOR](/cortex/data-structures-and-algorithms/bit-tricks/pattern-xor/pattern).
@@ -175,4 +294,4 @@ Restructuring is "lossless bit movement," and it recurs in low-level code:
 
 - **Warren**, *Hacker's Delight*, 2nd ed., ch. 2 & 7 — bit reversal (including the divide-and-conquer version) and rotations.
 - **Sedgewick & Wayne**, *Algorithms*, 4th ed. — bitwise operators and shifts.
-- Bit reversal (LSB loop) and rotation (OR-of-shifts) are standard; both runnable blocks are verified by running (`0b00001011 ⇒ 0b11010000`; rotate of `0b10000001` ⇒ `0b11`; utilities ⇒ `128`, `60`).
+- Bit reversal (LSB loop) and rotation (OR-of-shifts) are standard; both runnable blocks are verified by running.

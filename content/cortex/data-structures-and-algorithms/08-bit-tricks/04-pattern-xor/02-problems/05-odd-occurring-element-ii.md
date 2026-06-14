@@ -4,23 +4,110 @@ summary: "Same setup, but two elements occur an odd number of times. Return both
 prereqs:
   - 04-pattern-xor/01-pattern
 difficulty: medium
+kind: problem
+topics: [xor, bit-manipulation]
 ---
 
 # Odd-Occurring Element II
 
-## The Problem
+When two values survive the XOR, a single differing bit is enough to partition them apart.
 
-Same setup, but **two** elements occur an odd number of times. Return both, in any order.
+## Problem Statement
 
+Same setup as Odd-Occurring Element, but **two** elements occur an odd number of times. Return both, sorted ascending.
+
+## Examples
+
+**Example 1**
 ```
-Input:  [2, 2, 2, 1, 3, 1, 4, 3, 1, 4, 1, 5]   →  [2, 5]
-Input:  [1, 2, 1, 1, 2, 3, 1, 3, 1, 3]          →  [1, 3]
-Input:  [1, 2]                                  →  [1, 2]
+Input:  [2, 2, 2, 1, 3, 1, 4, 3, 1, 4, 1, 5]
+Output: [2, 5]
+Explanation: 2 appears 3 times and 5 appears 1 time — both odd; rest cancel.
+```
+
+**Example 2**
+```
+Input:  [1, 2, 1, 1, 2, 3, 1, 3, 1, 3]
+Output: [1, 3]
+Explanation: 1 appears 5 times (odd) and 3 appears 3 times (odd).
+```
+
+**Example 3**
+```
+Input:  [1, 2]
+Output: [1, 2]
+Explanation: Both appear once — both odd-occurring.
+```
+
+## Constraints
+
+- `2 ≤ arr.length` — at least two elements.
+- All elements are non-negative integers.
+- Exactly two elements have odd occurrence counts; they are distinct.
+
+```python run viz=array viz-root=arr
+import ast
+from typing import List
+
+class Solution:
+    def odd_occurring_element_ii(self, arr: List[int]) -> List[int]:
+        # Your code goes here
+        return []
+
+
+arr = ast.literal_eval(input())
+print(sorted(Solution().odd_occurring_element_ii(arr)))
+```
+
+```java run viz=array viz-root=arr
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public List<Integer> oddOccurringElementII(int[] arr) {
+            // Your code goes here
+            return new ArrayList<>();
+        }
+    }
+
+    static int[] parseIntArray(String s) {
+        s = s.trim();
+        if (s.equals("[]")) return new int[0];
+        s = s.substring(1, s.length() - 1);
+        String[] parts = s.split(",");
+        int[] arr = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) arr[i] = Integer.parseInt(parts[i].trim());
+        return arr;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine().trim());
+        List<Integer> result = new Solution().oddOccurringElementII(arr);
+        Collections.sort(result);
+        System.out.println(result);
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[2, 2, 2, 1, 3, 1, 4, 3, 1, 4, 1, 5]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[2, 2, 2, 1, 3, 1, 4, 3, 1, 4, 1, 5]" }, "expected": "[2, 5]" },
+    { "args": { "arr": "[1, 2, 1, 1, 2, 3, 1, 3, 1, 3]" }, "expected": "[1, 3]" },
+    { "args": { "arr": "[1, 2]" }, "expected": "[1, 2]" },
+    { "args": { "arr": "[3, 5]" }, "expected": "[3, 5]" },
+    { "args": { "arr": "[7, 7, 7, 4]" }, "expected": "[4, 7]" },
+    { "args": { "arr": "[0, 1, 2, 0, 2, 3]" }, "expected": "[1, 3]" }
+  ]
+}
 ```
 
 <details>
 <summary><h2>The Recurrence — Partition by a Differing Bit</h2></summary>
-
 
 XOR everything: result = `a ^ b`, where `a, b` are the two odd-occurring elements.
 
@@ -59,9 +146,12 @@ Because `a != b` (otherwise they'd be the same element). At least one bit must d
 <details>
 <summary><h2>The Solution</h2></summary>
 
+### The Solution
 
+Two passes: first XOR-all to get `a ^ b`; then partition by the lowest differing bit and XOR each bucket to recover `a` and `b` separately. The solution sorts before returning so the output is deterministic.
 
-```python run viz=array viz-root=arr
+```python solution time=O(n) space=O(1)
+import ast
 from typing import List
 
 class Solution:
@@ -98,18 +188,11 @@ class Solution:
         return [num1, num2]
 
 
-# Examples from the problem statement
-print(sorted(Solution().odd_occurring_element_ii([2, 2, 2, 1, 3, 1, 4, 3, 1, 4, 1, 5])))    # [2, 5]
-print(sorted(Solution().odd_occurring_element_ii([1, 2, 1, 1, 2, 3, 1, 3, 1, 3])))           # [1, 3]
-print(sorted(Solution().odd_occurring_element_ii([1, 2])))                                    # [1, 2]
-
-# Edge cases
-print(sorted(Solution().odd_occurring_element_ii([3, 5])))                                    # [3, 5]
-print(sorted(Solution().odd_occurring_element_ii([7, 7, 7, 4])))                              # [4, 7]
-print(sorted(Solution().odd_occurring_element_ii([0, 1, 0, 0, 1, 1, 2, 2, 2, 3])))           # [1, 3]
+arr = ast.literal_eval(input())
+print(sorted(Solution().odd_occurring_element_ii(arr)))
 ```
 
-```java run viz=array viz-root=arr
+```java solution
 import java.util.*;
 
 public class Main {
@@ -158,26 +241,22 @@ public class Main {
         }
     }
 
+    static int[] parseIntArray(String s) {
+        s = s.trim();
+        if (s.equals("[]")) return new int[0];
+        s = s.substring(1, s.length() - 1);
+        String[] parts = s.split(",");
+        int[] arr = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) arr[i] = Integer.parseInt(parts[i].trim());
+        return arr;
+    }
+
     public static void main(String[] args) {
-        // Examples from the problem statement
-        List<Integer> r1 = new Solution().oddOccurringElementII(new int[]{2, 2, 2, 1, 3, 1, 4, 3, 1, 4, 1, 5});
-        Collections.sort(r1); System.out.println(r1);    // [2, 5]
-
-        List<Integer> r2 = new Solution().oddOccurringElementII(new int[]{1, 2, 1, 1, 2, 3, 1, 3, 1, 3});
-        Collections.sort(r2); System.out.println(r2);    // [1, 3]
-
-        List<Integer> r3 = new Solution().oddOccurringElementII(new int[]{1, 2});
-        Collections.sort(r3); System.out.println(r3);    // [1, 2]
-
-        // Edge cases
-        List<Integer> r4 = new Solution().oddOccurringElementII(new int[]{3, 5});
-        Collections.sort(r4); System.out.println(r4);    // [3, 5]
-
-        List<Integer> r5 = new Solution().oddOccurringElementII(new int[]{7, 7, 7, 4});
-        Collections.sort(r5); System.out.println(r5);    // [4, 7]
-
-        List<Integer> r6 = new Solution().oddOccurringElementII(new int[]{0, 1, 0, 0, 1, 1, 2, 2, 2, 3});
-        Collections.sort(r6); System.out.println(r6);    // [1, 3]
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine().trim());
+        List<Integer> r = new Solution().oddOccurringElementII(arr);
+        Collections.sort(r);
+        System.out.println(r);
     }
 }
 ```

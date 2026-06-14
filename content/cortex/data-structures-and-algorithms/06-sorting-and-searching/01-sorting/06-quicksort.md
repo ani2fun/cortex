@@ -20,6 +20,8 @@ Sort `[5, 2, 8, 1, 9, 3]` by partitioning around a pivot and recursing. Run it, 
 > ▶ Run it, then click **Visualise** — each partition drags elements `≤` pivot to the left, then drops the pivot into its final slot before recursing on both halves.
 
 ```python run viz=array viz-root=arr
+import ast
+
 def partition(arr, lo, hi):
     pivot = arr[hi]                       # last element as pivot
     i = lo - 1                            # boundary of the "≤ pivot" region
@@ -39,7 +41,59 @@ def quicksort(arr, lo=0, hi=None):
         quicksort(arr, p + 1, hi)         # sort the right side
     return arr
 
-print(quicksort([5, 2, 8, 1, 9, 3]))      # [1, 2, 3, 5, 8, 9]
+arr = ast.literal_eval(input())           # the test case's array
+print(quicksort(arr))                     # [1, 2, 3, 5, 8, 9]
+```
+
+```java run viz=array viz-root=arr
+import java.util.*;
+
+public class Main {
+  static int partition(int[] arr, int lo, int hi) {
+    int pivot = arr[hi], i = lo - 1;
+    for (int j = lo; j < hi; j++)
+      if (arr[j] <= pivot) { i++; int t = arr[i]; arr[i] = arr[j]; arr[j] = t; }
+    int t = arr[i + 1]; arr[i + 1] = arr[hi]; arr[hi] = t;
+    return i + 1;
+  }
+  static void quicksort(int[] arr, int lo, int hi) {
+    if (lo < hi) {
+      int p = partition(arr, lo, hi);    // pivot now permanently placed at p
+      quicksort(arr, lo, p - 1);         // sort the left side
+      quicksort(arr, p + 1, hi);         // sort the right side
+    }
+  }
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());   // the test case's array
+    quicksort(arr, 0, arr.length - 1);
+    System.out.println(Arrays.toString(arr));   // [1, 2, 3, 5, 8, 9]
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's array
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[5, 2, 8, 1, 9, 3]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[5, 2, 8, 1, 9, 3]" }, "expected": "[1, 2, 3, 5, 8, 9]" },
+    { "args": { "arr": "[1, 2, 3, 4]" }, "expected": "[1, 2, 3, 4]" },
+    { "args": { "arr": "[3, 3, 1, 2, 3]" }, "expected": "[1, 2, 3, 3, 3]" },
+    { "args": { "arr": "[1]" }, "expected": "[1]" }
+  ]
+}
 ```
 
 ## How It Works
@@ -91,9 +145,79 @@ Because quicksort's pass does far more than finalize the pivot — it *also spli
 
 ## Your Turn
 
-The reusable in-place quicksort:
+Implement in-place quicksort: pick the last element as pivot, use a Lomuto partition to place elements `≤ pivot` left and `> pivot` right (pivot lands in its final slot), then recurse on both sides. Return the sorted array.
 
 ```python run viz=array
+import ast
+
+def partition(arr, lo, hi):
+    # Your code goes here — pivot = arr[hi]; boundary i = lo-1;
+    # swap arr[j] left when arr[j] <= pivot; place pivot at i+1.
+    return lo  # return pivot's final index
+
+def quicksort(arr, lo=0, hi=None):
+    if hi is None:
+        hi = len(arr) - 1
+    # Your code goes here — partition, then recurse on both sides.
+    return arr
+
+arr = ast.literal_eval(input())      # the test case's array
+print(quicksort(arr))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+  static int partition(int[] arr, int lo, int hi) {
+    // Your code goes here — pivot = arr[hi]; boundary i = lo-1;
+    // swap arr[j] left when arr[j] <= pivot; place pivot at i+1.
+    return lo;  // return pivot's final index
+  }
+  static void quicksort(int[] arr, int lo, int hi) {
+    // Your code goes here — partition, then recurse on both sides.
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());
+    quicksort(arr, 0, arr.length - 1);
+    System.out.println(Arrays.toString(arr));
+  }
+
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[5, 2, 8, 1, 9, 3]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[5, 2, 8, 1, 9, 3]" }, "expected": "[1, 2, 3, 5, 8, 9]" },
+    { "args": { "arr": "[1, 2, 3, 4]" }, "expected": "[1, 2, 3, 4]" },
+    { "args": { "arr": "[9, 7, 5, 3, 1]" }, "expected": "[1, 3, 5, 7, 9]" },
+    { "args": { "arr": "[2, 1]" }, "expected": "[1, 2]" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Lomuto partition: pivot is `arr[hi]`; boundary `i = lo - 1`; scan `j` from `lo` to `hi - 1` swapping any `arr[j] ≤ pivot` into the `≤` region; place pivot at `i + 1`. Recurse on `[lo, p-1]` and `[p+1, hi]`. `O(n log n)` average, `O(n²)` worst, `O(log n)` stack space, in-place, not stable.
+
+```python solution time=O(n log n) space=O(log n)
+import ast
+
 def partition(arr, lo, hi):
     pivot = arr[hi]
     i = lo - 1
@@ -113,11 +237,11 @@ def quicksort(arr, lo=0, hi=None):
         quicksort(arr, p + 1, hi)
     return arr
 
-print(quicksort([5, 2, 8, 1, 9, 3]))   # [1, 2, 3, 5, 8, 9]
-print(quicksort([3, 3, 1, 2, 3]))      # [1, 2, 3, 3, 3]
+arr = ast.literal_eval(input())      # the test case's array
+print(quicksort(arr))
 ```
 
-```java run viz=array
+```java solution
 import java.util.*;
 
 public class Main {
@@ -136,14 +260,24 @@ public class Main {
     }
   }
   public static void main(String[] args) {
-    int[] arr = {5, 2, 8, 1, 9, 3};
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());
     quicksort(arr, 0, arr.length - 1);
-    System.out.println(Arrays.toString(arr));   // [1, 2, 3, 5, 8, 9]
+    System.out.println(Arrays.toString(arr));
+  }
+
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
   }
 }
 ```
 
-This is a structural lesson — drill sorting in the pattern sets.
+</details>
 
 ## Reflect & Connect
 

@@ -4,23 +4,93 @@ summary: "Given num and k, return num with its kth bit forced to 0. If the bit w
 prereqs:
   - 01-pattern-kth-bit/01-pattern
 difficulty: easy
+kind: problem
+topics: [kth-bit, bit-manipulation]
 ---
 
 # Unset Kth Bit
 
-## The Problem
+Invert a mask that has a single `1` at position `k`, then AND with the number — that bit becomes `0`, and every other bit is untouched.
+
+## Problem Statement
 
 Given `num` and `k`, return `num` with its kth bit forced to 0. If the bit was already 0, the value is unchanged.
 
+## Examples
+
+**Example 1**
 ```
 Input:  num = 1, k = 1
-Output: 0                        0001 → 0000
+Output: 0
+Explanation: 0001 → 0000 — bit 1 cleared.
+```
 
+**Example 2**
+```
 Input:  num = 2, k = 1
-Output: 2                        0010 — bit 1 already 0; no change
+Output: 2
+Explanation: 0010 — bit 1 already 0; no change.
+```
 
+**Example 3**
+```
 Input:  num = 3, k = 1
-Output: 2                        0011 → 0010
+Output: 2
+Explanation: 0011 → 0010 — bit 1 cleared.
+```
+
+## Constraints
+
+- `0 ≤ num ≤ 2^31 - 1` — non-negative 32-bit integer.
+- `1 ≤ k ≤ 31` — 1-indexed bit position from the LSB.
+
+```python run viz=array
+class Solution:
+    def unset_kth_bit(self, num: int, k: int) -> int:
+        # Your code goes here
+        return 0
+
+
+num = int(input())
+k = int(input())
+print(Solution().unset_kth_bit(num, k))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int unsetKthBit(int num, int k) {
+            // Your code goes here
+            return 0;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int num = Integer.parseInt(sc.nextLine().trim());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().unsetKthBit(num, k));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "num", "label": "num", "type": "int", "placeholder": "1" },
+    { "id": "k", "label": "k", "type": "int", "placeholder": "1" }
+  ],
+  "cases": [
+    { "args": { "num": "1", "k": "1" }, "expected": "0" },
+    { "args": { "num": "2", "k": "1" }, "expected": "2" },
+    { "args": { "num": "3", "k": "1" }, "expected": "2" },
+    { "args": { "num": "7", "k": "2" }, "expected": "5" },
+    { "args": { "num": "7", "k": "3" }, "expected": "3" },
+    { "args": { "num": "15", "k": "4" }, "expected": "7" }
+  ]
+}
 ```
 
 <details>
@@ -41,9 +111,11 @@ Without the `~`, you'd be ANDing `num` against a mask that's 0 everywhere except
 <details>
 <summary><h2>The Solution</h2></summary>
 
+### The Solution
 
+AND `num` with `~(1 << (k - 1))` — the inverted mask has a `0` only at position k, so every other bit passes through and bit k is zeroed.
 
-```python run viz=array
+```python solution time=O(1) space=O(1)
 class Solution:
     def unset_kth_bit(self, num: int, k: int) -> int:
 
@@ -55,20 +127,14 @@ class Solution:
         return num & ~(1 << (k - 1))
 
 
-# Examples from the problem statement
-print(Solution().unset_kth_bit(1, 1))    # 0
-print(Solution().unset_kth_bit(2, 1))    # 2
-print(Solution().unset_kth_bit(3, 1))    # 2
-
-# Edge cases
-print(Solution().unset_kth_bit(0, 1))    # 0
-print(Solution().unset_kth_bit(7, 2))    # 5
-print(Solution().unset_kth_bit(7, 3))    # 3
-print(Solution().unset_kth_bit(15, 4))   # 7
-print(Solution().unset_kth_bit(8, 4))    # 0
+num = int(input())
+k = int(input())
+print(Solution().unset_kth_bit(num, k))
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
     static class Solution {
         public int unsetKthBit(int num, int k) {
@@ -84,17 +150,10 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().unsetKthBit(1, 1));    // 0
-        System.out.println(new Solution().unsetKthBit(2, 1));    // 2
-        System.out.println(new Solution().unsetKthBit(3, 1));    // 2
-
-        // Edge cases
-        System.out.println(new Solution().unsetKthBit(0, 1));    // 0
-        System.out.println(new Solution().unsetKthBit(7, 2));    // 5
-        System.out.println(new Solution().unsetKthBit(7, 3));    // 3
-        System.out.println(new Solution().unsetKthBit(15, 4));   // 7
-        System.out.println(new Solution().unsetKthBit(8, 4));    // 0
+        Scanner sc = new Scanner(System.in);
+        int num = Integer.parseInt(sc.nextLine().trim());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().unsetKthBit(num, k));
     }
 }
 ```

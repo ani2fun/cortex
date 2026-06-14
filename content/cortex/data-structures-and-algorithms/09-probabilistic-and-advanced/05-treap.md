@@ -17,7 +17,7 @@ A **treap** gets the same expected `O(log n)` with almost none of that complexit
 Insert keys — even in sorted order — and the treap stays a valid BST that's also balanced. Each insert drops the key in by BST rule, then rotates it up until the heap property on priorities is restored.
 
 ```python run viz=binary-tree viz-root=root
-import random
+import random, ast
 class Node:
     def __init__(self, key, pri):
         self.key, self.pri = key, pri
@@ -54,10 +54,13 @@ def build(keys, seed):
         root = insert(root, k, rng)
     return root
 
-t = build(list(range(1, 16)), seed=1)                  # insert 1..15 in SORTED order
+n = ast.literal_eval(input())                          # insert keys 1..n in sorted order
+sk1 = ast.literal_eval(input())                        # key present in tree
+sk2 = ast.literal_eval(input())                        # key absent from tree
+t = build(list(range(1, n + 1)), seed=1)
 out = []; inorder(t, out)
-print(out == sorted(out))                              # True — always a valid BST
-print(search(t, 7), search(t, 20))                     # True False
+print("true" if out == sorted(out) else "false")       # always a valid BST
+print(("true" if search(t, sk1) else "false") + " " + ("true" if search(t, sk2) else "false"))
 ```
 
 ```java run viz=binary-tree viz-root=root
@@ -85,13 +88,31 @@ public class Main {
         return root;
     }
     public static void main(String[] args) {
-        int[] ks = new int[15]; for (int i = 0; i < 15; i++) ks[i] = i + 1;
+        Scanner sc = new Scanner(System.in);
+        int n = Integer.parseInt(sc.nextLine().trim());
+        int sk1 = Integer.parseInt(sc.nextLine().trim());
+        int sk2 = Integer.parseInt(sc.nextLine().trim());
+        int[] ks = new int[n]; for (int i = 0; i < n; i++) ks[i] = i + 1;
         Node t = build(ks, 1);
         List<Integer> out = new ArrayList<>(); inorder(t, out);
         List<Integer> srt = new ArrayList<>(out); Collections.sort(srt);
         System.out.println(out.equals(srt));            // true
-        System.out.println(search(t, 7) + " " + search(t, 20));   // true false
+        System.out.println(search(t, sk1) + " " + search(t, sk2));
     }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "n",   "label": "key count (1..n)", "type": "number", "placeholder": "15" },
+    { "id": "sk1", "label": "search (present)", "type": "number", "placeholder": "7" },
+    { "id": "sk2", "label": "search (absent)",  "type": "number", "placeholder": "20" }
+  ],
+  "cases": [
+    { "args": { "n": "15", "sk1": "7",  "sk2": "20" }, "expected": "true\ntrue false" },
+    { "args": { "n": "10", "sk1": "5",  "sk2": "99" }, "expected": "true\ntrue false" }
+  ]
 }
 ```
 
@@ -185,7 +206,94 @@ The plain BST is height **31** — a pure right-leaning chain, exactly the degen
 **Split** a treap by a key into two valid treaps — every key `≤ k` on the left, every key `> k` on the right. It's the treap's signature primitive (the basis of implicit treaps and ropes), and it's a clean recursion: at each node, decide which side it belongs to and recurse into the boundary child.
 
 ```python run viz=binary-tree viz-root=root
-import random
+import random, ast
+class Node:
+    def __init__(self, key, pri):
+        self.key, self.pri = key, pri; self.left = self.right = None
+def rot_right(n): l = n.left; n.left = l.right; l.right = n; return l
+def rot_left(n):  r = n.right; n.right = r.left; r.left = n; return r
+def insert(n, key, rng):
+    if n is None: return Node(key, rng.random())
+    if key < n.key:
+        n.left = insert(n.left, key, rng)
+        if n.left.pri > n.pri: n = rot_right(n)
+    else:
+        n.right = insert(n.right, key, rng)
+        if n.right.pri > n.pri: n = rot_left(n)
+    return n
+def inorder(n, out):
+    if n: inorder(n.left, out); out.append(n.key); inorder(n.right, out)
+
+def split(n, key):                                     # -> (treap with keys <= key, treap with keys > key)
+    # Your code goes here
+    return (None, None)
+
+n = ast.literal_eval(input())
+split_key = ast.literal_eval(input())
+rng = random.Random(2); root = None
+for k in range(1, n + 1):
+    root = insert(root, k, rng)
+left, right = split(root, split_key)
+lo = []; inorder(left, lo)
+ro = []; inorder(right, ro)
+print(lo)
+print(ro)
+```
+
+```java run viz=binary-tree viz-root=root
+import java.util.*;
+public class Main {
+    static class Node { int key; double pri; Node left, right; Node(int k, double p) { key = k; pri = p; } }
+    static Node rotR(Node n) { Node l = n.left; n.left = l.right; l.right = n; return l; }
+    static Node rotL(Node n) { Node r = n.right; n.right = r.left; r.left = n; return r; }
+    static Node insert(Node n, int key, Random rng) {
+        if (n == null) return new Node(key, rng.nextDouble());
+        if (key < n.key) { n.left = insert(n.left, key, rng);  if (n.left.pri > n.pri)  n = rotR(n); }
+        else             { n.right = insert(n.right, key, rng); if (n.right.pri > n.pri) n = rotL(n); }
+        return n;
+    }
+    static void inorder(Node n, List<Integer> out) {
+        if (n != null) { inorder(n.left, out); out.add(n.key); inorder(n.right, out); }
+    }
+    static Node[] split(Node n, int key) {              // [<=key, >key]
+        // Your code goes here
+        return new Node[]{null, null};
+    }
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = Integer.parseInt(sc.nextLine().trim());
+        int splitKey = Integer.parseInt(sc.nextLine().trim());
+        Random rng = new Random(2); Node root = null;
+        for (int k = 1; k <= n; k++) root = insert(root, k, rng);
+        Node[] lr = split(root, splitKey);
+        List<Integer> lo = new ArrayList<>(); inorder(lr[0], lo);
+        List<Integer> ro = new ArrayList<>(); inorder(lr[1], ro);
+        System.out.println(lo);
+        System.out.println(ro);
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "n",         "label": "key count (1..n)", "type": "number", "placeholder": "10" },
+    { "id": "split_key", "label": "split at key",     "type": "number", "placeholder": "5" }
+  ],
+  "cases": [
+    { "args": { "n": "10", "split_key": "5" }, "expected": "[1, 2, 3, 4, 5]\n[6, 7, 8, 9, 10]" },
+    { "args": { "n": "8",  "split_key": "3" }, "expected": "[1, 2, 3]\n[4, 5, 6, 7, 8]" }
+  ]
+}
+```
+
+<details>
+<summary><strong>Editorial</strong></summary>
+
+Walk one root-to-leaf path, re-pointing children along the way. If the current node's key is `<= split_key`, it belongs to the left treap — recurse into the right subtree to handle the right boundary, then re-wire. If the node's key is `> split_key`, it belongs to the right treap — recurse into the left subtree instead. O(height) = O(log n) expected.
+
+```python solution time=O(log n) space=O(log n)
+import random, ast
 class Node:
     def __init__(self, key, pri):
         self.key, self.pri = key, pri; self.left = self.right = None
@@ -215,17 +323,19 @@ def split(n, key):                                     # -> (treap with keys <= 
         n.left = right_sub
         return (left_sub, n)
 
+n = ast.literal_eval(input())
+split_key = ast.literal_eval(input())
 rng = random.Random(2); root = None
-for k in range(1, 11):                                 # keys 1..10
+for k in range(1, n + 1):
     root = insert(root, k, rng)
-left, right = split(root, 5)
+left, right = split(root, split_key)
 lo = []; inorder(left, lo)
 ro = []; inorder(right, ro)
-print(lo)     # [1, 2, 3, 4, 5]
-print(ro)     # [6, 7, 8, 9, 10]
+print(lo)
+print(ro)
 ```
 
-```java run viz=binary-tree viz-root=root
+```java solution
 import java.util.*;
 public class Main {
     static class Node { int key; double pri; Node left, right; Node(int k, double p) { key = k; pri = p; } }
@@ -246,16 +356,21 @@ public class Main {
         Node[] s = split(n.left, key); n.left = s[1]; return new Node[]{s[0], n};
     }
     public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = Integer.parseInt(sc.nextLine().trim());
+        int splitKey = Integer.parseInt(sc.nextLine().trim());
         Random rng = new Random(2); Node root = null;
-        for (int k = 1; k <= 10; k++) root = insert(root, k, rng);
-        Node[] lr = split(root, 5);
+        for (int k = 1; k <= n; k++) root = insert(root, k, rng);
+        Node[] lr = split(root, splitKey);
         List<Integer> lo = new ArrayList<>(); inorder(lr[0], lo);
         List<Integer> ro = new ArrayList<>(); inorder(lr[1], ro);
-        System.out.println(lo);   // [1, 2, 3, 4, 5]
-        System.out.println(ro);   // [6, 7, 8, 9, 10]
+        System.out.println(lo);
+        System.out.println(ro);
     }
 }
 ```
+
+</details>
 
 Both print `[1, 2, 3, 4, 5]` then `[6, 7, 8, 9, 10]`. The split walked one root-to-leaf path, re-pointing children along the way, so it's `O(height) = O(log n)` expected — and both halves are still valid treaps (priorities untouched, so the heap order survives). `split` plus its inverse `merge` are how treaps implement sequence operations like "cut this range out and paste it elsewhere" in logarithmic time.
 

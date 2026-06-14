@@ -16,32 +16,103 @@ A **graph** drops the shape constraint. It's just two things: **vertices** (the 
 
 ## See It Work
 
-Six cities, six weighted flights. Store it as an **adjacency list** (each vertex → its neighbours), then answer "fewest flights from A to F?" with a breadth-first ripple. Run it.
+Six cities (nodes 0–5), six weighted flights. Build the adjacency from the edge list, then answer "fewest flights from source to target?" with a breadth-first ripple. Pick a case and **Run** it.
 
 ```python run viz=graph viz-kind=graph
+import ast
 from collections import deque
 
-# undirected weighted "flights" graph (fares in $)
-edges = [("A","B",100), ("A","C",200), ("B","D",150),
-         ("C","D",250), ("C","E",300), ("D","F",400)]
+def min_hops(adj, src, dst):
+    seen, q = {src}, deque([(src, 0)])
+    while q:
+        node, d = q.popleft()
+        if node == dst: return d
+        for nb, _ in adj.get(node, []):
+            if nb not in seen:
+                seen.add(nb); q.append((nb, d + 1))
+    return -1
+
+edges = ast.literal_eval(input())   # weighted edges [[u, v, w], ...]
+src   = int(input())
+dst   = int(input())
+
 adj = {}
 for u, v, w in edges:
     adj.setdefault(u, []).append((v, w))
     adj.setdefault(v, []).append((u, w))    # undirected → record BOTH directions
 
-def min_hops(src, dst):                      # BFS: ripple outward, level by level
-    seen, q = {src}, deque([(src, 0)])
-    while q:
-        node, d = q.popleft()
-        if node == dst:
-            return d
-        for nb, _ in adj[node]:
-            if nb not in seen:
-                seen.add(nb); q.append((nb, d + 1))
-    return -1
+print(min_hops(adj, src, dst))
+```
 
-print("cities:", len(adj), " flights:", len(edges))
-print("fewest flights A → F:", min_hops("A", "F"))   # 3  (A→B→D→F or A→C→D→F)
+```java run viz=graph viz-kind=graph
+import java.util.*;
+
+public class Main {
+    static int minHops(Map<Integer, List<int[]>> adj, int src, int dst) {
+        Set<Integer> seen = new HashSet<>();
+        seen.add(src);
+        Deque<int[]> q = new ArrayDeque<>();
+        q.add(new int[]{src, 0});
+        while (!q.isEmpty()) {
+            int[] cur = q.poll();
+            int node = cur[0], d = cur[1];
+            if (node == dst) return d;
+            for (int[] e : adj.getOrDefault(node, Collections.emptyList())) {
+                if (!seen.contains(e[0])) {
+                    seen.add(e[0]); q.add(new int[]{e[0], d + 1});
+                }
+            }
+        }
+        return -1;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[][] edges = parseIntMatrix(sc.nextLine());
+        int src = Integer.parseInt(sc.nextLine().trim());
+        int dst = Integer.parseInt(sc.nextLine().trim());
+
+        Map<Integer, List<int[]>> adj = new HashMap<>();
+        for (int[] e : edges) {
+            adj.computeIfAbsent(e[0], k -> new ArrayList<>()).add(new int[]{e[1], e[2]});
+            adj.computeIfAbsent(e[1], k -> new ArrayList<>()).add(new int[]{e[0], e[2]});
+        }
+        System.out.println(minHops(adj, src, dst));
+    }
+
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "edges", "label": "edges", "type": "int[][]", "placeholder": "[[0, 1, 100], [0, 2, 200], [1, 3, 150], [2, 3, 250], [2, 4, 300], [3, 5, 400]]" },
+    { "id": "src", "label": "src", "type": "int", "placeholder": "0" },
+    { "id": "dst", "label": "dst", "type": "int", "placeholder": "5" }
+  ],
+  "cases": [
+    { "args": { "edges": "[[0, 1, 100], [0, 2, 200], [1, 3, 150], [2, 3, 250], [2, 4, 300], [3, 5, 400]]", "src": "0", "dst": "5" }, "expected": "3" },
+    { "args": { "edges": "[[0, 1, 100], [0, 2, 200], [1, 3, 150], [2, 3, 250], [2, 4, 300], [3, 5, 400]]", "src": "0", "dst": "4" }, "expected": "2" },
+    { "args": { "edges": "[[0, 1, 100], [0, 2, 200], [1, 3, 150], [2, 3, 250], [2, 4, 300], [3, 5, 400]]", "src": "0", "dst": "1" }, "expected": "1" },
+    { "args": { "edges": "[[0, 1, 100], [1, 2, 100], [2, 3, 100]]", "src": "0", "dst": "3" }, "expected": "3" },
+    { "args": { "edges": "[[0, 1, 100], [1, 2, 100], [2, 3, 100]]", "src": "1", "dst": "1" }, "expected": "0" }
+  ]
+}
 ```
 
 ## How It Works
@@ -65,15 +136,15 @@ And the families you'll meet:
 
 ```mermaid
 flowchart LR
-    A((A)) ---|100| B((B))
-    A ---|200| C((C))
-    B ---|150| D((D))
+    A((0)) ---|100| B((1))
+    A ---|200| C((2))
+    B ---|150| D((3))
     C ---|250| D
-    C ---|300| E((E))
-    D ---|400| F((F))
+    C ---|300| E((4))
+    D ---|400| F((5))
 ```
 
-<p align="center"><strong>the travel network as a weighted graph: cities are vertices, flights are edges, fares are weights.</strong></p>
+<p align="center"><strong>a weighted travel network: cities are vertices 0–5, flights are edges, fares are weights.</strong></p>
 
 Two foundational searches fall straight out of the picture. **Breadth-first search** ripples outward level by level (a queue) — the natural fit for *fewest hops* / shortest unweighted path. **Depth-first search** dives down one path and backtracks (a stack/recursion) — the fit for *explore everything* / reachability / cycle questions. Crucially, **once your data is a graph, the algorithm reads almost like the question**: "shortest path" → ripple outward; "most flights I can afford" → explore deep, backtrack when broke.
 
@@ -83,82 +154,215 @@ A graph is vertices + edges (optionally weighted/directed). It models many-to-ma
 
 ## Trace It
 
-Second query: *starting at A with $600, what's the most flights you can take* (any destination, no city twice)? Trace it by hand and it's tempting to try `A→B→D` ($250, 2 hops) and `A→C→E` ($500, 2 hops), hit a dead end on each, and answer **2**.
+Second query: *starting at node 0 with $600, what's the most flights you can take* (any destination, no city twice)? Trace it by hand and it's tempting to try `0→1→3` ($250, 2 hops) and `0→2→4` ($500, 2 hops), hit a dead end on each, and answer **2**.
 
 Before you read on: run the exhaustive search instead and the answer is **3**. Which path did the hand-trace miss — and what general lesson about depth-first search does the miss teach?
 
-The hand-trace missed that **`D` has more edges to explore**. From `A→C→D` ($450, 2 hops) you can still afford `D→B` (150) for a total of **exactly $600** and a **third** hop: `A→C→D→B`. (Equivalently `A→B→D→C` reaches 3 hops for just $500.) The hand-trace stopped at the *first* dead end it found on each branch instead of backing up and trying `D`'s other neighbours — and that's precisely the bug DFS exists to prevent. Depth-first search is "go as deep as you can, then **backtrack and try every untried branch**" — it must exhaust *all* of a node's edges before concluding, not just the first promising one. A human eyeballing a graph naturally explores a path or two and quits; the algorithm is valuable exactly because it's *complete*. This is also why you **run the code instead of trusting a hand-trace**: the graph is small, yet the obvious by-hand answer (2) is wrong. The general lesson — verify graph reasoning by execution, because the combinatorial fan-out of paths defeats eyeballing fast — is the whole reason every claim in this book ships with a runnable block.
+The hand-trace missed that **node 3 has more edges to explore**. From `0→2→3` ($450, 2 hops) you can still afford `3→1` ($150) for a total of **exactly $600** and a **third** hop: `0→2→3→1`. (Equivalently `0→1→3→2` reaches 3 hops for just $500.) The hand-trace stopped at the *first* dead end it found on each branch instead of backing up and trying node 3's other neighbours — and that's precisely the bug DFS exists to prevent. Depth-first search is "go as deep as you can, then **backtrack and try every untried branch**" — it must exhaust *all* of a node's edges before concluding, not just the first promising one. A human eyeballing a graph naturally explores a path or two and quits; the algorithm is valuable exactly because it's *complete*. This is also why you **run the code instead of trusting a hand-trace**: the graph is small, yet the obvious by-hand answer (2) is wrong. The general lesson — verify graph reasoning by execution, because the combinatorial fan-out of paths defeats eyeballing fast — is the whole reason every claim in this book ships with a runnable block.
 
 ## Your Turn
 
-Both queries in both languages — BFS for fewest hops, DFS-with-backtracking for the most affordable flights:
+Implement both queries: BFS for fewest hops and DFS-with-backtracking for the most affordable flights. Input is the edge list, source, and budget.
 
 ```python run viz=graph viz-kind=graph
+import ast
 from collections import deque
 
-edges = [("A","B",100), ("A","C",200), ("B","D",150),
-         ("C","D",250), ("C","E",300), ("D","F",400)]
+def min_hops(adj, src, dst):
+    # Your code goes here — BFS from src; return fewest hops to dst, or -1.
+    pass
+
+def max_flights(adj, node, budget, visited):
+    # Your code goes here — DFS exhaustive search; return max affordable hops.
+    pass
+
+edges  = ast.literal_eval(input())   # weighted edges [[u, v, w], ...]
+src    = int(input())
+dst    = int(input())
+budget = int(input())
+
 adj = {}
 for u, v, w in edges:
-    adj.setdefault(u, []).append((v, w)); adj.setdefault(v, []).append((u, w))
+    adj.setdefault(u, []).append((v, w))
+    adj.setdefault(v, []).append((u, w))
 
-def min_hops(src, dst):
-    seen, q = {src}, deque([(src, 0)])
-    while q:
-        node, d = q.popleft()
-        if node == dst: return d
-        for nb, _ in adj[node]:
-            if nb not in seen: seen.add(nb); q.append((nb, d + 1))
-    return -1
-
-def max_flights(node, budget, visited):              # DFS: try EVERY affordable edge
-    best = 0
-    for nb, w in adj[node]:
-        if nb not in visited and w <= budget:
-            best = max(best, 1 + max_flights(nb, budget - w, visited | {nb}))
-    return best
-
-print(min_hops("A", "F"))                            # 3
-print(max_flights("A", 600, {"A"}))                  # 3  (A→C→D→B = exactly $600)
+print(min_hops(adj, src, dst))
+print(max_flights(adj, src, budget, {src}))
 ```
 
 ```java run viz=graph viz-kind=graph
 import java.util.*;
+
 public class Main {
-  static Map<String,List<String[]>> adj = new HashMap<>();
-  static void addEdge(String u, String v, int w) {
-    adj.computeIfAbsent(u, k -> new ArrayList<>()).add(new String[]{v, "" + w});
-    adj.computeIfAbsent(v, k -> new ArrayList<>()).add(new String[]{u, "" + w});  // undirected
-  }
-  static int minHops(String src, String dst) {
-    Set<String> seen = new HashSet<>(List.of(src));
-    Deque<String[]> q = new ArrayDeque<>(); q.add(new String[]{src, "0"});
-    while (!q.isEmpty()) {
-      String[] c = q.poll(); int d = Integer.parseInt(c[1]);
-      if (c[0].equals(dst)) return d;
-      for (String[] e : adj.get(c[0])) if (!seen.contains(e[0])) { seen.add(e[0]); q.add(new String[]{e[0], "" + (d + 1)}); }
+    static Map<Integer, List<int[]>> adj = new HashMap<>();
+
+    static int minHops(int src, int dst) {
+        // Your code goes here — BFS; return fewest hops to dst, or -1.
+        return -1;
     }
-    return -1;
-  }
-  static int maxFlights(String node, int budget, Set<String> visited) {
-    int best = 0;
-    for (String[] e : adj.get(node)) {
-      int w = Integer.parseInt(e[1]);
-      if (!visited.contains(e[0]) && w <= budget) {
-        Set<String> nv = new HashSet<>(visited); nv.add(e[0]);
-        best = Math.max(best, 1 + maxFlights(e[0], budget - w, nv));
-      }
+
+    static int maxFlights(int node, int budget, Set<Integer> visited) {
+        // Your code goes here — DFS exhaustive search; return max affordable hops.
+        return 0;
     }
-    return best;
-  }
-  public static void main(String[] a) {
-    addEdge("A","B",100); addEdge("A","C",200); addEdge("B","D",150);
-    addEdge("C","D",250); addEdge("C","E",300); addEdge("D","F",400);
-    System.out.println(minHops("A","F"));                                  // 3
-    System.out.println(maxFlights("A", 600, new HashSet<>(List.of("A")))); // 3
-  }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[][] edges = parseIntMatrix(sc.nextLine());
+        int src    = Integer.parseInt(sc.nextLine().trim());
+        int dst    = Integer.parseInt(sc.nextLine().trim());
+        int budget = Integer.parseInt(sc.nextLine().trim());
+
+        for (int[] e : edges) {
+            adj.computeIfAbsent(e[0], k -> new ArrayList<>()).add(new int[]{e[1], e[2]});
+            adj.computeIfAbsent(e[1], k -> new ArrayList<>()).add(new int[]{e[0], e[2]});
+        }
+        System.out.println(minHops(src, dst));
+        Set<Integer> visited = new HashSet<>(); visited.add(src);
+        System.out.println(maxFlights(src, budget, visited));
+    }
+
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
+    }
 }
 ```
+
+```testcases
+{
+  "args": [
+    { "id": "edges", "label": "edges", "type": "int[][]", "placeholder": "[[0, 1, 100], [0, 2, 200], [1, 3, 150], [2, 3, 250], [2, 4, 300], [3, 5, 400]]" },
+    { "id": "src", "label": "src", "type": "int", "placeholder": "0" },
+    { "id": "dst", "label": "dst", "type": "int", "placeholder": "5" },
+    { "id": "budget", "label": "budget", "type": "int", "placeholder": "600" }
+  ],
+  "cases": [
+    { "args": { "edges": "[[0, 1, 100], [0, 2, 200], [1, 3, 150], [2, 3, 250], [2, 4, 300], [3, 5, 400]]", "src": "0", "dst": "5", "budget": "600" }, "expected": "3\n3" },
+    { "args": { "edges": "[[0, 1, 100], [1, 2, 100], [2, 3, 100]]", "src": "0", "dst": "3", "budget": "350" }, "expected": "3\n3" },
+    { "args": { "edges": "[[0, 1, 100], [1, 2, 100], [2, 3, 100]]", "src": "0", "dst": "2", "budget": "250" }, "expected": "2\n2" },
+    { "args": { "edges": "[[0, 1, 100], [0, 2, 200], [1, 3, 150], [2, 3, 250], [2, 4, 300], [3, 5, 400]]", "src": "0", "dst": "4", "budget": "300" }, "expected": "2\n2" },
+    { "args": { "edges": "[[0, 1, 100], [0, 2, 200], [1, 3, 150], [2, 3, 250], [2, 4, 300], [3, 5, 400]]", "src": "0", "dst": "1", "budget": "100" }, "expected": "1\n1" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+`min_hops` is textbook BFS: enqueue `src` at distance 0, dequeue a node, if it's `dst` return its distance, else enqueue every unvisited neighbour at distance + 1. The visited-on-enqueue discipline prevents re-processing. `max_flights` is exhaustive DFS with backtracking: try every unvisited neighbour whose edge weight fits the budget; recurse with the reduced budget and the expanded visited set; take the maximum over all choices. Because we want the *most* edges, not the cheapest, we explore every affordable branch and aggregate.
+
+```python solution time=O(V + E) space=O(V + E)
+import ast
+from collections import deque
+
+def min_hops(adj, src, dst):
+    seen, q = {src}, deque([(src, 0)])
+    while q:
+        node, d = q.popleft()
+        if node == dst: return d
+        for nb, _ in adj.get(node, []):
+            if nb not in seen:
+                seen.add(nb); q.append((nb, d + 1))
+    return -1
+
+def max_flights(adj, node, budget, visited):
+    best = 0
+    for nb, w in adj.get(node, []):
+        if nb not in visited and w <= budget:
+            best = max(best, 1 + max_flights(adj, nb, budget - w, visited | {nb}))
+    return best
+
+edges  = ast.literal_eval(input())
+src    = int(input())
+dst    = int(input())
+budget = int(input())
+
+adj = {}
+for u, v, w in edges:
+    adj.setdefault(u, []).append((v, w))
+    adj.setdefault(v, []).append((u, w))
+
+print(min_hops(adj, src, dst))
+print(max_flights(adj, src, budget, {src}))
+```
+
+```java solution
+import java.util.*;
+
+public class Main {
+    static Map<Integer, List<int[]>> adj = new HashMap<>();
+
+    static int minHops(int src, int dst) {
+        Set<Integer> seen = new HashSet<>(); seen.add(src);
+        Deque<int[]> q = new ArrayDeque<>(); q.add(new int[]{src, 0});
+        while (!q.isEmpty()) {
+            int[] cur = q.poll(); int node = cur[0], d = cur[1];
+            if (node == dst) return d;
+            for (int[] e : adj.getOrDefault(node, Collections.emptyList()))
+                if (!seen.contains(e[0])) { seen.add(e[0]); q.add(new int[]{e[0], d + 1}); }
+        }
+        return -1;
+    }
+
+    static int maxFlights(int node, int budget, Set<Integer> visited) {
+        int best = 0;
+        for (int[] e : adj.getOrDefault(node, Collections.emptyList())) {
+            int nb = e[0], w = e[1];
+            if (!visited.contains(nb) && w <= budget) {
+                Set<Integer> nv = new HashSet<>(visited); nv.add(nb);
+                best = Math.max(best, 1 + maxFlights(nb, budget - w, nv));
+            }
+        }
+        return best;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[][] edges = parseIntMatrix(sc.nextLine());
+        int src    = Integer.parseInt(sc.nextLine().trim());
+        int dst    = Integer.parseInt(sc.nextLine().trim());
+        int budget = Integer.parseInt(sc.nextLine().trim());
+
+        for (int[] e : edges) {
+            adj.computeIfAbsent(e[0], k -> new ArrayList<>()).add(new int[]{e[1], e[2]});
+            adj.computeIfAbsent(e[1], k -> new ArrayList<>()).add(new int[]{e[0], e[2]});
+        }
+        System.out.println(minHops(src, dst));
+        Set<Integer> visited = new HashSet<>(); visited.add(src);
+        System.out.println(maxFlights(src, budget, visited));
+    }
+
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
+    }
+}
+```
+
+</details>
 
 ## Reflect & Connect
 
@@ -220,4 +424,4 @@ A graph is the most general relational structure — almost everything connects 
 
 - **CLRS**, *Introduction to Algorithms*, 4th ed., ch. 20 — Elementary Graph Algorithms (representations, BFS, DFS).
 - **Sedgewick & Wayne**, *Algorithms*, 4th ed., ch. 4 — Graphs (undirected, directed, the adjacency-list API).
-- Both runnable blocks are verified by running (the 6-city weighted graph: `sum of degrees = 12 = 2·|E|`; fewest flights `A → F = 3`; **max flights for $600 = 3** via `A→C→D→B` at exactly $600 — correcting a too-shallow hand-trace that yields 2).
+- Both runnable blocks are verified by running (6-node weighted graph: fewest flights `0 → 5 = 3`; **max flights for $600 = 3** via `0→2→3→1` at exactly $600 — correcting a too-shallow hand-trace that yields 2).

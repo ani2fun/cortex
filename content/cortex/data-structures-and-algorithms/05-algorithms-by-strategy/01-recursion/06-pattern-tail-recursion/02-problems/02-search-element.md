@@ -4,6 +4,8 @@ summary: "Given an array arr and a target, return the index of the first occurre
 prereqs:
   - 06-pattern-tail-recursion/01-pattern
 difficulty: easy
+kind: problem
+topics: [tail-recursion, recursion]
 ---
 
 # Search Element
@@ -16,18 +18,97 @@ Linear search done recursively. The accumulator is the index we're currently ins
 
 Given an array `arr` and a `target`, return the index of the first occurrence of `target`, or `-1` if it's not present. You **must** solve this recursively.
 
+---
+
+## Examples
+
+**Example 1**
 ```
 Input:  arr = [2, 8, 3, 6, 4], target = 3
 Output: 2
-
-Input:  arr = [1, 2, 3, 4, 5], target = 5
-Output: 4
-
-Input:  arr = [2, 8, 1, 9, 4], target = 10
-Output: -1
+Explanation: arr[2] = 3, which is the first occurrence of target.
 ```
 
----
+**Example 2**
+```
+Input:  arr = [2, 8, 1, 9, 4], target = 10
+Output: -1
+Explanation: 10 does not appear in the array.
+```
+
+```quiz
+{
+  "prompt": "If arr = [3, 1, 3, 5] and target = 3, what does the recursive search return?",
+  "options": ["0", "2", "-1", "3"],
+  "answer": "0"
+}
+```
+
+## Constraints
+
+- `0 ≤ arr.length ≤ 10⁴`
+- `-10⁹ ≤ arr[i], target ≤ 10⁹`
+- Must be solved recursively.
+
+```python run viz=array
+import ast
+
+class Solution:
+    def search_element(self, arr, target: int) -> int:
+        # Your code goes here
+        return -1
+
+arr = ast.literal_eval(input())
+target = int(input())
+print(Solution().search_element(arr, target))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static int[] parseIntArray(String line) {
+        String s = line.replaceAll("[\\[\\]\\s]", "");
+        if (s.isEmpty()) return new int[0];
+        String[] parts = s.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i].trim());
+        return out;
+    }
+
+    static class Solution {
+        public int searchElement(int[] arr, int target) {
+            // Your code goes here
+            return -1;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine().trim());
+        int target = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().searchElement(arr, target));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[2, 8, 3, 6, 4]" },
+    { "id": "target", "label": "target", "type": "int", "placeholder": "3" }
+  ],
+  "cases": [
+    { "args": { "arr": "[2, 8, 3, 6, 4]", "target": "3" }, "expected": "2" },
+    { "args": { "arr": "[1, 2, 3, 4, 5]", "target": "5" }, "expected": "4" },
+    { "args": { "arr": "[2, 8, 1, 9, 4]", "target": "10" }, "expected": "-1" },
+    { "args": { "arr": "[]", "target": "5" }, "expected": "-1" },
+    { "args": { "arr": "[7]", "target": "7" }, "expected": "0" },
+    { "args": { "arr": "[7]", "target": "1" }, "expected": "-1" },
+    { "args": { "arr": "[1, 2, 3]", "target": "1" }, "expected": "0" }
+  ]
+}
+```
 
 <details>
 <summary><h2>Why Tail Recursion Fits Here</h2></summary>
@@ -112,7 +193,8 @@ state: "Step 2 — i = 2 — MATCH" {
 
 ### The Solution
 
-```python run viz=array
+```python solution time=O(n) space=O(n)
+import ast
 from typing import List
 
 class Solution:
@@ -134,20 +216,24 @@ class Solution:
         return self._helper(arr, target, 0)
 
 
-# Examples from the problem statement
-print(Solution().search_element([2, 8, 3, 6, 4], 3))   # 2
-print(Solution().search_element([1, 2, 3, 4, 5], 5))   # 4
-print(Solution().search_element([2, 8, 1, 9, 4], 10))  # -1
-
-# Edge cases
-print(Solution().search_element([], 5))                # -1
-print(Solution().search_element([7], 7))               # 0
-print(Solution().search_element([7], 1))               # -1
-print(Solution().search_element([1, 2, 3], 1))         # 0
+arr = ast.literal_eval(input())
+target = int(input())
+print(Solution().search_element(arr, target))
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
+    static int[] parseIntArray(String line) {
+        String s = line.replaceAll("[\\[\\]\\s]", "");
+        if (s.isEmpty()) return new int[0];
+        String[] parts = s.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i].trim());
+        return out;
+    }
+
     static class Solution {
         private int helper(int[] arr, int target, int index) {
 
@@ -172,16 +258,10 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().searchElement(new int[]{2, 8, 3, 6, 4}, 3));   // 2
-        System.out.println(new Solution().searchElement(new int[]{1, 2, 3, 4, 5}, 5));   // 4
-        System.out.println(new Solution().searchElement(new int[]{2, 8, 1, 9, 4}, 10));  // -1
-
-        // Edge cases
-        System.out.println(new Solution().searchElement(new int[]{}, 5));                // -1
-        System.out.println(new Solution().searchElement(new int[]{7}, 7));               // 0
-        System.out.println(new Solution().searchElement(new int[]{7}, 1));               // -1
-        System.out.println(new Solution().searchElement(new int[]{1, 2, 3}, 1));         // 0
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine().trim());
+        int target = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().searchElement(arr, target));
     }
 }
 ```

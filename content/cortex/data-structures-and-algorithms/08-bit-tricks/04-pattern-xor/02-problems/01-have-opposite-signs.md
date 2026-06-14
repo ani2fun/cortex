@@ -4,18 +4,92 @@ summary: "Given two 32-bit signed integers num1 and num2, return true if they ha
 prereqs:
   - 04-pattern-xor/01-pattern
 difficulty: easy
+kind: problem
+topics: [xor, bit-manipulation]
 ---
 
 # Have Opposite Signs
 
-## The Problem
+Two numbers differ in sign exactly when their top bits differ — and XOR is the operator that lights up wherever two bits disagree.
+
+## Problem Statement
 
 Given two 32-bit signed integers `num1` and `num2`, return `true` if they have opposite signs (one positive, one negative), `false` otherwise. Treat `0` as positive.
 
+## Examples
+
+**Example 1**
 ```
-Input:  num1 = 10, num2 = -1     →  true
-Input:  num1 = 2, num2 = -3      →  true
-Input:  num1 = 9, num2 = 1       →  false
+Input:  num1 = 10, num2 = -1
+Output: true
+Explanation: One positive, one negative — opposite signs.
+```
+
+**Example 2**
+```
+Input:  num1 = 9, num2 = 1
+Output: false
+Explanation: Both positive — same sign.
+```
+
+**Example 3**
+```
+Input:  num1 = 0, num2 = -1
+Output: true
+Explanation: 0 counts as positive, so 0 and -1 have opposite signs.
+```
+
+## Constraints
+
+- `-2^31 ≤ num1, num2 ≤ 2^31 - 1` — ordinary signed 32-bit integers (no values above `2^31 - 1`, so they parse directly as `int`).
+- `0` is treated as positive.
+
+```python run viz=array
+class Solution:
+    def have_opposite_signs(self, num1: int, num2: int) -> bool:
+        # Your code goes here
+        return False
+
+
+num1 = int(input())
+num2 = int(input())
+print("true" if Solution().have_opposite_signs(num1, num2) else "false")
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public boolean haveOppositeSigns(int num1, int num2) {
+            // Your code goes here
+            return false;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int num1 = Integer.parseInt(sc.nextLine().trim());
+        int num2 = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().haveOppositeSigns(num1, num2));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "num1", "label": "num1", "type": "int", "placeholder": "10" },
+    { "id": "num2", "label": "num2", "type": "int", "placeholder": "-1" }
+  ],
+  "cases": [
+    { "args": { "num1": "10", "num2": "-1" }, "expected": "true" },
+    { "args": { "num1": "9", "num2": "1" }, "expected": "false" },
+    { "args": { "num1": "-5", "num2": "-10" }, "expected": "false" },
+    { "args": { "num1": "0", "num2": "0" }, "expected": "false" },
+    { "args": { "num1": "0", "num2": "-1" }, "expected": "true" }
+  ]
+}
 ```
 
 <details>
@@ -36,9 +110,11 @@ Because in two's complement, "less than zero" is determined by the sign bit alon
 <details>
 <summary><h2>The Solution</h2></summary>
 
+### The Solution
 
+XOR the two numbers and inspect the sign of the result — a single `^` and a comparison. Because the inputs are ordinary in-range `int`s, Python's `^` and `< 0` agree bit-for-bit with Java's; only the boolean *print* differs, so Python emits `"true"`/`"false"` explicitly to match Java's native lowercase.
 
-```python run viz=array
+```python solution time=O(1) space=O(1)
 class Solution:
     def have_opposite_signs(self, num1: int, num2: int) -> bool:
 
@@ -47,20 +123,14 @@ class Solution:
         return (num1 ^ num2) < 0
 
 
-# Examples from the problem statement
-print(Solution().have_opposite_signs(10, -1))     # True
-print(Solution().have_opposite_signs(2, -3))      # True
-print(Solution().have_opposite_signs(9, 1))       # False
-
-# Edge cases
-print(Solution().have_opposite_signs(-5, -10))    # False
-print(Solution().have_opposite_signs(0, 0))       # False
-print(Solution().have_opposite_signs(0, -1))      # False
-print(Solution().have_opposite_signs(1, -1))      # True
-print(Solution().have_opposite_signs(-1, 1))      # True
+num1 = int(input())
+num2 = int(input())
+print("true" if Solution().have_opposite_signs(num1, num2) else "false")
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
     static class Solution {
         public boolean haveOppositeSigns(int num1, int num2) {
@@ -72,17 +142,10 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().haveOppositeSigns(10, -1));     // true
-        System.out.println(new Solution().haveOppositeSigns(2, -3));      // true
-        System.out.println(new Solution().haveOppositeSigns(9, 1));       // false
-
-        // Edge cases
-        System.out.println(new Solution().haveOppositeSigns(-5, -10));    // false
-        System.out.println(new Solution().haveOppositeSigns(0, 0));       // false
-        System.out.println(new Solution().haveOppositeSigns(0, -1));      // false
-        System.out.println(new Solution().haveOppositeSigns(1, -1));      // true
-        System.out.println(new Solution().haveOppositeSigns(-1, 1));      // true
+        Scanner sc = new Scanner(System.in);
+        int num1 = Integer.parseInt(sc.nextLine().trim());
+        int num2 = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(new Solution().haveOppositeSigns(num1, num2));
     }
 }
 ```

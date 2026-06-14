@@ -4,6 +4,8 @@ summary: "Given a binary matrix of 0s and 1s, find the area of the largest *axis
 prereqs:
   - 18-pattern-2d-grid/01-pattern
 difficulty: medium
+kind: problem
+topics: [2d-grid, dynamic-programming]
 ---
 
 # Largest Square Area of 1s
@@ -24,6 +26,112 @@ Input:  grid = [[1, 1, 0, 0],
                 [1, 1, 1, 1],
                 [1, 0, 0, 0]]
 Output: 4                       Multiple 2 × 2 squares
+```
+
+---
+
+## Examples
+
+**Example 1**
+```
+Input:  matrix = [[1, 1, 0, 0], [0, 0, 1, 1], [1, 0, 1, 1], [1, 0, 0, 0]]
+Output: 4
+Explanation: The 2×2 square at rows 1-2, cols 2-3 is the largest; area = 2×2 = 4.
+```
+
+**Example 2**
+```
+Input:  matrix = [[1, 1], [1, 1]]
+Output: 4
+Explanation: The entire 2×2 grid is a square of 1s; area = 2×2 = 4.
+```
+
+```quiz
+{
+  "prompt": "Why is the aggregator min(top, left, diagonal) + 1 rather than max?",
+  "options": [
+    "min is faster to compute",
+    "min enforces that all three predecessor squares are fully filled — the weakest link caps the new square",
+    "max would double-count cells",
+    "diagonal is always the smallest"
+  ],
+  "answer": "min enforces that all three predecessor squares are fully filled — the weakest link caps the new square"
+}
+```
+
+## Constraints
+
+- `1 ≤ rows, cols ≤ 300`
+- `matrix[i][j]` is `0` or `1`.
+
+```python run viz=grid
+import ast
+
+class Solution:
+    def largest_square_area(self, matrix):
+        # Your code goes here — dp[r][c] = side of largest square whose
+        # bottom-right corner is (r, c). Recurrence:
+        # dp[r][c] = min(dp[r-1][c-1], dp[r-1][c], dp[r][c-1]) + 1
+        # if matrix[r][c] == 1, else 0. Return max_side^2.
+        return 0
+
+matrix = ast.literal_eval(input())   # the test case's matrix
+print(Solution().largest_square_area(matrix))
+```
+
+```java run viz=grid
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int largestSquareArea(int[][] matrix) {
+            // Your code goes here — dp[r][c] = side of largest square whose
+            // bottom-right corner is (r, c). Recurrence:
+            // dp[r][c] = min(dp[r-1][c-1], dp[r-1][c], dp[r][c-1]) + 1
+            // if matrix[r][c] == 1, else 0. Return maxSide^2.
+            return 0;
+        }
+    }
+
+    public static void main(String[] args) {
+        int[][] matrix = parseIntMatrix(new Scanner(System.in).nextLine());
+        System.out.println(new Solution().largestSquareArea(matrix));
+    }
+
+    // "[[1, 0], [1, 1]]" → int[][] — reads the test case's matrix
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "matrix", "label": "matrix", "type": "int[][]", "placeholder": "[[1, 1, 0], [0, 1, 1]]" }
+  ],
+  "cases": [
+    { "args": { "matrix": "[[1, 1, 0, 0], [0, 0, 1, 1], [1, 0, 1, 1], [1, 0, 0, 0]]" }, "expected": "4" },
+    { "args": { "matrix": "[[1, 1, 0, 0], [0, 1, 1, 1], [1, 1, 1, 1], [1, 0, 0, 0]]" }, "expected": "4" },
+    { "args": { "matrix": "[[1]]" }, "expected": "1" },
+    { "args": { "matrix": "[[0]]" }, "expected": "0" },
+    { "args": { "matrix": "[[0, 0], [0, 0]]" }, "expected": "0" },
+    { "args": { "matrix": "[[1, 1], [1, 1]]" }, "expected": "4" },
+    { "args": { "matrix": "[[1, 0, 1], [0, 1, 0], [1, 0, 1]]" }, "expected": "1" }
+  ]
+}
 ```
 
 <details>
@@ -76,7 +184,8 @@ Min ensures the square is *fully* filled with 1s. If any of the three neighbours
 
 ### The Solution
 
-```python run viz=grid viz-root=matrix
+```python solution time=O(rows × cols) space=O(rows × cols)
+import ast
 from typing import List
 
 class Solution:
@@ -118,19 +227,11 @@ class Solution:
         return max_size * max_size
 
 
-# Examples from the problem statement
-print(Solution().largest_square_area([[1,1,0,0],[0,0,1,1],[1,0,1,1],[1,0,0,0]]))  # 4
-print(Solution().largest_square_area([[1,1,0,0],[0,1,1,1],[1,1,1,1],[1,0,0,0]]))  # 4
-
-# Edge cases
-print(Solution().largest_square_area([[1]]))                                       # 1  — 1x1 with 1
-print(Solution().largest_square_area([[0]]))                                       # 0  — 1x1 with 0
-print(Solution().largest_square_area([[0, 0], [0, 0]]))                            # 0  — all zeros
-print(Solution().largest_square_area([[1, 1], [1, 1]]))                            # 4  — all ones 2x2
-print(Solution().largest_square_area([[1, 0, 1], [0, 1, 0], [1, 0, 1]]))          # 1  — checkerboard
+matrix = ast.literal_eval(input())   # the test case's matrix
+print(Solution().largest_square_area(matrix))
 ```
 
-```java run viz=grid viz-root=matrix
+```java solution
 import java.util.*;
 
 public class Main {
@@ -179,16 +280,24 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().largestSquareArea(new int[][]{{1,1,0,0},{0,0,1,1},{1,0,1,1},{1,0,0,0}}));  // 4
-        System.out.println(new Solution().largestSquareArea(new int[][]{{1,1,0,0},{0,1,1,1},{1,1,1,1},{1,0,0,0}}));  // 4
+        int[][] matrix = parseIntMatrix(new Scanner(System.in).nextLine());
+        System.out.println(new Solution().largestSquareArea(matrix));
+    }
 
-        // Edge cases
-        System.out.println(new Solution().largestSquareArea(new int[][]{{1}}));                                      // 1
-        System.out.println(new Solution().largestSquareArea(new int[][]{{0}}));                                      // 0
-        System.out.println(new Solution().largestSquareArea(new int[][]{{0,0},{0,0}}));                              // 0
-        System.out.println(new Solution().largestSquareArea(new int[][]{{1,1},{1,1}}));                              // 4
-        System.out.println(new Solution().largestSquareArea(new int[][]{{1,0,1},{0,1,0},{1,0,1}}));                  // 1
+    static int[][] parseIntMatrix(String line) {
+        String trimmed = line.trim();
+        if (trimmed.equals("[]") || trimmed.equals("[[]]")) return new int[0][];
+        String inner = trimmed.substring(1, trimmed.length() - 1).trim();
+        String[] rows = inner.split("\\],\\s*\\[");
+        int[][] mat = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) {
+            String row = rows[r].replaceAll("[\\[\\]\\s]", "");
+            if (row.isEmpty()) { mat[r] = new int[0]; continue; }
+            String[] parts = row.split(",");
+            mat[r] = new int[parts.length];
+            for (int c = 0; c < parts.length; c++) mat[r][c] = Integer.parseInt(parts[c].trim());
+        }
+        return mat;
     }
 }
 ```

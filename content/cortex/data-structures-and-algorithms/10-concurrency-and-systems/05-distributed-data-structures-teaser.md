@@ -21,6 +21,8 @@ So distributed structures are built to **converge without coordination**: apply 
 A **G-Counter** (grow-only CRDT counter): instead of one shared count, each node owns its own slot and only ever increments *its own*. The value is the sum; merging two replicas takes the element-wise **max**. Two replicas count independently, then gossip — and converge, no locks, no coordinator.
 
 ```python run viz=array
+import ast
+
 class GCounter:
     def __init__(self, node_id, num_nodes):
         self.node_id = node_id
@@ -32,9 +34,11 @@ class GCounter:
     def merge(self, other):
         self.counts = [max(a, b) for a, b in zip(self.counts, other.counts)]  # element-wise max
 
+a_incs = ast.literal_eval(input())
+b_incs = ast.literal_eval(input())
 a = GCounter(0, 3); b = GCounter(1, 3)
-a.increment(); a.increment()                       # replica A counts 2 locally
-b.increment()                                      # replica B counts 1 locally
+for _ in range(a_incs): a.increment()             # replica A counts locally
+for _ in range(b_incs): b.increment()             # replica B counts locally
 print("before sync -> A sees", a.value(), "| B sees", b.value())
 a.merge(b); b.merge(a)                             # gossip both directions
 print("after merge -> A sees", a.value(), "| B sees", b.value())
@@ -53,8 +57,11 @@ public class Main {
         void merge(GCounter o) { for (int i = 0; i < counts.length; i++) counts[i] = Math.max(counts[i], o.counts[i]); }
     }
     public static void main(String[] x) {
+        Scanner sc = new Scanner(System.in);
+        int aIncs = sc.nextInt(), bIncs = sc.nextInt();
         GCounter a = new GCounter(0, 3), b = new GCounter(1, 3);
-        a.increment(); a.increment(); b.increment();
+        for (int i = 0; i < aIncs; i++) a.increment();
+        for (int i = 0; i < bIncs; i++) b.increment();
         System.out.println("before sync -> A sees " + a.value() + " | B sees " + b.value());
         a.merge(b); b.merge(a);
         System.out.println("after merge -> A sees " + a.value() + " | B sees " + b.value());
@@ -64,7 +71,20 @@ public class Main {
 }
 ```
 
-Both print `A sees 2 | B sees 1` before sync, then `A sees 3 | B sees 3` after, then `3` again. Before gossiping, the replicas *disagree* — and that's fine, it's expected under a partition. The merge reconciles them with no locking and no leader, and merging a second time is a no-op. Those last two properties are the whole game.
+```testcases
+{
+  "args": [
+    { "id": "a_incs", "label": "A increments", "type": "number", "placeholder": "2" },
+    { "id": "b_incs", "label": "B increments", "type": "number", "placeholder": "1" }
+  ],
+  "cases": [
+    { "args": { "a_incs": "2", "b_incs": "1" }, "expected": "before sync -> A sees 2 | B sees 1\nafter merge -> A sees 3 | B sees 3\nmerge again -> A sees 3" },
+    { "args": { "a_incs": "5", "b_incs": "3" }, "expected": "before sync -> A sees 5 | B sees 3\nafter merge -> A sees 8 | B sees 8\nmerge again -> A sees 8" }
+  ]
+}
+```
+
+Before gossiping, the replicas *disagree* — and that's fine, it's expected under a partition. The merge reconciles them with no locking and no leader, and merging a second time is a no-op. Those last two properties are the whole game.
 
 ## How It Works
 
@@ -139,20 +159,17 @@ def merkle(leaves):                        # levels[0] = leaf hashes ... levels[
         levels.append(level)
     return levels
 
-A = ["alice", "bob", "carol", "dave"]
-B = ["alice", "bob", "carol", "DAVE"]      # exactly one record differs
-ta, tb = merkle(A), merkle(B)
-print("roots equal?", ta[-1][0] == tb[-1][0])         # one comparison certifies the whole replica
+def find_diff(ta, tb):
+    # Your code goes here — descend from root, following the mismatch branch each level
+    return 0
 
-idx, level, compares = 0, len(ta) - 1, 0   # descend from root, following the mismatch
-while level > 0:
-    child = level - 1
-    left, right = 2 * idx, 2 * idx + 1
-    compares += 1
-    idx = left if ta[child][left] != tb[child][left] else right
-    level = child
+A = input().split(",")
+B = input().split(",")
+A = [s.strip() for s in A]; B = [s.strip() for s in B]
+ta, tb = merkle(A), merkle(B)
+print("true" if ta[-1][0] == tb[-1][0] else "false")     # one comparison certifies the whole replica
+idx = find_diff(ta, tb)
 print("differing leaf index:", idx, "->", A[idx], "vs", B[idx])
-print("subtree checks to localise:", compares, "(not", len(A), "leaf scans)")
 ```
 
 ```java run viz=array
@@ -175,25 +192,122 @@ public class Main {
         }
         return levels;
     }
+    static int findDiff(List<long[]> ta, List<long[]> tb) {
+        // Your code goes here — descend from root, following the mismatch branch each level
+        return 0;
+    }
     public static void main(String[] x) {
-        String[] A = {"alice", "bob", "carol", "dave"};
-        String[] B = {"alice", "bob", "carol", "DAVE"};
+        Scanner sc = new Scanner(System.in);
+        String[] A = sc.nextLine().split(",");
+        String[] B = sc.nextLine().split(",");
+        for (int i = 0; i < A.length; i++) A[i] = A[i].trim();
+        for (int i = 0; i < B.length; i++) B[i] = B[i].trim();
         List<long[]> ta = merkle(A), tb = merkle(B);
-        System.out.println("roots equal? " + (ta.get(ta.size() - 1)[0] == tb.get(tb.size() - 1)[0]));
-        int idx = 0, level = ta.size() - 1, compares = 0;
-        while (level > 0) {
-            int child = level - 1, left = 2 * idx, right = 2 * idx + 1;
-            compares++;
-            idx = (ta.get(child)[left] != tb.get(child)[left]) ? left : right;
-            level = child;
-        }
+        System.out.println(ta.get(ta.size() - 1)[0] == tb.get(tb.size() - 1)[0]);
+        int idx = findDiff(ta, tb);
         System.out.println("differing leaf index: " + idx + " -> " + A[idx] + " vs " + B[idx]);
-        System.out.println("subtree checks to localise: " + compares + " (not " + A.length + " leaf scans)");
     }
 }
 ```
 
-Both print `roots equal? false`, then `differing leaf index: 3 -> dave vs DAVE`, then `subtree checks to localise: 2 (not 4 leaf scans)`. The mismatched root proves *something* diverged without transferring a single record; the descent then follows only the differing branch — **log₂4 = 2** comparisons — to land on `dave`. Scale that to a replica with a million records: ~20 comparisons instead of a million, which is why Merkle trees are the backbone of replica repair and content addressing.
+```testcases
+{
+  "args": [
+    { "id": "A", "label": "replica A (comma-separated)", "type": "string", "placeholder": "alice,bob,carol,dave" },
+    { "id": "B", "label": "replica B (comma-separated)", "type": "string", "placeholder": "alice,bob,carol,DAVE" }
+  ],
+  "cases": [
+    { "args": { "A": "alice,bob,carol,dave", "B": "alice,bob,carol,DAVE" }, "expected": "false\ndiffering leaf index: 3 -> dave vs DAVE" },
+    { "args": { "A": "a,b,c,d",             "B": "A,b,c,d"             }, "expected": "false\ndiffering leaf index: 0 -> a vs A" }
+  ]
+}
+```
+
+<details>
+<summary><strong>Editorial</strong></summary>
+
+Start at the root level and at index 0. At each level, check the left child's hash in both trees; if they differ, follow left, otherwise follow right. Repeat until you reach the leaf level. This visits exactly one node per level — O(log n) comparisons total.
+
+```python solution time=O(log n) space=O(1)
+def h(s):
+    acc = 0
+    for ch in s:
+        acc = (acc * 31 + ord(ch)) % 1_000_000_007
+    return acc
+def combine(a, b):
+    return h(str(a) + "|" + str(b))
+def merkle(leaves):
+    level = [h(x) for x in leaves]
+    levels = [level]
+    while len(level) > 1:
+        level = [combine(level[i], level[i + 1]) for i in range(0, len(level), 2)]
+        levels.append(level)
+    return levels
+
+def find_diff(ta, tb):
+    idx, level = 0, len(ta) - 1
+    while level > 0:
+        child = level - 1
+        left = 2 * idx
+        idx = left if ta[child][left] != tb[child][left] else left + 1
+        level = child
+    return idx
+
+A = input().split(",")
+B = input().split(",")
+A = [s.strip() for s in A]; B = [s.strip() for s in B]
+ta, tb = merkle(A), merkle(B)
+print("true" if ta[-1][0] == tb[-1][0] else "false")
+idx = find_diff(ta, tb)
+print("differing leaf index:", idx, "->", A[idx], "vs", B[idx])
+```
+
+```java solution
+import java.util.*;
+public class Main {
+    static long h(String s) {
+        long acc = 0;
+        for (int i = 0; i < s.length(); i++) acc = (acc * 31 + s.charAt(i)) % 1_000_000_007L;
+        return acc;
+    }
+    static long combine(long a, long b) { return h(a + "|" + b); }
+    static List<long[]> merkle(String[] leaves) {
+        long[] level = new long[leaves.length];
+        for (int i = 0; i < leaves.length; i++) level[i] = h(leaves[i]);
+        List<long[]> levels = new ArrayList<>(); levels.add(level);
+        while (level.length > 1) {
+            long[] next = new long[level.length / 2];
+            for (int i = 0; i < level.length; i += 2) next[i / 2] = combine(level[i], level[i + 1]);
+            level = next; levels.add(level);
+        }
+        return levels;
+    }
+    static int findDiff(List<long[]> ta, List<long[]> tb) {
+        int idx = 0, level = ta.size() - 1;
+        while (level > 0) {
+            int child = level - 1, left = 2 * idx;
+            idx = (ta.get(child)[left] != tb.get(child)[left]) ? left : left + 1;
+            level = child;
+        }
+        return idx;
+    }
+    public static void main(String[] x) {
+        Scanner sc = new Scanner(System.in);
+        String[] A = sc.nextLine().split(",");
+        String[] B = sc.nextLine().split(",");
+        for (int i = 0; i < A.length; i++) A[i] = A[i].trim();
+        for (int i = 0; i < B.length; i++) B[i] = B[i].trim();
+        List<long[]> ta = merkle(A), tb = merkle(B);
+        System.out.println(ta.get(ta.size() - 1)[0] == tb.get(tb.size() - 1)[0]);
+        int idx = findDiff(ta, tb);
+        System.out.println("differing leaf index: " + idx + " -> " + A[idx] + " vs " + B[idx]);
+    }
+}
+```
+
+</details>
+
+The mismatched root proves *something* diverged without transferring a single record; the descent then follows only the differing branch — **log₂4 = 2** comparisons — to land on `dave`. Scale that to a replica with a million records: ~20 comparisons instead of a million, which is why Merkle trees are the backbone of replica repair and content addressing.
 
 ## Reflect & Connect
 

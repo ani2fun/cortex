@@ -18,6 +18,8 @@ Quickselect reuses quicksort's **partition**, with one insight: after partitioni
 Find the 4th smallest of `[7, 2, 1, 6, 8, 5, 3, 4]` (the answer is `4`) without sorting. Run it.
 
 ```python run viz=array
+import ast
+
 def partition(arr, lo, hi):
     pivot = arr[hi]; i = lo - 1
     for j in range(lo, hi):
@@ -38,7 +40,66 @@ def quickselect(arr, k):                   # k-th smallest, 1-indexed
         else:
             hi = p - 1                     # answer is to the LEFT — recurse there only
 
-print(quickselect([7, 2, 1, 6, 8, 5, 3, 4], 4))   # 4
+arr = ast.literal_eval(input())
+k = int(input())
+print(quickselect(arr, k))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static int partition(int[] arr, int lo, int hi) {
+        int pivot = arr[hi], i = lo - 1;
+        for (int j = lo; j < hi; j++)
+            if (arr[j] <= pivot) { i++; int t = arr[i]; arr[i] = arr[j]; arr[j] = t; }
+        int t = arr[i + 1]; arr[i + 1] = arr[hi]; arr[hi] = t;
+        return i + 1;
+    }
+
+    static int quickselect(int[] arr, int k) {
+        int lo = 0, hi = arr.length - 1, target = k - 1;
+        while (lo <= hi) {
+            int p = partition(arr, lo, hi);
+            if (p == target) return arr[p];
+            else if (p < target) lo = p + 1;
+            else hi = p - 1;
+        }
+        return -1;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(quickselect(arr, k));
+    }
+
+    // "[7, 2, 1, 6, 8, 5, 3, 4]" → {7, 2, 1, 6, 8, 5, 3, 4}
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[7, 2, 1, 6, 8, 5, 3, 4]" },
+    { "id": "k", "label": "k", "type": "int", "placeholder": "4" }
+  ],
+  "cases": [
+    { "args": { "arr": "[7, 2, 1, 6, 8, 5, 3, 4]", "k": "4" }, "expected": "4" },
+    { "args": { "arr": "[5, 4, 2, 8]", "k": "2" }, "expected": "4" },
+    { "args": { "arr": "[1, 2, 3, 4, 5]", "k": "5" }, "expected": "5" },
+    { "args": { "arr": "[3, 1]", "k": "1" }, "expected": "1" }
+  ]
+}
 ```
 
 ## How It Works
@@ -85,9 +146,83 @@ Because the two recursive calls aren't equal-cost — they *compound*. Quicksort
 
 ## Your Turn
 
-The reusable quickselect:
+Implement `quickselect(arr, k)` — the reusable last-element-pivot version. Return the k-th smallest (1-indexed).
 
 ```python run viz=array
+import ast
+
+def partition(arr, lo, hi):
+    # Your code goes here — last element pivot, Lomuto partition,
+    # return the pivot's final index.
+    return lo
+
+def quickselect(arr, k):
+    # Your code goes here — iterative loop: partition [lo,hi], compare
+    # pivot rank to k-1, narrow the active range.
+    return -1
+
+arr = ast.literal_eval(input())
+k = int(input())
+print(quickselect(list(arr), k))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static int partition(int[] arr, int lo, int hi) {
+        // Your code goes here — last element pivot, Lomuto partition,
+        // return the pivot's final index.
+        return lo;
+    }
+
+    static int quickselect(int[] arr, int k) {
+        // Your code goes here — iterative loop: partition [lo,hi], compare
+        // pivot rank to k-1, narrow the active range.
+        return -1;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(quickselect(arr, k));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[7, 2, 1, 6, 8, 5, 3, 4]" },
+    { "id": "k", "label": "k", "type": "int", "placeholder": "4" }
+  ],
+  "cases": [
+    { "args": { "arr": "[7, 2, 1, 6, 8, 5, 3, 4]", "k": "4" }, "expected": "4" },
+    { "args": { "arr": "[5, 4, 2, 8]", "k": "2" }, "expected": "4" },
+    { "args": { "arr": "[1, 2, 3, 4, 5]", "k": "5" }, "expected": "5" },
+    { "args": { "arr": "[3, 1]", "k": "1" }, "expected": "1" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+`partition` uses the Lomuto scheme: pivot = `arr[hi]`, scan left-to-right routing values `≤ pivot` before a sliding `i`, then place the pivot at `i+1`. `quickselect` loops: partition `[lo, hi]`, compare the returned rank `p` to `target = k-1`. Equal → return `arr[p]`. `p < target` → narrow left to `p+1`. `p > target` → narrow right to `p-1`. `O(n)` average, `O(1)` space.
+
+```python solution time=O(n) space=O(1)
+import ast
+
 def partition(arr, lo, hi):
     pivot = arr[hi]; i = lo - 1
     for j in range(lo, hi):
@@ -108,35 +243,53 @@ def quickselect(arr, k):
         else:
             hi = p - 1
 
-vals = [7, 2, 1, 6, 8, 5, 3, 4]
-print(quickselect(vals, 1), quickselect(vals, 4), quickselect(vals, 8))   # 1 4 8
+arr = ast.literal_eval(input())
+k = int(input())
+print(quickselect(arr, k))
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
-  static int partition(int[] arr, int lo, int hi) {
-    int pivot = arr[hi], i = lo - 1;
-    for (int j = lo; j < hi; j++)
-      if (arr[j] <= pivot) { i++; int t = arr[i]; arr[i] = arr[j]; arr[j] = t; }
-    int t = arr[i + 1]; arr[i + 1] = arr[hi]; arr[hi] = t;
-    return i + 1;
-  }
-  static int quickselect(int[] arr, int k) {
-    int lo = 0, hi = arr.length - 1, target = k - 1;
-    while (lo <= hi) {
-      int p = partition(arr, lo, hi);
-      if (p == target) return arr[p];
-      else if (p < target) lo = p + 1;
-      else hi = p - 1;
+    static int partition(int[] arr, int lo, int hi) {
+        int pivot = arr[hi], i = lo - 1;
+        for (int j = lo; j < hi; j++)
+            if (arr[j] <= pivot) { i++; int t = arr[i]; arr[i] = arr[j]; arr[j] = t; }
+        int t = arr[i + 1]; arr[i + 1] = arr[hi]; arr[hi] = t;
+        return i + 1;
     }
-    return -1;
-  }
-  public static void main(String[] args) {
-    int[] vals = {7, 2, 1, 6, 8, 5, 3, 4};
-    System.out.println(quickselect(vals.clone(), 4));   // 4
-  }
+
+    static int quickselect(int[] arr, int k) {
+        int lo = 0, hi = arr.length - 1, target = k - 1;
+        while (lo <= hi) {
+            int p = partition(arr, lo, hi);
+            if (p == target) return arr[p];
+            else if (p < target) lo = p + 1;
+            else hi = p - 1;
+        }
+        return -1;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[] arr = parseIntArray(sc.nextLine());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        System.out.println(quickselect(arr, k));
+    }
+
+    static int[] parseIntArray(String line) {
+        String inner = line.replaceAll("[\\[\\]\\s]", "");
+        if (inner.isEmpty()) return new int[0];
+        String[] parts = inner.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+        return out;
+    }
 }
 ```
+
+</details>
 
 Drill the family in **Practice** — [Kth Smallest Element](/cortex/data-structures-and-algorithms/sorting-and-searching/sorting/pattern-quickselect/problems/kth-smallest-element), [Median Finder](/cortex/data-structures-and-algorithms/sorting-and-searching/sorting/pattern-quickselect/problems/median-finder), [K Closest Elements](/cortex/data-structures-and-algorithms/sorting-and-searching/sorting/pattern-quickselect/problems/k-closest-elements), and [K Most Frequent Elements](/cortex/data-structures-and-algorithms/sorting-and-searching/sorting/pattern-quickselect/problems/k-most-frequent-elements).
 
@@ -192,4 +345,4 @@ Quickselect is the "I need one order statistic, not the whole order" tool:
 
 - **CLRS**, *Introduction to Algorithms*, 4th ed., §9 — selection in expected linear time and the median-of-medians worst-case `O(n)`.
 - **Sedgewick & Wayne**, *Algorithms*, 4th ed., §2.5 — quickselect and order statistics.
-- Quickselect's `O(n)`-average / `O(n²)`-worst bounds and the one-sided recursion are standard; both runnable blocks are verified by running (`k=1,4,8 ⇒ 1, 4, 8`).
+- Quickselect's `O(n)`-average / `O(n²)`-worst bounds and the one-sided recursion are standard; both runnable blocks are verified by running (`[7,2,1,6,8,5,3,4], k=4 ⇒ 4`; `[5,4,2,8], k=2 ⇒ 4`).

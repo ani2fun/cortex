@@ -1,25 +1,107 @@
 ---
 title: "Circular Shift Bits"
-summary: "Given a 32-bit unsigned integer num, an integer k, and a flag rotateLeft, rotate num's bits left by k (if rotateLeft = true) or right by k (otherwise). Bits falling off one end wrap around to the othe"
+summary: "Given a 32-bit unsigned integer num, an integer k, and a flag rotateLeft, rotate num's bits left by k (if rotateLeft = true) or right by k (otherwise). Bits falling off one end wrap around to the other."
 prereqs:
   - 03-pattern-restructuring/01-pattern
 difficulty: medium
+kind: problem
+topics: [restructuring, bit-manipulation]
 ---
 
 # Circular Shift Bits
 
-## The Problem
+A rotation is a shift that *wraps*: bits that fall off one end reappear at the other. The restructuring trick is to combine two ordinary shifts of complementary distance.
+
+## Problem Statement
 
 Given a 32-bit unsigned integer `num`, an integer `k`, and a flag `rotateLeft`, rotate `num`'s bits left by `k` (if `rotateLeft = true`) or right by `k` (otherwise). Bits falling off one end wrap around to the other end — they don't disappear.
 
+## Examples
+
+**Example 1**
 ```
 Input:  num = 28, k = 2, rotateLeft = true
 Output: 112
-        Binary 00000000 00000000 00000000 00011100
-        After  00000000 00000000 00000000 01110000
+Explanation: 00000000 00000000 00000000 00011100  rotated left by 2 is
+             00000000 00000000 00000000 01110000  = 112.
+```
 
+**Example 2**
+```
 Input:  num = 1, k = 1, rotateLeft = false
-Output: 2147483648            Bit 1 wraps around to bit 32
+Output: 2147483648
+Explanation: A right rotation by 1 wraps bit 1 around to bit 32.
+```
+
+## Constraints
+
+- `0 ≤ num ≤ 2^32 - 1` — treated as unsigned, so the rotated result spans `0 .. 4294967295`.
+- `1 ≤ k ≤ 31` — a rotation distance within the word (shifting by `0` or `32` is a special case the formula's `32 - k` term doesn't handle).
+
+```python run viz=array
+class Solution:
+
+    # Assuming a 32-bit integer
+    size_int: int = 32
+
+    # Mask to ensure the result is a 32-bit integer
+    mask_int: int = 0xFFFFFFFF
+
+    def circular_shift_bits(
+        self, num: int, k: int, rotate_left: bool
+    ) -> int:
+        # Your code goes here
+        return 0
+
+
+num = int(input())
+k = int(input())
+rotate_left = input().strip() == "true"
+print(Solution().circular_shift_bits(num, k, rotate_left))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+    static class Solution {
+
+        // Number of bits in an integer
+        private int sizeInt = Integer.SIZE;
+
+        public int circularShiftBits(int num, int k, boolean rotateLeft) {
+            // Your code goes here
+            return 0;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        // num can be up to 2^32 - 1 (> Integer.MAX_VALUE): read as long, cast.
+        int num = (int) Long.parseLong(sc.nextLine().trim());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        boolean rotateLeft = Boolean.parseBoolean(sc.nextLine().trim());
+        // Print the unsigned interpretation (0 .. 2^32-1) to match Python.
+        System.out.println(Integer.toUnsignedLong(new Solution().circularShiftBits(num, k, rotateLeft)));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "num", "label": "num", "type": "int", "placeholder": "28" },
+    { "id": "k", "label": "k", "type": "int", "placeholder": "2" },
+    { "id": "rotateLeft", "label": "rotateLeft", "type": "string", "placeholder": "true" }
+  ],
+  "cases": [
+    { "args": { "num": "28", "k": "2", "rotateLeft": "true" }, "expected": "112" },
+    { "args": { "num": "1234567890", "k": "8", "rotateLeft": "true" }, "expected": "2516767305" },
+    { "args": { "num": "1", "k": "1", "rotateLeft": "false" }, "expected": "2147483648" },
+    { "args": { "num": "28", "k": "2", "rotateLeft": "false" }, "expected": "7" },
+    { "args": { "num": "0", "k": "4", "rotateLeft": "true" }, "expected": "0" }
+  ]
+}
 ```
 
 <details>
@@ -67,7 +149,9 @@ Python's integers are arbitrary-precision and *signed*, so `num >> k` propagates
 
 ### The Solution
 
-```python run viz=array
+Each direction is two shifts ORed together. The two languages model 32-bit width differently: Python masks the OR with `0xFFFFFFFF` to clamp back to 32 bits; Java uses the unsigned shift `>>>` so the high bits zero-fill. The driver then prints `Integer.toUnsignedLong(result)` so Java's signed `int` renders as the same unsigned value Python produces.
+
+```python solution time=O(1) space=O(1)
 class Solution:
 
     # Assuming a 32-bit integer
@@ -89,19 +173,15 @@ class Solution:
         return (num >> k | num << (self.size_int - k)) & self.mask_int
 
 
-# Examples from the problem statement
-print(Solution().circular_shift_bits(28, 2, True))             # 112
-print(Solution().circular_shift_bits(1234567890, 8, True))     # 2516767305
-print(Solution().circular_shift_bits(1, 1, False))             # 2147483648
-
-# Edge cases
-print(Solution().circular_shift_bits(0, 4, True))              # 0
-print(Solution().circular_shift_bits(1, 1, True))              # 2
-print(Solution().circular_shift_bits(2, 1, False))             # 1
-print(Solution().circular_shift_bits(28, 2, False))            # 7
+num = int(input())
+k = int(input())
+rotate_left = input().strip() == "true"
+print(Solution().circular_shift_bits(num, k, rotate_left))
 ```
 
-```java run viz=array
+```java solution
+import java.util.*;
+
 public class Main {
     static class Solution {
 
@@ -121,16 +201,11 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(Integer.toUnsignedLong(new Solution().circularShiftBits(28, 2, true)));             // 112
-        System.out.println(Integer.toUnsignedLong(new Solution().circularShiftBits(1234567890, 8, true)));     // 2516767305
-        System.out.println(Integer.toUnsignedLong(new Solution().circularShiftBits(1, 1, false)));             // 2147483648
-
-        // Edge cases
-        System.out.println(Integer.toUnsignedLong(new Solution().circularShiftBits(0, 4, true)));              // 0
-        System.out.println(Integer.toUnsignedLong(new Solution().circularShiftBits(1, 1, true)));              // 2
-        System.out.println(Integer.toUnsignedLong(new Solution().circularShiftBits(2, 1, false)));             // 1
-        System.out.println(Integer.toUnsignedLong(new Solution().circularShiftBits(28, 2, false)));            // 7
+        Scanner sc = new Scanner(System.in);
+        int num = (int) Long.parseLong(sc.nextLine().trim());
+        int k = Integer.parseInt(sc.nextLine().trim());
+        boolean rotateLeft = Boolean.parseBoolean(sc.nextLine().trim());
+        System.out.println(Integer.toUnsignedLong(new Solution().circularShiftBits(num, k, rotateLeft)));
     }
 }
 ```

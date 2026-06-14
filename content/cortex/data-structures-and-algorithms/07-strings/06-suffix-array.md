@@ -31,9 +31,10 @@ def sa_contains(s, pattern):
             hi = mid
     return lo < len(sa) and s[sa[lo]:].startswith(pattern)
 
-print(suffix_array("banana"))             # [5, 3, 1, 0, 4, 2]
-print(sa_contains("banana", "ana"))       # True
-print(sa_contains("banana", "xyz"))       # False
+s = input()
+pattern = input()
+print(suffix_array(s))
+print("true" if sa_contains(s, pattern) else "false")
 ```
 
 ```java run viz=array
@@ -55,10 +56,27 @@ public class Main {
         return lo < sa.length && s.substring(sa[lo]).startsWith(pattern);
     }
     public static void main(String[] args) {
-        System.out.println(Arrays.toString(suffixArray("banana")));   // [5, 3, 1, 0, 4, 2]
-        System.out.println(saContains("banana", "ana"));              // true
-        System.out.println(saContains("banana", "xyz"));              // false
+        Scanner sc = new Scanner(System.in);
+        String s = sc.nextLine();
+        String pattern = sc.nextLine();
+        System.out.println(Arrays.toString(suffixArray(s)));
+        System.out.println(saContains(s, pattern));
     }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "string", "type": "string", "placeholder": "banana" },
+    { "id": "pattern", "label": "pattern", "type": "string", "placeholder": "ana" }
+  ],
+  "cases": [
+    { "args": { "s": "banana", "pattern": "ana" }, "expected": "[5, 3, 1, 0, 4, 2]\ntrue" },
+    { "args": { "s": "banana", "pattern": "xyz" }, "expected": "[5, 3, 1, 0, 4, 2]\nfalse" },
+    { "args": { "s": "abcdef", "pattern": "abc" }, "expected": "[0, 1, 2, 3, 4, 5]\ntrue" },
+    { "args": { "s": "aaaaaa", "pattern": "aaa" }, "expected": "[5, 4, 3, 2, 1, 0]\ntrue" }
+  ]
 }
 ```
 
@@ -149,17 +167,82 @@ def lcp(a, b):
     return k
 
 def distinct_substrings(s):
+    # Your code goes here
+    return 0
+
+s = input()
+print(distinct_substrings(s))
+```
+
+```java run viz=array
+import java.util.*;
+public class Main {
+    static Integer[] suffixArray(String s) {
+        Integer[] sa = new Integer[s.length()];
+        for (int i = 0; i < s.length(); i++) sa[i] = i;
+        Arrays.sort(sa, (x, y) -> s.substring(x).compareTo(s.substring(y)));
+        return sa;
+    }
+    static int lcp(String a, String b) {
+        int k = 0;
+        while (k < a.length() && k < b.length() && a.charAt(k) == b.charAt(k)) k++;
+        return k;
+    }
+    static int distinctSubstrings(String s) {
+        // Your code goes here
+        return 0;
+    }
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String s = sc.nextLine();
+        System.out.println(distinctSubstrings(s));
+    }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "s", "label": "string", "type": "string", "placeholder": "banana" }
+  ],
+  "cases": [
+    { "args": { "s": "banana" }, "expected": "15" },
+    { "args": { "s": "aaa" }, "expected": "3" },
+    { "args": { "s": "abcd" }, "expected": "10" },
+    { "args": { "s": "aaab" }, "expected": "7" }
+  ]
+}
+```
+
+Both print `15` then `3`. `"banana"` has `21` substrings with duplicates but only `15` distinct (the LCP array sums to 6, the six duplicated prefixes); `"aaa"` has just `"a"`, `"aa"`, `"aaa"` — three distinct, from `6 − 3`. The same LCP array that found the longest repeat now *counts* the repeats — one preprocess, many answers, which is the whole point of indexing the text.
+
+<details>
+<summary><strong>Editorial</strong></summary>
+
+A length-`n` string has `n(n+1)/2` total substrings counting duplicates; adjacent sorted suffixes in the suffix array share a common prefix of length `lcp[i]` — those are the duplicates. Subtract the sum of all LCP values to get the distinct count.
+
+```python solution time=O(n^2 log n) space=O(n)
+def suffix_array(s):
+    return sorted(range(len(s)), key=lambda i: s[i:])
+
+def lcp(a, b):
+    k = 0
+    while k < len(a) and k < len(b) and a[k] == b[k]:
+        k += 1
+    return k
+
+def distinct_substrings(s):
     n = len(s)
     sa = suffix_array(s)
     total = n * (n + 1) // 2                           # all substrings, duplicates included
     repeated = sum(lcp(s[sa[i-1]:], s[sa[i]:]) for i in range(1, n))
     return total - repeated                            # subtract the duplicated prefixes
 
-print(distinct_substrings("banana"))    # 15
-print(distinct_substrings("aaa"))       # 3
+s = input()
+print(distinct_substrings(s))
 ```
 
-```java run viz=array
+```java solution
 import java.util.*;
 public class Main {
     static Integer[] suffixArray(String s) {
@@ -181,13 +264,14 @@ public class Main {
         return total - repeated;
     }
     public static void main(String[] args) {
-        System.out.println(distinctSubstrings("banana"));   // 15
-        System.out.println(distinctSubstrings("aaa"));      // 3
+        Scanner sc = new Scanner(System.in);
+        String s = sc.nextLine();
+        System.out.println(distinctSubstrings(s));
     }
 }
 ```
 
-Both print `15` then `3`. `"banana"` has `21` substrings with duplicates but only `15` distinct (the LCP array sums to 6, the six duplicated prefixes); `"aaa"` has just `"a"`, `"aa"`, `"aaa"` — three distinct, from `6 − 3`. The same LCP array that found the longest repeat now *counts* the repeats — one preprocess, many answers, which is the whole point of indexing the text.
+</details>
 
 ## Reflect & Connect
 

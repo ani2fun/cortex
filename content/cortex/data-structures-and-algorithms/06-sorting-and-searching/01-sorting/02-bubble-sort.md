@@ -20,7 +20,9 @@ Sort `[5, 2, 8, 1, 9, 3]` by repeatedly swapping adjacent out-of-order pairs. Ru
 > ▶ Run it, then click **Visualise** — each pass walks left to right swapping neighbours; watch the biggest unsorted value reach the end every pass.
 
 ```python run viz=array viz-root=arr
-arr = [5, 2, 8, 1, 9, 3]
+import ast
+
+arr = ast.literal_eval(input())         # the test case's array
 n = len(arr)
 for i in range(n - 1):                  # n-1 passes
     swapped = False
@@ -31,6 +33,53 @@ for i in range(n - 1):                  # n-1 passes
     if not swapped:                     # a clean pass ⇒ already sorted, stop early
         break
 print(arr)                              # [1, 2, 3, 5, 8, 9]
+```
+
+```java run viz=array viz-root=arr
+import java.util.*;
+
+public class Main {
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());   // the test case's array
+    int n = arr.length;
+    for (int i = 0; i < n - 1; i++) {           // n-1 passes
+      boolean swapped = false;
+      for (int j = 0; j < n - 1 - i; j++) {     // the last i elements are already in place
+        if (arr[j] > arr[j + 1]) {              // adjacent pair out of order?
+          int t = arr[j]; arr[j] = arr[j + 1]; arr[j + 1] = t;   // swap
+          swapped = true;
+        }
+      }
+      if (!swapped) break;                       // a clean pass ⇒ already sorted, stop early
+    }
+    System.out.println(Arrays.toString(arr));   // [1, 2, 3, 5, 8, 9]
+  }
+
+  // "[1, 2, 3]" → {1, 2, 3} — reads the test case's array
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[5, 2, 8, 1, 9, 3]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[5, 2, 8, 1, 9, 3]" }, "expected": "[1, 2, 3, 5, 8, 9]" },
+    { "args": { "arr": "[1, 2, 3, 4]" }, "expected": "[1, 2, 3, 4]" },
+    { "args": { "arr": "[3, 3, 1, 2, 3]" }, "expected": "[1, 2, 3, 3, 3]" },
+    { "args": { "arr": "[1]" }, "expected": "[1]" }
+  ]
+}
 ```
 
 ## How It Works
@@ -81,9 +130,69 @@ Because each pass guarantees the largest element of the still-unsorted region re
 
 ## Your Turn
 
-The reusable adaptive bubble sort:
+Implement the adaptive bubble sort: walk adjacent pairs swapping any out of order so the largest unsorted value bubbles to the end each pass, shrink the inner bound by `i`, and stop early on a clean (no-swap) pass. Return the sorted array.
 
 ```python run viz=array
+import ast
+
+def bubble_sort(arr):
+    # Your code goes here — nested passes swapping adjacent out-of-order pairs;
+    # shrink the inner bound by i each pass; break early on a no-swap pass.
+    return arr
+
+arr = ast.literal_eval(input())      # the test case's array
+print(bubble_sort(arr))
+```
+
+```java run viz=array
+import java.util.*;
+
+public class Main {
+  static int[] bubbleSort(int[] arr) {
+    // Your code goes here — nested passes swapping adjacent out-of-order pairs;
+    // shrink the inner bound by i each pass; break early on a no-swap pass.
+    return arr;
+  }
+
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());
+    System.out.println(Arrays.toString(bubbleSort(arr)));
+  }
+
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
+  }
+}
+```
+
+```testcases
+{
+  "args": [
+    { "id": "arr", "label": "arr", "type": "int[]", "placeholder": "[5, 2, 8, 1, 9, 3]" }
+  ],
+  "cases": [
+    { "args": { "arr": "[5, 2, 8, 1, 9, 3]" }, "expected": "[1, 2, 3, 5, 8, 9]" },
+    { "args": { "arr": "[1, 2, 3, 4]" }, "expected": "[1, 2, 3, 4]" },
+    { "args": { "arr": "[9, 7, 5, 3, 1]" }, "expected": "[1, 3, 5, 7, 9]" },
+    { "args": { "arr": "[2, 1]" }, "expected": "[1, 2]" }
+  ]
+}
+```
+
+<details>
+<summary>Editorial</summary>
+
+Two nested loops with an early-exit flag. The inner loop walks adjacent pairs and swaps any out of order, bubbling the largest unsorted value to the end; the outer loop repeats, shrinking the inner bound by `i` since the last `i` elements are already in place. A pass with no swaps proves the array is sorted, so break. `O(n²)` time, `O(1)` space, stable, and `O(n)` on already-sorted input.
+
+```python solution time=O(n^2) space=O(1)
+import ast
+
 def bubble_sort(arr):
     n = len(arr)
     for i in range(n - 1):
@@ -96,11 +205,11 @@ def bubble_sort(arr):
             break
     return arr
 
-print(bubble_sort([5, 2, 8, 1, 9, 3]))   # [1, 2, 3, 5, 8, 9]
-print(bubble_sort([1, 2, 3, 4]))          # [1, 2, 3, 4] (one pass, early exit)
+arr = ast.literal_eval(input())      # the test case's array
+print(bubble_sort(arr))
 ```
 
-```java run viz=array
+```java solution
 import java.util.*;
 
 public class Main {
@@ -120,12 +229,23 @@ public class Main {
   }
 
   public static void main(String[] args) {
-    System.out.println(Arrays.toString(bubbleSort(new int[]{5, 2, 8, 1, 9, 3})));   // [1, 2, 3, 5, 8, 9]
+    Scanner sc = new Scanner(System.in);
+    int[] arr = parseIntArray(sc.nextLine());
+    System.out.println(Arrays.toString(bubbleSort(arr)));
+  }
+
+  static int[] parseIntArray(String line) {
+    String inner = line.replaceAll("[\\[\\]\\s]", "");
+    if (inner.isEmpty()) return new int[0];
+    String[] parts = inner.split(",");
+    int[] out = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i]);
+    return out;
   }
 }
 ```
 
-This is a structural lesson — the quickselect / custom-compare pattern sets are where you'll drill sorting in problems.
+</details>
 
 ## Reflect & Connect
 
