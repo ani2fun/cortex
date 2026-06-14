@@ -1,0 +1,5 @@
+{
+    "title": "Part 4 — Docker & Kubernetes: Shipping the System",
+    "summary": "From a Dockerfile to a running pod — containers, orchestration, and the path from git push to production.",
+    "defaultStatus": "essential"
+}

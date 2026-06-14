@@ -269,6 +269,16 @@
     .cortex-reader-sidebar__section-name {
         @apply flex-1 truncate;
     }
+    /* Reveal the full Part/section title on hover / keyboard focus by un-truncating
+       in place — mirrors the chapter-link rule below. A popup tooltip would be
+       clipped by the sidebar's overflow-y: auto (W3C overflow rules), so we let the
+       summary grow vertically instead, keeping the full title inside the rail. */
+    .cortex-reader-sidebar__section-summary:hover .cortex-reader-sidebar__section-name,
+    .cortex-reader-sidebar__section-summary:focus-visible .cortex-reader-sidebar__section-name {
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
+    }
     .cortex-reader-sidebar__section-children {
         @apply list-none ml-3 mt-1 space-y-1 border-l border-border pl-2;
     }

@@ -1,0 +1,308 @@
+---
+title: '7. The verification loop'
+summary: An agent saying "it works" is a prediction, not evidence — the proof is running the thing. Meet the verify node of the loop, the single habit that separates a flashy demo from a dependable agent, demonstrated by the gate that checked this very chapter.
+---
+
+# 7. The verification loop
+
+## TL;DR
+
+> **An agent's claim that "it works" is not evidence — it's a guess.** The evidence is *running the
+> thing*: the test passes, the program prints what the prose promised, the type-checker is green, the
+> diff says what you think it says. This is the **verify** node of Chapter 1's gather → act → verify
+> loop, and it is an **action the agent takes** — a tool call — not a feeling it reports. Because a
+> language model can be *confidently wrong*, its own self-assessment can never be the gate; execution
+> is. And the strongest form is **independent** verification: don't trust a subagent's "done" —
+> re-run it yourself. This chapter is itself proof: its one runnable block was executed in our sandbox
+> before you read this line.
+
+## 1. Motivation
+
+In 2023 a New York lawyer filed a court brief citing six cases — *Varghese v. China Southern
+Airlines*, *Martinez v. Delta*, and four more. They were perfectly formatted: party names, dockets,
+quoted holdings, the works. They were also entirely **fictional**. An LLM had invented them, and the
+lawyer had asked the model *"are these real cases?"* — to which it had answered, confidently, *"yes."*
+The judge was not amused; sanctions followed. Part 1 met this lawyer already. He returns here for a
+sharper reason: **he did verify — he just verified with the wrong oracle.** He asked the thing that
+made the claim to grade the claim.
+
+The fix is almost insultingly simple, and it is the engine of this whole book. The agent that wrote
+these chapters does **not** get to say "the Scala example works." It must *prove* it: take the code
+block, ship it to a sandboxed runner (`POST /api/run`), execute it, and compare the actual output to
+what the prose claims — byte for byte. If the sandbox doesn't say **Accepted**, the example does not
+go in. For the Python you're about to see in §5, the reviewer of *this very chapter* re-ran that step
+independently — extracted the block, ran it, demanded "Accepted." (How do we know? It's the documented
+rule, and you can see the verdict reproduced in §5.)
+
+That is the difference between a demo and a dependable agent, and it's worth saying plainly because
+the hype obscures it: **the magic isn't that the agent is usually right — it's that we never have to
+take its word for it.** A model that checks its work by *running* it is categorically more trustworthy
+than one that merely sounds sure, even if the underlying intelligence is identical. The lawyer had a
+brilliant assistant. What he lacked was a sandbox.
+
+## 2. Intuition (Analogy)
+
+A pilot does not *believe* the wing flaps work. Before every single flight — even the thousandth, even
+when running late — they run the **pre-flight checklist**: move the controls, watch the surfaces
+respond, confirm with their own eyes. Not because pilots are forgetful, but because "I'm sure it's
+fine" has killed people and a thirty-second check never has. The checklist is mechanized distrust, and
+it is *the most professional thing in the cockpit.*
+
+A coding agent's verify node is that checklist. The agent doesn't *assume* its edit compiles — it runs
+the build. It doesn't *assume* the function is right — it runs the test and reads the output. Same
+spirit as the chef from Part 1 **tasting the dish at the pass** before it leaves the kitchen: you don't
+plate what you haven't tasted, however good the recipe looked on paper.
+
+The folk phrase is *"trust, but verify"* — and the load-bearing word is **verify**. Trust gets you
+started; verification is what makes the result *true*.
+
+| | "Trust the claim" (vibes) | **"Verify by running" (the loop)** |
+|---|---|---|
+| What's the evidence? | The agent *said* it works | The test passed / output matched |
+| When wrong, you find out… | In production, from a user | Now, from the failing check |
+| Confident-but-wrong | Sails straight through | **Caught** — code can't lie about its output |
+| Who is the oracle? | The thing that made the claim | An **independent** runner / fresh check |
+| Cost | Zero now, expensive later | Seconds now, cheap forever |
+| Professional habit? | No — it's hoping | Yes — it's the pre-flight checklist |
+
+## 3. Formal Definition
+
+**Verification** is the act of producing *independent evidence* that an artifact meets its goal,
+where "independent" means the evidence does not come from the same source that produced the artifact.
+
+It rests on one uncomfortable fact about language models:
+
+> A model emits the *most plausible-sounding* continuation, which is not the same as the *true* one.
+> So "it works" is a **prediction the model is making about reality**, generated by the same fallible
+> process that produced the code — and therefore it carries no independent weight. A confident tone is
+> a property of the text, not a measurement of the world.
+
+So the gate cannot be the model's self-report. The gate must be an **action**: the agent invokes a
+tool whose output is determined by *reality*, not by the model — run the test, execute the program,
+type-check, lint, re-read the diff, preview the UI — and then *reacts* to what comes back. That action
+is the **verify** node of Chapter 1's loop. The forms it takes:
+
+| Form of verification | The tool call | What reality tells you |
+|---|---|---|
+| **Run the tests** | `Bash{pytest}` | Pass / fail — does behaviour match the spec? |
+| **Execute & compare output** | `Bash{python x.py}` → diff vs expected | Does it actually print what we claim? |
+| **Type-check / lint** | `Bash{tsc}` / `Bash{scalafmt}` | Is it well-formed before we even run it? |
+| **Re-read the diff** | `Read` the final patch | Did we change *only* what we intended? |
+| **Browser-preview a UI** | open the page, look | Does the human-facing thing render right? |
+
+| Term | Meaning |
+|---|---|
+| **Claim** | The agent's assertion that the goal is met ("the test passes"). A prediction — **never** the evidence. |
+| **Evidence** | The actual result of an action determined by reality (exit code, stdout, type-checker verdict). |
+| **Verify node** | The step in the loop where the agent *takes a verifying action* and inspects the result. |
+| **Independent verification** | Checking with an oracle the producer doesn't control — a fresh runner, a second agent, *you* re-running it. |
+| **Confidently wrong** | The model produces a fluent, certain-sounding output that is false. The exact failure verification exists to catch. |
+| **Oracle** | The thing that decides pass/fail. The point of this chapter: choose an oracle the agent can't talk its way past. |
+
+The deepest rule, the one we actually follow in this repo: **don't trust a subagent's self-report —
+independently re-run.** Even another *agent's* "done" is still a claim. The only thing that isn't a
+claim is the rerun.
+
+## 4. Worked Example — a claim meets the gate
+
+One task: *"implement `add(a, b)` so `add(2, 3) == 5`."* The agent finishes and **claims success**.
+Watch what the verify node does with that claim.
+
+```mermaid
+flowchart TD
+  G([Goal: add(2,3) must equal 5]) --> A["**act**<br/>agent writes add(), claims 'done, returns a+b'"]
+  A --> V{"**verify** (action!)<br/>RUN add(2,3), read the result"}
+  V -->|"got 5 — reality agrees"| OK([VERIFIED: claim backed by evidence])
+  V -->|"got -1 — reality disagrees"| FIX["claim was confidently WRONG<br/>re-gather context, fix"]
+  FIX --> A
+  N["self-report 'it works' alone"] -. "is NOT a path to done" .-> OK
+  classDef s fill:#1f2937,stroke:#6366f1,color:#e5e7eb,rx:6,ry:6;
+  classDef bad fill:#3f1d2b,stroke:#ef4444,color:#fecaca,rx:6,ry:6;
+  class A,V,FIX s;
+  class N bad;
+```
+
+Three things to notice. **The claim and the verdict are different nodes** — the agent *saying* "returns
+a+b" and the runner *showing* `5` are not the same event, and only the second one closes the loop. The
+dashed edge — self-report straight to "done" — is **drawn but forbidden**; that shortcut is exactly the
+lawyer's mistake from §1. **Verify is a `{}` action**, a tool call with a question mark, because its
+output depends on reality, not on the model's confidence. And **the back-edge handles the liar**: if the
+code secretly subtracts, the claim is glowing but `got -1` exposes it, and the loop re-gathers instead
+of shipping. The agent that *only acts* trusts itself; the agent that *verifies* lets reality vote.
+
+## 5. Build It
+
+Here is the verify node distilled to its essence: a **gate** that takes a claim and an artifact, then
+**throws the claim away** and independently runs the artifact against known cases. Two agents hand it
+*identical* claims — "I implemented `add()`; it returns `a + b`." One is honest. One is confidently
+wrong (its code subtracts). Self-report can't tell them apart. Execution can.
+
+```python run
+def verify_gate(claim, func, cases):
+    """The gate IGNORES the claim. It runs `func` on every (input -> want) case.
+    Reality is the result of EXECUTION, not what the claim asserts."""
+    for a, b, want in cases:
+        got = func(a, b)
+        if got != want:
+            return f"REJECTED  (claim: {claim!r}) -> add({a},{b}) gave {got}, expected {want}"
+    return f"VERIFIED  (claim: {claim!r}) -> all {len(cases)} cases passed"
+
+cases = [(2, 3, 5), (10, 4, 14), (0, 0, 0)]
+
+# Agent A: honest. Claim matches what the code actually does.
+def add_honest(a, b):
+    return a + b
+
+# Agent B: confidently wrong. The CLAIM says "+", but the code subtracts.
+def add_liar(a, b):
+    return a - b
+
+print("claim says: 'I implemented add(); it returns a + b'  (both agents claim this)")
+print()
+print("Agent A:", verify_gate("returns a + b", add_honest, cases))
+print("Agent B:", verify_gate("returns a + b", add_liar,   cases))
+print()
+print("The claims were identical. Only EXECUTION told them apart.")
+```
+
+Running it prints `Agent A: VERIFIED …` and `Agent B: REJECTED … add(2,3) gave -1, expected 5`. Sit
+with that: **the strings the two agents reported were byte-identical.** No amount of reading their
+claims would catch Agent B — its prose was flawless. The lie lived in the *code*, and only running the
+code surfaced it. That is the entire chapter in fourteen lines, and — fittingly — this block was itself
+shipped to our sandbox and had to come back **Accepted** before it earned its place on this page. The
+chapter practices what it preaches.
+
+**Now break it.** Change `add_liar` to `return a + b` and re-run: Agent B flips to `VERIFIED`, because
+the gate never cared *who* you are or *what you claimed* — only what your code *does* when reality runs
+it. Swap the cases for ones the honest function fails (say `(2, 3, 6)`) and watch *Agent A* get
+rejected too. The gate has no favourites. That impartiality — judging the artifact, never the
+assertion — is what makes verification trustworthy.
+
+## 6. Trade-offs & Complexity
+
+| Verify by running | Trust the self-report | Verify by hand, every time |
+|---|---|---|
+| Catches confidently-wrong, objectively | Free, instant, zero tooling | Most thorough; you understand deeply |
+| Costs seconds (a test/build run) | Costs nothing now, *plenty* later | Costs your time on every change |
+| Needs a real oracle (test, runner, types) | Needs only optimism | Doesn't scale past a handful of checks |
+| Best for anything *executable/checkable* | Best for… nothing, really | Best for the subtle & irreversible |
+| Can give false confidence if tests are weak | Gives false confidence always | You *are* the oracle (but you tire) |
+
+The cost of verification is real but tiny: a few seconds of compute and the discipline to actually wire
+the gate in. The cost of *skipping* it is unbounded — it's the failure deferred to production, to a
+user, to a courtroom. There's one honest caveat: **verification is only as good as its oracle.** A test
+suite that doesn't cover the bug will happily go green on broken code (`add(2,3)==5` alone wouldn't
+catch a function that returns `5` for everything). Weak tests give *false* confidence, which is why the
+next chapters add **independent** review — a fresh agent, a second oracle — on top of the agent's own
+checks. Verification isn't "run something and relax"; it's "run the *right* thing, and trust the result
+over the vibe."
+
+## 7. Edge Cases & Failure Modes
+
+- **Self-report as the gate.** The agent edits, announces "done — it works," and that's the proof.
+  This is the lawyer of §1. Antidote: the verdict must come from an *action*, never an assertion.
+- **The empty / fake verification.** The agent "runs the tests" but there are no tests, or they don't
+  touch the change. Green means nothing here. Antidote: confirm the check *actually exercises* the code.
+- **Trusting a subagent's "done."** A delegated agent reports success; the orchestrator believes it.
+  Another agent's claim is *still a claim.* Antidote: the rule we follow — independently re-run it.
+- **Verifying with the same fallible source.** Asking the model that wrote the cite "is this real?" —
+  the oracle and the author are the same. Antidote: the oracle must be *independent* of the producer.
+- **Stopping at "it ran" instead of "it's right."** The program executed without crashing, so… ship?
+  No crash ≠ correct output. Antidote: compare output to *expected*, don't just check the exit code.
+- **Weak oracle, false green.** Thin tests pass on broken code. Antidote: strengthen cases; add an
+  adversarial/independent reviewer (Chapters 8 & Part 6).
+- **Skipping verification "because it's a trivial change."** Trivial changes are where overconfidence
+  lives. Antidote: the pilot runs the checklist on flight one thousand too.
+
+## 8. Practice
+
+> **Exercise 1 — Why isn't "it works" evidence?** A teammate says: "The agent told me the fix works,
+> and it's a really good model, so we're done." From first principles, explain why the agent's claim
+> carries no independent weight — and what would turn it into actual evidence.
+
+<details>
+<summary><strong>Answer</strong></summary>
+
+Because a language model emits the *most plausible-sounding* continuation, and "it works" is generated
+by the **same fallible process** that wrote the code (§3). The claim and the code share an author, so
+the claim can't independently vouch for the code — a confident tone is a property of the *text*, not a
+measurement of the *world*. "Really good model" only means *usually* right, and "usually" is precisely
+the gap where confidently-wrong lives (the §1 lawyer's cites were fluent *and* fictional).
+
+What turns it into evidence: an **action with an independent oracle** — run the test, execute the
+program and diff the output against expected, type-check it. The verdict then comes from reality (exit
+code, stdout) rather than from the model's self-assessment. Evidence is something *reality* produced,
+not something the author *asserted*.
+
+</details>
+
+> **Exercise 2 — Same claim, opposite truth.** In the §5 gate, Agent A and Agent B return the
+> *identical* string `"returns a + b"`, yet one is VERIFIED and one REJECTED. Explain how that's
+> possible, and what general principle about verification it demonstrates.
+
+<details>
+<summary><strong>Answer</strong></summary>
+
+It's possible because the gate **ignores the claim entirely** and runs each agent's `func` against
+known cases (§5). Agent A's *code* actually adds, so `add(2,3)` yields `5` and matches — VERIFIED.
+Agent B's *code* subtracts, so `add(2,3)` yields `-1` and mismatches — REJECTED. The claims being
+byte-identical is irrelevant: the gate never read them as evidence, only as a label.
+
+The principle: **verify the artifact, not the assertion.** The truth of "it works" lives in what the
+code *does* when executed, never in what anyone *says* about it — which is exactly why no amount of
+re-reading Agent B's confident prose would have caught the bug. Execution is the oracle; the claim is
+just a sticky note on the box.
+
+</details>
+
+> **Exercise 3 — Independent vs self.** Our rule is "don't trust a subagent's self-report —
+> independently re-run." If a subagent already ran the tests and they passed, why re-run them yourself?
+> Isn't that wasteful?
+
+<details>
+<summary><strong>Answer</strong></summary>
+
+Because a subagent reporting "tests passed" is **still a claim** — it's the *same kind* of self-report
+the §1 lawyer trusted, just one level up (§3, §7). The subagent might have run the wrong tests, run no
+tests, misread a failure as a pass, or simply hallucinated the green. Its summary is a prediction about
+what happened, not a guarantee. Independent re-running replaces the prediction with a *measurement* you
+control: you choose the oracle and you see the verdict firsthand.
+
+It is not wasteful — it's the cheapest insurance there is. A test rerun costs seconds; a false "done"
+that reaches production costs far more (§6). This is the whole logic of the pre-flight checklist and of
+double-entry bookkeeping: a second, *independent* pass over the same fact is how you catch the error the
+first pass missed. The redundancy *is* the safety.
+
+</details>
+
+```quiz
+{
+  "prompt": "An agent finishes a change and reports: 'Done — I ran it and it works.' What single thing makes this a trustworthy result rather than just a confident claim?",
+  "input": "Choose one:",
+  "options": [
+    "An independent verifying action whose verdict comes from reality (e.g. a test/runner the agent doesn't control) confirms the output matches what's expected",
+    "The model is large and well-regarded, so its self-assessment is reliable",
+    "The agent phrased its success report clearly and in detail",
+    "The code executed without throwing an error"
+  ],
+  "answer": "An independent verifying action whose verdict comes from reality (e.g. a test/runner the agent doesn't control) confirms the output matches what's expected"
+}
+```
+
+## In the Wild
+
+- **[Mata v. Avianca — the ChatGPT fake-citations sanctions (Reuters)](https://www.reuters.com/legal/new-york-lawyers-sanctioned-using-fake-chatgpt-cases-legal-brief-2023-06-22/)**
+  — the §1 story in full. Confidently-wrong output, no independent oracle, real consequences. The
+  cautionary tale this whole chapter is built around.
+- **[Anthropic — Claude Code best practices](https://www.anthropic.com/engineering/claude-code-best-practices)**
+  — including the test-driven and "have the agent verify its work" workflows; verification as a
+  first-class step in the loop, not an afterthought.
+- **[Anthropic — Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)**
+  — the evaluator/optimizer and orchestrator patterns: an explicit, *independent* checking step over a
+  generator's output. The architecture behind "never trust, always verify."
+
+---
+
+**Next:** the agent's reach so far stops at its built-in tools. How does it borrow *new* powers —
+external services, fresh data — and hand whole sub-tasks to clean-context helpers? →
+[8. MCP & subagents in Claude Code](/cortex/the-claude-stack/claude-code-in-action/mcp-and-subagents-in-claude-code)

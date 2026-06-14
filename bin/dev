@@ -153,6 +153,15 @@ fi
 stores="db redis mongo go-judge likec4"
 if [[ "$AUTH_ENABLED" == "true" ]]; then stores="$stores keycloak"; fi
 log "starting backing stores ($stores)"
+
+# go-judge bakes a pre-warmed Scala coursier cache at image-build time
+# (runner/go-judge/Dockerfile) so `scala run` compiles inside the no-network
+# sandbox. A plain `up -d` reuses whatever image is already cached, so editing
+# that warm-cache step would silently leave a stale image running — and every
+# Scala /api/run would then NZEC offline (UnknownHostException fetching the
+# compiler). Rebuild it first: fully layer-cached (fast, no network) when
+# nothing changed, real work only when the runner image actually changes.
+docker compose build go-judge
 docker compose up -d --remove-orphans $stores
 
 for svc in db redis mongo; do

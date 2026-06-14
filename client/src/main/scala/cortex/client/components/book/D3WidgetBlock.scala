@@ -9,11 +9,17 @@ import cortex.client.components.book.widgets.{
   EstimationCalculator,
   HandshakeTimeline,
   HotShardSimulator,
+  JwtInspector,
+  K8sReconcile,
+  KeycloakRealmExplorer,
   LatencyScaledTime,
+  MigrationTimeline,
+  OAuthPkceFlow,
   PartitionSimulator,
   QueueingSimulator,
   RaftAnimator,
-  ReplicationLagSimulator
+  ReplicationLagSimulator,
+  ZioEffectStepper
 }
 import japgolly.scalajs.react.*
 import japgolly.scalajs.react.vdom.html_<^.*
@@ -90,13 +96,25 @@ object D3WidgetBlock:
           HotShardSimulator.Component(HotShardSimulator.Props(props.payload))
         case "raft-animator" =>
           RaftAnimator.Component(RaftAnimator.Props(props.payload))
+        case "oauth-pkce-flow" =>
+          OAuthPkceFlow.Component(OAuthPkceFlow.Props(props.payload))
+        case "jwt-inspector" =>
+          JwtInspector.Component(JwtInspector.Props(props.payload))
+        case "keycloak-realm-explorer" =>
+          KeycloakRealmExplorer.Component(KeycloakRealmExplorer.Props(props.payload))
+        case "zio-effect-stepper" =>
+          ZioEffectStepper.Component(ZioEffectStepper.Props(props.payload))
+        case "migration-timeline" =>
+          MigrationTimeline.Component(MigrationTimeline.Props(props.payload))
+        case "k8s-reconcile" =>
+          K8sReconcile.Component(K8sReconcile.Props(props.payload))
         case other =>
           <.div(
             ^.className := "d3-widget__error",
             <.p(^.className := "d3-widget__error-title", "Unknown D3 widget"),
             <.p(
               ^.className := "d3-widget__error-message",
-              s"""Widget "$other" is not registered. Available widgets: union-find, decision-tree, dp-table, latency-scaled-time, estimation-calculator, partition-simulator, queueing-simulator, handshake-timeline, consistent-hash-ring, cache-stampede, btree-walker, replication-lag, hot-shard, raft-animator."""
+              s"""Widget "$other" is not registered. Available widgets: union-find, decision-tree, dp-table, latency-scaled-time, estimation-calculator, partition-simulator, queueing-simulator, handshake-timeline, consistent-hash-ring, cache-stampede, btree-walker, replication-lag, hot-shard, raft-animator, oauth-pkce-flow, jwt-inspector, keycloak-realm-explorer, zio-effect-stepper, migration-timeline, k8s-reconcile."""
             )
           )
   }

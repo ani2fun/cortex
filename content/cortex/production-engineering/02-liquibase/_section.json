@@ -1,0 +1,5 @@
+{
+    "title": "Part 2 — Liquibase: Evolving a Database Without Fear",
+    "summary": "Migrations as version control for your database schema — from the first CREATE TABLE to zero-downtime refactors.",
+    "defaultStatus": "essential"
+}

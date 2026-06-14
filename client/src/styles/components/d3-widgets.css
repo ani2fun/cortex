@@ -3532,4 +3532,575 @@
         @apply ml-1 font-mono text-xs text-muted-foreground;
     }
 
+    /* ─── OAuth / PKCE flow stepper (Production Engineering, Part 3) ───
+       Step-through sequence diagram. Lanes + lifelines + per-step message
+       arrows are a string-built SVG; React owns the variant bar, caption and
+       playback controls. Message colour is driven by a --msg-color custom
+       property set per kind on the message group. */
+    .oauth-pkce-flow {
+        @apply my-6 rounded-lg border border-border bg-card p-4;
+    }
+    .oauth-pkce-flow__title {
+        @apply mb-2 text-center text-sm font-medium text-muted-foreground;
+    }
+    .oauth-pkce-flow__summary {
+        @apply mb-2 text-center text-xs text-muted-foreground;
+    }
+    .oauth-pkce-flow__variants {
+        @apply mb-3 flex flex-wrap justify-center gap-2;
+    }
+    .oauth-pkce-flow__variant-btn {
+        @apply rounded-md border border-border px-3 py-1 text-xs font-medium text-muted-foreground
+               transition-colors hover:bg-accent hover:text-foreground;
+    }
+    .oauth-pkce-flow__variant-btn--active {
+        @apply border-primary bg-primary/10 text-foreground;
+    }
+    .oauth-pkce-flow__frame {
+        @apply flex justify-center overflow-x-auto;
+    }
+    .oauth-pkce-flow__svg {
+        @apply block h-auto max-w-full;
+    }
+    .oauth-pkce-flow__actor-box {
+        fill: var(--color-muted, #f1f5f9);
+        stroke: var(--color-border, #cbd5e1);
+        stroke-width: 1.5;
+    }
+    .oauth-pkce-flow__actor-label {
+        fill: var(--color-foreground, #1e293b);
+        font-size: 13px;
+        font-weight: 600;
+    }
+    .oauth-pkce-flow__lifeline {
+        stroke: var(--color-border, #cbd5e1);
+        stroke-width: 1;
+        stroke-dasharray: 4 4;
+    }
+    .oauth-pkce-flow__msg {
+        transition: opacity 250ms ease;
+    }
+    .oauth-pkce-flow__msg--future {
+        opacity: 0.26;
+    }
+    .oauth-pkce-flow__msg--past {
+        opacity: 0.9;
+    }
+    .oauth-pkce-flow__msg--current {
+        opacity: 1;
+    }
+    .oauth-pkce-flow__msg--request {
+        --msg-color: #475569;
+    }
+    .oauth-pkce-flow__msg--redirect {
+        --msg-color: #6366f1;
+    }
+    .oauth-pkce-flow__msg--token {
+        --msg-color: #0891b2;
+    }
+    .oauth-pkce-flow__msg--data {
+        --msg-color: #059669;
+    }
+    .oauth-pkce-flow__msg--compute {
+        --msg-color: #9333ea;
+    }
+    .oauth-pkce-flow__msg--attack {
+        --msg-color: #dc2626;
+    }
+    .oauth-pkce-flow__msg-line {
+        stroke: var(--msg-color, #475569);
+        stroke-width: 2;
+    }
+    .oauth-pkce-flow__msg--current .oauth-pkce-flow__msg-line {
+        stroke-width: 3;
+    }
+    .oauth-pkce-flow__msg-arrow {
+        fill: var(--msg-color, #475569);
+    }
+    .oauth-pkce-flow__msg-label {
+        fill: var(--color-foreground, #1e293b);
+        font-size: 12px;
+    }
+    .oauth-pkce-flow__msg--current .oauth-pkce-flow__msg-label {
+        font-weight: 700;
+    }
+    .oauth-pkce-flow__self-rect {
+        fill: var(--msg-color, #9333ea);
+        fill-opacity: 0.12;
+        stroke: var(--msg-color, #9333ea);
+        stroke-width: 1.5;
+    }
+    .oauth-pkce-flow__self-label {
+        fill: var(--color-foreground, #1e293b);
+        font-size: 12px;
+    }
+    .oauth-pkce-flow__detail {
+        @apply mt-3 min-h-[2.75rem] rounded-md bg-muted px-3 py-2 text-sm text-foreground;
+    }
+    .oauth-pkce-flow__controls {
+        @apply mt-3 flex flex-wrap items-center gap-1.5 border-t border-border pt-3;
+    }
+    .oauth-pkce-flow__button {
+        @apply inline-flex items-center gap-1 rounded-md border border-border px-2.5 py-1 text-xs
+               font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground
+               disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent;
+    }
+    .oauth-pkce-flow__button--primary {
+        @apply border-transparent bg-primary text-primary-foreground hover:bg-primary/90
+               hover:text-primary-foreground;
+    }
+    .oauth-pkce-flow__button--icon {
+        @apply px-1.5;
+    }
+    .oauth-pkce-flow__button-icon {
+        @apply h-3.5 w-3.5;
+    }
+    .oauth-pkce-flow__progress {
+        @apply ml-1 font-mono text-xs text-muted-foreground;
+    }
+
+    /* ─── JWT inspector (Production Engineering, Part 3) ───────────────
+       Live, decode-only JWT viewer. Pure HTML — React owns it all. */
+    .jwt-inspector {
+        @apply my-6 rounded-lg border border-border bg-card p-4;
+    }
+    .jwt-inspector__title {
+        @apply mb-2 text-sm font-medium text-muted-foreground;
+    }
+    .jwt-inspector__input-label {
+        @apply mb-1 block text-xs font-medium text-muted-foreground;
+    }
+    .jwt-inspector__input {
+        @apply w-full rounded-md border border-border bg-background p-2 font-mono text-xs text-foreground;
+    }
+    .jwt-inspector__token {
+        @apply mt-3 break-all rounded-md bg-muted p-2 font-mono text-xs leading-relaxed;
+    }
+    .jwt-inspector__dot {
+        @apply text-muted-foreground;
+    }
+    .jwt-inspector__seg--header {
+        color: #dc2626;
+    }
+    .jwt-inspector__seg--payload {
+        color: #7c3aed;
+    }
+    .jwt-inspector__seg--signature {
+        color: #0891b2;
+    }
+    .jwt-inspector__grid {
+        @apply mt-3 grid gap-3 md:grid-cols-2;
+    }
+    .jwt-inspector__panel {
+        @apply rounded-md border border-border bg-background p-3;
+    }
+    .jwt-inspector__panel-title {
+        @apply mb-1 text-xs font-semibold text-muted-foreground;
+    }
+    .jwt-inspector__json {
+        @apply overflow-x-auto whitespace-pre font-mono text-xs text-foreground;
+    }
+    .jwt-inspector__claims {
+        @apply mt-3 w-full border-collapse text-sm;
+    }
+    .jwt-inspector__claim-row {
+        @apply border-t border-border align-top;
+    }
+    .jwt-inspector__claim-key {
+        @apply py-1 pr-3 font-mono text-xs font-semibold text-foreground;
+    }
+    .jwt-inspector__claim-val {
+        @apply py-1 pr-3 font-mono text-xs text-foreground;
+    }
+    .jwt-inspector__claim-time {
+        @apply text-muted-foreground;
+    }
+    .jwt-inspector__claim-desc {
+        @apply py-1 text-xs text-muted-foreground;
+    }
+    .jwt-inspector__badge {
+        @apply ml-2 inline-block rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase;
+    }
+    .jwt-inspector__badge--valid {
+        color: #047857;
+        background: rgba(5, 150, 105, 0.15);
+    }
+    .jwt-inspector__badge--expired {
+        @apply bg-destructive/15 text-destructive;
+    }
+    .jwt-inspector__error-inline {
+        @apply mt-2 text-xs text-muted-foreground;
+    }
+
+    /* ─── Keycloak realm explorer (Production Engineering, Part 3) ─────
+       Two-pane tree + detail. Pure HTML; the only state is the selection. */
+    .keycloak-realm-explorer {
+        @apply my-6 rounded-lg border border-border bg-card p-4;
+    }
+    .keycloak-realm-explorer__title {
+        @apply mb-2 text-sm font-medium text-muted-foreground;
+    }
+    .keycloak-realm-explorer__layout {
+        @apply grid gap-4 md:grid-cols-[minmax(0,14rem)_1fr];
+    }
+    .keycloak-realm-explorer__tree {
+        @apply rounded-md border border-border bg-background p-2;
+    }
+    .keycloak-realm-explorer__realm-btn {
+        @apply mb-2 w-full rounded-md px-2 py-1 text-left text-sm font-semibold text-foreground
+               transition-colors hover:bg-accent;
+    }
+    .keycloak-realm-explorer__realm-btn--active {
+        @apply bg-primary/10 text-foreground;
+    }
+    .keycloak-realm-explorer__group {
+        @apply mb-2;
+    }
+    .keycloak-realm-explorer__group-label {
+        @apply mb-1 px-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground;
+    }
+    .keycloak-realm-explorer__items {
+        @apply space-y-0.5;
+    }
+    .keycloak-realm-explorer__item-btn {
+        @apply flex w-full items-center justify-between gap-2 rounded-md px-2 py-1 text-left text-sm
+               text-muted-foreground transition-colors hover:bg-accent hover:text-foreground;
+    }
+    .keycloak-realm-explorer__item-btn--active {
+        @apply bg-accent text-foreground;
+    }
+    .keycloak-realm-explorer__item-badge {
+        @apply rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground;
+    }
+    .keycloak-realm-explorer__detail {
+        @apply rounded-md border border-border bg-background p-3;
+    }
+    .keycloak-realm-explorer__detail-head {
+        @apply mb-2 flex items-center gap-2 border-b border-border pb-2;
+    }
+    .keycloak-realm-explorer__detail-title {
+        @apply font-mono text-sm font-semibold text-foreground;
+    }
+    .keycloak-realm-explorer__detail-badge {
+        @apply rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-primary;
+    }
+    .keycloak-realm-explorer__fields {
+        @apply w-full border-collapse text-sm;
+    }
+    .keycloak-realm-explorer__field-row {
+        @apply border-t border-border align-top first:border-t-0;
+    }
+    .keycloak-realm-explorer__field-key {
+        @apply py-1 pr-3 font-mono text-xs font-semibold text-muted-foreground;
+    }
+    .keycloak-realm-explorer__field-val {
+        @apply py-1 font-mono text-xs text-foreground;
+    }
+    .keycloak-realm-explorer__note {
+        @apply mt-3 rounded-md bg-muted px-3 py-2 text-xs text-muted-foreground;
+    }
+    .keycloak-realm-explorer__empty {
+        @apply text-xs text-muted-foreground;
+    }
+
+    /* ─── ZIO effect stepper (Production Engineering, Part 1) ──────────
+       Runs a ZIO[R,E,A] recipe step by step; shows the R/E/A channels. */
+    .zio-effect {
+        @apply my-6 rounded-lg border border-border bg-card p-4;
+    }
+    .zio-effect__title {
+        @apply mb-2 text-sm font-medium text-muted-foreground;
+    }
+    .zio-effect__body {
+        @apply grid gap-4 md:grid-cols-[1fr_minmax(0,16rem)];
+    }
+    .zio-effect__program {
+        @apply space-y-1 rounded-md border border-border bg-background p-2;
+        list-style: none;
+        margin: 0;
+        counter-reset: zio;
+    }
+    .zio-effect__step {
+        @apply flex items-center gap-2 rounded px-2 py-1 text-xs transition-colors;
+    }
+    .zio-effect__step--future {
+        @apply opacity-40;
+    }
+    .zio-effect__step--past {
+        border-left: 2px solid #059669;
+    }
+    .zio-effect__step--current {
+        @apply bg-accent font-semibold text-foreground;
+    }
+    .zio-effect__step--current-fail {
+        background: rgba(220, 38, 38, 0.12);
+        border-left: 2px solid #dc2626;
+    }
+    .zio-effect__step--current-recover {
+        background: rgba(5, 150, 105, 0.14);
+        border-left: 2px solid #059669;
+    }
+    .zio-effect__step--recovered {
+        border-left: 2px solid #059669;
+    }
+    .zio-effect__step--skipped {
+        @apply opacity-50 line-through;
+    }
+    .zio-effect__kind {
+        @apply inline-block min-w-[2.4rem] rounded px-1 py-0.5 text-center text-[10px] font-bold uppercase;
+        color: #fff;
+    }
+    .zio-effect__kind--access {
+        background: #9333ea;
+    }
+    .zio-effect__kind--effect {
+        background: #2563eb;
+    }
+    .zio-effect__kind--transform {
+        background: #0891b2;
+    }
+    .zio-effect__kind--fail {
+        background: #dc2626;
+    }
+    .zio-effect__kind--recover {
+        background: #059669;
+    }
+    .zio-effect__op {
+        @apply font-mono text-xs text-foreground;
+    }
+    .zio-effect__panel {
+        @apply space-y-3 rounded-md border border-border bg-background p-3;
+    }
+    .zio-effect__channel-label {
+        @apply mb-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground;
+    }
+    .zio-effect__env {
+        @apply flex flex-wrap gap-1;
+    }
+    .zio-effect__svc {
+        @apply rounded bg-muted px-1.5 py-0.5 font-mono text-[11px] text-muted-foreground;
+    }
+    .zio-effect__svc--on {
+        color: #047857;
+        background: rgba(5, 150, 105, 0.15);
+    }
+    .zio-effect__value {
+        @apply inline-block rounded px-2 py-1 font-mono text-sm;
+    }
+    .zio-effect__value--ok {
+        color: #047857;
+        background: rgba(5, 150, 105, 0.12);
+    }
+    .zio-effect__value--fail {
+        @apply text-destructive;
+        background: rgba(220, 38, 38, 0.12);
+    }
+    .zio-effect__caption {
+        @apply mt-3 min-h-[2.5rem] rounded-md bg-muted px-3 py-2 text-sm text-foreground;
+    }
+    .zio-effect__controls {
+        @apply mt-3 flex flex-wrap items-center gap-1.5 border-t border-border pt-3;
+    }
+    .zio-effect__button {
+        @apply inline-flex items-center gap-1 rounded-md border border-border px-2.5 py-1 text-xs
+               font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground
+               disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent;
+    }
+    .zio-effect__button--primary {
+        @apply border-transparent bg-primary text-primary-foreground hover:bg-primary/90
+               hover:text-primary-foreground;
+    }
+    .zio-effect__button--icon {
+        @apply px-1.5;
+    }
+    .zio-effect__button-icon {
+        @apply h-3.5 w-3.5;
+    }
+    .zio-effect__progress {
+        @apply ml-1 font-mono text-xs text-muted-foreground;
+    }
+
+    /* ─── Migration timeline (Production Engineering, Part 2) ──────────
+       Applies Liquibase changesets; shows schema + DATABASECHANGELOG. */
+    .migration-timeline {
+        @apply my-6 rounded-lg border border-border bg-card p-4;
+    }
+    .migration-timeline__title {
+        @apply mb-2 text-sm font-medium text-muted-foreground;
+    }
+    .migration-timeline__body {
+        @apply grid gap-4 md:grid-cols-[minmax(0,15rem)_1fr];
+    }
+    .migration-timeline__list {
+        @apply space-y-1 rounded-md border border-border bg-background p-2;
+        list-style: none;
+        margin: 0;
+    }
+    .migration-timeline__cs {
+        @apply flex items-center gap-2 rounded px-2 py-1 text-xs transition-colors;
+    }
+    .migration-timeline__cs--pending {
+        @apply opacity-45;
+    }
+    .migration-timeline__cs--current {
+        @apply bg-accent font-semibold text-foreground;
+    }
+    .migration-timeline__cs--applied {
+        color: #047857;
+    }
+    .migration-timeline__cs-mark {
+        @apply text-xs;
+    }
+    .migration-timeline__cs-id {
+        @apply font-mono text-xs;
+    }
+    .migration-timeline__panels {
+        @apply space-y-3;
+    }
+    .migration-timeline__panel {
+        @apply rounded-md border border-border bg-background p-3;
+    }
+    .migration-timeline__panel-label {
+        @apply mb-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground;
+    }
+    .migration-timeline__empty {
+        @apply text-xs italic text-muted-foreground;
+    }
+    .migration-timeline__tables {
+        @apply flex flex-wrap gap-1.5;
+    }
+    .migration-timeline__table {
+        @apply rounded px-2 py-0.5 font-mono text-xs;
+        color: #1e40af;
+        background: rgba(37, 99, 235, 0.12);
+    }
+    .migration-timeline__changelog {
+        @apply w-full border-collapse text-left text-xs;
+    }
+    .migration-timeline__changelog th {
+        @apply border-b border-border py-1 pr-3 text-[10px] font-semibold uppercase text-muted-foreground;
+    }
+    .migration-timeline__changelog td {
+        @apply border-b border-border py-1 pr-3 align-top font-mono text-[11px] text-foreground;
+    }
+    .migration-timeline__md5 {
+        @apply text-muted-foreground;
+    }
+    .migration-timeline__sql {
+        @apply mt-3 rounded-md border border-border bg-background p-3;
+    }
+    .migration-timeline__sql-code {
+        @apply overflow-x-auto whitespace-pre font-mono text-xs text-foreground;
+    }
+    .migration-timeline__caption {
+        @apply mt-3 min-h-[2.5rem] rounded-md bg-muted px-3 py-2 text-sm text-foreground;
+    }
+    .migration-timeline__controls {
+        @apply mt-3 flex flex-wrap items-center gap-1.5 border-t border-border pt-3;
+    }
+    .migration-timeline__button {
+        @apply inline-flex items-center gap-1 rounded-md border border-border px-2.5 py-1 text-xs
+               font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground
+               disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent;
+    }
+    .migration-timeline__button--primary {
+        @apply border-transparent bg-primary text-primary-foreground hover:bg-primary/90
+               hover:text-primary-foreground;
+    }
+    .migration-timeline__button--icon {
+        @apply px-1.5;
+    }
+    .migration-timeline__button-icon {
+        @apply h-3.5 w-3.5;
+    }
+    .migration-timeline__progress {
+        @apply ml-1 font-mono text-xs text-muted-foreground;
+    }
+
+    /* ─── K8s reconcile loop (Production Engineering, Part 4) ──────────
+       Desired vs actual pods; the controller self-heals. */
+    .k8s-reconcile {
+        @apply my-6 rounded-lg border border-border bg-card p-4;
+    }
+    .k8s-reconcile__title {
+        @apply mb-2 text-sm font-medium text-muted-foreground;
+    }
+    .k8s-reconcile__status {
+        @apply mb-3 flex flex-wrap items-center gap-2;
+    }
+    .k8s-reconcile__metric {
+        @apply rounded bg-muted px-2 py-1 font-mono text-xs text-foreground;
+    }
+    .k8s-reconcile__banner {
+        @apply rounded px-2 py-1 text-xs font-medium;
+    }
+    .k8s-reconcile__banner--ok {
+        color: #047857;
+        background: rgba(5, 150, 105, 0.14);
+    }
+    .k8s-reconcile__banner--recon {
+        color: #b45309;
+        background: rgba(245, 158, 11, 0.16);
+    }
+    .k8s-reconcile__pods {
+        @apply flex flex-wrap gap-2 rounded-md border border-border bg-background p-3;
+        min-height: 4rem;
+    }
+    .k8s-reconcile__pod {
+        @apply flex min-w-[6.5rem] flex-col gap-0.5 rounded-md border px-2 py-1.5 transition-colors;
+    }
+    .k8s-reconcile__pod-name {
+        @apply font-mono text-xs font-semibold text-foreground;
+    }
+    .k8s-reconcile__pod-status {
+        @apply text-[10px] uppercase tracking-wide;
+    }
+    .k8s-reconcile__pod--pending {
+        border-color: #f59e0b;
+        background: rgba(245, 158, 11, 0.1);
+    }
+    .k8s-reconcile__pod--running {
+        border-color: #2563eb;
+        background: rgba(37, 99, 235, 0.1);
+    }
+    .k8s-reconcile__pod--ready {
+        border-color: #059669;
+        background: rgba(5, 150, 105, 0.12);
+    }
+    .k8s-reconcile__pod--terminating {
+        border-color: #94a3b8;
+        background: rgba(148, 163, 184, 0.12);
+    }
+    .k8s-reconcile__pod--crashed {
+        border-color: #dc2626;
+        background: rgba(220, 38, 38, 0.12);
+    }
+    .k8s-reconcile__empty {
+        @apply text-xs italic text-muted-foreground;
+    }
+    .k8s-reconcile__caption {
+        @apply mt-3 min-h-[2.5rem] rounded-md bg-muted px-3 py-2 text-sm text-foreground;
+    }
+    .k8s-reconcile__controls {
+        @apply mt-3 flex flex-wrap items-center gap-1.5 border-t border-border pt-3;
+    }
+    .k8s-reconcile__button {
+        @apply inline-flex items-center gap-1 rounded-md border border-border px-2.5 py-1 text-xs
+               font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground
+               disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent;
+    }
+    .k8s-reconcile__button--primary {
+        @apply border-transparent bg-primary text-primary-foreground hover:bg-primary/90
+               hover:text-primary-foreground;
+    }
+    .k8s-reconcile__button--icon {
+        @apply px-1.5;
+    }
+    .k8s-reconcile__button-icon {
+        @apply h-3.5 w-3.5;
+    }
+    .k8s-reconcile__progress {
+        @apply ml-1 font-mono text-xs text-muted-foreground;
+    }
+
 }

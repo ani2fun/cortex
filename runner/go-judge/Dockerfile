@@ -64,5 +64,20 @@ RUN ARCH="$(uname -m)" \
  && mv /tmp/scala-cli /usr/local/bin/scala-cli \
  && chmod 755 /usr/local/bin/scala-cli
 
+# Pre-warm the Scala 3 toolchain so `scala run` works OFFLINE (the sandbox has NO
+# network — that UnknownHostException was scala-cli fetching coursier's jvm-index
+# at run time). Two parts, both consumed by Languages.scala's run command:
+#   * --jvm system → use the installed openjdk-21 (no JVM-index fetch), and
+#   * COURSIER_CACHE under /usr/local (a mounted, uid-1536-readable path) populated
+#     HERE at build time (network available) with the Scala 3 compiler + stdlib,
+#     so run-time compiles are pure cache hits. Warming with network up also
+#     captures anything else scala-cli probes, belt-and-suspenders.
+ENV COURSIER_CACHE=/usr/local/share/coursier
+RUN mkdir -p "$COURSIER_CACHE" \
+ && printf '@main def __warm(): Unit = println("scala toolchain warm")\n' > /tmp/warm.scala \
+ && HOME=/tmp scala-cli run /tmp/warm.scala --quiet --server=false --jvm system \
+ && chmod -R a+rX "$COURSIER_CACHE" \
+ && rm -rf /tmp/warm.scala /tmp/.scala-build /tmp/.cache
+
 # Inherit ENTRYPOINT ["/opt/go-judge"], WORKDIR /opt, port 5050 from the base.
 # Seccomp hardening + tuned default limits are layered in via deploy flags (Phase 1b).

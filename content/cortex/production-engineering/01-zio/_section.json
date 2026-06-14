@@ -1,0 +1,5 @@
+{
+    "title": "Part 1 — ZIO: Effects, Layers & Concurrency",
+    "summary": "Rebuild the idea of a program-as-a-value from scratch, then meet the ZIO[R, E, A] type at the heart of Cortex's backend.",
+    "defaultStatus": "essential"
+}

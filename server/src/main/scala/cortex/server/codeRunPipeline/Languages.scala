@@ -62,12 +62,16 @@ object Languages:
     ),
     Language(
       RunnableLanguageInfo(id = 81, label = "Scala 3", aliases = Seq("scala")),
-      // scala-cli compiles + runs in one step; it fetches its toolchain via coursier (network), which the
-      // sandbox denies — best-effort until the coursier cache is pre-warmed into the image (follow-up).
+      // scala-cli compiles + runs in one step. The sandbox has NO network, so we point it at the coursier
+      // cache pre-warmed into the go-judge image (Dockerfile) and use the installed JDK 21 via --jvm system
+      // (which is what avoids the run-time jvm-index fetch that used to UnknownHostException). Offline.
       GoJudgeSpec(
         sourceFile = "main.scala",
         compile = None,
-        run = "scala-cli run main.scala --quiet --server=false",
+        // The sandbox JVM's stdout charset follows the container locale (native.encoding=ANSI_X3.4-1968,
+        // i.e. ASCII), so non-ASCII output (em-dashes, arrows) would print as '?'. Force UTF-8 on std streams.
+        run =
+          "COURSIER_CACHE=/usr/local/share/coursier scala-cli run main.scala --quiet --server=false --jvm system --java-opt -Dstdout.encoding=UTF-8 --java-opt -Dstderr.encoding=UTF-8",
         cpuSeconds = 60,
         clockSeconds = 120,
         memoryMiB = 1024

@@ -1,0 +1,20 @@
+{
+    "title": "The Claude Stack",
+    "description": "Become fluent in Anthropic's Claude developer stack — and ready for the Claude Certified Architect (CCA) exam — from first principles. Collaborate with AI through the 4 D's, drive Claude Code, build on the Claude API, extend models with the Model Context Protocol, package expertise as Agent Skills, and orchestrate Subagents. Every idea is taught against the very system serving these pages: its CLAUDE.md, hooks, MCP servers, skills, and the subagent workflows that wrote this book. Beginner-friendly, end-to-end. Work in progress.",
+    "tags": [
+        "claude",
+        "anthropic",
+        "ai-fluency",
+        "claude-code",
+        "claude-api",
+        "mcp",
+        "model-context-protocol",
+        "agent-skills",
+        "subagents",
+        "agents",
+        "cca",
+        "certification"
+    ],
+    "estimatedReadingMinutes": 1100,
+    "order": 7
+}

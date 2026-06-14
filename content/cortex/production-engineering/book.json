@@ -1,0 +1,19 @@
+{
+    "title": "Production Engineering",
+    "description": "Build, secure, and ship a real backend — taught through the very system serving these pages. Write it in ZIO, evolve its schema with Liquibase, secure it with OAuth 2.0 and Keycloak, and run it on Kubernetes. First principles, beginner-friendly, end-to-end. Work in progress.",
+    "tags": [
+        "production-engineering",
+        "zio",
+        "scala",
+        "liquibase",
+        "oauth2",
+        "oidc",
+        "keycloak",
+        "iam",
+        "docker",
+        "kubernetes",
+        "backend"
+    ],
+    "estimatedReadingMinutes": 1200,
+    "order": 6
+}
