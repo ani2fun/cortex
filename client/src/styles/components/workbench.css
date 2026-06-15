@@ -588,7 +588,34 @@
         @apply flex flex-col gap-4;
     }
     .coach__tracker {
-        @apply flex flex-wrap items-center justify-between gap-3;
+        @apply flex flex-wrap items-center justify-between gap-3 bg-background/95;
+        position: sticky;
+        top: 0;
+        z-index: 20; /* below the model dropdown (menu z-50 / backdrop z-40) */
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+        margin-top: -1rem; /* cancel .pwb__panel's py-4 so the strip pins flush to the top */
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+    }
+    .coach__progress {
+        @apply mt-1 flex flex-col gap-1;
+        flex-basis: 100%; /* always its own row under the dots/picker */
+    }
+    .coach__progress-meta {
+        @apply flex items-center justify-between gap-2;
+    }
+    .coach__progress-step {
+        @apply text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground;
+    }
+    .coach__progress-pct {
+        @apply font-mono text-xs font-semibold text-primary;
+    }
+    .coach__progress-track {
+        @apply h-1.5 w-full overflow-hidden rounded-full bg-secondary;
+    }
+    .coach__progress-fill {
+        @apply h-full rounded-full bg-primary transition-all;
     }
     .coach__tracker-left {
         @apply flex min-w-0 items-center gap-2;
@@ -696,6 +723,168 @@
     .coach__soon-icon {
         @apply h-3.5 w-3.5;
         flex: 0 0 auto;
+    }
+
+    /* ─── Live coach (CoachController: transcript, composer, BYOK, picker) ── */
+    .coach__status {
+        @apply m-0 text-sm text-muted-foreground;
+    }
+    .coach__transcript {
+        @apply flex flex-col gap-3;
+    }
+    .coach__msg {
+        @apply flex;
+    }
+    .coach__msg--me {
+        @apply justify-end;
+    }
+    .coach__msg--coach {
+        @apply justify-start;
+    }
+    .coach__bubble {
+        @apply rounded-xl px-3.5 py-2.5 text-sm leading-relaxed;
+        max-width: 78%;
+        white-space: pre-wrap;
+    }
+    .coach__msg--me .coach__bubble {
+        @apply rounded-tr-sm bg-primary text-primary-foreground;
+    }
+    .coach__msg--coach .coach__bubble {
+        @apply rounded-tl-sm border border-border bg-secondary text-foreground;
+    }
+    .coach__score {
+        @apply flex items-center justify-between rounded-md border border-border bg-card px-3.5 py-2.5;
+    }
+    .coach__score-label {
+        @apply text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground;
+    }
+    .coach__score-value {
+        @apply font-mono text-sm font-semibold text-primary;
+    }
+    .coach__error {
+        @apply rounded-md border border-rose-500/40 bg-rose-500/5 px-3.5 py-2.5 text-sm
+               text-rose-700 dark:text-rose-400;
+    }
+    .coach__composer {
+        @apply flex items-end gap-2.5;
+    }
+    .coach__input {
+        @apply flex-1 rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground;
+        min-height: 44px;
+        resize: vertical;
+    }
+    .coach__input::placeholder {
+        @apply text-muted-foreground;
+    }
+    .coach__input:focus-visible {
+        outline: 2px solid hsl(var(--ring) / 0.5);
+        outline-offset: 1px;
+    }
+    .coach__input:disabled {
+        opacity: 0.6;
+    }
+    .coach__send {
+        @apply inline-flex flex-none items-center justify-center rounded-md bg-primary
+               text-primary-foreground hover:bg-primary/90;
+        height: 44px;
+        width: 44px;
+    }
+    .coach__send:disabled {
+        opacity: 0.5;
+    }
+    .coach__send-icon {
+        @apply h-4 w-4;
+    }
+    .coach__byok {
+        @apply flex flex-col gap-2.5;
+    }
+    .coach__byok-row {
+        @apply flex items-center gap-2.5;
+    }
+    .coach__byok-input {
+        @apply flex-1 font-mono;
+        min-height: 0;
+        resize: none;
+    }
+    .coach__byok-foot {
+        @apply flex justify-end;
+    }
+    .coach__byok-help {
+        @apply mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1.5;
+    }
+    .coach__byok-which {
+        @apply inline-flex items-center gap-1.5 text-[12.5px] text-muted-foreground;
+    }
+    .coach__byok-getkey {
+        @apply inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-primary hover:underline;
+    }
+    .coach__byok-help-icon {
+        @apply h-3.5 w-3.5;
+        flex: 0 0 auto;
+    }
+
+    /* ─── "Coach is thinking…" + stuck-hint emphasis ── */
+    .coach__bubble--thinking {
+        @apply inline-flex items-center gap-2 text-muted-foreground;
+    }
+    .coach__spin {
+        @apply h-4 w-4 animate-spin text-primary;
+    }
+    .coach__note--stuck {
+        @apply border-amber-500/40 bg-amber-500/10;
+    }
+    .coach__note-ask {
+        @apply mt-2 flex items-center gap-2 text-[13px] font-medium text-foreground/90;
+    }
+
+    /* ─── Coach model picker (mirrors .langselect) ── */
+    .modelselect {
+        @apply relative;
+        flex: 0 0 auto;
+    }
+    .modelselect--locked {
+        @apply inline-flex items-center gap-1.5 rounded-md border border-border bg-secondary/40 py-1
+               pl-2.5 pr-3 text-xs font-medium text-muted-foreground;
+    }
+    .modelselect__btn {
+        @apply inline-flex items-center gap-1.5 rounded-md border border-border py-1 pl-2.5 pr-2
+               text-xs font-medium text-foreground hover:bg-accent;
+    }
+    .modelselect__btn--open {
+        @apply bg-secondary;
+    }
+    .modelselect__glyph {
+        @apply h-3.5 w-3.5 text-primary;
+    }
+    .modelselect__label {
+        white-space: nowrap;
+    }
+    .modelselect__chevron {
+        @apply h-3 w-3 text-muted-foreground transition-transform;
+    }
+    .modelselect__chevron--open {
+        transform: rotate(180deg);
+    }
+    .modelselect__backdrop {
+        @apply fixed inset-0 z-40;
+    }
+    .modelselect__menu {
+        @apply absolute right-0 z-50 rounded-md border border-border bg-card p-1 shadow-lg;
+        top: calc(100% + 5px);
+        min-width: 200px;
+    }
+    .modelselect__item {
+        @apply flex w-full items-center gap-2 rounded px-2.5 py-2 text-left text-xs font-medium
+               text-muted-foreground hover:bg-secondary/60;
+    }
+    .modelselect__item--active {
+        @apply bg-secondary text-foreground;
+    }
+    .modelselect__item-label {
+        @apply flex-1;
+    }
+    .modelselect__check {
+        @apply h-3 w-3 text-primary;
     }
 
     /* ─── Your-Turn inline workbench (same panel as problem pages) ── */

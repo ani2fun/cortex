@@ -3,6 +3,7 @@ package cortex.client.components.book.workbench
 import cortex.client.components.book.BlockMounter
 import cortex.client.components.icons.LucideIcons
 import cortex.shared.book.Block
+import cortex.shared.tutor.TutorContract.SessionOrigin
 import japgolly.scalajs.react.*
 import japgolly.scalajs.react.vdom.html_<^.*
 import org.scalajs.dom
@@ -34,7 +35,12 @@ object ProblemWorkbench:
       /** CSS height of the whole panel — viewport-bound on the page, `100%` inside the modal. */
       heightCss: String,
       /** Present on problem PAGES only — enables the editor's Submit button (Your-Turn modals omit it). */
-      submitCtx: Option[WorkbenchEditor.SubmitContext] = None
+      submitCtx: Option[WorkbenchEditor.SubmitContext] = None,
+      /**
+       * The coach `problemId` (`<book>/<chapter-slug>`, the tutor's join key). `Some` lights up the live
+       * Coach tab; `None` (generic-dispatch fallback) keeps the static manual prompts.
+       */
+      coachProblemId: Option[String] = None
   )
 
   object Props:
@@ -96,7 +102,10 @@ object ProblemWorkbench:
           }
         }
       }
-      .render { (props, leftPctS, tabS, openS, rootRef, _, _) =>
+      // Latest right-pane editor snapshot (code / language / last run), fed by WorkbenchEditor.onSnapshot
+      // and read by the Coach tab at submit time for implement/test turns.
+      .useRefBy(_ => Option.empty[WorkbenchEditor.Snapshot])
+      .render { (props, leftPctS, tabS, openS, rootRef, _, _, snapRef) =>
         def startSplitDrag(e: ReactMouseEvent): Callback = Callback {
           e.preventDefault()
           dom.document.body.style.cursor = "col-resize"
@@ -226,7 +235,15 @@ object ProblemWorkbench:
           <.div(
             ^.className := "pwb__panel pwb__panel--coach",
             ^.hidden    := tabS.value != 2,
-            CoachTab.Component()
+            CoachTab.Component(
+              CoachTab.Props(
+                coachProblemId = props.coachProblemId,
+                origin =
+                  if props.submitCtx.isDefined then SessionOrigin.ProblemPage else SessionOrigin.YourTurn,
+                active = tabS.value == 2,
+                snapshot = () => snapRef.value
+              )
+            )
           )
 
         val submissionsPanel: VdomNode =
@@ -268,7 +285,12 @@ object ProblemWorkbench:
                 fixedHeightPx = None,
                 pctClamp = (30.0, 78.0),
                 defaultPct = 58.0,
-                submitCtx = props.submitCtx
+                submitCtx = props.submitCtx,
+                // Only capture snapshots when the live coach is present (it reads them for code steps).
+                onSnapshot =
+                  props.coachProblemId.map(_ =>
+                    (s: WorkbenchEditor.Snapshot) => Callback { snapRef.value = Some(s) }
+                  )
               )
             )
           )

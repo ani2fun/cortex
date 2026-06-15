@@ -109,6 +109,10 @@ object ApiClient:
   private val deleteOneSubmissionRequestFn =
     SttpClientInterpreter().toSecureRequestThrowDecodeFailures(Endpoints.deleteOneSubmission, baseUri)
 
+  // /api/submissions (DELETE, no id) — wipe ALL the caller's submissions (account "delete all data").
+  private val deleteAllSubmissionsRequestFn =
+    SttpClientInterpreter().toSecureRequestThrowDecodeFailures(Endpoints.deleteMySubmissions, baseUri)
+
   private val cortexIndexCall =
     callable(Endpoints.getCortexIndex, apiError)(_ => "Failed to fetch Cortex index")
 
@@ -177,6 +181,15 @@ object ApiClient:
         case Right(value) => Future.successful(value)
         case Left(error) =>
           Future.failed(RuntimeException(apiError("Failed to delete submission")(res.code, error)))
+    }
+
+  /** Delete ALL of the signed-in user's submissions (the account "delete all my data" path). */
+  def deleteAllSubmissions(token: String): Future[DeleteSubmissionsResponse] =
+    backend.send(deleteAllSubmissionsRequestFn(token)(())).flatMap { res =>
+      res.body match
+        case Right(value) => Future.successful(value)
+        case Left(error) =>
+          Future.failed(RuntimeException(apiError("Failed to delete submissions")(res.code, error)))
     }
 
   // ---- Auth ----------------------------------------------------------------

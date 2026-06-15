@@ -879,6 +879,15 @@ components:
           nullable: true
           description: Public Keycloak client id for the SPA.
           example: "cortex-web"
+        tutorBaseUrl:
+          type: string
+          nullable: true
+          description: |
+            Base URL of the standalone cortex-tutor service (a different
+            origin than the cortex API). The SPA calls it directly with the
+            user's JWT for the Socratic coach. Absent when no tutor is
+            configured — the coach UI then degrades gracefully.
+          example: "https://tutor.kakde.eu"
 
     Quota:
       type: object

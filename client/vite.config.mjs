@@ -35,6 +35,9 @@ export default defineConfig({
       // /c4/* is reverse-proxied by the ZIO server to the LikeC4 SPA
       // container (see LikeC4ProxyRoutes + bin/dev's LIKEC4_URL export).
       "/c4": "http://localhost:8080",
+      // /tutor/* is reverse-proxied by the ZIO server to cortex-tutor
+      // (see TutorProxyRoutes; set CORTEX_TUTOR_BASE_URL for the backend).
+      "/tutor": "http://localhost:8080",
     },
   },
 

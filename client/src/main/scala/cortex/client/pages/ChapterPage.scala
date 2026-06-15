@@ -176,7 +176,14 @@ object ChapterPage:
               ): VdomNode
             )
             .getOrElse(EmptyVdom),
-          ChapterContent.Component(ChapterContent.Props(loaded.render)),
+          ChapterContent.Component(
+            ChapterContent.Props(
+              loaded.render,
+              // Identity for an inline `## Your Turn` coach: the chapter's join key (book/slug),
+              // matching the tutor's problemId. Prose chapters without a Your-Turn block ignore it.
+              coachProblemId = Some(s"${payload.book.slug}/${payload.chapter.slug}")
+            )
+          ),
           pager
         )
 

@@ -70,9 +70,19 @@ object CodeRunPipeline:
    * pipeline returns `NotConfigured` per request (the misconfiguration is made visible rather than silently
    * swallowed). There is no runtime failover — a single backend, by design.
    */
+  /**
+   * Global cap on CONCURRENT code executions — bounds go-judge fan-out so an authenticated user firing many
+   * runs at once can't exhaust the exec node's memory (the per-hour rate limit caps the RATE, not
+   * concurrency). Excess runs queue for a permit. Tune here.
+   */
+  private val MaxConcurrentRuns = 8L
+
   val live: ZLayer[RunnerConfig, Nothing, CodeRunPipeline] =
-    ZLayer.fromFunction { (cfg: RunnerConfig) =>
-      CodeRunPipelineLive(liveBackends(cfg))
+    ZLayer {
+      for
+        cfg  <- ZIO.service[RunnerConfig]
+        gate <- Semaphore.make(MaxConcurrentRuns)
+      yield CodeRunPipelineLive(liveBackends(cfg), Some(gate))
     }
 
   // ---------------------------------------------------------------------------
@@ -161,7 +171,8 @@ object CodeRunPipeline:
     }
 
 final private class CodeRunPipelineLive(
-    backends: List[CodeExecutionBackend]
+    backends: List[CodeExecutionBackend],
+    runGate: Option[Semaphore] = None
 ) extends CodeRunPipeline:
 
   override def run(req: RunRequest): IO[RunFailure, RunResponse] =
@@ -170,7 +181,10 @@ final private class CodeRunPipelineLive(
       lang <- ZIO
         .fromOption(Languages.resolve(req.language))
         .mapError(_ => RunFailure.BadInput(s"Language '${req.language}' is not runnable"))
-      result <- pickAndRun(lang, req)
+      // Bound concurrent executions globally (go-judge fan-out guard); excess runs queue for a permit.
+      result <- runGate match
+        case Some(gate) => gate.withPermit(pickAndRun(lang, req))
+        case None       => pickAndRun(lang, req)
     yield RunResponse(result = result, language = lang.info)
 
   private def validate(req: RunRequest): IO[RunFailure, Unit] =

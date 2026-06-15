@@ -6,7 +6,14 @@ import cortex.server.codeRunPipeline.CodeRunPipeline
 import cortex.server.config.AppConfig
 import cortex.server.cortexPipeline.CortexPipeline
 import cortex.server.helloPipeline.HelloPipeline
-import cortex.server.http.{ApiRoutes, CortexAssetRoutes, LikeC4ProxyRoutes, RateLimiter, StaticRoutes}
+import cortex.server.http.{
+  ApiRoutes,
+  CortexAssetRoutes,
+  LikeC4ProxyRoutes,
+  RateLimiter,
+  StaticRoutes,
+  TutorProxyRoutes
+}
 import cortex.server.submissionPipeline.SubmissionPipeline
 import zio.*
 import zio.http.*
@@ -47,6 +54,9 @@ final private class HttpAppLive(
 
   private val cortexAssetRoutes = CortexAssetRoutes.from(cfg.cortex.root)
   private val likec4Routes      = LikeC4ProxyRoutes.from(cfg.likec4.upstreamUrl)
+  // Same-origin reverse proxy for the now-internal-only cortex-tutor (ClusterIP, no public Ingress). The
+  // SPA calls /tutor/* on this origin; we forward to the in-cluster tutor at cfg.tutorBaseUrl.
+  private val tutorRoutes = TutorProxyRoutes.from(cfg.tutorBaseUrl)
   // Enumerate book slugs from the content tree so the production SPA fallback serves index.html for
   // `/{book}/{chapter}` hard reloads without a greedy wildcard that would shadow /api and /docs.
   private val staticRoutes = StaticRoutes.from(cfg.staticDir, StaticRoutes.bookSlugsFromDir(cfg.cortex.root))
@@ -54,9 +64,13 @@ final private class HttpAppLive(
   override def serve: Task[Unit] =
     ZIO.logInfo(s"Starting server on port ${cfg.port}; ${staticRoutes.startupInfo}") *>
       Server
-        .serve(apiRoutes ++ cortexAssetRoutes ++ likec4Routes ++ staticRoutes.routes)
+        .serve(apiRoutes ++ cortexAssetRoutes ++ likec4Routes ++ tutorRoutes ++ staticRoutes.routes)
         .provide(
-          ZLayer.succeed(Server.Config.default.port(cfg.port)),
+          // Cap request bodies at 512 KiB. zio-http's default is 100 KiB — too tight for a max-size
+          // BYOK coach turn (code 64K + coachReply 64K + runResult 16K + text 16K ≈ 165 KiB), which
+          // would 413 at the edge; 512 KiB clears that yet stays far under OOM territory (oversize is
+          // a cheap pre-decode 413). Mirrors the tutor's coach_max_request_bytes.
+          ZLayer.succeed(Server.Config.default.port(cfg.port).disableRequestStreaming(512 * 1024)),
           Server.live
         )
         .unit

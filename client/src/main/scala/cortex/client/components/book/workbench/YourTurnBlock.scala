@@ -16,7 +16,7 @@ import japgolly.scalajs.react.vdom.html_<^.*
  */
 object YourTurnBlock:
 
-  final case class Props(block: Block.YourTurn)
+  final case class Props(block: Block.YourTurn, coachProblemId: Option[String] = None)
 
   /** "🐍 Python 3.8" → "Python" — the kicker's meta wants language names, not versions. */
   private def shortLang(tab: Block.Tab): String =
@@ -61,7 +61,8 @@ object YourTurnBlock:
             tabs = b.tabs,
             spec = b.spec,
             heightCss = "min(calc(100vh - 7rem), 820px)",
-            submitCtx = None
+            submitCtx = None,
+            coachProblemId = props.coachProblemId
           )
         )
       )

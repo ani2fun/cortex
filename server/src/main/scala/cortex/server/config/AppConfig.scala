@@ -101,7 +101,11 @@ final case class AppConfig(
     likec4: LikeC4Config,
     cortex: CortexConfig,
     blog: BlogConfig,
-    auth: AuthConfig
+    auth: AuthConfig,
+    // Base URL of the standalone cortex-tutor service (a different origin). Surfaced to the SPA via
+    // /api/auth/config so the browser can call the tutor directly with the user's JWT. Optional —
+    // unset (CORTEX_TUTOR_BASE_URL absent) means no tutor configured, and the coach UI degrades.
+    tutorBaseUrl: Option[String]
 )
 
 object AppConfig:

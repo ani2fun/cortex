@@ -84,8 +84,14 @@ object WorkbenchEditor:
       pctClamp: (Double, Double) = (26.0, 74.0),
       defaultPct: Double = 52.0,
       // Present only on problem pages: enables the Submit button (run ALL cases server-side + save).
-      submitCtx: Option[SubmitContext] = None
+      submitCtx: Option[SubmitContext] = None,
+      // Push the active tab's code / language / last-run to the host (the coach folds it into
+      // implement/test turns). None for surfaces with no coach.
+      onSnapshot: Option[Snapshot => Callback] = None
   )
+
+  /** The active tab's live code + language + last run result — pushed to the host on change. */
+  final case class Snapshot(code: String, language: String, result: Option[RunResult])
 
   /** Whole-workbench state in one value so async run completions update editor + verdicts atomically. */
   final private case class WbState(
@@ -171,6 +177,27 @@ object WorkbenchEditor:
       .useState(280)                  // Monaco explicit pixel height, driven by the wrapper's rect
       .useRefBy((_, _, _, _, _, _, _) => nextWbId())                  // stable model-path prefix
       .useRefBy((_, _, _, _, _, _, _, _) => Option.empty[js.Dynamic]) // live editor instance
+      // Push the active tab's code / language / last run result to the host whenever they change, so a
+      // coach (the left Coach tab) can attach the learner's solution to implement/test turns.
+      .useEffectWithDepsBy { (_, st, _, _, _, _, _, _, _) =>
+        val s  = st.value
+        val ed = s.editors(s.activeTab)
+        // RunResult has no Reusability instance; fingerprint it by hashCode so the deps tuple stays
+        // (Int, String, Int). Re-emits the snapshot when the active tab, its code, or its run changes.
+        (s.activeTab, ed.code, ed.result.hashCode)
+      } { (props, st, _, _, _, _, _, _, _) => _ =>
+        props.onSnapshot match
+          case None => Callback.empty
+          case Some(emit) =>
+            val s = st.value
+            emit(
+              Snapshot(
+                s.editors(s.activeTab).code,
+                props.tabs(s.activeTab).language,
+                s.editors(s.activeTab).result
+              )
+            )
+      }
       .render { (props, st, authS, vizOpenS, cardRef, monacoWrapRef, monacoHeightS, wbIdRef, editorRef) =>
         val s       = st.value
         val tabIdx  = s.activeTab

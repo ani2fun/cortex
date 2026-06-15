@@ -46,8 +46,16 @@ object AuthStore:
   // Set once by AuthBoot after `new Keycloak(...)`. None while auth is Loading/Disabled.
   private var keycloak: Option[Keycloak] = None
 
+  // The tutor service base URL from `/api/auth/config` (a *different origin* than the cortex API).
+  // Boot-time config, not reactive state — set once by AuthBoot, read by the tutor client. None until
+  // config resolves, or if the server reports no tutor (the coach UI then degrades).
+  private var tutorBase: Option[String] = None
+
   /** The current snapshot. Components seed local state from this on mount. */
   def current: Snapshot = snapshot
+
+  /** The tutor service base URL, or `None` if the tutor isn't configured / config hasn't resolved. */
+  def tutorBaseUrl: Option[String] = tutorBase
 
   /** Register a listener; returns an unsubscribe thunk to run on component unmount. */
   def subscribe(listener: Snapshot => Unit): () => Unit =
@@ -57,6 +65,10 @@ object AuthStore:
   // ── Writes — AuthBoot only ───────────────────────────────────────────────
 
   private[auth] def registerKeycloak(kc: Keycloak): Unit = keycloak = Some(kc)
+
+  /** Capture the tutor base URL from `/api/auth/config` (blank → treated as absent). */
+  private[auth] def setTutorBaseUrl(url: Option[String]): Unit =
+    tutorBase = url.map(_.trim).filter(_.nonEmpty)
 
   private[auth] def setStatus(status: Status): Unit = update(_.copy(status = status))
 
@@ -89,6 +101,7 @@ object AuthStore:
 
   /** End the session. keycloak-js redirects to Keycloak's logout endpoint, then back to the site root. */
   def signOut(): Unit =
+    ByokKeyStore.clearAll() // the visitor's own BYOK keys must not outlive their sign-in
     keycloak match
       case Some(kc) =>
         kc.logout(KeycloakLogoutOptions(redirectUri = dom.window.location.origin))

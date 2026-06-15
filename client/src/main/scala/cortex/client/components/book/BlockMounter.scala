@@ -38,6 +38,17 @@ object BlockMounter:
     def unmount(): Unit            = js.native
 
   /**
+   * Per-mount context threaded to the blocks that need page identity the packaged HTML can't carry —
+   * currently just the coach `problemId` (`<book>/<chapter-slug>`) so an inline Your-Turn can open a live
+   * coaching session. Defaults to empty, so non-chapter mounts (workbench panels, generic fallbacks) are
+   * unaffected and their coach degrades to the static prompts.
+   */
+  final case class MountContext(coachProblemId: Option[String] = None)
+
+  object MountContext:
+    val empty: MountContext = MountContext()
+
+  /**
    * Mount a scalajs-react `Unmounted` into a DOM container by routing it through `ReactDOMClient.createRoot`.
    * Returns the root handle so the caller can unmount on cleanup.
    */
@@ -51,11 +62,15 @@ object BlockMounter:
    * standard decorations. Returns the mounted roots — callers own their teardown (pass back to [[teardown]]
    * when the surface unmounts or re-injects).
    */
-  def mountInto(container: dom.html.Element, html: String): js.Array[RootHandle] =
+  def mountInto(
+      container: dom.html.Element,
+      html: String,
+      ctx: MountContext = MountContext.empty
+  ): js.Array[RootHandle] =
     container.innerHTML = html
     val roots = js.Array[RootHandle]()
     BlockDiscovery.discover(container).blocks.foreach { case (node, block) =>
-      val _ = roots.push(mount(node, render(block)))
+      val _ = roots.push(mount(node, render(block, ctx)))
     }
     decorateAnchorLinks(container)
     decorateCodeBlocks(container)
@@ -77,7 +92,7 @@ object BlockMounter:
 
   // Total `Block => VdomElement` dispatch. Adding a new Block variant breaks the match
   // exhaustively at compile time — the missing-case error names exactly what's missing.
-  def render(block: Block): VdomElement = block match
+  def render(block: Block, ctx: MountContext = MountContext.empty): VdomElement = block match
     case Block.RunnableCode(language, source, languageLabel, viz, vizRoot, vizCase, vizKind) =>
       RunnableCodeBlock.Component(
         RunnableCodeBlock.Props(
@@ -95,7 +110,7 @@ object BlockMounter:
     case Block.WorkbenchInline(tabs, spec) =>
       WorkbenchEditor.Component(WorkbenchEditor.Props(tabs, spec))
     case yt: Block.YourTurn =>
-      YourTurnBlock.Component(YourTurnBlock.Props(yt))
+      YourTurnBlock.Component(YourTurnBlock.Props(yt, ctx.coachProblemId))
     case pw: Block.ProblemWorkbench =>
       ProblemWorkbench.Component(ProblemWorkbench.Props.fromBlock(pw))
     case q: Block.Quiz =>

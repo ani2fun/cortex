@@ -47,7 +47,8 @@ object ProblemPageHost:
                 tabs = pw.tabs,
                 spec = pw.spec,
                 heightCss = "calc(100vh - 10rem)",
-                submitCtx = Some(WorkbenchEditor.SubmitContext(props.book, props.chapter))
+                submitCtx = Some(WorkbenchEditor.SubmitContext(props.book, props.chapter)),
+                coachProblemId = Some(s"${props.book}/${props.chapter}")
               )
             )
           case None =>

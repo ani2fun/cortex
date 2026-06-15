@@ -1,6 +1,7 @@
 package cortex.client.components.sections
 
 import cortex.client.Page
+import cortex.client.auth.AccountMenu
 import cortex.client.components.ToggleMode
 import cortex.client.components.icons.LucideIcons
 import japgolly.scalajs.react.*
@@ -82,6 +83,7 @@ object Header:
               ^.className := "header__actions",
               <.div(^.className := "header__toggle--mobile", ToggleMode.Component()),
               <.div(^.className := "header__toggle--desktop", ToggleMode.Component()),
+              AccountMenu.Component(),
               <.a(
                 ^.href      := GithubUrl,
                 ^.target    := "_blank",

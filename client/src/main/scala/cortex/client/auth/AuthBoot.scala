@@ -32,10 +32,12 @@ object AuthBoot:
   /** Kick off the bootstrap. Fire-and-forget — all results land in [[AuthStore]]. */
   def run(): Unit =
     ApiClient.getAuthConfig.onComplete {
-      case Success(cfg) if !cfg.enabled =>
-        AuthStore.setStatus(AuthStore.Status.Disabled)
       case Success(cfg) =>
-        initKeycloak(cfg)
+        // Capture the tutor base URL regardless of whether auth itself is on — the coach is usable
+        // in dev (auth disabled) too, and the tutor enforces its own allowlist server-side.
+        AuthStore.setTutorBaseUrl(cfg.tutorBaseUrl)
+        if !cfg.enabled then AuthStore.setStatus(AuthStore.Status.Disabled)
+        else initKeycloak(cfg)
       case Failure(err) =>
         dom.console.warn(s"auth: /api/auth/config unreachable (${err.getMessage}); treating as disabled")
         AuthStore.setStatus(AuthStore.Status.Disabled)

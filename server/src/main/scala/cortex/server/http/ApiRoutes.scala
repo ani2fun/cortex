@@ -50,6 +50,21 @@ object ApiRoutes:
   private val ForwardedForHeader  = "X-Forwarded-For"
   private val RetryAfterHeader    = "Retry-After"
 
+  // Same-origin base path the SPA uses to reach the cortex-tutor reverse proxy (TutorProxyRoutes).
+  private val TutorProxyPath = "/tutor"
+
+  /**
+   * What `/api/auth/config` advertises to the SPA as the tutor base URL.
+   *
+   * cortex-tutor lost its public Ingress and is now a ClusterIP, so the browser can't reach its in-cluster
+   * DNS directly — it goes through this backend's same-origin reverse proxy at `/tutor`. We therefore
+   * advertise the RELATIVE path `"/tutor"` (never the raw internal DNS) whenever a tutor is configured, and
+   * `None` when it isn't (so the coach UI degrades exactly as before). `configuredTutorBaseUrl` is
+   * `AppConfig.tutorBaseUrl` — the internal DNS that stays server-side as the proxy target.
+   */
+  private[http] def advertisedTutorBaseUrl(configuredTutorBaseUrl: Option[String]): Option[String] =
+    configuredTutorBaseUrl.map(_ => TutorProxyPath)
+
   def routes(
       appConfig: AppConfig,
       helloPipeline: HelloPipeline,
@@ -204,15 +219,27 @@ object ApiRoutes:
         .out(jsonBody[AuthConfig])
         .zServerLogic { _ =>
           val a = appConfig.auth
+          // Advertise the same-origin proxy path "/tutor" (not the raw in-cluster DNS, which the browser
+          // can't resolve). `appConfig.tutorBaseUrl` — the internal DNS — stays server-side as the
+          // TutorProxyRoutes target. See `advertisedTutorBaseUrl`.
+          val tutorBaseUrl = advertisedTutorBaseUrl(appConfig.tutorBaseUrl)
           val payload =
             if a.enabled then
               AuthConfig(
                 enabled = true,
                 issuerUrl = Some(a.issuerUrl),
                 realm = Some(a.realm),
-                clientId = Some(a.clientId)
+                clientId = Some(a.clientId),
+                tutorBaseUrl = tutorBaseUrl
               )
-            else AuthConfig(enabled = false, issuerUrl = None, realm = None, clientId = None)
+            else
+              AuthConfig(
+                enabled = false,
+                issuerUrl = None,
+                realm = None,
+                clientId = None,
+                tutorBaseUrl = tutorBaseUrl
+              )
           ZIO.succeed(payload)
         }
 

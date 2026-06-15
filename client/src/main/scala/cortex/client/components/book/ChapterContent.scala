@@ -21,7 +21,7 @@ import scala.scalajs.js
  */
 object ChapterContent:
 
-  final case class Props(result: MarkdownRenderer.Result)
+  final case class Props(result: MarkdownRenderer.Result, coachProblemId: Option[String] = None)
 
   val Component =
     ScalaFnComponent
@@ -38,7 +38,7 @@ object ChapterContent:
       // NO React children, so React leaves its contents — and the mounted roots / any open modal —
       // untouched across re-renders; only an html change re-fires this effect and rebuilds it.
       .useEffectWithDepsBy((props, _, _) => props.result.html) {
-        (_, articleRef, rootsRef) => html =>
+        (props, articleRef, rootsRef) => html =>
           val tearDown: Callback = Callback {
             BlockMounter.teardown(rootsRef.value)
             rootsRef.value = js.Array()
@@ -50,7 +50,8 @@ object ChapterContent:
           // mermaid/runnable/d2 placeholders empty).
           val mountAll: Callback = articleRef.foreach { article =>
             article.addEventListener("click", onArticleClick)
-            rootsRef.value = BlockMounter.mountInto(article, html)
+            rootsRef.value =
+              BlockMounter.mountInto(article, html, BlockMounter.MountContext(props.coachProblemId))
             val _ = dom.window.setTimeout(() => HashScroll.scrollToCurrentHash(), 0)
           }
 
