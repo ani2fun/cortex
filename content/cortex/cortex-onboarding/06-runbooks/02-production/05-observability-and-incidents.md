@@ -9,9 +9,10 @@ summary: What to look at when the site is slow or down — health endpoints, log
 |---|---|---|
 | **Health** | `curl https://cortex.kakde.eu/api/health` | Per-store status: `{status, postgres, redis, mongo}`. Postgres `down` = real problem; redis/mongo `down` = degraded, not down. |
 | **Readiness** | `kubectl -n apps-prod get pods -l app.kubernetes.io/name=cortex` | Is the pod `Ready`? Restart count climbing = crash loop. |
-| **Logs** | `kubectl -n apps-prod logs deploy/cortex -f` | Structured Logback output; Liquibase migration lines on startup. |
+| **Logs** | `kubectl -n apps-prod logs deploy/cortex -f` (live tail), or **Grafana → Explore → VictoriaLogs** for history | Structured Logback output + Liquibase migration lines. VictoriaLogs retains 30d, so logs survive pod restarts (plain `kubectl logs` doesn't). |
 | **Tutor health** | `curl …/tutor/readyz` (via the proxy) | DB + JWKS + MCP reachability for the coach. |
 | **Argo CD** | `argocd app get cortex` | Is the cluster in sync with git, or has something drifted? |
+| **Metrics** | Grafana — `grafana.kakde.eu` (GitHub login, `ani2fun`) | Container CPU/memory vs the 1Gi limit, restart count, OOMKills, node pressure — trended over time, not just at the moment of failure. See *Metrics & dashboards* below. |
 
 ```bash
 # the four commands you'll run most
@@ -40,8 +41,33 @@ The throughline: **Postgres down or the single pod down = outage; everything els
 - **Correlate with deploys.** Most incidents follow a change. `kubectl rollout history deploy/cortex` and recent `infra`/`cortex` commits are the first suspects; [rollback](/cortex/cortex-onboarding/runbooks/production/deploy-and-rollback) is one `git revert` away.
 - **Tutor cost spikes.** If the Anthropic bill jumps, confirm non-allowlist users are on **BYOK** (their key, not yours) and check `COACH_HOMELAB_USERS` hasn't grown. Per-turn `TurnUsage.costUsd` is recorded, so the spend is measurable, not a mystery.
 
-## What's deliberately not here
+## Metrics, logs & dashboards
 
-This is a homelab, not a NOC — there's no Prometheus/Grafana/alerting wired up by default. The honest observability story is *health endpoints + `kubectl logs` + Argo CD*. Turning the fire-and-forget logs into real metrics and dashboards is a concrete next step, sketched in the [data-intensive chapter](/cortex/system-design/capstones/cortex-data-intensive) — it's where the platform would go to grow up operationally.
+The homelab grew a metrics stack (June 2026), so the observability story is no longer just health endpoints + logs. In the `monitoring` namespace: **VictoriaMetrics** (single-node TSDB) + **vmagent** (scraper) + **node-exporter** + **kube-state-metrics**, with **Grafana** at **`grafana.kakde.eu`** as the front end (sign in with GitHub — `ani2fun` only). It's Argo-synced from `infra/deploy/apps/monitoring/`, same as everything else.
+
+What it buys you *for cortex today, with zero app changes*: cortex's pod is already scraped via cAdvisor + kube-state-metrics, so you can watch its **container CPU / memory against the 1Gi limit**, **restart count**, and **OOMKills** on a dashboard and over time — the same failure modes from the triage list above, but trended instead of only visible in `describe pod` at the moment it dies. node-exporter also tells you whether `wk-1` (where go-judge runs untrusted code) is under real memory pressure.
+
+**Logs, too — also zero app changes.** A **VictoriaLogs** store plus a **Vector** DaemonSet on every node ship every pod's stdout/stderr into the same Grafana. Open **Explore → VictoriaLogs** and query with [LogsQL](https://docs.victoriametrics.com/victorialogs/logsql/): `namespace:apps-prod pod:cortex*` for cortex (add `error` to filter, `_time:5m` to scope). Retention is 30d, so unlike `kubectl logs` **a crashed pod's logs are still there afterwards** — the "capture before you fix" step above becomes a query, not a race against the restart.
+
+To get cortex's *application* metrics — request rates, latencies, the Hikari pool's 10 connections, tutor turn costs — the backend has to expose them; the scrape side is already waiting:
+
+1. Add a Prometheus endpoint to the Scala backend (Micrometer `PrometheusMeterRegistry` at `/metrics`).
+2. Add scrape annotations to the cortex Deployment in `infra` — vmagent's `annotated-pods` job finds them automatically, no central config change:
+   ```yaml
+   spec:
+     template:
+       metadata:
+         annotations:
+           prometheus.io/scrape: "true"
+           prometheus.io/port: "8080"
+           prometheus.io/path: "/metrics"
+   ```
+3. Build a cortex dashboard in Grafana against the `VictoriaMetrics` datasource.
+
+Stack internals and ops live in the homelab guide ([Observability with VictoriaMetrics and Grafana](https://notebook.kakde.eu/infrastructure/k8s-homelab/17-observability-and-monitoring.html)) and the `infra` DR runbook (Layer 11).
+
+## What's still deliberately not here
+
+This is still a homelab, not a NOC. **Distributed tracing** (Tempo) and **alerting / paging** (Alertmanager) are not wired up — on purpose, until the need is real. Metrics + logs answer "is it healthy, what is it doing, and what did it just say"; the jump to traces and paging is sketched in the [data-intensive chapter](/cortex/system-design/capstones/cortex-data-intensive), where the platform grows up operationally.
 
 > **Next:** that completes the runbooks. To go deeper on *why* these limits exist and what it takes to grow past them, read the [Cortex platform deep-dive](/cortex/system-design/capstones/cortex-platform-overview) in the System Design book.
