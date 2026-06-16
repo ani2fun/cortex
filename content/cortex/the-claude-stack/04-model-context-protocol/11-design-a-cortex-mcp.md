@@ -23,6 +23,15 @@ summary: Cortex *consumes* MCP servers (codegraph, graphify) but has never *auth
 > Cortex stops being a website and becomes a **reusable tool** any agent can search, read, and run
 > against.
 
+> 🚢 **Update — Cortex now authors a real MCP server (scoped differently).** This chapter's `cortex-content`
+> server is still unbuilt, but the "Cortex has authored no MCP server" premise is no longer absolute: the
+> **[Cortex Tutor](/cortex/cortex-onboarding/cortex-tutor/grounding-and-the-skill)** ships **`grounding_mcp`** —
+> a real, read-only Streamable-HTTP MCP server over the Cortex corpus. It's *narrower* than the design here
+> (it serves lesson/problem context to the tutor's own coach, with the solution withheld pre-implement — not a
+> public `search_chapters` + `run_code` server for any host), but it's a genuine authored server that proves
+> out this chapter's transport + resources + security thinking on real code. The full `cortex-content` design
+> below remains the architect's exercise; `grounding_mcp` is the first real step into it.
+
 ## 1. Motivation
 
 For ten chapters you have been a *customer* in the MCP mall. You learned the architecture by watching

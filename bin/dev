@@ -102,6 +102,43 @@ export KEYCLOAK_ISSUER_URL="${KEYCLOAK_ISSUER_URL:-http://localhost:8081/realms/
 export KEYCLOAK_REALM="${KEYCLOAK_REALM:-cortex}"
 export KEYCLOAK_CLIENT_ID="${KEYCLOAK_CLIENT_ID:-cortex-web}"
 
+# Optional: REAL GitHub sign-in on localhost. The committed local realm
+# (docker/keycloak/import/cortex-realm.json) has NO GitHub IdP, so the SPA's
+# GitHub-only sign-in lands on Keycloak's own form (user tester/tester). To
+# exercise actual GitHub OAuth locally, register your OWN GitHub OAuth App
+# (callback http://localhost:8081/realms/cortex/broker/github/endpoint) and
+# export its credentials — we then inject a `github` IdP into a GENERATED copy
+# of the realm and import THAT (KC_IMPORT_DIR). Unset => unchanged. Changing
+# KC_IMPORT_DIR makes compose recreate Keycloak so the new realm re-imports.
+# See: Runbooks → Local Dev → Auth & GitHub sign-in on localhost.
+if [[ "$AUTH_ENABLED" == "true" && -n "${GITHUB_CLIENT_ID:-}" && -n "${GITHUB_CLIENT_SECRET:-}" ]]; then
+  log "GitHub IdP: injecting your OAuth App into a generated local realm (GITHUB_CLIENT_ID is set)"
+  rm -rf docker/keycloak/import-generated
+  mkdir -p docker/keycloak/import-generated
+  python3 - <<'PY'
+import json, os
+realm = json.load(open("docker/keycloak/import/cortex-realm.json"))
+idps = [ip for ip in realm.get("identityProviders", []) if ip.get("alias") != "github"]
+idps.append({
+    "alias": "github", "providerId": "github", "enabled": True,
+    "trustEmail": True, "storeToken": False,
+    "firstBrokerLoginFlowAlias": "first broker login",
+    "config": {
+        "clientId": os.environ["GITHUB_CLIENT_ID"],
+        "clientSecret": os.environ["GITHUB_CLIENT_SECRET"],
+        "defaultScope": "user:email",
+    },
+})
+realm["identityProviders"] = idps
+json.dump(realm, open("docker/keycloak/import-generated/cortex-realm.json", "w"), indent=2)
+PY
+  export KC_IMPORT_DIR="./docker/keycloak/import-generated"
+elif [[ "$AUTH_ENABLED" == "true" ]]; then
+  log "GitHub IdP: not configured — sign in with tester/tester on Keycloak's form."
+  log "            Set GITHUB_CLIENT_ID + GITHUB_CLIENT_SECRET for real GitHub sign-in"
+  log "            (see Runbooks → Local Dev → Auth & GitHub sign-in on localhost)."
+fi
+
 # ---- 1c. Fresh build state: clear the cross-compiled `shared` targets ----
 #
 # `./bin/dev` runs TWO sbt processes that both compile `shared`: the watcher
@@ -145,6 +182,27 @@ if ! docker info >/dev/null 2>&1; then
   warn "docker CLI is available but the daemon isn't responding."
   warn "Start Docker Desktop and re-run ./bin/dev:"
   warn "    open -ga Docker"
+  exit 1
+fi
+
+# Pre-flight the store HOST ports: a FOREIGN docker compose project (e.g. an
+# orphaned agent-worktree stack) squatting :5432/:6379/… makes `docker compose up`
+# die with a cryptic "Bind for 0.0.0.0:5432 failed: port is already allocated".
+# Detect that up front and print the exact teardown — don't auto-kill (it may be
+# a live concurrent stack).
+foreign=""
+for p in 5432 6379 27017 5050 8090 8081; do
+  line="$(docker ps --filter "publish=$p" --format '{{.Label "com.docker.compose.project"}}' 2>/dev/null | head -1)"
+  if [[ -n "$line" && "$line" != "cortex" ]]; then
+    foreign="${foreign}\n    :$p  held by compose project '$line'"
+  fi
+done
+if [[ -n "$foreign" ]]; then
+  warn "store ports are held by another docker compose project (not 'cortex'):"
+  printf '%b\n' "$foreign" >&2
+  warn "that's usually a leftover worktree stack. Free the ports, then re-run:"
+  warn "    docker compose -p <project-above> down       # stop the squatter (keeps volumes)"
+  warn "    docker compose -p cortex down --remove-orphans"
   exit 1
 fi
 

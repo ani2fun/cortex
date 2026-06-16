@@ -1,0 +1,130 @@
+// Capstone 47–52 — "Cortex platform at homelab scale". Three views of the REAL
+// system this site runs on: a CONTAINER view (today's runtime topology — one
+// replica, four stores, a sandbox, the tutor), a COMPONENT view (the request
+// pipelines that the capacity/failure math is computed against), and a SCALED
+// view (the target architecture from the scaling roadmap — stateless web tier,
+// an autoscaled executor fleet, pooled/replicated stores, a CDN, an async judge
+// queue). The chapters iframe these next to the prose.
+//
+// All identifiers carry the `cp` prefix (the model namespace is flat and global
+// across every .c4 file in the book). View names are scope-prefixed
+// `capstones_cortexplatform_*`. No `specification` block — element kinds (actor,
+// system, container) are shared from 05-application-architecture/c4/workspace.c4.
+//
+// Public-content rule: topology + technology choices only. No IPs, no secrets.
+
+model {
+  cpUser = actor 'Visitor / learner' {
+    description 'Reads chapters (cheap, cached), runs code (expensive, sandboxed), and is coached (Claude-backed).'
+  }
+
+  // ============ Today — the single-replica platform ============
+  cpToday = system 'Cortex platform (today)' {
+    description 'One Scala replica on a 4-node K3s homelab. Everything is single-instance; the constraints (1 replica, 1Gi, semaphore=8) shape the whole capacity story.'
+
+    cpEdge = container 'Edge ingress (TLS)' {
+      description 'vm-1 edge node terminates TLS and forwards to the cluster. The public front door.'
+    }
+    cpServer = container 'Cortex server (1 replica)' {
+      description 'ZIO + tapir, 1000m CPU / 1Gi RAM limit. Serves book/blog from an in-memory index and gates /api/run behind a global Semaphore of 8.'
+
+      cpHttp = container 'Auth + RateLimiter' {
+        description 'Optional/required JWT; Redis fixed-window limiter (anon 10/60s/IP, auth 100/3600s/user); fail-open.'
+      }
+      cpRunP = container 'codeRunPipeline + Semaphore(8)' {
+        description 'The expensive path. At most 8 runs execute at once; the 9th blocks on a permit. Dispatches to go-judge.'
+      }
+      cpHelloP = container 'helloPipeline (3 stores)' {
+        description 'Postgres canonical (visit counter); Redis cache + Mongo log are fail-open. The demo of degraded-mode design.'
+      }
+      cpContentP = container 'cortex/blogPipeline (mtime-cached)' {
+        description 'Book + blog served from an in-memory MtimeCachedIndex — no DB on the hot path. The cheap path.'
+      }
+
+      cpHttp -> cpRunP 'gate runs'
+      cpHttp -> cpHelloP 'greet / health'
+      cpHttp -> cpContentP 'index / chapter'
+    }
+    cpGoJudge = container 'go-judge (sandbox)' {
+      description 'Per-run limits: interpreted 15s/30s/512MiB, JVM 60s/120s/1024MiB. 8 concurrent heavy runs ≈ up to 8 GiB of sandboxes at once.'
+    }
+    cpPg = container 'Postgres (single)' {
+      description 'Visits + tutor sessions/messages. HikariCP pool = 10 → the 11th concurrent borrower waits. The only critical store; no replica.'
+    }
+    cpRedis = container 'Redis (single)' {
+      description 'Greeting cache + rate-limiter counters. Down → limits stop (fail-open), go-judge leans on the semaphore alone.'
+    }
+    cpMongo = container 'MongoDB (single)' {
+      description 'Append-only hello_events. No TTL → unbounded growth (the cleanest data-intensive pivot).'
+    }
+    cpTutor = container 'Cortex Tutor (FastAPI)' {
+      description 'Gate (Haiku) + coach (Sonnet). Homelab tier pays via the server key; BYOK tier runs the coach client-direct on the visitor key.'
+    }
+
+    cpEdge -> cpServer 'HTTPS'
+    cpServer -> cpGoJudge 'POST /run (≤ 8 concurrent)'
+    cpServer -> cpPg 'JDBC (pool 10)'
+    cpServer -> cpRedis 'cache + rate limit'
+    cpServer -> cpMongo 'event log'
+    cpEdge -> cpTutor 'coach (SSE) — same origin /tutor'
+    cpTutor -> cpPg 'tutor schema'
+  }
+
+  cpUser -> cpEdge 'read / run / coach'
+
+  // ============ Target — the scaled platform (roadmap) ============
+  cpScaled = system 'Cortex platform (scaled target)' {
+    description 'The roadmap end-state: stateless web tier behind a CDN, an autoscaled executor fleet behind an async judge queue, pooled + replicated stores. Scales like a LeetCode-shaped system.'
+
+    cpCdn = container 'CDN / edge cache' {
+      description 'Serves the immutable per-deploy book/blog. Origin sees only cache-fills + dynamic /api/run + coach.'
+    }
+    cpLb = container 'Load balancer' {
+      description 'Fronts N stateless cortex replicas (HPA). Restart ≠ outage anymore.'
+    }
+    cpWebN = container 'Cortex web tier (N replicas)' {
+      description 'Stateless: index per-pod in memory, sessions in PG, limits/cache in Redis. The per-pod semaphore becomes a Redis-backed distributed limiter.'
+    }
+    cpQueue = container 'Judge queue (async)' {
+      description 'submit → 202 + job id → poll/stream. Bursts queue instead of timing out at 100s. How real judges absorb spikes.'
+    }
+    cpFleet = container 'go-judge fleet (HPA)' {
+      description 'M autoscaled workers consume the queue. Run throughput ≈ M × per-worker concurrency — the real bottleneck, now elastic.'
+    }
+    cpPgbouncer = container 'pgbouncer + PG primary/replicas' {
+      description 'Connection pooler so N replicas do not exhaust the 10-connection cap; read replicas absorb tutor reads.'
+    }
+    cpRedisCluster = container 'Redis cluster' {
+      description 'Distributed rate-limiter + cache at scale.'
+    }
+
+    cpCdn -> cpLb 'cache miss / dynamic'
+    cpLb -> cpWebN 'route'
+    cpWebN -> cpQueue 'enqueue run'
+    cpQueue -> cpFleet 'dispatch'
+    cpWebN -> cpPgbouncer 'pooled JDBC'
+    cpWebN -> cpRedisCluster 'cache + distributed limit'
+  }
+
+  cpUser -> cpCdn 'read (CDN-served)'
+}
+
+views {
+  view capstones_cortexplatform_container of cpToday {
+    title 'Cortex platform — container view (today: 1 replica, 4 stores, a sandbox, the tutor)'
+    include *
+    include cpUser
+  }
+
+  view capstones_cortexplatform_components of cpServer {
+    title 'Cortex server — request pipelines the capacity math runs against'
+    include *
+    include cpGoJudge, cpPg, cpRedis, cpMongo
+  }
+
+  view capstones_cortexplatform_scaled of cpScaled {
+    title 'Cortex platform — scaled target (stateless tier, executor fleet, async judge queue)'
+    include *
+    include cpUser
+  }
+}

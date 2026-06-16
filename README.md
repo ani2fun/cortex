@@ -12,8 +12,10 @@ zio-http + tapir**, the API contract is **OpenAPI-first** with code generation.
 
 > **New here?** The engineering tour lives in Cortex itself. After `./bin/dev`, open
 > <http://localhost:5173/cortex-onboarding/overview> for a walk-through of the
-> architecture, the request lifecycle, the markdown pipeline, and how to extend the
-> project. The chapters are also readable as plain markdown under
+> architecture, the request lifecycle, and the markdown pipeline; the **Cortex Tutor**
+> section explains the Socratic AI coach, and the **Runbooks** section is copy-paste-able
+> local + production setup so you can run the whole platform yourself. The chapters are also
+> readable as plain markdown under
 > [`content/cortex/cortex-onboarding/`](content/cortex/cortex-onboarding/).
 
 ## What's inside
@@ -34,6 +36,13 @@ zio-http + tapir**, the API contract is **OpenAPI-first** with code generation.
 - **Auth** — OIDC via Keycloak (`apps-prod` realm, `cortex-web` PKCE client, GitHub IdP).
   Reading is public; editing / running code is gated by sign-in. `AUTH_ENABLED=false`
   unlocks everything for local dev.
+- **Architecture diagrams** — **LikeC4** models under `content/cortex/**/c4/*.c4` compile to
+  a small SPA (built by `Dockerfile.likec4`) that the server reverse-proxies at `/c4/*`;
+  chapters embed views via `<iframe src="/c4/view/...">`.
+- **Cortex Tutor** — an optional Socratic AI coach for the *Your Turn* problems, living in a
+  **separate** repo ([`cortex-tutor`](https://github.com/ani2fun/cortex-tutor), FastAPI). The
+  SPA calls it directly (different origin, same Keycloak JWT) at `CORTEX_TUTOR_BASE_URL`; if
+  unset, the Coach tab shows a static fallback. See the onboarding *Cortex Tutor* section.
 
 ## Backing stores
 
@@ -59,6 +68,11 @@ watcher that re-runs `server/reStart` + `client/fastLinkJS` on change, and the V
 server on :5173 — one terminal, prefixed colour-coded logs, Ctrl-C stops everything.
 `AUTH_ENABLED=false ./bin/dev` skips Keycloak for fast content/runner iteration.
 
+**Both stacks at once** (cortex + the `cortex-tutor` coach, so the SPA's live coach works end-to-end):
+[`./scripts/devcombined`](scripts/devcombined) — launches `cortex/bin/dev` and the sibling
+`../cortex-tutor/bin/dev` together and wires `CORTEX_TUTOR_BASE_URL`. Requires cortex and cortex-tutor to
+be siblings under one parent dir.
+
 | URL | What |
 |---|---|
 | <http://localhost:5173> | Frontend with Vite HMR (proxies `/api`, `/docs`, `/c4` to :8080) |
@@ -80,6 +94,7 @@ server on :5173 — one terminal, prefixed colour-coded logs, Ctrl-C stops every
 | `AUTH_ENABLED` | Gate editing/run behind Keycloak sign-in | `true` |
 | `KEYCLOAK_ISSUER_URL` / `KEYCLOAK_REALM` / `KEYCLOAK_CLIENT_ID` | OIDC config | apps-prod / `cortex-web` |
 | `LIKEC4_URL` | LikeC4 SPA upstream for the `/c4` proxy | — |
+| `CORTEX_TUTOR_BASE_URL` | Cortex Tutor base URL (surfaced to the SPA via `/api/auth/config`); unset → coach falls back to static | — |
 
 ## API surface
 

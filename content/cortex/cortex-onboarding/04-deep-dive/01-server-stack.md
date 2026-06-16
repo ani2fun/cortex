@@ -5,6 +5,17 @@ summary: ZIO 2, tapir, circe, HikariCP, Lettuce, Mongo sync — what each one bu
 
 This chapter is a library-by-library tour of `server/`. The format is the same throughout: a section per decision, each with **what we use**, **why this and not the obvious alternative**, and **what breaks if you change it**. Read it alongside [Repository Tour](/cortex/cortex-onboarding/start-here/repository-tour) — that one is a map; this one is the legend.
 
+Before the libraries, here's the *shape* they assemble into — the server's five request pipelines and the stores they touch, as a LikeC4 component view (the `http` box is where auth + the rate limiter live; each pipeline is one deep module):
+
+<iframe
+  src="/c4/view/onboarding_server_components"
+  width="100%"
+  height="460"
+  style="border: 1px solid var(--border, #2b2b2b); border-radius: 8px;"
+  loading="lazy"
+  title="Cortex server — component view"
+></iframe>
+
 ## Why ZIO 2 at all
 
 The server is one big `ZIO[R, E, A]`. Three things this buys us that a plain `Future` server doesn't:

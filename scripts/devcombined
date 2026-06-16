@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+# devcombined — bring up BOTH local stacks at once: the Scala `cortex` app
+# (this repo) and the Python `cortex-tutor` coach (its sibling), wired together
+# so the SPA's live coach talks to the tutor end-to-end on one machine.
+#
+# Layout assumption: cortex and cortex-tutor are SIBLINGS under the same parent
+# (e.g. ~/Development/homelab/{cortex,cortex-tutor}). This script lives at
+# cortex/scripts/devcombined and finds the tutor at ../cortex-tutor.
+#
+# What it does:
+#   • starts cortex-tutor first (../cortex-tutor/bin/dev) so it warms while
+#     cortex's Scala compile runs;
+#   • starts cortex (./bin/dev) with CORTEX_TUTOR_BASE_URL pointing at the tutor,
+#     so /api/auth/config advertises it and the SPA's Coach tab goes live;
+#   • streams both logs with [cortex] / [tutor] prefixes;
+#   • Ctrl-C forwards SIGINT to both so each runs its own teardown.
+#
+# Auth: OFF by default (fast loop) → the tutor uses a synthetic dev principal.
+# To exercise the BYOK client-direct path, set FORCE_BYOK=true in
+# cortex-tutor/.env. For the full Keycloak sign-in flow, run with
+# `AUTH_ENABLED=true scripts/devcombined` (cortex starts its local Keycloak; set
+# the tutor's KEYCLOAK_ISSUER_URL to match — see the Runbooks book).
+
+set -euo pipefail
+
+CORTEX_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+TUTOR_DIR="$(cd "$CORTEX_DIR/.." && pwd)/cortex-tutor"
+
+c_reset=$'\033[0m'; c_meta=$'\033[32m'; c_cx=$'\033[34m'; c_tu=$'\033[35m'
+prefix() { local label="$1" colour="$2"; sed -u -e "s/^/${colour}[${label}]${c_reset} /"; }
+log()  { printf "%s[devcombined]%s %s\n" "$c_meta" "$c_reset" "$*"; }
+warn() { printf "%s[devcombined]%s %s\n" $'\033[31m' "$c_reset" "$*" >&2; }
+
+# ---- pre-flight: both repos + their launchers must be present -----------
+[[ -x "$CORTEX_DIR/bin/dev" ]] || { warn "missing $CORTEX_DIR/bin/dev"; exit 1; }
+if [[ ! -d "$TUTOR_DIR" ]]; then
+  warn "expected the tutor as a sibling at: $TUTOR_DIR"
+  warn "clone cortex-tutor next to cortex (same parent dir), then re-run."
+  exit 1
+fi
+[[ -x "$TUTOR_DIR/bin/dev" ]] || { warn "missing $TUTOR_DIR/bin/dev (the tutor's launcher)"; exit 1; }
+
+# Shared dev defaults. AUTH_ENABLED off by default for both; tutor base URL wired
+# so cortex's SPA can reach the coach (same value the server advertises via
+# /api/auth/config).
+export AUTH_ENABLED="${AUTH_ENABLED:-false}"
+export CORTEX_TUTOR_BASE_URL="${CORTEX_TUTOR_BASE_URL:-http://localhost:8000}"
+
+CX_PID=""; TU_PID=""
+cleanup() {
+  printf "\n"; log "stopping both stacks…"
+  kill -INT "$TU_PID" "$CX_PID" 2>/dev/null || true   # each child runs its own teardown trap
+}
+trap cleanup INT TERM
+
+log "cortex      : $CORTEX_DIR"
+log "cortex-tutor: $TUTOR_DIR"
+log "wiring      : CORTEX_TUTOR_BASE_URL=$CORTEX_TUTOR_BASE_URL · AUTH_ENABLED=$AUTH_ENABLED"
+log "starting the tutor first (it warms while cortex compiles)…"
+
+# Start the tutor. `exec` so $! is the bin/dev PID (signals reach its trap);
+# output goes through a prefixing process-substitution (keeps $! intact, unlike a pipe).
+( cd "$TUTOR_DIR" && exec env AUTH_ENABLED="$AUTH_ENABLED" ./bin/dev ) \
+  > >(prefix "tutor" "$c_tu") 2> >(prefix "tutor" "$c_tu" >&2) &
+TU_PID=$!
+
+log "starting cortex…"
+( cd "$CORTEX_DIR" && exec env AUTH_ENABLED="$AUTH_ENABLED" CORTEX_TUTOR_BASE_URL="$CORTEX_TUTOR_BASE_URL" ./bin/dev ) \
+  > >(prefix "cortex" "$c_cx") 2> >(prefix "cortex" "$c_cx" >&2) &
+CX_PID=$!
+
+log "both launching — Ctrl-C stops both. Open http://localhost:5173 (cortex SPA);"
+log "the tutor is at http://localhost:8000. Coach tab → live once both are up."
+
+# Wait for both background stacks. Ctrl-C runs cleanup() (forwards SIGINT so each
+# child runs its own teardown), then wait returns. Plain `wait` (no -n) for
+# macOS bash 3.2 portability.
+wait || true

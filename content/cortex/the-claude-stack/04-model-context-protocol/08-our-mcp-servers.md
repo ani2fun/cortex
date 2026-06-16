@@ -433,10 +433,12 @@ project's* data (its chapters, its `/api/run` code runner) over MCP for any host
 framing of Ch. 1, Cortex is purely an "app" side; it contributes nothing to the "tool" side of the
 ecosystem.
 
-That's the deliberate **gap**, and **Chapter 11 — "Design a Cortex MCP"** closes it: it designs a
+That's the deliberate **gap**, and **Chapter 11 — "Design a Cortex MCP"** closes it on paper: it designs a
 `cortex-content` MCP server (tools to search chapters, fetch a section, maybe run a snippet) so that *other*
 MCP hosts could reach into Cortex the same way our host reaches into `codegraph`. Chapter 7 taught the
 *how* (build a minimal server); Chapter 11 applies it to *our* domain.
+
+> 🚢 **Closed for real:** since this was written, the **[Cortex Tutor](/cortex/cortex-onboarding/cortex-tutor/grounding-and-the-skill)** ships a real authored MCP server — **`grounding_mcp`**, a read-only Streamable-HTTP server over the Cortex corpus that feeds the coach lesson/problem context (with the solution withheld pre-implement). It's a *different* host relationship than this chapter's `.claude/mcp.json` (the tutor *service* is the host that consumes it, not Claude Code), but it means Cortex is no longer purely an "app" side of the M+N ecosystem — it now contributes a server too.
 
 </details>
 

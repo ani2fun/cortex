@@ -18,6 +18,8 @@ summary: We design a real skill — workbench-author — that captures this repo
 > own draft and asserts it's compliant. To be explicit: this skill is **designed in this chapter, not
 > installed in the repo.** Closing that gap is left as the natural next step.
 
+> 🚢 **Update — Cortex now *does* ship a skill.** The "Cortex ships no skill of its own" gap is closed: the **[Cortex Tutor](/cortex/cortex-onboarding/cortex-tutor/grounding-and-the-skill)** ships **`.claude/skills/socratic-tutor/`** — the six-step coaching rubric, per-gate pass criteria, and the verdict contract the gate must emit. It's a *different* skill than the `workbench-author` we design here (it teaches the *coach* how to grade, not an agent how to author chapters), but it's a real, shipped Agent Skill — and it's even **CI-gated by eval suites**, the diligence this chapter preaches. The design exercise below still stands on its own; just know the "no skill" premise is now historical.
+
 ## 1. Motivation
 
 Here is a true story about *this book*. Every chapter you're reading obeys a strict, mostly-unwritten

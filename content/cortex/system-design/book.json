@@ -1,12 +1,12 @@
 {
     "title": "System Design",
-    "description": "A serious, hands-on track for building production systems — written for curious beginners, not interview-cram readers. Covers foundations, distributed patterns, storage, application architecture, operations, and capstone designs. Work in progress.",
+    "description": "A serious, hands-on track for building production systems — written for curious beginners, not interview-cram readers. Covers foundations, distributed patterns, storage, application architecture, operations, and capstone designs — including a six-chapter deep dive on this very platform (Cortex) with real capacity, cost, and scaling analysis. Work in progress.",
     "tags": [
         "system-design",
         "distributed-systems",
         "backend",
         "architecture"
     ],
-    "estimatedReadingMinutes": 900,
+    "estimatedReadingMinutes": 990,
     "order": 2
 }

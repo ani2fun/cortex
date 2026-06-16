@@ -78,7 +78,9 @@ services:
       KC_BOOTSTRAP_ADMIN_USERNAME: admin
       KC_BOOTSTRAP_ADMIN_PASSWORD: admin
     volumes:
-      - ./docker/keycloak/import:/opt/keycloak/data/import:ro
+      # bin/dev overrides KC_IMPORT_DIR to a generated realm (base + your GitHub
+      # IdP) when GITHUB_CLIENT_ID/SECRET are set; defaults to the committed realm.
+      - ${KC_IMPORT_DIR:-./docker/keycloak/import}:/opt/keycloak/data/import:ro
     ports:
       - "8081:8080"
 

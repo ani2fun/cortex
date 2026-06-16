@@ -105,9 +105,12 @@ object CacheStampedeSimulator:
   private val PanelGap      = 40.0  // gap between the two panels
   private val PanelLeftX    = (ViewBoxWidth - 2 * PanelWidth - PanelGap) / 2
   private val PanelRightX   = PanelLeftX + PanelWidth + PanelGap
-  private val PlotTop       = TopPad + 16
-  private val PlotBottom    = PlotTop + PanelHeight - PanelVPad
-  private val MaxBarH       = PlotBottom - PlotTop
+  private val CaptionH      = 48.0  // room for the two-line caption (title + subtitle) ABOVE the plot
+  private val PlotTop = TopPad + CaptionH // start the plot below the caption, so tall bars never reach it
+
+  private val PlotBottom =
+    TopPad + PanelHeight - PanelVPad // bottom band holds the x-axis labels + the verdict
+  private val MaxBarH = PlotBottom - PlotTop
 
   // ===========================================================================
   // SVG building
@@ -232,8 +235,12 @@ object CacheStampedeSimulator:
       colorClass = "cache-stampede__bar--with"
     )
 
+    // The rotated axis title lives in the left viewBox margin; at PanelLeftX-18 it
+    // clipped off the x=0 edge, so pull it in to PanelLeftX-10 (still left of the panel frame).
+    val yTitleX = PanelLeftX - 10
+    val yTitleY = PlotTop + MaxBarH / 2
     val yLabelText =
-      s"""<text class="cache-stampede__y-title" x="${PanelLeftX - 18}" y="${PlotTop + MaxBarH / 2}" text-anchor="middle" transform="rotate(-90 ${PanelLeftX - 18} ${PlotTop + MaxBarH / 2})">in-flight at origin</text>"""
+      s"""<text class="cache-stampede__y-title" x="$yTitleX" y="$yTitleY" text-anchor="middle" transform="rotate(-90 $yTitleX $yTitleY)">in-flight at origin</text>"""
 
     s"""<svg viewBox="0 0 $ViewBoxWidth $ViewBoxHeight"
        |     class="cache-stampede__svg" role="img"

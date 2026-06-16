@@ -89,6 +89,15 @@ collapsible answers), a **quiz**, and **In the Wild** links to the primary sourc
 stack touches our system, we read the real file. Wherever we haven't built it, we mark it
 **GAP** and design it together — because knowing what you *haven't* done is half of architecture.
 
+> 🚢 **Several GAPs are now closed.** When most of this book was written, Cortex used the Claude API
+> nowhere, shipped no MCP server, and published no skill — each flagged as a **GAP** and designed as a
+> capstone. Since then, the **[Cortex Tutor](/cortex/cortex-onboarding/cortex-tutor/what-the-tutor-is)** — a
+> separate Socratic-coaching service — has *built* all three: it calls the **Claude API** for real (a Haiku
+> gate + a streamed Sonnet coach), ships a real **MCP server** (`grounding_mcp`), and publishes a real
+> **Agent Skill** (`socratic-tutor`). The GAP chapters keep their design-exercise value — and now each ends
+> with a note on how the *real* thing turned out, which is the more honest lesson: you design, you build, and
+> the building teaches you the design you actually needed.
+
 ---
 
 **Begin:** before any tool, the meta-skill that makes every tool safe and productive — how to

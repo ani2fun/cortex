@@ -1,0 +1,178 @@
+// Cortex Onboarding — LikeC4 model of the Cortex application itself, at three
+// zoom levels: CONTEXT (who uses it, what it depends on), CONTAINER (one binary,
+// four stores, a sandbox, the tutor), and COMPONENT (server pipelines + SPA
+// parts + tutor internals). Companion to system-design/05-application-architecture
+// /c4/workspace.c4, which models the homelab *substrate*; this models the *app*.
+//
+// No `specification` block — element kinds (actor, system, container) are declared
+// once in workspace.c4 and shared across the whole merged model. Identifiers carry
+// the `cx`/`cortex`/`tutor` prefix (the model namespace is flat and global); view
+// names are scope-prefixed `onboarding_*` (the view namespace is flat too).
+//
+// Public-content rule: topology + technology + public hostnames only. No internal
+// IPs, no versions, no secret/service-account names.
+
+model {
+  cxOperator = actor 'Operator' {
+    description 'Authors content, deploys via GitOps, runs the homelab.'
+  }
+  cxVisitor = actor 'Visitor / learner' {
+    description 'Reads books, runs code in the playground, and is coached by the tutor.'
+  }
+
+  // ---- External systems (context level) ----
+  cxKeycloak = system 'Keycloak' {
+    description 'OIDC identity provider (apps-prod realm, GitHub IdP). Issues the JWT the SPA sends to both cortex and the tutor.'
+  }
+  cxAnthropic = system 'Anthropic API' {
+    description 'Claude models. The tutor calls Haiku (the gate) and Sonnet (the coach).'
+  }
+  cxOpenRouter = system 'OpenRouter' {
+    description 'BYOK model gateway. A visitor can run the coach client-direct on their own key, so the operator pays nothing for it.'
+  }
+
+  // ============ Cortex — the single Scala binary ============
+  cortex = system 'Cortex' {
+    description 'One Scala 3 process behind cortex.kakde.eu: book + blog + code playground + three-store demo.'
+
+    cxSpa = container 'SPA (Scala.js + React)' {
+      description 'scalajs-react app, Vite-bundled. Renders markdown in the browser, mounts interactive blocks, talks to /api/*.'
+
+      cxRouter = container 'Router' {
+        description 'AppRoutes / SpaRoutes topology → pages. Prefix-free chapter URLs /{book}/{chapter}.'
+      }
+      cxBookRender = container 'Book renderer' {
+        description 'One TS unified/remark/rehype module → HTML with placeholder divs → React-mounted Scala.js blocks (mermaid / d2 / d3 / likec4 / runnable).'
+      }
+      cxWorkbench = container 'Workbench' {
+        description 'Monaco editor stack + RunnableCodeBlock; posts to /api/run and renders stdout / verdict.'
+      }
+      cxCoach = container 'Coach client' {
+        description 'CoachController FSM + CoachTab / ModelSelect; TutorApiClient / ByokProvider / ByokKeyStore.'
+      }
+      cxApiClient = container 'ApiClient' {
+        description 'tapir-generated sttp client over /api/*. Same case classes as the server (one OpenAPI spec).'
+      }
+      cxAuthStore = container 'AuthStore / AuthBoot' {
+        description 'keycloak-js PKCE; holds the JWT and the tutorBaseUrl learned from /api/auth/config.'
+      }
+
+      cxRouter -> cxBookRender 'render a chapter'
+      cxBookRender -> cxWorkbench 'mount runnable blocks'
+      cxWorkbench -> cxCoach 'snapshot code for implement/test turns'
+      cxBookRender -> cxApiClient 'fetch index / chapter'
+      cxWorkbench -> cxApiClient 'POST /api/run'
+    }
+
+    cxServer = container 'Server (ZIO + tapir)' {
+      description 'zio-http + tapir API, static handler, content index. The component view zooms in here.'
+
+      cxHttp = container 'http (ApiRoutes / Auth / RateLimiter)' {
+        description 'Tapir endpoint wiring; optional-or-required auth; Redis fixed-window rate limiter; uniform error envelope.'
+      }
+      cxHello = container 'helloPipeline' {
+        description '/api/hello, /recent, /health — the three-store demo. Postgres canonical; Redis + Mongo fail-open.'
+      }
+      cxRun = container 'codeRunPipeline' {
+        description '/api/run — a global Semaphore (8) gates a CodeExecutionBackend (go-judge). Languages dispatch + GoJudgeWire.'
+      }
+      cxCortexP = container 'cortexPipeline' {
+        description '/api/cortex/* — MtimeCachedIndex over the content tree. No DB on the book hot path.'
+      }
+      cxBlogP = container 'blogPipeline' {
+        description '/api/blogs/* — the same mtime-cached shape over the blog tree.'
+      }
+      cxSubP = container 'submissionPipeline' {
+        description '/api/submissions — authenticated; allowlist-gated; each submit consumes runs.'
+      }
+
+      cxHttp -> cxHello 'greet / health'
+      cxHttp -> cxRun 'run (rate-limited; authed or anon)'
+      cxHttp -> cxCortexP 'index / chapter'
+      cxHttp -> cxBlogP 'index / post'
+      cxHttp -> cxSubP 'submit / list'
+    }
+
+    cxPg = container 'Postgres' {
+      description 'Visit counter + the tutor `tutor` schema. The ONLY critical store. HikariCP pool of 10.'
+    }
+    cxRedis = container 'Redis' {
+      description 'Greeting cache (120s TTL) + rate-limiter counters. Fail-open: a Redis outage degrades, never downs.'
+    }
+    cxMongo = container 'MongoDB' {
+      description 'Append-only hello_events log (only a ts_desc index, no TTL). Fail-open.'
+    }
+    cxGoJudge = container 'go-judge' {
+      description 'Privileged cgroup-v2 sandbox. Per-run CPU / memory / wall limits; no network inside the sandbox.'
+    }
+    cxLikeC4 = container 'LikeC4 service' {
+      description 'nginx serving the compiled C4 SPA; cortex reverse-proxies /c4/* to it (these very diagrams).'
+    }
+
+    cxSpa -> cxServer 'HTTPS /api/*'
+    cxServer -> cxPg 'JDBC (visits + tutor schema)'
+    cxServer -> cxRedis 'cache + rate limit'
+    cxServer -> cxMongo 'event log'
+    cxServer -> cxGoJudge 'POST /run'
+    cxServer -> cxLikeC4 'proxy /c4/*'
+  }
+
+  // ============ Cortex Tutor — separate FastAPI service ============
+  tutor = system 'Cortex Tutor' {
+    description 'Standalone Socratic coach. Validates the same JWT; persists to the Postgres `tutor` schema.'
+
+    tutorApi = container 'Tutor API (FastAPI)' {
+      description 'whoami / sessions / turns (SSE) / prompt-bundle / byok-record. Runs the 6-step gate→coach FSM.'
+    }
+    tutorMcp = container 'grounding_mcp' {
+      description 'Read-only MCP server — lesson + problem context. The solution is withheld until the implement step.'
+    }
+    tutorApi -> tutorMcp 'fetch grounding (MCP)'
+  }
+
+  // ---- Context-level relationships ----
+  cxOperator -> cortex 'authors content, deploys'
+  cxVisitor -> cxSpa 'reads, runs, gets coached'
+  cxSpa -> cxKeycloak 'OIDC PKCE login'
+  cxSpa -> tutorApi 'coach: whoami / turns (JWT, different origin)'
+  cxSpa -> cxAnthropic 'BYOK coach (client-direct, user key)'
+  cxSpa -> cxOpenRouter 'BYOK coach (client-direct, user key)'
+  tutorApi -> cxKeycloak 'validate JWT (JWKS)'
+  tutorApi -> cxAnthropic 'gate (Haiku) + coach (Sonnet)'
+  tutorApi -> cxPg 'sessions + messages (tutor schema)'
+}
+
+views {
+  view onboarding_cortex_context {
+    title 'Cortex — context (who uses it, what it depends on)'
+    include cxOperator, cxVisitor
+    include cortex, tutor
+    include cxKeycloak, cxAnthropic, cxOpenRouter
+    include cxSpa, tutorApi
+  }
+
+  view onboarding_cortex_container of cortex {
+    title 'Cortex — container view (one binary, four stores, a sandbox)'
+    include *
+    include tutor, tutorApi
+    include cxVisitor, cxKeycloak, cxAnthropic
+  }
+
+  view onboarding_server_components of cxServer {
+    title 'Cortex server — the five pipelines (component view)'
+    include *
+    include cxPg, cxRedis, cxMongo, cxGoJudge
+  }
+
+  view onboarding_client_components of cxSpa {
+    title 'Cortex SPA — renderer, workbench, coach (component view)'
+    include *
+    include cxServer, tutorApi, cxKeycloak
+  }
+
+  view onboarding_tutor_components of tutor {
+    title 'Cortex Tutor — gate, coach, grounding'
+    include *
+    include cxSpa, cxAnthropic, cxPg
+  }
+}

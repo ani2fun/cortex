@@ -10,6 +10,17 @@ Most of what happens in this app is a variation of one of these two flows. If yo
 1. **Run a code block** — POST `/api/run`. State machine in the browser, single backend call, structured errors.
 2. **Open a chapter** — GET `/api/cortex/{book}/{chapter}` then run the markdown pipeline locally. Two-stage loading.
 
+Both requests cross the same boxes — the SPA, the server, and one backing dependency each (go-judge for a run, the content index for a chapter). The LikeC4 container view is the map they travel:
+
+<iframe
+  src="/c4/view/onboarding_cortex_container"
+  width="100%"
+  height="440"
+  style="border: 1px solid var(--border, #2b2b2b); border-radius: 8px;"
+  loading="lazy"
+  title="Cortex — container view"
+></iframe>
+
 ## Story 1: running code
 
 ```mermaid

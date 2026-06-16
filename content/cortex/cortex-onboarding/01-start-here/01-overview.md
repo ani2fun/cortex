@@ -13,6 +13,7 @@ summary: What Cortex is, what's running where, and the shape of the system at on
 2. A **blog** at `/blogs` — the same markdown pipeline as the book, a separate content tree.
 3. A **runnable code playground** — `python run` and friends in chapters actually execute against a sandboxed runner.
 4. A **demo page** at `/demo` that exercises Postgres, Redis, and MongoDB in a single round-trip — kept around as a smoke test of the persistence layer.
+5. A **Socratic AI coach** — the *Your Turn* tutor that interviews you through a problem, one gate at a time. It's the one piece that *isn't* part of this binary: a separate Python service. This book's [Cortex Tutor](/cortex/cortex-onboarding/cortex-tutor/what-the-tutor-is) section is a first-principles tour of it.
 
 > **A note on the split.** Cortex used to live in a single `codefolio` monorepo alongside a personal portfolio site. That repo was split: the portfolio (Hero/About/Experience/Projects) is now a separate static site at `kakde.eu`, and this repo — `cortex.kakde.eu` — keeps the book, blog, demo, and code runner. The package prefix was renamed `codefolio.*` → `cortex.*` in the same move, and the old `/cortex/...` URL prefix was dropped (the book index now lives at `/`). You'll still see the word "codefolio" in a few historical notes; that's the origin story, not a live module.
 
@@ -53,6 +54,18 @@ Every box is something you can grep for in the repo:
 - The **shared** OpenAPI types live in `shared/` — generated from `api/openapi.yaml`, under package `cortex.shared.api`.
 - The **book content** is in `content/cortex/`; **blog posts** are in `content/blogs/`.
 - The **go-judge sandbox** is built from `runner/go-judge/` — a Dockerfile layering the language toolchains onto [`criyle/go-judge`](https://github.com/criyle/go-judge).
+- The **coach client** is `client/.../components/book/workbench/Coach*`; it talks to the *separate* [Cortex Tutor](/cortex/cortex-onboarding/cortex-tutor/what-the-tutor-is) service.
+
+That diagram is the 30-second version. For the same system at three real zoom levels — context, containers, and the server's internal pipelines — this book uses **LikeC4** models you can pan and zoom. Here's the context view (the app, the tutor, and what they depend on):
+
+<iframe
+  src="/c4/view/onboarding_cortex_context"
+  width="100%"
+  height="440"
+  style="border: 1px solid var(--border, #2b2b2b); border-radius: 8px;"
+  loading="lazy"
+  title="Cortex — context view"
+></iframe>
 
 ## Tech stack at a glance
 
@@ -94,5 +107,12 @@ The second half is a **deep dive** — a per-library tour of the stack. For each
 | [Client Stack](/cortex/cortex-onboarding/deep-dive/client-stack) | Scala.js, the scalajs-react hook builder, sttp + FetchBackend, the JS interop boundary. |
 | [Shared & Codegen](/cortex/cortex-onboarding/deep-dive/shared-and-codegen) | The cross-project, the OpenAPI codegen plugin, what gets generated and how. |
 | [Build Toolchain](/cortex/cortex-onboarding/deep-dive/build-toolchain) | sbt plugins, Vite, Tailwind v4, scalafmt, the Dockerfile, and `bin/dev`. |
+
+Two more sections go beyond the core app:
+
+| Section | What you'll learn |
+| --- | --- |
+| [Cortex Tutor](/cortex/cortex-onboarding/cortex-tutor/what-the-tutor-is) | The Socratic AI coach — the six-step gate/coach loop, the two funding tiers, BYOK, and the MCP + Agent-Skill pieces it ships. A working tour of the Claude stack. |
+| [Runbooks](/cortex/cortex-onboarding/runbooks) | Launch the whole platform yourself — copy-paste-able local-dev and production runbooks, so you can run it (and operate it) end to end. |
 
 If you read all the chapters end-to-end you should be able to make almost any change confidently — and explain *why* the project is the way it is. If something here is wrong or unclear, fix it — this book lives in the same repo as the code it describes.

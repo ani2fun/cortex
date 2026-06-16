@@ -18,6 +18,8 @@ summary: Cortex has no AI in it — so this capstone designs the one it's missin
 > Keycloak auth** (ch9). The API key lives **server-side only**. Treat learner code as **untrusted**
 > (prompt injection). The whole point: *an architect knows what they haven't built, and designs it right.*
 
+> 🚢 **Update — the GAP is now closed.** When this chapter was written, Cortex used the Claude API in zero places. **That's no longer true.** A real AI tutor now ships — **[Cortex Tutor](/cortex/cortex-onboarding/cortex-tutor/what-the-tutor-is)** — using the Claude API for real: a **Haiku gate** (forced tool-use, structured verdict) plus a **streamed Sonnet coach**. It made *different* choices than the `/api/tutor` design below — a **separate Python service** instead of a ZIO route, a **Socratic six-step coach** instead of an "explain this error" button, and a **BYOK** path so visitors fund their own coaching. The design exercise here is still worth doing (it's how you'd add AI *inside* the Scala server); comparing it to what actually shipped is the most valuable part — see the **[Postscript](#postscript-what-actually-shipped)** at the end.
+
 ## 1. Motivation
 
 We have reached the end of Part 3, and it is time to collect the winnings.
@@ -32,10 +34,12 @@ once. So this capstone builds the exact feature the very first page of Part 3 pr
 **still does not have**: an **AI tutor** — an *"explain this error"* button next to the code runner that
 takes a learner's failing program, asks Claude what went wrong, and shows a beginner-friendly hint.
 
-Be clear-eyed about the status: **this endpoint is unimplemented.** Cortex's application code calls the
-Claude API in exactly zero places. The code runner is **go-judge**, a sandboxed command runner — not a
-language model. (The only "Claude" in the repo is the UI *design* handoffs and this very book.) So this
-chapter is not a walkthrough of code you can `grep` for. It is the **design document** for code that
+Be clear-eyed about the status: **this particular endpoint is unimplemented.** The Cortex *Scala
+application* calls the Claude API in exactly zero places — the code runner is **go-judge**, a sandboxed
+command runner, not a language model. (What *did* get built is a **separate service**, cortex-tutor, that
+calls the Claude API for real — a different shape than this in-server `/api/tutor`, compared in the
+[Postscript](#postscript-what-actually-shipped).) So this chapter is not a walkthrough of ZIO code you can
+`grep` for in the `cortex` repo. It is the **design document** for code that
 *should* exist — the deliverable an architect writes before anyone opens an editor. Knowing precisely
 what you have **not** built, and specifying it correctly against the system you *do* have, is the job.
 
@@ -543,6 +547,37 @@ put the answer. (And the key never leaves the server, so the injection can't exf
 - **[Anthropic — Keep a human in the loop / safety best practices](https://docs.claude.com/en/docs/test-and-evaluate/strengthen-guardrails/reduce-prompt-leak)** —
   treating user-supplied text as untrusted, disclosing AI involvement, and guarding against prompt injection
   — the Part-1 diligence this chapter encodes as a server-side gate.
+
+## Postscript: what actually shipped
+
+The design above is what you'd build to add AI *inside* the Scala server. What got built instead is
+**[Cortex Tutor](/cortex/cortex-onboarding/cortex-tutor/what-the-tutor-is)** — and the differences are a
+masterclass in how a real system diverges from a clean design. Same Part-3 pieces, assembled differently:
+
+| Dimension | This chapter's `/api/tutor` design | What shipped (cortex-tutor) |
+|---|---|---|
+| **Where it lives** | a ZIO route *inside* the Scala server | a **separate Python/FastAPI service** (different language, different repo) |
+| **What it does** | "explain this error" — one hint over a failed run | a **Socratic six-step interview** (clarify→…→test) that coaches, doesn't answer |
+| **The model calls** | one streamed `POST /v1/messages` | **two** per turn: a **Haiku gate** (forced tool-use → a verdict) + a **streamed Sonnet coach** |
+| **Structured output** | `{explanation, fix, confidence}` | a `GateVerdict` `{verdict, score, rubricHits, missing, hint}` that *drives a state machine* |
+| **Who pays** | server key only | server key (homelab tier) **or BYOK** (client-direct on the visitor's key) |
+| **The diligence gate** | a server-side SHIP/BLOCK check | the **gate verdict** the FSM acts on — the model can't fabricate an advance |
+| **Reuse** | `RateLimiter` + Keycloak + go-judge, in-process | validates the **same Keycloak JWT** across an origin boundary |
+
+Read across that table and you can see *why* each divergence happened. The workload is **I/O-bound and
+streaming**, so Python/FastAPI fit better than the JVM — hence a separate service. The job is **teaching,
+not answering**, so a six-step coach beats a one-shot hint — hence the gate/coach split (this chapter's
+single "diligence gate" became the *thing that drives the whole loop*). And the **cost** of one operator
+funding everyone's coaching is brutal at scale — hence BYOK ([the numbers](/cortex/system-design/capstones/cortex-storage-and-cost)
+are stark). The design here wasn't *wrong*; reality just added constraints (streaming workload, pedagogy,
+unbounded users) that pushed the architecture somewhere richer.
+
+**That's the lesson an architect internalizes:** you design against the system you have, you build, and the
+*building* teaches you the design you actually needed. The full real architecture is in the
+[Cortex Tutor onboarding section](/cortex/cortex-onboarding/cortex-tutor/architecture); it also ships a real
+**[MCP server](/cortex/the-claude-stack/model-context-protocol/our-mcp-servers)** and a real
+**[Agent Skill](/cortex/the-claude-stack/agent-skills/build-a-cortex-skill)** — the GAPs the rest of this
+book flags are, one by one, now closed.
 
 ---
 

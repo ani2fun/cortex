@@ -5,6 +5,17 @@ summary: Scala.js, scalajs-react hooks, sttp + FetchBackend, the JS interop boun
 
 This chapter is the client-side companion to [Server Stack](/cortex/cortex-onboarding/deep-dive/server-stack). Same format: per-decision, **what we use**, **why this and not the obvious alternative**, **what breaks if you change it**. If you're new to Scala.js, the section on the hook builder is the one to internalise — every component in the codebase follows the same pattern.
 
+The SPA's main parts — the router, the markdown/book renderer, the workbench, the coach client, and the API/auth plumbing — as a LikeC4 component view:
+
+<iframe
+  src="/c4/view/onboarding_client_components"
+  width="100%"
+  height="460"
+  style="border: 1px solid var(--border, #2b2b2b); border-radius: 8px;"
+  loading="lazy"
+  title="Cortex SPA — component view"
+></iframe>
+
 ## Why Scala.js + scalajs-react
 
 The frontend is Scala 3 compiled to JavaScript via Scala.js. The React binding is `japgolly.scalajs-react` 3.0.x. Two concrete benefits:

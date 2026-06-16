@@ -1,7 +1,7 @@
 {
     "title": "Cortex Onboarding",
-    "description": "An engineer's tour of this codebase — what each module does, how requests flow end-to-end, and how to extend the project. Read this before opening a PR.",
-    "tags": ["onboarding", "architecture", "scala", "scala.js"],
-    "estimatedReadingMinutes": 30,
+    "description": "An engineer's tour of this codebase — what each module does, how requests flow end-to-end, the Socratic AI tutor, and copy-paste runbooks to run the whole platform yourself, locally and in production. Read this before opening a PR.",
+    "tags": ["onboarding", "architecture", "scala", "scala.js", "runbooks", "tutor"],
+    "estimatedReadingMinutes": 95,
     "order": 5
 }
