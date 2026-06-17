@@ -67,4 +67,8 @@ CORTEX_TUTOR_BASE_URL=http://localhost:8000 ./bin/dev
 - [Scaling & DR](/cortex/cortex-onboarding/runbooks/production/scaling-and-dr) — the knobs you have today, and the disaster-recovery drill.
 - [Observability & incidents](/cortex/cortex-onboarding/runbooks/production/observability-and-incidents) — health, logs, and what to check first when it's slow.
 
+**Cross-cutting**
+
+- [Access & allowlists](/cortex/cortex-onboarding/runbooks/access-and-allowlists) — grant or revoke who may **Submit code** and **Save coach history** (one Postgres table, checked live, no restart); plus the separate coach model-tier knob. Applies to both local dev and production.
+
 > **Next:** [Local Dev → Prerequisites](/cortex/cortex-onboarding/runbooks/local-dev/prerequisites).

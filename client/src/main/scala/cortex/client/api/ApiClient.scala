@@ -8,12 +8,16 @@ import cortex.shared.api.Endpoints.{
   BlogPostPayload,
   ChapterPayload,
   CortexIndex,
+  DeleteCoachResponse,
   DeleteSubmissionsResponse,
   Greeting,
+  ListSavedCoachResponse,
   ListSubmissionsResponse,
   RecentCalls,
   RunRequest,
   RunResponse,
+  SaveCoachRequest,
+  SaveCoachResponse,
   SubmitRequest,
   SubmitResponse,
   UserInfo
@@ -113,6 +117,18 @@ object ApiClient:
   private val deleteAllSubmissionsRequestFn =
     SttpClientInterpreter().toSecureRequestThrowDecodeFailures(Endpoints.deleteMySubmissions, baseUri)
 
+  private val saveCoachRequestFn =
+    SttpClientInterpreter().toSecureRequestThrowDecodeFailures(Endpoints.saveCoachSession, baseUri)
+
+  private val listSavedCoachRequestFn =
+    SttpClientInterpreter().toSecureRequestThrowDecodeFailures(Endpoints.listMySavedCoach, baseUri)
+
+  private val deleteOneSavedCoachRequestFn =
+    SttpClientInterpreter().toSecureRequestThrowDecodeFailures(Endpoints.deleteOneSavedCoach, baseUri)
+
+  private val deleteAllSavedCoachRequestFn =
+    SttpClientInterpreter().toSecureRequestThrowDecodeFailures(Endpoints.deleteMySavedCoach, baseUri)
+
   private val cortexIndexCall =
     callable(Endpoints.getCortexIndex, apiError)(_ => "Failed to fetch Cortex index")
 
@@ -190,6 +206,50 @@ object ApiClient:
         case Right(value) => Future.successful(value)
         case Left(error) =>
           Future.failed(RuntimeException(apiError("Failed to delete submissions")(res.code, error)))
+    }
+
+  // ---- Coach-save (allow-listed) -------------------------------------------
+
+  /**
+   * Save a snapshot of the coach transcript. Requires a signed-in user; the server additionally allow-lists
+   * who may save. Keeps the server's `hint` too — for a 403 that's the request-access instructions, which the
+   * coach surfaces verbatim (mirrors `submitSolution`).
+   */
+  def saveCoachSession(token: String, req: SaveCoachRequest): Future[SaveCoachResponse] =
+    backend.send(saveCoachRequestFn(token)(req)).flatMap { res =>
+      res.body match
+        case Right(value) => Future.successful(value)
+        case Left(error) =>
+          val detail = error.detail.filter(_.nonEmpty).map(d => s" $d").getOrElse("")
+          val hint   = error.hint.filter(_.nonEmpty).map(h => s" $h").getOrElse("")
+          Future.failed(RuntimeException(s"${error.error}.$detail$hint"))
+    }
+
+  /** List the signed-in user's saved coach snapshots for one problem, newest first. */
+  def listMySavedCoach(token: String, problemId: String): Future[ListSavedCoachResponse] =
+    backend.send(listSavedCoachRequestFn(token)(problemId)).flatMap { res =>
+      res.body match
+        case Right(value) => Future.successful(value)
+        case Left(error) =>
+          Future.failed(RuntimeException(apiError("Failed to load saved coach sessions")(res.code, error)))
+    }
+
+  /** Delete one saved coach snapshot the user owns. */
+  def deleteOneSavedCoach(token: String, id: Long): Future[DeleteCoachResponse] =
+    backend.send(deleteOneSavedCoachRequestFn(token)(id)).flatMap { res =>
+      res.body match
+        case Right(value) => Future.successful(value)
+        case Left(error) =>
+          Future.failed(RuntimeException(apiError("Failed to delete saved coach session")(res.code, error)))
+    }
+
+  /** Delete ALL of the user's saved coach snapshots (self-service erasure). */
+  def deleteAllSavedCoach(token: String): Future[DeleteCoachResponse] =
+    backend.send(deleteAllSavedCoachRequestFn(token)(())).flatMap { res =>
+      res.body match
+        case Right(value) => Future.successful(value)
+        case Left(error) =>
+          Future.failed(RuntimeException(apiError("Failed to delete saved coach sessions")(res.code, error)))
     }
 
   // ---- Auth ----------------------------------------------------------------

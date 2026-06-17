@@ -82,68 +82,55 @@ object SignInModal:
                 ),
                 <.p(
                   ^.className := "sign-in-modal__lede",
-                  "Reading is open. Running the snippet as-written is open. Once you ",
+                  "Reading and running the snippet as-written are open. The moment you ",
                   <.em("edit"),
-                  " the code, the sandbox needs a name on the request — so we don't get drowned in " +
-                    "anonymous executions, and so your run has its own quota."
+                  " the code, the sandbox needs a name on the request — so your run gets its own quota."
                 )
               ),
-              // ── body: what we ask GitHub for ──────────────────────
-              <.div(
-                ^.className := "sign-in-modal__body",
-                <.div(
-                  ^.className := "sign-in-modal__why",
-                  <.div(^.className := "sign-in-modal__why-title", "What I'm asking GitHub for"),
-                  <.div(
-                    ^.className := "sign-in-modal__rows",
-                    <.div(
-                      ^.className := "sign-in-modal__row sign-in-modal__row--yes",
-                      <.span(
-                        ^.className := "sign-in-modal__row-ico",
-                        LucideIcons.Check(LucideIcons.withClass("sign-in-modal__row-icon"))
-                      ),
-                      <.span(
-                        <.b("Your handle, name, and verified email."),
-                        " Used as the identity for your sandbox session — and as your per-user " +
-                          "rate-limit key. Scope: ",
-                        <.code("user:email"),
-                        "."
-                      )
-                    ),
-                    <.div(
-                      ^.className := "sign-in-modal__row sign-in-modal__row--no",
-                      <.span(
-                        ^.className := "sign-in-modal__row-ico",
-                        LucideIcons.X(LucideIcons.withClass("sign-in-modal__row-icon"))
-                      ),
-                      <.span(
-                        <.b("Nothing else."),
-                        " No repo access, no gists written, no commits on your behalf. The token " +
-                          "never leaves the sandbox process."
-                      )
-                    )
+              // ── CTA (full-width) ──────────────────────────────────
+              <.button(
+                ^.tpe := "button",
+                ^.className := "sign-in-modal__cta" +
+                  (if redirecting then " sign-in-modal__cta--loading" else ""),
+                ^.disabled := redirecting,
+                ^.onClick --> Callback(AuthStore.signIn()),
+                if redirecting then
+                  TagMod(
+                    LucideIcons.Loader2(LucideIcons.withClass("sign-in-modal__cta-icon animate-spin")),
+                    "Redirecting to GitHub…"
                   )
+                else
+                  TagMod(
+                    BrandIcons.Github("sign-in-modal__cta-icon"),
+                    "Continue with GitHub"
+                  )
+              ),
+              // ── scope strip: exactly what GitHub is asked for ─────
+              <.div(
+                ^.className := "sign-in-modal__scope",
+                LucideIcons.ShieldCheck(LucideIcons.withClass("sign-in-modal__scope-icon")),
+                <.p(
+                  ^.className := "sign-in-modal__scope-text",
+                  <.b("Your handle, name & verified email"),
+                  " — scope ",
+                  <.code("user:email"),
+                  ", nothing else. No repo access, no writes on your behalf. The token never leaves the " +
+                    "sandbox."
                 )
               ),
-              // ── foot: CTA ─────────────────────────────────────────
+              // ── foot: fine print + skip ───────────────────────────
               <.div(
                 ^.className := "sign-in-modal__foot",
-                <.button(
-                  ^.tpe := "button",
-                  ^.className := "sign-in-modal__cta" +
-                    (if redirecting then " sign-in-modal__cta--loading" else ""),
-                  ^.disabled := redirecting,
-                  ^.onClick --> Callback(AuthStore.signIn()),
-                  if redirecting then
-                    TagMod(
-                      LucideIcons.Loader2(LucideIcons.withClass("sign-in-modal__cta-icon animate-spin")),
-                      "Redirecting to GitHub…"
-                    )
-                  else
-                    TagMod(
-                      BrandIcons.Github("sign-in-modal__cta-icon"),
-                      "Continue with GitHub"
-                    )
+                <.span(
+                  ^.className := "sign-in-modal__fine",
+                  "OAuth via GitHub — kakde.eu never sees your password; revoke any time from ",
+                  <.a(
+                    ^.href   := GithubSettingsUrl,
+                    ^.target := "_blank",
+                    ^.rel    := "noreferrer",
+                    "GitHub → Settings → Applications"
+                  ),
+                  "."
                 ),
                 <.button(
                   ^.tpe       := "button",
@@ -151,19 +138,6 @@ object SignInModal:
                   ^.onClick --> Callback(AuthStore.closeSignIn()),
                   "Not now"
                 )
-              ),
-              // ── fine print ────────────────────────────────────────
-              <.div(
-                ^.className := "sign-in-modal__fine",
-                "Auth is delegated to GitHub via OAuth — kakde.eu never sees your password. You can " +
-                  "revoke access any time from ",
-                <.a(
-                  ^.href   := GithubSettingsUrl,
-                  ^.target := "_blank",
-                  ^.rel    := "noreferrer",
-                  "GitHub → Settings → Applications"
-                ),
-                "."
               )
             )
           )

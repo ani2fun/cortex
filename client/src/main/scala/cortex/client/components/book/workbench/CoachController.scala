@@ -1,10 +1,12 @@
 package cortex.client.components.book.workbench
 
-import cortex.client.api.{ByokProvider, TutorApiClient}
+import cortex.client.api.{ApiClient, ByokProvider, TutorApiClient}
 import cortex.client.auth.{AuthStore, ByokKeyStore}
-import cortex.shared.api.Endpoints.RunResult
+import cortex.client.util.ReaderState
+import cortex.shared.api.Endpoints.SaveCoachRequest
 import cortex.shared.tutor.TutorContract.*
 import cortex.shared.tutor.ModelPicker
+import io.circe.syntax.*
 import japgolly.scalajs.react.*
 import japgolly.scalajs.react.vdom.html_<^.*
 import org.scalajs.dom
@@ -39,22 +41,23 @@ object CoachController:
     case Locked                       // 403 — coaching not permitted for this tier
     case Unavailable(message: String) // whoami/tutor unreachable — host degrades to a static fallback
 
-  /** The server steps that embed a code editor — their turns carry the editor snapshot. */
-  def isCodeStep(s: Step): Boolean = s == Step.Implement || s == Step.Test
+  /** The coach-save button's UI state (allow-listed Save → homelab DB). */
+  enum SaveStatus:
+    case Idle
+    case Saving
+    case Saved
+    case Failed(message: String)
 
   /**
-   * The host's live editor state, pulled at submit time for implement/test turns. `runResult` is already a
-   * textual summary (see [[summariseRun]]); the controller stays free of the workbench's `RunResult`
-   * plumbing.
+   * Coach UI state held in ONE hook: whether the transcript is archived (the tutor purged the session, so the
+   * browser mirror is shown read-only) and the Save button's status.
    */
-  final case class EditorSnapshot(code: String, language: String, runResult: Option[String])
+  final case class CoachUi(archived: Boolean = false, save: SaveStatus = SaveStatus.Idle)
 
   final case class Props(
       problemId: String,
       // Distinguishes the coaching surface to the tutor: problem pages vs an inline "Your Turn".
       origin: SessionOrigin = SessionOrigin.YourTurn,
-      /** Pulls the right-pane editor's latest snapshot for code steps; `None` for composer-only shells. */
-      snapshot: () => Option[EditorSnapshot] = () => None,
       render: View => VdomNode
   )
 
@@ -83,7 +86,12 @@ object CoachController:
       hasByokKey: Boolean,
       keySaving: Boolean,
       saveByokKey: String => Callback,
-      forgetByokKey: Callback
+      forgetByokKey: Callback,
+      // Coach-save (allow-listed): persist a snapshot to the homelab DB; `saveStatus` drives the button.
+      save: Callback,
+      saveStatus: SaveStatus,
+      // True when the tutor has dropped this session (TTL purge); the browser mirror is shown read-only.
+      transcriptArchived: Boolean
   )
 
   private given ExecutionContext = JSExecutionContext.queue
@@ -102,38 +110,6 @@ object CoachController:
         case _                => hex((js.Math.random() * 16).toInt)
       }.mkString
 
-  private val RunSummaryMax = 4000
-
-  /**
-   * Textual, bounded summary of a run for the coach (the prompt assembly doesn't need megabytes of stdout).
-   */
-  def summariseRun(r: RunResult): String =
-    val full = List(
-      Some(s"status: ${r.statusDescription}"),
-      Option(r.compileOutput).filter(_.nonEmpty).map(c => s"compile output:\n$c"),
-      Option(r.stderr).filter(_.nonEmpty).map(e => s"stderr:\n$e"),
-      Option(r.stdout).filter(_.nonEmpty).map(o => s"stdout:\n$o")
-    ).flatten.mkString("\n")
-    if full.length <= RunSummaryMax then full else full.take(RunSummaryMax) + "\n…(truncated)"
-
-  /**
-   * Fold the editor snapshot into the message the BYOK model judges — MIRRORS the tutor's server-side
-   * `gate.compose_answer` for homelab turns. Keep the `[workbench …]` / `[run result …]` markers in lockstep
-   * with the step guides.
-   */
-  private def composeByokAnswer(step: Step, text: String, snap: Option[EditorSnapshot]): String =
-    if !isCodeStep(step) then text
-    else
-      snap.filter(_.code.trim.nonEmpty) match
-        case Some(s) =>
-          val lang = s.language.trim.toLowerCase
-          val run = s.runResult match
-            case Some(r) => s"[run result]\n$r"
-            case None    => "[run result: none]"
-          s"$text\n\n[workbench snapshot — $lang]\n```$lang\n${s.code}\n```\n\n$run"
-        case None =>
-          s"$text\n\n[workbench: no code attached to this message]"
-
   val Component =
     ScalaFnComponent
       .withHooks[Props]
@@ -149,40 +125,80 @@ object CoachController:
       .useState(false)                      // key validation probe in flight
       .useState(0)                          // localRetries — client-only "stuck" counter (current step)
       .useRef(Option.empty[TutorApiClient.TurnStream]) // in-flight stream handle (cancel on unmount)
+      .useState(CoachUi())                             // archived flag + Save-button status (one hook)
       .useEffectOnMountBy {
-        (props, whoamiS, selectedKeyS, sessionS, stageS, _, _, _, _, _, _, _, streamRef) =>
+        (props, whoamiS, selectedKeyS, sessionS, stageS, _, _, _, _, _, _, _, streamRef, uiS) =>
           CallbackTo {
-            AuthStore.current.status match
-              case AuthStore.Status.Anonymous =>
-                stageS.setState(Stage.NeedsSignIn).runNow()
-              case _ =>
-                TutorApiClient.whoami().onComplete {
-                  case Success(w) =>
-                    (whoamiS.setState(Some(w)) >>
-                      selectedKeyS.setState(ModelPicker.resolveDefault(w).map(_.key)) >>
-                      stageS.setState(Stage.Coaching)).runNow()
-                    // Restore an in-progress session so a refresh CONTINUES the journey (never resets);
-                    // a never-started problem (204) leaves it None → lazy-create on the first submit.
-                    TutorApiClient.getActiveSession(props.problemId).onComplete {
-                      case Success(Some(session)) =>
-                        val pick = session.model.fold(Callback.empty)(m => selectedKeyS.setState(Some(m)))
-                        (sessionS.setState(Some(session)) >> pick).runNow()
-                      case _ => () // none, or a transient read error — fall back to lazy create
-                    }
-                  case Failure(e: TutorApiClient.TutorHttpError) if e.status == 401 =>
-                    stageS.setState(Stage.NeedsSignIn).runNow()
-                  case Failure(e) =>
-                    stageS.setState(Stage.Unavailable(e.getMessage)).runNow()
-                }
-            // Cleanup: abort any in-flight stream so its callbacks don't touch an unmounted host.
-            Callback(streamRef.value.foreach(_.cancel()))
+            // Boot the FSM once, when auth FIRST resolves. keycloak-js init is async, so a page load that
+            // opens straight onto the Coach tab (e.g. a restored tab) can still be `Loading` at mount —
+            // booting then would whoami WITHOUT a token and 401 into a stuck "Sign in". We wait for the
+            // status to settle and re-run via the subscription below (the keycloak-js race).
+            var bootedOnce = false
+            def boot(): Unit =
+              AuthStore.current.status match
+                case AuthStore.Status.Loading =>
+                  () // auth not resolved yet — the subscribe re-runs boot once it is
+                case AuthStore.Status.Anonymous =>
+                  bootedOnce = true
+                  stageS.setState(Stage.NeedsSignIn).runNow()
+                case _ =>
+                  bootedOnce = true
+                  TutorApiClient.whoami().onComplete {
+                    case Success(w) =>
+                      (whoamiS.setState(Some(w)) >>
+                        selectedKeyS.setState(ModelPicker.resolveDefault(w).map(_.key)) >>
+                        stageS.setState(Stage.Coaching)).runNow()
+                      // Restore an in-progress session so a refresh CONTINUES the journey (never resets);
+                      // a never-started problem (204) leaves it None → lazy-create on the first submit.
+                      TutorApiClient.getActiveSession(props.problemId).onComplete {
+                        case Success(Some(session)) =>
+                          // Live server session — it wins (the mirror-write effect re-mirrors it).
+                          val pick = session.model.fold(Callback.empty)(m => selectedKeyS.setState(Some(m)))
+                          (sessionS.setState(Some(session)) >> pick).runNow()
+                        case Success(None) =>
+                          // No live session (never started, or TTL-purged). If the browser mirrored a
+                          // transcript, show it READ-ONLY (archived) so it isn't lost and can be Saved —
+                          // but don't resume turns against a session the tutor has dropped.
+                          ReaderState
+                            .coachMirror(props.problemId)
+                            .flatMap(j => io.circe.parser.decode[CoachSession](j).toOption) match
+                            case Some(mirrored) =>
+                              (sessionS.setState(Some(mirrored)) >>
+                                uiS.modState(_.copy(archived = true))).runNow()
+                            case None => () // truly fresh → lazy-create on the first submit
+                        case Failure(_) => () // transient read error — fall back to lazy create
+                      }
+                    case Failure(e: TutorApiClient.TutorHttpError) if e.status == 401 =>
+                      stageS.setState(Stage.NeedsSignIn).runNow()
+                    case Failure(e) =>
+                      stageS.setState(Stage.Unavailable(e.getMessage)).runNow()
+                  }
+            boot()
+            // If auth was still `Loading` at mount, re-run boot once it settles (Authed / Anonymous /
+            // Disabled). `bootedOnce` keeps a later token-refresh from re-booting the FSM.
+            val unsubscribe = AuthStore.subscribe(_ => if !bootedOnce then boot())
+            // Cleanup: drop the subscription + abort any in-flight stream so callbacks don't touch an
+            // unmounted host.
+            Callback {
+              unsubscribe()
+              streamRef.value.foreach(_.cancel())
+            }
           }
       }
       // Reset the local "stuck" retry counter whenever the server step advances.
-      .useEffectWithDepsBy((_, _, _, sessionS, _, _, _, _, _, _, _, _, _) =>
+      .useEffectWithDepsBy((_, _, _, sessionS, _, _, _, _, _, _, _, _, _, _) =>
         sessionS.value.map(_.stepIndex).getOrElse(0)
-      ) { (_, _, _, _, _, _, _, _, _, _, _, retriesS, _) => _ =>
+      ) { (_, _, _, _, _, _, _, _, _, _, _, retriesS, _, _) => _ =>
         retriesS.setState(0)
+      }
+      // Mirror the live transcript to localStorage on every change so a refresh restores it instantly and
+      // it survives the tutor's TTL purge (the browser is the refresh-safe copy; durable Save is opt-in).
+      .useEffectWithDepsBy((_, _, _, sessionS, _, _, _, _, _, _, _, _, _, _) =>
+        sessionS.value.map(s => s"${s.sessionId}:${s.messages.length}:${s.stepIndex}:${s.completed}")
+      ) { (props, _, _, sessionS, _, _, _, _, _, _, _, _, _, _) => _ =>
+        Callback(
+          sessionS.value.foreach(s => ReaderState.saveCoachMirror(props.problemId, s.asJson.noSpaces))
+        )
       }
       .render {
         (
@@ -198,7 +214,8 @@ object CoachController:
             byokKeyS,
             keySavingS,
             retriesS,
-            streamRef
+            streamRef,
+            uiS
         ) =>
 
           val tier          = whoamiS.value.map(_.tier)
@@ -216,7 +233,6 @@ object CoachController:
 
           // ── run one turn against an existing session (transport decided by session.byok) ──
           def doTurn(s: CoachSession, step: Step, text: String): Callback =
-            val snapshot   = if isCodeStep(step) then props.snapshot() else None
             val optimistic = CoachMessage(Role.User, step, text, 0L)
             val seeded     = s.copy(messages = s.messages :+ optimistic)
             val prelude =
@@ -241,7 +257,7 @@ object CoachController:
                     val flow =
                       for
                         bundle <- TutorApiClient.getPromptBundle(s.sessionId, step)
-                        turn   <- byokProvider.runTurn(key, bundle, composeByokAnswer(step, text, snapshot))
+                        turn   <- byokProvider.runTurn(key, bundle, text)
                         result <- TutorApiClient.recordByokTurn(
                           s.sessionId,
                           ByokRecordRequest(
@@ -250,9 +266,9 @@ object CoachController:
                             coachReply = turn.coachReply,
                             verdict = turn.verdict,
                             turnId = Some(turnId),
-                            code = snapshot.map(_.code),
-                            language = snapshot.map(_.language),
-                            runResult = snapshot.flatMap(_.runResult)
+                            code = None,
+                            language = None,
+                            runResult = None
                           )
                         )
                         // The turn is committed server-side the moment `recordByokTurn` succeeds. Don't let a
@@ -277,9 +293,9 @@ object CoachController:
                 step = step,
                 text = text,
                 turnId = Some(newTurnId()),
-                code = snapshot.map(_.code),
-                language = snapshot.map(_.language),
-                runResult = snapshot.flatMap(_.runResult)
+                code = None,
+                language = None,
+                runResult = None
               )
               prelude >> Callback {
                 val handle = TutorApiClient.submitTurn(
@@ -402,24 +418,71 @@ object CoachController:
               case Some(p) => Callback(ByokKeyStore.clear(p)) >> byokKeyS.modState(_ - p)
               case None    => Callback.empty
 
-          // "Start over" is now a permanent hard delete (this problem's history) — confirm first.
+          // "Start over" is a permanent hard delete (this problem's history) — confirm first. When the
+          // transcript is archived (the tutor already purged the session), there's nothing to reset
+          // server-side: just clear the local mirror + state and fall back to lazy-create.
           val doReset: Callback =
-            sessionS.value match
-              case None => Callback.empty
-              case Some(s) =>
-                CallbackTo(
-                  dom.window.confirm("Delete this conversation and start over? This can't be undone.")
-                ).flatMap { ok =>
-                  if !ok then Callback.empty
-                  else
-                    (resultS.setState(None) >> streamingS.setState("") >> busyS.setState(false) >>
-                      errorS.setState(None)) >> Callback {
-                      TutorApiClient.resetSession(s.sessionId).onComplete {
-                        case Success(fresh) => sessionS.setState(Some(fresh)).runNow()
-                        case Failure(e)     => errorS.setState(Some(e.getMessage)).runNow()
+            if uiS.value.archived then
+              Callback(ReaderState.clearCoachMirror(props.problemId)) >>
+                sessionS.setState(None) >> uiS.modState(_.copy(archived = false)) >>
+                resultS.setState(None) >> streamingS.setState("") >> errorS.setState(None)
+            else
+              sessionS.value match
+                case None => Callback.empty
+                case Some(s) =>
+                  CallbackTo(
+                    dom.window.confirm("Delete this conversation and start over? This can't be undone.")
+                  ).flatMap { ok =>
+                    if !ok then Callback.empty
+                    else
+                      (resultS.setState(None) >> streamingS.setState("") >> busyS.setState(false) >>
+                        errorS.setState(None)) >> Callback {
+                        ReaderState.clearCoachMirror(props.problemId)
+                        TutorApiClient.resetSession(s.sessionId).onComplete {
+                          case Success(fresh) => sessionS.setState(Some(fresh)).runNow()
+                          case Failure(e)     => errorS.setState(Some(e.getMessage)).runNow()
+                        }
                       }
+                  }
+
+          // Coach-save (allow-listed) — persist a snapshot to the homelab DB. Gating mirrors the Submit
+          // button: the server allow-lists who may save, and the 403 request-access text surfaces verbatim.
+          val saveCb: Callback =
+            AuthStore.current.status match
+              case AuthStore.Status.Authed(_, token) =>
+                sessionS.value match
+                  case None =>
+                    uiS.modState(_.copy(save = SaveStatus.Failed("There's nothing to save yet.")))
+                  case Some(s) =>
+                    uiS.modState(_.copy(save = SaveStatus.Saving)) >> Callback {
+                      ApiClient
+                        .saveCoachSession(
+                          token,
+                          SaveCoachRequest(
+                            sessionId = s.sessionId,
+                            problemId = props.problemId,
+                            stepIndex = s.stepIndex,
+                            messageCount = s.messages.length,
+                            completed = s.completed,
+                            transcript = s.asJson.noSpaces
+                          )
+                        )
+                        .onComplete {
+                          case Success(_) => uiS.modState(_.copy(save = SaveStatus.Saved)).runNow()
+                          case Failure(e) =>
+                            uiS.modState(_.copy(save = SaveStatus.Failed(e.getMessage))).runNow()
+                        }
                     }
-                }
+              case AuthStore.Status.Disabled =>
+                uiS.modState(
+                  _.copy(save =
+                    SaveStatus.Failed(
+                      "Saving needs a signed-in identity, and auth is switched off on this server " +
+                        "(AUTH_ENABLED=false). Start dev with auth on to try the full flow."
+                    )
+                  )
+                )
+              case _ => Callback(AuthStore.openSignIn())
 
           val currentStepOpt = sessionS.value.map(_.currentStep)
           val liveScore: Option[Int] =
@@ -446,7 +509,10 @@ object CoachController:
               hasByokKey = selectedModel.exists(m => byokKeyS.value.contains(m.provider)),
               keySaving = keySavingS.value,
               saveByokKey = saveByokKey,
-              forgetByokKey = forgetByokKey
+              forgetByokKey = forgetByokKey,
+              save = saveCb,
+              saveStatus = uiS.value.save,
+              transcriptArchived = uiS.value.archived
             )
           )
       }

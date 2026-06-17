@@ -1,0 +1,108 @@
+/* The /account page — profile identity card + a Danger zone of bulk data-deletion actions.
+   Reuses the repo's destructive language (rose) and the emerald/rose status banners. Block: .account-page */
+
+@layer components {
+    .account-page {
+        @apply px-4 py-16;
+    }
+    .account-page__inner {
+        @apply mx-auto w-full max-w-2xl;
+    }
+    .account-page__title {
+        @apply mb-6 font-head text-3xl font-medium text-foreground;
+    }
+
+    /* signed-out */
+    .account-page__signin {
+        @apply rounded-lg border border-border bg-card px-6 py-12 text-center;
+    }
+    .account-page__lede {
+        @apply mx-auto mb-5 max-w-md text-muted-foreground;
+    }
+    .account-page__signin-btn {
+        @apply inline-flex items-center rounded-md bg-primary px-4 py-2 text-sm font-semibold
+               text-primary-foreground hover:bg-primary/90;
+    }
+
+    /* identity card */
+    .account-page__identity {
+        @apply mb-6 flex items-center gap-4 rounded-lg border border-border bg-card px-5 py-4;
+    }
+    .account-page__avatar {
+        @apply grid h-12 w-12 place-items-center rounded-full text-lg font-bold text-white;
+        background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.7));
+        flex: 0 0 auto;
+    }
+    .account-page__handle {
+        @apply text-lg font-semibold text-foreground;
+    }
+    .account-page__meta {
+        @apply mt-0.5 inline-flex items-center gap-1.5 text-sm text-muted-foreground;
+    }
+    .account-page__meta-icon {
+        @apply h-3.5 w-3.5;
+    }
+    .account-page__field {
+        @apply mt-0.5 text-[13px] text-muted-foreground;
+    }
+
+    /* danger zone */
+    .account-page__danger {
+        @apply rounded-lg border border-rose-500/30 bg-rose-500/5 px-5 pb-5 pt-4;
+    }
+    .account-page__danger-head {
+        @apply mb-2 inline-flex items-center gap-2 text-sm font-bold uppercase tracking-[0.08em]
+               text-rose-700 dark:text-rose-400;
+    }
+    .account-page__danger-icon {
+        @apply h-4 w-4;
+    }
+    .account-page__danger-note {
+        @apply mb-3 text-[13px] leading-relaxed text-muted-foreground;
+    }
+    .account-page__status {
+        @apply mb-3 flex items-center gap-2 rounded-md px-3 py-2 text-[13px] font-medium;
+    }
+    .account-page__status--busy {
+        @apply bg-muted text-foreground/80;
+    }
+    .account-page__status--ok {
+        @apply bg-emerald-500/10 text-emerald-700 dark:text-emerald-400;
+    }
+    .account-page__status--err {
+        @apply bg-rose-500/10 text-rose-700 dark:text-rose-400;
+    }
+    .account-page__status-icon {
+        @apply h-4 w-4;
+        flex: 0 0 auto;
+    }
+    .account-page__spin {
+        @apply animate-spin;
+    }
+    .account-page__card {
+        @apply mt-2.5 flex items-center justify-between gap-4 rounded-md border border-border
+               bg-background/40 px-4 py-3;
+    }
+    .account-page__card--disabled {
+        @apply opacity-70;
+    }
+    .account-page__card-title {
+        @apply m-0 text-[14.5px] font-semibold text-foreground;
+    }
+    .account-page__card-desc {
+        @apply m-0 mt-1 text-[12.5px] leading-relaxed text-muted-foreground;
+    }
+    .account-page__btn {
+        @apply inline-flex flex-none items-center gap-1.5 rounded-md border border-border px-3 py-2
+               text-[13px] font-semibold text-muted-foreground;
+    }
+    .account-page__btn--danger {
+        @apply border-rose-500/40 bg-rose-500/5 text-rose-700 hover:bg-rose-500/10 dark:text-rose-400;
+    }
+    .account-page__btn:disabled {
+        @apply cursor-default opacity-60;
+    }
+    .account-page__btn-icon {
+        @apply h-3.5 w-3.5;
+    }
+}

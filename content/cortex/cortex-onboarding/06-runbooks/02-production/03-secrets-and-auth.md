@@ -38,6 +38,8 @@ Both Cortex and the Tutor validate JWTs against the **same** Keycloak realm — 
 
 The `cortex-web` client must exist in the realm with `cortex.kakde.eu` redirect URIs and web origins (documented in `infra/deploy/apps/cortex/keycloak-client.md`). The GitHub IdP federation lets "Continue with GitHub" work in production — the homelab Keycloak federates GitHub, where the local dev realm does not.
 
+**What a signed-in user can manage.** The header avatar opens a calm account dropdown (identity + Sign out); bulk data deletion lives on the **/account** page (*Manage account & data*). Coach sessions are **ephemeral** — a sliding TTL with a background purge — and mirrored to the browser; the only durable server copies are submissions and the transcripts allow-listed users explicitly **Save**. Deleting the Keycloak *identity* itself is not yet self-service: the apps only verify JWTs (no admin service-account), so `/account` wipes data and defers identity deletion (Sign out is the rest of the story).
+
 ## What's where (quick map)
 
 | Concern | Location |

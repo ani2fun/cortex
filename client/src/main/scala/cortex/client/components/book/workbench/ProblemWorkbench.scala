@@ -2,6 +2,7 @@ package cortex.client.components.book.workbench
 
 import cortex.client.components.book.BlockMounter
 import cortex.client.components.icons.LucideIcons
+import cortex.client.util.ReaderState
 import cortex.shared.book.Block
 import cortex.shared.tutor.TutorContract.SessionOrigin
 import japgolly.scalajs.react.*
@@ -58,12 +59,23 @@ object ProblemWorkbench:
         heightCss = "calc(100vh - 12rem)"
       )
 
+  /**
+   * First tab to show: the one persisted for this problem (clamped to the live tab count), else Description.
+   * Only problem PAGES (coachProblemId set) persist — the Your-Turn modal never refreshes.
+   */
+  private def initialTab(props: Props): Int =
+    props.coachProblemId match
+      case Some(pid) =>
+        val maxTab = if props.submitCtx.isDefined then 3 else 2
+        math.max(0, math.min(maxTab, ReaderState.activeTabFor(pid)))
+      case None => 0
+
   val Component =
     ScalaFnComponent
       .withHooks[Props]
-      .useState(44.0)   // left pane width (%)
-      .useState(0)      // active left tab: 0 desc · 1 editorial · 2 coach
-      .useState(Set(0)) // open editorial sections (Intuition open by default)
+      .useState(44.0)                              // left pane width (%)
+      .useStateBy((props, _) => initialTab(props)) // active tab — restored from localStorage (problem pages)
+      .useState(Set(0))                            // open editorial sections (Intuition open by default)
       .useRefToVdom[dom.html.Element]
       .useRefBy(_ => js.Array[BlockMounter.RootHandle]())
       .useRefBy(_ => Set.empty[String]) // panel keys already injected+mounted
@@ -102,10 +114,7 @@ object ProblemWorkbench:
           }
         }
       }
-      // Latest right-pane editor snapshot (code / language / last run), fed by WorkbenchEditor.onSnapshot
-      // and read by the Coach tab at submit time for implement/test turns.
-      .useRefBy(_ => Option.empty[WorkbenchEditor.Snapshot])
-      .render { (props, leftPctS, tabS, openS, rootRef, _, _, snapRef) =>
+      .render { (props, leftPctS, tabS, openS, rootRef, _, _) =>
         def startSplitDrag(e: ReactMouseEvent): Callback = Callback {
           e.preventDefault()
           dom.document.body.style.cursor = "col-resize"
@@ -127,6 +136,11 @@ object ProblemWorkbench:
           dom.document.addEventListener("mouseup", up)
         }
 
+        // Switch tab + persist it (problem pages) so a refresh lands on the tab you were on.
+        def selectTab(i: Int): Callback =
+          tabS.setState(i) >>
+            props.coachProblemId.fold(Callback.empty)(pid => Callback(ReaderState.saveActiveTab(pid, i)))
+
         // Submissions is a problem-PAGE tab only (it needs the book/chapter to fetch); the Your-Turn
         // modal (submitCtx = None) shows just Description / Editorial / Coach.
         val tabDefs: Vector[(String, LucideIcons.IconProps => VdomNode)] =
@@ -147,7 +161,7 @@ object ProblemWorkbench:
                 ^.key       := s"tab-$i",
                 ^.tpe       := "button",
                 ^.className := (if on then "pwb__tab pwb__tab--active" else "pwb__tab"),
-                ^.onClick --> tabS.setState(i),
+                ^.onClick --> selectTab(i),
                 icon(LucideIcons.withClass("pwb__tab-icon")),
                 name
               )
@@ -240,8 +254,7 @@ object ProblemWorkbench:
                 coachProblemId = props.coachProblemId,
                 origin =
                   if props.submitCtx.isDefined then SessionOrigin.ProblemPage else SessionOrigin.YourTurn,
-                active = tabS.value == 2,
-                snapshot = () => snapRef.value
+                active = tabS.value == 2
               )
             )
           )
@@ -285,12 +298,7 @@ object ProblemWorkbench:
                 fixedHeightPx = None,
                 pctClamp = (30.0, 78.0),
                 defaultPct = 58.0,
-                submitCtx = props.submitCtx,
-                // Only capture snapshots when the live coach is present (it reads them for code steps).
-                onSnapshot =
-                  props.coachProblemId.map(_ =>
-                    (s: WorkbenchEditor.Snapshot) => Callback { snapRef.value = Some(s) }
-                  )
+                submitCtx = props.submitCtx
               )
             )
           )

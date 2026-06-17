@@ -3,9 +3,11 @@ title: Auth & GitHub sign-in on localhost
 summary: Run the real sign-in flow locally — against the LOCAL Keycloak, not production — so you can test features that need an identity (saving coach chats, submitting passed code). Includes registering your own GitHub OAuth App for localhost.
 ---
 
-Some features only work when you're **signed in**: the live tutor coach persists your chat under your
-identity, and submitting passed test-case code records it against your account. To exercise those locally
-you need a working sign-in — and it must go through the **local** Keycloak, never production.
+Some features only work when you're **signed in**: an allow-listed user can **Save** a coach transcript to
+the homelab DB, and submitting passed test-case code records it against your account. (Coaching itself
+doesn't need the allowlist — sessions are ephemeral and browser-mirrored.) To exercise the durable
+features locally you need a working sign-in — and it must go through the **local** Keycloak, never
+production.
 
 > **The golden rule:** local dev authenticates against **`http://localhost:8081/realms/cortex`**, *not*
 > `https://keycloak.kakde.eu/realms/apps-prod`. `./bin/dev` (and `./scripts/devcombined`) set this for you.
@@ -31,6 +33,33 @@ The cortex server is handed these coordinates via `/api/auth/config`, and the SP
 runs the PKCE flow against them. With `./scripts/devcombined`, the **tutor** is pointed at the *same*
 local realm too (its `bin/dev` defaults `KEYCLOAK_ISSUER_URL` to `localhost:8081/realms/cortex` when auth
 is on) — so the JWT the SPA gets is accepted by both cortex and the coach.
+
+## The sign-in flow
+
+Clicking **Sign in** (the header avatar's button, or any editor's **Edit**) opens the condensed GitHub
+sign-in modal — one CTA and one "what GitHub is asked for" scope strip. `keycloak-js` then runs the
+standard OIDC **PKCE** round-trip and hands the SPA a JWT it sends on every `/api/*` and `/tutor/*` call:
+
+```mermaid
+sequenceDiagram
+  autonumber
+  participant U as You
+  participant S as Cortex SPA (keycloak-js)
+  participant K as Keycloak
+  participant G as GitHub
+  U->>S: click "Sign in" / "Edit"
+  S->>K: authorize (PKCE code_challenge)
+  K->>G: federate (GitHub IdP)
+  G-->>K: identity (scope user:email)
+  K-->>S: redirect with ?code
+  S->>K: token (code + code_verifier)
+  K-->>S: access + refresh JWT
+  Note over S: JWT sent on /api/* and /tutor/*
+```
+
+Once signed in, the avatar opens a calm dropdown — your identity, a note on where data lives, and **Sign
+out**. Bulk data deletion lives on the **/account** page (avatar → *Manage account & data*); see
+[The turn lifecycle → Managing your data](/cortex/cortex-onboarding/cortex-tutor/the-turn-lifecycle).
 
 ## Two ways to sign in locally
 

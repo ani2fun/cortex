@@ -43,6 +43,17 @@
       "credentials": [
         { "type": "password", "value": "tester", "temporary": false }
       ]
+    },
+    {
+      "username": "test1",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "test1@cortex.local",
+      "firstName": "Cortex",
+      "lastName": "Test One",
+      "credentials": [
+        { "type": "password", "value": "test1", "temporary": false }
+      ]
     }
   ]
 }

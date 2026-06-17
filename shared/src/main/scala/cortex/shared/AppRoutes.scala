@@ -6,6 +6,7 @@ object AppRoutes:
   val Demo           = "demo"
   val Cortex         = "cortex"
   val Blogs          = "blogs"
+  val Account        = "account"
   val IndexHtml      = "index.html"
   val Assets         = "assets"
   val Images         = "img"
@@ -29,6 +30,7 @@ object AppRoutes:
    */
   val SpaRoutes: List[SpaRoute] = List(
     SpaRoute(Demo, hasNestedRoutes = false),
+    SpaRoute(Account, hasNestedRoutes = false),
     SpaRoute(Blogs, hasNestedRoutes = true),
     SpaRoute(Cortex, hasNestedRoutes = true)
   )

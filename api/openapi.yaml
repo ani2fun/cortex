@@ -362,6 +362,114 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
+  /api/coach/saved:
+    get:
+      operationId: listMySavedCoach
+      summary: |
+        List the bearer-token holder's saved coach transcripts for one problem,
+        newest first. `problemId` is the tutor join key ("<book>/<chapter>").
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: problemId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The caller's saved coach sessions for this problem, newest first.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListSavedCoachResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      operationId: saveCoachSession
+      summary: |
+        Save a snapshot of the caller's coach transcript to the homelab DB.
+
+        **Allow-listed feature (homelab).** Saving reuses the SAME allowlist as
+        POST /api/submissions — restricted to GitHub usernames on the submission
+        allowlist. This is a personal homelab deployment, not a scalable service,
+        and stored data carries no durability guarantee. To request access, email
+        cortex.kakde.eu@gmail.com with your GitHub username; access is granted
+        selectively. Anyone can self-host the whole stack instead — instructions
+        are in the cortex GitHub repository. Saved data can be wiped any time by
+        the owner via DELETE /api/coach/saved.
+
+        The tutor runs the live interview and keeps sessions only ephemerally
+        (TTL/purge); Save is the explicit "keep this" for allow-listed learners.
+        The full transcript snapshot (the tutor's CoachSession wire JSON) is sent
+        by the client and stored opaquely. Metered against the caller's hourly
+        authenticated bucket, plus a hard cap per user per problem.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SaveCoachRequest'
+      responses:
+        '200':
+          description: Snapshot stored.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SaveCoachResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+    delete:
+      operationId: deleteMySavedCoach
+      summary: |
+        Delete every saved coach transcript for the bearer-token holder
+        (self-service erasure). Returns the number of rows removed.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Caller's saved coach sessions removed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteCoachResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/coach/saved/{id}:
+    delete:
+      operationId: deleteOneSavedCoach
+      summary: |
+        Delete a single saved coach transcript the caller owns. Scoped to the
+        bearer-token holder. Idempotent: `deleted` is 1 if a row was removed, 0
+        otherwise.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Saved session removed if it was the caller's.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteCoachResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
 components:
   securitySchemes:
     bearerAuth:
@@ -1056,3 +1164,82 @@ components:
           items:
             $ref: '#/components/schemas/SubmissionSummary'
           description: The caller's submissions for one problem, newest first.
+
+    SaveCoachRequest:
+      type: object
+      required: [problemId, sessionId, stepIndex, completed, messageCount, transcript]
+      description: |
+        A snapshot of the caller's coach transcript to persist. `transcript` is
+        the tutor's CoachSession serialised as a JSON string (circe); the server
+        stores it opaquely as jsonb. The denormalised fields power the list view
+        and the per-problem cap without parsing the blob.
+      properties:
+        problemId:
+          type: string
+          example: "data-structures-and-algorithms/bit-tricks/pattern-xor/problems/swap-numbers"
+        sessionId:
+          type: string
+        stepIndex:
+          type: integer
+        completed:
+          type: boolean
+        messageCount:
+          type: integer
+        transcript:
+          type: string
+          description: The CoachSession snapshot, circe-encoded JSON (stored as jsonb).
+
+    SaveCoachResponse:
+      type: object
+      required: [saved, savedId]
+      properties:
+        saved:
+          type: boolean
+        savedId:
+          type: integer
+          format: int64
+          description: Database id of the stored snapshot.
+
+    SavedCoachSummary:
+      type: object
+      required: [id, problemId, sessionId, stepIndex, completed, messageCount, transcript, createdAtEpochMs]
+      description: One saved coach snapshot, projected for the saved-sessions view.
+      properties:
+        id:
+          type: integer
+          format: int64
+        problemId:
+          type: string
+        sessionId:
+          type: string
+        stepIndex:
+          type: integer
+        completed:
+          type: boolean
+        messageCount:
+          type: integer
+        transcript:
+          type: string
+          description: The CoachSession snapshot, circe-encoded JSON.
+        createdAtEpochMs:
+          type: integer
+          format: int64
+          description: Save timestamp, epoch milliseconds (UTC).
+
+    ListSavedCoachResponse:
+      type: object
+      required: [saved]
+      properties:
+        saved:
+          type: array
+          items:
+            $ref: '#/components/schemas/SavedCoachSummary'
+          description: The caller's saved coach sessions for one problem, newest first.
+
+    DeleteCoachResponse:
+      type: object
+      required: [deleted]
+      properties:
+        deleted:
+          type: integer
+          description: Number of saved coach sessions removed for the caller.

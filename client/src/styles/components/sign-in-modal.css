@@ -104,7 +104,7 @@
         font-style: italic;
     }
     .sign-in-modal__lede {
-        margin: 0 0 22px;
+        margin: 0;
         max-width: 42ch;
         font-size: 15px;
         line-height: 1.55;
@@ -117,79 +117,13 @@
         letter-spacing: 0.02em;
     }
 
-    /* Body — "what I'm asking GitHub for" */
-    .sign-in-modal__body {
-        padding: 0 26px 8px;
-    }
-    .sign-in-modal__why {
-        padding: 18px 0 4px;
-        border-top: 1px solid hsl(var(--border) / 0.7);
-    }
-    .sign-in-modal__why-title {
-        margin-bottom: 10px;
-        font-family: var(--font-mono);
-        font-size: 10.5px;
-        letter-spacing: 0.16em;
-        text-transform: uppercase;
-        color: hsl(var(--muted-foreground));
-    }
-    .sign-in-modal__rows {
-        display: grid;
-        gap: 10px;
-    }
-    .sign-in-modal__row {
-        display: grid;
-        grid-template-columns: 22px 1fr;
-        gap: 12px;
-        font-size: 13.5px;
-        line-height: 1.45;
-        color: hsl(var(--foreground) / 0.85);
-    }
-    .sign-in-modal__row b {
-        font-weight: 600;
-        color: hsl(var(--foreground));
-    }
-    .sign-in-modal__row code {
-        padding: 1px 5px;
-        border-radius: 4px;
-        font-family: var(--font-mono);
-        font-size: 12px;
-        background: hsl(var(--primary) / 0.1);
-        color: hsl(var(--primary));
-    }
-    .sign-in-modal__row-ico {
-        width: 22px;
-        height: 22px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border: 1px solid hsl(var(--border));
-        border-radius: 6px;
-        color: hsl(var(--muted-foreground));
-    }
-    .sign-in-modal__row--yes .sign-in-modal__row-ico {
-        color: #4e8e54;
-        border-color: rgba(78, 142, 84, 0.4);
-        background: rgba(78, 142, 84, 0.08);
-    }
-    .sign-in-modal__row-icon {
-        width: 11px;
-        height: 11px;
-    }
-
-    /* Foot — CTA + skip */
-    .sign-in-modal__foot {
+    /* CTA — full-width block in the card's gutters (no longer a flex item in the foot). */
+    .sign-in-modal__cta {
         display: flex;
         align-items: center;
-        gap: 12px;
-        padding: 18px 26px 24px;
-    }
-    .sign-in-modal__cta {
-        flex: 1;
-        display: inline-flex;
-        align-items: center;
         justify-content: center;
         gap: 10px;
+        margin: 8px 26px 0;
         padding: 14px 18px;
         border-radius: 10px;
         background: hsl(var(--foreground));
@@ -198,6 +132,54 @@
         font-weight: 500;
         font-size: 14.5px;
         transition: background-color 160ms ease, color 160ms ease, transform 120ms ease;
+    }
+
+    /* Scope strip — exactly what GitHub is asked for (emerald-tinted). */
+    .sign-in-modal__scope {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        margin: 16px 26px 0;
+        padding: 12px 14px;
+        border: 1px solid rgba(78, 142, 84, 0.28);
+        border-radius: 10px;
+        background: rgba(78, 142, 84, 0.06);
+    }
+    .sign-in-modal__scope-icon {
+        width: 18px;
+        height: 18px;
+        margin-top: 1px;
+        flex: 0 0 auto;
+        color: #4e8e54;
+    }
+    .sign-in-modal__scope-text {
+        margin: 0;
+        font-size: 13px;
+        line-height: 1.5;
+        color: hsl(var(--foreground) / 0.85);
+    }
+    .sign-in-modal__scope-text b {
+        font-weight: 600;
+        color: hsl(var(--foreground));
+    }
+    .sign-in-modal__scope-text code {
+        padding: 1px 5px;
+        border-radius: 4px;
+        font-family: var(--font-mono);
+        font-size: 12px;
+        background: hsl(var(--primary) / 0.1);
+        color: hsl(var(--primary));
+    }
+
+    /* Foot — fine print (left) + skip (right), divided by a top hairline. */
+    .sign-in-modal__foot {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-top: 18px;
+        padding: 16px 26px 20px;
+        border-top: 1px solid hsl(var(--border) / 0.7);
     }
     .sign-in-modal__cta:hover {
         transform: translateY(-1px);
@@ -213,11 +195,13 @@
         height: 18px;
     }
     .sign-in-modal__skip {
+        flex: 0 0 auto;
         padding: 10px 6px;
         font-family: var(--font-mono);
         font-size: 10.5px;
         letter-spacing: 0.14em;
         text-transform: uppercase;
+        white-space: nowrap;
         color: hsl(var(--muted-foreground));
         transition: color 160ms ease;
     }
@@ -225,9 +209,10 @@
         color: hsl(var(--primary));
     }
 
-    /* Fine print */
+    /* Fine print — left of the foot row. */
     .sign-in-modal__fine {
-        padding: 0 26px 22px;
+        flex: 1;
+        margin: 0;
         font-family: var(--font-mono);
         font-size: 10.5px;
         line-height: 1.55;
@@ -253,7 +238,7 @@
 }
 
 @layer components {
-    /* ── Account / data: the header avatar opens a "Your data" modal with a Danger zone ── */
+    /* ── Account / data: the header avatar opens a calm anchored dropdown (no danger zone) ── */
     .account-btn {
         display: inline-flex;
         align-items: center;
@@ -287,137 +272,130 @@
         color: hsl(var(--primary));
     }
 
-    .account-modal {
+    /* Relative anchor for the dropdown + its click-outside backdrop. */
+    .account-menu {
+        position: relative;
+        display: inline-flex;
+    }
+    .account-menu__backdrop {
         position: fixed;
         inset: 0;
-        z-index: 200;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 24px;
-        background: rgba(20, 16, 12, 0.55);
-        backdrop-filter: blur(6px);
-        -webkit-backdrop-filter: blur(6px);
-        animation: sign-in-modal-scrim-in 220ms cubic-bezier(0.2, 0.7, 0.2, 1);
+        z-index: 40;
     }
-    .dark .account-modal {
-        background: rgba(0, 0, 0, 0.65);
-    }
-    .account-modal__card {
-        width: 100%;
-        max-width: 440px;
+    .account-menu__panel {
+        position: absolute;
+        top: calc(100% + 10px);
+        right: 0;
+        z-index: 50;
+        width: 290px;
         background: hsl(var(--card));
         border: 1px solid hsl(var(--border));
-        border-radius: 16px;
+        border-radius: 13px;
         box-shadow:
-            0 24px 60px -20px rgba(0, 0, 0, 0.4),
-            0 8px 24px -12px rgba(0, 0, 0, 0.25);
+            0 18px 44px -16px rgba(0, 0, 0, 0.4),
+            0 6px 18px -10px rgba(0, 0, 0, 0.22);
         overflow: hidden;
-        animation: sign-in-modal-card-in 280ms cubic-bezier(0.2, 0.7, 0.2, 1);
+        animation: sign-in-modal-card-in 200ms cubic-bezier(0.2, 0.7, 0.2, 1);
     }
-    .account-modal__head {
-        position: relative;
-        padding: 22px 24px 16px;
-        border-bottom: 1px solid hsl(var(--border));
+    .account-menu__id {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        padding: 16px 16px 14px;
+        border-bottom: 1px solid hsl(var(--border) / 0.7);
     }
-    .account-modal__close {
-        position: absolute;
-        top: 14px;
-        right: 14px;
-        width: 28px;
-        height: 28px;
+    .account-menu__avatar {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        border-radius: 8px;
-        color: hsl(var(--muted-foreground));
-        transition: color 160ms ease, background-color 160ms ease;
-    }
-    .account-modal__close:hover {
-        color: hsl(var(--primary));
-        background: hsl(var(--primary) / 0.08);
-    }
-    .account-modal__close-icon {
-        width: 16px;
-        height: 16px;
-    }
-    .account-modal__eyebrow {
-        font-size: 11px;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        color: hsl(var(--muted-foreground));
-    }
-    .account-modal__title {
-        margin: 6px 0 0;
-        font-size: 20px;
+        width: 36px;
+        height: 36px;
+        flex: 0 0 auto;
+        border-radius: 9999px;
+        font-size: 14px;
         font-weight: 700;
-        color: hsl(var(--foreground));
+        color: #fff;
+        background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.7));
     }
-    .account-modal__signout {
-        margin-top: 12px;
-        font-size: 13px;
+    .account-menu__handle {
+        font-size: 14px;
         font-weight: 600;
-        color: hsl(var(--muted-foreground));
-    }
-    .account-modal__signout:hover {
         color: hsl(var(--foreground));
-        text-decoration: underline;
     }
-    .account-modal__danger {
-        padding: 18px 24px 22px;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-    }
-    .account-modal__danger-head {
+    .account-menu__meta {
         display: inline-flex;
         align-items: center;
-        gap: 8px;
+        gap: 6px;
+        margin-top: 2px;
         font-size: 12px;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: hsl(var(--destructive));
+        color: hsl(var(--muted-foreground));
     }
-    .account-modal__danger-icon {
+    .account-menu__meta-icon {
+        width: 13px;
+        height: 13px;
+    }
+    .account-menu__data {
+        padding: 13px 16px 14px;
+    }
+    .account-menu__data-h {
+        margin-bottom: 5px;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: hsl(var(--muted-foreground));
+    }
+    .account-menu__data-body {
+        margin: 0;
+        font-size: 12.5px;
+        line-height: 1.5;
+        color: hsl(var(--foreground) / 0.8);
+    }
+    .account-menu__data-body b {
+        font-weight: 600;
+        color: hsl(var(--foreground));
+    }
+    .account-menu__signout {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        width: 100%;
+        padding: 12px 16px;
+        border-top: 1px solid hsl(var(--border) / 0.7);
+        font-size: 13.5px;
+        font-weight: 500;
+        color: hsl(var(--foreground));
+        transition: background-color 160ms ease, color 160ms ease;
+    }
+    .account-menu__signout:hover {
+        background: hsl(var(--primary) / 0.08);
+        color: hsl(var(--primary));
+    }
+    .account-menu__signout-icon {
         width: 15px;
         height: 15px;
         flex: 0 0 auto;
     }
-    .account-modal__danger-note {
-        margin: 0 0 4px;
-        font-size: 12.5px;
-        line-height: 1.5;
-        color: hsl(var(--muted-foreground));
-    }
-    .account-modal__danger-btn {
-        display: inline-flex;
+    /* Row that opens the /account page — sits between the identity and the data note. */
+    .account-menu__manage {
+        display: flex;
         align-items: center;
-        gap: 8px;
-        padding: 9px 12px;
-        border: 1px solid hsl(var(--destructive) / 0.4);
-        border-radius: 9px;
-        font-size: 13px;
-        font-weight: 600;
-        color: hsl(var(--destructive));
-        background: hsl(var(--destructive) / 0.06);
-        transition: background-color 160ms ease;
+        gap: 9px;
+        width: 100%;
+        padding: 11px 16px;
+        border-bottom: 1px solid hsl(var(--border) / 0.7);
+        font-size: 13.5px;
+        font-weight: 500;
+        color: hsl(var(--foreground));
+        transition: background-color 160ms ease, color 160ms ease;
     }
-    .account-modal__danger-btn:hover {
-        background: hsl(var(--destructive) / 0.12);
+    .account-menu__manage:hover {
+        background: hsl(var(--primary) / 0.08);
+        color: hsl(var(--primary));
     }
-    .account-modal__danger-btn--max {
-        border-style: dashed;
-        font-weight: 700;
-    }
-    .account-modal__danger-btn-icon {
-        width: 14px;
-        height: 14px;
+    .account-menu__manage-icon {
+        width: 15px;
+        height: 15px;
         flex: 0 0 auto;
-    }
-    .account-modal__msg {
-        margin: 4px 0 0;
-        font-size: 12.5px;
-        color: hsl(var(--muted-foreground));
     }
 }

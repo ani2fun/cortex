@@ -83,7 +83,7 @@ object Header:
               ^.className := "header__actions",
               <.div(^.className := "header__toggle--mobile", ToggleMode.Component()),
               <.div(^.className := "header__toggle--desktop", ToggleMode.Component()),
-              AccountMenu.Component(),
+              AccountMenu.Component(AccountMenu.Props(props.ctl)),
               <.a(
                 ^.href      := GithubUrl,
                 ^.target    := "_blank",

@@ -109,10 +109,51 @@ Real users open two tabs, double-click submit, and lose network at the worst mom
 
 These aren't exotic; they're the same idempotency-key and optimistic-concurrency patterns the [System Design book](/cortex/system-design/distributed-patterns/idempotency-retries-backoff) teaches — here applied to a coaching session so it survives the messiness of real browsers.
 
-## Resuming, resetting, and clearing
+## Ephemeral by default — resume, save, clear
 
-- **Resume** — `GET /v1/sessions/{id}` returns the full transcript and current step. Closing the tab loses nothing; the FSM state is in Postgres.
-- **Reset** — `POST …/reset` abandons the active session and starts fresh at `clarify`, re-validating and carrying the model forward (or falling back to the tier default if that model is no longer allowed).
-- **Clear all** — `POST /v1/sessions/clear-all` deletes every session and message for you, returning a count.
+A coaching session is **working state, not an archive**. It lives behind a **sliding TTL** (idle-for-N-hours, refreshed on every turn and model switch) and a background job **purges** it once that window lapses. Durability comes in two layers:
+
+- **The browser mirror (everyone).** The SPA mirrors the whole transcript to `localStorage` on every change, so a refresh restores it instantly — and it survives the server-side purge. No account, no allow-list; this is the refresh-safety net.
+- **Durable Save (allow-listed).** Pressing **Save** in the coach posts the transcript to cortex's own `coach_saved_session` table — the only server copy that outlives the TTL. Saving is **allow-listed**, gated by the same `submission_allowlist` as "Submit code" (see [Access & allowlists](/cortex/cortex-onboarding/runbooks/access-and-allowlists)); off-list visitors keep the browser mirror.
+
+The session operations:
+
+- **Resume** — `GET /v1/sessions/{id}` returns the transcript + current step *while the session is still within its TTL*. Past that the row is gone, and the browser mirror brings the conversation back (read-only — you start fresh to continue).
+- **Reset** — `POST …/reset` abandons the active session and starts over at `clarify`, carrying the model forward (or the tier default if it's no longer allowed).
+- **Clear** — `POST /v1/sessions/clear-all` deletes every session + message you own; durable saved copies and submissions delete separately. All three are wired into the account page below.
+
+In the UI the transcript is **grouped by step** — each of the six steps is a labelled section, and the header's step dots double as jump-to-step tabs, so a long interview stays navigable.
+
+```mermaid
+flowchart TD
+  S["First submit · pick-then-start"] --> A["Active session · Postgres (sliding TTL)"]
+  A -->|"Save — allow-listed"| D["Durable copy · cortex DB"]
+  A -->|"idle past TTL"| P["Background purge · row gone"]
+  A -. "refresh restores instantly" .-> B["Browser mirror · localStorage"]
+  P -. "refresh: read-only" .-> B
+```
+
+## Managing your data
+
+The coach's data spans three stores; the account page (header avatar → **Manage account & data**) deletes across all of them in one place — all coach history, all submissions, or everything at once:
+
+```mermaid
+flowchart TD
+  A["/account · Danger zone"] --> B["Delete all coach history"]
+  A --> C["Delete all submissions"]
+  A --> D["Delete all my data"]
+  B --> B1["tutor: clear sessions + messages"]
+  B --> B2["cortex: delete saved transcripts"]
+  B --> B3["browser: clear coach mirrors"]
+  C --> C1["cortex: delete all submissions"]
+  D --> B1
+  D --> B2
+  D --> B3
+  D --> C1
+  D --> D1["browser: clear all cortex:* keys"]
+  D --> D2["reload the page"]
+```
+
+Deleting the **account itself** (the Keycloak identity) isn't wired yet — the server only verifies JWTs, so the page shows it as "coming soon". For now, wiping your data and signing out is the full self-service path.
 
 > **Next:** [Grounding & the skill](/cortex/cortex-onboarding/cortex-tutor/grounding-and-the-skill) — where the lesson context comes from (an MCP server), and the Agent Skill that encodes the rubric the gate grades against.

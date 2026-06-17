@@ -6,6 +6,7 @@ import cortex.shared.tutor.TutorContract.*
 import japgolly.scalajs.react.*
 import japgolly.scalajs.react.hooks.Hooks
 import japgolly.scalajs.react.vdom.html_<^.*
+import org.scalajs.dom
 
 import scala.scalajs.js
 
@@ -24,8 +25,7 @@ object CoachTab:
   final case class Props(
       coachProblemId: Option[String],
       origin: SessionOrigin = SessionOrigin.YourTurn,
-      active: Boolean,
-      snapshot: () => Option[WorkbenchEditor.Snapshot]
+      active: Boolean
   )
 
   // ── server-step display metadata (the SERVER's six steps; the design mock labels differ) ──────────
@@ -47,20 +47,24 @@ object CoachTab:
     case Step.Test      => "Test & debug"
 
   private def stepBlurb(s: Step): String = s match
-    case Step.Clarify   => "Restate the problem in your own words and surface assumptions and edge cases."
-    case Step.Examples  => "Work through concrete examples to pin down the expected behaviour."
-    case Step.Approach  => "Brainstorm strategies and weigh their tradeoffs, then commit to one."
-    case Step.Plan      => "Commit to a concrete plan before writing code."
-    case Step.Implement => "Write the solution in the editor on the right, running it against the cases."
-    case Step.Test      => "Run against tricky cases and debug any failures."
+    case Step.Clarify  => "Restate the problem in your own words and surface assumptions and edge cases."
+    case Step.Examples => "Work through concrete examples to pin down the expected behaviour."
+    case Step.Approach => "Brainstorm strategies and weigh their tradeoffs, then commit to one."
+    case Step.Plan     => "Commit to a concrete plan before writing code."
+    case Step.Implement =>
+      "Write and run your solution in the editor on the right, then paste it into the coach below to " +
+        "pass this step."
+    case Step.Test =>
+      "Test your solution on tricky cases in the editor, then paste it into the coach below with what " +
+        "you found."
 
   private def composerHint(s: Step): String = s match
     case Step.Clarify   => "Restate the problem in your own words…"
     case Step.Examples  => "Give an example input and its expected output…"
     case Step.Approach  => "Describe your approach and its complexity…"
     case Step.Plan      => "Outline your step-by-step plan…"
-    case Step.Implement => "Explain your implementation, then submit…"
-    case Step.Test      => "Describe the cases you ran and what you found…"
+    case Step.Implement => "Paste your solution from the editor here, then send to pass this step…"
+    case Step.Test      => "Paste your tested solution and what you found, then send…"
 
   val Component =
     ScalaFnComponent
@@ -81,14 +85,6 @@ object CoachTab:
                 CoachController.Props(
                   problemId = pid,
                   origin = props.origin,
-                  snapshot = () =>
-                    props.snapshot().map { s =>
-                      CoachController.EditorSnapshot(
-                        s.code,
-                        s.language,
-                        s.result.map(CoachController.summariseRun)
-                      )
-                    },
                   render = view => liveCoach(view, draftS)
                 )
               )
@@ -128,6 +124,39 @@ object CoachTab:
     val showThinking = view.busy && view.streaming.isEmpty
     val stuck        = view.localRetries >= 3
 
+    // Chat navigation, all scoped to THIS coach instance via closest(".coach") so multiple coaches on a
+    // page never cross-scroll. The step dots double as tabs (jump to a step's section); a floating up/down
+    // control jumps to the start / latest. scrollIntoView is called dynamically to dodge the
+    // ScrollIntoViewOptions type surface.
+    def scrollWithin(from: dom.Element, sel: String, block: String): Unit =
+      val root = from.closest(".coach")
+      if root != null then
+        val target = root.querySelector(sel)
+        if target != null then
+          val _ = target.asInstanceOf[js.Dynamic].scrollIntoView(js.Dynamic.literal(
+            behavior = "smooth",
+            block = block
+          ))
+
+    // Jump to a step's section; fall back to the latest if that step has no messages yet (just advanced).
+    def stepJump(i: Int): ReactMouseEvent => Callback = e =>
+      val from = e.currentTarget.asInstanceOf[dom.Element]
+      Callback {
+        val root = from.closest(".coach")
+        if root != null then
+          val tgt = Option(root.querySelector(s"[data-coach-step='$i']"))
+            .getOrElse(root.querySelector("[data-coach-anchor='bottom']"))
+          if tgt != null then
+            val _ = tgt.asInstanceOf[js.Dynamic].scrollIntoView(js.Dynamic.literal(
+              behavior = "smooth",
+              block = "start"
+            ))
+      }
+
+    def jump(sel: String, block: String): ReactMouseEvent => Callback = e =>
+      val from = e.currentTarget.asInstanceOf[dom.Element]
+      Callback(scrollWithin(from, sel, block))
+
     val header =
       <.div(
         ^.className := "coach__tracker",
@@ -143,16 +172,29 @@ object CoachTab:
             Step.ordered.zipWithIndex.toVdomArray { case (st, i) =>
               val on   = i == stepIdx
               val done = i < stepIdx
-              // Not buttons: the tutor's gate controls progression — you can't jump steps.
-              <.span(
-                ^.key   := s"dot-$i",
-                ^.title := stepLabel(st),
-                ^.className := ("coach__dot"
-                  + (if on then " coach__dot--on" else "")
-                  + (if done then " coach__dot--done" else "")),
+              val cls = "coach__dot" + (if on then " coach__dot--on" else "") +
+                (if done then " coach__dot--done" else "")
+              val glyph: VdomNode =
                 if done then LucideIcons.Check(LucideIcons.withClass("coach__dot-check"))
                 else (i + 1).toString
-              )
+              // Done/current dots double as tabs: click to jump to that step's section. Future steps stay
+              // inert — the tutor's gate controls progression, you can't jump ahead.
+              if done || on then
+                <.button(
+                  ^.key       := s"dot-$i",
+                  ^.tpe       := "button",
+                  ^.className := (cls + " coach__dot--nav"),
+                  ^.title     := s"Jump to Step ${i + 1} · ${stepLabel(st)}",
+                  ^.onClick ==> stepJump(i),
+                  glyph
+                )
+              else
+                <.span(
+                  ^.key       := s"dot-$i",
+                  ^.title     := s"Step ${i + 1} · ${stepLabel(st)} (upcoming)",
+                  ^.className := cls,
+                  glyph
+                )
             }
           )
         ),
@@ -161,6 +203,7 @@ object CoachTab:
             models = view.models,
             selectedKey = view.selectedModel.map(_.key),
             locked = view.modelLocked,
+            busy = view.busy,
             onChange = view.setModel
           )
         ),
@@ -179,6 +222,9 @@ object CoachTab:
                 view.currentStepProgress.map(p => s"$p%").getOrElse("Not started")
               )
             ),
+            // The actionable "what to do" for this step, kept in the sticky header so it's always on
+            // screen — you can scroll a long transcript and still see where you are and what's being asked.
+            <.div(^.className := "coach__tracker-verb", stepVerb(curStep)),
             <.div(
               ^.className := "coach__progress-track",
               <.div(
@@ -191,14 +237,12 @@ object CoachTab:
           )
       )
 
-    val stepHead =
-      <.div(
-        <.span(
-          ^.className := "coach__eyebrow coach__eyebrow--primary",
-          s"Step ${stepIdx + 1} of 6 · ${stepLabel(curStep)}"
-        ),
-        <.h2(^.className := "coach__verb", if completed then "Interview complete" else stepVerb(curStep))
-      )
+    // The step eyebrow + verb now live in the STICKY header (coach__tracker) so they survive scrolling.
+    // The scrollable body leads with the fuller blurb — or a completion headline once the interview is
+    // done and the header's progress block (which carries the verb) is hidden.
+    val intro: VdomNode =
+      if completed then <.h2(^.className := "coach__verb", "Interview complete")
+      else <.p(^.className               := "coach__blurb", stepBlurb(curStep))
 
     val hintBox: VdomNode =
       view.lastResult
@@ -231,32 +275,82 @@ object CoachTab:
         }
         .getOrElse(EmptyVdom)
 
+    val thinkingBubble: VdomNode =
+      if showThinking then
+        <.div(
+          ^.className := "coach__msg coach__msg--coach",
+          ^.key       := "thinking",
+          <.div(
+            ^.className := "coach__bubble coach__bubble--thinking",
+            LucideIcons.Loader2(LucideIcons.withClass("coach__spin")),
+            <.span("Coach is thinking…")
+          )
+        )
+      else EmptyVdom
+
     val transcript: VdomNode =
       session match
         case Some(s) if s.messages.nonEmpty || view.streaming.nonEmpty || showThinking =>
+          // Group the conversation into per-step sections with a labelled divider, so a long interview
+          // reads as distinct steps and the header dots can jump to each. groupBy preserves per-step order;
+          // steps run sequentially (the gate never goes back), so Step.ordered yields the right sequence.
+          val byStep = s.messages.zipWithIndex.groupBy(_._1.step)
           <.div(
             ^.className := "coach__transcript",
-            s.messages.zipWithIndex.toVdomArray { case (m, i) => bubble(s"m-$i", m.role, m.content) },
+            Step.ordered.zipWithIndex.toVdomArray { case (st, i) =>
+              byStep.get(st) match
+                case None => EmptyVdom
+                case Some(msgs) =>
+                  val done = i < stepIdx
+                  <.div(
+                    ^.className                 := "coach__step-group",
+                    ^.key                       := s"grp-$i",
+                    VdomAttr("data-coach-step") := i.toString,
+                    <.div(
+                      ^.className := "coach__step-divider",
+                      <.span(
+                        ^.className :=
+                          ("coach__step-badge" + (if done then " coach__step-badge--done" else "")),
+                        if done then LucideIcons.Check(LucideIcons.withClass("coach__step-badge-icon"))
+                        else (i + 1).toString
+                      ),
+                      <.span(^.className := "coach__step-divider-label", s"Step ${i + 1} · ${stepLabel(st)}")
+                    ),
+                    msgs.toVdomArray { case (m, idx) => bubble(s"m-$idx", m.role, m.content) }
+                  )
+            },
             if view.streaming.nonEmpty then bubble("streaming", Role.Coach, view.streaming) else EmptyVdom,
-            if showThinking then
-              <.div(
-                ^.className := "coach__msg coach__msg--coach",
-                ^.key       := "thinking",
-                <.div(
-                  ^.className := "coach__bubble coach__bubble--thinking",
-                  LucideIcons.Loader2(LucideIcons.withClass("coach__spin")),
-                  <.span("Coach is thinking…")
-                )
-              )
-            else EmptyVdom
+            thinkingBubble
           )
         case _ => EmptyVdom
 
     val errorBox: VdomNode =
       view.error.map(m => <.div(^.className := "coach__error", m): VdomNode).getOrElse(EmptyVdom)
 
+    // Human label for the BYOK footer note — only surfaced when a key is in play (OpenRouter / Anthropic).
+    val providerLabel =
+      view.selectedModel.map(_.provider) match
+        case Some(p) if p.equalsIgnoreCase("anthropic") => "Anthropic"
+        case _                                          => "OpenRouter"
+
     val footerArea: VdomNode =
-      if completed then
+      if view.transcriptArchived then
+        <.div(
+          ^.className := "coach__handoff",
+          <.p(
+            ^.className := "coach__blurb",
+            "This conversation has ended on the server (saved sessions expire) — it's restored here from " +
+              "your browser. Save it to keep a copy, or start fresh."
+          ),
+          <.button(
+            ^.tpe       := "button",
+            ^.className := "coach__ghost-btn",
+            ^.onClick --> view.reset,
+            LucideIcons.RotateCcw(LucideIcons.withClass("coach__ghost-btn-icon")),
+            "Start fresh"
+          )
+        )
+      else if completed then
         <.div(
           ^.className := "coach__handoff",
           <.p(
@@ -273,35 +367,110 @@ object CoachTab:
         )
       else if view.needsKey && !view.hasByokKey then ByokCard.Component(view)
       else
-        <.div(
-          ^.className := "coach__composer",
-          <.textarea(
-            ^.className   := "coach__input",
-            ^.rows        := 3,
-            ^.value       := draftS.value,
-            ^.placeholder := composerHint(curStep),
-            ^.disabled    := thinking,
-            ^.onChange ==> ((e: ReactEventFromInput) => draftS.setState(e.target.value))
-          ),
-          <.button(
-            ^.tpe       := "button",
-            ^.className := "coach__send",
-            ^.disabled  := thinking || draftS.value.trim.isEmpty,
-            ^.title     := "Send answer",
-            ^.onClick --> (view.submit(curStep, draftS.value) >> draftS.setState("")),
-            LucideIcons.Send(LucideIcons.withClass("coach__send-icon"))
+        Composer.Component(
+          Composer.Props(
+            draft = draftS,
+            disabled = thinking,
+            placeholder = composerHint(curStep),
+            onSend = view.submit(curStep, draftS.value) >> draftS.setState(""),
+            needsKey = view.needsKey,
+            hasByokKey = view.hasByokKey,
+            providerLabel = providerLabel,
+            forgetKey = view.forgetByokKey
           )
         )
 
-    val byokFooter: VdomNode =
-      if view.needsKey && view.hasByokKey then
+    // Coach-save (allow-listed): persist a snapshot to the homelab DB. Shown once a session exists; gating
+    // is server-side and mirrors Submit — a non-allowlisted save returns the request-access 403 verbatim.
+    val saveBar: VdomNode =
+      if session.isEmpty then EmptyVdom
+      else
+        val saving = view.saveStatus == CoachController.SaveStatus.Saving
+        val saveLabel = view.saveStatus match
+          case CoachController.SaveStatus.Saving => "Saving…"
+          case CoachController.SaveStatus.Saved  => "Saved"
+          case _                                 => "Save"
         <.div(
-          ^.className := "coach__byok-foot",
+          ^.className := "coach__savebar",
+          <.span(
+            ^.className := "coach__save",
+            <.button(
+              ^.tpe       := "button",
+              ^.className := "coach__save-btn",
+              ^.disabled  := saving,
+              ^.onClick --> view.save,
+              if saving then LucideIcons.Loader2(LucideIcons.withClass("coach__save-icon coach__save-spin"))
+              else LucideIcons.BookMarked(LucideIcons.withClass("coach__save-icon")),
+              saveLabel
+            ),
+            // Hover/focus tooltip — the allow-list / request-access / erase story, mirroring the editor's
+            // Submit tooltip so both gated actions read the same.
+            <.div(
+              ^.className := "coach__save-tip",
+              ^.role      := "tooltip",
+              <.p(
+                ^.className := "coach__save-tip-head",
+                "Save keeps this coaching conversation in the homelab database so you can revisit your " +
+                  "reasoning later."
+              ),
+              <.p(
+                "Saving is ",
+                <.strong("allow-listed"),
+                ": this is a personal homelab deployment for learning and experimentation — not a hosted " +
+                  "service — and stored data carries no durability guarantee. Your browser already keeps " +
+                  "this transcript across refreshes whether or not you save."
+              ),
+              <.p(
+                "To request access, email ",
+                <.strong("cortex.kakde.eu@gmail.com"),
+                " with your GitHub username; grants are made selectively."
+              ),
+              <.p(
+                "You can erase your saved transcripts at any time (",
+                <.code("DELETE /api/coach/saved"),
+                ")."
+              )
+            )
+          ),
+          view.saveStatus match
+            // Success notification — confirm the transcript is stored. Worded to stay accurate after later
+            // turns: a save DID happen; saving again captures progress made since.
+            case CoachController.SaveStatus.Saved =>
+              <.span(
+                ^.className := "coach__save-ok",
+                ^.role      := "status",
+                LucideIcons.CircleCheck(LucideIcons.withClass("coach__save-ok-icon")),
+                "Saved to your homelab database — run Save again to capture later progress."
+              ): VdomNode
+            case CoachController.SaveStatus.Failed(msg) =>
+              <.span(
+                ^.className := "coach__save-note",
+                LucideIcons.AlertTriangle(LucideIcons.withClass("coach__save-ok-icon")),
+                msg
+              ): VdomNode
+            case _ => EmptyVdom
+        )
+
+    // Floating up/down jump control — only once there's enough conversation to move through.
+    val scrollNav: VdomNode =
+      if session.exists(_.messages.length >= 2) then
+        <.div(
+          ^.className := "coach__scrollnav",
           <.button(
-            ^.tpe       := "button",
-            ^.className := "coach__ghost-btn",
-            ^.onClick --> view.forgetByokKey,
-            "Forget key"
+            ^.tpe        := "button",
+            ^.className  := "coach__scrollnav-btn",
+            ^.title      := "Jump to the start of the conversation",
+            ^.aria.label := "Jump to the start of the conversation",
+            ^.onClick ==> jump("[data-coach-anchor='top']", "start"),
+            LucideIcons.ArrowUp(LucideIcons.withClass("coach__scrollnav-icon"))
+          ),
+          <.button(
+            ^.tpe        := "button",
+            ^.className  := "coach__scrollnav-btn",
+            ^.title      := "Jump to the latest message",
+            ^.aria.label := "Jump to the latest message",
+            ^.onClick ==> jump("[data-coach-anchor='bottom']", "end"),
+            LucideIcons.ArrowDown(LucideIcons.withClass("coach__scrollnav-icon"))
           )
         )
       else EmptyVdom
@@ -309,13 +478,15 @@ object CoachTab:
     <.div(
       ^.className := "coach",
       header,
-      stepHead,
-      <.p(^.className := "coach__blurb", stepBlurb(curStep)),
+      <.div(^.className := "coach__anchor", VdomAttr("data-coach-anchor") := "top"),
+      intro,
       hintBox,
       transcript,
       errorBox,
+      saveBar,
       footerArea,
-      byokFooter
+      <.div(^.className := "coach__anchor", VdomAttr("data-coach-anchor") := "bottom"),
+      scrollNav
     )
 
   private def bubble(key: String, role: Role, content: String): VdomNode =
@@ -325,6 +496,237 @@ object CoachTab:
       ^.key       := key,
       <.div(^.className := "coach__bubble", if content.nonEmpty then content else "…")
     )
+
+  /**
+   * The answer composer — a docked compose surface, visually distinct from the reply bubbles above it. It
+   * carries a Write/Preview toggle, a markdown toolbar (bold, italic, inline code, bullet list, code fence),
+   * Enter-to-send (Shift+Enter for a newline), a lightweight markdown preview, and the BYOK "Forget key"
+   * control folded into its footer. The draft lives in the parent's state so it survives stage transitions.
+   */
+  private object Composer:
+
+    final case class Props(
+        draft: Hooks.UseState[String],
+        disabled: Boolean,
+        placeholder: String,
+        onSend: Callback,
+        needsKey: Boolean,
+        hasByokKey: Boolean,
+        providerLabel: String,
+        forgetKey: Callback
+    )
+
+    /** Leading ```info-string (e.g. "python") on a fence's first line. */
+    private val FenceInfo = "^[A-Za-z0-9_+\\-]*\\n".r
+
+    private def escapeHtml(s: String): String =
+      s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+    /** Wrap the selection in `pre`/`suf`; returns (newValue, selStart, selEnd). */
+    private def wrapSelection(v: String, s: Int, e: Int, pre: String, suf: String): (String, Int, Int) =
+      val sel = v.substring(s, e)
+      (v.substring(0, s) + pre + sel + suf + v.substring(e), s + pre.length, s + pre.length + sel.length)
+
+    /** Prefix the selection with a "- " bullet on its own line. */
+    private def insertList(v: String, s: Int, e: Int): (String, Int, Int) =
+      val sel   = v.substring(s, e)
+      val lead  = if s > 0 && v.charAt(s - 1) != '\n' then "\n" else ""
+      val caret = s + lead.length + 2 + sel.length
+      (v.substring(0, s) + lead + "- " + sel + v.substring(e), caret, caret)
+
+    /** Insert a ```python fence around the selection (or a placeholder), selecting the body. */
+    private def insertFence(v: String, s: Int, e: Int): (String, Int, Int) =
+      val sel   = v.substring(s, e)
+      val lead  = if s > 0 && v.charAt(s - 1) != '\n' then "\n" else ""
+      val body  = if sel.nonEmpty then sel else "# your code here"
+      val out   = v.substring(0, s) + lead + "```python\n" + body + "\n```\n" + v.substring(e)
+      val caret = s + lead.length + "```python\n".length
+      (out, caret, caret + body.length)
+
+    /**
+     * A deliberately tiny markdown→HTML pass for the live preview ONLY (not the heavy async
+     * MarkdownRenderer): HTML-escape, then ``` fences → <pre><code>, inline `code`, **bold**, *italic*, "- "
+     * bullets, newlines → <br>. Mirrors the design mock's `mdLite`.
+     */
+    private def mdLite(src: String): String =
+      val parts = src.split("```", -1)
+      val out   = new StringBuilder
+      var i     = 0
+      while i < parts.length do
+        if i % 2 == 1 then
+          val seg  = FenceInfo.findPrefixOf(parts(i)).fold(parts(i))(m => parts(i).substring(m.length))
+          val code = if seg.endsWith("\n") then seg.dropRight(1) else seg
+          out.append("<pre class=\"cmp-pre\"><code>").append(escapeHtml(code)).append("</code></pre>")
+        else
+          var t = escapeHtml(parts(i))
+          t = t.replaceAll("`([^`]+)`", "<code class=\"cmp-ic\">$1</code>")
+          t = t.replaceAll("\\*\\*([^*]+)\\*\\*", "<strong>$1</strong>")
+          t = t.replaceAll("\\*([^*\\n]+)\\*", "<em>$1</em>")
+          // Bullets line-by-line — Scala.js's JS-RegExp backend rejects the (?m) inline flag.
+          val bulleted =
+            t.split("\n", -1).map(l => if l.startsWith("- ") then "•&nbsp;" + l.substring(2) else l)
+          out.append(bulleted.mkString("\n").replace("\n", "<br>"))
+        i += 1
+      out.toString
+
+    val Component =
+      ScalaFnComponent
+        .withHooks[Props]
+        .useState(false) // preview mode
+        .useRefToVdom[dom.html.TextArea]
+        .render { (props, previewS, areaRef) =>
+          val draft   = props.draft
+          val preview = previewS.value
+          val canSend = !props.disabled && draft.value.trim.nonEmpty
+
+          // Apply a pure (value, selStart, selEnd) ⇒ (value', start', end') transform to the textarea: write
+          // back through controlled state, then restore the caret on the next tick (after React commits).
+          def fmt(f: (String, Int, Int) => (String, Int, Int)): Callback =
+            areaRef.get.flatMap {
+              case Some(el) =>
+                val (out, ns, ne) = f(el.value, el.selectionStart, el.selectionEnd)
+                draft.setState(out) >> Callback {
+                  js.timers.setTimeout(0) {
+                    el.focus()
+                    el.setSelectionRange(ns, ne)
+                  }
+                  ()
+                }
+              case None => Callback.empty
+            }
+
+          val onKeyDown: ReactKeyboardEvent => Callback = e =>
+            if e.key == "Enter" && !e.shiftKey then
+              e.preventDefaultCB >> (if canSend then props.onSend else Callback.empty)
+            else Callback.empty
+
+          def fmtBtn(
+              title: String,
+              body: VdomNode,
+              f: (String, Int, Int) => (String, Int, Int),
+              extra: String = ""
+          ): VdomNode =
+            <.button(
+              ^.tpe       := "button",
+              ^.className := (if extra.nonEmpty then s"coach__fmt $extra" else "coach__fmt"),
+              ^.title     := title,
+              ^.disabled  := props.disabled,
+              ^.onClick --> fmt(f),
+              body
+            )
+
+          val tabs =
+            <.div(
+              ^.className := "coach__composer-tabs",
+              <.button(
+                ^.tpe := "button",
+                ^.className := (if preview then "coach__composer-tab"
+                                else "coach__composer-tab coach__composer-tab--on"),
+                ^.onClick --> previewS.setState(false),
+                "Write"
+              ),
+              <.button(
+                ^.tpe := "button",
+                ^.className := (if preview then "coach__composer-tab coach__composer-tab--on"
+                                else "coach__composer-tab"),
+                ^.onClick --> previewS.setState(true),
+                "Preview"
+              )
+            )
+
+          val bar =
+            <.div(
+              ^.className := "coach__composer-bar",
+              fmtBtn("Bold (**)", <.b("B"), wrapSelection(_, _, _, "**", "**")),
+              fmtBtn("Italic (*)", <.i("I"), wrapSelection(_, _, _, "*", "*")),
+              fmtBtn(
+                "Inline code (`)",
+                LucideIcons.Code(LucideIcons.withClass("coach__fmt-icon")),
+                wrapSelection(_, _, _, "`", "`")
+              ),
+              fmtBtn(
+                "Bulleted list",
+                LucideIcons.List(LucideIcons.withClass("coach__fmt-icon")),
+                insertList(_, _, _)
+              ),
+              <.span(^.className := "coach__fmt-sep"),
+              fmtBtn(
+                "Code block (```)",
+                React.Fragment(LucideIcons.Terminal(LucideIcons.withClass("coach__fmt-icon")), "Code block"),
+                insertFence(_, _, _),
+                "coach__fmt--code"
+              ),
+              <.span(^.className := "coach__composer-bar-sp"),
+              <.span(
+                ^.className := "coach__composer-hint",
+                <.kbd("⏎"),
+                " send · ",
+                <.kbd("⇧⏎"),
+                " newline"
+              ),
+              <.button(
+                ^.tpe       := "button",
+                ^.className := "coach__composer-send",
+                ^.disabled  := !canSend,
+                ^.title     := "Send answer",
+                ^.onClick --> props.onSend,
+                "Send",
+                LucideIcons.Send(LucideIcons.withClass("coach__composer-send-icon"))
+              )
+            )
+
+          val byokFoot: VdomNode =
+            if props.needsKey && props.hasByokKey then
+              <.div(
+                ^.className := "coach__composer-foot",
+                <.span(
+                  ^.className := "coach__byok-note",
+                  LucideIcons.Lock(LucideIcons.withClass("coach__byok-note-icon")),
+                  s"Coaching on your ${props.providerLabel} key · stays in this tab"
+                ),
+                <.button(
+                  ^.tpe       := "button",
+                  ^.className := "coach__composer-forget",
+                  ^.onClick --> props.forgetKey,
+                  "Forget key"
+                )
+              )
+            else EmptyVdom
+
+          <.div(
+            ^.className := "coach__composer",
+            <.div(
+              ^.className := "coach__composer-top",
+              <.span(
+                ^.className := "coach__composer-label",
+                LucideIcons.Pencil(LucideIcons.withClass("coach__composer-label-icon")),
+                "Your answer · Markdown"
+              ),
+              tabs
+            ),
+            <.div(
+              ^.className := "coach__composer-box",
+              if preview then
+                <.div(
+                  ^.className               := "coach__composer-preview",
+                  ^.dangerouslySetInnerHtml := mdLite(draft.value)
+                )
+              else
+                <.textarea.withRef(areaRef)(
+                  ^.className   := "coach__composer-area",
+                  ^.rows        := 4,
+                  ^.value       := draft.value,
+                  ^.placeholder := props.placeholder,
+                  ^.disabled    := props.disabled,
+                  ^.onChange ==> ((e: ReactEventFromInput) => draft.setState(e.target.value)),
+                  ^.onKeyDown ==> onKeyDown
+                )
+              ,
+              if preview then EmptyVdom else bar
+            ),
+            byokFoot
+          )
+        }
 
   /** BYOK key entry, shown in place of the composer when the selected model needs the visitor's own key. */
   private object ByokCard:

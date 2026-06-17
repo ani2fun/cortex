@@ -15,3 +15,4 @@ object Page:
   case object Blogs                                       extends Page
   final case class BlogPost(slug: String)                 extends Page
   case object Demo                                        extends Page
+  case object Account                                     extends Page

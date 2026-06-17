@@ -2,6 +2,7 @@ package cortex.server.http
 
 import cortex.server.auth.{Auth, AuthFailure, VerifiedClaims}
 import cortex.server.blogPipeline.BlogPipeline
+import cortex.server.coachPipeline.CoachSavePipeline
 import cortex.server.codeRunPipeline.CodeRunPipeline
 import cortex.server.config.AppConfig
 import cortex.server.cortexPipeline.CortexPipeline
@@ -15,13 +16,17 @@ import cortex.shared.api.Endpoints.{
   BlogPostPayload,
   ChapterPayload,
   CortexIndex,
+  DeleteCoachResponse,
   DeleteSubmissionsResponse,
   Greeting,
+  ListSavedCoachResponse,
   ListSubmissionsResponse,
   Quota,
   RecentCalls,
   RunRequest,
   RunResponse,
+  SaveCoachRequest,
+  SaveCoachResponse,
   SubmitRequest,
   SubmitResponse,
   UserInfo
@@ -73,10 +78,21 @@ object ApiRoutes:
       blog: BlogPipeline,
       auth: Auth,
       rateLimiter: RateLimiter,
-      submissions: SubmissionPipeline
+      submissions: SubmissionPipeline,
+      coachSave: CoachSavePipeline
   ): Routes[Any, Response] =
     val endpoints =
-      serverEndpoints(appConfig, helloPipeline, codeRun, cortex, blog, auth, rateLimiter, submissions)
+      serverEndpoints(
+        appConfig,
+        helloPipeline,
+        codeRun,
+        cortex,
+        blog,
+        auth,
+        rateLimiter,
+        submissions,
+        coachSave
+      )
     val swaggerEndpoints =
       SwaggerInterpreter()
         .fromServerEndpoints[Task](endpoints, "Cortex API", "0.1.0")
@@ -128,7 +144,8 @@ object ApiRoutes:
       blog: BlogPipeline,
       auth: Auth,
       rateLimiter: RateLimiter,
-      submissions: SubmissionPipeline
+      submissions: SubmissionPipeline,
+      coachSave: CoachSavePipeline
   ): List[ZServerEndpoint[Any, Any]] =
 
     // Endpoints are defined here rather than reusing the generated `Endpoints.*` values directly so the
@@ -320,6 +337,36 @@ object ApiRoutes:
       endpoint.delete.in("api" / "submissions" / path[Long]("id")).out(jsonBody[DeleteSubmissionsResponse])
     )((claims, id) => submissions.deleteOne(claims, id))
 
+    // /api/coach/saved — auth required; the SAME submission_allowlist gates saving (403 with
+    // request-access instructions). A save is cheap but bounded by the caller's authenticated bucket.
+    val saveCoachEndpoint = authedInputEndpoint(
+      endpoint.post
+        .in("api" / "coach" / "saved")
+        .in(jsonBody[SaveCoachRequest])
+        .out(jsonBody[SaveCoachResponse])
+    ) { (claims, req) =>
+      rateLimiter.consumeAuthenticated(claims.sub) *> coachSave.save(claims, req)
+    }
+
+    // List the caller's saved coach snapshots for one problem. A single query input flattens to a
+    // 2-tuple with the auth header, so authedInputEndpoint destructures it (unlike the 2-param list).
+    val listSavedCoachEndpoint = authedInputEndpoint(
+      endpoint.get
+        .in("api" / "coach" / "saved")
+        .in(query[String]("problemId"))
+        .out(jsonBody[ListSavedCoachResponse])
+    )((claims, problemId) => coachSave.list(claims, problemId))
+
+    // Self-service erasure: wipe all of the caller's saved coach snapshots.
+    val deleteSavedCoachEndpoint = authedEndpoint(
+      endpoint.delete.in("api" / "coach" / "saved").out(jsonBody[DeleteCoachResponse])
+    )(claims => coachSave.deleteAll(claims))
+
+    // Per-row erasure — delete one saved snapshot the caller owns.
+    val deleteOneSavedCoachEndpoint = authedInputEndpoint(
+      endpoint.delete.in("api" / "coach" / "saved" / path[Long]("id")).out(jsonBody[DeleteCoachResponse])
+    )((claims, id) => coachSave.deleteOne(claims, id))
+
     List(
       helloEndpoint,
       recentEndpoint,
@@ -334,5 +381,9 @@ object ApiRoutes:
       submitEndpoint,
       deleteSubmissionsEndpoint,
       listSubmissionsEndpoint,
-      deleteOneSubmissionEndpoint
+      deleteOneSubmissionEndpoint,
+      saveCoachEndpoint,
+      listSavedCoachEndpoint,
+      deleteSavedCoachEndpoint,
+      deleteOneSavedCoachEndpoint
     )

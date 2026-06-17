@@ -79,3 +79,54 @@ object ReaderState:
   /** Slug → (progress%, minutesOpt). One pass so the sidebar can render N rows without N round-trips. */
   def snapshotFor(slugs: Iterable[String]): Map[String, (Int, Option[Int])] =
     slugs.iterator.map(s => s -> (progressFor(s), minutesFor(s))).toMap
+
+  // ── Active workbench tab — survive a refresh on the tab you were on (problem pages) ──
+
+  private def tabKey(problemId: String): String = s"cortex:tab:$problemId"
+
+  /**
+   * Active workbench tab index for a problem (0 desc · 1 editorial · 2 coach · 3 submissions). Missing or
+   * non-numeric → 0 (Description). The caller clamps to the live tab count.
+   */
+  def activeTabFor(problemId: String): Int =
+    getItem(tabKey(problemId)).flatMap(s => Try(s.toInt).toOption).filter(_ >= 0).getOrElse(0)
+
+  /** Persist the active workbench tab index for a problem. */
+  def saveActiveTab(problemId: String, idx: Int): Unit =
+    setItem(tabKey(problemId), idx.toString)
+
+  // ── Coach transcript mirror — refresh-safe (the tutor keeps sessions only ephemerally) ──
+
+  private def coachKey(problemId: String): String = s"cortex:coach:$problemId"
+
+  /**
+   * Mirror the coach transcript (the CoachSession serialised as JSON) so a refresh restores it instantly and
+   * it survives the tutor's TTL purge. Keyed by the coach problemId ("<book>/<chapter>").
+   */
+  def saveCoachMirror(problemId: String, transcriptJson: String): Unit =
+    setItem(coachKey(problemId), transcriptJson)
+
+  /** The mirrored coach transcript JSON for a problem, if any (non-empty). */
+  def coachMirror(problemId: String): Option[String] =
+    getItem(coachKey(problemId)).filter(_.nonEmpty)
+
+  /** Drop the mirror (e.g. on "Start over"). */
+  def clearCoachMirror(problemId: String): Unit =
+    storage.foreach(s => Try(s.removeItem(coachKey(problemId))))
+
+  // Collect-then-remove so index shifts during removal don't skip keys.
+  private def clearByPrefix(prefix: String): Unit =
+    storage.foreach { s =>
+      Try {
+        val keys = (0 until s.length).flatMap(i => Option(s.key(i))).filter(_.startsWith(prefix))
+        keys.foreach(s.removeItem)
+      }
+    }
+
+  /**
+   * Drop every per-problem coach mirror (`cortex:coach:*`) — backs the account page's "Delete coach history".
+   */
+  def clearAllCoachMirrors(): Unit = clearByPrefix("cortex:coach:")
+
+  /** Wipe every Cortex-owned localStorage entry (progress / minutes / tab / coach) — "Delete all my data". */
+  def clearAllLocal(): Unit = clearByPrefix("cortex:")

@@ -18,6 +18,7 @@ import cortex.server.cortexPipeline.CortexPipeline
 import cortex.server.db.{DataSource, Migrations}
 import cortex.server.helloPipeline.HelloPipeline
 import cortex.server.http.RateLimiter
+import cortex.server.coachPipeline.CoachSavePipeline
 import cortex.server.submissionPipeline.SubmissionPipeline
 import org.slf4j.bridge.SLF4JBridgeHandler
 import zio.*
@@ -111,6 +112,7 @@ object Main extends ZIOAppDefault:
         Auth.live,               // Keycloak JWT verifier (no-op when AUTH_ENABLED=false)
         RateLimiter.live,        // Redis token bucket for /api/run
         SubmissionPipeline.live, // /api/submissions (allow-listed save + self-service delete)
+        CoachSavePipeline.live,  // /api/coach/saved (allow-listed coach-history save + delete)
         HttpApp.live             // tapir + zio-http + static + SPA fallback
       )
 

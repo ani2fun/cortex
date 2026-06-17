@@ -53,6 +53,7 @@ object LucideIcons:
   @js.native @JSImport("lucide-react", "ListTree") private object ListTreeRaw           extends js.Object
   @js.native @JSImport("lucide-react", "ArrowLeft") private object ArrowLeftRaw         extends js.Object
   @js.native @JSImport("lucide-react", "ArrowUp") private object ArrowUpRaw             extends js.Object
+  @js.native @JSImport("lucide-react", "ArrowDown") private object ArrowDownRaw         extends js.Object
   @js.native @JSImport("lucide-react", "Heart") private object HeartRaw                 extends js.Object
   @js.native @JSImport("lucide-react", "Star") private object StarRaw                   extends js.Object
   @js.native @JSImport("lucide-react", "Trophy") private object TrophyRaw               extends js.Object
@@ -94,8 +95,14 @@ object LucideIcons:
   @js.native @JSImport("lucide-react", "CircleCheck") private object CircleCheckRaw extends js.Object
   @js.native @JSImport("lucide-react", "Send") private object SendRaw               extends js.Object
   @js.native @JSImport("lucide-react", "Trash2") private object Trash2Raw           extends js.Object
+  @js.native @JSImport("lucide-react", "Settings") private object SettingsRaw       extends js.Object
   @js.native @JSImport("lucide-react", "Inbox") private object InboxRaw             extends js.Object
   @js.native @JSImport("lucide-react", "LogIn") private object LogInRaw             extends js.Object
+  @js.native @JSImport("lucide-react", "LogOut") private object LogOutRaw           extends js.Object
+  @js.native @JSImport("lucide-react", "Code") private object CodeRaw               extends js.Object
+  @js.native @JSImport("lucide-react", "List") private object ListRaw               extends js.Object
+
+  @js.native @JSImport("lucide-react", "ShieldCheck") private object ShieldCheckRaw extends js.Object
 
   // ---- Components (call as Sun(withClass("h-5 w-5"))) --------------------
 
@@ -120,6 +127,7 @@ object LucideIcons:
   val ListTree      = JsComponent[IconProps, Children.None, Null](ListTreeRaw)
   val ArrowLeft     = JsComponent[IconProps, Children.None, Null](ArrowLeftRaw)
   val ArrowUp       = JsComponent[IconProps, Children.None, Null](ArrowUpRaw)
+  val ArrowDown     = JsComponent[IconProps, Children.None, Null](ArrowDownRaw)
   val Heart         = JsComponent[IconProps, Children.None, Null](HeartRaw)
   val Star          = JsComponent[IconProps, Children.None, Null](StarRaw)
   val Trophy        = JsComponent[IconProps, Children.None, Null](TrophyRaw)
@@ -154,5 +162,10 @@ object LucideIcons:
   val CircleCheck   = JsComponent[IconProps, Children.None, Null](CircleCheckRaw)
   val Send          = JsComponent[IconProps, Children.None, Null](SendRaw)
   val Trash2        = JsComponent[IconProps, Children.None, Null](Trash2Raw)
+  val Settings      = JsComponent[IconProps, Children.None, Null](SettingsRaw)
   val Inbox         = JsComponent[IconProps, Children.None, Null](InboxRaw)
   val LogIn         = JsComponent[IconProps, Children.None, Null](LogInRaw)
+  val LogOut        = JsComponent[IconProps, Children.None, Null](LogOutRaw)
+  val Code          = JsComponent[IconProps, Children.None, Null](CodeRaw)
+  val List          = JsComponent[IconProps, Children.None, Null](ListRaw)
+  val ShieldCheck   = JsComponent[IconProps, Children.None, Null](ShieldCheckRaw)

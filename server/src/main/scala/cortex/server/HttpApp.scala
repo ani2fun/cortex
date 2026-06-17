@@ -14,6 +14,7 @@ import cortex.server.http.{
   StaticRoutes,
   TutorProxyRoutes
 }
+import cortex.server.coachPipeline.CoachSavePipeline
 import cortex.server.submissionPipeline.SubmissionPipeline
 import zio.*
 import zio.http.*
@@ -32,11 +33,11 @@ object HttpApp:
 
   val live: ZLayer[
     AppConfig & HelloPipeline & CodeRunPipeline & CortexPipeline & BlogPipeline & Auth & RateLimiter &
-      SubmissionPipeline,
+      SubmissionPipeline & CoachSavePipeline,
     Nothing,
     HttpApp
   ] =
-    ZLayer.fromFunction(HttpAppLive(_, _, _, _, _, _, _, _))
+    ZLayer.fromFunction(HttpAppLive(_, _, _, _, _, _, _, _, _))
 
 final private class HttpAppLive(
     cfg: AppConfig,
@@ -46,11 +47,12 @@ final private class HttpAppLive(
     blog: BlogPipeline,
     auth: Auth,
     rateLimiter: RateLimiter,
-    submissions: SubmissionPipeline
+    submissions: SubmissionPipeline,
+    coachSave: CoachSavePipeline
 ) extends HttpApp:
 
   private val apiRoutes =
-    ApiRoutes.routes(cfg, helloPipeline, codeRun, cortex, blog, auth, rateLimiter, submissions)
+    ApiRoutes.routes(cfg, helloPipeline, codeRun, cortex, blog, auth, rateLimiter, submissions, coachSave)
 
   private val cortexAssetRoutes = CortexAssetRoutes.from(cfg.cortex.root)
   private val likec4Routes      = LikeC4ProxyRoutes.from(cfg.likec4.upstreamUrl)

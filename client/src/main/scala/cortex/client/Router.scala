@@ -64,6 +64,7 @@ object Router:
         | dynamicRouteCT((AppRoutes.Blogs / seg).caseClass[Page.BlogPost]) ~>
         dynRender((p: Page.BlogPost) => BlogPostPage.Component(BlogPostPage.Props(p.slug)))
         | staticRoute(AppRoutes.Demo, Page.Demo) ~> render(DemoPage.Component())
+        | staticRoute(AppRoutes.Account, Page.Account) ~> render(AccountPage.Component())
         // Legacy compatibility: `/cortex/<rest>` (the monorepo's old prefix) → `/<rest>`. The server's
         // ChapterAssetRewrite already strips this from in-content links; this catches external/bookmarked
         // URLs. Must precede the generic book routes so `/cortex/x` isn't read as book "cortex"; `/cortex`

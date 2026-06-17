@@ -72,6 +72,8 @@ Because the FSM is in code+DB, the loop is **deterministic and auditable**: give
 
 Notice the arc: it's the exact discipline the [System Design](/cortex/system-design) and [DSA](/cortex/data-structures-and-algorithms) books preach — *requirements before estimation before design before code before verification* — turned into an interactive loop with a gatekeeper.
 
+On the **implement** and **test** steps the answer *is* code: you write and run it in the workbench editor on the right, then **paste it into the coach** to submit. The coach deliberately doesn't auto-pull the editor — so advancing the interview never depends on the editor's state, and a learner who can't durably submit their code (saving is allow-listed) can still finish the six steps. In the UI the transcript is **grouped by step**, with the header's step dots doubling as jump-to-step tabs so a long interview stays easy to scan.
+
 ## Where it lives (and where it doesn't)
 
 The Tutor is **not** part of the Scala binary. It is a standalone **Python / FastAPI** service in a *separate repo* (`cortex-tutor`), deployed next to Cortex on the homelab. The Cortex SPA calls it **directly** (it's a different origin), sending the *same* Keycloak JWT you're already signed in with. Why a whole separate service in a different language? That's the [next chapter](/cortex/cortex-onboarding/cortex-tutor/architecture) — short version: LLM orchestration is I/O-bound, streaming, and Python-first, and keeping it stateless-with-Postgres lets it scale independently of the book server.

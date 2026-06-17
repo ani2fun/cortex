@@ -2,6 +2,7 @@ package cortex.server.http
 
 import cortex.server.auth.AuthFailure
 import cortex.server.blogPipeline.BlogFailure
+import cortex.server.coachPipeline.CoachSaveFailure
 import cortex.server.codeRunPipeline.RunFailure
 import cortex.server.cortexPipeline.CortexFailure
 import cortex.server.helloPipeline.HelloFailure
@@ -18,7 +19,7 @@ object ApiErrors:
    */
   type HandlerFailure =
     RunFailure | CortexFailure | HelloFailure | BlogFailure | AuthFailure | RateLimitFailure |
-      SubmissionFailure
+      SubmissionFailure | CoachSaveFailure
 
   def toHttp(failure: HandlerFailure): (StatusCode, ApiError) = failure match
     case RunFailure.BadInput(error, hint) =>
@@ -121,6 +122,32 @@ object ApiErrors:
     case SubmissionFailure.Internal(detail) =>
       StatusCode.InternalServerError ->
         ApiError(error = "Submission storage error", detail = Some(detail), hint = None)
+    case CoachSaveFailure.NotAllowed(username) =>
+      StatusCode.Forbidden ->
+        ApiError(
+          error = "Saving coach sessions is allow-listed on this homelab deployment",
+          detail = Some(
+            s"GitHub user '$username' is not on the submission allowlist (which also gates coach " +
+              "saving). This is a personal homelab setup for learning and experimentation — access is " +
+              "granted selectively, and stored data carries no durability guarantee."
+          ),
+          hint = Some(
+            "Email cortex.kakde.eu@gmail.com with your GitHub username to request access, or " +
+              "self-host cortex yourself — instructions are in the GitHub repository."
+          )
+        )
+    case CoachSaveFailure.BadInput(error) =>
+      StatusCode.BadRequest -> ApiError(error = error, detail = None, hint = None)
+    case CoachSaveFailure.LimitReached(limit) =>
+      StatusCode.TooManyRequests ->
+        ApiError(
+          error = s"Saved-session limit reached for this problem ($limit per user)",
+          detail = Some("A hard cap, not a rolling window — an abuse guard for the homelab DB."),
+          hint = Some("DELETE /api/coach/saved wipes your saved coach sessions and frees the budget.")
+        )
+    case CoachSaveFailure.Internal(detail) =>
+      StatusCode.InternalServerError ->
+        ApiError(error = "Coach-save storage error", detail = Some(detail), hint = None)
 
   /**
    * Seconds to advertise in the `Retry-After` response header. Set only for a throttle failure; every other

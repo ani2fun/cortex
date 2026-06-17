@@ -50,7 +50,7 @@ In Chapter 10 you decoded a token whose payload contained:
 
 That `submitter` role got there because a **"realm roles" protocol mapper** on the client copied the user's roles into the token. An API *could* authorize submissions by checking `"submitter" in realm_access.roles` — pure token-based RBAC, no lookup.
 
-**But Cortex actually does it differently** — and the difference is instructive. Cortex gates submissions with a **Postgres allow-list table** (`submission_allowlist`, created by a Liquibase changeset — Part 2), checked live on each submit:
+**But Cortex actually does it differently** — and the difference is instructive. Cortex gates submissions with a **Postgres allow-list table** (`submission_allowlist`, created by a Liquibase changeset — Part 2), checked live on each submit (the same table now also gates **saving a coach transcript**, `POST /api/coach/saved` — one live-lookup governs both durable writes):
 
 ```sql
 -- From Cortex's v2-submissions.sql changeset
