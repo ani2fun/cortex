@@ -120,12 +120,12 @@ That's why a 1-vCPU box serves a surprising number of readers — and it sets up
   "title": "Cortex's latency budget — where each operation sits (1 ns ≡ 1 s on the human scale)",
   "scaleSeconds": 1.0e9,
   "items": [
-    { "label": "In-memory index lookup (chapter)", "ns": 200, "highlight": true },
-    { "label": "Redis cache hit (greeting)",        "ns": 200000 },
-    { "label": "Postgres visit increment",          "ns": 2000000 },
-    { "label": "Mongo event append",                "ns": 3000000 },
-    { "label": "Python run (go-judge, typical)",    "ns": 2000000000, "highlight": true },
-    { "label": "Scala run (cold scala-cli compile)","ns": 20000000000, "highlight": true }
+    { "label": "In-memory index lookup",   "ns": 200, "highlight": true },
+    { "label": "Redis cache hit (greeting)", "ns": 200000 },
+    { "label": "Postgres visit increment",  "ns": 2000000 },
+    { "label": "Mongo event append",        "ns": 3000000 },
+    { "label": "Python run (typical)",      "ns": 2000000000, "highlight": true },
+    { "label": "Scala run (cold compile)",  "ns": 20000000000, "highlight": true }
   ]
 }
 ```

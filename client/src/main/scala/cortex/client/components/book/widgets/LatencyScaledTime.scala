@@ -57,8 +57,12 @@ object LatencyScaledTime:
   // 100%, so the absolute numbers are scale-invariant once in the chapter.
   // ===========================================================================
 
-  private val ViewBoxWidth = 720.0
-  private val LeftPad      = 168.0 // operation label column
+  // The label column was 156px (LeftPad-12) and right-anchored, so labels longer
+  // than ~26 chars clipped off the left viewBox edge. Widen the gutter (and the
+  // viewBox by the same amount, so the plot keeps its width) to fit ~38-char
+  // labels; the SVG is width:100% so the only cost is a slightly smaller render.
+  private val ViewBoxWidth = 796.0
+  private val LeftPad      = 244.0 // operation label column (gutter = LeftPad - 12 = 232px)
   private val RightPad     = 28.0  // breathing room for the right-tip ns label
   private val TopPad       = 36.0  // axis labels above
   private val BottomPad    = 8.0   // SVG-internal bottom gutter
