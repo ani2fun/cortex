@@ -12,10 +12,10 @@ import scala.jdk.CollectionConverters.*
 /**
  * Behavioural contract for the cortex-tutor reverse proxy.
  *
- * cortex-tutor lost its public Ingress and is now a ClusterIP, so the SPA reaches it same-origin through
- * the `/tutor/` prefix on the cortex backend. These tests run real requests through
- * `TutorProxyRoutes.from(...).routes`
- * against a JDK-native stub upstream (same pattern as `PostJsonSpec`) and pin the load-bearing properties:
+ * cortex-tutor lost its public Ingress and is now a ClusterIP, so the SPA reaches it same-origin through the
+ * `/tutor/` prefix on the cortex backend. These tests run real requests through
+ * `TutorProxyRoutes.from(...).routes` against a JDK-native stub upstream (same pattern as `PostJsonSpec`) and
+ * pin the load-bearing properties:
  *
  *   - the path under `/tutor` is forwarded verbatim to the FIXED upstream (only the path varies — no open
  *     proxy),
@@ -40,6 +40,35 @@ object TutorProxyRoutesSpec extends ZIOSpecDefault:
           seen.path == "/v1/whoami",
           seen.method == "GET",
           body.contains("\"echo\":\"/v1/whoami\"")
+        )
+      }
+    },
+    test("forwards the query string verbatim with a single `?` (guards the prompt-bundle double-`?` bug)") {
+      withEchoServer() { (url, recorded) =>
+        for
+          // `/v1/sessions/active?problemId=p1` is a real call shape (getActiveSession / getPromptBundle).
+          _    <- run(TutorProxyRoutes.from(Some(url)), Request.get("/tutor/v1/sessions/active?problemId=p1"))
+          seen <- recorded.get
+        yield assertTrue(
+          seen.path == "/v1/sessions/active",
+          seen.query.contains("problemId=p1"),
+          // A leading `?` here would mean the proxy doubled the separator (`active??problemId=…`) —
+          // exactly what makes the tutor 422. See TutorProxyRoutes.buildUpstreamUrl.
+          !seen.query.exists(_.startsWith("?"))
+        )
+      }
+    },
+    test("joins multiple query params with `&` (no separator doubling)") {
+      withEchoServer() { (url, recorded) =>
+        for
+          _    <- run(TutorProxyRoutes.from(Some(url)), Request.get("/tutor/v1/x?a=1&b=2"))
+          seen <- recorded.get
+        yield assertTrue(
+          seen.path == "/v1/x",
+          seen.query.exists(_.contains("a=1")),
+          seen.query.exists(_.contains("b=2")),
+          seen.query.exists(_.contains("&")),
+          !seen.query.exists(_.startsWith("?"))
         )
       }
     },
@@ -93,7 +122,8 @@ object TutorProxyRoutesSpec extends ZIOSpecDefault:
       withEchoServer(status = 200, contentType = "text/event-stream", bodyOverride = Some(sse)) {
         (url, _) =>
           for
-            res         <- run(TutorProxyRoutes.from(Some(url)), Request.post("/tutor/v1/sessions/s1/turns", Body.empty))
+            res <-
+              run(TutorProxyRoutes.from(Some(url)), Request.post("/tutor/v1/sessions/s1/turns", Body.empty))
             body        <- res.body.asString
             contentType <- ZIO.succeed(res.header(Header.ContentType).map(_.renderedValue))
           yield assertTrue(
@@ -129,9 +159,10 @@ object TutorProxyRoutesSpec extends ZIOSpecDefault:
   // ---------------------------------------------------------------------------
   // What the stub upstream recorded about the request the proxy forwarded.
   // ---------------------------------------------------------------------------
-  private final case class Recorded(
+  final private case class Recorded(
       method: String,
       path: String,
+      query: Option[String],
       authorization: Option[String],
       cookie: Option[String],
       headerNames: List[String],
@@ -139,7 +170,7 @@ object TutorProxyRoutesSpec extends ZIOSpecDefault:
   )
 
   private object Recorded:
-    val empty: Recorded = Recorded("", "", None, None, Nil, "")
+    val empty: Recorded = Recorded("", "", None, None, None, Nil, "")
 
   // ---------------------------------------------------------------------------
   // JDK-native echo upstream (com.sun.net.httpserver — zero new deps, like
@@ -185,6 +216,7 @@ object TutorProxyRoutesSpec extends ZIOSpecDefault:
                     Recorded(
                       method = exchange.getRequestMethod,
                       path = exchange.getRequestURI.getPath,
+                      query = Option(exchange.getRequestURI.getRawQuery),
                       authorization = Option(reqHdrs.getFirst("Authorization")),
                       cookie = Option(reqHdrs.getFirst("Cookie")),
                       headerNames = hdrNames,

@@ -52,6 +52,16 @@ object TutorProxyRoutes:
       .connectTimeout(Duration.ofSeconds(5))
       .build()
 
+  // Bound concurrent in-flight proxied calls so a burst can't exhaust the blocking pool / upstream
+  // sockets — the same posture the run-concurrency semaphore gives /api/run. The count spans admission
+  // through the response body stream's finaliser (so it covers the long SSE hold, not just the header
+  // phase); an over-cap call sheds with 503 rather than queueing. Process-global, created once like the
+  // client above.
+  private val MaxConcurrentProxied = 32L
+
+  private val inFlight: Ref[Long] =
+    Unsafe.unsafe(implicit u => Ref.unsafe.make(0L))
+
   /**
    * Build the `/tutor/` routes. `upstreamBaseUrl` is `AppConfig.tutorBaseUrl`: when `None`, the tutor is not
    * configured and every call short-circuits to 503.
@@ -116,41 +126,55 @@ object TutorProxyRoutes:
       body: Option[Array[Byte]]
   ): UIO[Response] =
     val upstreamUrl = buildUpstreamUrl(base, rest, req)
-    ZIO
-      .attemptBlocking {
-        val builder = HttpRequest
-          .newBuilder()
-          .uri(URI.create(upstreamUrl))
-          .timeout(Duration.ofSeconds(30))
+    // Admit at most MaxConcurrentProxied calls; shed the rest with 503. Uninterruptible through the
+    // header phase so an interrupt can't sneak between the increment and the stream that owns the
+    // decrement; once the body stream is handed back, ITS finaliser releases the permit (covering the
+    // long SSE hold and a mid-turn client disconnect alike). A send failure decrements via `catchAll`.
+    inFlight
+      .modify(n => if n >= MaxConcurrentProxied then (false, n) else (true, n + 1))
+      .flatMap { admitted =>
+        if !admitted then ZIO.succeed(Response.status(Status.ServiceUnavailable))
+        else
+          ZIO
+            .attemptBlocking {
+              val builder = HttpRequest
+                .newBuilder()
+                .uri(URI.create(upstreamUrl))
+                .timeout(Duration.ofSeconds(30))
 
-        // Re-attach only the allowlisted request headers (case-insensitive lookup off the incoming request).
-        ForwardedRequestHeaders.foreach { name =>
-          req.rawHeader(name).foreach(value => builder.header(name, value))
-        }
+              // Re-attach only the allowlisted request headers (case-insensitive lookup off the request).
+              ForwardedRequestHeaders.foreach { name =>
+                req.rawHeader(name).foreach(value => builder.header(name, value))
+              }
 
-        body match
-          case Some(bytes) => builder.POST(HttpRequest.BodyPublishers.ofByteArray(bytes))
-          case None        => builder.GET()
+              body match
+                case Some(bytes) => builder.POST(HttpRequest.BodyPublishers.ofByteArray(bytes))
+                case None        => builder.GET()
 
-        val upstream = httpClient.send(builder.build(), HttpResponse.BodyHandlers.ofInputStream())
-        val status   = Status.fromInt(upstream.statusCode())
-        val contentType =
-          Option(upstream.headers().firstValue("content-type").orElse(null))
-            .filter(_.nonEmpty)
-            .getOrElse("application/octet-stream")
+              val upstream = httpClient.send(builder.build(), HttpResponse.BodyHandlers.ofInputStream())
+              val status   = Status.fromInt(upstream.statusCode())
+              val contentType =
+                Option(upstream.headers().firstValue("content-type").orElse(null))
+                  .filter(_.nonEmpty)
+                  .getOrElse("application/octet-stream")
 
-        // Stream the upstream body through unbuffered. `fromStreamChunked` uses chunked transfer-encoding
-        // (no Content-Length), which is what an SSE response needs.
-        //
-        // Bound the stream's lifetime: if the upstream emits nothing for >200s (a stuck or slow-loris
-        // stream), end it so the cortex thread + upstream socket are reclaimed rather than held open
-        // indefinitely. 200s clears the legitimate worst case (the Ollama coach can take ~180s to first
-        // token); the SPA's SSE reader already treats a truncated stream as "stream ended unexpectedly".
-        val bodyStream = ZStream.fromInputStream(upstream.body()).timeout(200.seconds)
-        Response(
-          status = status,
-          headers = Headers(Header.ContentType.parse(contentType).toOption.toList*),
-          body = Body.fromStreamChunked(bodyStream)
-        )
+              // Stream the upstream body through unbuffered. `fromStreamChunked` uses chunked
+              // transfer-encoding (no Content-Length), which is what an SSE response needs.
+              //
+              // Bound the stream's lifetime: if the upstream emits nothing for >200s (a stuck or
+              // slow-loris stream), end it so the cortex thread + upstream socket are reclaimed rather
+              // than held open indefinitely. 200s clears the legitimate worst case (the Ollama coach can
+              // take ~180s to first token); the SPA's SSE reader already treats a truncated stream as
+              // "stream ended unexpectedly". The `ensuring` releases the concurrency permit on any stream
+              // end — completion, the timeout, an upstream error, or a client disconnect.
+              val bodyStream =
+                ZStream.fromInputStream(upstream.body()).timeout(200.seconds).ensuring(inFlight.update(_ - 1))
+              Response(
+                status = status,
+                headers = Headers(Header.ContentType.parse(contentType).toOption.toList*),
+                body = Body.fromStreamChunked(bodyStream)
+              )
+            }
+            .catchAll(_ => inFlight.update(_ - 1).as(Response.status(Status.BadGateway)))
       }
-      .catchAll(_ => ZIO.succeed(Response.status(Status.BadGateway)))
+      .uninterruptible

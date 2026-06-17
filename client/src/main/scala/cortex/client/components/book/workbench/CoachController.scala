@@ -230,7 +230,7 @@ object CoachController:
                 .flatMap(k => models.find(_.key == k))
                 .orElse(selectedModel)
                 .map(_.provider)
-                .getOrElse("anthropic")
+                .getOrElse("openrouter") // primary BYOK path; matches saveByokKey's fallback default
               val byokProvider = ByokProvider.forProvider(providerName)
               byokKeyS.value.get(providerName) match
                 case None =>
@@ -255,7 +255,14 @@ object CoachController:
                             runResult = snapshot.flatMap(_.runResult)
                           )
                         )
-                        fresh <- TutorApiClient.getSession(s.sessionId)
+                        // The turn is committed server-side the moment `recordByokTurn` succeeds. Don't let a
+                        // failed refresh discard it (which would re-run the provider call — re-spending the
+                        // user's key — on the next submit): fall back to the optimistic session + the coach
+                        // reply, which the next successful load reconciles against the server. The fallback
+                        // keeps the pre-turn step; a verdict that advanced it reconciles on that next load.
+                        fresh <- TutorApiClient
+                          .getSession(s.sessionId)
+                          .recover { case _ => seeded.copy(messages = seeded.messages :+ result.reply) }
                       yield (result, fresh)
                     flow.onComplete {
                       case Success((result, fresh)) =>
@@ -338,22 +345,34 @@ object CoachController:
           // Pre-session, switching just updates the pick. With a session, re-point it server-side
           // (dual-mode: the new model's provider re-derives the transport) and adopt the fresh state;
           // a tier-disallowed model (422) reverts the picker to the session's current model.
-          def setModel(key: String): Callback =
+          //
+          // The session branch holds `busyS` for the whole re-point: `submit` guards on `busyS`, so a turn
+          // can't fire against the pre-switch session/transport while the switch is in flight (their
+          // `sessionS` writes would otherwise race last-write-wins). A switch is likewise ignored while a
+          // turn — or an earlier switch — is still running.
+          def setModel(key: String): Callback = Callback.suspend {
             sessionS.value match
-              case None => selectedKeyS.setState(Some(key)) >> errorS.setState(None)
+              case None                   => selectedKeyS.setState(Some(key)) >> errorS.setState(None)
+              case Some(_) if busyS.value => Callback.empty
               case Some(s) =>
-                selectedKeyS.setState(Some(key)) >> errorS.setState(None) >> Callback {
+                selectedKeyS.setState(Some(key)) >> errorS.setState(None) >> busyS.setState(
+                  true
+                ) >> Callback {
                   TutorApiClient.changeModel(s.sessionId, key).onComplete {
                     case Success(fresh) =>
                       (sessionS.setState(Some(fresh)) >>
-                        fresh.model.fold(Callback.empty)(m => selectedKeyS.setState(Some(m)))).runNow()
+                        fresh.model.fold(Callback.empty)(m => selectedKeyS.setState(Some(m))) >>
+                        busyS.setState(false)).runNow()
                     case Failure(e: TutorApiClient.TutorHttpError) if e.status == 422 =>
                       (selectedKeyS.setState(s.model) >>
-                        errorS.setState(Some("That model isn't available — pick another."))).runNow()
+                        errorS.setState(Some("That model isn't available — pick another.")) >>
+                        busyS.setState(false)).runNow()
                     case Failure(e) =>
-                      (selectedKeyS.setState(s.model) >> errorS.setState(Some(e.getMessage))).runNow()
+                      (selectedKeyS.setState(s.model) >> errorS.setState(Some(e.getMessage)) >>
+                        busyS.setState(false)).runNow()
                   }
                 }
+          }
 
           // ── store the visitor's key after a validation probe (sessionStorage; this tab only) ──
           def saveByokKey(raw: String): Callback = Callback.suspend {

@@ -76,11 +76,16 @@ object TutorApiClient:
   def resetSession(sessionId: String): Future[CoachSession] =
     sendExpect[CoachSession](s"/v1/sessions/${enc(sessionId)}/reset", "POST", None)
 
+  // A model re-point holds the coach's busy flag for its whole round-trip, so bound it client-side: without
+  // this a hung switch would wedge the picker + composer until the browser's own (minutes-long) timeout.
+  private val ChangeModelTimeoutMs: Double = 30000
+
   /** Re-point an active session's coach model (dual-mode switch); returns the updated session. */
   def changeModel(sessionId: String, model: String): Future[CoachSession] =
     postJson[ModelChangeRequest, CoachSession](
       s"/v1/sessions/${enc(sessionId)}/model",
-      ModelChangeRequest(model)
+      ModelChangeRequest(model),
+      timeoutMs = Some(ChangeModelTimeoutMs)
     )
 
   /** Permanently delete ALL of the caller's coach sessions + messages. */
@@ -219,23 +224,48 @@ object TutorApiClient:
             }
         }
 
-  private def postJson[I: Encoder, O: Decoder](path: String, body: I): Future[O] =
-    sendExpect[O](path, "POST", Some(body.asJson.noSpaces))
+  private def postJson[I: Encoder, O: Decoder](
+      path: String,
+      body: I,
+      timeoutMs: Option[Double] = None
+  ): Future[O] =
+    sendExpect[O](path, "POST", Some(body.asJson.noSpaces), timeoutMs)
 
-  private def sendExpect[O: Decoder](path: String, method: String, body: Option[String]): Future[O] =
+  private def sendExpect[O: Decoder](
+      path: String,
+      method: String,
+      body: Option[String],
+      timeoutMs: Option[Double] = None
+  ): Future[O] =
     base match
-      case None => Future.failed(RuntimeException("The tutor is not configured (no tutorBaseUrl)."))
+      case None    => Future.failed(RuntimeException("The tutor is not configured (no tutorBaseUrl)."))
       case Some(b) =>
-        dom.fetch(b + path, requestInit(method, body, js.undefined)).toFuture.flatMap { res =>
-          res.text().toFuture.flatMap { txt =>
-            if res.ok then
-              parse(txt).flatMap(_.as[O]) match
-                case Right(value) => Future.successful(value)
-                case Left(err) =>
-                  Future.failed(RuntimeException(s"Tutor: malformed response (${err.getMessage})"))
-            else Future.failed(new TutorHttpError(res.status, errorMessage(txt, res.status)))
+        // Optional client-side deadline: abort the fetch after `timeoutMs` so a hung request fails fast
+        // instead of leaving the caller (e.g. the coach's model switch) wedged. The timer is cleared once
+        // the call settles; an abort is surfaced as a clean "timed out" failure rather than a raw DOMError.
+        val controller = timeoutMs.map(_ => new dom.AbortController())
+        val timer      = timeoutMs.zip(controller).map { case (ms, c) => js.timers.setTimeout(ms)(c.abort()) }
+        val signal: js.UndefOr[dom.AbortSignal] =
+          controller.fold(js.undefined: js.UndefOr[dom.AbortSignal])(_.signal)
+        dom
+          .fetch(b + path, requestInit(method, body, signal))
+          .toFuture
+          .flatMap { res =>
+            res.text().toFuture.flatMap { txt =>
+              if res.ok then
+                parse(txt).flatMap(_.as[O]) match
+                  case Right(value) => Future.successful(value)
+                  case Left(err) =>
+                    Future.failed(RuntimeException(s"Tutor: malformed response (${err.getMessage})"))
+              else Future.failed(new TutorHttpError(res.status, errorMessage(txt, res.status)))
+            }
           }
-        }
+          .transform {
+            case Failure(_) if controller.exists(_.signal.aborted) =>
+              Failure(RuntimeException("The request timed out — try again."))
+            case other => other
+          }
+          .andThen { case _ => timer.foreach(js.timers.clearTimeout) }
 
   /**
    * Build a `fetch` init: JSON content-type when there's a body, bearer when signed in, optional abort
