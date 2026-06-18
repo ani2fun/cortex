@@ -1,10 +1,11 @@
 package cortex.client.pages
 
 import cortex.client.api.ApiClient
+import cortex.client.components.blog.PostGrid
 import cortex.client.components.book.BookGrid
 import cortex.client.components.icons.LucideIcons
 import cortex.client.util.{AsyncFetch, PageTitle}
-import cortex.shared.api.Endpoints.CortexIndex
+import cortex.shared.api.Endpoints.{BlogIndex, CortexIndex}
 import japgolly.scalajs.react.*
 import japgolly.scalajs.react.vdom.html_<^.*
 
@@ -77,15 +78,21 @@ object CortexIndexPage:
     ScalaFnComponent
       .withHooks[Unit]
       .useState(AsyncFetch.initial[CortexIndex])
-      .useEffectOnMountBy { (_, state) =>
+      .useState(AsyncFetch.initial[BlogIndex])
+      .useEffectOnMountBy { (_, booksS, blogS) =>
         PageTitle.set("Cortex — Aniket Kakde") >>
           AsyncFetch.run(
-            setState = state.setState,
+            setState = booksS.setState,
             fetch = ApiClient.getCortexIndex,
             errorPrefix = "Failed to load index"
+          ) >>
+          AsyncFetch.run(
+            setState = blogS.setState,
+            fetch = ApiClient.getBlogIndex,
+            errorPrefix = "Failed to load writing"
           )
       }
-      .render { (_, state) =>
+      .render { (_, booksS, blogS) =>
         <.main(
           ^.className := "cx-home",
           hero,
@@ -97,9 +104,25 @@ object CortexIndexPage:
               <.div(^.className := "cx-lib__eyebrow", "— The library"),
               <.h2(^.className  := "cx-lib__title", "Browse the books")
             ),
-            state.value.render(
+            booksS.value.render(
               loaded = idx => BookGrid.Component(BookGrid.Props(idx.books.toList)),
               loading = <.p(^.className := "cx-lib__status", "Loading the library…"),
+              errored = msg => <.p(^.className := "cx-lib__status", msg)
+            ),
+            // ── Blog as a shelf: writing lives inside the library, under its own divider ──
+            <.div(
+              ^.className := "cx-shelf__divider",
+              <.span(
+                ^.className := "cx-shelf__divider-label",
+                LucideIcons.Pencil(LucideIcons.withClass("cx-shelf__divider-icon")),
+                "Writing & notes"
+              ),
+              <.span(^.className := "cx-shelf__divider-line", ^.aria.hidden := true),
+              <.span(^.className := "cx-shelf__divider-sub", "the blog")
+            ),
+            blogS.value.render(
+              loaded = bi => PostGrid.Component(PostGrid.Props(bi.posts.toList)),
+              loading = <.p(^.className := "cx-lib__status", "Loading the writing…"),
               errored = msg => <.p(^.className := "cx-lib__status", msg)
             )
           )

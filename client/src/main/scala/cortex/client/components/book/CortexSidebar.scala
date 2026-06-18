@@ -229,8 +229,7 @@ object CortexSidebar:
               if e.key == "Escape" then e.preventDefaultCB >> onQuery("")
               else Callback.empty
             }
-          ),
-          <.span(^.className := "cortex-reader-sidebar__search-kbd", "⌘K")
+          )
         )
       ),
       <.nav(
@@ -250,23 +249,6 @@ object CortexSidebar:
           )
       )
     )
-
-  // Global ⌘K / Ctrl+K focus shortcut. Single install gate; the handler looks up the input by
-  // data-attribute so we don't have to thread a ref across mounts.
-  private val ShortcutMarker = "__cortexCortexSearchShortcut"
-
-  private def installShortcut(): Unit =
-    val win = dom.window.asInstanceOf[js.Dynamic]
-    if !win.selectDynamic(ShortcutMarker).asInstanceOf[js.UndefOr[Boolean]].getOrElse(false) then
-      val handler: js.Function1[dom.KeyboardEvent, Unit] = (e: dom.KeyboardEvent) =>
-        val isK = e.key == "k" || e.key == "K"
-        if isK && (e.metaKey || e.ctrlKey) then
-          val input = dom.document.querySelector("input[data-cortex-search='true']")
-          if input != null then
-            e.preventDefault()
-            input.asInstanceOf[dom.html.Input].focus()
-      dom.window.addEventListener("keydown", handler)
-      win.updateDynamic(ShortcutMarker)(true)
 
   /**
    * Pulse the active rail tile + active chapter row when the right-TOC dispatches a sync-flash event. We
@@ -320,9 +302,6 @@ object CortexSidebar:
       .useState("")
       .useRef(js.undefined: js.UndefOr[Int])
       .useRef(js.undefined: js.UndefOr[Int])
-      .useEffectOnMountBy { (_, _, _, _, _) =>
-        Callback(installShortcut())
-      }
       // Sync-flash listener — fires on cortex:syncFlash custom events from CortexToc.
       .useEffectOnMountBy { (_, _, _, _, _) =>
         Callback {

@@ -1,0 +1,180 @@
+/* Library search palette — the ⌘K command bar (LibrarySearch.scala). Scrim + card +
+   live input + grouped, highlighted results. Tokenised onto cortex's shadcn HSL
+   variables so light / dark come for free; structure mirrors sign-in-modal.css.
+   Block: .library-search */
+
+@keyframes library-search-scrim-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+@keyframes library-search-card-in {
+    from { opacity: 0; transform: translateY(-8px) scale(0.99); }
+    to   { opacity: 1; transform: none; }
+}
+
+@layer components {
+    /* Scrim — fixed full-viewport backdrop + click-outside close target. Sits above
+       the header (z-50), so z-index 300 like the sign-in modal's 200 tier. */
+    .library-search {
+        position: fixed;
+        inset: 0;
+        z-index: 300;
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        padding: 84px 24px 24px;
+        background: rgba(20, 16, 12, 0.55);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        animation: library-search-scrim-in 180ms cubic-bezier(0.2, 0.7, 0.2, 1);
+    }
+    .dark .library-search {
+        background: rgba(0, 0, 0, 0.65);
+    }
+
+    /* Card */
+    .library-search__card {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        max-width: 600px;
+        max-height: 70vh;
+        background: hsl(var(--popover));
+        border: 1px solid hsl(var(--border));
+        border-radius: 14px;
+        box-shadow:
+            0 26px 56px -18px rgba(0, 0, 0, 0.6),
+            0 6px 20px -10px rgba(0, 0, 0, 0.4);
+        overflow: hidden;
+        animation: library-search-card-in 200ms cubic-bezier(0.2, 0.7, 0.2, 1);
+    }
+
+    /* Head — search icon + live input + Esc hint */
+    .library-search__head {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex: 0 0 auto;
+        padding: 14px 16px;
+        border-bottom: 1px solid hsl(var(--border) / 0.7);
+    }
+    .library-search__head-icon {
+        width: 18px;
+        height: 18px;
+        flex: 0 0 auto;
+        color: hsl(var(--muted-foreground));
+    }
+    .library-search__input {
+        flex: 1;
+        min-width: 0;
+        border: none;
+        background: none;
+        outline: none;
+        font-family: var(--font-sans);
+        font-size: 16px;
+        color: hsl(var(--foreground));
+    }
+    .library-search__input::placeholder {
+        color: hsl(var(--muted-foreground));
+    }
+    .library-search__kbd {
+        flex: 0 0 auto;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        line-height: 1;
+        border: 1px solid hsl(var(--border));
+        border-radius: 5px;
+        padding: 3px 6px;
+        color: hsl(var(--foreground) / 0.7);
+        background: hsl(var(--background));
+    }
+
+    /* Results */
+    .library-search__results {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        padding: 6px;
+    }
+    .library-search__hint,
+    .library-search__empty {
+        padding: 22px 16px;
+        font-size: 14px;
+        color: hsl(var(--muted-foreground));
+        text-align: center;
+    }
+    .library-search__hint--error {
+        color: hsl(var(--destructive));
+    }
+    .library-search__empty em {
+        font-style: italic;
+        color: hsl(var(--foreground) / 0.8);
+    }
+    .library-search__group {
+        padding: 10px 12px 5px;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: hsl(var(--muted-foreground));
+    }
+    .library-search__row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        padding: 9px 12px;
+        border-radius: 9px;
+        text-decoration: none;
+        cursor: pointer;
+        color: hsl(var(--foreground) / 0.9);
+    }
+    .library-search__row--active {
+        background: hsl(var(--secondary) / 0.7);
+        color: hsl(var(--foreground));
+    }
+    .library-search__row-icon {
+        display: inline-flex;
+        flex: 0 0 auto;
+    }
+    .library-search__row-glyph {
+        width: 16px;
+        height: 16px;
+        color: hsl(var(--muted-foreground));
+    }
+    .library-search__row--active .library-search__row-glyph {
+        color: hsl(var(--primary));
+    }
+    .library-search__row-body {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+    .library-search__row-title {
+        font-size: 14px;
+        color: hsl(var(--foreground));
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .library-search__row-context {
+        margin-top: 2px;
+        font-family: var(--font-mono);
+        font-size: 10.5px;
+        color: hsl(var(--muted-foreground));
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .library-search__mark {
+        background: hsl(var(--primary) / 0.22);
+        color: inherit;
+        border-radius: 2px;
+        padding: 0 1px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .library-search,
+        .library-search__card { animation: none; }
+    }
+}

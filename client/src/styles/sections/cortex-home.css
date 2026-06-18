@@ -10,7 +10,9 @@
 @media (max-width: 640px) { .cx-home { padding-inline: 20px; } }
 
 /* ── Header brand: indigo logo chip + lowercase wordmark ─────────────────── */
-.header__chip { display: block; border-radius: 7px; flex: none; }
+/* Explicit dimensions: cortex-chip.svg carries only a viewBox (no intrinsic px),
+   so without a fixed size it collapses to 0×0 in the flex nav. */
+.header__chip { display: block; width: 30px; height: 30px; border-radius: 7px; flex: none; }
 
 /* ── Hero ────────────────────────────────────────────────────────────────── */
 .cx-hero { padding: 72px 0 56px; }
@@ -93,6 +95,20 @@
   letter-spacing: -0.025em; margin: 0; color: hsl(var(--foreground));
 }
 .cx-lib__status { font-family: var(--font-sans); color: hsl(var(--muted-foreground)); padding: 24px 0; }
+
+/* ── Blog as a shelf: writing lives inside the library, under a labelled divider ── */
+.cx-shelf__divider { display: flex; align-items: center; gap: 16px; margin: 44px 0 24px; }
+.cx-shelf__divider-label {
+  display: inline-flex; align-items: center; gap: 9px; white-space: nowrap;
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+  color: hsl(var(--foreground) / 0.72);
+}
+.cx-shelf__divider-icon { width: 14px; height: 14px; color: hsl(var(--primary)); }
+.cx-shelf__divider-line { flex: 1; height: 1px; background: hsl(var(--border)); }
+.cx-shelf__divider-sub {
+  font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.04em; white-space: nowrap;
+  color: hsl(var(--muted-foreground));
+}
 
 /* ── Footer ("Read it once. Keep it forever.") ─────────────────────────────── */
 .cx-foot { border-top: 1px solid hsl(var(--border)); background: hsl(var(--card)); margin-top: 48px; }

@@ -1,5 +1,6 @@
 package cortex.client
 
+import cortex.client.components.search.LibrarySearch
 import cortex.client.components.sections.{Footer, Header}
 import japgolly.scalajs.react.*
 import japgolly.scalajs.react.extra.router.{Resolution, RouterCtl}
@@ -18,6 +19,10 @@ object Layout:
       ^.className := "min-h-screen flex flex-col bg-background text-foreground",
       Header.Component(Header.Props(props.ctl)),
       <.div(^.className := "flex-1", props.resolution.render()),
-      Footer.Component()
+      Footer.Component(),
+      // Library ⌘K search palette — mounted here (a sibling of the header, not a descendant) so its
+      // fixed-position overlay isn't trapped by the header's backdrop-blur containing block. The
+      // header's centered trigger opens it via the `cortex:openLibrarySearch` event.
+      LibrarySearch.Component(LibrarySearch.Props(props.ctl))
     )
   }

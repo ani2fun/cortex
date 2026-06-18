@@ -1,12 +1,12 @@
 @layer components {
-    /* Header — sticky top nav with logomark + lowercase wordmark + desktop nav
-       + dark-mode toggle + ghost "Get in touch" pill + mobile drawer.
+    /* Header — sticky, quiet top nav: brand (left) · ⌘K library search (center) ·
+       theme toggle + account control (right). The old Library/Blog links, the
+       GitHub pill, and the mobile drawer are gone (see the Nav-redesign plan).
 
        Block: .header
-       Elements: __nav, __brand, __logomark, __wordmark, __link, __link--active,
-                 __actions, __toggle, __toggle--mobile, __toggle--desktop,
-                 __cta, __burger, __burger-icon, __drawer, __drawer-list,
-                 __drawer-link */
+       Elements: __nav, __brand, __wordmark, __mid, __search, __search-icon,
+                 __search-text, __search-kbd, __actions
+       (the chip lives in cortex-home.css as .header__chip) */
 
     .header {
         @apply fixed top-0 left-0 right-0 z-50 bg-background/85 backdrop-blur
@@ -24,65 +24,77 @@
         .header { transition: none; }
     }
     .header__nav {
-        @apply px-5 py-4 flex justify-between items-center gap-4;
+        @apply px-5 py-3 flex justify-between items-center gap-4;
     }
     .header__brand {
-        @apply flex items-center gap-2.5 no-underline;
-    }
-    .header__logomark {
-        /* Solid ink-on-bg chip per prototype — confidence over decoration.
-           Bg flips with theme: dark roast in light mode, warm cream in dark
-           mode. The mono "a" sits in the middle. */
-        @apply inline-flex items-center justify-center w-[22px] h-[22px] rounded-md
-               bg-foreground text-background text-xs font-mono font-semibold leading-none;
+        @apply flex items-center gap-2.5 no-underline shrink-0;
     }
     .header__wordmark {
         @apply text-[13px] font-mono font-medium tracking-tight text-foreground hidden sm:inline;
     }
-    .header__menu {
-        @apply hidden md:flex md:gap-1 lg:gap-2;
+
+    /* Center column — holds the search affordance, centered. */
+    .header__mid {
+        flex: 1 1 auto;
+        display: flex;
+        justify-content: center;
+        min-width: 0;
     }
-    .header__link {
-        @apply relative px-2 lg:px-3 py-2 text-sm font-medium text-foreground/80
-               hover:text-foreground transition-colors no-underline;
+
+    /* ⌘K library-search affordance — a button styled like a search input. Clicking
+       it (or pressing ⌘K anywhere) opens the LibrarySearch palette. */
+    .header__search {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        width: 360px;
+        max-width: 46vw;
+        height: 38px;
+        padding: 0 12px;
+        border-radius: 10px;
+        border: 1px solid hsl(var(--border));
+        background: hsl(var(--secondary) / 0.3);
+        color: hsl(var(--muted-foreground));
+        font-family: var(--font-sans);
+        cursor: text;
+        transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
     }
-    .header__link::after {
-        content: "";
-        position: absolute;
-        left: 0.5rem;
-        right: 0.5rem;
-        bottom: 0.4rem;
-        height: 1px;
-        background-color: hsl(var(--primary));
-        transform: scaleX(0);
-        transform-origin: left;
-        transition: transform 200ms ease;
+    .header__search:hover {
+        border-color: hsl(var(--primary) / 0.4);
+        background: hsl(var(--secondary) / 0.5);
+        color: hsl(var(--foreground) / 0.8);
     }
-    .header__link:hover::after { transform: scaleX(1); }
+    .header__search:focus-visible {
+        outline: 2px solid hsl(var(--ring) / 0.5);
+        outline-offset: 2px;
+    }
+    .header__search-icon { width: 15px; height: 15px; flex: 0 0 auto; }
+    .header__search-text { flex: 1; text-align: left; font-size: 13.5px; }
+    .header__search-kbd {
+        flex: 0 0 auto;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        line-height: 1;
+        border: 1px solid hsl(var(--border));
+        border-radius: 5px;
+        padding: 3px 6px;
+        color: hsl(var(--foreground) / 0.7);
+        background: hsl(var(--background));
+    }
+    /* On narrow screens the search collapses to an icon-only button. */
+    @media (max-width: 640px) {
+        .header__search {
+            width: 38px;
+            max-width: 38px;
+            padding: 0;
+            justify-content: center;
+            gap: 0;
+        }
+        .header__search-text,
+        .header__search-kbd { display: none; }
+    }
+
     .header__actions {
-        @apply flex items-center gap-3;
-    }
-    .header__toggle--mobile { @apply block md:hidden; }
-    .header__toggle--desktop { @apply hidden md:flex; }
-    .header__cta {
-        /* Solid ink-on-bg pill per prototype. Hover lifts 1px; nothing more. */
-        @apply hidden md:inline-flex items-center px-[14px] py-2 rounded-full
-               bg-foreground text-background text-[13px] font-medium
-               hover:-translate-y-px transition no-underline;
-    }
-    .header__burger {
-        @apply md:hidden inline-flex items-center justify-center;
-    }
-    .header__burger-icon {
-        @apply w-7 h-7 text-foreground/80 hover:text-primary;
-    }
-    .header__drawer {
-        @apply md:hidden border-t border-border/60 bg-background;
-    }
-    .header__drawer-list {
-        @apply flex flex-col items-start gap-3 p-6;
-    }
-    .header__drawer-link {
-        @apply text-base font-medium text-foreground/80 hover:text-primary;
+        @apply flex items-center gap-3 shrink-0;
     }
 }
