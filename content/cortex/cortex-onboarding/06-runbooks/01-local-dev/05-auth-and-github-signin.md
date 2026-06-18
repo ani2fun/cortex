@@ -160,6 +160,38 @@ that instead (via `KC_IMPORT_DIR`). Unset them and you're back to Mode A — not
 GitHub's authorize screen → back to localhost, signed in as you. The tutor coach and submission features
 now persist under your GitHub identity.
 
+## Adding a local dev user
+
+Local sign-in accounts are seeded in the realm import `docker/keycloak/import/cortex-realm.json` — that's
+where `tester` and `test1` live. To add another, copy an existing `users[]` block and change the
+username / password / email. **Copy the whole block, including `realmRoles`:**
+
+```json
+{
+  "username": "alice",
+  "enabled": true,
+  "emailVerified": true,
+  "email": "alice@cortex.local",
+  "firstName": "Alice",
+  "lastName": "Example",
+  "credentials": [{ "type": "password", "value": "alice", "temporary": false }],
+  "realmRoles": ["default-roles-cortex"],
+  "clientRoles": { "account": ["delete-account"] }
+}
+```
+
+- **`realmRoles: ["default-roles-cortex"]` is load-bearing.** Omit it and Keycloak skips the automatic
+  default-roles grant (the third gotcha above), stripping `manage-account`/`view-profile` from the user — and
+  the account console then 401s for them.
+- **`clientRoles: { account: ["delete-account"] }`** is only needed if that user should be able to
+  self-delete from the account console; drop it otherwise and everything else still works.
+
+The realm re-imports only into a **fresh** container, so after editing recreate Keycloak:
+`docker compose up -d --force-recreate keycloak` (or `docker compose down keycloak && AUTH_ENABLED=true
+./bin/dev`). The new user can sign in right away, but is **not** on the
+[allowlist](/cortex/cortex-onboarding/runbooks/access-and-allowlists) — Submit and Save return a 403 until
+you add their username.
+
 ## Troubleshooting
 
 - **Redirected to `keycloak.kakde.eu/realms/apps-prod` on localhost.** Your server is using the *prod*
