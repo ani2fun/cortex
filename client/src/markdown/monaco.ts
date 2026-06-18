@@ -1,73 +1,37 @@
-// Monaco bridge for the Scala.js client. Re-exports the @monaco-editor/react
-// `Editor` component as the default so the Scala.js facade can `@JSImport`
-// this module without touching @monaco-editor/react directly. On first import
-// the side-effects below wire up:
+// Lazy boundary for the Monaco editor.
 //
-//   1. The editor web worker (Vite `?worker` URL import).
-//   2. Language tokeniser contributions for exactly the languages we support
-//      server-side (see Languages.scala). No language *workers* — we don't
-//      want IntelliSense / type-checking; the editor is a runner, not an IDE.
-//   3. A custom theme that blends with the surrounding `.rcb__editor` card
-//      (background #2d2d2d).
-//   4. `loader.config({ monaco })` so @monaco-editor/react resolves to the
-//      npm-bundled monaco-editor instead of fetching from a CDN at runtime.
+// The editor stack — monaco-editor + @monaco-editor/react + the per-language
+// Monarch tokenisers + the editor web worker — is ~3.8 MB. Only runnable code
+// blocks ever mount it, yet a static `@JSImport("@markdown/monaco")` from the
+// Scala.js facade used to drag that whole chunk into the entry's static import
+// graph, so the home page and plain chapters modulepreloaded + downloaded it
+// for nothing.
 //
-// Because the Scala.js side only imports this module from
-// RunnableCodeBlock's render path, Vite tree-shakes it into its own chunk
-// (see vite.config.mjs manualChunks). Pages without runnable code blocks
-// never fetch it.
+// The heavy module now lives in ./monaco-impl; this wrapper hides it behind
+// React.lazy(() => import("./monaco-impl")) so Vite emits it as an on-demand
+// chunk fetched only when an editor first mounts. The Scala.js facade
+// (MonacoEditor.scala) still @JSImports the default export of THIS module
+// unchanged — the laziness lives entirely here, no Scala changes required.
 
-// @ts-expect-error — Vite's ?worker query is resolved at build time.
-import EditorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
+import { createElement, lazy, Suspense } from "react";
 
-import * as monaco from "monaco-editor";
-import { Editor, loader } from "@monaco-editor/react";
+// monaco-impl's default export is @monaco-editor/react's `Editor`; its top-level
+// side-effects (worker registration, theme, loader.config) run on chunk load,
+// before the lazy component first renders.
+const RealEditor = lazy(() => import("./monaco-impl"));
 
-// Side-effect language imports. Each pulls in the Monarch tokeniser for that
-// language. cpp covers both C and C++.
-import "monaco-editor/esm/vs/basic-languages/python/python.contribution";
-import "monaco-editor/esm/vs/basic-languages/java/java.contribution";
-import "monaco-editor/esm/vs/basic-languages/scala/scala.contribution";
-import "monaco-editor/esm/vs/basic-languages/cpp/cpp.contribution";
-import "monaco-editor/esm/vs/basic-languages/go/go.contribution";
-import "monaco-editor/esm/vs/basic-languages/rust/rust.contribution";
-import "monaco-editor/esm/vs/basic-languages/kotlin/kotlin.contribution";
-import "monaco-editor/esm/vs/basic-languages/typescript/typescript.contribution";
-import "monaco-editor/esm/vs/basic-languages/javascript/javascript.contribution";
-
-// Monaco asks the host page how to spawn workers. With only `editor.worker`
-// imported above, we can ignore the requested label and return the editor
-// worker for every request.
-(self as unknown as { MonacoEnvironment: { getWorker: (id: string, label: string) => Worker } })
-  .MonacoEnvironment = {
-  getWorker: () => new EditorWorker(),
-};
-
-// Custom dark theme that matches the existing `.rcb__editor` (#2d2d2d) card
-// surround so the editor doesn't look like a transplanted VS Code window. The
-// token rules mirror the static-fence palette (indigo keyword, teal function/type,
-// green string, amber number, muted-italic comment) so runnable + rendered code match.
-monaco.editor.defineTheme("cortex-dark", {
-  base: "vs-dark",
-  inherit: true,
-  rules: [
-    { token: "keyword", foreground: "7E88E6" },
-    { token: "type", foreground: "54B3A1" },
-    { token: "function", foreground: "54B3A1" },
-    { token: "string", foreground: "84B87D" },
-    { token: "number", foreground: "D59A55" },
-    { token: "regexp", foreground: "84B87D" },
-    { token: "comment", foreground: "8A857C", fontStyle: "italic" },
-  ],
-  colors: {
-    "editor.background": "#2d2d2d",
-    "editor.lineHighlightBackground": "#3a3a3a40",
-    "editorGutter.background": "#2d2d2d",
-  },
-});
-
-// Pin @monaco-editor/react to the npm-bundled monaco we just configured.
-// Without this it would attempt to load monaco from a CDN at runtime.
-loader.config({ monaco });
-
-export default Editor;
+// Brief fallback for the chunk-fetch window (distinct from @monaco-editor/react's
+// own `loading` prop, which covers editor initialisation after the chunk arrives).
+export default function MonacoEditor(props: Record<string, unknown>) {
+  return createElement(
+    Suspense,
+    {
+      fallback: createElement(
+        "div",
+        { className: "rcb__editor-loading" },
+        "Loading editor…",
+      ),
+    },
+    createElement(RealEditor, props),
+  );
+}

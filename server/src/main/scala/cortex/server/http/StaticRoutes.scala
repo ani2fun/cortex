@@ -11,27 +11,37 @@ object StaticRoutes:
   def from(staticDir: String, bookSlugs: List[String]): StaticRoutes =
     val fileServer = FileServer(staticDir)
 
-    // index.html — served at `/`, at `/index.html`, and as the SPA fallback below.
+    // index.html — served at `/`, at `/index.html`, and as the SPA fallback below. `no-cache` so a
+    // redeploy's content-hashed asset references are picked up on the next load rather than going stale.
     def staticIndex: ZIO[Any, Nothing, Response] =
-      fileServer.serve(AppRoutes.IndexHtml)
+      fileServer.serve(AppRoutes.IndexHtml, Some(FileServer.NoCacheHtml))
 
     // A `trailing`-captured path is relative to `prefix`; FileServer resolves it under the static root
-    // and enforces path-traversal containment.
-    def trailingFileHandler(prefix: String): Handler[Any, Response, (zio.http.Path, Request), Response] =
+    // and enforces path-traversal containment. `cacheControl` is the policy emitted for matched files.
+    def trailingFileHandler(
+        prefix: String,
+        cacheControl: String
+    ): Handler[Any, Response, (zio.http.Path, Request), Response] =
       Handler.fromFunctionZIO[(zio.http.Path, Request)] { case (path, _) =>
-        fileServer.serve(s"$prefix/${path.encode.stripPrefix("/")}")
+        fileServer.serve(s"$prefix/${path.encode.stripPrefix("/")}", Some(cacheControl))
       }
 
     // Vite emits index.html + assets/*; img/ and certificates/ are copied from client/public/ at the
-    // dist root; the CV is a single fixed file.
+    // dist root; the CV is a single fixed file. `/assets/*` is content-hashed → immutable for a year;
+    // img/, certificates/, and the CV aren't hashed → a modest TTL.
     val fixedRoutes: Routes[Any, Response] = Routes(
-      Method.GET / Root                              -> handler(staticIndex),
-      Method.GET / AppRoutes.IndexHtml               -> handler(staticIndex),
-      Method.GET / AppRoutes.Assets / trailing       -> trailingFileHandler(AppRoutes.Assets),
-      Method.GET / AppRoutes.Images / trailing       -> trailingFileHandler(AppRoutes.Images),
-      Method.GET / AppRoutes.Certificates / trailing -> trailingFileHandler(AppRoutes.Certificates),
-      Method.GET / AppRoutes.CvFile                  -> handler(fileServer.serve(AppRoutes.CvFile)),
-      Method.GET / AppRoutes.SilentCheckSso          -> handler(fileServer.serve(AppRoutes.SilentCheckSso))
+      Method.GET / Root                -> handler(staticIndex),
+      Method.GET / AppRoutes.IndexHtml -> handler(staticIndex),
+      Method.GET / AppRoutes.Assets / trailing ->
+        trailingFileHandler(AppRoutes.Assets, FileServer.ImmutableAsset),
+      Method.GET / AppRoutes.Images / trailing ->
+        trailingFileHandler(AppRoutes.Images, FileServer.ShortLived),
+      Method.GET / AppRoutes.Certificates / trailing ->
+        trailingFileHandler(AppRoutes.Certificates, FileServer.ShortLived),
+      Method.GET / AppRoutes.CvFile ->
+        handler(fileServer.serve(AppRoutes.CvFile, Some(FileServer.ShortLived))),
+      Method.GET / AppRoutes.SilentCheckSso ->
+        handler(fileServer.serve(AppRoutes.SilentCheckSso, Some(FileServer.NoCacheHtml)))
     )
 
     // index.html SPA fallback. A hard reload of any SPA path must return index.html so the client router can

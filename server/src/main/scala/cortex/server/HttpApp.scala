@@ -63,8 +63,16 @@ final private class HttpAppLive(
   // `/{book}/{chapter}` hard reloads without a greedy wildcard that would shadow /api and /docs.
   private val staticRoutes = StaticRoutes.from(cfg.staticDir, StaticRoutes.bookSlugsFromDir(cfg.cortex.root))
 
+  // Fill the Cortex + Blog index caches at boot rather than lazily on the first request, so the first
+  // visitor after a redeploy doesn't pay the content-tree walk. Forked in `serve` so it never blocks the
+  // bind; failures are logged and ignored — the lazy path still rebuilds on demand if this loses a race.
+  private val prewarmIndexes: UIO[Unit] =
+    (cortex.index.unit.catchAll(e => ZIO.logWarning(s"Cortex index pre-warm failed: $e")) <&>
+      blog.index.unit.catchAll(e => ZIO.logWarning(s"Blog index pre-warm failed: $e"))).unit
+
   override def serve: Task[Unit] =
     ZIO.logInfo(s"Starting server on port ${cfg.port}; ${staticRoutes.startupInfo}") *>
+      prewarmIndexes.forkDaemon *>
       Server
         .serve(apiRoutes ++ cortexAssetRoutes ++ likec4Routes ++ tutorRoutes ++ staticRoutes.routes)
         .provide(
@@ -72,7 +80,24 @@ final private class HttpAppLive(
           // BYOK coach turn (code 64K + coachReply 64K + runResult 16K + text 16K ≈ 165 KiB), which
           // would 413 at the edge; 512 KiB clears that yet stays far under OOM territory (oversize is
           // a cheap pre-decode 413). Mirrors the tutor's coach_max_request_bytes.
-          ZLayer.succeed(Server.Config.default.port(cfg.port).disableRequestStreaming(512 * 1024)),
+          //
+          // responseCompression: gzip/deflate responses over ~1 KiB. The frontend ships a multi-MB
+          // Scala.js bundle that crosses the WireGuard tunnel + home uplink uncompressed today;
+          // compressing at the origin shrinks the bytes *before* that bottleneck (not just edge→user).
+          ZLayer.succeed(
+            Server.Config.default
+              .port(cfg.port)
+              .disableRequestStreaming(512 * 1024)
+              .responseCompression(
+                Server.Config.ResponseCompressionConfig(
+                  contentThreshold = 1024,
+                  options = IndexedSeq(
+                    Server.Config.CompressionOptions.gzip(),
+                    Server.Config.CompressionOptions.deflate()
+                  )
+                )
+              )
+          ),
           Server.live
         )
         .unit

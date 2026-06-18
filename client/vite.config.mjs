@@ -44,30 +44,16 @@ export default defineConfig({
   build: {
     outDir: "dist",
     emptyOutDir: true,
-    // Bundle-size hygiene: peel the heavy markdown-pipeline deps into their
-    // own chunks so the home-page entry doesn't ship them. Browsers fetch
-    // them on demand when the chapter page first lands.
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
-          if (id.includes("node_modules")) {
-            if (id.includes("/shiki") || id.includes("/@shikijs/")) return "shiki";
-            if (id.includes("/mermaid")) return "mermaid";
-            if (id.includes("/@terrastruct/d2")) return "d2";
-            if (id.includes("/katex")) return "katex";
-            if (id.includes("/prismjs")) return "prismjs";
-            // Monaco core + the React wrapper + any web-worker entry points
-            // ride together. Loaded only when a Cortex chapter mounts a
-            // runnable block (Scala.js imports `@markdown/monaco` from inside
-            // RunnableCodeBlock's render path).
-            if (id.includes("/monaco-editor") || id.includes("/@monaco-editor/")) return "monaco";
-          }
-          return null;
-        },
-      },
-    },
-    // Quiet the warning at 800 KB; the manual-chunked vendor splits above
-    // are intentionally large but lazily loaded.
+    // NO manualChunks. The heavy libs (monaco, shiki, mermaid, katex, d2) are all
+    // reached only through dynamic import() — monaco via the React.lazy boundary in
+    // src/markdown/monaco.ts, the rest via render.ts / runtime.ts — so Rollup already
+    // emits each as its own on-demand chunk. Forcing them into *named* manualChunks made
+    // Rollup co-locate shared runtime helpers (notably Vite's own `__vitePreload`) inside
+    // those vendor chunks; the entry then STATICALLY imported the chunks just to reach
+    // those helpers, dragging ~9 MB of editor/diagram/highlighter code onto the landing
+    // page's critical path. Letting Vite chunk automatically keeps shared helpers in a
+    // small shared chunk and leaves the heavy libs genuinely lazy. (Verified: the landing
+    // page then fetches only the entry + a tiny prism chunk.)
     chunkSizeWarningLimit: 800,
   },
 });

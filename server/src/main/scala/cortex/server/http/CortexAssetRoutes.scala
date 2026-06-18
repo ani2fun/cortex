@@ -25,6 +25,8 @@ object CortexAssetRoutes:
     Routes(
       Method.GET / "api" / "cortex" / "asset" / trailing ->
         Handler.fromFunctionZIO[(zio.http.Path, Request)] { case (rest, _) =>
-          fileServer.serve(rest.encode)
+          // Chapter assets aren't content-hashed, so a modest TTL (not immutable): repeat views hit
+          // the browser cache, while a content redeploy still surfaces within the hour.
+          fileServer.serve(rest.encode, Some(FileServer.ShortLived))
         }
     )

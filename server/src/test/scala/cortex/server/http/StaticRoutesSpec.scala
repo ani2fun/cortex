@@ -32,6 +32,25 @@ object StaticRoutesSpec extends ZIOSpecDefault:
         yield assertTrue(res.status == Status.Ok, body.contains(IndexMarker))
       }
     },
+    test("caches hashed /assets/* immutably and revalidates index.html") {
+      ZIO.scoped {
+        for
+          dir <- tempDist
+          _ <- ZIO.attempt {
+            val assets = dir.resolve(AppRoutes.Assets)
+            Files.createDirectories(assets)
+            Files.writeString(assets.resolve("app-abc123.js"), "console.log(1)", StandardCharsets.UTF_8)
+          }
+          routes = StaticRoutes.from(dir.toString, Books).routes
+          idx   <- runGet(routes, "/")
+          asset <- runGet(routes, s"/${AppRoutes.Assets}/app-abc123.js")
+        yield assertTrue(
+          idx.rawHeader("cache-control").contains(FileServer.NoCacheHtml),
+          asset.status == Status.Ok,
+          asset.rawHeader("cache-control").contains(FileServer.ImmutableAsset)
+        )
+      }
+    },
     test("serves index.html for every top-level SPA route in AppRoutes.SpaRoutes") {
       ZIO.scoped {
         for

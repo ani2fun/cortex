@@ -28,6 +28,19 @@ object FileServerSpec extends ZIOSpecDefault:
           yield assertTrue(res.status == Status.Ok, body == "hello world")
         }
       },
+      test("attaches Cache-Control when a policy is given, and omits it otherwise") {
+        ZIO.scoped {
+          for
+            root   <- tempRoot
+            _      <- write(root.resolve("hello.txt"), "hi")
+            withCc <- FileServer(root.toString).serve("hello.txt", Some(FileServer.ImmutableAsset))
+            noCc   <- FileServer(root.toString).serve("hello.txt")
+          yield assertTrue(
+            withCc.rawHeader("cache-control").contains(FileServer.ImmutableAsset),
+            noCc.rawHeader("cache-control").isEmpty
+          )
+        }
+      },
       test("404s a missing file") {
         ZIO.scoped {
           for
