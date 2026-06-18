@@ -74,8 +74,8 @@ account** option only when two realm preconditions are met:
 
 The committed local realm (`docker/keycloak/import/cortex-realm.json`) sets both, so the flow works
 end-to-end in dev: sign in as `tester`/`tester`, open the avatar → **Manage account & data** → **Delete my
-account** → the console offers the deletion. Two import gotchas are baked into how that realm is written —
-both learned the hard way against `keycloak:26.0`:
+account** → the console offers the deletion. Three import gotchas are baked into how that realm is written —
+all learned the hard way against `keycloak:26.0`:
 
 - **A partial `requiredActions` array *replaces* Keycloak's defaults — it doesn't merge.** Listing only
   `delete_account` silently strips `VERIFY_EMAIL`, `UPDATE_PASSWORD`, and the rest. The realm therefore
@@ -84,10 +84,24 @@ both learned the hard way against `keycloak:26.0`:
 - **The realm JSON can't carry comment keys.** Keycloak 26 parses the realm with
   `FAIL_ON_UNKNOWN_PROPERTIES` *on*, so a stray `_comment` field aborts the entire import ("Unrecognized
   field … not marked as ignorable") and the server won't start. Quirks get documented here, not inline.
+- **Giving a user *any* explicit role in the import suppresses the automatic default-roles grant.** Add a
+  `clientRoles`/`realmRoles` block to a user and Keycloak stops auto-assigning `default-roles-cortex` to
+  them — so granting only `account/delete-account` silently cost `tester`/`test1` their `manage-account` +
+  `view-profile` (and `offline_access`). The fallout is non-obvious: the **account console** resolves its
+  `account` token audience from exactly those roles, so without them the token carries **no `aud`** and the
+  account REST API answers **HTTP 401 "Something went wrong"** — the console renders an error instead of the
+  profile. Fix: list `default-roles-cortex` back explicitly in each user's `realmRoles`, *next to* the
+  `clientRoles`.
 
-The `delete-account` role is granted **per user** in the import
-(`clientRoles: { account: ["delete-account"] }` on `tester` and `test1`) — Keycloak creates the built-in
-`account` client and its roles before it imports users, so this resolves cleanly.
+The two roles are therefore granted **together**, per user:
+
+```json
+"realmRoles": ["default-roles-cortex"],
+"clientRoles": { "account": ["delete-account"] }
+```
+
+(Keycloak creates the built-in `account` client and its roles before it imports users, so the `clientRoles`
+reference resolves cleanly.)
 
 > **Production.** The homelab `apps-prod` realm needs the same two switches: enable the **Delete Account**
 > required action (Realm settings → *Required actions*), and grant the `delete-account` role to users — most
