@@ -119,6 +119,8 @@ object BlockMounter:
       SolutionViewerBlock.Component(SolutionViewerBlock.Props(tabs, time, space))
     case Block.Mermaid(source) =>
       MermaidBlock.Component(MermaidBlock.Props(source))
+    case Block.StandaloneCoach(overrideId) =>
+      StandaloneCoachBlock.Component(StandaloneCoachBlock.Props(overrideId.orElse(ctx.coachProblemId)))
     case Block.D2Slides(slides, caption) =>
       D2Slideshow.Component(D2Slideshow.Props(slides, caption))
     case Block.D2Inline(svgHtml) =>

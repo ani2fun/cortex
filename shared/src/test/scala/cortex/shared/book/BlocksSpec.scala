@@ -28,6 +28,17 @@ object BlocksSpec extends ZIOSpecDefault:
         assertTrue(r == Left(BlockDecodeError.MissingAttribute("runnable-code", "data-source")))
       }
     ),
+    suite("decodeStandaloneCoach")(
+      test("author override present → Some(problemId)") {
+        assertTrue(
+          Blocks.decodeStandaloneCoach(Some("system-design/capstones/url-shortener")) ==
+            Right(Block.StandaloneCoach(Some("system-design/capstones/url-shortener")))
+        )
+      },
+      test("absent override → None (mounter falls back to the chapter problemId)") {
+        assertTrue(Blocks.decodeStandaloneCoach(None) == Right(Block.StandaloneCoach(None)))
+      }
+    ),
     suite("decodeRunnableGroup")(
       test("happy path — every tab fully populated") {
         val raws = List(

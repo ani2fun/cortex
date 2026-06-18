@@ -197,6 +197,16 @@ Before this was derived, the server fallback was a hand-maintained list and forg
 - **Scala / Java**: edit `build.sbt`, run `sbt update`, then `sbt compile` and `sbt test`. Watch for binary-incompatible bumps in tapir, zio, and circe — they go in waves.
 - **JS**: edit `client/package.json`, then `cd client && npm install`. Run `npm run build` to confirm the bundle still builds. Heavy deps (mermaid, d2, shiki, katex) deserve a manual size check after upgrading: a 200KB regression on the home page is a regression worth catching.
 
+## Recipe 7: embed a live coach in a lesson
+
+Theory chapters (System Design and the other prose books) can drop the six-step **standalone coach** inline — no code editor, just the Socratic interview. Author it as a one-line placeholder anywhere in the markdown:
+
+```html
+<div class="standalone-coach"></div>
+```
+
+It coaches on the chapter's own `<book>/<chapter-slug>` join key by default; pass `data-coach-problem-id="…"` to point it at a different problem. Mechanically it's the same block path as everything else: `Blocks.decodeStandaloneCoach` (shared, unit-tested) → `BlockDiscovery` (the `standalone-coach` class) → `BlockMounter` → `StandaloneCoachBlock`, which frames the live `CoachTab` / `CoachController` in a self-contained scroll card. A live example sits in the [URL-shortener capstone](/cortex/system-design/capstones/url-shortener).
+
 ## A general principle
 
 When you're not sure where a change should go, **start with the OpenAPI spec or the markdown content**, never with the implementation. Both are pure data, both have schema validation, and both are read by code on multiple sides. If you can express the change as "the contract is now X" or "the content is now Y", the implementation falls out of the codegen and the existing rendering logic.

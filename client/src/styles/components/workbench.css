@@ -588,6 +588,29 @@
         @apply text-foreground;
     }
 
+    /* ─── Standalone coach (inline in theory lessons; no editor) ──── */
+    .standalone-coach {
+        @apply my-6;
+    }
+    .standalone-coach__intro {
+        @apply mb-3 flex items-center gap-2 text-[13px] leading-snug text-muted-foreground;
+    }
+    .standalone-coach__intro-icon {
+        @apply h-4 w-4 text-primary;
+        flex: 0 0 auto;
+    }
+    /* Bounded card so the coach's own sticky header pins inside the block, not the page. */
+    .standalone-coach__frame {
+        @apply flex flex-col overflow-hidden rounded-xl border border-border bg-card;
+        height: min(72vh, 640px);
+    }
+    /* The scroll region — mirrors .pwb__panel--coach (px gutter, zero top padding so the sticky
+       coach header sits flush at the top). */
+    .standalone-coach__scroll {
+        @apply min-h-0 flex-1 overflow-y-auto px-5 pb-4;
+        padding-top: 0;
+    }
+
     /* ─── Coach tab (design-only) ────────────────────────────────── */
     .coach {
         @apply flex flex-col gap-4;

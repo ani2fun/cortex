@@ -277,6 +277,15 @@ object Blocks:
       .map(Block.Mermaid(_))
 
   /**
+   * Decode a `standalone-coach` placeholder. The author's `data-coach-problem-id` is optional — when absent
+   * the mounter falls back to the chapter's coach problemId — so this always succeeds.
+   */
+  def decodeStandaloneCoach(
+      coachProblemId: Option[String]
+  ): Either[BlockDecodeError, Block.StandaloneCoach] =
+    Right(Block.StandaloneCoach(coachProblemId))
+
+  /**
    * Decode a `d2-slides` placeholder. `slides` is the inner-HTML of each `div.d2-slide` child element, in
    * order. Empty `slides` is treated as "skip me" (no useful diagram to render). Caption is optional;
    * empty-string captions are normalised to `None` to match the original behaviour.
@@ -382,6 +391,13 @@ object Block:
   final case class RunnableGroup(tabs: List[Tab]) extends Block
 
   final case class Mermaid(source: String) extends Block
+
+  /**
+   * A standalone six-step coach for theory lessons (no code editor) — the live coach mounted inline in prose.
+   * `coachProblemId` is an optional author override (`data-coach-problem-id`); when absent the mounter falls
+   * back to the chapter's `<book>/<chapter-slug>` join key.
+   */
+  final case class StandaloneCoach(coachProblemId: Option[String]) extends Block
 
   final case class D2Slides(
       slides: List[String],

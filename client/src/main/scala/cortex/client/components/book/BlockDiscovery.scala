@@ -65,6 +65,7 @@ object BlockDiscovery:
       RunnableGroup,
       WorkbenchInline,
       YourTurn,
+      StandaloneCoach,
       ProblemWorkbench,
       QuizBlock,
       SolutionViewer,
@@ -113,6 +114,12 @@ object BlockDiscovery:
         rawTabs = tabsAttr(node),
         rawSpec = specAttr(node)
       )
+
+  private object StandaloneCoach extends Discoverer:
+    override val className: String = "standalone-coach"
+
+    override def decode(node: dom.HTMLElement): Either[BlockDecodeError, Block] =
+      Blocks.decodeStandaloneCoach(nonEmpty(node.getAttribute("data-coach-problem-id")))
 
   private object ProblemWorkbench extends Discoverer:
     override val className: String = "problem-workbench"

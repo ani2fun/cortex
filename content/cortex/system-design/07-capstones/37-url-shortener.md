@@ -16,6 +16,12 @@ That tension is exactly why the URL shortener is the canonical first capstone. O
 
 This is also the **dry run for the capstone format.** Every capstone (37–46) follows the same arc: pin the **requirements**, do the **back-of-envelope estimation**, sketch the **API** and **data model**, draw the **architecture** (a Mermaid hot-path sequence, a D2 topology, and a C4 container view), find the **bottlenecks**, then answer the question that separates a design from a daydream — **"what breaks at 100×?"** — and close with **trade-offs** and an **illustrative prototype**. Let's build it.
 
+## Try it with the coach
+
+Before you read the design, work through it yourself. The coach runs the same six-step interview — restate the problem, estimate, choose an approach, plan it, sketch the implementation, then stress-test it — and pushes back at each gate. There's no code editor here; you reason in prose, the way you would at a whiteboard. (Sign in to start; your conversation is kept in your browser as you go.)
+
+<div class="standalone-coach"></div>
+
 ## 2. Requirements and scope
 
 Pin down *what we're building* before *how*, because the "how" is dictated by a couple of numbers and constraints.
