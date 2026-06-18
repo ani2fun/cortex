@@ -61,6 +61,40 @@ Once signed in, the avatar opens a calm dropdown — your identity, a note on wh
 out**. Bulk data deletion lives on the **/account** page (avatar → *Manage account & data*); see
 [The turn lifecycle → Managing your data](/cortex/cortex-onboarding/cortex-tutor/the-turn-lifecycle).
 
+## Deleting your account
+
+The **/account** page also has a **Delete my account** card. It deliberately does *not* call the cortex
+server — that server only **verifies** JWTs and holds no Keycloak-admin rights, so it can't (and shouldn't)
+delete identities. The card instead links out to **Keycloak's own account console** (built by `keycloak-js`'s
+`createAccountUrl()`, opened in a new tab), where the user self-deletes. Keycloak renders that **Delete
+account** option only when two realm preconditions are met:
+
+1. the **`delete_account` required action** is enabled on the realm, and
+2. the user holds the **`delete-account`** client role of the built-in `account` client.
+
+The committed local realm (`docker/keycloak/import/cortex-realm.json`) sets both, so the flow works
+end-to-end in dev: sign in as `tester`/`tester`, open the avatar → **Manage account & data** → **Delete my
+account** → the console offers the deletion. Two import gotchas are baked into how that realm is written —
+both learned the hard way against `keycloak:26.0`:
+
+- **A partial `requiredActions` array *replaces* Keycloak's defaults — it doesn't merge.** Listing only
+  `delete_account` silently strips `VERIFY_EMAIL`, `UPDATE_PASSWORD`, and the rest. The realm therefore
+  carries the **full** Keycloak-26 default list verbatim, with `delete_account` flipped to `enabled: true`
+  (the lone change from stock).
+- **The realm JSON can't carry comment keys.** Keycloak 26 parses the realm with
+  `FAIL_ON_UNKNOWN_PROPERTIES` *on*, so a stray `_comment` field aborts the entire import ("Unrecognized
+  field … not marked as ignorable") and the server won't start. Quirks get documented here, not inline.
+
+The `delete-account` role is granted **per user** in the import
+(`clientRoles: { account: ["delete-account"] }` on `tester` and `test1`) — Keycloak creates the built-in
+`account` client and its roles before it imports users, so this resolves cleanly.
+
+> **Production.** The homelab `apps-prod` realm needs the same two switches: enable the **Delete Account**
+> required action (Realm settings → *Required actions*), and grant the `delete-account` role to users — most
+> simply by adding it to the realm's **default roles** (`default-roles-apps-prod`) so every federated GitHub
+> user picks it up automatically. Until both are set, the card's link still opens the console, but it won't
+> show the delete option.
+
 ## Two ways to sign in locally
 
 The SPA's sign-in is **GitHub-only** (it always sends `idpHint=github`). What happens next depends on

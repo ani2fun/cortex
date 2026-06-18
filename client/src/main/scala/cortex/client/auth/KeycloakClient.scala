@@ -89,6 +89,14 @@ class Keycloak(@unused config: KeycloakConfig) extends js.Object:
   /** Refresh the access token if it expires within `minValidity` seconds. Resolves `true` if refreshed. */
   def updateToken(minValidity: Int): js.Promise[Boolean] = js.native
 
+  /**
+   * Build the URL of Keycloak's own **account console** for this realm. keycloak-js bakes in the realm and a
+   * `referrer` back-link to this app, so we don't string-munge the issuer URL ourselves. This is the only
+   * account-management surface cortex links to — the place a user can permanently delete their own sign-in
+   * identity (when the realm enables self-service account deletion). The server stays unprivileged.
+   */
+  def createAccountUrl(): String = js.native
+
   /** The current access token (a JWT), once authenticated. */
   val token: js.UndefOr[String] = js.native
 

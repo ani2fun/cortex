@@ -18,10 +18,11 @@ import scala.util.{Failure, Success}
  * problem/lesson: all coach history (live sessions + saved transcripts + browser mirrors), all code
  * submissions, or everything at once. Reached from the header avatar's "Manage account & data" entry.
  *
- * Deleting the sign-in **identity** itself is deferred (the server only verifies JWTs today); the page shows
- * a disabled placeholder for it. Each action is `window.confirm`-guarded and reports progress inline; the
- * full wipe reloads so every surface rehydrates empty. Auth-off (local dev) offers only the coach clear — the
- * submissions API rejects authed calls when off.
+ * Deleting the sign-in **identity** itself is handled by linking out to Keycloak's own account console (the
+ * cortex server holds no Keycloak-admin privilege — it only verifies JWTs), where a user can self-delete when
+ * the realm enables it. Each data action is `window.confirm`-guarded and reports progress inline; the full
+ * wipe reloads so every surface rehydrates empty. Auth-off (local dev) offers only the coach clear — there's
+ * no identity to delete and the submissions API rejects authed calls when off.
  */
 object AccountPage:
 
@@ -221,28 +222,17 @@ object AccountPage:
             "Delete all my data",
             deleteAll,
             busy
-          )
+          ),
+          // Identity deletion proper: a link out to Keycloak's own account console (the server stays
+          // unprivileged). The data actions above run first; deleting the identity doesn't erase its data.
+          accountConsoleCard(AuthStore.accountConsoleUrl)
         )
       else
         <.p(
           ^.className := "account-page__danger-note",
-          "Submissions and the full wipe need a signed-in identity — run with auth on to manage them."
+          "Submissions, the full wipe, and account deletion need a signed-in identity — run with auth on to " +
+            "manage them."
         )
-      ,
-      // Deferred: deleting the Keycloak identity itself.
-      <.div(
-        ^.className := "account-page__card account-page__card--disabled",
-        <.div(
-          ^.className := "account-page__card-text",
-          <.h3(^.className := "account-page__card-title", "Delete my account"),
-          <.p(
-            ^.className := "account-page__card-desc",
-            "Removing your sign-in identity isn't available yet. For now, deleting your data above and " +
-              "signing out from the account menu clears your footprint here."
-          )
-        ),
-        <.button(^.tpe := "button", ^.className := "account-page__btn", ^.disabled := true, "Coming soon")
-      )
     )
 
   private def statusBanner(s: Option[Status]): VdomNode = s match
@@ -288,4 +278,35 @@ object AccountPage:
         LucideIcons.Trash2(LucideIcons.withClass("account-page__btn-icon")),
         btnLabel
       )
+    )
+
+  /**
+   * Identity deletion sits one origin away — in Keycloak's account console. We render a link rather than a
+   * delete call so the cortex server never needs Keycloak-admin rights. `url` is `None` only in the unlikely
+   * case keycloak-js can't build it; we then disable the control rather than guess a URL.
+   */
+  private def accountConsoleCard(url: Option[String]): VdomNode =
+    <.div(
+      ^.className := "account-page__card",
+      <.div(
+        ^.className := "account-page__card-text",
+        <.h3(^.className := "account-page__card-title", "Delete my account"),
+        <.p(
+          ^.className := "account-page__card-desc",
+          "Permanently remove your sign-in identity in Keycloak's own account console. Delete your data " +
+            "above first — removing the identity doesn't erase the data tied to it. Opens in a new tab."
+        )
+      ),
+      url match
+        case Some(u) =>
+          <.a(
+            ^.className := "account-page__btn account-page__btn--danger",
+            ^.href      := u,
+            ^.target    := "_blank",
+            ^.rel       := "noopener noreferrer",
+            LucideIcons.ExternalLink(LucideIcons.withClass("account-page__btn-icon")),
+            "Open account console"
+          )
+        case None =>
+          <.button(^.tpe := "button", ^.className := "account-page__btn", ^.disabled := true, "Unavailable")
     )

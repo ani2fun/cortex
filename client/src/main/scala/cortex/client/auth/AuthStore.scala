@@ -3,6 +3,8 @@ package cortex.client.auth
 import cortex.shared.api.Endpoints.UserInfo
 import org.scalajs.dom
 
+import scala.util.Try
+
 /**
  * Global auth state for the SPA — a tiny observable store, deliberately *not* a React context.
  *
@@ -56,6 +58,15 @@ object AuthStore:
 
   /** The tutor service base URL, or `None` if the tutor isn't configured / config hasn't resolved. */
   def tutorBaseUrl: Option[String] = tutorBase
+
+  /**
+   * Keycloak's **account-console** URL for the signed-in user, or `None` when auth is off / not yet booted.
+   * keycloak-js builds it (carrying the realm + a referrer back to the app), so the SPA never reconstructs
+   * the issuer URL by hand. The account console is where a user can permanently delete their own sign-in
+   * identity (when the realm enables self-service deletion) — the server holds no Keycloak-admin privilege.
+   */
+  def accountConsoleUrl: Option[String] =
+    keycloak.flatMap(kc => Try(kc.createAccountUrl()).toOption).map(_.trim).filter(_.nonEmpty)
 
   /** Register a listener; returns an unsubscribe thunk to run on component unmount. */
   def subscribe(listener: Snapshot => Unit): () => Unit =

@@ -142,6 +142,7 @@ flowchart TD
   A["/account · Danger zone"] --> B["Delete all coach history"]
   A --> C["Delete all submissions"]
   A --> D["Delete all my data"]
+  A --> E["Delete my account ↗"]
   B --> B1["tutor: clear sessions + messages"]
   B --> B2["cortex: delete saved transcripts"]
   B --> B3["browser: clear coach mirrors"]
@@ -152,8 +153,10 @@ flowchart TD
   D --> C1
   D --> D1["browser: clear all cortex:* keys"]
   D --> D2["reload the page"]
+  E --> E1["Keycloak account console (new tab)"]
+  E1 --> E2["self-delete identity · when realm enables it"]
 ```
 
-Deleting the **account itself** (the Keycloak identity) isn't wired yet — the server only verifies JWTs, so the page shows it as "coming soon". For now, wiping your data and signing out is the full self-service path.
+Deleting the **account itself** — the Keycloak identity — happens one origin away, in Keycloak's own account console; the **Delete my account** card links straight there (opens in a new tab). The cortex server holds no Keycloak-admin rights, so it never deletes identities itself — the console does, when the realm enables self-service deletion (local dev and the homelab realm both do). Delete your data first: removing the identity doesn't erase the data keyed to it.
 
 > **Next:** [Grounding & the skill](/cortex/cortex-onboarding/cortex-tutor/grounding-and-the-skill) — where the lesson context comes from (an MCP server), and the Agent Skill that encodes the rubric the gate grades against.

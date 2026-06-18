@@ -83,9 +83,6 @@
         @apply mt-2.5 flex items-center justify-between gap-4 rounded-md border border-border
                bg-background/40 px-4 py-3;
     }
-    .account-page__card--disabled {
-        @apply opacity-70;
-    }
     .account-page__card-title {
         @apply m-0 text-[14.5px] font-semibold text-foreground;
     }
