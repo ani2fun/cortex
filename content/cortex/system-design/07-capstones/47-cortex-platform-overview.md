@@ -1,5 +1,6 @@
 ---
 title: '47. Cortex platform (capstone)'
+group: 'Capstone: Cortex Platform (a system you are currently looking at)'
 summary: The first capstone that designs a system you are literally using right now — this site. One Scala binary, three stores, a sandbox, and an AI tutor, on four homelab nodes. We pin the constraints (1 replica, 1Gi, a semaphore of 8) that the next five chapters compute against.
 ---
 

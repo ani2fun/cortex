@@ -40,7 +40,7 @@ Output: [[0, 1, 2, 3]]
 
 > *Before coding — Hamiltonian path detection is NP-hard in general. Why is DFS-enumeration still reasonable here?* Because NP-hardness shows up at large N. For small graphs (N ≤ ~12) the DFS-with-pruning tree is small enough in practice. The intractability is visible at N ≈ 20+ where path counts explode.
 
-```python run viz=graph viz-root=graph
+```python run viz=graph viz-root=graph viz-kind=graph
 import ast
 
 def hamiltonian_paths(graph, source, destination):
@@ -55,7 +55,7 @@ destination = int(input())
 print(hamiltonian_paths(graph, source, destination))
 ```
 
-```java run viz=graph viz-root=graph
+```java run viz=graph viz-root=graph viz-kind=graph
 import java.util.*;
 
 public class Main {

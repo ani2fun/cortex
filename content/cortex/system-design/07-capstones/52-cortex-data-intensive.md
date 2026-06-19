@@ -1,5 +1,6 @@
 ---
 title: '52. Making Cortex data-intensive'
+group: 'Capstone: Cortex Platform (a system you are currently looking at)'
 summary: The fire-and-forget Mongo log and the per-turn token usage are already latent event streams. Turn them on, and Cortex grows analytics, leaderboards, recommendations, a CDC pipeline, and a labeled dataset of how people actually learn and where the gate is wrong.
 ---
 

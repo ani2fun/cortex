@@ -257,8 +257,6 @@ object CortexIndexWalker:
       val sectionDirs = children.collect {
         case d: CortexDir if includesAsContent(d.name) => d
       }
-      val groupOpt = if groupPath.isEmpty then None else Some(groupPath.toSeq)
-
       val chapterError = mdFiles.iterator
         .map { f =>
           val pathSegs = pathInBook :+ f.name
@@ -268,7 +266,16 @@ object CortexIndexWalker:
             val fallback  = humanise(f.name.stripSuffix(".md"))
             val title     = Frontmatter.extractTitle(f.content, fallback)
             val essential = Frontmatter.extractEssential(f.content).getOrElse(inheritedEssential)
-            val relPath   = pathSegs.mkString("/")
+            // A chapter's frontmatter `group:` REPLACES its directory-derived section path with a single
+            // top-level sidebar section of that name — lifting the chapter (and its like-grouped siblings)
+            // OUT of its enclosing directory section into a sibling section of its own. The slug (URL
+            // identity, from the FS path) is untouched, so this regroups the Sidebar Forest with no URL
+            // churn. Chapters without a `group:` keep the directory-derived path.
+            val chGroupPath = Frontmatter.extractGroup(f.content) match
+              case Some(g) => Vector(g)
+              case None    => groupPath
+            val groupOpt = if chGroupPath.isEmpty then None else Some(chGroupPath.toSeq)
+            val relPath  = pathSegs.mkString("/")
             acc += ((
               ChapterRef(slug = slug, title = title, groupPath = groupOpt, essential = Some(essential)),
               relPath

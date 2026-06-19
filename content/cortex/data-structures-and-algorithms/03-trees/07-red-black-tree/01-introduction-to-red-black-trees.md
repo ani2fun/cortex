@@ -16,7 +16,7 @@ If you've used Java's `TreeMap`, C++'s `std::map`, Linux's `epoll`, or the CFS s
 
 ## See It Work
 
-Insert the sorted run `1 … 15` — the BST worst case — into a red-black tree, then check the invariants: root black, every root-to-leaf path crosses the same number of black nodes, no two reds adjacent. Run it.
+Insert a sorted run — the BST worst case — into a red-black tree, then check the invariants: root black, every root-to-leaf path crosses the same number of black nodes, no two reds adjacent. The first case **visualises** the short run `1 … 7` so you can watch every rotation and recolour end to end; the `1 … 15` case verifies the full worst case stays balanced. Run it.
 
 ```python run viz=binary-tree viz-root=root
 import json
@@ -164,9 +164,10 @@ public class Main {
 ```testcases
 {
   "args": [
-    { "id": "keys", "label": "keys to insert", "type": "array", "placeholder": "[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]" }
+    { "id": "keys", "label": "keys to insert", "type": "array", "placeholder": "[1, 2, 3, 4, 5, 6, 7]" }
   ],
   "cases": [
+    { "args": { "keys": "[1, 2, 3, 4, 5, 6, 7]" }, "expected": "inorder: [1, 2, 3, 4, 5, 6, 7]\nroot: BLACK key 2\nblack-height: 3" },
     { "args": { "keys": "[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]" }, "expected": "inorder: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]\nroot: BLACK key 4\nblack-height: 4" },
     { "args": { "keys": "[10, 20, 30]" }, "expected": "inorder: [10, 20, 30]\nroot: BLACK key 20\nblack-height: 2" },
     { "args": { "keys": "[5, 3, 7, 1, 4, 6, 8]" }, "expected": "inorder: [1, 3, 4, 5, 6, 7, 8]\nroot: BLACK key 5\nblack-height: 3" },
@@ -175,7 +176,7 @@ public class Main {
 }
 ```
 
-Both print `inorder: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]`, `root: BLACK key 4`, `black-height: 4`. The sorted run `1…15` is the classic adversarial case for plain BSTs (degenerates to a list of height 15); the red-black tree keeps height at most `2·bh = 8` and in this case lands at 4 — far from the BST worst case.
+The `1…15` case prints `inorder: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]`, `root: BLACK key 4`, `black-height: 4` in both languages. The sorted run `1…15` is the classic adversarial case for plain BSTs (degenerates to a list of height 15); the red-black tree keeps height at most `2·bh = 8` and in this case lands at 4 — far from the BST worst case.
 
 ## How It Works
 

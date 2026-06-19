@@ -46,7 +46,7 @@ Path `0 → 2 → 3`: arrive at 2 at time 2 (even) → no wait → arrive at 3 a
 - Arrival time at source is `0`
 - Return `-1` if destination is unreachable
 
-```python run viz=graph viz-root=routes
+```python run viz=graph viz-root=routes viz-kind=graph
 import ast, heapq
 
 class Solution:
@@ -62,7 +62,7 @@ dst = int(input())
 print(Solution().minimum_travel_time(routes, src, dst))
 ```
 
-```java run viz=graph viz-root=routes
+```java run viz=graph viz-root=routes viz-kind=graph
 import java.util.*;
 
 public class Main {

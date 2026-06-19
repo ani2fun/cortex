@@ -40,7 +40,7 @@ Node 2 is isolated (no edges); nodes 0–1 and 3–4 form pairs.
 - `0 ≤ values[i] ≤ 10⁴`
 - Output components are sorted internally and sorted by their first element (for determinism)
 
-```python run viz=graph viz-root=graph
+```python run viz=graph viz-root=graph viz-kind=graph
 import ast
 
 def connected_components(graph, values):
@@ -56,7 +56,7 @@ result.sort(key=lambda c: c[0] if c else 0)
 print(result)
 ```
 
-```java run viz=graph viz-root=graph
+```java run viz=graph viz-root=graph viz-kind=graph
 import java.util.*;
 
 public class Main {

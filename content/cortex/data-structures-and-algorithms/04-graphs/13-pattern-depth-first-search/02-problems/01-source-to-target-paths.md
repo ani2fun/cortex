@@ -58,7 +58,7 @@ Output: [[0, 4]]
 - The graph is directed and may contain cycles; nodes visited on a path may not repeat.
 - The answer list is ordered by DFS discovery — neighbour order in the adjacency list determines visit order.
 
-```python run viz=graph viz-root=graph
+```python run viz=graph viz-root=graph viz-kind=graph
 import ast
 
 def source_to_target_paths(graph):
@@ -71,7 +71,7 @@ graph = ast.literal_eval(input())
 print(source_to_target_paths(graph))
 ```
 
-```java run viz=graph viz-root=graph
+```java run viz=graph viz-root=graph viz-kind=graph
 import java.util.*;
 
 public class Main {

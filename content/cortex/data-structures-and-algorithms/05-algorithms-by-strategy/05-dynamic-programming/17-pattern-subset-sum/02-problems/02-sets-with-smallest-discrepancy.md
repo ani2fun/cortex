@@ -55,7 +55,7 @@ Explanation: Both subsets get one element summing to 1; |1 − 1| = 0.
 - `1 ≤ arr.length ≤ 200`
 - `0 ≤ arr[i] ≤ 100`
 
-```python run viz=graph viz-root=dp
+```python run viz=grid viz-root=dp
 import ast
 from typing import List
 
@@ -68,7 +68,7 @@ arr = ast.literal_eval(input())
 print(Solution().sets_with_smallest_discrepancy(arr))
 ```
 
-```java run viz=graph viz-root=dp
+```java run viz=grid viz-root=dp
 import java.util.*;
 
 public class Main {

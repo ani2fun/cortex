@@ -45,7 +45,7 @@ Explanation: 'y' appears 3 times, 'z' 3 times (tie broken lex: 'y' < 'z'), 'x' 2
 - `1 ≤ s.length ≤ 5 × 10^5`
 - `s` consists of uppercase and lowercase English letters and digits.
 
-```python run viz=hashmap viz-root=frequency
+```python run viz=hashmap viz-root=frequency viz-kind=hashmap
 class Solution:
     def sort_characters_by_frequency(self, s: str) -> str:
         # Your code goes here — count frequencies, sort by (-freq, char),
@@ -56,7 +56,7 @@ s = input()
 print(Solution().sort_characters_by_frequency(s))
 ```
 
-```java run viz=hashmap viz-root=frequency
+```java run viz=hashmap viz-root=frequency viz-kind=hashmap
 import java.util.*;
 
 public class Main {

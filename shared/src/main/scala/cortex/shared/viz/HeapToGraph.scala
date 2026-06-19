@@ -139,6 +139,14 @@ object HeapToGraph:
       val srcLines = source.split("\n", -1).toVector
       val kept     = prepared.steps.filterNot(s => isHelperFrame(headFn(s)))
       if kept.isEmpty then Left("The trace stepped only through builder frames.")
+      else if layoutHint == "callstack" then
+        // ADR-0024 §"call stack" — the recursion / memory-model chapters hold no heap data structure; the
+        // memory the lesson is about IS the call stack. Render the live frames AS a stack (innermost on
+        // top) instead of hunting for a heap root, so `fact(n)` draws its frames pushing then unwinding.
+        // Built from `frames`, which BOTH tracers capture, so it works in Java too — sidestepping the JVM
+        // tracer's Collection gap (an explicit `ArrayList` stack would not render). One animation, no
+        // case segmentation (there is no viz-root variable to rebind).
+        adaptCallStack(kept, srcLines, title, prepared.truncated).map(g => VizCases(List(g)))
       else
         val segments = segment(kept, rootHint, vizCase)
         val results =
@@ -244,6 +252,65 @@ object HeapToGraph:
         else Right(VizGraph(steps, layoutHint, title, truncated))
 
   /**
+   * Adapt a structure-less trace (`viz=callstack`) into one animation of the call stack itself. Each
+   * surviving step becomes a snapshot of the live frames drawn as a stack; [[diffSteps]] then narrates each
+   * push (a call) and pop (a return). Used by the recursion / memory-model chapters, whose code holds no heap
+   * data structure — the thing worth watching is the stack of frames.
+   */
+  private def adaptCallStack(
+      kept: List[HeapStep],
+      srcLines: Vector[String],
+      title: String,
+      truncated: Boolean
+  ): Either[String, VizGraph] =
+    val built = kept.map(step => buildCallStackStep(step, srcLines))
+    val steps = diffSteps(coalesce(built))
+    if steps.forall(_.nodes.isEmpty) then Left("The trace produced no call frames to visualise.")
+    else Right(VizGraph(steps, "callstack", title, truncated))
+
+  /**
+   * One step → the call stack as drawable cells. Non-helper frames ([[isHelperFrame]], matching the
+   * StackFramesPanel) become slot-bearing nodes with a stable `__cf_frame_<slot>` id — the outermost frame at
+   * slot 0 (the bottom), the active frame on top. The stable per-slot id is what lets [[diffSteps]] light a
+   * pushed frame as new and fade a popped one. `structureType = "stack"` routes the whole graph to the
+   * bespoke StackRenderer; the detailed per-frame locals still populate the StackFramesPanel via `frames`.
+   */
+  private def buildCallStackStep(step: HeapStep, srcLines: Vector[String]): VizGraphStep =
+    val srcLine =
+      if step.line >= 1 && step.line <= srcLines.size then srcLines(step.line - 1).trim else ""
+    val annotation = Annotation(eyebrow = eyebrowOf(step.event), title = "", body = srcLine)
+    val frames     = step.frames.filterNot(f => isHelperFrame(f.fn))
+    val depth      = frames.length
+    val nodes = frames.iterator.zipWithIndex.map { (frame, i) =>
+      val slot = depth - 1 - i // outermost frame at the bottom (slot 0), active frame on top
+      VizNode(s"__cf_frame_$slot", frameStackLabel(frame), "frame", Nil, Some(slot))
+    }.toList
+    VizGraphStep(
+      nodes,
+      Nil,
+      Nil,
+      Nil,
+      Nil,
+      Nil,
+      annotation,
+      step.line,
+      frames = buildFrames(step),
+      structureType = Some("stack")
+    )
+
+  /**
+   * A call-stack cell's label: the function name, plus its first integer argument in parens (`fact(3)`) so
+   * sibling recursive frames are distinguishable at a glance. The program-entry frames (`main` / Python's
+   * `<module>`) show the name alone — their "first int" would be a stray local, not a meaningful argument.
+   */
+  private def frameStackLabel(frame: HeapFrame): String =
+    if frame.fn == "main" || frame.fn == "<module>" then frame.fn
+    else
+      frame.locals
+        .collectFirst { case (_, HeapValue.Scalar(HeapScalar.I(v))) => v }
+        .fold(frame.fn)(v => s"${frame.fn}($v)")
+
+  /**
    * Marker-local detection for the bespoke-renderer dispatch (ADR-0024). When the root object is an Arr,
    * inspect the union of every step's frame locals + function names: a `top` local OR a `push` / `pop` call
    * is a stack; `front` + `back` (both) OR `addFirst` / `pollLast` / `addLast` / `pollFirst` calls is a
@@ -290,22 +357,34 @@ object HeapToGraph:
         sliceAt(v, splits)
 
   /**
-   * The step indices where a new test case begins — the root variable rebound to a fresh structure. "Fresh"
-   * is checked against the set of objects reachable from the *current* case's root at the moment that case
-   * began: a new object outside that set is a new case; an object inside it is the algorithm walking its own
-   * structure (a recursive `insert(root.left, …)` rebinds the parameter to a child — not a new case). The
-   * first index returned establishes case 1; later ones are the boundaries between cases.
+   * The step indices where a new test case begins — the root variable rebound to a *disconnected* structure.
+   *
+   * A rebind stays in the SAME case as long as the new root is still connected to the current one in that
+   * step's heap — checked BOTH directions: either the new root reaches the old (an in-place rotation lifts a
+   * node ABOVE the old root, as RB/AVL/splay/treap insert do — `self.root = y` after `_left_rotate`), or the
+   * old root reaches the new (a recursive `insert(root.left, …)` rebinds the parameter to a child). Only when
+   * neither reaches the other — a driver moving on to a genuinely fresh tree — does a new case start.
+   *
+   * Connectivity is read from the LIVE heap each step, NOT a snapshot taken when the case began. The snapshot
+   * approach (a fixed `reachableFrom(caseRoot)` set) breaks on incrementally-built trees: a rotation rebinds
+   * `root` onto a node inserted AFTER the snapshot, so it looks "fresh" and the one build animation shatters
+   * into a spurious case per rotation (the first being the empty `root = NIL` phase). The live check keeps
+   * the whole build as one animation. The first index returned establishes case 1; later ones split the
+   * cases.
    */
   private def caseBoundaries(v: Vector[HeapStep], hint: String): List[Int] =
-    val out       = mutable.ListBuffer.empty[Int]
-    var caseRoot  = Option.empty[String]
-    var caseReach = Set.empty[String]
+    val out      = mutable.ListBuffer.empty[Int]
+    var caseRoot = Option.empty[String]
     v.indices.foreach { i =>
       rootIdInStep(v(i), hint).foreach { rid =>
-        if caseRoot.forall(cr => rid != cr && !caseReach.contains(rid)) then
+        val connected = caseRoot.exists { cr =>
+          rid == cr ||
+          reachableFrom(rid, v(i).heap).contains(cr) ||
+          reachableFrom(cr, v(i).heap).contains(rid)
+        }
+        if !connected then
           out += i
           caseRoot = Some(rid)
-          caseReach = reachableFrom(rid, v(i).heap).toSet
       }
     }
     out.toList
@@ -478,7 +557,13 @@ object HeapToGraph:
         structureType = structureType
       )
     else
-      val reachable = reachableFrom(rootId, step.heap)
+      // Drop null-sentinel leaves (a CLRS-style `NIL`: a null-valued instance whose only refs, if
+      // any, are self-loops). They're bookkeeping placeholders, not data — and because ONE sentinel
+      // is shared by every leaf, rendering them turns the tree into a DAG of edges into a single
+      // confusing "null" node. Eliding them makes a leaf render empty, exactly like a `None` child
+      // in a sentinel-free tree. Filtered out of `reachable` up front so edges/cursors targeting the
+      // sentinel drop with it (both fan out through the `nodeIds` membership gate below).
+      val reachable = reachableFrom(rootId, step.heap).filterNot(id => isNullSentinel(id, step.heap))
       val rawNodes =
         reachable.flatMap(id => step.heap.get(id).toList.flatMap(nodesOf(id, _, step.heap)))
       val nodeIds = rawNodes.iterator.map(_.id).toSet
@@ -578,8 +663,11 @@ object HeapToGraph:
       heap.get(id) match
         case Some(HeapObject.Instance(_, fields)) =>
           fields.foreach {
+            // `parent.contains(toId)` guards refs that leave the grouped set — e.g. a tree node whose
+            // child is an elided null-sentinel (dropped from `reachable` by buildStep). Without it,
+            // `union`/`find` would dereference an id that was never seeded into `parent`.
             case (_, HeapValue.Ref(toId))
-                if heap.get(toId).exists(_.isInstanceOf[HeapObject.Instance]) =>
+                if parent.contains(toId) && heap.get(toId).exists(_.isInstanceOf[HeapObject.Instance]) =>
               union(id, toId)
             case _ => ()
           }
@@ -853,6 +941,28 @@ object HeapToGraph:
     case HeapObject.Arr(_, items)       => items.collect { case HeapValue.Ref(id) => id }
     case HeapObject.Dict(entries) =>
       entries.flatMap { case (k, v) => List(k, v) }.collect { case HeapValue.Ref(id) => id }
+
+  /**
+   * A null-sentinel leaf — a CLRS-style `NIL`: an instance whose primary VALUE field is explicitly null AND
+   * whose every reference field (if any) is a self-loop. Such a node carries no data; it's the tree's shared
+   * empty-leaf placeholder. [[buildStep]] elides it so a leaf renders empty (like a `None` child) rather than
+   * as a "null" node, and so the one shared sentinel doesn't pull every leaf onto a single DAG node. The
+   * self-loop tolerance covers impls that wire `NIL.left = NIL.right = NIL`; a null-valued node that refers
+   * to OTHER nodes is kept (dropping it would orphan real children).
+   */
+  private def isNullSentinel(id: String, heap: Map[String, HeapObject]): Boolean =
+    heap.get(id) match
+      case Some(HeapObject.Instance(_, fields)) =>
+        val byName = fields.toMap
+        val primaryNull = ValueFields.find(byName.contains).flatMap(byName.get) match
+          case Some(HeapValue.Scalar(HeapScalar.Null)) => true
+          case _                                       => false
+        val refsAllSelf = fields.forall {
+          case (_, HeapValue.Ref(to)) => to == id
+          case _                      => true
+        }
+        primaryNull && refsAllSelf
+      case _ => false
 
   /** Ids reachable from `start` over references, in deterministic depth-first order. */
   private def reachableFrom(start: String, heap: Map[String, HeapObject]): List[String] =

@@ -72,7 +72,7 @@ Explanation: Single digit 2 → abc (3 choices) → 3 combinations.
 - `digits[i]` is a digit in the range `['2', '9']`.
 - No empty-string test case (avoids stdin EOF crash — the empty-digits case returns `[]` and is covered in the editorial edge cases).
 
-```python run viz=graph viz-root=current_combination
+```python run viz=array viz-root=current_combination
 from typing import List
 
 class Solution:
@@ -86,7 +86,7 @@ r = Solution().phone_combinations(digits)
 print("[" + ", ".join(r) + "]")
 ```
 
-```java run viz=graph viz-root=current_combination
+```java run viz=array viz-root=current_combination
 import java.util.*;
 
 public class Main {

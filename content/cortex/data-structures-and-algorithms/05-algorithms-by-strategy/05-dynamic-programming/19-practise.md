@@ -1099,7 +1099,7 @@ Then backtrack to reconstruct the subsequence string.
 
 
 
-```python run viz=graph viz-root=dp
+```python run viz=grid viz-root=dp
 from typing import List
 
 class Solution:
@@ -1170,7 +1170,7 @@ s = input()
 print(Solution().longest_repeated_subsequence(s))
 ```
 
-```java run viz=graph viz-root=dp
+```java run viz=grid viz-root=dp
 import java.util.*;
 
 public class Main {

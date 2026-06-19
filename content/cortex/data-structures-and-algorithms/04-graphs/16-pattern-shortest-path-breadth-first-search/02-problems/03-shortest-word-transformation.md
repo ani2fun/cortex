@@ -43,7 +43,7 @@ Output: 0   (target not reachable)
 - `0 ≤ wordList.length ≤ 5000`
 - `0 ≤ O(N × L × 26)` time — per-position character substitution BFS
 
-```python run viz=graph viz-root=queue
+```python run viz=array viz-root=queue viz-kind=queue
 import ast
 
 class Solution:
@@ -59,7 +59,7 @@ word_list = ast.literal_eval(input())
 print(Solution().shortest_word_transformation(source, target, word_list))
 ```
 
-```java run viz=graph viz-root=queue
+```java run viz=array viz-root=queue viz-kind=queue
 import java.util.*;
 
 public class Main {

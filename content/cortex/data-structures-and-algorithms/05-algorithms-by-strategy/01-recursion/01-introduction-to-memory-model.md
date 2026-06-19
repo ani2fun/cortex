@@ -13,7 +13,7 @@ You didn't write a bad algorithm — you ran out of a **region of memory** most 
 
 Recursion makes the stack *visible*. Each call pushes a frame; each return pops one. Watch `fact(n)` stack frames deep, hit the base case, then unwind last-in-first-out:
 
-```python run viz=array
+```python run viz=callstack
 def fact(n, depth=0):
     pad = "  " * depth
     print(f"{pad}push fact({n})")                 # a frame is pushed onto the stack
@@ -28,7 +28,7 @@ n = int(input())                  # the test case's n
 print("result:", fact(n))
 ```
 
-```java run viz=array
+```java run viz=callstack
 import java.util.*;
 
 public class Main {
@@ -125,7 +125,7 @@ Which region a value lives in decides its lifetime — and a name *assigned* ins
 
 **Predict before you run:** does this print `1`, or something else?
 
-```python run viz=array
+```python run
 counter = 0                      # lives in the static/global region
 
 def tick():
@@ -149,7 +149,7 @@ It raises `UnboundLocalError: cannot access local variable 'counter' where it is
 
 The flip side: state that must **survive across calls** can't live on the stack (frames vanish on return) — it belongs in the **static** region. Implement a call-counter that returns how many times it has been called. Its value must persist even though every call gets a brand-new frame.
 
-```python run viz=array
+```python run viz=array viz-root=results
 def call_count():
     # Your code goes here — the counter must survive across calls.
     # Hint: a function attribute persists with the function object (heap),
@@ -157,11 +157,13 @@ def call_count():
     return 0
 
 k = int(input())                  # the test case's k (number of calls)
-results = [call_count() for _ in range(k)]
+results = []
+for _ in range(k):
+    results.append(call_count())  # watch results fill: 1, 2, 3 … proves the counter persists
 print(" ".join(str(r) for r in results))
 ```
 
-```java run viz=array
+```java run viz=array viz-root=results
 import java.util.*;
 
 public class Main {
@@ -173,9 +175,11 @@ public class Main {
 
     public static void main(String[] args) {
         int k = Integer.parseInt(new Scanner(System.in).nextLine().trim());
-        List<String> results = new ArrayList<>();
-        for (int i = 0; i < k; i++) results.add(String.valueOf(Counter.callCount()));
-        System.out.println(String.join(" ", results));
+        int[] results = new int[k];                       // a plain array draws as a row of cells
+        for (int i = 0; i < k; i++) results[i] = Counter.callCount();
+        StringBuilder out = new StringBuilder();
+        for (int i = 0; i < k; i++) out.append(i == 0 ? "" : " ").append(results[i]);
+        System.out.println(out.toString());
     }
 }
 ```

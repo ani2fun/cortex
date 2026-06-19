@@ -285,6 +285,40 @@
     .cortex-reader-sidebar__section--depth-0 > .cortex-reader-sidebar__section-details > .cortex-reader-sidebar__section-summary {
         @apply mt-3;
     }
+    /* ── Homelab capstone accent ───────────────────────────────────────────────
+       The "Capstone: Cortex Platform" section documents the live homelab this very
+       site runs on. It stands as its OWN top-level section (sibling to Capstones, via
+       the `group:` frontmatter), and a warm amber accent — distinct from the indigo
+       --primary used everywhere else — on the label, chevron, and a short left bar
+       flags "this is the real system you're looking at." Amber reads legibly on both
+       the light and dark reader surfaces. */
+    .cortex-reader-sidebar__section--homelab {
+        --cortex-homelab: 32 95% 48%;
+    }
+    .cortex-reader-sidebar__section--homelab
+        > .cortex-reader-sidebar__section-details
+        > .cortex-reader-sidebar__section-summary {
+        border-left: 2px solid hsl(var(--cortex-homelab));
+        border-radius: 1px;
+        padding-left: 8px;
+        margin-left: -2px;
+    }
+    .cortex-reader-sidebar__section--homelab
+        > .cortex-reader-sidebar__section-details
+        > .cortex-reader-sidebar__section-summary
+        .cortex-reader-sidebar__section-name,
+    .cortex-reader-sidebar__section--homelab
+        > .cortex-reader-sidebar__section-details
+        > .cortex-reader-sidebar__section-summary
+        .cortex-reader-sidebar__section-chevron {
+        color: hsl(var(--cortex-homelab));
+    }
+    /* Tint the group's connector rail amber so its chapters read as one unit. */
+    .cortex-reader-sidebar__section--homelab
+        > .cortex-reader-sidebar__section-details
+        > .cortex-reader-sidebar__section-children {
+        border-left-color: hsl(var(--cortex-homelab) / 0.4);
+    }
     .cortex-reader-sidebar__chapter-item {
         @apply list-none;
     }

@@ -116,6 +116,35 @@ object CortexIndexWalkerSpec extends ZIOSpecDefault:
           chapters(1).groupPath == Some(Seq("System"))
         )
       },
+      test("a chapter's frontmatter `group:` lifts it into a SEPARATE top-level section, slug unchanged") {
+        val tree = book(
+          "guide",
+          children = List(
+            section(
+              "07-capstones",
+              meta = Some(SectionMeta(title = Some("Capstones"), summary = None)),
+              children = List(
+                chapter("37-url-shortener.md", "---\ntitle: 'URL shortener'\n---\n# URL shortener"),
+                chapter(
+                  "47-cortex-overview.md",
+                  "---\ntitle: 'Cortex'\ngroup: 'Cortex Platform'\n---\n# Cortex"
+                )
+              )
+            )
+          )
+        )
+        val Right(r)           = CortexIndexWalker.walk(List(tree)): @unchecked
+        val chapters           = r.index.books.head.chapters
+        def find(slug: String) = chapters.find(_.slug == slug)
+        assertTrue(
+          // The slug is the order-stripped directory path — `group:` leaves it untouched (no URL churn).
+          find("capstones/cortex-overview").isDefined,
+          // A plain capstone stays under its directory section.
+          find("capstones/url-shortener").exists(_.groupPath == Some(Seq("Capstones"))),
+          // The grouped capstone is lifted OUT into its own top-level section — sibling to Capstones, not nested.
+          find("capstones/cortex-overview").exists(_.groupPath == Some(Seq("Cortex Platform")))
+        )
+      },
       test("section title falls back to humanised dir name when SectionMeta is absent") {
         val tree = book(
           "guide",

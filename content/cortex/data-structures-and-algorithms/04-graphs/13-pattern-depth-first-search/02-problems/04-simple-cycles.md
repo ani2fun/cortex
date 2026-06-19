@@ -45,7 +45,7 @@ Cycles: `0→1→2→0` and `0→2→1→0` — both pass through node 1.
 - source and destination are valid node indices
 - A valid cycle must contain at least 3 distinct nodes; 2-node back-edges (`u→v→u`) are not counted
 
-```python run viz=graph viz-root=graph
+```python run viz=graph viz-root=graph viz-kind=graph
 import ast
 
 def simple_cycles(graph, source, destination):
@@ -61,7 +61,7 @@ destination = int(input())
 print(simple_cycles(graph, source, destination))
 ```
 
-```java run viz=graph viz-root=graph
+```java run viz=graph viz-root=graph viz-kind=graph
 import java.util.*;
 
 public class Main {

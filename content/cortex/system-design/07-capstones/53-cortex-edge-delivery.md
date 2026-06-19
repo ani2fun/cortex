@@ -1,5 +1,6 @@
 ---
 title: '53. Cortex, made fast — compression, caching & the edge'
+group: 'Capstone: Cortex Platform (a system you are currently looking at)'
 summary: Chapter 48 found the reader ceiling was the home upload link and said "you'll need a CDN." This is that stage — shipped and measured. gzip at the origin, immutable cache headers, a landing bundle that lazy-loads its heavy chunks, and a Cloudflare proxy cut first-load ~10.8 MB → 929 KB (~12×), made repeat visits ~free, and lifted the egress-bound reader ceiling from ~500 reads/s toward CPU-bound — with cf-cache HITs proving assets now leave the home tunnel entirely.
 ---
 

@@ -149,6 +149,26 @@ const LAYOUT_RENDERERS: Record<string, RendererFn> = {
   "linked-list": linkedListRenderer,
   "list-single": linkedListRenderer,
   "list-double": linkedListRenderer,
+  // Slot/shape structures whose generic circle rendering HIDES the idea (a stack's
+  // LIFO column, a bitset's set/clear contrast, a Fenwick staircase, …). A static
+  // `d3 widget=<name>` fence carries no `structureType` (only runnable `viz-kind=`
+  // blocks set one), so without an entry here these fences fell through to the
+  // generic circle renderer — the catalog gallery and the segment-tree/fenwick
+  // lesson fences rendered as plain circles instead of their bespoke widget. These
+  // per-card renderers read only `slot` / `label` / `level`-meta, exactly what the
+  // hand-authored payloads already carry, so routing the layoutKind to them needs
+  // no payload change. (These layoutKinds are NEVER produced by the trace adapter —
+  // they're not in HeapToGraph.KnownLayoutKinds and inferOneCard never returns them
+  // — so this only upgrades static fences; runnable traces are untouched.)
+  // segment-tree is the one exception: its renderer also needs `lo`/`hi` meta +
+  // `left`/`right` edges, reconciled in the payloads (see segment-tree-renderer.ts).
+  stack: stackRenderer,
+  queue: queueRenderer,
+  deque: queueRenderer,
+  bitset: bitsetRenderer,
+  skiplist: skiplistRenderer,
+  fenwick: fenwickRenderer,
+  "segment-tree": segmentTreeRenderer,
 };
 
 /**

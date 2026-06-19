@@ -41,7 +41,7 @@ Output: 2
 - `1 ≤ edge cost ≤ 10⁴`
 - Return `-1` if destination is unreachable within `k` stops
 
-```python run viz=graph viz-root=flights
+```python run viz=graph viz-root=flights viz-kind=graph
 import ast, heapq
 
 class Solution:
@@ -58,7 +58,7 @@ k = int(input())
 print(Solution().cheapest_flights(flights, src, dst, k))
 ```
 
-```java run viz=graph viz-root=flights
+```java run viz=graph viz-root=flights viz-kind=graph
 import java.util.*;
 
 public class Main {

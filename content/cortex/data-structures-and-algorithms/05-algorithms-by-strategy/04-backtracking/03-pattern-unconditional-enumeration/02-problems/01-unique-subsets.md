@@ -61,7 +61,7 @@ Explanation: The empty set has exactly one subset — itself.
 - All elements are unique.
 - The result is the power set; subsets may be returned in any order (these tests use the order the backtracking discovers them — include-first).
 
-```python run viz=graph viz-root=arr
+```python run viz=array viz-root=arr
 import ast
 from typing import List
 
@@ -76,7 +76,7 @@ arr = ast.literal_eval(input())     # the test case's arr
 print(Solution().unique_subsets(arr))
 ```
 
-```java run viz=graph viz-root=arr
+```java run viz=array viz-root=arr
 import java.util.*;
 
 public class Main {

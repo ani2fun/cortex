@@ -68,7 +68,7 @@ Explanation: Each subset gets one element summing to 2.
 - `1 ≤ arr.length ≤ 200`
 - `1 ≤ arr[i] ≤ 100`
 
-```python run viz=graph viz-root=dp
+```python run viz=grid viz-root=dp
 import ast
 from typing import List
 
@@ -81,7 +81,7 @@ arr = ast.literal_eval(input())
 print("true" if Solution().partition_with_equal_sum(arr) else "false")
 ```
 
-```java run viz=graph viz-root=dp
+```java run viz=grid viz-root=dp
 import java.util.*;
 
 public class Main {

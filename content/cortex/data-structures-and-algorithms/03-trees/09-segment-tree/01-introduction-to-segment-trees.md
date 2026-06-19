@@ -115,68 +115,68 @@ A range query *could* visit every node — that would be `O(n)`. It doesn't: que
   "steps": [
     {
       "nodes": [
-        {"id": "1", "label": "16", "kind": "node", "slot": 1, "meta": [{"name": "range", "value": "[0,3]"}], "cardId": "", "layoutKind": ""},
-        {"id": "2", "label": "4",  "kind": "node", "slot": 2, "meta": [{"name": "range", "value": "[0,1]"}], "cardId": "", "layoutKind": ""},
-        {"id": "3", "label": "12", "kind": "node", "slot": 3, "meta": [{"name": "range", "value": "[2,3]"}], "cardId": "", "layoutKind": ""},
-        {"id": "4", "label": "1",  "kind": "leaf", "slot": 4, "meta": [{"name": "range", "value": "[0,0]"}], "cardId": "", "layoutKind": ""},
-        {"id": "5", "label": "3",  "kind": "leaf", "slot": 5, "meta": [{"name": "range", "value": "[1,1]"}], "cardId": "", "layoutKind": ""},
-        {"id": "6", "label": "5",  "kind": "leaf", "slot": 6, "meta": [{"name": "range", "value": "[2,2]"}], "cardId": "", "layoutKind": ""},
-        {"id": "7", "label": "7",  "kind": "leaf", "slot": 7, "meta": [{"name": "range", "value": "[3,3]"}], "cardId": "", "layoutKind": ""}
+        {"id": "1", "label": "16", "kind": "node", "slot": 1, "meta": [{"name": "lo", "value": "0"}, {"name": "hi", "value": "3"}], "cardId": "", "layoutKind": ""},
+        {"id": "2", "label": "4",  "kind": "node", "slot": 2, "meta": [{"name": "lo", "value": "0"}, {"name": "hi", "value": "1"}], "cardId": "", "layoutKind": ""},
+        {"id": "3", "label": "12", "kind": "node", "slot": 3, "meta": [{"name": "lo", "value": "2"}, {"name": "hi", "value": "3"}], "cardId": "", "layoutKind": ""},
+        {"id": "4", "label": "1",  "kind": "leaf", "slot": 4, "meta": [{"name": "lo", "value": "0"}, {"name": "hi", "value": "0"}], "cardId": "", "layoutKind": ""},
+        {"id": "5", "label": "3",  "kind": "leaf", "slot": 5, "meta": [{"name": "lo", "value": "1"}, {"name": "hi", "value": "1"}], "cardId": "", "layoutKind": ""},
+        {"id": "6", "label": "5",  "kind": "leaf", "slot": 6, "meta": [{"name": "lo", "value": "2"}, {"name": "hi", "value": "2"}], "cardId": "", "layoutKind": ""},
+        {"id": "7", "label": "7",  "kind": "leaf", "slot": 7, "meta": [{"name": "lo", "value": "3"}, {"name": "hi", "value": "3"}], "cardId": "", "layoutKind": ""}
       ],
       "edges": [
-        {"from": "2", "to": "1", "label": ""},
-        {"from": "3", "to": "1", "label": ""},
-        {"from": "4", "to": "2", "label": ""},
-        {"from": "5", "to": "2", "label": ""},
-        {"from": "6", "to": "3", "label": ""},
-        {"from": "7", "to": "3", "label": ""}
+        {"from": "1", "to": "2", "label": "left"},
+        {"from": "1", "to": "3", "label": "right"},
+        {"from": "2", "to": "4", "label": "left"},
+        {"from": "2", "to": "5", "label": "right"},
+        {"from": "3", "to": "6", "label": "left"},
+        {"from": "3", "to": "7", "label": "right"}
       ],
       "cursor": [], "highlight": [], "changed": [], "removed": [],
-      "annotation": "Initial state. Query: sum(A[1..3]) = 3+5+7 = 15.",
+      "annotation": "Built. Root [0,3] stores the total sum 16; each node stores the sum over its range.",
       "line": 0, "frames": [], "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "1", "label": "16", "kind": "node", "slot": 1, "meta": [{"name": "range", "value": "[0,3]"}], "cardId": "", "layoutKind": ""},
-        {"id": "2", "label": "4",  "kind": "node", "slot": 2, "meta": [{"name": "range", "value": "[0,1]"}], "cardId": "", "layoutKind": ""},
-        {"id": "3", "label": "12", "kind": "node", "slot": 3, "meta": [{"name": "range", "value": "[2,3]"}], "cardId": "", "layoutKind": ""},
-        {"id": "4", "label": "1",  "kind": "leaf", "slot": 4, "meta": [{"name": "range", "value": "[0,0]"}], "cardId": "", "layoutKind": ""},
-        {"id": "5", "label": "3",  "kind": "leaf", "slot": 5, "meta": [{"name": "range", "value": "[1,1]"}], "cardId": "", "layoutKind": ""},
-        {"id": "6", "label": "5",  "kind": "leaf", "slot": 6, "meta": [{"name": "range", "value": "[2,2]"}], "cardId": "", "layoutKind": ""},
-        {"id": "7", "label": "7",  "kind": "leaf", "slot": 7, "meta": [{"name": "range", "value": "[3,3]"}], "cardId": "", "layoutKind": ""}
+        {"id": "1", "label": "16", "kind": "node", "slot": 1, "meta": [{"name": "lo", "value": "0"}, {"name": "hi", "value": "3"}], "cardId": "", "layoutKind": ""},
+        {"id": "2", "label": "4",  "kind": "node", "slot": 2, "meta": [{"name": "lo", "value": "0"}, {"name": "hi", "value": "1"}], "cardId": "", "layoutKind": ""},
+        {"id": "3", "label": "12", "kind": "node", "slot": 3, "meta": [{"name": "lo", "value": "2"}, {"name": "hi", "value": "3"}], "cardId": "", "layoutKind": ""},
+        {"id": "4", "label": "1",  "kind": "leaf", "slot": 4, "meta": [{"name": "lo", "value": "0"}, {"name": "hi", "value": "0"}], "cardId": "", "layoutKind": ""},
+        {"id": "5", "label": "3",  "kind": "leaf", "slot": 5, "meta": [{"name": "lo", "value": "1"}, {"name": "hi", "value": "1"}], "cardId": "", "layoutKind": ""},
+        {"id": "6", "label": "5",  "kind": "leaf", "slot": 6, "meta": [{"name": "lo", "value": "2"}, {"name": "hi", "value": "2"}], "cardId": "", "layoutKind": ""},
+        {"id": "7", "label": "7",  "kind": "leaf", "slot": 7, "meta": [{"name": "lo", "value": "3"}, {"name": "hi", "value": "3"}], "cardId": "", "layoutKind": ""}
       ],
       "edges": [
-        {"from": "2", "to": "1", "label": ""},
-        {"from": "3", "to": "1", "label": ""},
-        {"from": "4", "to": "2", "label": ""},
-        {"from": "5", "to": "2", "label": ""},
-        {"from": "6", "to": "3", "label": ""},
-        {"from": "7", "to": "3", "label": ""}
+        {"from": "1", "to": "2", "label": "left"},
+        {"from": "1", "to": "3", "label": "right"},
+        {"from": "2", "to": "4", "label": "left"},
+        {"from": "2", "to": "5", "label": "right"},
+        {"from": "3", "to": "6", "label": "left"},
+        {"from": "3", "to": "7", "label": "right"}
       ],
-      "cursor": [], "highlight": ["1","2","4","5","3"], "changed": [], "removed": [],
-      "annotation": "Traversal: root[0,3] partial. Left[0,1] partial. [0,0] outside (skip). [1,1] fully inside. Right[2,3] fully inside.",
+      "cursor": [{"name": "cur", "target": "3", "color": "#6366f1"}], "highlight": [], "changed": [], "removed": [],
+      "annotation": "Descend for sum[1,3]: root [0,3] and left [0,1] straddle the range, so recurse; right child [2,3] lies fully inside — take it whole.",
       "line": 0, "frames": [], "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "1", "label": "16", "kind": "node", "slot": 1, "meta": [{"name": "range", "value": "[0,3]"}], "cardId": "", "layoutKind": ""},
-        {"id": "2", "label": "4",  "kind": "node", "slot": 2, "meta": [{"name": "range", "value": "[0,1]"}], "cardId": "", "layoutKind": ""},
-        {"id": "3", "label": "12", "kind": "node", "slot": 3, "meta": [{"name": "range", "value": "[2,3]"}], "cardId": "", "layoutKind": ""},
-        {"id": "4", "label": "1",  "kind": "leaf", "slot": 4, "meta": [{"name": "range", "value": "[0,0]"}], "cardId": "", "layoutKind": ""},
-        {"id": "5", "label": "3",  "kind": "leaf", "slot": 5, "meta": [{"name": "range", "value": "[1,1]"}], "cardId": "", "layoutKind": ""},
-        {"id": "6", "label": "5",  "kind": "leaf", "slot": 6, "meta": [{"name": "range", "value": "[2,2]"}], "cardId": "", "layoutKind": ""},
-        {"id": "7", "label": "7",  "kind": "leaf", "slot": 7, "meta": [{"name": "range", "value": "[3,3]"}], "cardId": "", "layoutKind": ""}
+        {"id": "1", "label": "16", "kind": "node", "slot": 1, "meta": [{"name": "lo", "value": "0"}, {"name": "hi", "value": "3"}], "cardId": "", "layoutKind": ""},
+        {"id": "2", "label": "4",  "kind": "node", "slot": 2, "meta": [{"name": "lo", "value": "0"}, {"name": "hi", "value": "1"}], "cardId": "", "layoutKind": ""},
+        {"id": "3", "label": "12", "kind": "node", "slot": 3, "meta": [{"name": "lo", "value": "2"}, {"name": "hi", "value": "3"}], "cardId": "", "layoutKind": ""},
+        {"id": "4", "label": "1",  "kind": "leaf", "slot": 4, "meta": [{"name": "lo", "value": "0"}, {"name": "hi", "value": "0"}], "cardId": "", "layoutKind": ""},
+        {"id": "5", "label": "3",  "kind": "leaf", "slot": 5, "meta": [{"name": "lo", "value": "1"}, {"name": "hi", "value": "1"}], "cardId": "", "layoutKind": ""},
+        {"id": "6", "label": "5",  "kind": "leaf", "slot": 6, "meta": [{"name": "lo", "value": "2"}, {"name": "hi", "value": "2"}], "cardId": "", "layoutKind": ""},
+        {"id": "7", "label": "7",  "kind": "leaf", "slot": 7, "meta": [{"name": "lo", "value": "3"}, {"name": "hi", "value": "3"}], "cardId": "", "layoutKind": ""}
       ],
       "edges": [
-        {"from": "2", "to": "1", "label": ""},
-        {"from": "3", "to": "1", "label": ""},
-        {"from": "4", "to": "2", "label": ""},
-        {"from": "5", "to": "2", "label": ""},
-        {"from": "6", "to": "3", "label": ""},
-        {"from": "7", "to": "3", "label": ""}
+        {"from": "1", "to": "2", "label": "left"},
+        {"from": "1", "to": "3", "label": "right"},
+        {"from": "2", "to": "4", "label": "left"},
+        {"from": "2", "to": "5", "label": "right"},
+        {"from": "3", "to": "6", "label": "left"},
+        {"from": "3", "to": "7", "label": "right"}
       ],
-      "cursor": [], "highlight": [], "changed": ["5","3"], "removed": [],
-      "annotation": "Answer segments: node 5 ([1,1] = 3) + node 3 ([2,3] = 12). Total = 15.",
+      "cursor": [], "highlight": [], "changed": ["5", "3"], "removed": [],
+      "annotation": "Two canonical segments answer the query: [1,1] = 3 and [2,3] = 12. Sum = 15.",
       "line": 0, "frames": [], "cardCursor": []
     }
   ]

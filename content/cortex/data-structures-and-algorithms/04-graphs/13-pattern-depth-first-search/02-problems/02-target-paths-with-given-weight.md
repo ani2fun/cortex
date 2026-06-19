@@ -41,7 +41,7 @@ Output: [[3, 2, 4], [3, 2, 0, 4], [3, 4]]
 - source and destination are valid node indices.
 - No node may appear more than once in a path; the source node at position 0 counts as the first visit.
 
-```python run viz=graph viz-root=graph
+```python run viz=graph viz-root=graph viz-kind=graph
 import ast
 
 def target_paths(graph, source, destination, target):
@@ -59,7 +59,7 @@ target = int(input())
 print(target_paths(graph, source, destination, target))
 ```
 
-```java run viz=graph viz-root=graph
+```java run viz=graph viz-root=graph viz-kind=graph
 import java.util.*;
 
 public class Main {

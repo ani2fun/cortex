@@ -105,9 +105,16 @@ object CortexSidebar:
       )
     case s @ Section(title, depth, children) =>
       val open = s.containsActive(activeSlug) || query.trim.nonEmpty
+      // The Cortex-platform capstone documents the live homelab this very site runs on. Flag it so the
+      // sidebar can give it a distinct accent — a visual cue that these chapters describe the system the
+      // reader is currently looking at, not a generic textbook example.
+      val homelab = title.contains("Cortex Platform")
       <.li(
-        ^.key       := s"sec-$depth-$title",
-        ^.className := s"cortex-reader-sidebar__section cortex-reader-sidebar__section--depth-$depth",
+        ^.key := s"sec-$depth-$title",
+        ^.className := {
+          val base = s"cortex-reader-sidebar__section cortex-reader-sidebar__section--depth-$depth"
+          if homelab then s"$base cortex-reader-sidebar__section--homelab" else base
+        },
         <.details(
           ^.className := "cortex-reader-sidebar__section-details",
           ^.open      := open,

@@ -569,6 +569,73 @@ object HeapToGraphSpec extends ZIOSpecDefault:
         result.exists(_.cases.head.steps(1).cursor.exists(c => c.name == "root" && c.target == "B"))
       )
     },
+    test("keeps an incrementally-built tree whose root ROTATES onto a later node in one case") {
+      // RB/AVL-style build: root grows (A, then A with right child B), then a left rotation lifts B
+      // ABOVE A so `root` rebinds A → B. B was inserted AFTER this case began, yet it now REACHES the
+      // old root A (B.left = A) — same evolving structure, so ONE animation, not a spurious new case.
+      // The old snapshot heuristic split here (B wasn't in reachableFrom(A) captured at case start),
+      // surfacing the empty `root = NIL` phase as a useless first case — the red-black-tree bug.
+      val h1 = Map("A" -> treeNode(1, nul, nul))
+      val h2 = Map("A" -> treeNode(1, nul, ref("B")), "B" -> treeNode(2, nul, nul))
+      val h3 = Map("B" -> treeNode(2, ref("A"), nul), "A" -> treeNode(1, nul, nul))
+      val trace = HeapTrace(
+        List(
+          mstep(1, List("root" -> ref("A")), h1),
+          mstep(2, List("root" -> ref("A")), h2),
+          mstep(3, List("root" -> ref("B")), h3)
+        ),
+        truncated = false
+      )
+      val result = HeapToGraph.adapt(trace, src, "binary-tree", Some("root"), None, "t")
+      assertTrue(
+        result.isRight,
+        result.exists(_.cases.size == 1),
+        result.exists(_.cases.head.steps.last.nodes.map(_.label).toSet == Set("1", "2"))
+      )
+    },
+    test("RBTree NIL-sentinel is elided — root=Node(1) renders the real node, never a 'null' leaf") {
+      val nilNode =
+        instance("Node", "key" -> nul, "colour" -> int(1), "left" -> nul, "right" -> nul, "parent" -> nul)
+      val node1 = instance(
+        "Node",
+        "key"    -> int(1),
+        "colour" -> int(0),
+        "left"   -> ref("N"),
+        "right"  -> ref("N"),
+        "parent" -> nul
+      )
+      val h0 = Map[String, HeapObject](
+        "RB" -> instance("RBTree", "NIL" -> ref("N"), "root" -> ref("N")),
+        "N"  -> nilNode
+      )
+      val h1 = Map[String, HeapObject](
+        "RB" -> instance("RBTree", "NIL" -> ref("N"), "root" -> ref("N")),
+        "N"  -> nilNode,
+        "n1" -> node1
+      )
+      val h2 = Map[String, HeapObject](
+        "RB" -> instance("RBTree", "NIL" -> ref("N"), "root" -> ref("n1")),
+        "N"  -> nilNode,
+        "n1" -> node1
+      )
+      val trace = HeapTrace(
+        List(
+          mstep(1, List("t" -> ref("RB")), h0),
+          mstep(36, List("key" -> int(1), "z" -> ref("n1"), "y" -> nul, "x" -> ref("N")), h1),
+          mstep(44, List("key" -> int(1), "z" -> ref("n1"), "y" -> nul, "x" -> ref("N")), h2)
+        ),
+        truncated = false
+      )
+      val result = HeapToGraph.adapt(trace, src, "binary-tree", Some("root"), None, "t")
+      val lastLabels =
+        result.toOption.flatMap(_.cases.head.steps.lastOption).map(_.nodes.map(_.label)).getOrElse(Nil)
+      assertTrue(
+        result.isRight,
+        result.exists(_.cases.size == 1),
+        lastLabels.contains("1"),    // the real node is visible once root points at it
+        !lastLabels.contains("null") // the shared NIL sentinel is elided — no confusing "null" node, no DAG
+      )
+    },
     test("viz-case overrides the detected case count") {
       // three single-node trees → three cases auto-detected; viz-case forces the count.
       val trace = HeapTrace(
@@ -907,6 +974,69 @@ object HeapToGraphSpec extends ZIOSpecDefault:
         result.exists(_.steps.head.nodes.exists(n => n.cardId == "A" && n.layoutKind == "tree-binary")),
         result.exists(_.steps.head.nodes.exists(n => n.cardId == "D" && n.layoutKind == "hashmap")),
         result.exists(_.steps.head.nodes.map(_.cardId).distinct.size == 2)
+      )
+    },
+    test("viz=callstack draws the live frames as a stack that pushes on call and unwinds on return") {
+      // A 2-deep recursion with no heap data: <module> calls fact(2), which calls fact(1); both return.
+      val trace = HeapTrace(
+        List(
+          HeapStep(
+            10,
+            "call",
+            List(HeapFrame("<module>", List("n" -> int(2)))),
+            Map.empty[String, HeapObject]
+          ),
+          HeapStep(
+            2,
+            "call",
+            List(HeapFrame("fact", List("n" -> int(2))), HeapFrame("<module>", List("n" -> int(2)))),
+            Map.empty[String, HeapObject]
+          ),
+          HeapStep(
+            2,
+            "call",
+            List(
+              HeapFrame("fact", List("n" -> int(1))),
+              HeapFrame("fact", List("n" -> int(2))),
+              HeapFrame("<module>", List("n" -> int(2)))
+            ),
+            Map.empty[String, HeapObject]
+          ),
+          HeapStep(
+            5,
+            "return",
+            List(HeapFrame("fact", List("n" -> int(2))), HeapFrame("<module>", List("n" -> int(2)))),
+            Map.empty[String, HeapObject]
+          ),
+          HeapStep(
+            10,
+            "return",
+            List(HeapFrame("<module>", List("n" -> int(2)))),
+            Map.empty[String, HeapObject]
+          )
+        ),
+        truncated = false
+      )
+      val result = adaptSingle(trace, src, "callstack", None, "Call stack")
+      // The label set of each step's stack cells (arg-labelled so recursive frames stay distinct).
+      val labelSets =
+        result.toOption.toList
+          .flatMap(_.steps)
+          .map(_.nodes.filter(_.id.startsWith("__cf_frame_")).map(_.label).toSet)
+      assertTrue(
+        result.exists(_.layoutHint == "callstack"),
+        // every step routes to the bespoke StackRenderer
+        result.exists(_.steps.forall(_.structureType.contains("stack"))),
+        // every drawn node is a slot-bearing call-frame cell
+        result.exists(_.steps.forall(_.nodes.forall(n =>
+          n.id.startsWith("__cf_frame_") && n.slot.isDefined
+        ))),
+        // the deepest snapshot is <module> + fact(2) + fact(1), each labelled with its int arg
+        labelSets.contains(Set("<module>", "fact(2)", "fact(1)")),
+        // a call pushes a new cell …
+        result.exists(_.steps.exists(_.highlight.exists(_.startsWith("__cf_frame_")))),
+        // … and a return fades one out
+        result.exists(_.steps.exists(_.removed.nonEmpty))
       )
     }
   )

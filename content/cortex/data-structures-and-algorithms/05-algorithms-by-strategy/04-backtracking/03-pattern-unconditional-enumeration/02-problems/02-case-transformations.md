@@ -61,7 +61,7 @@ Explanation: One letter (z) has 2 choices; the digits are forced → 2¹ = 2 res
 - `s` consists of lower-case English letters, upper-case English letters, and digits.
 - No empty-string test case (avoids stdin EOF crash).
 
-```python run viz=graph viz-root=transformations
+```python run viz=array viz-root=transformations
 from typing import List
 
 class Solution:
@@ -76,7 +76,7 @@ r = Solution().case_transformations(s)
 print("[" + ", ".join(r) + "]")
 ```
 
-```java run viz=graph viz-root=transformations
+```java run viz=array viz-root=transformations
 import java.util.*;
 
 public class Main {

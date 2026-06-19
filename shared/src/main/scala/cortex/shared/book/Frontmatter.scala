@@ -60,6 +60,16 @@ object Frontmatter:
       .orElse(firstH1(stripFrontmatter(content)))
       .getOrElse(fallback)
 
+  /**
+   * Per-chapter sidebar-section override (frontmatter `group:`). The index walker uses this as the chapter's
+   * SOLE `groupPath` — a single top-level Sidebar Forest section of that name — lifting the chapter out of
+   * its directory-derived section into a sibling section of its own, WITHOUT moving files. The chapter's slug
+   * (its URL identity, derived from the FS path) is untouched, so a themed group (e.g. the Cortex platform
+   * capstone) can stand as its own section with no URL churn. `None` when the key is absent or empty.
+   */
+  def extractGroup(content: String): Option[String] =
+    parseLines(content).get("group").filter(_.nonEmpty)
+
   // ===========================================================================
   // Internals
   // ===========================================================================

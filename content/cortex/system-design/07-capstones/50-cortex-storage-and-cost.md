@@ -1,5 +1,6 @@
 ---
 title: '50. Cortex storage & cost'
+group: 'Capstone: Cortex Platform (a system you are currently looking at)'
 summary: What grows without bound (the Mongo log), what the real ceilings are (one Postgres, a pool of 10), what the homelab costs versus an equivalent cloud bill, and the per-coached-session token model that makes BYOK the difference between a $7 and a $5,000 month.
 ---
 

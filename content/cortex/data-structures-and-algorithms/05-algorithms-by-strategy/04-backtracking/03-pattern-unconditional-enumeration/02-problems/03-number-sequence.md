@@ -61,7 +61,7 @@ Explanation: n = 0 means zero slots → one leaf, the empty sequence.
 - `0 ≤ k ≤ 6`
 - When `k = 0` the result is `[]` (no choices, no leaves).
 
-```python run viz=graph viz-root=sequences
+```python run viz=array viz-root=sequences
 from typing import List
 
 class Solution:
@@ -75,7 +75,7 @@ k = int(input())     # the test case's k
 print(Solution().number_sequence(n, k))
 ```
 
-```java run viz=graph viz-root=sequences
+```java run viz=array viz-root=sequences
 import java.util.*;
 
 public class Main {

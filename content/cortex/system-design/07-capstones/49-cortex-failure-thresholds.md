@@ -1,5 +1,6 @@
 ---
 title: '49. Cortex failure thresholds'
+group: 'Capstone: Cortex Platform (a system you are currently looking at)'
 summary: Capacity tells you the ceiling; this tells you what breaks when you hit it — a ranked "what saturates first" ladder, from the single-replica outage at the top to fail-open Redis at the bottom, with the real trigger load for each.
 ---
 

@@ -1,5 +1,6 @@
 ---
 title: '48. Cortex capacity today'
+group: 'Capstone: Cortex Platform (a system you are currently looking at)'
 summary: How many users can one homelab replica actually serve? We compute it — readers (uplink-bound, thousands) and code-runners (Little''s law on a semaphore of 8, a few per second) — and find the exact moment the ninth person to hit Run starts waiting.
 ---
 

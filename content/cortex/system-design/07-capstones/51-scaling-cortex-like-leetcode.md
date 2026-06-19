@@ -1,5 +1,6 @@
 ---
 title: '51. Scaling Cortex like LeetCode'
+group: 'Capstone: Cortex Platform (a system you are currently looking at)'
 summary: A staged path from one homelab replica to a LeetCode-shaped platform — stateless web tier, an autoscaled executor fleet, pooled and replicated stores, a CDN, and the one move that matters most: turning the synchronous run-semaphore into an async judge queue.
 ---
 

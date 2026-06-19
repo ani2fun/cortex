@@ -40,7 +40,7 @@ Three components: `{0, 1}` → min 2, `{2}` → min 1, `{3, 4}` → min 6. Sum =
 - `-10⁴ ≤ values[i] ≤ 10⁴`
 - Empty graph returns 0
 
-```python run viz=graph viz-root=graph
+```python run viz=graph viz-root=graph viz-kind=graph
 import ast
 
 def sum_of_minimums(graph, values):
@@ -52,7 +52,7 @@ values = ast.literal_eval(input())
 print(sum_of_minimums(graph, values))
 ```
 
-```java run viz=graph viz-root=graph
+```java run viz=graph viz-root=graph viz-kind=graph
 import java.util.*;
 
 public class Main {

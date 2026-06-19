@@ -46,7 +46,7 @@ The triangle `0–1–2` is an odd cycle: paint `0` red, `1` blue, `2` must be r
 - An empty graph (no nodes) is treated as not two-colourable
 - `O(V + E)` time, `O(V)` space — every node is coloured once, every edge checked once
 
-```python run viz=graph viz-root=graph
+```python run viz=graph viz-root=graph viz-kind=graph
 import ast
 
 def is_two_colourable(graph):
@@ -59,7 +59,7 @@ graph = ast.literal_eval(input())   # adjacency list: graph[u] = u's neighbours
 print("true" if is_two_colourable(graph) else "false")
 ```
 
-```java run viz=graph viz-root=graph
+```java run viz=graph viz-root=graph viz-kind=graph
 import java.util.*;
 
 public class Main {

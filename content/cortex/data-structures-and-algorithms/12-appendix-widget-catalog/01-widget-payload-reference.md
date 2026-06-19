@@ -342,13 +342,13 @@ See it live → [Renderer Gallery](/cortex/data-structures-and-algorithms/append
 
 ### segment-tree
 
-A complete binary tree addressed by 1-based BFS index — each node's position derives purely from its index (level `k = ⌊log₂ i⌋`, slot within level `s = i − 2^k`). Each node stores a range aggregate (sum, min, max).
+A complete binary tree of range-aggregate nodes. Each node's **x** position is the centre of the `[lo,hi]` range it covers and its **depth** comes from the `left`/`right` tree edges; the underlying array (the leaves, one per index) is drawn as a row beneath the tree. Each node stores a range aggregate (sum, min, max).
 
-- **kind** is `"node"` for internal range-covering nodes and `"leaf"` for single-element ranges (no children, only an incoming edge). Node ids are the BFS index as a string (`"1"` = root, left child of `k` = `"2k"`, right = `"2k+1"`).
-- **edges** go **child → parent** with `label: ""`; **meta** carries `[{"name": "range", "value": "[l,r]"}]`.
-- **highlight** marks the traversal/query path; **changed** flashes answer segments or just-updated nodes.
+- **kind** is `"node"` for internal range-covering nodes and `"leaf"` for single-element ranges. Node ids only need to be unique within the step (BFS indices `"1"`/`"2"`/`"3"`… read naturally).
+- **edges** go **parent → child** labelled `"left"` / `"right"` (the renderer walks these to assign depth). **meta** carries the covered range as two numeric fields: `[{"name": "lo", "value": "l"}, {"name": "hi", "value": "r"}]` (the renderer reads `lo` and `hi` separately). Optionally add `{"name": "value", "value": "…"}`; otherwise the node `label` is the aggregate.
+- **cursor** named `"cur"` marks the node being examined (tinted in its role colour); **changed** flashes answer segments or just-updated nodes. (`highlight` is **not** read by this renderer.)
 
-> Layout: `client/src/d3/segment-tree-layout.ts` · widget id `segment-tree`
+> Layout: `client/src/d3/segment-tree-layout.ts` · Renderer: `client/src/d3/segment-tree-renderer.ts` · widget id `segment-tree`
 
 ```d3 widget=segment-tree
 {
@@ -356,21 +356,21 @@ A complete binary tree addressed by 1-based BFS index — each node's position d
   "steps": [
     {
       "nodes": [
-        {"id": "1", "label": "16", "kind": "node", "slot": 1, "meta": [{"name": "range", "value": "[0,3]"}], "cardId": "", "layoutKind": ""},
-        {"id": "2", "label": "4",  "kind": "node", "slot": 2, "meta": [{"name": "range", "value": "[0,1]"}], "cardId": "", "layoutKind": ""},
-        {"id": "3", "label": "12", "kind": "node", "slot": 3, "meta": [{"name": "range", "value": "[2,3]"}], "cardId": "", "layoutKind": ""},
-        {"id": "4", "label": "1",  "kind": "leaf", "slot": 4, "meta": [{"name": "range", "value": "[0,0]"}], "cardId": "", "layoutKind": ""},
-        {"id": "5", "label": "3",  "kind": "leaf", "slot": 5, "meta": [{"name": "range", "value": "[1,1]"}], "cardId": "", "layoutKind": ""},
-        {"id": "6", "label": "5",  "kind": "leaf", "slot": 6, "meta": [{"name": "range", "value": "[2,2]"}], "cardId": "", "layoutKind": ""},
-        {"id": "7", "label": "7",  "kind": "leaf", "slot": 7, "meta": [{"name": "range", "value": "[3,3]"}], "cardId": "", "layoutKind": ""}
+        {"id": "1", "label": "16", "kind": "node", "slot": 1, "meta": [{"name": "lo", "value": "0"}, {"name": "hi", "value": "3"}], "cardId": "", "layoutKind": ""},
+        {"id": "2", "label": "4",  "kind": "node", "slot": 2, "meta": [{"name": "lo", "value": "0"}, {"name": "hi", "value": "1"}], "cardId": "", "layoutKind": ""},
+        {"id": "3", "label": "12", "kind": "node", "slot": 3, "meta": [{"name": "lo", "value": "2"}, {"name": "hi", "value": "3"}], "cardId": "", "layoutKind": ""},
+        {"id": "4", "label": "1",  "kind": "leaf", "slot": 4, "meta": [{"name": "lo", "value": "0"}, {"name": "hi", "value": "0"}], "cardId": "", "layoutKind": ""},
+        {"id": "5", "label": "3",  "kind": "leaf", "slot": 5, "meta": [{"name": "lo", "value": "1"}, {"name": "hi", "value": "1"}], "cardId": "", "layoutKind": ""},
+        {"id": "6", "label": "5",  "kind": "leaf", "slot": 6, "meta": [{"name": "lo", "value": "2"}, {"name": "hi", "value": "2"}], "cardId": "", "layoutKind": ""},
+        {"id": "7", "label": "7",  "kind": "leaf", "slot": 7, "meta": [{"name": "lo", "value": "3"}, {"name": "hi", "value": "3"}], "cardId": "", "layoutKind": ""}
       ],
       "edges": [
-        {"from": "2", "to": "1", "label": ""},
-        {"from": "3", "to": "1", "label": ""},
-        {"from": "4", "to": "2", "label": ""},
-        {"from": "5", "to": "2", "label": ""},
-        {"from": "6", "to": "3", "label": ""},
-        {"from": "7", "to": "3", "label": ""}
+        {"from": "1", "to": "2", "label": "left"},
+        {"from": "1", "to": "3", "label": "right"},
+        {"from": "2", "to": "4", "label": "left"},
+        {"from": "2", "to": "5", "label": "right"},
+        {"from": "3", "to": "6", "label": "left"},
+        {"from": "3", "to": "7", "label": "right"}
       ],
       "cursor": [], "highlight": [], "changed": [], "removed": [],
       "annotation": "Sum segment tree built over A = [1, 3, 5, 7]. Root stores total sum 16; each node stores the sum of its range.",
