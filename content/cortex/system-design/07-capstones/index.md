@@ -1,6 +1,6 @@
 # Part 7 — Capstones
 
-> **Design famous systems end-to-end — then turn the lens on this one.** Capstones 37–46 design ten well-known systems, each with all three diagram views (Mermaid hot-path sequence, D2 topology, LikeC4 container view), a runnable prototype, and a "what would you do differently at 100×?" extension. Capstones **47–52** are different: a six-chapter deep dive on **Cortex itself** — the platform you're reading this on — with *real, auditable* numbers for capacity, failure, cost, and scale.
+> **Design famous systems end-to-end — then turn the lens on this one.** Capstones 37–46 design ten well-known systems, each with all three diagram views (Mermaid hot-path sequence, D2 topology, LikeC4 container view), a runnable prototype, and a "what would you do differently at 100×?" extension. Capstones **47–53** are different: a seven-chapter deep dive on **Cortex itself** — the platform you're reading this on — with *real, auditable* numbers for capacity, failure, cost, scale, and edge delivery.
 
 ## The famous-systems capstones
 
@@ -23,3 +23,4 @@
 - [50. Cortex storage & cost — growth, limits, and the AI-token bill](/cortex/system-design/capstones/cortex-storage-and-cost)
 - [51. Scaling Cortex like LeetCode — the staged roadmap](/cortex/system-design/capstones/scaling-cortex-like-leetcode)
 - [52. Making Cortex data-intensive — logs as a product](/cortex/system-design/capstones/cortex-data-intensive)
+- [53. Cortex, made fast — compression, caching & the edge](/cortex/system-design/capstones/cortex-edge-delivery)

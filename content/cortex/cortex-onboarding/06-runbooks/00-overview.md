@@ -66,6 +66,7 @@ CORTEX_TUTOR_BASE_URL=http://localhost:8000 ./bin/dev
 - [Secrets & auth](/cortex/cortex-onboarding/runbooks/production/secrets-and-auth) — sealed secrets, the Keycloak realm.
 - [Scaling & DR](/cortex/cortex-onboarding/runbooks/production/scaling-and-dr) — the knobs you have today, and the disaster-recovery drill.
 - [Observability & incidents](/cortex/cortex-onboarding/runbooks/production/observability-and-incidents) — health, logs, and what to check first when it's slow.
+- [Serving performance & the Cloudflare edge](/cortex/cortex-onboarding/runbooks/production/serving-performance-and-edge) — compression, immutable caching, the lazy landing bundle, and the Cloudflare proxy; the `curl` proofs, the measured before/after, and a cluster smoke-test.
 
 **Cross-cutting**
 

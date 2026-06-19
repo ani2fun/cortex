@@ -68,7 +68,7 @@ app -> img: "resident index"
 | LB / egress / ingress | — | ~$20+ |
 | **Total** | | **~$170–330** |
 
-So the homelab runs the *same topology* for **~€50** versus a **~$200–300** cloud equivalent — a **4–6×** saving whose price is that *you* are the SRE, the pager, and the power bill. (The [Homelab from Scratch](/cortex/homelab-from-scratch) book is the long version of that trade.)
+So the homelab runs the *same topology* for **~€50** versus a **~$200–300** cloud equivalent — a **4–6×** saving whose price is that *you* are the SRE, the pager, and the power bill. (The [Homelab from Scratch](/cortex/homelab-from-scratch) book is the long version of that trade.) Read **egress**, meanwhile, is effectively **free**: once Cloudflare proxies the static assets they're edge-served at no metered cost — the optimization with no cost-axis trade-off, measured in [ch 53](/cortex/system-design/capstones/cortex-edge-delivery).
 
 ## 4. What it costs — AI tokens (the axis that matters)
 

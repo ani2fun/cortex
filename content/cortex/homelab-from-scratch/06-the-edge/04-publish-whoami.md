@@ -227,4 +227,4 @@ That covers ~95% of first-deploy failures.
 
 Every app you deploy from here on follows this exact pattern: namespace, Deployment, Service, Ingress. The next section automates the deployment side via GitOps.
 
-→ Next: [Sealed Secrets](/cortex/homelab-from-scratch/secrets-and-gitops/sealed-secrets)
+→ Next: [Compress once, cache forever, edge-serve globally](/cortex/homelab-from-scratch/the-edge/serving-performance-and-cdn)

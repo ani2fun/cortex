@@ -51,7 +51,7 @@ The components we're sizing — the read path, the three-store hello path, and t
 }
 ```
 
-(`replicationFactor = 1` — single Postgres, and the markdown isn't replicated, it ships in the image. `bytesPerWrite` doubles as "bytes per read" for the egress estimate. Watch "Egress at peak" — that's the number that decides when you need a CDN, which is exactly [ch 51's](/cortex/system-design/capstones/scaling-cortex-like-leetcode) stage 4.)
+(`replicationFactor = 1` — single Postgres, and the markdown isn't replicated, it ships in the image. `bytesPerWrite` doubles as "bytes per read" for the egress estimate. Watch "Egress at peak" — that's the number that decides when you need a CDN, which is exactly [ch 51's](/cortex/system-design/capstones/scaling-cortex-like-leetcode) stage 4 — now **shipped and measured** in [ch 53](/cortex/system-design/capstones/cortex-edge-delivery), which recomputes this very egress ceiling after compression + the edge.)
 
 ## 3. Workload B — code-runners (the expensive path)
 
