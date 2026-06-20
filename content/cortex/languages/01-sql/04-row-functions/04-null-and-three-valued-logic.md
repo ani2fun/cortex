@@ -410,3 +410,9 @@ NULL is the one piece of SQL that surprises every engineer at least once. Three 
 3. **`NOT IN` against a subquery is the most common NULL bug.** The fix is `NOT EXISTS`, which is null-safe by construction. (Covered fully in [Anti-joins and Existence](/cortex/languages/sql/multiple-tables/anti-joins-and-existence).)
 
 Master these three and NULL becomes a tool you wield deliberately, not a trap that catches you.
+
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>

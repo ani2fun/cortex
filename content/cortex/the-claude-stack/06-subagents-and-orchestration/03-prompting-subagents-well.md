@@ -403,6 +403,12 @@ acquires the context the parent already has, at high fidelity and low brief-cost
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Anthropic — Claude Code subagents](https://docs.claude.com/en/docs/claude-code/sub-agents)** — the

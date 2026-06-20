@@ -179,6 +179,12 @@ This is *precisely* the expand/contract discipline from Part 2, Chapter 11: neve
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Kubernetes — Rolling updates & Deployment strategy](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#updating-a-deployment)** — `maxSurge`, `maxUnavailable`, and readiness gating.

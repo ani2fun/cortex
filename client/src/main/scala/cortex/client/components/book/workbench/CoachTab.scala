@@ -25,6 +25,8 @@ object CoachTab:
   final case class Props(
       coachProblemId: Option[String],
       origin: SessionOrigin = SessionOrigin.YourTurn,
+      // Which coaching ladder this surface runs (six-step coding vs four-step conceptual).
+      track: Track = Track.Problem,
       active: Boolean
   )
 
@@ -37,6 +39,10 @@ object CoachTab:
     case Step.Plan      => "Plan"
     case Step.Implement => "Implement"
     case Step.Test      => "Test"
+    case Step.Explain   => "Explain"
+    case Step.Apply     => "Apply"
+    case Step.Analyze   => "Analyze"
+    case Step.Defend    => "Defend"
 
   private def stepVerb(s: Step): String = s match
     case Step.Clarify   => "Restate & clarify"
@@ -45,6 +51,10 @@ object CoachTab:
     case Step.Plan      => "Plan the solution"
     case Step.Implement => "Write your solution"
     case Step.Test      => "Test & debug"
+    case Step.Explain   => "Explain the idea"
+    case Step.Apply     => "Apply the idea"
+    case Step.Analyze   => "Weigh the trade-offs"
+    case Step.Defend    => "Defend your reasoning"
 
   private def stepBlurb(s: Step): String = s match
     case Step.Clarify  => "Restate the problem in your own words and surface assumptions and edge cases."
@@ -57,6 +67,14 @@ object CoachTab:
     case Step.Test =>
       "Test your solution on tricky cases in the editor, then paste it into the coach below with what " +
         "you found."
+    case Step.Explain =>
+      "In your own words, explain this lesson's main idea — what it is, why it exists, and how it works."
+    case Step.Apply =>
+      "Apply the idea to a concrete scenario and reason through what actually happens."
+    case Step.Analyze =>
+      "Weigh the trade-offs: when it helps, when it breaks, and the alternatives."
+    case Step.Defend =>
+      "Make a reasoned judgement and defend it against an obvious counter-point."
 
   private def composerHint(s: Step): String = s match
     case Step.Clarify   => "Restate the problem in your own words…"
@@ -65,6 +83,10 @@ object CoachTab:
     case Step.Plan      => "Outline your step-by-step plan…"
     case Step.Implement => "Paste your solution from the editor here, then send to pass this step…"
     case Step.Test      => "Paste your tested solution and what you found, then send…"
+    case Step.Explain   => "Explain the idea in your own words…"
+    case Step.Apply     => "Walk through a concrete example…"
+    case Step.Analyze   => "Name a trade-off or failure mode — and why…"
+    case Step.Defend    => "State your position and defend it…"
 
   val Component =
     ScalaFnComponent
@@ -85,6 +107,7 @@ object CoachTab:
                 CoachController.Props(
                   problemId = pid,
                   origin = props.origin,
+                  track = props.track,
                   render = view => liveCoach(view, draftS)
                 )
               )
@@ -118,7 +141,7 @@ object CoachTab:
   private def coaching(view: CoachController.View, draftS: Hooks.UseState[String]): VdomNode =
     val session      = view.session
     val stepIdx      = session.map(_.stepIndex).getOrElse(0)
-    val curStep      = session.map(_.currentStep).getOrElse(Step.Clarify)
+    val curStep      = session.map(_.currentStep).getOrElse(view.steps.headOption.getOrElse(Step.Clarify))
     val completed    = session.exists(_.completed)
     val thinking     = view.busy
     val showThinking = view.busy && view.streaming.isEmpty
@@ -169,7 +192,7 @@ object CoachTab:
           ),
           <.div(
             ^.className := "coach__dots",
-            Step.ordered.zipWithIndex.toVdomArray { case (st, i) =>
+            view.steps.zipWithIndex.toVdomArray { case (st, i) =>
               val on   = i == stepIdx
               val done = i < stepIdx
               val cls = "coach__dot" + (if on then " coach__dot--on" else "") +
@@ -215,7 +238,7 @@ object CoachTab:
               ^.className := "coach__progress-meta",
               <.span(
                 ^.className := "coach__progress-step",
-                s"Step ${stepIdx + 1} of 6 · ${stepLabel(curStep)}"
+                s"Step ${stepIdx + 1} of ${view.steps.size} · ${stepLabel(curStep)}"
               ),
               <.span(
                 ^.className := "coach__progress-pct",
@@ -241,8 +264,12 @@ object CoachTab:
     // The scrollable body leads with the fuller blurb — or a completion headline once the interview is
     // done and the header's progress block (which carries the verb) is hidden.
     val intro: VdomNode =
-      if completed then <.h2(^.className := "coach__verb", "Interview complete")
-      else <.p(^.className               := "coach__blurb", stepBlurb(curStep))
+      if completed then
+        <.h2(
+          ^.className := "coach__verb",
+          if view.track == Track.Conceptual then "Understanding check complete" else "Interview complete"
+        )
+      else <.p(^.className := "coach__blurb", stepBlurb(curStep))
 
     val hintBox: VdomNode =
       view.lastResult
@@ -297,7 +324,7 @@ object CoachTab:
           val byStep = s.messages.zipWithIndex.groupBy(_._1.step)
           <.div(
             ^.className := "coach__transcript",
-            Step.ordered.zipWithIndex.toVdomArray { case (st, i) =>
+            view.steps.zipWithIndex.toVdomArray { case (st, i) =>
               byStep.get(st) match
                 case None => EmptyVdom
                 case Some(msgs) =>
@@ -322,7 +349,22 @@ object CoachTab:
             if view.streaming.nonEmpty then bubble("streaming", Role.Coach, view.streaming) else EmptyVdom,
             thinkingBubble
           )
-        case _ => EmptyVdom
+        case _ =>
+          // Before the first turn, the conceptual coach greets with an opening question so the learner knows
+          // exactly what to do (the coding coach opens via its own first turn instead). It's hidden the moment
+          // a real message exists or the first turn starts streaming (those hit the case above).
+          if view.track == Track.Conceptual && !completed then
+            <.div(
+              ^.className := "coach__transcript",
+              bubble(
+                "opening",
+                Role.Coach,
+                "Welcome — let's check how well this lesson landed. To start: in your own words, explain " +
+                  "this lesson's core idea — what it is, why it exists, and how it works. Give it your best " +
+                  "shot, and I'll help you sharpen it."
+              )
+            )
+          else EmptyVdom
 
     val errorBox: VdomNode =
       view.error.map(m => <.div(^.className := "coach__error", m): VdomNode).getOrElse(EmptyVdom)
@@ -355,7 +397,9 @@ object CoachTab:
           ^.className := "coach__handoff",
           <.p(
             ^.className := "coach__blurb",
-            "You worked through all six steps. Reset to practise this problem again."
+            if view.track == Track.Conceptual then
+              "You worked through all four steps. Reset to practise this lesson again."
+            else "You worked through all six steps. Reset to practise this problem again."
           ),
           <.button(
             ^.tpe       := "button",

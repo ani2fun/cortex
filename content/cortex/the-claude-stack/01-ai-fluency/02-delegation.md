@@ -335,6 +335,12 @@ wrong is cheap and catchable.
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Anthropic — AI Fluency: Delegation](https://anthropic.skilljar.com/)** — the source lesson for

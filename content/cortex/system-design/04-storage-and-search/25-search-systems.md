@@ -213,6 +213,12 @@ The first trade is **scan vs. index**: a scan needs zero preparation and handles
 >
 > </details>
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[GitHub — "The technology behind GitHub's new code search"](https://github.blog/engineering/architecture-optimization/the-technology-behind-githubs-new-code-search/)** (Feb 2023) — the §1 motivation: why general-purpose engines (Solr, Elasticsearch) couldn't power code search at 200M repos, why code needs a trigram index, and how they built Blackbird in Rust. A rare, candid "we outgrew the standard tool" story.

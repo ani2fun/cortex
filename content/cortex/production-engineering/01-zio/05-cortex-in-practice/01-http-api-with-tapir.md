@@ -184,6 +184,12 @@ Because each `*Routes` group **is a value** — a bundle of endpoints with their
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Tapir docs](https://tapir.softwaremill.com/)** — endpoints as values, and the server/client/docs interpreters.

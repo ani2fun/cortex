@@ -195,6 +195,12 @@ println(program.run())
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[ZIO docs — The ZIO data type](https://zio.dev/reference/core/zio/)** — the three channels and the type aliases, official.

@@ -576,6 +576,12 @@ fixed manifest — and why you watched it happen live in this session.
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[MCP spec — Client Features (Sampling, Roots, Elicitation)](https://modelcontextprotocol.io/specification/2025-06-18/client)**

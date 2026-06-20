@@ -245,6 +245,12 @@ The whole design is in `publish`'s `if` and `home_timeline`'s two sources. `publ
 >
 > </details>
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Raffi Krikorian — "Timelines at Scale"](https://www.infoq.com/presentations/Twitter-Timeline-Scalability/)** (Twitter, 2013) — the §1 source: Redis-materialized timelines, fan-out-on-write at 300K+ reads/s, and the celebrity pull-and-merge. The canonical primary reference for this entire design.

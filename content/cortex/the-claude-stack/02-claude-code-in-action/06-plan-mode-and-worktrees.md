@@ -346,6 +346,12 @@ to constrain.
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Claude Code — common workflows (plan mode & extended thinking)](https://docs.claude.com/en/docs/claude-code/common-workflows)**

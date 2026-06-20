@@ -332,6 +332,12 @@ You saw this in the Build It: `README.md` matched the matcher but the `content/`
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Claude Code — Hooks reference](https://docs.claude.com/en/docs/claude-code/hooks)** — the full

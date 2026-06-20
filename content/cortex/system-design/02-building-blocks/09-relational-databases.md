@@ -358,6 +358,12 @@ Otherwise an order's historical total changes whenever you re-price the item —
 
 </details>
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## 8. In the Wild
 
 - **[Nick Craver, *Stack Overflow: The Architecture — 2016 Edition*](https://nickcraver.com/blog/2016/02/17/stack-overflow-the-architecture-2016-edition/)** — the canonical "what one relational database actually does at scale" write-up. Includes the hardware list, the connection / cache topology, and the engineering decisions that let two SQL Servers handle the world's traffic.

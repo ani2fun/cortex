@@ -250,6 +250,12 @@ Every line is a decision: `on_location` keeps the **cell→drivers** index curre
 >
 > </details>
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Uber — "H3: Uber's Hexagonal Hierarchical Spatial Index"](https://www.uber.com/en-US/blog/h3/)** (2018) — the §1 motivation, from the source: why hexagons (uniform neighbour distance), the hierarchy, `kRing`, and how H3 powers dispatch and surge. The [open-source library](https://github.com/uber/h3) is genuinely fun to play with.

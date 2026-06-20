@@ -362,6 +362,12 @@ Mind the cost (§7): 12 scanned pages can be a lot of input tokens.
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Anthropic — Vision](https://docs.claude.com/en/docs/build-with-claude/vision)** — the canonical

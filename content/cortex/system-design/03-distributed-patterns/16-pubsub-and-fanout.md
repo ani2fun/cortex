@@ -171,6 +171,12 @@ The trap worth burning into memory: **Redis Pub/Sub is at-most-once and stores n
 >
 > </details>
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Raffi Krikorian — "Timelines at Scale"](https://www.infoq.com/presentations/Twitter-Timeline-Scalability/)** (Twitter, InfoQ, 2013) — the canonical fan-out talk: 300K QPS to build timelines, Redis-backed home timelines (capped ~800), and the push-most/pull-celebrities hybrid. Everything in this lesson traces back to it.

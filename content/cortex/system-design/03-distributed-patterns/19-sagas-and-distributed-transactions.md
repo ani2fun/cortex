@@ -163,6 +163,12 @@ And the most important trade: **build an orchestrator yourself vs use a durable-
 >
 > </details>
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Garcia-Molina & Salem — "Sagas"](https://www.cs.cornell.edu/andru/cs711/2002fa/reading/sagas.pdf)** (ACM SIGMOD 1987) — the original paper: long-lived transactions, compensating transactions, and the all-or-compensate guarantee. Short, foundational, and still the clearest statement of the idea.

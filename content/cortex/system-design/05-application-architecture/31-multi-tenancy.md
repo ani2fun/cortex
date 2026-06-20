@@ -166,6 +166,12 @@ The honest decision rule, echoing AWS's guidance: **start in the pool** and **mi
 >
 > </details>
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Valve — "Update on Christmas Issues"](https://store.steampowered.com/oldnews/19852)** (Dec 2015) — the §1 postmortem: a caching config that "incorrectly cached web traffic for authenticated users" served ~34,000 users' account pages to strangers. The canonical tenant-blind-cache-key failure, at famous scale.

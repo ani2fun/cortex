@@ -286,6 +286,16 @@ object Blocks:
     Right(Block.StandaloneCoach(coachProblemId))
 
   /**
+   * Decode a `concept-coach` placeholder — the conceptual (four-step) coach. Like `standalone-coach`, the
+   * author's `data-coach-problem-id` is optional (the mounter falls back to the chapter), so this always
+   * succeeds.
+   */
+  def decodeConceptCoach(
+      coachProblemId: Option[String]
+  ): Either[BlockDecodeError, Block.ConceptCoach] =
+    Right(Block.ConceptCoach(coachProblemId))
+
+  /**
    * Decode a `d2-slides` placeholder. `slides` is the inner-HTML of each `div.d2-slide` child element, in
    * order. Empty `slides` is treated as "skip me" (no useful diagram to render). Caption is optional;
    * empty-string captions are normalised to `None` to match the original behaviour.
@@ -398,6 +408,14 @@ object Block:
    * back to the chapter's `<book>/<chapter-slug>` join key.
    */
   final case class StandaloneCoach(coachProblemId: Option[String]) extends Block
+
+  /**
+   * A standalone **conceptual** coach for prose lessons (no code) — the live coach mounted inline, but
+   * running the four-step understanding ladder (explain → apply → analyze → defend) instead of the six-step
+   * coding interview. `coachProblemId` is an optional author override (`data-coach-problem-id`); when absent
+   * the mounter falls back to the chapter's `<book>/<chapter-slug>`.
+   */
+  final case class ConceptCoach(coachProblemId: Option[String]) extends Block
 
   final case class D2Slides(
       slides: List[String],

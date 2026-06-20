@@ -66,6 +66,7 @@ object BlockDiscovery:
       WorkbenchInline,
       YourTurn,
       StandaloneCoach,
+      ConceptCoach,
       ProblemWorkbench,
       QuizBlock,
       SolutionViewer,
@@ -120,6 +121,12 @@ object BlockDiscovery:
 
     override def decode(node: dom.HTMLElement): Either[BlockDecodeError, Block] =
       Blocks.decodeStandaloneCoach(nonEmpty(node.getAttribute("data-coach-problem-id")))
+
+  private object ConceptCoach extends Discoverer:
+    override val className: String = "concept-coach"
+
+    override def decode(node: dom.HTMLElement): Either[BlockDecodeError, Block] =
+      Blocks.decodeConceptCoach(nonEmpty(node.getAttribute("data-coach-problem-id")))
 
   private object ProblemWorkbench extends Discoverer:
     override val className: String = "problem-workbench"

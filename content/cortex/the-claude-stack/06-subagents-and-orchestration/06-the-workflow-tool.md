@@ -399,6 +399,12 @@ than a one-off spawn.
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Anthropic — Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)**

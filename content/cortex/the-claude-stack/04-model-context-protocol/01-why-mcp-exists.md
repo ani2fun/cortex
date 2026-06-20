@@ -257,6 +257,12 @@ Same move every time: standardize the *interface*, and the combinatorial glue ev
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Anthropic — Introducing the Model Context Protocol](https://www.anthropic.com/news/model-context-protocol)**

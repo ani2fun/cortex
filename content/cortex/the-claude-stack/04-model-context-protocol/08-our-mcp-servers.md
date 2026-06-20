@@ -456,6 +456,12 @@ MCP hosts could reach into Cortex the same way our host reaches into `codegraph`
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[modelcontextprotocol.io — Connect to local MCP servers](https://modelcontextprotocol.io/quickstart/user)**

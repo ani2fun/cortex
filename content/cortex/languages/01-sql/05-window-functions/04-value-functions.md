@@ -390,3 +390,9 @@ Value functions reach into specific rows of the window. Three patterns to intern
 3. **`NTH_VALUE` is rare; `ROW_NUMBER = N` is usually cleaner.** When you want the n-th row of a group, ranking + filter beats `NTH_VALUE` for readability.
 
 Master these three and you can answer every "what value did the row N positions away have?" question in a single window expression — replacing self-joins and correlated subqueries that were the only options before windows existed.
+
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>

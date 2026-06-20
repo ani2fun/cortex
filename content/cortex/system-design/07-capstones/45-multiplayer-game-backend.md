@@ -266,6 +266,12 @@ Egress ≈ players × ticks/s × snapshot size = 100 × 128 × 1.5 KB ≈ **19.2
 **Lockstep.** With 2,000+ units per side, broadcasting the full state of every unit 60 times a second (state-sync) would be enormous bandwidth — thousands of unit positions, orientations, and states per snapshot. Lockstep instead sends only each player's **commands** ("move these 40 units here"), which is a tiny, near-constant trickle regardless of unit count, and every client deterministically simulates the identical battle. You pay for it with **strict determinism** (no divergent floating point across machines) and a **shared input delay** (the game waits for all players' inputs each turn, so one slow player adds lag for everyone) — but for an RTS those costs are far cheaper than the bandwidth state-sync would demand. This is exactly why the *StarCraft* and *Age of Empires* lineages are lockstep.
 </details>
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **Valve — Source Multiplayer Networking.** The canonical write-up of the tick-step server plus client-side prediction, entity interpolation (100 ms default), and lag compensation that underpins *Counter-Strike* and most of the genre. [developer.valvesoftware.com](https://developer.valvesoftware.com/wiki/Source_Multiplayer_Networking)

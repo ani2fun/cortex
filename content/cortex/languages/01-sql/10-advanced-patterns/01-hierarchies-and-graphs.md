@@ -229,3 +229,9 @@ Hierarchical SQL has four canonical shapes. Three patterns to internalise:
 1. **Adjacency list is the default.** Simple, write-friendly. Query with recursive CTEs.
 2. **Closure table for read-heavy hot paths.** Trades write cost for read speed.
 3. **Postgres `ltree` is the modern Postgres-native answer.** Built-in operators + GiST indexing.
+
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>

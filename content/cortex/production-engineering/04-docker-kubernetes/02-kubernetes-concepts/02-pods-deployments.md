@@ -196,6 +196,12 @@ Notice (c) and (d) both live at the Deployment — updates and rollback are prec
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Kubernetes — Pods](https://kubernetes.io/docs/concepts/workloads/pods/)**, **[ReplicaSets](https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/)**, **[Deployments](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/)** — the three objects, official docs.

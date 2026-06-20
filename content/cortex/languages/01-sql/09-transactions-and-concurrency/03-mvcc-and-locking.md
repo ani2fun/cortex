@@ -280,3 +280,9 @@ MVCC and locking are how SQL handles concurrent access. Three patterns to intern
 3. **Lock in a consistent order to avoid deadlocks; use `SKIP LOCKED` for queue workers; advisory locks for application-level coordination beyond rows.** These three primitives cover most real-world concurrency needs.
 
 With this chapter, the [Transactions and Concurrency](/cortex/languages/sql/transactions-and-concurrency/index) module is complete. The final module ([Advanced Patterns](/cortex/languages/sql/index)) covers JSON, hierarchies, pivoting, and time-series patterns that don't fit cleanly elsewhere.
+
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>

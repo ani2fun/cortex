@@ -170,6 +170,12 @@ print("\nBYOK turns an exponential operator bill into a flat one — that's the 
 >
 > </details>
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## 9. In the Wild
 
 - **[`TutorContract.scala` → `TurnUsage`](https://github.com/ani2fun/cortex)** — `inputTokens/outputTokens/cacheRead/cacheWrite/costUsd` recorded per turn. The §4 model is something the system *measures*.

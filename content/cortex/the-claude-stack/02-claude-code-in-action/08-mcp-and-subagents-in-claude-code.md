@@ -311,6 +311,12 @@ because the agent doesn't yet know the tool's inputs. (Exactly what the book's a
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Model Context Protocol — official site](https://modelcontextprotocol.io/)** — the open standard

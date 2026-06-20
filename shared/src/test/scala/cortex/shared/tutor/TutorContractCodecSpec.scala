@@ -29,6 +29,44 @@ object TutorContractCodecSpec extends ZIOSpecDefault:
       test("round-trips without a model") {
         val req = SessionCreateRequest("p", SessionOrigin.YourTurn, None)
         assertTrue(decode[SessionCreateRequest](req.asJson.noSpaces) == Right(req))
+      },
+      test("defaults the track to problem, and round-trips a conceptual request") {
+        val conceptual = SessionCreateRequest("p", SessionOrigin.YourTurn, None, Track.Conceptual)
+        assertTrue(
+          SessionCreateRequest("two-sum").asJson.hcursor.get[String]("track") == Right("problem"),
+          conceptual.asJson.hcursor.get[String]("track") == Right("conceptual"),
+          decode[SessionCreateRequest](conceptual.asJson.noSpaces) == Right(conceptual)
+        )
+      }
+    ),
+    suite("Track + conceptual steps")(
+      test("Track round-trips both wire values") {
+        assertTrue(
+          (Track.Problem: Track).asJson.noSpaces == "\"problem\"",
+          (Track.Conceptual: Track).asJson.noSpaces == "\"conceptual\"",
+          decode[Track]("\"conceptual\"") == Right(Track.Conceptual),
+          decode[Track]("\"bogus\"").isLeft
+        )
+      },
+      test("conceptual steps round-trip via the shared Step codec, and orderedFor is the 4-step ladder") {
+        assertTrue(
+          (Step.Explain: Step).asJson.noSpaces == "\"explain\"",
+          decode[Step]("\"defend\"") == Right(Step.Defend),
+          Step.orderedFor(Track.Conceptual) == List(Step.Explain, Step.Apply, Step.Analyze, Step.Defend),
+          Step.orderedFor(Track.Problem) == Step.ordered
+        )
+      }
+    ),
+    suite("CoachSession track")(
+      test("decodes its track, and tolerates an absent track (older browser mirror) as None") {
+        val withTrack =
+          """{"sessionId":"s","problemId":"p","origin":"your_turn","track":"conceptual","status":"active","currentStep":"explain","stepIndex":0,"completed":false,"messages":[],"scores":[],"rubricVersion":"v"}"""
+        val withoutTrack =
+          """{"sessionId":"s","problemId":"p","origin":"your_turn","status":"active","currentStep":"clarify","stepIndex":0,"completed":false,"messages":[],"scores":[],"rubricVersion":"v"}"""
+        assertTrue(
+          decode[CoachSession](withTrack).map(_.track) == Right(Some(Track.Conceptual)),
+          decode[CoachSession](withoutTrack).map(_.track) == Right(None)
+        )
       }
     ),
     suite("Whoami decode")(

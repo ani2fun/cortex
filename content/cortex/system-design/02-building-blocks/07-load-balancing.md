@@ -287,6 +287,12 @@ The LB hits `/healthz`. During the Postgres hiccup, all backends look healthy; s
 
 </details>
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## 8. In the Wild
 
 - **[GitHub — Introducing GLB](https://github.blog/2016-09-22-introducing-glb/)** (2016) and **[GLB Director: Eight years and some changes](https://github.blog/2019-04-19-glb-director-eight-years-and-some-changes/)** (2019). The clearest write-up of an L4 LB built from first principles, including the rendezvous-hashing trick that lets any GLB node figure out which backend a connection belongs to.

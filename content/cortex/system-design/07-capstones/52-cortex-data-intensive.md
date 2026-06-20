@@ -151,6 +151,12 @@ Notice the queue-wait column: Scala runs show real queue time (they're slow, so 
 >
 > </details>
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## 9. In the Wild
 
 - **[Designing Data-Intensive Applications](https://dataintensive.net/)** (Kleppmann) — chs. 11 (streams) & 12 (derived data) are this chapter's backbone; the whole book is the lens for capstones 47–52.

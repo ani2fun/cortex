@@ -265,3 +265,9 @@ Type choice is permanent. Three patterns to internalise:
 3. **JSONB for genuinely schemaless data; columns for everything else.** Reach for JSONB last, after considering whether the data should be modelled as columns.
 
 Master these three and your schemas survive the prototype-to-production transition without painful rewrites.
+
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>

@@ -255,6 +255,12 @@ It gives every feature a **single definition** used in **both** training and ser
 Because the two systems answer fundamentally different *kinds* of question. A payment has **one correct outcome** — a cent is moved or it isn't — so any approximation is a defect that loses or duplicates money. A recommendation has **no single correct outcome**: there are thousands of perfectly good feeds for any user, and missing one good item among a thousand candidates is invisible to them. So the trade is wildly asymmetric. Exact nearest-neighbour over 100M vectors costs a full scan; approximate search (HNSW) costs milliseconds at, say, 95–99% recall. Giving up that sliver of recall buys a ~1000× speed-up that makes the system *possible* — and the user cannot tell. The general principle, threaded through the whole book: **make your guarantees exactly as strong as the problem needs, and no stronger.** Payments need exactness; feeds need speed.
 </details>
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **YouTube — *Deep Neural Networks for YouTube Recommendations* (Covington, Adams, Sargin; RecSys 2016).** The canonical statement of the two-stage candidate-generation-then-ranking funnel for deep recommenders. [dl.acm.org](https://dl.acm.org/doi/10.1145/2959100.2959190)

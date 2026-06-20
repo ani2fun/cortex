@@ -353,3 +353,9 @@ Recursive CTEs walk trees and graphs. Three patterns to internalise:
 3. **Cycles need protection.** `UNION` deduplicates; explicit path-tracking with arrays is more robust. For deep graphs, consider denormalising into closure tables instead of pure recursion.
 
 With this chapter, the [CTEs and Recursion](/cortex/languages/sql/ctes-and-recursion/index) module is complete.
+
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>

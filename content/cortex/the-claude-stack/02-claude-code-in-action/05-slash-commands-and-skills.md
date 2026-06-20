@@ -303,6 +303,12 @@ doors — the whole lesson of this chapter, made concrete in the repo you're rea
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Claude Code — slash commands](https://docs.claude.com/en/docs/claude-code/slash-commands)** —

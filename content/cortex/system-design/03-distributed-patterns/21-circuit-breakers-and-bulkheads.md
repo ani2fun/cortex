@@ -231,6 +231,12 @@ The breaker's two dials are in tension: **threshold** (how much failure you tole
 >
 > </details>
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Martin Fowler — "CircuitBreaker"](https://martinfowler.com/bliki/CircuitBreaker.html)** (6 March 2014) — the canonical explainer, with the Closed/Open/Half-Open state machine and runnable sample code, written in dialogue with Nygard. If you read one external thing on this lesson, read this.

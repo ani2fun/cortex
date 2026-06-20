@@ -154,6 +154,12 @@ The first decision is **how you want bursts handled**: forbid them (leaky bucket
 >
 > </details>
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Stripe — "Scaling your API with rate limiters"](https://stripe.com/blog/rate-limiters)** (2017) — the canonical production write-up: per-user token buckets in Redis, plus the *concurrency* limiter and load-shedder they run alongside it. The clearest "why and how" from a company where throttling protects real money.

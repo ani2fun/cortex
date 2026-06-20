@@ -166,6 +166,12 @@ Both child fibers are **interrupted** too. Under structured concurrency, the chi
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[ZIO docs — Fibers](https://zio.dev/reference/fiber/)** — `fork`, `join`, `interrupt`, and structured concurrency.

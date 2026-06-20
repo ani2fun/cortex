@@ -210,6 +210,12 @@ Senior heuristic: **the latency budget of a UI screen is the budget for the slow
 
 </details>
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## 8. In the Wild
 
 - **[Kyle Kingsbury, *Strong consistency models*](https://aphyr.com/posts/313-strong-consistency-models)** (2014). The post that puts every common model on one lattice diagram. Required reading if you're going to design with consistency in mind.

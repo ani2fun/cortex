@@ -172,6 +172,12 @@ The connection to Cortex: `ZIO.acquireRelease(open)(close)` is that same staple,
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[ZIO docs — Scope & resource management](https://zio.dev/reference/resource/)** — `acquireRelease`, `Scope`, `scoped`, and finalizer ordering.

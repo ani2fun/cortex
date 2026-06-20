@@ -290,6 +290,12 @@ That last one is why "just put the database in the other region" is almost never
 >
 > </details>
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Jeff Dean — Designs, Lessons and Advice from Building Large Distributed Systems](https://www.cs.cornell.edu/projects/ladis2009/talks/dean-keynote-ladis2009.pdf)** (2009, LADIS keynote PDF) — the talk that launched the table; slide 24 is the original *Numbers Everyone Should Know*.

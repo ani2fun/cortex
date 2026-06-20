@@ -108,6 +108,12 @@ So this chapter lifts the **capacity ceiling** ch 48 measured; it does **not** t
 - **The record goes grey.** If the Cloudflare proxy is flipped to "DNS only," `cortex.kakde.eu` resolves straight to the origin again and every byte crosses the tunnel — the ceiling collapses back to ~500 reads/s. `dig +short @1.1.1.1 cortex.kakde.eu` returning `84.247.143.66` (not Cloudflare IPs) is the tell.
 - **CAA lockout.** Cloudflare's edge cert is Google-issued (`pki.goog`); cert-manager's origin cert is Let's Encrypt. The CAA record must permit **both**, or the edge cert silently fails to renew and the proxied site goes dark.
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## 9. In the Wild
 
 - **The change itself** — [`HttpApp` / `FileServer`](https://github.com/ani2fun/cortex) (origin compression + `Cache-Control`), `markdown/monaco.ts` (the `React.lazy` boundary), and the deleted `manualChunks` in `vite.config.mjs`. The operational version is the [Serving performance & the Cloudflare edge](/cortex/cortex-onboarding/runbooks/production/serving-performance-and-edge) runbook.

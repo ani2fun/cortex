@@ -20,7 +20,7 @@ This is also the **dry run for the capstone format.** Every capstone (37–46) f
 
 Before you read the design, work through it yourself. The coach runs the same six-step interview — restate the problem, estimate, choose an approach, plan it, sketch the implementation, then stress-test it — and pushes back at each gate. There's no code editor here; you reason in prose, the way you would at a whiteboard. (Sign in to start; your conversation is kept in your browser as you go.)
 
-<div class="standalone-coach"></div>
+<div class="concept-coach"></div>
 
 ## 2. Requirements and scope
 

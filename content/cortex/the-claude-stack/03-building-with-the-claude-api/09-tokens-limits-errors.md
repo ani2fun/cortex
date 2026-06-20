@@ -449,6 +449,12 @@ that parallel is exactly the "Diligence" of Part 1.
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Anthropic — API errors & retries](https://docs.claude.com/en/api/errors)** — the authoritative

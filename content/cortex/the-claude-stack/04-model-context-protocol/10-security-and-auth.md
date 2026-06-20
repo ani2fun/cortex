@@ -477,6 +477,12 @@ now to cap damage later," tuned so the asks that remain are the ones worth readi
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[MCP Specification — Security & Trust (2025-06-18)](https://modelcontextprotocol.io/specification/2025-06-18/basic/security_best_practices)**

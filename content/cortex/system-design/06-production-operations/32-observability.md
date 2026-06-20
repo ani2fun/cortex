@@ -177,6 +177,12 @@ The core trade is **cost vs. resolution**, and the three pillars sit at differen
 >
 > </details>
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Google — "Dapper, a Large-Scale Distributed Systems Tracing Infrastructure"](https://research.google/pubs/pub36356/)** (2010) — the origin of distributed tracing: trace IDs, spans, sampling whole traces, and ~200ns/<0.3%-CPU overhead. Every tracing system since (Zipkin, Jaeger, OpenTelemetry) descends from it.

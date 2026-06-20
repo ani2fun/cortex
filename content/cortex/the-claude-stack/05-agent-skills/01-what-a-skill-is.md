@@ -266,6 +266,12 @@ The throughline: (a) and (c) are *knowledge*; (b) is an *action*. Knowledge → 
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Anthropic — Introducing Agent Skills](https://www.anthropic.com/news/skills)** — the announcement

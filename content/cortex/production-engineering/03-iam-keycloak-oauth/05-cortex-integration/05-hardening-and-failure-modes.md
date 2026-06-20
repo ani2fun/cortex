@@ -170,6 +170,12 @@ The one-line takeaway: required auth gets you *a* user; the **ownership predicat
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[OAuth 2.0 Security Best Current Practice — RFC 9700](https://datatracker.ietf.org/doc/html/rfc9700)** — the authoritative hardening checklist; this chapter is a friendly tour of it.

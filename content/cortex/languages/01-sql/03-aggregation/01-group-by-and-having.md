@@ -473,3 +473,9 @@ The deeper production move is to *materialise* such aggregations — precompute 
 3. **Aggregating after a join? Watch for row inflation.** A customer with 10 orders contributes their score 10 times after a `JOIN`. The fix is to aggregate the many-side *first* (in a subquery or CTE), then join to the one-side.
 
 Master these three and aggregation queries become straightforward. Most production aggregation bugs trace back to one of them.
+
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>

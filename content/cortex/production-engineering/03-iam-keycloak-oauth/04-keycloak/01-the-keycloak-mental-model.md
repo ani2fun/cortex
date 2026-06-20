@@ -272,6 +272,12 @@ Why all three are needed: a public client without PKCE *is* the vulnerable varia
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Keycloak — Core concepts and terms](https://www.keycloak.org/docs/latest/server_admin/#core-concepts-and-terms)** — the official glossary of realms, clients, users, roles, and more.

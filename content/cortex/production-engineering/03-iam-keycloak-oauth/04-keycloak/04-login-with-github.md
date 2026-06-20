@@ -183,6 +183,12 @@ That asymmetry — *all* the change lives in the broker, *zero* in the app — i
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Keycloak — Identity Brokering](https://www.keycloak.org/docs/latest/server_admin/#_identity_broker)** — the full configuration surface, including first-login flows and account linking.

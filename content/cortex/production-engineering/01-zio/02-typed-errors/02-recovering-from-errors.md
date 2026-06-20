@@ -194,6 +194,12 @@ In the railway picture: once the switch throws and the train is rolling along th
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[ZIO docs — Error recovery](https://zio.dev/reference/error-management/recovering/)** — `catchAll`, `catchSome`, `orElse`, `fold`, `foldZIO`, and friends.

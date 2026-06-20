@@ -167,6 +167,12 @@ The fix is trust boundary discipline: the IP must come from **`X-Real-IP` set by
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Stripe — Scaling your API with rate limiters](https://stripe.com/blog/rate-limiters)** — token buckets and layered limits in production, from a team that meters billions of requests.

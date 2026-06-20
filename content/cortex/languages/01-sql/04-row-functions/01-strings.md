@@ -388,3 +388,9 @@ String functions are the per-row data-cleanup layer. Three patterns to internali
 3. **`||` propagates NULL; `CONCAT_WS` doesn't.** Pick the operator that matches your intent. When a column might be NULL and you want a sensible default, `COALESCE(col, '')` makes the choice explicit.
 
 Master these three and string handling becomes a routine layer of every query — not the source of half your data-quality bugs.
+
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>

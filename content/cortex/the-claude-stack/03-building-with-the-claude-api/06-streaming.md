@@ -409,6 +409,12 @@ object `messages.create()` would have returned. That's why the standard pattern 
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Anthropic — Streaming Messages](https://docs.claude.com/en/docs/build-with-claude/streaming)** —

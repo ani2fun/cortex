@@ -245,6 +245,12 @@ Every line is a money-safety decision: the **idempotency gate** (`get_idempotent
 >
 > </details>
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Luca Pacioli & double-entry bookkeeping (Summa de Arithmetica, 1494)](https://en.wikipedia.org/wiki/Luca_Pacioli)** — the §1 origin: the 500-year-old discipline of recording every transaction as a balanced debit and credit, still the foundation of every ledger and the reason payment bugs are *detectable*.

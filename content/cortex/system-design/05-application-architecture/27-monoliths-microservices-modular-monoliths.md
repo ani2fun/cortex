@@ -173,6 +173,12 @@ The decision rule, distilled from Martin Fowler's **"MonolithFirst"** (2015): **
 >
 > </details>
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Prime Video — "Scaling up the audio/video monitoring service and reducing costs by 90%"](https://www.primevideotech.com/video-streaming/scaling-up-the-prime-video-audio-video-monitoring-service-and-reducing-costs-by-90)** (March 2023) — the §1 motivation, straight from the team: why *one* chatty, tightly-coupled service was cheaper as a monolith. Read it for the nuance the hot-takes dropped (it was one service, not a verdict on microservices).

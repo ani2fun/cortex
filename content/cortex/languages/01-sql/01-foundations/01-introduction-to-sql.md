@@ -548,3 +548,9 @@ SQL is not just "the syntax for talking to a database." It's a particular *way o
 3. **The relational model is austere on purpose.** Tables, rows, columns, primary keys, foreign keys. No nesting. The constraint is what lets the *same data* answer questions the original schema designer never anticipated — which is the entire point of using a relational database in the first place.
 
 Master those three and the rest of this curriculum — every join, every aggregate, every window — falls into place.
+
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>

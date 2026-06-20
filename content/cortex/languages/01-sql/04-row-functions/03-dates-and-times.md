@@ -370,3 +370,9 @@ Dates and times are SQL's most timezone-bug-prone area. Three patterns to intern
 3. **Compute time windows in the timezone that matters to the consumer, not the server.** "Yesterday" is timezone-relative. Store in UTC, query in UTC, convert to the user's timezone *only at the display layer* (or compute boundaries explicitly with `AT TIME ZONE`).
 
 Master these three and date/time SQL stops being the silent source of "the report is one hour off after every DST change."
+
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>

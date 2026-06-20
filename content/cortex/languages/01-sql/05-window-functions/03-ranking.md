@@ -375,3 +375,9 @@ Ranking functions label each row with its position. Three patterns to internalis
 3. **Window functions can't appear in `WHERE`.** Wrap any rank-based filter in a CTE or subquery. This is the consistent rule across all window functions and the most common "wait, why does this fail" moment when learning them.
 
 With these and frames, the [Window Functions](/cortex/languages/sql/window-functions/index) module is mostly in your fingertips. The next chapter ([Value Functions](/cortex/languages/sql/window-functions/value-functions)) covers the row-relative functions (`LAG`, `LEAD`, etc.), and the [final chapter](/cortex/languages/sql/window-functions/window-patterns) ties everything together with the canonical production patterns.
+
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>

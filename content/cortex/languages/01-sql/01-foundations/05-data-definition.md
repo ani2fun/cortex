@@ -614,3 +614,9 @@ DDL is the half of SQL most engineers learn last and use least often — but the
 3. **Schema migrations have a lifecycle: forward-only in production, transactional where possible, and aware of locks.** Postgres's transactional DDL is a quiet superpower; use it. The migration that almost causes an incident is the one that holds an `ACCESS EXCLUSIVE` lock for two minutes during peak traffic — the one that takes a second in dev where the table has 100 rows.
 
 Master those three and the rest of DDL — types, indexes, foreign keys, normalisation — are details, not surprises.
+
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>

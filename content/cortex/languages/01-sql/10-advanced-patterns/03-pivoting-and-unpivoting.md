@@ -240,3 +240,9 @@ Pivot/unpivot reshape data between long and wide. Three patterns to internalise:
 1. **Pivot with `SUM(CASE WHEN ... THEN ... END)`.** Portable, readable, the universal answer.
 2. **Unpivot with `UNION ALL` of one `SELECT` per source column.** Works everywhere.
 3. **Hard-coded column lists are the limitation; for dynamic pivots, generate SQL in the application or use BI-tool pivoting.**
+
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>

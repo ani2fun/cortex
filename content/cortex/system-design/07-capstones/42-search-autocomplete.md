@@ -228,6 +228,12 @@ The whole design is in the two functions: `build` runs **offline** and does the 
 >
 > </details>
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Google — How Search autocomplete works](https://blog.google/products/search/how-google-autocomplete-works-search/)** — the §1 motivation from the source: predictions drawn from real popular searches, refreshed as you type, and the care taken around what gets suggested. Context for the product and its safety constraints.

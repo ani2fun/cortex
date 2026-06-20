@@ -391,6 +391,12 @@ Reuse frequency alone isn't enough; the prefix also has to be *big enough to cac
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Anthropic — Prompt caching](https://docs.claude.com/en/docs/build-with-claude/prompt-caching)** —

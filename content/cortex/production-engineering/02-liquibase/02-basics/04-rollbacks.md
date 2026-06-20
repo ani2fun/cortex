@@ -203,6 +203,12 @@ The crucial fact first: the destructive change **already shipped and ran**, so t
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Liquibase — Rollback](https://docs.liquibase.com/workflows/liquibase-community/using-rollback.html)** — `--rollback`, `rollbackCount`, `rollback <tag>`, `rollbackToDate`, and previewing.

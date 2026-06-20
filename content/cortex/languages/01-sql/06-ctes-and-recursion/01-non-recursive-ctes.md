@@ -297,3 +297,9 @@ CTEs are the readability tool of modern SQL. Three patterns to internalise:
 3. **Trust the planner's CTE inlining; reach for `MATERIALIZED` only after profiling.** The old "CTEs are an optimisation barrier" advice no longer applies.
 
 Master these three and your analytical SQL becomes top-to-bottom readable.
+
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>

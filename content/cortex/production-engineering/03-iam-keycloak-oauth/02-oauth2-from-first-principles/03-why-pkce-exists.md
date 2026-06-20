@@ -214,6 +214,12 @@ How that property **becomes** the security: PKCE sends only the *hash* (`code_ch
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[RFC 7636 — Proof Key for Code Exchange](https://datatracker.ietf.org/doc/html/rfc7636)** — the spec, including the §1 description of the interception attack that motivates it. Surprisingly readable.

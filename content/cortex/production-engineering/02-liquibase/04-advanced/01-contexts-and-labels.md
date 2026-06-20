@@ -175,6 +175,12 @@ At that point you've effectively **forked your changelog in disguise**: it's one
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Liquibase — Contexts](https://docs.liquibase.com/concepts/changelogs/attributes/contexts.html)** — declaring and passing contexts, and the matching rules.

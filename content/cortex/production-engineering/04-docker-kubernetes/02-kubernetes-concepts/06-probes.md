@@ -173,6 +173,12 @@ That's the payoff of "a dead pod is better than a broken one": readiness is the 
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Kubernetes — Liveness, readiness & startup probes](https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#container-probes)** — the three probe types and their semantics.

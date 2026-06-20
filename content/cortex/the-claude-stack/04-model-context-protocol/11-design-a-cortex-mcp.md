@@ -547,6 +547,12 @@ Part 5 opens with.
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[MCP — Build an MCP server (server quickstart)](https://modelcontextprotocol.io/quickstart/server)**

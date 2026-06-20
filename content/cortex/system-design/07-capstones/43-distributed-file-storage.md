@@ -247,6 +247,12 @@ The design is the structure: `write_file` **chunks** the file and **fans each ch
 >
 > </details>
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[The Google File System (Ghemawat, Gobioff, Leung)](https://research.google/pubs/the-google-file-system/)** (SOSP 2003) — the §1 source and one of the most influential systems papers ever written: 64 MB chunks, the metadata-only master off the data path, 3× replication, and the "failure is normal" philosophy. Read it.

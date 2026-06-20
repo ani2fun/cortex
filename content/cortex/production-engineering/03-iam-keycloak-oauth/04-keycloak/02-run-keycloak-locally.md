@@ -189,6 +189,12 @@ But the chapter's deeper point is the **`iss` verification step** from Chapter 1
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Keycloak — Importing and exporting realms](https://www.keycloak.org/server/importExport)** — the official guide to `--import-realm` and `kc.sh export`.

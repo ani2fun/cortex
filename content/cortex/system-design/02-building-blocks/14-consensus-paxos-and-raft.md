@@ -398,6 +398,12 @@ The pattern (periodic election storms followed by recovery) suggests **a leader 
 
 </details>
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## 8. In the Wild
 
 - **[Diego Ongaro and John Ousterhout, *In Search of an Understandable Consensus Algorithm*](https://raft.github.io/raft.pdf)** (USENIX ATC 2014). The Raft paper. 18 pages. Required reading; the lesson body is built directly on it.

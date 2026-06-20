@@ -301,6 +301,12 @@ The *exception* is throughput-only batch systems where latency does not matter (
 > **Exercise 4 — the USL fitting exercise (advanced).**
 > Read Gunther's [*Guerrilla Capacity Planning*](https://www.perfdynamics.com/Manifesto/USLscalability.html) page. Pick a system you operate (or pick a published benchmark) where throughput-vs-N data is available. Fit `α` and `β` by least squares. The peak `N*` is at `√((1−α)/β)`. Does it match where you would have provisioned by intuition? *(Almost always: the USL fit predicts a *lower* peak than the team had provisioned for.)*
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Neil Gunther — Guerrilla Capacity Planning](https://www.perfdynamics.com/Manifesto/USLscalability.html)** — the home of the USL. The book of the same name has become a quiet classic on senior performance teams.

@@ -168,6 +168,12 @@ The test for "did I bundle enough?": could this image run on a host with *nothin
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Docker — Why Docker? / Getting started](https://docs.docker.com/get-started/docker-overview/)** — the official framing of the environment-drift problem and the container model.

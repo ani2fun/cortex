@@ -289,6 +289,12 @@ In all three cases, the pattern is the same: **NoSQL families are specialists; t
 
 </details>
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## 8. In the Wild
 
 - **[DeCandia et al., *Dynamo: Amazon's Highly Available Key-value Store*, SOSP 2007](https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf)** — the paper that defines what "NoSQL" actually means. Consistent hashing, vector clocks, sloppy quorums, hinted handoff. Foundation reading.

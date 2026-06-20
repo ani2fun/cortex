@@ -305,3 +305,9 @@ Constraints turn a schema into a contract. Three patterns to internalise:
 1. **Every table has a PK; every reference is a FK.** The combination prevents orphan rows at the schema level — no application code needed.
 2. **`ON DELETE RESTRICT` is the safe default.** Surface the question at delete time; let the application decide. Use `CASCADE` only for compositional relationships.
 3. **`CHECK` constraints encode invariants once.** Range checks, format checks, cross-column constraints — write them in DDL, enforce on every write, never have to repeat the validation in application code.
+
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>

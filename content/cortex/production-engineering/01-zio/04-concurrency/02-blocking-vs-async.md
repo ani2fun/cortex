@@ -163,6 +163,12 @@ You need both because the unbounded blocking pool that keeps the CPU pool safe i
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[ZIO docs — Blocking operations](https://zio.dev/reference/concurrency/#blocking)** — `attemptBlocking`, `blocking`, `attemptBlockingInterrupt`, and the two pools.

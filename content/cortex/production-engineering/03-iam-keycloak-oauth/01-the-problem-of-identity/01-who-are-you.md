@@ -238,6 +238,12 @@ The throughline: friction should scale with the *consequence of impersonation*, 
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Wired — "How Apple and Amazon Security Flaws Led to My Epic Hacking"](https://www.wired.com/2012/08/apple-amazon-mat-honan-hacking/)** (Mat Honan, 2012) — the primary source for the story above. Read it; it is fifteen minutes that will permanently change how you think about "identity verification."

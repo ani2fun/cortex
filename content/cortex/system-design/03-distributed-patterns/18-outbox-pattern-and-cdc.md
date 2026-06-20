@@ -173,6 +173,12 @@ The real choice is **outbox vs log-based CDC**. The outbox is *simple* and keeps
 >
 > </details>
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Chris Richardson — Pattern: Transactional outbox](https://microservices.io/patterns/data/transactional-outbox.html)** (microservices.io) — the canonical write-up of the pattern, the dual-write problem it solves, and the relay variants. The reference definition.

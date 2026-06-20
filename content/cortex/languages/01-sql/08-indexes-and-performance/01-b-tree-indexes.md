@@ -304,3 +304,9 @@ B-tree indexes are the workhorse of SQL performance. Three patterns to internali
 1. **Index for queries, not for tables.** Look at slow queries first; add indexes that accelerate them. Indexes "just in case" are pure cost.
 2. **Sargability is the rule.** Function-on-column, leading wildcards, and arithmetic on the indexed column hide it from the planner. Rewrite the predicate or build an expression index.
 3. **Always `CREATE INDEX CONCURRENTLY` in production.** The exclusive-lock duration of a regular `CREATE INDEX` is unacceptable for any table that's actively read or written.
+
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>

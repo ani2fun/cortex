@@ -194,6 +194,12 @@ The principle (from §7 and Chapter 3): don't let a *valid-but-wrong* default ma
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[ZIO Config docs](https://zio.dev/zio-config/)** — `Config`, providers, and deriving config from case classes.

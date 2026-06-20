@@ -426,6 +426,12 @@ a deployment change, not a rewrite.
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[MCP spec — Transports](https://modelcontextprotocol.io/specification/2025-06-18/basic/transports)**

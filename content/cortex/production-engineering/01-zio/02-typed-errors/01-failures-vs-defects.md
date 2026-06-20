@@ -187,6 +187,12 @@ The lesson: recover from the *typed* failure (the `Left`/`E` channel); never let
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[ZIO docs — Error Management: Failures vs Defects](https://zio.dev/reference/error-management/sequential-and-parallel-errors/)** and **[Types of errors](https://zio.dev/reference/error-management/types/)** — the official treatment of `E`, defects, and `Cause`.

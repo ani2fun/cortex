@@ -59,11 +59,12 @@ object TutorApiClient:
   def createSession(
       problemId: String,
       origin: SessionOrigin = SessionOrigin.YourTurn,
+      track: Track = Track.Problem,
       model: Option[String] = None
   ): Future[CoachSession] =
     postJson[SessionCreateRequest, CoachSession](
       "/v1/sessions",
-      SessionCreateRequest(problemId, origin, model)
+      SessionCreateRequest(problemId = problemId, origin = origin, track = track, model = model)
     )
 
   def getSession(sessionId: String): Future[CoachSession] =

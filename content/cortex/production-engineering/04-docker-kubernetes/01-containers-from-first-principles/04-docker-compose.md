@@ -207,6 +207,12 @@ The principle: never assume "container started" means "service ready." Either ma
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Docker — Compose overview & file reference](https://docs.docker.com/compose/)** — services, networks, volumes, healthchecks, and the full YAML schema.

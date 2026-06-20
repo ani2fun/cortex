@@ -267,6 +267,12 @@ Option 1 is the production-grade answer. The general principle: **health checks 
 
 </details>
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## 8. In the Wild
 
 - **[Nishtala et al., *Scaling Memcache at Facebook*, NSDI 2013](https://www.usenix.org/system/files/conference/nsdi13/nsdi13-final170_update.pdf)** — the canonical write-up. Read §3 (regional caching), §4 (cross-region) and §5 (single-server optimisations). The lease pattern is in §3.2 (Reducing Load).

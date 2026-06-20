@@ -180,6 +180,12 @@ The takeaway the simulator makes concrete: throughput **plateaus at `c ÷ servic
 >
 > </details>
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## 9. In the Wild
 
 - **[`CodeRunPipeline.scala`](https://github.com/ani2fun/cortex)** — `MaxConcurrentRuns = 8`, the `gate.withPermit` that *is* the queue, and the 100 s client timeout. The whole §3 model is ~30 lines of real code.

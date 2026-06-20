@@ -169,6 +169,12 @@ GitOps makes a git repo the **single source of truth** for desired state, so eve
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Argo CD docs](https://argo-cd.readthedocs.io/)** & **[GitOps principles (OpenGitOps)](https://opengitops.dev/)** — the pull-based, git-as-truth model Cortex uses.

@@ -216,6 +216,12 @@ Register it with one more `include` (for `v4-bookmarks-note.sql`, or wherever yo
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Liquibase — Add changesets workflow](https://docs.liquibase.com/start/tutorials/home.html)** — the end-to-end add-a-changeset flow this chapter mirrors.

@@ -306,3 +306,9 @@ Anti-patterns are the predicates that block index use. Three patterns to interna
 1. **Function-on-column kills indexes.** `LOWER(col)`, `CAST(col AS X)`, `col + 1` — all of them. Fix: store the normalised form, or build an expression index.
 2. **`NOT IN` with subqueries → `NOT EXISTS`.** The null-safety and the plan are both better.
 3. **A code-review checklist beats a debug session.** Catch these patterns before they ship; production query plans should be examined, not assumed.
+
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>

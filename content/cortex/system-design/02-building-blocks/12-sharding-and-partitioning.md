@@ -244,6 +244,12 @@ The lesson: **the migration's cost depends on the partitioning math AND the migr
 
 </details>
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## 8. In the Wild
 
 - **[Notion, *Herding Elephants — Sharding Postgres at Notion*](https://www.notion.so/blog/sharding-postgres-at-notion)** (2021) — the case study every team contemplating sharding should read. Concrete numbers, the weekend cutover, the `shard_id` column design.

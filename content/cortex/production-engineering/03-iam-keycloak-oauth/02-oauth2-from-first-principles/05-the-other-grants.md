@@ -177,6 +177,12 @@ One caveat from §7: the resulting token has **no user identity**, so it's only 
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[oauth.net — Grant types](https://oauth.net/2/grant-types/)** — a clean index of every grant with one-line "use this when" guidance.

@@ -165,6 +165,12 @@ Instead, run the slow change **out-of-band** — as a separate one-off migration
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Liquibase — Integrating with your application (Java API)](https://docs.liquibase.com/tools-integrations/java-api/home.html)** — running `liquibase.update` programmatically, as `Migrations.scala` does.

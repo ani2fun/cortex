@@ -377,3 +377,9 @@ Window functions add per-row context without collapsing rows. Three patterns to 
 3. **The presence of `ORDER BY` inside `OVER` flips the default frame from "entire window" to "running through current row."** This is the single most consequential detail: `SUM(x) OVER (PARTITION BY g)` is the per-group total; `SUM(x) OVER (PARTITION BY g ORDER BY t)` is the per-group running total. Same aggregate, different question.
 
 Master these three and the rest of the window-functions module — frames, ranking, value functions — falls into place.
+
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>

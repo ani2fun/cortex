@@ -271,3 +271,9 @@ JSONB is Postgres's flexible-schema escape hatch. Three patterns to internalise:
 1. **`JSONB` over `JSON`. Always.** Binary representation, queryable, indexable.
 2. **Use `->>` for text, `->` for JSONB; cast at the boundary.** `(payload->>'amount')::NUMERIC` is the standard pattern.
 3. **Index the paths you query.** GIN index for general containment; expression index or generated column for specific paths.
+
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>

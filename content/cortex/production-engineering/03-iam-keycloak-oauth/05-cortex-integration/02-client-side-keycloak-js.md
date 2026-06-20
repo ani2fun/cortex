@@ -212,6 +212,12 @@ The key insight: the per-IP-vs-per-user *behavior* isn't configured anywhere cen
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[keycloak-js — JavaScript adapter docs](https://www.keycloak.org/securing-apps/javascript-adapter)** — `init` options, `check-sso`, `updateToken`, and the silent-SSO redirect page.

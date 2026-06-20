@@ -244,6 +244,12 @@ If both checks pass, you've reproduced ADR-0013's gate on a brand-new endpoint: 
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Cortex `ApiRoutes.scala`](https://github.com/ani2fun/cortex/blob/main/server/src/main/scala/cortex/server/http/ApiRoutes.scala)** — the real route wiring; your endpoint slots in beside submissions.

@@ -490,6 +490,12 @@ renderer can trust. It's the data spine of the Chapter 10 capstone.
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Anthropic — Structured outputs](https://docs.claude.com/en/docs/build-with-claude/structured-outputs)** —

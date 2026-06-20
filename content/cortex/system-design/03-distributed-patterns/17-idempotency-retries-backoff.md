@@ -143,6 +143,12 @@ The deeper trade-off is **latency vs load**. Aggressive retries (short waits, ma
 >
 > </details>
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Marc Brooker — "Exponential Backoff And Jitter"](https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/)** (AWS Architecture Blog, 2015) — the canonical demonstration that jitter beats plain exponential backoff, with the Full/Equal/Decorrelated variants. Short and worth reading in full.

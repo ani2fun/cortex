@@ -450,3 +450,9 @@ For **storing** the tier (e.g., as a denormalised column), the `CASE` would move
 3. **Custom logic that's more than a substitution:** when `COALESCE`/`NULLIF` aren't enough — multiple NULL branches, derived values, custom orderings — reach for `CASE`. It's the universal fallback for "I need a per-row computed value with branching logic."
 
 With this chapter, the [Row Functions](/cortex/languages/sql/row-functions/index) module is complete. You can now compute on strings, numbers, dates, NULLs, and arbitrary conditions — the per-row layer of every SQL query. The next module, [Window Functions](/cortex/languages/sql/window-functions/index), generalises aggregation: per-row results that *also* incorporate context from other rows.
+
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>

@@ -178,6 +178,12 @@ The headline trade is **realism vs. risk**, and the Principles resolve it: exper
 >
 > </details>
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Netflix — "Lessons Netflix Learned from the AWS Outage"](https://netflixtechblog.com/lessons-netflix-learned-from-the-aws-outage-deefe5fd0c04)** (April 2011) — the §1 motivation, first-hand: how designing for failure (and practicing it with Chaos Monkey) kept Netflix streaming through the EBS outage that toppled much of the internet.

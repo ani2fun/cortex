@@ -178,6 +178,12 @@ The two most misunderstood trade-offs deserve a sharper word. First, **mitigate 
 >
 > </details>
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[GitLab — "Postmortem of database outage of January 31"](https://about.gitlab.com/blog/postmortem-of-database-outage-of-january-31/)** (2017) — the §1 incident in extraordinary, blameless detail: the `rm -rf`, the five broken backups, the ~6 hours lost, and a public document that taught the whole industry how to write a postmortem. Read it in full.

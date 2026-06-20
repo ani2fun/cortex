@@ -182,6 +182,12 @@ The big one is **session vs JWT**, and it's a genuine trade, not a fashion: a **
 >
 > </details>
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[OWASP — A01:2021 Broken Access Control](https://owasp.org/Top10/2021/A01_2021-Broken_Access_Control/)** — the data behind §1: authorization failures are the #1 web risk (up from 5th in 2017), found in 94% of tested apps. The canonical catalogue of how authz breaks (IDOR, missing function-level checks) and how to prevent it.

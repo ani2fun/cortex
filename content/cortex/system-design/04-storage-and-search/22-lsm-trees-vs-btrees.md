@@ -190,6 +190,12 @@ The decision rule is almost embarrassingly simple: **is your workload write-boun
 >
 > </details>
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Martin Kleppmann — *Designing Data-Intensive Applications*, Ch. 3 "Storage and Retrieval"](https://dataintensive.net/)** — the definitive side-by-side of LSM-trees and B-trees, including the read/write/space amplification framing this lesson is built around. If you read one thing after this, read this chapter.

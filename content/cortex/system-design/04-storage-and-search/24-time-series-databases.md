@@ -163,6 +163,12 @@ The decision rule is clean. If your data is **time-stamped, append-only, queried
 >
 > </details>
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Pelkonen et al. — "Gorilla: A Fast, Scalable, In-Memory Time Series Database"](https://www.vldb.org/pvldb/vol8/p1816-teller.pdf)** (Facebook, VLDB 2015) — the §1 motivation and the source of delta-of-delta + XOR compression hitting ~12× losslessly. Open-sourced as Beringei; the compression ideas are now everywhere.

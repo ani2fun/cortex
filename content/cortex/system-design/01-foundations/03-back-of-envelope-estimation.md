@@ -273,6 +273,12 @@ The instinct to be precise is wrong. The instinct to slap "× 10 for safety" on 
 >
 > If you are within 10× on every dimension, you are doing it right. If you are within 3×, you are doing it like a senior engineer. If you are within 1.5×, you cheated and looked something up.
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Twitter — The Infrastructure Behind Twitter: Scale](https://blog.twitter.com/engineering/en_us/topics/infrastructure/2017/the-infrastructure-behind-twitter-scale)** (2017) — published numbers for QPS, storage, and the *operational* sizes of the fleets that handle them. Excellent for calibrating your peak-factor instinct.

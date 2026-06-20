@@ -424,6 +424,12 @@ the gist — exactly the trade the Build-It models.
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Anthropic — Context windows](https://docs.claude.com/en/docs/build-with-claude/context-windows)** —

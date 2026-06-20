@@ -156,6 +156,12 @@ The numbers make the architectural point: with 8 permits and a 20 s service, a s
 >
 > </details>
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## 9. In the Wild
 
 - **[LeetCode / HackerRank judge architecture](https://en.wikipedia.org/wiki/Competitive_programming)** — real online judges run a worker **fleet** behind a **submission queue**; stages 2 + 6 are their core shape.

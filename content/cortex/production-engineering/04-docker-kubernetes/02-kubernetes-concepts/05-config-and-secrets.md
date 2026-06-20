@@ -174,6 +174,12 @@ So the *code* that reads `DB_URL` is identical in both — same image, same ZIO 
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Kubernetes — ConfigMaps](https://kubernetes.io/docs/concepts/configuration/configmap/)** & **[Secrets](https://kubernetes.io/docs/concepts/configuration/secret/)** — injecting config and the (important) caveats about Secret security.

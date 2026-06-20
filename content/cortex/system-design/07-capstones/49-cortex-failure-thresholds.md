@@ -160,6 +160,12 @@ The point isn't the exact crossover (the coefficients are illustrative); it's th
 >
 > </details>
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## 9. In the Wild
 
 - **[`Languages.scala`](https://github.com/ani2fun/cortex)** — the per-language sandbox limits. Look closely at the Java entry: it inherits the interpreted defaults, the §1 caveat. (Worth a PR.)

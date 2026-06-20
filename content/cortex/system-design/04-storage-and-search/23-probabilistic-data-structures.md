@@ -190,6 +190,12 @@ What you give up is concrete: you usually **can't enumerate** the elements back 
 >
 > </details>
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[antirez — "Redis new data structure: the HyperLogLog"](https://antirez.com/news/75)** (2014) — the §1 motivation, from the person who shipped it: 12 KB, 0.81% error, no practical cardinality limit, and a clear walk through the leading-zeros intuition.

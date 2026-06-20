@@ -261,3 +261,9 @@ ACID is the foundation of relational SQL. Three patterns to internalise:
 1. **Multi-statement operations need explicit transactions.** Single statements get implicit autocommit transactions; multi-statement work needs `BEGIN`/`COMMIT`.
 2. **Always pair `BEGIN` with a try/catch and matching `COMMIT`/`ROLLBACK`.** Open transactions left dangling hold locks and bloat the database.
 3. **Side effects outside the database aren't transactional.** Emails, webhooks, payments — handle these *after* commit, ideally via the outbox pattern.
+
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>

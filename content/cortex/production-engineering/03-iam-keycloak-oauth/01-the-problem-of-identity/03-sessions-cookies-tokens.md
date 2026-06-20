@@ -234,6 +234,12 @@ This is the Chapter's central trade-off in miniature: you buy faster revocation 
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[MDN — Using HTTP cookies](https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies)** — the definitive, readable reference on cookies and their security flags (`HttpOnly`, `Secure`, `SameSite`).

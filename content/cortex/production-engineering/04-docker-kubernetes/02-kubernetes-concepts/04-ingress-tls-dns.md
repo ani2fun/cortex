@@ -200,6 +200,12 @@ That asymmetry is the point: standing up the controller + cert-manager is the on
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Kubernetes — Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/)** & **[Ingress Controllers](https://kubernetes.io/docs/concepts/services-networking/ingress-controllers/)** — the object and what implements it.

@@ -171,6 +171,12 @@ An access token is an opaque "bearer of this may access X" minted *for a Resourc
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[OpenID Connect Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html)** — the spec. §2 (the ID token) and §3.1 (the auth-code flow with OIDC) are the parts to read.

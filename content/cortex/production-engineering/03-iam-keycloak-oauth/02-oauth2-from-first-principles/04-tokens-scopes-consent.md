@@ -195,6 +195,12 @@ So the **minimum** is: a valid (signed, unexpired) access token whose claims inc
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[RFC 6749 §1.4–1.5 — Access & Refresh Tokens](https://datatracker.ietf.org/doc/html/rfc6749#section-1.4)** — the definitions, straight from the source.

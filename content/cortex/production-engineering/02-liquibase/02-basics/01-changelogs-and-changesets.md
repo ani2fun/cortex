@@ -210,6 +210,12 @@ The blob "works," but it forfeits all of this — which is exactly why the rule 
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Liquibase — Changelog & changeset](https://docs.liquibase.com/concepts/changelogs/home.html)** — the structures, `include`/`includeAll`, and best practices.

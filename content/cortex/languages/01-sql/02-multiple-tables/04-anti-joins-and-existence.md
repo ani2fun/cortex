@@ -398,3 +398,9 @@ Anti-joins are "rows where no match." Three patterns to internalise:
 3. **Reconciliation queries — the workhorse use case for anti-joins — should be on a schedule.** "Rows in source not in target," "orphan FKs," "events without their corresponding customer record." Wire them to alerting; the day they return rows is the day your pipeline drifted, and you want to know before users do.
 
 Master these three and the anti-join shape becomes routine. With this chapter, the [Working with Multiple Tables](/cortex/languages/sql/multiple-tables/index) module is complete — you can now combine rows from any number of tables, in any of the standard shapes.
+
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>

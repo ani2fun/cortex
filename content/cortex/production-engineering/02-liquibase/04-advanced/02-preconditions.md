@@ -186,6 +186,12 @@ The essence: `MARK_RAN` lets you *tell Liquibase "these already happened"* witho
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Liquibase — Preconditions](https://docs.liquibase.com/concepts/changelogs/preconditions.html)** — all precondition types and the `onFail`/`onError` behaviors.

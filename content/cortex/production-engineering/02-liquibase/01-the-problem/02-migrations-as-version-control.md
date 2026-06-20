@@ -186,6 +186,12 @@ The discipline that avoids all of this is the same one git teaches: treat applie
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Liquibase — Concepts (changelog, changeset, DATABASECHANGELOG)](https://docs.liquibase.com/concepts/home.html)** — the core vocabulary, which now maps cleanly onto git in your head.

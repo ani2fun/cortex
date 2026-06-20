@@ -173,6 +173,12 @@ The core tension is **cost vs. risk**: every machine you don't run saves money, 
 >
 > </details>
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Google Cloud — "Bringing Pokémon GO to life on Google Cloud"](https://cloud.google.com/blog/products/containers-kubernetes/bringing-pokemon-go-to-life-on-google-cloud)** — the §1 motivation: a launch that ran ~50× over its target (10× the planned worst case) and survived on elastic provisioning of tens of thousands of cores. The case for elasticity over the perfect forecast.

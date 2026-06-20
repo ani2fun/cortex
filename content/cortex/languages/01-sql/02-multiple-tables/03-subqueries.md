@@ -491,3 +491,9 @@ Subqueries are queries-inside-queries. Three patterns to internalise:
 3. **Correlated subqueries are powerful but watch the cost.** Logically run once per outer row; planners usually rewrite into joins, but not always. Profile with `EXPLAIN` for any correlated subquery in a hot path. When you have the option, a `LEFT JOIN + GROUP BY` (or a window function) often runs faster.
 
 Master these three and subqueries become a clean fourth tool — alongside joins, set operators, and (next chapter) anti-joins — for combining result-sets.
+
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>

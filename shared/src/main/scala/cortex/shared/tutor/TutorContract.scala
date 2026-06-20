@@ -26,19 +26,50 @@ object TutorContract:
   // ── string enums (exact wire values) ────────────────────────────────────────
 
   enum Step(val wire: String):
+    // PROBLEM track (the six-step coding interview)
     case Clarify   extends Step("clarify")
     case Examples  extends Step("examples")
     case Approach  extends Step("approach")
     case Plan      extends Step("plan")
     case Implement extends Step("implement")
     case Test      extends Step("test")
+    // CONCEPTUAL track (the four-step understanding check for prose lessons)
+    case Explain extends Step("explain")
+    case Apply   extends Step("apply")
+    case Analyze extends Step("analyze")
+    case Defend  extends Step("defend")
 
   object Step:
-    /** Canonical order — the six-step FSM, used to render the tracker and derive step index. */
-    val ordered: List[Step]               = List(Clarify, Examples, Approach, Plan, Implement, Test)
-    def fromWire(s: String): Option[Step] = ordered.find(_.wire == s)
+    /** The six-step PROBLEM ladder. Kept as `ordered` for back-compat (== `orderedFor(Track.Problem)`). */
+    val ordered: List[Step] = List(Clarify, Examples, Approach, Plan, Implement, Test)
+
+    /** The four-step CONCEPTUAL ladder (explain → apply → analyze → defend). */
+    private val conceptual: List[Step] = List(Explain, Apply, Analyze, Defend)
+
+    /** The ordered steps for a track — used to render the step tracker and derive the step index. */
+    def orderedFor(track: Track): List[Step] = track match
+      case Track.Problem    => ordered
+      case Track.Conceptual => conceptual
+
+    // Search ALL cases (not just `ordered`) so conceptual steps round-trip too.
+    def fromWire(s: String): Option[Step] = values.find(_.wire == s)
     given Encoder[Step]                   = Encoder.encodeString.contramap(_.wire)
     given Decoder[Step] = Decoder.decodeString.emap(s => fromWire(s).toRight(s"unknown step: $s"))
+
+  /**
+   * Which coaching ladder a session runs — `problem` (the six-step coding interview) or `conceptual` (the
+   * four-step understanding check for prose lessons). Pinned at creation, mirrors the tutor's `Track`. The
+   * client renders the step tracker from [[Step.orderedFor]] of the session's track.
+   */
+  enum Track(val wire: String):
+    case Problem    extends Track("problem")
+    case Conceptual extends Track("conceptual")
+
+  object Track:
+    private val all                        = List(Problem, Conceptual)
+    def fromWire(s: String): Option[Track] = all.find(_.wire == s)
+    given Encoder[Track]                   = Encoder.encodeString.contramap(_.wire)
+    given Decoder[Track] = Decoder.decodeString.emap(s => fromWire(s).toRight(s"unknown track: $s"))
 
   enum Verdict(val wire: String):
     case Pass     extends Verdict("pass")
@@ -183,6 +214,11 @@ object TutorContract:
       sessionId: String,
       problemId: String,
       origin: SessionOrigin,
+      /**
+       * The coaching ladder this session runs (pinned at creation). `Option` for decode-compatibility with
+       * pre-track payloads / browser mirrors; absent ⇒ the host falls back to the block's track.
+       */
+      track: Option[Track] = None,
       status: SessionStatus,
       currentStep: Step,
       stepIndex: Int,
@@ -214,7 +250,9 @@ object TutorContract:
        * tier default. Validated server-side against the caller's tier allow-list (HTTP 422 if
        * unknown/disallowed) and pinned at creation — ignored on resume; `reset` to change it.
        */
-      model: Option[String] = None
+      model: Option[String] = None,
+      /** Which coaching ladder to run — `Conceptual` for the concept-coach block, else `Problem`. */
+      track: Track = Track.Problem
   )
 
   object SessionCreateRequest:

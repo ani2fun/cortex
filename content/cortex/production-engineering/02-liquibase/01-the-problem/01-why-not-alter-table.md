@@ -194,6 +194,12 @@ That asymmetry — *code is reproducible, data is precious and singular* — is 
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[GitLab — Database outage of January 31 (2017)](https://about.gitlab.com/blog/postmortem-of-database-outage-of-january-31/)** — a legendary postmortem about the perils of manual operations on a production database. Required reading.

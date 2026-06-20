@@ -165,6 +165,12 @@ The tell that you've done it right: each Consequence is something the Decision *
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Michael Nygard — "Documenting Architecture Decisions"](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions.html)** — the original ADR format used above. A five-minute read that will change how you record decisions.

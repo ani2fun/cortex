@@ -280,6 +280,12 @@ by orders of magnitude. Fluency isn't a fixed ritual; it's a dial you turn up as
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Anthropic — AI Fluency: Frameworks & Foundations](https://anthropic.skilljar.com/)** — the

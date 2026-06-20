@@ -678,3 +678,9 @@ Spin up the [sample schema](/cortex/languages/sql/foundations/introduction-to-sq
 3. **Half-open ranges (`>= start AND < end_plus_one`) for time windows; closed ranges (`BETWEEN`) for plain `DATE` columns.** This single habit prevents an entire class of "we missed the rows from 30 April after lunch" bugs.
 
 Internalise those three and `WHERE` becomes the predictable, boring clause it should be — leaving your attention free for the joins, aggregations, and windows that *are* hard.
+
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>

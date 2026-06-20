@@ -233,6 +233,12 @@ This prevents **client-asserted-authorization / impersonation**: by anchoring tr
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[RFC 6749 §1.1 — Roles](https://datatracker.ietf.org/doc/html/rfc6749#section-1.1)** — the four roles, in the authors' own words. Short and worth reading once.

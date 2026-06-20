@@ -227,6 +227,12 @@ For a single-Postgres app like Cortex, none of the portability is worth those co
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Liquibase — SQL format](https://docs.liquibase.com/concepts/changelogs/sql-format.html)** — the full directive reference (`--changeset`, `--rollback`, `splitStatements`, etc.).

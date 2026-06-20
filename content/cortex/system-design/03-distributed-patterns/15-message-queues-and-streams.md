@@ -206,6 +206,12 @@ A third common choice is **Amazon SQS** — a managed queue. Standard SQS gives 
 >
 > </details>
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Jay Kreps — "The Log: What every software engineer should know about real-time data's unifying abstraction"](https://engineering.linkedin.com/distributed-systems/log-what-every-software-engineer-should-know-about-real-time-datas-unifying-abstraction)** (LinkedIn Engineering, 2013) — the essay that explains *why* the log is the right central abstraction, by one of Kafka's creators. The single best thing to read on this topic.

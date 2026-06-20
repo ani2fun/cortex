@@ -175,6 +175,12 @@ Add **`.withParallelism(n)`** — e.g. `ZIO.foreachPar(userIds)(notify).withPara
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[ZIO docs — Parallelism](https://zio.dev/reference/concurrency/)** — `zipPar`, `foreachPar`, `withParallelism`, and fail-fast semantics.

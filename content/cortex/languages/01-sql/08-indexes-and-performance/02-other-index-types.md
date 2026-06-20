@@ -283,3 +283,9 @@ B-tree is the default; specialised index types are the answer for specific query
 1. **Match the index type to the query shape.** Containment → GIN; range overlap / geometry → GiST; sequentially-ordered huge tables → BRIN.
 2. **Partial and expression indexes are powerful refinements.** Not a different *type*, but a different *coverage*. Use to tailor an index to the actual query patterns.
 3. **`pg_stat_user_indexes` shows which indexes get used.** Drop the ones that don't. Index maintenance has a real cost.
+
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>

@@ -510,3 +510,9 @@ Joins are 80% of multi-table SQL. Three patterns to internalise:
 3. **Always alias your tables, especially in multi-table joins.** Two-letter abbreviations (`c`, `o`, `p`) are the convention; long names (`customer_table`, `orders_table`) hurt readability without adding precision.
 
 Master these three and joins become predictable. Most production join bugs trace back to one of them.
+
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>

@@ -478,3 +478,9 @@ Functional in dev. Linearly slower in prod. After a year of `/api/hello` traffic
 3. **Keyset pagination is the production answer for infinite scroll, time-series feeds, and any "load more" UI.** Track the cursor, not the offset. With the right composite index, every page is `O(log n + page_size)` regardless of where you are in the sequence — and a row inserted while you're scrolling doesn't shift the page under you.
 
 Internalise these three and your sort-and-page queries scale from prototype to production without rewrites.
+
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>

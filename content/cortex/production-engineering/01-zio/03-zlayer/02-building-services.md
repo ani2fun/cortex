@@ -206,6 +206,12 @@ Why not `++`? `++` is *horizontal* — it combines two **independent** layers in
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[ZIO docs — ZLayer](https://zio.dev/reference/contextual/zlayer/)** — constructors, composition (`>>>`, `++`), and memoization.

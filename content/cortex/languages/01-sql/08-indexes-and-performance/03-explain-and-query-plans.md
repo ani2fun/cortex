@@ -252,3 +252,9 @@ For codefolio, every query that hits the `/api/recent` or `/api/hello` endpoints
 1. **Estimated vs actual rows is the first thing to read.** Big gaps = stale statistics. `ANALYZE table_name` is the first fix.
 2. **The slowest node is usually the deepest sequential scan.** Adding an index on its filter column is usually the biggest win.
 3. **Make `EXPLAIN ANALYZE` part of every PR that touches a hot query.** Production query plans should be checked, not assumed.
+
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>

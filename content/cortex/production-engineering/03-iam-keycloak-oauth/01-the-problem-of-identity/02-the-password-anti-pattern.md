@@ -219,6 +219,12 @@ Asking for less makes users **more** likely to click *Allow* for two reinforcing
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[The OAuth 2.0 Authorization Framework — RFC 6749, §1](https://datatracker.ietf.org/doc/html/rfc6749#section-1)** — the introduction literally opens by describing the password anti-pattern as the problem to solve. Reading the first two pages is genuinely enlightening.

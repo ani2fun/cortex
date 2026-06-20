@@ -39,6 +39,17 @@ object BlocksSpec extends ZIOSpecDefault:
         assertTrue(Blocks.decodeStandaloneCoach(None) == Right(Block.StandaloneCoach(None)))
       }
     ),
+    suite("decodeConceptCoach")(
+      test("author override present → Some(problemId)") {
+        assertTrue(
+          Blocks.decodeConceptCoach(Some("system-design/foundations/cap-and-pacelc")) ==
+            Right(Block.ConceptCoach(Some("system-design/foundations/cap-and-pacelc")))
+        )
+      },
+      test("absent override → None (mounter falls back to the chapter problemId)") {
+        assertTrue(Blocks.decodeConceptCoach(None) == Right(Block.ConceptCoach(None)))
+      }
+    ),
     suite("decodeRunnableGroup")(
       test("happy path — every tab fully populated") {
         val raws = List(

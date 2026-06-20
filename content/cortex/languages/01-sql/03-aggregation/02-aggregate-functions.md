@@ -504,3 +504,9 @@ Aggregate functions summarise rows into one value per group. Three patterns to i
 3. **`FILTER` lets one `SELECT` produce multiple aggregates over different subsets in one pass.** "Total customers / German customers / high-score customers" should be three `FILTER`ed aggregates in one query, not three separate queries combined later. Faster, cleaner, atomic.
 
 Master these three and aggregate functions become the predictable workhorses they should be.
+
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>

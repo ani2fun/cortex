@@ -188,6 +188,12 @@ Cortex checks, in order:
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[RFC 7517 — JSON Web Key (JWK) & JWKS](https://datatracker.ietf.org/doc/html/rfc7517)** — the format of the keys document Cortex fetches.

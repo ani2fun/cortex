@@ -175,6 +175,12 @@ Fix by aligning them (correct the selector or the Pod labels so they agree), and
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Kubernetes — Service](https://kubernetes.io/docs/concepts/services-networking/service/)** — types, selectors, endpoints, and load-balancing.

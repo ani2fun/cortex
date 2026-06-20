@@ -438,3 +438,9 @@ Set operators combine result-sets, not tables. Three patterns to internalise:
 3. **The column count and types must match on both sides.** When they don't, inject literals or `NULL`s to force the shapes to align — and consider tagging each row with its source so the consumer knows where it came from.
 
 Master these three and set operators become a clean, predictable second tool — joins for related tables, set operators for similar-shaped result-sets.
+
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>

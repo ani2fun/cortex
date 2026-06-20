@@ -353,6 +353,12 @@ A longer TTL (60 s → 3600 s) generally helps the hit ratio because each cached
 
 </details>
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## 8. In the Wild
 
 - **[Cloudflare — "HTTP/3: the past, present, and future"](https://blog.cloudflare.com/http3-the-past-present-and-future/)** (2019). The deployment-day announcement with the measured tail-latency wins; the canonical "why HTTP/3" reference.

@@ -572,6 +572,12 @@ makes handing a model a code-execution tool sane rather than reckless (§7). It'
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Anthropic — Tool use (function calling) overview](https://docs.claude.com/en/docs/agents-and-tools/tool-use/overview)**

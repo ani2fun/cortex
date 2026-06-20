@@ -361,6 +361,12 @@ You will discover that **last-writer-wins silently lost one of the writes** — 
 >
 > </details>
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Eric Brewer — CAP twelve years later](https://www.infoq.com/articles/cap-twelve-years-later-how-the-rules-have-changed/)** (2012) — the author of CAP corrects the most common misunderstanding of his own theorem. Required reading.

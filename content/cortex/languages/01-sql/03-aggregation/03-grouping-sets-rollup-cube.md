@@ -357,3 +357,9 @@ Multi-dimensional aggregation gives you subtotals at multiple levels in one pass
 3. **One query, one pass over the data, atomic snapshot.** Compared to four `UNION ALL`'d queries, the multi-dimensional operators are faster and consistent. They're why BI tools generate this syntax under the hood — and why your dashboards should too once you're past prototype scale.
 
 With this chapter, the [Aggregation](/cortex/languages/sql/aggregation/index) module — and Phase 2 of the SQL curriculum — is complete. You can now combine rows from multiple tables and summarise them at any level; the next module ([Row Functions](/cortex/languages/sql/index)) shifts back to per-row computations: strings, dates, numbers, and the `CASE` expression.
+
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>

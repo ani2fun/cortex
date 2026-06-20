@@ -196,6 +196,12 @@ This is the whole point of tracking `R` in the type — the compiler *sums up* t
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[ZIO docs — The environment (`R`)](https://zio.dev/reference/contextual/)** — accessing services and how `R` composes.

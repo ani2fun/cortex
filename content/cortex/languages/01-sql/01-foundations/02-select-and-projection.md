@@ -602,3 +602,9 @@ The column list looks simple. It's the place where the most production-grade hab
 3. **`DISTINCT` is the right tool when the data has duplicates, the wrong tool when your join has a bug.** When you reach for it, ask which one you're dealing with.
 
 Master these three and the column list becomes invisible — exactly as it should be, so you can focus on the harder parts of the query.
+
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>

@@ -403,3 +403,9 @@ Window patterns are the production toolkit. Three patterns to internalise:
 3. **Tiebreakers are mandatory for any rank-and-filter query.** Without one, the answer is non-deterministic. The PK is the safest choice.
 
 With this chapter, the [Window Functions](/cortex/languages/sql/window-functions/index) module — and Phase 3 of the curriculum — is complete. You can now write the analytical SQL that powers dashboards, reports, and recommender systems. The remaining phases (CTEs/recursion, schema, indexes, transactions, advanced patterns) round out the toolkit but are increasingly specialised; the patterns in this module are what you'll reach for daily.
+
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>

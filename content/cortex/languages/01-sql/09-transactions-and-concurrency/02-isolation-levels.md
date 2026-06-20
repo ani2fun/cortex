@@ -211,3 +211,9 @@ Isolation levels trade strength for performance. Three patterns to internalise:
 1. **`READ COMMITTED` is the right default.** Prevents the worst anomaly (dirty read), keeps things fast.
 2. **Reach for `REPEATABLE READ` when a single transaction needs internal consistency** — long reports, multi-step calculations.
 3. **`SERIALIZABLE` requires a retry loop in application code.** Powerful, expensive. Use when you genuinely need full serializability; otherwise prefer explicit locking at strategic points.
+
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>

@@ -367,3 +367,9 @@ Numeric SQL is mostly arithmetic and rounding. Three patterns to internalise:
 3. **Guard your divisors with `NULLIF`.** `a / NULLIF(b, 0)` returns `NULL` instead of crashing — turning a runtime error into a missing-value, which downstream code can handle. Build this reflex; you'll be the engineer who doesn't take the dashboard down on the day a zero shows up in production.
 
 Master these three and numeric handling becomes the routine layer it should be.
+
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>

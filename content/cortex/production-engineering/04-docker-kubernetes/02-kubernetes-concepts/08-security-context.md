@@ -198,6 +198,12 @@ The principle (§7): when hardening "breaks" the app, the failure is telling you
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Kubernetes — Configure a Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/)** — `runAsNonRoot`, capabilities, seccomp, read-only filesystem.

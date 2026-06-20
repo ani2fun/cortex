@@ -175,6 +175,12 @@ The decision is about the **caller**, not the technology's coolness. Public, cac
 >
 > </details>
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[GitHub — "The GitHub GraphQL API"](https://github.blog/2016-09-14-the-github-graphql-api/)** (Sept 2016) — the §1 motivation: why GitHub added GraphQL v4 alongside REST v3, framed exactly as over-fetching + too many round-trips. Note they *kept* REST — the clearest "pick by client, not by fashion" lesson.

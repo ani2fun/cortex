@@ -182,6 +182,12 @@ Because **a Pod's logs are local and ephemeral — they vanish when the Pod is d
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Kubernetes — kubectl Cheat Sheet](https://kubernetes.io/docs/reference/kubectl/cheatsheet/)** & **[Debugging running Pods](https://kubernetes.io/docs/tasks/debug/debug-application/debug-running-pod/)** — the diagnostic commands above.

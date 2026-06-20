@@ -357,3 +357,9 @@ Frames are how you control which rows a window function sees. Three patterns to 
 3. **Specify frames explicitly in production code.** Defaults are convenient but easy to misread. `ROWS BETWEEN N PRECEDING AND CURRENT ROW` is the most common explicit form — moving windows of fixed size are the bread and butter of analytics SQL.
 
 Master these three and the moving-window patterns in the [Window Patterns](/cortex/languages/sql/window-functions/window-patterns) chapter become straightforward applications of frame control.
+
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>

@@ -182,6 +182,12 @@ This is also why §7 warns against `provide`-ing the same layer in *two separate
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[ZIO docs — Automatic layer construction](https://zio.dev/reference/contextual/zlayer/#automatic-layer-construction)** — how `provide`/`ZLayer.make` solve the graph, and reading the errors.

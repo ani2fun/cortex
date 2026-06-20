@@ -189,6 +189,12 @@ Tie to referential transparency: a *result* is referentially transparent — it'
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[ZIO docs — "What is an Effect?"](https://zio.dev/overview/getting-started)** — ZIO's own framing of effects-as-values.

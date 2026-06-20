@@ -155,6 +155,12 @@ What your teammate has described *is the OAuth **Implicit flow*** (`response_typ
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Sign in with Apple — account takeover write-up (Bhavuk Jain, 2020)](https://bhavukjain.com/blog/2020/05/30/zeroday-signin-with-apple/)** — breach ①, by the researcher who found it.

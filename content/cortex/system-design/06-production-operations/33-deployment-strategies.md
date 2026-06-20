@@ -173,6 +173,12 @@ The honest guidance: **rolling** is the right default for most stateless service
 >
 > </details>
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Knight Capital — SEC Form 8-K](https://www.sec.gov/Archives/edgar/data/0001060749/000119312512336167/d392288d8k.htm)** (Aug 2012) — the primary filing confirming the ~$440M pre-tax loss. The §1 catastrophe: a missed server, a repurposed flag, and no rollback. Read it as the strongest possible argument for everything in this lesson.

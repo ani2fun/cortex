@@ -166,6 +166,12 @@ Together they convert a raw crash into a contained, fixable incident: the broken
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Liquibase — Transaction handling / DDL in transactions](https://docs.liquibase.com/concepts/changelogs/changeset.html)** — how changesets are wrapped in transactions (on databases that support transactional DDL like Postgres).

@@ -287,6 +287,12 @@ Your two regions cannot agree on the latest write *and* keep responding *and* ke
 
 </details>
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Stack Overflow Architecture (2016)](https://nickcraver.com/blog/2016/02/17/stack-overflow-the-architecture-2016-edition/)** — Stack Overflow served roughly 66 M page loads *per day* (~2 billion/month) from *nine* web servers and a *single active SQL master*. It is the most widely-quoted refutation of "you must have microservices to scale" you will ever read.

@@ -168,6 +168,12 @@ When `exp` is in the past, the server must **reject the token** — treat it as 
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[RFC 7519 — JSON Web Token](https://datatracker.ietf.org/doc/html/rfc7519)** — the spec, including the registered claim names (`iss`, `sub`, `aud`, `exp`, …).

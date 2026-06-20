@@ -175,6 +175,12 @@ Adopting K8s here is **cargo-culting** (§7): paying a large, permanent complexi
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Kubernetes — What is Kubernetes / concepts](https://kubernetes.io/docs/concepts/overview/)** — the control-plane, nodes, and the declarative model.

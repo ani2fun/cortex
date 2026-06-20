@@ -480,6 +480,12 @@ bespoke integration.
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[MCP spec — Server Concepts: Tools](https://modelcontextprotocol.io/docs/concepts/tools)** — the

@@ -183,6 +183,12 @@ Each override is narrow and deliberate (§3):
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Liquibase — Checksums (MD5SUM)](https://docs.liquibase.com/concepts/changelogs/changeset-checksums.html)** — how they're computed, validated, and the `validCheckSum`/`runOnChange` attributes.

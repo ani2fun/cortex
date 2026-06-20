@@ -206,6 +206,12 @@ This is correctness, not laxness: the check still pins the token to *our* client
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Nimbus JOSE + JWT](https://connect2id.com/products/nimbus-jose-jwt)** — the Java library Cortex uses (`DefaultJWTProcessor`, `JWKSourceBuilder`, `JWSVerificationKeySelector`).

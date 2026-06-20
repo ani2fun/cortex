@@ -207,6 +207,12 @@ Now `app.example.com.evil.com` no longer matches, because the rule pins the host
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Keycloak — Managing OIDC clients](https://www.keycloak.org/docs/latest/server_admin/#_oidc_clients)** — every client setting, including the PKCE and redirect-URI options shown here.

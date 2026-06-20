@@ -242,6 +242,12 @@ The design is visible in the structure: `process_upload` **fans the one source i
 >
 > </details>
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Netflix — Open Connect](https://openconnect.netflix.com/en/)** — the §1 motivation: Netflix's purpose-built CDN, ~19,000 appliances *inside* ISP networks serving ~95% of its traffic. The clearest real-world statement that video streaming is a bytes-to-eyeballs problem solved at the edge.

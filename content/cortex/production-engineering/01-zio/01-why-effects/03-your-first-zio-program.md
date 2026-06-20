@@ -162,6 +162,12 @@ It must run *before* `run` because `run`'s layers — notably `AppConfig.live` �
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[ZIO docs — ZIOApp & ZIOAppDefault](https://zio.dev/reference/program/)** — building a runnable app and overriding `bootstrap`.

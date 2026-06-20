@@ -167,6 +167,12 @@ Object storage's bargain is concrete: you **give up** in-place edits, low-latenc
 >
 > </details>
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[AWS — "Summary of the Amazon S3 Service Disruption in the US-EAST-1 Region"](https://aws.amazon.com/message/41926/)** (28 Feb 2017) — the §1 postmortem, in AWS's own words: the mistyped command, the index and placement subsystems, and the cascade across the internet. The canonical "availability ≠ durability" case study.

@@ -192,6 +192,12 @@ The decision rule matches the stub: **a mesh is overkill most of the time.** Wit
 >
 > </details>
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Matt Klein / Lyft — announcing Envoy](https://eng.lyft.com/envoy-7-months-later-41986c2fd443)** (2016) — the §1 origin story: a polyglot fleet drowning in inconsistent per-language networking, and the out-of-process sidecar that made the network uniform and observable. The "why service meshes exist" primary source.

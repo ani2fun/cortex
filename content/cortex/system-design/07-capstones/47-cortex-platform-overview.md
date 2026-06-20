@@ -184,6 +184,12 @@ The full ranked analysis is [chapter 49](/cortex/system-design/capstones/cortex-
 >
 > </details>
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## 10. In the Wild
 
 - **[`infra/deploy/apps/cortex/base/deployment.yaml`](https://github.com/ani2fun/infra)** — the actual Deployment: `replicas: 1`, `limits: {cpu: 1000m, memory: 1Gi}`, the probes. Every number in §4 is here.

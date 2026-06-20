@@ -417,6 +417,12 @@ deciding question is always **who is in control** (§3) — here, the user.
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[MCP spec — Server Concepts: Prompts](https://modelcontextprotocol.io/docs/concepts/prompts)** —

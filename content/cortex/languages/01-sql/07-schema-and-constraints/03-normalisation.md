@@ -262,3 +262,9 @@ Normalisation eliminates redundancy. Three patterns to internalise:
 1. **Every fact lives in exactly one place.** That's the whole game. The normal forms are formal expressions of this rule for different cases.
 2. **Aim for 3NF; reach for BCNF if it costs nothing extra.** Most production schemas live here. Lower forms have anomalies; higher forms have diminishing returns.
 3. **Denormalise deliberately, never accidentally.** Cached columns, materialised views, immutable historical fields — each with a documented reason and a sync strategy. Drift is the tax.
+
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>

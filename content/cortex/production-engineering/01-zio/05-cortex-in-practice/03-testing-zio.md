@@ -200,6 +200,12 @@ This is **impossible if the code reads the wall clock directly** (`System.curren
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[ZIO Test docs](https://zio.dev/reference/test/)** — `ZIOSpecDefault`, `assertTrue`, suites, and providing test layers.

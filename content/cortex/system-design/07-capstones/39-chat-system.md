@@ -241,6 +241,12 @@ Every line is a design decision: `seen()`/`client_msg_id` is **dedup** (effectiv
 >
 > </details>
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[High Scalability — "How WhatsApp Grew to Nearly 500 Million Users…"](http://highscalability.com/blog/2014/3/31/how-whatsapp-grew-to-nearly-500-million-users-11000-cores-an.html)** (2014) — the §1 numbers: ~2M connections/server on Erlang, tens of billions of messages/day, a tiny team. The canonical "chat is a connection-management problem" case study.

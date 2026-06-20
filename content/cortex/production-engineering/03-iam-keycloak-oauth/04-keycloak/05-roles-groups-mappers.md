@@ -192,6 +192,12 @@ The user has the `submitter` realm role assigned in Keycloak's directory (direct
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Keycloak — Roles, groups, and the user model](https://www.keycloak.org/docs/latest/server_admin/#assigning-permissions-using-roles-and-groups)** — RBAC and groups in depth.

@@ -563,3 +563,9 @@ DML is where SQL meets production. Three patterns to internalise:
 3. **Wrap interactive DML in transactions; keep them short.** `BEGIN; … COMMIT;` is the safety net for typed-into-psql changes. Long-running transactions are themselves a problem — they hold locks, block `VACUUM`, and bloat the database. Open, do the work, close.
 
 Master these three and DML becomes the boring, predictable layer it should be — leaving your attention free for the fun parts: joins, aggregations, and windows in the modules ahead.
+
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>

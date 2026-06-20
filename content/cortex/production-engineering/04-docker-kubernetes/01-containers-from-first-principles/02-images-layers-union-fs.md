@@ -168,6 +168,12 @@ The correct approach: never `COPY` a secret into a layer at all. Use **build sec
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Docker — Images and layers / build cache](https://docs.docker.com/build/cache/)** — how layers are cached and the ordering rules to exploit them.

@@ -181,6 +181,12 @@ Flip the order — copy source before `sbt update` — and every code edit busts
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Docker — Multi-stage builds](https://docs.docker.com/build/building/multi-stage/)** — the official guide to `FROM ... AS` and `COPY --from`.

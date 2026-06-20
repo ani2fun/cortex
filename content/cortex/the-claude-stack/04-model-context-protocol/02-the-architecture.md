@@ -504,6 +504,12 @@ Chapter 6 can swap transports without touching what you learned here.
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[MCP Architecture overview](https://modelcontextprotocol.io/docs/learn/architecture)** — the

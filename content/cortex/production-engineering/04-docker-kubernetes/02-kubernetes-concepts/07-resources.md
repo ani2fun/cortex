@@ -167,6 +167,12 @@ Right-sizing is the balance: the *limit* must be above real peak usage (or you O
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Kubernetes — Managing resources for containers](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/)** — requests, limits, units, and behavior.

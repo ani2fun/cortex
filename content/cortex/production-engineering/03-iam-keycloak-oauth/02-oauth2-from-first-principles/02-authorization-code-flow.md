@@ -217,6 +217,12 @@ The key observation: your **browser navigates to `/authorize`** (so its paramete
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[RFC 6749 §4.1 — Authorization Code Grant](https://datatracker.ietf.org/doc/html/rfc6749#section-4.1)** — the canonical step-by-step. Read it alongside the diagram above.

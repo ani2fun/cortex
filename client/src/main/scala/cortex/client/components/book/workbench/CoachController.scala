@@ -58,6 +58,9 @@ object CoachController:
       problemId: String,
       // Distinguishes the coaching surface to the tutor: problem pages vs an inline "Your Turn".
       origin: SessionOrigin = SessionOrigin.YourTurn,
+      // Which coaching ladder to run: the six-step coding interview or the four-step conceptual check.
+      // Pins the session's track at creation; on resume the server's pinned track wins.
+      track: Track = Track.Problem,
       render: View => VdomNode
   )
 
@@ -65,6 +68,11 @@ object CoachController:
   final case class View(
       stage: Stage,
       session: Option[CoachSession],
+      // The ordered steps of this session's track (six for problem, four for conceptual) — the shell
+      // renders the step tracker from this rather than assuming the six-step ladder.
+      steps: List[Step],
+      // The session's track — lets the shell word the count/labels/completion for a lesson vs a problem.
+      track: Track,
       tier: Option[Tier],
       models: List[ModelOption],
       selectedModel: Option[ModelOption],
@@ -326,7 +334,7 @@ object CoachController:
                 errorS.setState(Some("Pick a coach model to start."))
               case Some(key) =>
                 busyS.setState(true) >> errorS.setState(None) >> Callback {
-                  TutorApiClient.createSession(props.problemId, props.origin, Some(key)).onComplete {
+                  TutorApiClient.createSession(props.problemId, props.origin, props.track, Some(key)).onComplete {
                     case Success(session) =>
                       // Lock the picker to the server-pinned model (may differ from the pick on resume).
                       session.model.foreach(m => selectedKeyS.setState(Some(m)).runNow())
@@ -487,11 +495,15 @@ object CoachController:
           val currentStepOpt = sessionS.value.map(_.currentStep)
           val liveScore: Option[Int] =
             resultS.value.filter(r => currentStepOpt.contains(r.step)).flatMap(_.score)
+          // The live session's pinned track wins on resume; before a session exists, the block's track.
+          val activeTrack = sessionS.value.flatMap(_.track).getOrElse(props.track)
 
           props.render(
             View(
               stage = stageS.value,
               session = sessionS.value,
+              steps = Step.orderedFor(activeTrack),
+              track = activeTrack,
               tier = tier,
               models = models,
               selectedModel = selectedModel,

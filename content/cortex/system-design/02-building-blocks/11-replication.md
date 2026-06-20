@@ -316,6 +316,12 @@ The senior move: **`QUORUM` is a per-query choice, not a cluster-wide setting**.
 
 </details>
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## 8. In the Wild
 
 - **[GitHub Engineering, *October 21 post-incident analysis*](https://github.blog/news-insights/company-news/oct21-post-incident-analysis/)** (2018) — the canonical split-brain story. The 43-second partition, the eager failover, the 24-hour reconciliation. Required reading.

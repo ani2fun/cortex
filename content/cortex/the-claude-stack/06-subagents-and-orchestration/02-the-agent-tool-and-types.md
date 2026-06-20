@@ -376,6 +376,12 @@ subagent's job ends at "return to parent"; closing the last mile to the user is 
 }
 ```
 
+## Your Turn
+
+Before you move on, check your understanding with the coach — explain the idea, apply it, weigh the trade-offs, then defend your reasoning.
+
+<div class="concept-coach"></div>
+
 ## In the Wild
 
 - **[Claude Code — Subagents](https://docs.claude.com/en/docs/claude-code/sub-agents)** — the real Agent
