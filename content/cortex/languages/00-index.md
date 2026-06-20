@@ -17,12 +17,12 @@ Every section follows the same shape — a hook, the mental model, mechanics, ed
 ## What's here
 
 1. [**SQL**](/cortex/languages/sql/index) — the data-querying language every backend engineer ends up touching. Postgres-canonical, with callouts where SQLite, MySQL, or SQL Server diverge. Ten modules from foundations through window functions, CTEs, indexes, and transactions.
+2. [**Python**](/cortex/languages/python/index) — a single progressive text from absolute beginner to advanced. Thirty-four tutorials in strict read order across six tiers, every code block runnable in the browser, every rule earned through a three-move "Intuition" standard rather than asserted. **Complete** — First Steps through type hints, concurrency, and the data model.
 
 ## What's coming
 
-The shape of the book is *one section per language*, and the SQL section is the template. Future sections planned, in rough order:
+The shape of the book is *one section per language*. Further sections planned, in rough order:
 
-- **Python** — interpreter model, the GIL, when generators are the right answer, type-checking with `mypy`, the async/await mental model, `numpy` and `pandas` for data work.
 - **Scala** — the JVM through a strongly-typed lens; the type system, immutability by default, `for` comprehensions, ZIO and effect systems, JS interop.
 - **Bash** — the language nobody learns deliberately and everyone uses anyway. POSIX vs Bash-isms, `set -euo pipefail`, the `IFS` trap, signals and traps.
 - **TypeScript** — JavaScript with brakes; the structural type system, declaration files, narrowing, why `any` is contagious.
@@ -33,12 +33,12 @@ Order isn't fixed. New sections will be added as time and demand warrant; each o
 
 ## Reading conventions
 
-These are universal across every section in this book.
+Most conventions are shared across sections; a couple are section-specific, noted below.
 
 - Every chapter opens with a hook — a real-world scenario or "you've used this without realising" moment — before any formalism.
-- Code blocks use the language's canonical syntax (no multi-language tabs). For SQL, that's PostgreSQL; brief callouts mark divergences from SQLite/MySQL/T-SQL when relevant.
-- Every chapter closes with **Production reality**, **Practice ladder** (3–5 problems with hints, not solutions), and a **Final takeaway** of 2–4 punchy bullets.
-- Cross-links use absolute paths (`/cortex/languages/sql-foundations-introduction-to-sql`) so a chapter still resolves if you've bookmarked or shared it.
+- Code blocks use the language's canonical syntax (no multi-language tabs), and are **runnable in the browser** where the language has a sandbox runner. For SQL, that's PostgreSQL syntax (with SQLite/MySQL/T-SQL divergence callouts); for Python, a real Python 3.13 sandbox.
+- The **SQL** section closes each chapter with **Production reality**, a **Practice ladder**, and a **Final takeaway**. The **Python** section instead follows a verified-outputs, three-move **Intuition** standard (mechanism → concrete bite → earned rule), with a mental-model summary table and a gotcha checklist per chapter.
+- Cross-links use absolute paths so a chapter still resolves if you've bookmarked or shared it.
 - The DSA book ([Data Structures and Algorithms](/cortex/data-structures-and-algorithms/index)) is a frequent cross-reference — when a language chapter relies on a DSA concept (hash tables, B-trees, recursion), the link is one click away.
 
 ---

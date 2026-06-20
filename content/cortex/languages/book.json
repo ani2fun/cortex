@@ -5,8 +5,9 @@
         "languages",
         "sql",
         "postgres",
+        "python",
         "programming-languages"
     ],
-    "estimatedReadingMinutes": 600,
+    "estimatedReadingMinutes": 1140,
     "order": 3
 }
