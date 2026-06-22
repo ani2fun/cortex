@@ -101,13 +101,15 @@ Try it. The widget below distributes a Zipfian-skewed workload across 8 shards u
 Two observations the widget makes obvious:
 
 - **Range partitioning is the worst under Zipfian skew.** Because Zipf weights are concentrated in the lowest ranks, and range partitioning maps the lowest ranks to one shard, that shard gets disproportionately hammered.
-- **Hash partitioning is uniform, even under skew** — provided the shard count is small relative to the key universe. The hash function is *blind* to popularity, so popular and unpopular keys land on the same distribution.
+- **Hash partitioning spreads the many *distinct* keys evenly, regardless of letter-popularity skew** — provided the shard count is small relative to the key universe. The hash function is *blind* to popularity, so popular and unpopular letters land on the same distribution. But note the scope: this evens out the *key space*, not the *request load*. A single dominant key (the celebrity / hot key in §6.2) still funnels all its traffic to one shard — a separate failure mode that uniform hashing does **not** solve.
 
 Then the third trick: **virtual shards**. The "hash + virtual" strategy treats each physical shard as owning many *virtual* shards on the hash ring, then distributes keys across virtual shards via the same hash. With 50 virtuals per physical, the law of large numbers smooths the worst-case skew below the residual sampling noise. This is exactly the same trick consistent hashing uses to balance the ring at low node counts (Lesson 7's `ConsistentHashRing` widget).
 
 ### 3.4 Resharding — the dreaded migration
 
-Eventually you outgrow the current shard count. With **hash partitioning**, naïvely changing `N` from 8 to 16 reshuffles every key: `hash(k) % 8` is unrelated to `hash(k) % 16`. That's a full data migration. **With consistent hashing**, only roughly `1/N` of keys move when you add a shard — the same property the widget in [Lesson 7](/cortex/system-design/building-blocks/load-balancing) made visceral. Production sharded systems use consistent hashing (or a close cousin like rendezvous hashing) precisely so resharding is cheap.
+Eventually you outgrow the current shard count. With **hash partitioning**, naïvely changing `N` from 8 to 16 reshuffles every key: `hash(k) % 8` is unrelated to `hash(k) % 16`. That's a full data migration. **With consistent hashing**, only roughly `1/N` of keys move when you add a shard — the same property the widget in [Lesson 7](/cortex/system-design/building-blocks/load-balancing) made visceral. That `1/N` figure is the bound for growing **one shard at a time**; doubling the cluster is the worst case (≈50% of keys move, the same as plain modulo — see Exercise 3). Production sharded systems use consistent hashing precisely so incremental resharding is cheap.
+
+A naming caveat worth carrying forward. **"Consistent hashing" names a *family* of algorithms, not the ring specifically.** What unifies them is a single guarantee: adding or removing a shard relocates only a small fraction of keys. The hash ring with virtual nodes (Lesson 7) is the best-known member, but **rendezvous hashing** (highest-random-weight) and **jump consistent hashing** are siblings that hit the same target without a ring at all. Cassandra and ScyllaDB use something close to the original ring definition; others pick a sibling. And the word **"consistent" here has nothing to do with the consistency taxonomy coming in [Lesson 13](/cortex/system-design/building-blocks/consistency-models)** (or with replica/ACID consistency) — it describes only the *stability of placement*: few keys move when the topology changes, not anything about what a reader sees.
 
 The Notion migration moved billions of rows from one monolithic Postgres into 480 logical shards across 32 databases in a single weekend with minimal downtime, because they had pre-designed the logical-shard scheme. **Plan for resharding before you need it**; retrofitting consistent hashing onto an existing modulo-hashed system is the expensive migration story you don't want to live through.
 
@@ -140,7 +142,7 @@ The runnable in `./examples/12-sharding-strategies/` is a 100-line Python script
 | **Hash partitioning** | range scans on the partition key | near-uniform load on average |
 | **Hash + virtual** | a few microseconds per request to compute the virtual mapping | resilient to per-shard skew at any reasonable shard count |
 | **Directory partitioning** | a central component to operate + replicate | per-key flexibility (e.g. carve out a hot key) |
-| **Consistent hashing** | implementation complexity | cheap resharding (only ~1/N keys move per added shard) |
+| **Consistent hashing** | implementation complexity | cheap resharding (only ~1/N keys move per shard added one at a time; doubling is still ~50%) |
 | **Thin router (client library)** | dependency / version sprawl across services | no central proxy in the request path |
 | **Thick router (Vitess / Citus / proxy)** | one more service to operate | central place to evolve sharding policy |
 | **Single partition key for the whole DB** | flexibility for queries that don't fit it | cross-shard queries become rare |
@@ -160,7 +162,7 @@ Even with uniform hash partitioning, a single popular key (the celebrity user, t
 
 ### 6.3 Cross-shard transaction
 
-A single transaction touching rows on multiple shards is hard. You can't use a regular database transaction (each shard is its own database). The substitutes: **two-phase commit** (works, slow, not survivable to coordinator failure); **sagas** (a sequence of compensating actions on failure — see [Lesson 19](/cortex/system-design/distributed-patterns/sagas-and-distributed-transactions)); **just don't do it** (model the data so transactions stay within one shard). The third is by far the most common production answer.
+A single transaction touching rows on multiple shards is hard. You can't use a regular database transaction (each shard is its own database). The substitutes: **two-phase commit** (works, slow, not survivable to coordinator failure); **sagas** (a sequence of compensating actions on failure — see [Lesson 21](/cortex/system-design/distributed-patterns/sagas-and-distributed-transactions)); **just don't do it** (model the data so transactions stay within one shard). The third is by far the most common production answer.
 
 ### 6.4 The router becomes the bottleneck
 
@@ -172,7 +174,12 @@ You decide to add 4 more shards to your 8-shard cluster (8 → 12, +50% capacity
 
 ### 6.6 Secondary indexes don't shard cleanly
 
-If your `messages` table is partitioned by `(channel_id, bucket)` but you want a secondary lookup by `author_id`, the secondary index must either: (a) be **global** (a separate index table that maps `author_id → shard list`, queried separately), or (b) be **local** (each shard has its own `author_id` index, requiring a scatter-gather for "all messages by author X"). Both are correct; both are slow compared to the partition-key path. The trap is thinking sharding makes *every* query cheap; it makes only the partition-key-aligned queries cheap.
+If your `messages` table is partitioned by `(channel_id, bucket)` but you want a secondary lookup by `author_id`, the secondary index must either:
+
+- **(a) be local — a *document-partitioned* index.** Each shard maintains an `author_id` index over only its own rows. Writes touch one shard, but a read for "all messages by author X" is a **scatter-gather** across every shard (and prone to tail-latency amplification — you wait for the slowest one). Used by MongoDB, Cassandra, and Elasticsearch.
+- **(b) be global — a *term-partitioned* index.** The index is sharded by the *term* (the `author_id` value) itself, independently of the primary key. A single-author lookup therefore lands on **one** index shard — cheap reads — but a write may have to update **many** index shards, so global indexes are often maintained asynchronously and can return stale reads (DynamoDB's global secondary indexes are the canonical example). Used by CockroachDB, TiDB, and YugabyteDB.
+
+Both are correct; both cost more than the partition-key path. The trap is thinking sharding makes *every* query cheap — it makes only the partition-key-aligned queries cheap.
 
 ## 7. Practice
 
@@ -228,7 +235,7 @@ You operate a 16-shard cluster with modulo hashing (`hash(k) % 16`). You're scal
 <details>
 <summary>Solution</summary>
 
-**Modulo hashing.** Going from 16 → 32 shards changes the modulus. For each key `k`, the new shard is `hash(k) % 32`; the old was `hash(k) % 16`. A key stays put iff `hash(k) % 32 == hash(k) % 16`, which happens when `hash(k) % 32 ∈ [0, 16)` AND `hash(k) % 32 == hash(k) % 16`. With uniformly distributed hashes, roughly **half the keys** move (those whose new shard is in `[16, 32)` — they were on a shard in `[0, 16)` before).
+**Modulo hashing.** Going from 16 → 32 shards changes the modulus. For each key `k`, write `x = hash(k)`: the new shard is `x % 32`, the old was `x % 16`. The clean fact is that `x % 16` is just `x % 32` folded in half — so a key keeps its shard exactly when `x % 32 < 16` (there `x % 32 == x % 16`). When `x % 32 ≥ 16` the key moves. With uniformly distributed hashes that's the **half** of keys whose `% 32` lands in `[16, 32)`.
 
 So: **~50% of all data must migrate** for a 16 → 32 expansion.
 

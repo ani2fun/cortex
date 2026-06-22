@@ -5,10 +5,10 @@
 
 ## Chapters
 
-- [15. Message queues and event streams](/cortex/system-design/distributed-patterns/message-queues-and-streams)
-- [16. Pub/sub and fan-out](/cortex/system-design/distributed-patterns/pubsub-and-fanout)
-- [17. Idempotency, retries, and backoff](/cortex/system-design/distributed-patterns/idempotency-retries-backoff)
-- [18. The outbox pattern and CDC](/cortex/system-design/distributed-patterns/outbox-pattern-and-cdc)
-- [19. Sagas and distributed transactions](/cortex/system-design/distributed-patterns/sagas-and-distributed-transactions)
-- [20. Rate limiting](/cortex/system-design/distributed-patterns/rate-limiting)
-- [21. Circuit breakers and bulkheads](/cortex/system-design/distributed-patterns/circuit-breakers-and-bulkheads)
+- [17. Message queues and event streams](/cortex/system-design/distributed-patterns/message-queues-and-streams)
+- [18. Pub/sub and fan-out](/cortex/system-design/distributed-patterns/pubsub-and-fanout)
+- [19. Idempotency, retries, and backoff](/cortex/system-design/distributed-patterns/idempotency-retries-backoff)
+- [20. The outbox pattern and CDC](/cortex/system-design/distributed-patterns/outbox-pattern-and-cdc)
+- [21. Sagas and distributed transactions](/cortex/system-design/distributed-patterns/sagas-and-distributed-transactions)
+- [22. Rate limiting](/cortex/system-design/distributed-patterns/rate-limiting)
+- [23. Circuit breakers and bulkheads](/cortex/system-design/distributed-patterns/circuit-breakers-and-bulkheads)

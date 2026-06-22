@@ -68,6 +68,12 @@ A short, useful definition of "good" system design:
 
 That is the bar. Not "scales to infinity". Not "uses microservices". Not "uses Kubernetes". Absorbs the next realistic surprise.
 
+**Two distinctions you will use in every chapter after this one.** Before we go further, internalise two pairs of words that the rest of this track leans on constantly. They come straight from *Designing Data-Intensive Applications*, the book that sits behind much of this track.
+
+The first is **operational versus analytical** work. An *operational* system handles the live actions of users: it looks up a handful of records by key, then creates, updates, or deletes them — "add this book to my shelf", "charge this card", "post this message". These are small, fast, predefined queries, and there are a *lot* of them. An *analytical* system instead scans across a huge number of records to compute an aggregate — "what was total revenue per store in January?", "how many more bananas than usual did we sell during the promotion?" Few queries, each one enormous. The two have opposite shapes, so above a certain scale they are almost always run on *separate* systems: the operational database stays fast for users, and a read-only copy of its data is fed into a separate analytical store (a *data warehouse*) where analysts can run expensive queries without ever slowing down the checkout page. Most of this track is about operational systems — but knowing the split is what stops you from accidentally running a report that takes down production.
+
+The second is **system of record versus derived data**. A *system of record* (also called a *source of truth*) holds the authoritative copy of a fact: when new data arrives, it is written *here first*, exactly once, and if any other system disagrees, the system of record wins by definition. *Derived data* is anything you computed *from* the source of truth and could rebuild if you lost it — a cache, a search index, a materialised view, a leaderboard, a thumbnail, an ML model's features. Here is the load-bearing insight DDIA draws from this: a database is just a tool; *nothing is inherently a source of truth or a derived store* — it depends entirely on how you use it. The skill is being explicit about which is which, because the moment you are fuzzy about it ("is the cache or the database the real answer?") is the moment a stale read corrupts something that matters. We will return to this every time we add a cache, an index, or a replica — each one is derived data that must be rebuildable from a source of truth.
+
 ## 4. Worked Example
 
 A friend asks you to help them build **a personal book-tracking app**. They have read the entire 5-step wizard at [systemdesignschool.io](https://systemdesignschool.io) and have already started writing the diagram with Kafka in it.
@@ -164,6 +170,8 @@ Below is what that scaled architecture looks like in C4 Container notation. Noti
 
 The architectural difference between the two views is the entire content of this track — how to know *which* box to add, *when*, and *why*.
 
+**Why the numbers force the design.** The reason the second architecture *has* to look different is arithmetic, not fashion. Run the rough numbers the way a senior engineer would. Imagine a service with 300 million monthly users, half of them active on a given day, each writing twice a day. That is 150 million × 2 ÷ 86,400 seconds ≈ **3,500 writes per second on average, and roughly double that — ~7,000/s — at peak**. A single SQLite file doing in-process writes cannot survive that; it is not a deficiency of SQLite, it is that the workload no longer fits on one disk's write path. And if 10% of those actions store a 1 MB image, you are adding ~30 TB *per day* of media — which is why the scaled diagram suddenly grows an object store. (These figures are illustrative, not real platform numbers — but the *shape* of the reasoning is exactly the job.) The lesson the two diagrams teach together: **you do not choose an architecture and then check if it scales; you estimate the load and let the numbers tell you which architecture is even allowed.** We devote all of [Lesson 3 — Back-of-the-envelope estimation](/cortex/system-design/foundations/back-of-envelope-estimation) to doing this fluently.
+
 ## 5. Build It
 
 The best way to start thinking like a system designer is to read **real postmortems** from real outages, then reverse-engineer the design that allowed them to happen and the design that recovered.
@@ -248,13 +256,26 @@ There is no "complexity" in the algorithmic sense at this level — but there is
 
 If a colleague tells you a single design "is the best", they are wrong. Politely ask: "best for which axis, and at what cost on the others?"
 
+**Make one axis concrete: availability.** "Nines" sound abstract until you convert them to time. Each extra nine is roughly a 10× reduction in allowed downtime per year:
+
+| Availability | Downtime per year | Downtime per day | What it costs to get there |
+|---|---|---|---|
+| 99% ("two nines") | ~3.65 days | ~14 min | One server, occasional reboots — basically free |
+| 99.9% ("three nines") | ~8.8 hours | ~1.4 min | Redundancy + a real on-call process; this is where most cloud SLAs sit |
+| 99.99% ("four nines") | ~52 min | ~8.6 s | Multi-AZ failover, automated recovery, tested runbooks |
+| 99.999% ("five nines") | ~5 min | ~0.86 s | Multi-region, heavy investment, a large always-on team |
+
+The jump from three nines to five nines is not "a bit more effort" — it is the difference between a small team and a department. The system designer's job is to ask *whether the business actually needs the extra nine*, because each one is paid for in the **cost**, **operational burden**, and **time-to-market** columns. A hobby project that targets five nines is as miscalibrated as a hospital pager system that targets two.
+
+**A concrete trade across the table: build versus buy.** Suppose you need a message queue. You can self-host (run RabbitMQ or Kafka on your own machines) or buy a managed service (SQS, Confluent Cloud). DDIA frames the choice as a business question, not a technical one: keep things that are a *core competency or competitive advantage* in-house, and let a vendor handle what is *routine* — almost nobody fabricates their own CPUs because buying them is cheaper. Self-hosting wins on **cost and control** *if* your load is predictable and you already have the operational skill; you can tune it to your exact workload, and you keep your data on your own machines. Managed wins on **time-to-market and operational burden**: you trade money and a measure of control for not having to learn to run the thing — and you accept that if it has a bug or an outage, you can only file a ticket and wait. There is no universally correct answer; there is only "which columns of the table does *this* business need to spend in?"
+
 ## 7. Edge Cases & Failure Modes
 
 The mistakes that distinguish junior from senior thinking — every one of these is a real outage somebody actually wrote a postmortem about:
 
 - **Optimising for the imaginary case.** *"What if we get 10 M users?"* You probably will not. Design for 10× your current numbers, not 1000×. ([Stack Overflow ran on nine web servers and a single active SQL master](https://nickcraver.com/blog/2016/02/17/stack-overflow-the-architecture-2016-edition/) — 2016; the post notes it could limp along on just one.)
 - **Confusing "we need it to be fast" with "we need it to be predictable".** A system that takes 80 ms in the median but 5,000 ms at the 99th percentile can be *worse* than one that takes 400 ms always — especially once a request fans out across many services, where the rare slow component dominates the user-perceived time. Tail latency is what your users actually feel. ([Jeff Dean and Luiz Barroso, 2013](https://research.google/pubs/the-tail-at-scale/) is the canonical paper.)
-- **Treating "the cloud" as infinite and infallible.** It is not. Regions go down. Availability zones lose power. AWS's worst regional outages have run roughly 7–20 hours of degraded service in us-east-1 — and even then it has never lost an entire region (all zones) at once. Design for it.
+- **Treating "the cloud" as infinite and infallible.** It is not. Regions go down. Availability zones lose power. AWS's worst regional outages have run several hours to most of a day of degraded service in us-east-1, usually triggered by one subsystem (DNS, the control plane) failing and cascading. The cloud gives you someone else's operations team, not someone else's laws of physics — DDIA makes the same point: a cloud service's biggest downside is that *you have no control over it*. If it's down, "all you can do is wait for it to recover." Design for that wait.
 - **Assuming the network is reliable.** It is not — partitions happen, packets vanish, DNS lies. (This is fallacy #1 of the [Eight Fallacies of Distributed Systems](https://en.wikipedia.org/wiki/Fallacies_of_distributed_computing). We will dedicate a lesson to it later.)
 - **Building distributed systems before you have a single-machine system that works.** Distribution multiplies bugs by the number of nodes. If you cannot make one machine reliable, six of them will not save you. They will compound your suffering.
 - **Caching as a reflex.** "Add a cache" is the duct tape of system design. It hides slowness, then explodes spectacularly the first time the cache layer fails and 100% of your traffic hits the cold backend. (Cache stampedes get their own treatment in [Lesson 8](/cortex/system-design/building-blocks/caching).)
@@ -299,7 +320,7 @@ Before you move on, check your understanding with the coach — explain the idea
 
 - **[Discord — How Discord Stores Trillions of Messages](https://discord.com/blog/how-discord-stores-trillions-of-messages)** (2023) — A study in *deliberate* migration from Cassandra to ScyllaDB, including the months of measurement that justified the move. Notice how much of the post is about *measurement*, not implementation.
 
-- **[Stripe — Designing Robust and Predictable APIs with Idempotency](https://stripe.com/blog/idempotency)** (2017) — Senior-grade thinking about making payments retryable without double-charging anyone. We will use this directly in [Lesson 17](/cortex/system-design/distributed-patterns/idempotency-retries-backoff) and [Capstone 44](/cortex/system-design/capstones/payment-system).
+- **[Stripe — Designing Robust and Predictable APIs with Idempotency](https://stripe.com/blog/idempotency)** (2017) — Senior-grade thinking about making payments retryable without double-charging anyone. We will use this directly in [Lesson 19](/cortex/system-design/distributed-patterns/idempotency-retries-backoff) and [Capstone 49](/cortex/system-design/capstones/payment-system).
 
 - **[Cloudflare — How we built Pingora, the proxy that connects Cloudflare to the Internet](https://blog.cloudflare.com/how-we-built-pingora-the-proxy-that-connects-cloudflare-to-the-internet/)** (2022) — A masterclass in *replacing* a load-bearing component (Nginx) with a custom one (Pingora) only after years of measurement justified the cost.
 

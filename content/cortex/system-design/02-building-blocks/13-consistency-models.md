@@ -6,11 +6,11 @@ summary: Six consistency levels along one axis, the anomalies each one allows, a
 # 13. Consistency models
 
 ## TL;DR
-> Consistency is a **per-query** choice, not a cluster-wide setting. There are six points on the spectrum — strong (linearizable) at one end; eventual at the other; monotonic-reads, read-your-writes, sequential, and causal in between — and each one allows specific anomalies to leak through. The senior moves are: (a) **know which anomalies you're signing up for**, and (b) **don't pay for stronger consistency than each query needs**. Linearizable reads on a query that's reading a "last seen" timestamp is just wasted latency; eventually-consistent reads on a query that determines account-balance authorisation is a future incident.
+> Consistency is a **per-query** choice, not a cluster-wide setting. There is a spectrum — strong (linearizable) at one end; eventual at the other; monotonic-reads, read-your-writes, consistent-prefix, and causal in between — and each point allows specific anomalies to leak through. The senior moves are: (a) **know which anomalies you're signing up for**, and (b) **don't pay for stronger consistency than each query needs**. Linearizable reads on a query that's reading a "last seen" timestamp is just wasted latency; eventually-consistent reads on a query that determines account-balance authorisation is a future incident.
 
 ## 1. Motivation
 
-In **2014**, Kyle Kingsbury published [*Strong consistency models*](https://aphyr.com/posts/313-strong-consistency-models) — the post that took the textbook definitions and put them on **one axis** with a clear lattice diagram. The lattice ranks every common consistency model by strictness, and shows which guarantees imply which. Strong serialisability implies linearisability, which implies sequential, which implies causal, which implies all the per-key models, and so on. *Most production databases are eventually consistent by default, and the precise dialect of "eventual" varies in ways that surprise teams.*
+In **2014**, Kyle Kingsbury published [*Strong consistency models*](https://aphyr.com/posts/313-strong-consistency-models) — the post that took the textbook definitions and put them on **one axis** with a clear lattice diagram. The lattice ranks every common consistency model by strictness, and shows which guarantees imply which. Strong serialisability implies linearisability, which implies causal, which implies the consistent-prefix and per-session models, and so on. (As §3.1 spells out, the lattice actually flattens *two* independent axes — transaction isolation and replication recency — onto one picture; they coincide only at the very top.) *Most production databases are eventually consistent by default, and the precise dialect of "eventual" varies in ways that surprise teams.*
 
 The same axis explains why production systems mix consistency levels per query. A bank's `SELECT balance FROM accounts WHERE id = ?` ahead of a `UPDATE accounts SET balance = balance - 100` must be linearisable: a stale balance read leads to authorising a withdrawal against money already gone. The same bank's `SELECT user_id, last_login_at FROM users WHERE id = ?` on the analytics dashboard can be 30 seconds stale and nobody cares. Same database; different queries; different consistency.
 
@@ -22,9 +22,9 @@ A replicated database under load is **a busy newsroom**.
 
 Three reporters (the writers) file different versions of the same story across the day. A team of fact-checkers (the readers) checks the story before publication. The question every consistency model answers is: **which version of the story do the fact-checkers see?**
 
-- **Linearizable**: all fact-checkers, at any moment, see exactly the most recently filed version. There's a single canonical timeline, and everyone agrees on it instantly. (Expensive: every fact-check has to wait for the wire to confirm.)
-- **Sequential**: all fact-checkers see *the same order* of filings, but the version they're looking at might lag the most recent by a bit. (Cheaper: a fact-checker can serve from a cached version as long as it doesn't go backwards.)
-- **Causal**: if reporter A files a follow-up that *references* reporter B's earlier version, fact-checkers cannot see A's follow-up without B's predecessor. (Just enough order to keep stories coherent; cheaper still.)
+- **Linearizable**: all fact-checkers, at any moment, see exactly the most recently filed version. There's a single canonical timeline pinned to *real* wall-clock time, and everyone agrees on it instantly. (Expensive: every fact-check has to wait for the wire to confirm.)
+- **Sequential**: all fact-checkers agree on *one* order of filings, and each reporter's own filings appear in the order they filed them — but that agreed order need not match real wall-clock time across reporters. A filing that physically went out first can sit later in the shared order, as long as *everyone* sees that same order. (Note this is an *ordering* guarantee, not a "slightly stale" one — it is weaker than linearizable only because it drops the tie to real time, not because reads lag.)
+- **Causal**: if reporter A files a follow-up that *references* reporter B's earlier version, fact-checkers cannot see A's follow-up without B's predecessor. Filings with no such dependency can be seen in any order. (Just enough order to keep stories coherent; cheaper still.)
 - **Read-your-writes**: a *specific reporter* always sees their own most recent filing, but other reporters may lag. (Cheap; just need to pin the reporter's reads.)
 - **Monotonic reads**: a fact-checker never sees the story go *backwards* — once they've seen version 5, they never go back to seeing version 4. (Cheap; just need to remember "what version did I last see".)
 - **Eventual**: given a quiet day, all fact-checkers eventually see the same version. **No timing or ordering guarantee** on how they get there. (Cheapest; potentially confusing.)
@@ -39,15 +39,24 @@ Models, ranked strict → loose. A model further down "allows more anomalies" th
 
 | Level | Allows | Prevents | Example workload |
 |---|---|---|---|
-| **Strict serialisability** | nothing | every concurrency anomaly | airline-seat assignment with hard global ordering |
-| **Linearisable** | non-determinism on ties | stale reads, lost updates within the linearisation order | bank balance check before withdrawal |
-| **Sequential** | reads slightly behind writes (per replica) | reordering of operations across users | feed timeline within a session |
-| **Causal** | reads that don't preserve real-time order | reading a reply before its parent | comment threads, social-graph updates |
+| **Strict serialisability** | nothing the database is responsible for | every isolation anomaly *and* stale reads (serialisable + linearisable) | airline-seat assignment with hard global ordering |
+| **Linearisable** | non-determinism on ties; anything spanning more than one object | stale reads on a *single* register (a read always sees the latest committed write) | bank balance check before withdrawal |
+| **Sequential** | an agreed order that doesn't match real wall-clock time across clients | disagreement about *what* order operations happened in | feed timeline within a session |
+| **Causal** | reordering of operations that aren't causally related | reading a reply before its parent | comment threads, social-graph updates |
 | **Read-your-writes (session)** | other users' updates not yet visible to you | your own write appearing missing on reread | "I posted a comment" pages |
 | **Monotonic reads (session)** | data getting more stale | data going *backwards* within your session | infinite-scroll feeds |
 | **Eventual** | any temporary ordering | nothing — convergence "eventually" | analytics dashboards, online presence indicators |
 
-The strict-to-loose ordering matters: if your database offers linearisable, you automatically have sequential / causal / read-your-writes / monotonic-reads "for free" *on that query*. If it offers eventual, you have nothing.
+**The one definition worth memorising — linearisability is a recency guarantee on a single register.** Operations on one key/row/document appear to take effect instantaneously at some single point between when they start and when they finish, in an order consistent with real time. The operational consequence: *if operation A returns before operation B begins, B must observe A's effect (or something even newer)* — and once any reader sees the new value, every later read, from any client, sees it too. That is the whole guarantee. It is about one object and about *freshness*; it says nothing about atomicity across multiple objects, which is why it cannot, by itself, prevent a lost update or write skew that spans two rows.
+
+**Two independent axes are flattened onto this lattice for convenience.** One axis is *transaction isolation* (read-committed → snapshot → serialisable — the subject of [Lesson 9](/cortex/system-design/building-blocks/relational-databases)); the other is *replication recency* (eventual → causal → linearisable). They are not a single ladder, and neither subsumes the other:
+
+- A **serialisable** database can still hand you a *stale* snapshot — serialisability orders transactions correctly but makes no recency promise, so the consistent answer it gives you may be from a moment ago.
+- A **linearisable** register is always current but offers no multi-row atomicity.
+
+You get both at once only at the top of the lattice, in **strict serialisability** (sometimes "strong-1SR"). Spanner and FoundationDB provide it; CockroachDB is deliberately serialisable-but-not-strict, trading a little recency to avoid the coordination cost. Below the top row you can mix and match freely — snapshot isolation on a linearisable store, or serialisable isolation that still permits stale reads.
+
+With that caveat in mind, the strict-to-loose ordering still buys you something: if your database offers linearisable reads, you automatically have causal / read-your-writes / monotonic-reads "for free" *on that query*. If it offers eventual, you have nothing.
 
 ### 3.2 The anomalies, by example
 
@@ -61,11 +70,11 @@ These are what each consistency level lets through. The widget from [Lesson 11](
 
 **Causal violation** — a user posts a reply to a comment they haven't yet seen exist (because the comment lives on a replica they haven't read). *Allowed* by everything below causal; prevented by causal, sequential, linearisable.
 
-**Write skew** — two transactions read overlapping data, decide independently, write disjoint rows that *together* violate an invariant. The canonical example: "at least one doctor must be on call" — two doctors each read "two of us are on call" and decide to take a break. *Only prevented by serialisable*, not even by linearisable (which is single-key).
+**Write skew** — two transactions read overlapping data, decide independently, write disjoint rows that *together* violate an invariant. The canonical example: "at least one doctor must be on call" — two doctors each read "two of us are on call" and decide to take a break. *Reliably prevented only by serialisable isolation* (or by manually locking the rows you read, e.g. `SELECT ... FOR UPDATE` on the read set) — **not** by linearisable, which governs a single object and so never sees the cross-row invariant.
 
 **Phantom read** — a query reading "all rows matching X" sees a different set across two reads because another transaction inserted a new row matching X. Prevented by serialisable / Postgres's REPEATABLE READ (snapshot).
 
-**Lost update** — two transactions read the same value, both increment in memory, both write back; one's update silently overwrites the other. *Allowed by* READ COMMITTED (the Postgres default; covered in [Lesson 9](/cortex/system-design/building-blocks/relational-databases)). Prevented by SERIALIZABLE, REPEATABLE READ in Postgres, or `SELECT FOR UPDATE`.
+**Lost update** — two transactions read the same value, both increment in memory, both write back; one's update silently overwrites the other. *Allowed by* READ COMMITTED (the Postgres default; covered in [Lesson 9](/cortex/system-design/building-blocks/relational-databases)). Prevented by SERIALIZABLE, by `SELECT FOR UPDATE`, and — specifically in Postgres — by REPEATABLE READ (which is snapshot isolation under the hood and *detects* the conflict; note the SQL-standard REPEATABLE READ makes no such promise — "repeatable read" is a famously under-specified term).
 
 ### 3.3 What different storage shapes offer by default
 
@@ -76,7 +85,8 @@ These are what each consistency level lets through. The widget from [Lesson 11](
 | Cassandra | LOCAL_ONE (eventual) | QUORUM + Lightweight Transactions | per-query `CONSISTENCY QUORUM`; LWT for compare-and-swap |
 | DynamoDB | eventually consistent reads | strongly consistent reads | `ConsistentRead=true` on the request |
 | MongoDB (replica set) | `readConcern: local` on the primary | `readConcern: linearizable` (single-doc) | set `readConcern` per query; causal sessions for causal |
-| etcd / ZooKeeper | linearisable | linearisable | default — they're built for this |
+| etcd (v3) | linearisable reads *and* writes | linearisable | default — built for this |
+| ZooKeeper | linearisable *writes*; reads may be stale | linearisable reads | issue a `sync` before the read (reads needn't come from the current leader) |
 
 The pattern: **most systems default to the weakest practical model**, and offer stronger modes as a per-query opt-in with extra latency. Knowing which knob to flip for which query is the lesson.
 
@@ -84,7 +94,11 @@ The pattern: **most systems default to the weakest practical model**, and offer 
 
 [Lesson 4 (CAP and PACELC, honestly)](/cortex/system-design/foundations/cap-and-pacelc) introduced the *partition* dimension. Consistency models live on the *non-partition* axis — the "L" (latency) or "C" (consistency) trade-off in PACELC, *during normal operation*. The `PartitionSimulator` widget from Foundations 4 still applies here: under a partition, a CP system stays strongly consistent (refuses some writes); an AP system serves stale data (continues writes). What lesson 13 adds is: **even during normal operation** (no partition), you choose a consistency level per query; even an "AP system" can give you strong reads if you ask for the right primitive (Cassandra's `CONSISTENCY ALL` or LWT).
 
+It's worth being precise about *why* a partition forces that CP-or-AP choice for linearisable systems. Linearisability isn't merely slow under a partition — it is **impossible to serve on the disconnected side**. A replica cut off from the leader cannot know whether a newer write has been committed elsewhere, so to stay linearisable it must either block until the network heals or return an error. That is the real content of CAP: under a partition, a linearisable system *cannot* remain available on both sides. **Causal consistency is the special case worth remembering: it is the strongest model a replica can keep honouring while still answering every request during a partition**, because causal order is tracked with logical clocks (happens-before) and needs no cross-node coordination. So the principled middle isn't "linearisable-vs-stale" — causal sits between them and pays neither price.
+
 The hardest level — **linearisability** — is the strongest single-key guarantee any practical system offers, and it is what **consensus algorithms** ([Lesson 14](/cortex/system-design/building-blocks/consensus-paxos-and-raft)) actually provide. Linearisable reads on etcd cost ~1 RTT to the Raft leader; everything weaker is the database choosing to short-circuit that path. When a system claims "strongly consistent reads", what it usually means under the hood is "we route this query to a node that ran consensus on its local state".
+
+And this latency isn't an implementation accident you can engineer away. Attiya and Welch proved that the response time of linearisable reads and writes is *at least proportional to the uncertainty in network delay* — there is no clever algorithm that beats it. The slowness is therefore present **all the time, not only during a network fault**, which is exactly why most systems weaken consistency for *latency*, not for partition tolerance: the cost is there even when the network is perfectly healthy.
 
 ## 4. Worked example — three queries, three different consistency levels
 
@@ -144,7 +158,7 @@ A user reads version 5 from replica A. Replica A dies. The user's next read goes
 
 ### 6.6 Cross-region linearisable reads are expensive
 
-A linearisable read in a single-region database is fast (one local round-trip). A linearisable read in a multi-region setup costs at least one cross-region RTT — you must contact the primary, which lives in one region. Production systems with strict latency budgets either (a) accept eventual cross-region and pay for it operationally, or (b) regionalise the data (each region's users get their own region's primary). Spanner offers cross-region linearisability via TrueTime; the cost is a 7–10 ms commit latency floor anyway.
+A linearisable read in a single-region database is fast (one local round-trip). A linearisable read in a multi-region setup costs at least one cross-region RTT — you must contact the primary, which lives in one region. Production systems with strict latency budgets either (a) accept eventual cross-region and pay for it operationally, or (b) regionalise the data (each region's users get their own region's primary). Spanner offers cross-region linearisability via TrueTime; the cost is a *commit-wait* on every write — Spanner deliberately pauses for its clock-uncertainty window (single-digit milliseconds in Google's deployment) before returning, so that timestamps it hands out are guaranteed to be in the past.
 
 ## 7. Practice
 
@@ -218,6 +232,7 @@ Before you move on, check your understanding with the coach — explain the idea
 
 ## 8. In the Wild
 
+- **Martin Kleppmann, *Designing Data-Intensive Applications*, 2nd ed., Ch. 10 "Consistency and Consensus."** The canonical deep-dive, and the source for the linearisability-vs-serialisability distinction, the recency-guarantee definition, and the "unhelpful CAP theorem" critique used throughout this chapter.
 - **[Kyle Kingsbury, *Strong consistency models*](https://aphyr.com/posts/313-strong-consistency-models)** (2014). The post that puts every common model on one lattice diagram. Required reading if you're going to design with consistency in mind.
 - **[Werner Vogels, *Eventually Consistent*, CACM 2009](https://queue.acm.org/detail.cfm?id=1466448)** — Amazon CTO's classic on the spectrum of consistency, written for the practitioner.
 - **[Daniel Abadi, *Consistency Tradeoffs in Modern Distributed Database Systems*](https://cs.umd.edu/~abadi/papers/abadi-pacelc.pdf)** (2012) — the paper that introduced PACELC. Pairs naturally with [Lesson 4](/cortex/system-design/foundations/cap-and-pacelc).

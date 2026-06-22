@@ -5,8 +5,8 @@
 
 ## Chapters
 
-- [32. Observability — logs, metrics, traces](/cortex/system-design/production-operations/observability)
-- [33. Deployment strategies](/cortex/system-design/production-operations/deployment-strategies)
-- [34. Capacity planning and autoscaling](/cortex/system-design/production-operations/capacity-planning-and-autoscaling)
-- [35. Failure injection and chaos engineering](/cortex/system-design/production-operations/chaos-engineering)
-- [36. Incident response and postmortems](/cortex/system-design/production-operations/incident-response-and-postmortems)
+- [37. Observability — logs, metrics, traces](/cortex/system-design/production-operations/observability)
+- [38. Deployment strategies](/cortex/system-design/production-operations/deployment-strategies)
+- [39. Capacity planning and autoscaling](/cortex/system-design/production-operations/capacity-planning-and-autoscaling)
+- [40. Failure injection and chaos engineering](/cortex/system-design/production-operations/chaos-engineering)
+- [41. Incident response and postmortems](/cortex/system-design/production-operations/incident-response-and-postmortems)

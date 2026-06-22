@@ -156,7 +156,7 @@ Between the edge and the origin, well-run CDNs add an **origin shield**: a singl
   title="Browser → DNS → CDN → origin: the system context"
 ></iframe>
 
-> Pan and zoom inside the frame. This is the topology every Part-2 lesson refers back to. [Lesson 8 (caching)](/cortex/system-design/building-blocks/caching) will zoom into the CDN edge; [Lesson 11 (replication)](/cortex/system-design/building-blocks/replication) will zoom into the database tier; [Capstone 37 (URL shortener)](/cortex/system-design/capstones/url-shortener) will lay a real read/write path through all of it.
+> Pan and zoom inside the frame. This is the topology every Part-2 lesson refers back to. [Lesson 8 (caching)](/cortex/system-design/building-blocks/caching) will zoom into the CDN edge; [Lesson 11 (replication)](/cortex/system-design/building-blocks/replication) will zoom into the database tier; [Capstone 42 (URL shortener)](/cortex/system-design/capstones/url-shortener) will lay a real read/write path through all of it.
 
 The CDN container view makes the edge / shield split concrete:
 
@@ -369,6 +369,6 @@ Before you move on, check your understanding with the coach — explain the idea
 
 ---
 
-Networking is not a *layer* of a system design — it's the *medium* every other layer sits in. Every cache exists to skip a network round-trip. Every replica exists to put bytes closer to users. Every consensus protocol's cost is "how many RTTs to agree?" You will return to RTT counting in [Lesson 8 (caching)](/cortex/system-design/building-blocks/caching) for the cache stampede, [Lesson 11 (replication)](/cortex/system-design/building-blocks/replication) for cross-region async replication's 80–200 ms staleness window, [Lesson 14 (consensus)](/cortex/system-design/building-blocks/consensus-paxos-and-raft) for Raft's commit-latency floor (1 RTT to a follower + 1 fsync), and in every capstone from [37](/cortex/system-design/capstones/url-shortener) onwards.
+Networking is not a *layer* of a system design — it's the *medium* every other layer sits in. Every cache exists to skip a network round-trip. Every replica exists to put bytes closer to users. Every consensus protocol's cost is "how many RTTs to agree?" You will return to RTT counting in [Lesson 8 (caching)](/cortex/system-design/building-blocks/caching) for the cache stampede, [Lesson 11 (replication)](/cortex/system-design/building-blocks/replication) for cross-region async replication's 80–200 ms staleness window, [Lesson 14 (consensus)](/cortex/system-design/building-blocks/consensus-paxos-and-raft) for Raft's commit-latency floor (1 RTT to a follower + 1 fsync), and in every capstone from [42](/cortex/system-design/capstones/url-shortener) onwards.
 
 > **Next:** [7. Load balancing](/cortex/system-design/building-blocks/load-balancing) — once you've got requests landing at the nearest edge, the next question is how to spread them across backend instances when one shows up versus a hundred show up.

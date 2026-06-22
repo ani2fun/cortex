@@ -5,9 +5,9 @@
 
 ## Chapters
 
-- [27. Monoliths, microservices, and modular monoliths](/cortex/system-design/application-architecture/monoliths-microservices-modular-monoliths)
-- [28. API design — REST, gRPC, GraphQL](/cortex/system-design/application-architecture/api-design)
-- [29. Service discovery and service mesh](/cortex/system-design/application-architecture/service-discovery-and-mesh)
-- [30. Authentication and authorization](/cortex/system-design/application-architecture/authn-authz)
-- [31. Multi-tenancy](/cortex/system-design/application-architecture/multi-tenancy)
+- [32. Monoliths, microservices, and modular monoliths](/cortex/system-design/application-architecture/monoliths-microservices-modular-monoliths)
+- [33. API design — REST, gRPC, GraphQL](/cortex/system-design/application-architecture/api-design)
+- [34. Service discovery and service mesh](/cortex/system-design/application-architecture/service-discovery-and-mesh)
+- [35. Authentication and authorization](/cortex/system-design/application-architecture/authn-authz)
+- [36. Multi-tenancy](/cortex/system-design/application-architecture/multi-tenancy)
 - [Example — modelling a system with the C4 model](/cortex/system-design/application-architecture/example-c4-model)

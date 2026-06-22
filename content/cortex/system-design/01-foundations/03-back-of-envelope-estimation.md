@@ -26,6 +26,11 @@ Designing systems works the same way. You estimate: "1 M users × 5 requests/day
 
 The mistake is wanting precision. **The estimate is wrong by definition.** That is fine — it is wrong on the right *order of magnitude*, which is enough to pick a class of solution.
 
+> **A second analogy — the chef who never weighs salt.**
+> A line cook plating 300 covers a night does not pull out a kitchen scale for the salt. They *know* a four-finger pinch is roughly a gram, that a pan of greens takes "a pinch per handful," and they adjust by taste at the end. The discipline is not "guess wildly"; it is "carry a few calibrated reference quantities in your hands so you can ballpark instantly and correct later." Estimation works identically: memorise a handful of reference numbers (seconds in a day, bytes in a tweet, the latency of a disk seek), reach for them by reflex, and let the final taste-test — a sanity check against a published figure — catch anything that is wildly off. The cook who stops to weigh every ingredient never gets the food out; the engineer who demands exact numbers never gets to a design.
+
+Jeff Dean, the Google engineer whose latency numbers we will memorise in §3, put the working definition best: a back-of-the-envelope calculation is *an estimate built from thought experiments plus a few common performance numbers, just good enough to tell which designs will meet your requirements.* The whole point is to **eliminate bad designs cheaply** before you spend a week building one.
+
 ## 3. Formal Definition
 
 A back-of-envelope estimate (BOTE) is a calculation that:
@@ -67,6 +72,50 @@ Engineers reach for "1 GB ≈ 1 billion bytes" so often that they forget the dif
 | 1 TB | 10¹² | A year of detailed logs from a mid-sized service |
 | 1 PB | 10¹⁵ | The total user data of a 100-million-user social product |
 
+### Latency numbers every engineer should know
+
+QPS and storage tell you *how much*; latency numbers tell you *how slow each option is*, and therefore which one your design can afford. These come from Jeff Dean's famous list (originally 2010, the relative gaps still hold). You do not need them to the nanosecond — you need the **ratios**, because the ratios decide architecture.
+
+| Operation | Rough time | Mental shorthand |
+|---|---|---|
+| L1 cache reference | ~1 ns | free |
+| Branch mispredict | ~5 ns | free |
+| Main memory reference | ~100 ns | "memory is fast" |
+| Compress 1 KB (fast codec) | ~10 µs | cheap |
+| Send 1 KB over 1 Gbps network | ~10 µs | cheap |
+| Read 1 MB sequentially from memory | ~100 µs | fast |
+| SSD random read | ~100 µs | "SSD is ~1000× faster than seek" |
+| Read 1 MB sequentially from SSD | ~1 ms | fine |
+| Round trip within a datacenter | ~500 µs | cheap |
+| **Disk seek (spinning disk)** | **~10 ms** | "disk is slow — avoid seeks" |
+| Read 1 MB sequentially from spinning disk | ~30 ms | slow |
+| **Round trip across regions (e.g. US↔EU)** | **~150 ms** | "cross-region is expensive" |
+
+The four conclusions you actually carry around:
+
+1. **Memory is ~100,000× faster than a disk seek.** This is *why caches exist.* When your read QPS dwarfs your write QPS (see §4), you cache.
+2. **Avoid disk seeks; prefer sequential reads.** A design that does one seek per request caps out near 100 QPS *per disk*. A design that reads sequentially does not.
+3. **Compress before you send.** ~10 µs of CPU to shrink a payload beats the network and disk time it saves, almost always.
+4. **Cross-region round trips are ~150 ms.** Any design that makes a synchronous call to another continent on the request path has *already* blown a typical latency budget. This is the single number behind "replicate data close to users."
+
+> **Quick worked check — can this design hit a 200 ms page-load budget?**
+> A page makes, in sequence: 1 cross-region API call (~150 ms) + 3 database queries that each do a disk seek (~10 ms each = 30 ms) + some compute (~10 ms). Total ≈ **190 ms** — it *barely* fits, with zero margin, and one retry blows it. The latency table told you the cross-region hop is 79% of your budget *before you wrote any code.* Fix: serve from a same-region replica (drop 150 ms → ~1 ms) and the budget opens wide.
+
+### Availability numbers — counting the nines
+
+The third quantity worth memorising is **availability**, written as a percentage of uptime and spoken as "nines." An SLA (service-level agreement) of "three nines" means 99.9% uptime. The reason to memorise the table is that *the gap between adjacent rows is what each extra nine costs you in engineering effort.*
+
+| Availability | "Nines" | Downtime per year | Downtime per day |
+|---|---|---|---|
+| 99% | two nines | ~3.65 days | ~14 min |
+| 99.9% | three nines | ~8.76 hours | ~86 sec |
+| 99.99% | four nines | ~52.6 min | ~8.6 sec |
+| 99.999% | five nines | ~5.26 min | ~0.86 sec |
+
+How to derive any row in your head: a year is ~`525,600` minutes (round to `~500,000`). "Two nines" means 1% is downtime → `~5,000` min/year ≈ 3.5 days. Each additional nine divides the downtime by 10. That is the whole table — you can reconstruct it from one number and a division.
+
+The design consequence: **most cloud providers promise three nines (99.9%) for a single service**, and every nine beyond that typically costs redundancy — multiple replicas, multi-region failover, automated recovery. When a requirement says "five nines," it is really saying "budget for full geographic redundancy and an on-call team," because 5 minutes of *total* downtime per year leaves no room for a manual fix.
+
 ## 4. Worked Example
 
 Let's estimate the QPS, storage, and bandwidth of **Twitter**, twice — once with rough public numbers, then again with realistic peaks.
@@ -104,7 +153,7 @@ The read path is **25× the write path**. That is the *single most important num
 - Writes can be slow; reads cannot.
 - The architecture is read-optimised.
 
-This is exactly why Twitter's core design uses *fan-out on write* — pre-compute every follower's timeline at write time so reads are O(1) cache hits. We will design that exact pipeline in [Capstone 38](/cortex/system-design/capstones/news-feed).
+This is exactly why Twitter's core design uses *fan-out on write* — pre-compute every follower's timeline at write time so reads are O(1) cache hits. We will design that exact pipeline in [Capstone 43](/cortex/system-design/capstones/news-feed).
 
 ### Calculation 3 — Storage growth
 
@@ -126,6 +175,40 @@ Reads/sec (peak) × bytes per read ≈ 300,000 × 1 KB = 300 MB/s = 2.4 Gbps
 
 Plus images and video (which dwarf text). For full media-attached reads, multiply by ~50 for an estimated **120 Gbps egress at peak**. Twitter operates this through CDNs — never hitting their core for image bytes.
 
+### Calculation 5 — Memory for a cache
+
+We just proved reads are 25× writes, so we *must* cache. How much RAM? The trick is to size the **hot set** — the data actually requested — not the whole dataset. The standard rule of thumb: roughly **20% of daily reads hit 80% of the traffic** (the Pareto split), so cache that hot 20%.
+
+```
+Daily reads                = 10 B  (from Calculation 2)
+Distinct items behind them ≈ 20% are "hot"  → cache the hot set
+Hot tweets/day             ≈ 20% × (reads as a proxy for distinct hot items)
+                            ≈ 0.2 × 10 B = 2 B item-reads → dedupe to ~200 M distinct hot tweets
+Bytes per cached tweet     ≈ 1 KB
+Cache size                 = 200 M × 1 KB = 200 GB
+With cache overhead (~30% for keys, pointers, fragmentation) ≈ 260 GB
+```
+
+So a **~260 GB cache** holds the day's hot timeline data. That fits comfortably on a handful of memory-optimised cache nodes (modern ones carry 64–256 GB each), which tells you Redis/Memcached is viable here — you are *not* in "needs a disk-backed store for the hot set" territory. Had the number come out to 50 TB, the architecture conversation would change entirely (tiered cache, or cache only the very hottest celebrities).
+
+> **Why dedupe?** Ten billion *reads* are not ten billion *distinct items* — the same viral tweet is read millions of times. You cache distinct items, so you must collapse reads down to the unique-hot-item count before multiplying by bytes. Forgetting this is the most common cache-sizing error: it inflates the answer by 10–100×.
+
+### Calculation 6 — How many servers?
+
+Now turn QPS into a machine count — the estimate that decides "one box or a fleet." The only extra number you need is **what one server can handle**, which you either benchmark or assume (a reasonable default for a moderate app server is ~1,000 QPS; CPU-light endpoints do more, heavy ones less).
+
+```
+Peak read QPS              = 300,000  (from Calculation 2)
+Throughput per app server  ≈ 1,000 QPS  (assumption — state it!)
+Servers (bare minimum)     = 300,000 / 1,000 = 300 servers
+Headroom for failures + deploys (×1.5)  ≈ 450 servers
+```
+
+Two things fall out of that one division:
+
+- **300 is not "a server," it is "a fleet behind a load balancer."** The architecture must include horizontal scaling and a load balancer from day one — the number forbade the single-box design.
+- **The cache changes this number by 10×.** If the 260 GB cache from Calculation 5 absorbs 90% of reads, only 30,000 QPS reach the app servers → ~30 (×1.5 ≈ 45) servers. *This is the payoff of caching expressed in dollars:* the same workload needs 45 machines instead of 450. The estimate didn't just pick an architecture; it quantified why the cache is worth building.
+
 > **Friction prompt — before reading on:**
 > Try the same five-step calculation for **WhatsApp**: 2 B users, 60 B messages per day (publicly stated). Without scrolling, what is the message QPS? What does it imply for the architecture compared to Twitter?
 >
@@ -140,6 +223,63 @@ Read/write ≈ 1× (every sent message is read once), so the architecture is **w
 
 Same math, completely different architecture. The numbers told you which.
 </details>
+
+### A second full walkthrough — a URL shortener (different system, same drill)
+
+Twitter is read-heavy and storage-light per item. To prove the method generalises, run it end-to-end on a system with the *opposite* shape: a TinyURL-style shortener, where the interesting questions are "how many keys?" and "how long must each short code be?" — not bandwidth.
+
+**The setup.**
+
+- New short links created: **100 M/day** (a large but plausible public number).
+- Read:write ratio: **~10:1** — links are followed far more often than they are made.
+- Service lifetime to plan for: **10 years** (links are forever; you cannot delete them).
+- Bytes stored per link (long URL + short code + metadata): **~500 bytes**.
+
+**Step 1 — Write and read QPS.**
+
+```
+Writes/sec = 100 M / 100,000 = 1,000 writes/sec
+Reads/sec  = 1,000 × 10       = 10,000 reads/sec
+Peak (×2)  → ~2,000 writes/sec, ~20,000 reads/sec
+```
+
+10k reads/sec sustained again says *cache the hot links* — a small fraction of URLs (a viral campaign link) gets the vast majority of clicks, so a modest cache absorbs most read traffic, exactly as with Twitter.
+
+**Step 2 — Total records over the planning horizon.** This is the number that actually drives the design:
+
+```
+Records = 100 M/day × 365 days × 10 years
+        ≈ 365 B records  (round: ~3.6 × 10¹¹)
+```
+
+**Step 3 — Storage.**
+
+```
+Storage = 365 B × 500 bytes ≈ 180 TB  (before replication)
+With 3× replication ≈ 550 TB
+```
+
+Hundreds of TB is too big for one machine → the database must be **sharded** from the start. The number forbade the single-DB design, just as Twitter's 300-server count forbade the single-app-server design.
+
+**Step 4 — The number unique to this problem: short-code length.** The total-records figure feeds straight into a design parameter. A short code drawn from `[0-9, a-z, A-Z]` has **62** possible characters per position, so `n` characters encode `62ⁿ` distinct links. You need `62ⁿ ≥ 365 B`:
+
+```
+62⁵ ≈ 916 M       → too few
+62⁶ ≈ 56.8 B      → still short of 365 B
+62⁷ ≈ 3.5 T       → comfortably above 365 B ✓
+```
+
+So **7-character short codes** suffice for a decade, with ~10× headroom. Notice what just happened: a back-of-envelope *count* (365 B records) turned directly into a *concrete schema decision* (7-char keys). That is the whole value of the drill — the estimate is not trivia, it sizes a real design knob.
+
+> **Contrast with Twitter, side by side.** Same five-step method; the numbers pointed at completely different designs:
+>
+> | | Twitter timeline | URL shortener |
+> |---|---|---|
+> | Dominant ratio | reads ≫ writes (25:1) | reads > writes (10:1) |
+> | Binding constraint | read QPS → cache + fan-out | record count → shard + key length |
+> | What the number decided | "read-optimised, cache everything" | "shard the DB, 7-char codes" |
+>
+> You did not need to know either product in advance. The arithmetic chose the architecture.
 
 ## 5. Build It
 
@@ -268,7 +408,36 @@ The instinct to be precise is wrong. The instinct to slap "× 10 for safety" on 
 >
 > </details>
 
-> **Exercise 3 — Time the estimate.**
+> **Exercise 3 — Concurrent connections, not requests.**
+> A "nearby friends" feature keeps a **live WebSocket open** for each active user and pushes location updates. Public-ish assumptions: 100 M DAU; concurrent users ≈ **10% of DAU**; each connected user reports their location every **30 seconds**. Estimate (a) the number of *simultaneous open connections*, (b) the location-update write QPS, and (c) roughly how many connection-holding servers you need if one box holds ~100 k connections.
+>
+> <details>
+> <summary>Solution sketch</summary>
+>
+> (a) **Concurrent connections** = 10% × 100 M = **10 M open sockets at once.** This is a different beast from request QPS — these connections sit idle but *occupy memory and a file descriptor* the whole time. It is the number that decides you need a connection-oriented tier (WebSocket/long-poll servers), not a plain request/response fleet.
+>
+> (b) **Update QPS** = 10 M connections × (1 update / 30 s) = 10 M / 30 ≈ **334,000 writes/sec.** Notice we divided by the *refresh interval*, not by seconds-per-day — for always-connected systems the cadence is the clock, not daily counts.
+>
+> (c) **Servers** = 10 M / 100 k per box = **~100 connection servers** (then add ×1.5 for headroom ≈ 150). The "100 k connections per box" figure is the load-bearing assumption — state it, because it is what turns 10 M sockets into a fleet size.
+>
+> The lesson: for real-time systems, *concurrent connections* and *update cadence* replace daily-action counts as your primary inputs. Same multiply-and-divide discipline, different five numbers.
+>
+> </details>
+
+> **Exercise 4 — Size a session cache.**
+> You run an app with 50 M DAU. Each logged-in user has a session object of **~2 KB** (auth token, preferences, feature flags) that you want to keep in an in-memory cache so every request avoids a database hit. Assume the average user is active across a **2-hour window** per day, so that fraction is "live" at once. Estimate the cache RAM needed, and decide whether it fits on one node.
+>
+> <details>
+> <summary>Solution sketch</summary>
+>
+> Fraction of the day a user is live = 2 h / 24 h ≈ 8%. **Concurrent sessions** ≈ 8% × 50 M = 4 M.
+> Cache size = 4 M × 2 KB = **8 GB**, plus ~30% overhead ≈ **~10 GB.**
+>
+> 10 GB fits comfortably on a *single* cache node, so the answer is "one Redis instance is plenty — no sharding needed yet." Had sessions been 50 KB (e.g. caching a rendered timeline per user), the number would be ~250 GB and the answer flips to "shard the cache or shrink the object." The estimate told you which side of the line you are on before you provisioned anything.
+>
+> </details>
+
+> **Exercise 5 — Time the estimate.**
 > Set a 5-minute timer. Pick a system you use daily — Spotify, Discord, Strava, Notion. Without looking up *any* number, do the full BOTE: QPS, storage, bandwidth. After the timer, look up the company's published engineering blog and compare your estimate to their reported numbers.
 >
 > If you are within 10× on every dimension, you are doing it right. If you are within 3×, you are doing it like a senior engineer. If you are within 1.5×, you cheated and looked something up.

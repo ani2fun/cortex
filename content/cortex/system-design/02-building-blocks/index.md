@@ -14,3 +14,5 @@
 - [12. Sharding and partitioning](/cortex/system-design/building-blocks/sharding-and-partitioning)
 - [13. Consistency models](/cortex/system-design/building-blocks/consistency-models)
 - [14. Consensus — Paxos and Raft, from scratch](/cortex/system-design/building-blocks/consensus-paxos-and-raft)
+- [15. Clocks and time in distributed systems](/cortex/system-design/building-blocks/clocks-and-time)
+- [16. Distributed-systems faults](/cortex/system-design/building-blocks/distributed-systems-faults)

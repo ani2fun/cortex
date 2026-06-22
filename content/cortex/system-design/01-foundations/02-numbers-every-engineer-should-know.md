@@ -16,6 +16,8 @@ That slide changed how a generation of engineers thought about systems. Not beca
 
 Jeff's table told them, *to within an order of magnitude*, exactly why.
 
+Does the latency actually *matter* to the business? Probably — though be sceptical of the famous figures. The widely-repeated claims (Google: 400 ms slower search → 20% less traffic; Amazon: 100 ms → 1% of sales) are mostly old, hard to reproduce, and often confounded. DDIA points out, for instance, that one large study found the *fastest*-loading pages also converted poorly — because the fastest pages were often empty 404s. The honest takeaway is directional, not precise: **latency correlates with engagement, the effect is real, and the exact percentage is nobody's to quote with confidence.** That uncertainty is the point — you reach for the *numbers* precisely because the *outcomes* are noisy.
+
 The version below is the modern (2026) update. Memorise the order-of-magnitude column. The exact nanoseconds drift; the orders of magnitude do not.
 
 ## 2. Intuition (Analogy)
@@ -78,9 +80,22 @@ That is the whole curriculum of this lesson, in three lines. Everything else is 
 
 ## 3. Formal Definition
 
-**Latency** is the time elapsed from "I asked" to "I got the first byte of the answer". It is what a single user experiences and what a stopwatch measures.
+Three words get used interchangeably and shouldn't be. DDIA draws the lines precisely, and the rest of the track depends on getting them right:
 
-The numbers in the table are **medians** for *typical* operations on *typical* modern hardware. Specific values vary by:
+- **Response time** is what the *client* sees end-to-end. It is `service time + queueing delay + network latency` — everything between "I asked" and "I have the answer," including time the request spent doing nothing.
+- **Latency** is narrower: it is the catch-all for the time a request is *latent* — waiting, in flight, **not** being actively worked on. Network latency (the packet's travel time) is the kind you'll quote most. The numbers in the table below are latencies in this sense.
+- **Throughput** is a different axis entirely: requests per second, or bytes per second, that the whole system processes. Latency is "how long for *one*"; throughput is "how many *per second*."
+
+The trap is treating these as one number. A single operation can have a 1 ms latency and the *service* still deliver 100,000 requests/second — because thousands are in flight at once. We make that relationship exact with Little's Law in [Lesson 5](/cortex/system-design/foundations/latency-throughput-usl). And the two axes are coupled by **queueing**: as throughput climbs toward a server's capacity, requests start waiting behind each other and response time spikes — gently at first, then off a cliff near saturation. (A motorway at 30% occupancy flows at the speed limit; at 95% it's a stop-start crawl, even though no individual car got slower. Same physics.)
+
+**One number is never enough — use a distribution.** Response time varies request to request even for *identical* requests: a GC pause, a TCP retransmit, a context switch, a cold page fault. So we report **percentiles**, not the mean. Sort the responses fastest-to-slowest:
+
+- **p50 (median):** the halfway point — your *typical* user's wait. "p50 = 200 ms" means half of requests finished faster, half slower.
+- **p95 / p99 / p999:** the **tail**. "p99 = 1 s" means 1 in 100 requests took at least a second. These directly shape how the service *feels* under load.
+
+Why not just average? Because **the mean hides the tail**. One 10-second request among ninety-nine 100 ms requests pulls the mean to ~200 ms — a figure *no actual user experienced*. The mean is fine for capacity math (it predicts throughput); it is misleading for "how slow is slow." The deeper consequence — that one slow component in a fan-out drags the whole request down — gets its own treatment in §7 (head-of-line blocking and tail amplification).
+
+The numbers in the table are **medians (p50)** for *typical* operations on *typical* modern hardware. Specific values vary by:
 
 - **CPU** — server-class chips have larger caches and faster memory.
 - **Storage class** — NVMe is 5–10× faster than SATA SSD; spinning disk is 10–100× slower than SSD; tape is *seconds* to first byte.
@@ -97,6 +112,17 @@ Two related numbers you will need for the rest of the track:
 | Inter-AZ (intra-region) per-instance bandwidth | ~5–10 Gbps single-flow | Internal AWS / GCP backbone; ~5 Gbps per flow, ~10 Gbps in a cluster placement group, 100 Gbps spines exist. Cross-*region* is a separate, WAN-bound scope. |
 
 The bandwidth column matters because **a 1 GB transfer** does not take 10 µs (the latency of one packet) — it takes ~800 ms over a 10 Gbps link, dominated by bandwidth, not latency. Throughput = concurrency ÷ latency (equivalently, Little's Law: concurrency = latency × throughput). We will use this exact relationship in [Lesson 5 — Little's Law](/cortex/system-design/foundations/latency-throughput-usl).
+
+One last set of numbers belongs in muscle memory: **availability, counted in "nines."** SLOs are written as a percentage of successful requests (or uptime), and the only intuitive way to read them is as *downtime budget per year*. Each extra nine is ~10× less downtime — and exponentially more expensive to buy.
+
+| Availability | "Nines" | Downtime per year | Downtime per day |
+|---|---|---|---|
+| 99% | two nines | ~3.65 days | ~14.4 min |
+| 99.9% | three nines | ~8.77 hours | ~1.44 min |
+| 99.99% | four nines | ~52.6 min | ~8.6 s |
+| 99.999% | five nines | ~5.26 min | ~0.86 s |
+
+Major cloud providers set their compute SLAs at **99.9% or better**. The jump from three nines to five is not 2× the work — it is the difference between "one person can reboot it during business hours" and "no human can be in the loop at all." Note this is the *same statistical idea* as the percentiles above: 99.9% availability is just "the p999 request still succeeds."
 
 ## 4. Worked Example
 
@@ -181,6 +207,8 @@ print(f"- p99 / median ratio reveals tail latency. Ratios > 5x mean GC/preemptio
 
 **Now break it.** Increase the list size to `100_000_000`. Notice the median jumps. Why? *Because you stopped fitting in L3.* You just *measured* the cache hierarchy on your own laptop. Senior engineers do this regularly — not because they need the exact numbers but because they need to *see* the cliff between cache and main memory, and between memory and disk, in their own data.
 
+> **A measurement gotcha that bites everyone:** the script computes p99 from raw samples, which is correct here. But once you collect percentiles in production, never *average* them — the mean of two p99s is not the combined p99, and "average p99 across our fleet" is mathematically meaningless. To combine latency data across machines or time windows, add the **histograms**, then read the percentile off the merged histogram. (This is why tools like HdrHistogram, t-digest, and DDSketch exist.)
+
 For network-tier numbers (which Pyodide cannot measure from inside the browser), use this from a real terminal:
 
 ```bash
@@ -230,10 +258,12 @@ That last one is why "just put the database in the other region" is almost never
 ## 7. Edge Cases & Failure Modes
 
 - **Confusing latency with bandwidth.** A 1-ms RTT does not mean you can transfer 1 GB in 1 ms. It means *the first byte* shows up after 1 ms; the rest is bandwidth-bound. *(See: every "why is my big file upload slow over fast network?" thread on the internet.)*
-- **Quoting medians when only tails matter.** If 1% of your requests are 100× slower than the median, your *user* experiences the tail every fifth page load (a page with 100 dependent calls hits the 99th-percentile call ~once). [The Tail at Scale (Dean & Barroso, 2013)](https://research.google/pubs/the-tail-at-scale/) is required reading.
+- **Quoting medians when only tails matter.** This is the single most common latency mistake, and the math is brutal. Say each backend call is independently slow 1% of the time (its p99). A page that fans out to 100 of those calls is slow whenever *any one* of them is slow, and `P(at least one slow) = 1 − 0.99¹⁰⁰ ≈ 63%`. So a *per-call* p99 of "only 1%" becomes a *per-page* experience of "almost two requests in three feel the tail." Worse, parallelising the calls does not save you — the page still waits for the **slowest** of the 100, so the user effectively *always* lives at the tail of the call distribution. DDIA names this **tail-latency amplification**, and it is exactly why Amazon specifies internal-service SLOs at the **99.9th** percentile even though that affects only 1 in 1,000 *calls*: by the time a request fans out, the rare call is the common experience. (There is a poignant twist Amazon noticed: the customers who hit the slow path are disproportionately the *most valuable* ones — they have the most data on their account, so their queries are the heaviest.) [The Tail at Scale (Dean & Barroso, 2013)](https://research.google/pubs/the-tail-at-scale/) is required reading.
 - **Optimising L1 cache when network is the bottleneck.** A 100 ns memory access embedded inside a 100 ms cross-region call is *one millionth* of the latency. Senior engineers triage where the time actually goes *before* optimising.
 - **Forgetting that even a "fast" SSD is still ~1,000× slower than RAM (and a spinning-disk seek ~100,000×).** This is why caching exists. This is also why "we made the database faster" hits a wall — the disk is still the disk.
-- **Trusting cloud "best-case" latencies.** Vendors quote *un-loaded* RTT. Loaded systems queue. A "1 ms" service averages ~10 ms at 90% CPU utilisation (M/M/1: response = service ÷ (1 − utilisation)), and its p99 tail can hit ~50 ms; a 50 ms *typical* figure needs ~98% utilisation. We will quantify this in [Lesson 5 — Little's Law](/cortex/system-design/foundations/latency-throughput-usl).
+- **Trusting cloud "best-case" latencies.** Vendors quote *un-loaded* RTT. Loaded systems queue. A "1 ms" service averages ~10 ms at 90% CPU utilisation (M/M/1: response = service ÷ (1 − utilisation)), and its p99 tail can hit ~50 ms; a 50 ms *typical* figure needs ~98% utilisation. The lesson: the published number is the floor, not the forecast. We will quantify this in [Lesson 5 — Little's Law](/cortex/system-design/foundations/latency-throughput-usl).
+- **Head-of-line blocking.** A server processes only a handful of things at once (bounded by cores). One genuinely slow request can wedge the queue, so *fast* requests stacked behind it inherit the wait — even though their own service time was tiny. This is why you must measure response time on the **client** side: the queueing delay is invisible from inside the server, which only sees its own fast service time. (Think of one shopper paying by cheque at the only open till: everyone behind them is "slow" through no fault of their own.)
+- **Retry storms / metastable failure.** When a system is already near overload, timeouts trigger retries, retries add load, and the extra load causes more timeouts — a vicious cycle that can keep a service down *even after the original spike passes*, until someone reboots it. The defences are all about *not* piling on: exponential backoff with jitter, circuit breakers, and server-side load shedding. A latency budget that ignores what happens past the saturation knee is a budget for an outage.
 - **Comparing wall-clock from different machines.** Same code, different CPU, can be 10× different. Always measure on the hardware you will run on.
 - **Forgetting cold caches.** First-request latency is dominated by everything that *should* have been hot but was not — DNS, TLS handshake, JIT, page cache, CDN warm-up. Every system has a "first 30 seconds" pathology. Production load tests should always include cold-start measurement.
 

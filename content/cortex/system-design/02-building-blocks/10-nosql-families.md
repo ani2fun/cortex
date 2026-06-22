@@ -16,6 +16,8 @@ The answer was Cassandra. Specifically, a table partitioned by `((channel_id, bu
 
 Six years later, Discord [published a follow-up](https://discord.com/blog/how-discord-stores-trillions-of-messages): the data was now in *trillions*, and the storage had moved from Cassandra to ScyllaDB — same data model, same partitioning, but a different engine. The data model was right; the engine got swapped.
 
+It helps to remember that "NoSQL" was never a single technology. It started as a loose cluster of ideas — new data models, schema flexibility, horizontal scale, open-source licensing — and the term has since faded precisely because mainstream databases absorbed most of those ideas. That's exactly why "NoSQL vs SQL" is the wrong question; the right one is *which shape*.
+
 That is the lesson. **The data model — the shape of the keys and the access pattern over them — is what you actually commit to.** The specific database product is replaceable. Picking NoSQL because it's trendy without first knowing what shape your data has is how teams end up rewriting their storage layer two years in. Picking the *right* shape, even with the wrong product, lets the next migration be a swap of engines, not a rewrite of the application.
 
 ## 2. Intuition (Analogy)
@@ -36,16 +38,16 @@ The senior move is not "pick the shoe rack because it's the newest piece of furn
 
 **Shape:** `key → value`. The value is opaque to the database — a string, a JSON blob, a serialised protobuf, anything. The only operations are `get(key)`, `put(key, value)`, `delete(key)`.
 
-**Examples:** **DynamoDB** (managed, AWS), **Redis** (in-memory, often used as a side cache — see [Lesson 8](/cortex/system-design/building-blocks/caching)), **etcd / Consul** (config + service discovery, with strong consistency), **RocksDB** (embedded, the underlying engine for many other things).
+**Examples:** **DynamoDB** (managed, AWS), **Redis** (in-memory, often used as a side cache — see [Lesson 8](/cortex/system-design/building-blocks/caching)), **etcd / Consul** (config + service discovery, with strong consistency), **RocksDB** (an embedded LSM-tree *storage engine* that many other databases build on, rather than a database you run directly).
 
-**Scaling shape:** partition the keyspace via [consistent hashing](/cortex/system-design/building-blocks/load-balancing). Each node owns a slice of the ring. Adding a node moves `1/N` of the keys; removing one moves another `1/N`.
+**Scaling shape:** partition the keyspace by **hash of the key** — often a [consistent-hashing](/cortex/system-design/building-blocks/load-balancing) variant — so each node owns a slice of the ring, and adding a node moves roughly `1/N` of the keys (removing one moves another `1/N`). The alternative is *range* partitioning by key, which keeps related keys together at the cost of needing care to avoid hot ranges.
 
 | Property | KV stores |
 |---|---|
 | Primary access | `get(key)` — single-key reads |
 | Secondary indexes | foreign concept; DynamoDB grafts them on as GSI/LSI at significant cost |
 | Transactions | usually single-key only; some (DynamoDB, FoundationDB) offer multi-key |
-| Joins | not supported |
+| Joins | no first-class joins — do them in application code or denormalise |
 | Consistency model | tunable (DynamoDB) or strong (etcd) or eventual (Redis cluster) |
 | When to reach for | one or two well-known access patterns, very high QPS, scale beyond a single Postgres |
 
@@ -64,26 +66,28 @@ The senior move is not "pick the shoe rack because it's the newest piece of furn
 | Transactions | per-document atomicity; multi-doc since Mongo 4.0 (slower) |
 | Joins | limited (`$lookup` aggregation); generally denormalise instead |
 | Consistency model | per-replica-set strong; configurable read concerns |
-| When to reach for | variable-shape data (e.g. CMS content, product catalogs), rapid schema iteration |
+| When to reach for | tree-shaped, one-to-many (often "one-to-few") data you load whole; variable-shape content (CMS, product catalogs); rapid schema iteration. Many-to-many relationships are the signal to leave |
 
-The "rapid schema iteration" point is the most common pitch — and the most common foot-gun. Schema-less doesn't mean schema-free; it means **schema is enforced at the application layer instead of the database**. Two years in, you have documents from five generations of code in the same collection. Migrations become "rewrite every document in a background job".
+The "rapid schema iteration" point is the most common pitch — and the most common foot-gun. "Schema-less" is a misleading label; the precise terms are **schema-on-read** (the document store reads any shape and your code interprets it) versus **schema-on-write** (a relational database checks the shape up front). It's the same distinction as dynamic versus static type checking — the schema still exists, it's just enforced at the application layer instead of the database. That genuinely cuts the right way when your records are *legitimately* heterogeneous, or shaped by external systems you don't control, where a single rigid table would be a straitjacket. But when the data really is uniform, the cost shows up later: two years in, you have documents from five generations of code in the same collection, and migrations become "rewrite every document in a background job".
 
 ### 3.3 Wide-column stores
 
 **Shape:** keyed by `(partition_key, clustering_key) → row of sparse columns`. The partition key determines which node holds the data; the clustering key orders rows within a partition. Each row can have any subset of columns.
 
-**Examples:** **Cassandra** (the canonical; from Facebook, 2009 paper), **ScyllaDB** (C++ rewrite of Cassandra; same data model, much faster), **HBase** (Hadoop-era; Google Bigtable-shaped), **DynamoDB** (the wide-column flavour, distinct from its KV mode).
+**Examples:** **Cassandra** (the canonical; from Facebook, 2009 paper), **ScyllaDB** (C++ rewrite of Cassandra; same data model, much faster), **HBase** (Hadoop-era; Google Bigtable-shaped), **Bigtable / Accumulo** (the original and its open-source cousin). DynamoDB is a *key-value* store at heart (see §3.1), but its partition-key-plus-sort-key item model gives it range-scan ergonomics reminiscent of this family.
 
-**Scaling shape:** consistent hashing on the partition key. Adding a node moves a slice of partitions. The clustering key within a partition is stored sorted, so "give me messages 1000–2000 in channel 42" is one disk seek + one sequential scan.
+**Scaling shape:** hash-based partitioning on the partition key (Cassandra and ScyllaDB use a consistent-hashing variant with virtual nodes / token ranges). Adding a node moves a slice of partitions. The clustering key within a partition is stored sorted, so "give me messages 1000–2000 in channel 42" is one disk seek + one sequential scan.
 
 | Property | Wide-column stores |
 |---|---|
 | Primary access | range scans on the *clustering* key within a partition |
 | Secondary indexes | exist (Cassandra "materialised views", "secondary indexes") but discouraged at scale |
 | Transactions | single-partition atomicity; "lightweight transactions" exist but are slow |
-| Joins | not supported |
+| Joins | no first-class joins — do them in application code or denormalise |
 | Consistency model | tunable per query: ONE / QUORUM / ALL on reads and writes |
 | When to reach for | time-series-like access at huge scale; `(entity, time)` shaped queries |
+
+**A naming trap worth flagging up front:** "wide-column" (also called *column-family*) is **not** the same as "column-oriented". Wide-column stores like Cassandra, HBase, and Bigtable are *row-oriented* under the hood — all of a row's columns sit together on disk, which is exactly what makes `(partition, row)` reads cheap. "Column-oriented" (or columnar) databases — Parquet/ORC files, Snowflake, DuckDB, Druid — store each *column* together instead, a layout tuned for scan-heavy analytics and aggregation. Same word, opposite layout, different job.
 
 The phrase "the partition key is the entire design" is not hyperbole. Once you commit to a partition key, you cannot retrofit a different one without rewriting the table. Discord's choice of `((channel_id, bucket), message_id)` is a precise engineering decision: `channel_id` alone would put all of `#general`'s 100M messages on one node (hot partition); `(channel_id, bucket)` cuts every channel into 10-day-slice partitions, keeping them all roughly equal size.
 
@@ -104,7 +108,7 @@ The phrase "the partition key is the entire design" is not hyperbole. Once you c
 | Consistency model | strong (single-machine), more complex when distributed |
 | When to reach for | social networks, recommendation engines, fraud detection (path tracing), knowledge graphs |
 
-The killer use case is the one nobody can do well in SQL: **multi-hop traversal queries**. In SQL, "friends of friends" is a 2-table join; "friends of friends of friends" is a 3-table join; depth-N traversals become unmaintainable. Neo4j's Cypher expresses these as `MATCH (a)-[:FOLLOWS*2..3]-(b)`, and the engine walks the graph in time proportional to the number of edges visited, not the total dataset size.
+The killer use case is the one nobody can do well in SQL: **multi-hop traversal queries**. In SQL, "friends of friends" is a 2-table join; "friends of friends of friends" is a 3-table join; variable-depth traversals push you onto recursive CTEs (`WITH RECURSIVE`) that balloon fast — DDIA's running example is *4 lines of Cypher versus 31 lines of SQL* for the same query. Neo4j's Cypher expresses these as `MATCH (a)-[:FOLLOWS*2..3]-(b)`, and the engine walks the graph in time proportional to the number of edges visited, not the total dataset size.
 
 ## 4. Worked example — the same data, four ways
 
@@ -186,7 +190,7 @@ Pattern (1): `MATCH (m:Message)-[:IN_CHANNEL]->(c:Channel {id: 42}) RETURN m ORD
 
 ### Conclusion
 
-Pick the data model whose primary operations match your highest-volume access patterns. *Then* pick the engine. A real chat-app system might use **two** stores: Cassandra for messages (pattern 1 at scale), and Postgres for everything else (users, follows, settings). [Capstone 39 (Chat)](/cortex/system-design/capstones/chat-system) walks this in depth.
+Pick the data model whose primary operations match your highest-volume access patterns. *Then* pick the engine. A real chat-app system might use **two** stores: Cassandra for messages (pattern 1 at scale), and Postgres for everything else (users, follows, settings). [Capstone 44 (Chat)](/cortex/system-design/capstones/chat-system) walks this in depth.
 
 ## 5. Trade-offs
 
@@ -201,6 +205,8 @@ Pick the data model whose primary operations match your highest-volume access pa
 The pattern: **NoSQL families optimise for one access shape and pay for it elsewhere.** Relational is the generalist; the NoSQL families are specialists. Picking the wrong specialist is much more painful than picking the generalist and accepting some specialisation overhead.
 
 A working senior-engineer rule of thumb: **start with Postgres**. Move to a NoSQL family only when (a) you can articulate which family and why, with reference to one of the five rows above, and (b) the access pattern that drove you away from Postgres is *the dominant one* in production traffic, not a 1% edge case.
+
+The families have also converged, so the choice is rarely binary: relational engines added JSON columns with indexing inside documents (Postgres `jsonb` + GIN), and document stores grew joins, secondary indexes, and declarative queries. The shape still decides — but "relational *or* document" is increasingly "relational *with* document".
 
 ## 6. Edge cases and failure modes
 

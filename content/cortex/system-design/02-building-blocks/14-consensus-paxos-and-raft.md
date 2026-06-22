@@ -61,6 +61,17 @@ flowchart LR
 
 ## 3. Formal definitions
 
+### 3.0 What consensus must guarantee
+
+Before Raft's specifics, here is what *any* consensus algorithm has to deliver. The classic formulation gives four properties:
+
+- **Uniform agreement** — no two nodes decide on different values. (This is the one everyone means by "agreement".)
+- **Integrity** — a node decides at most once; once it has committed to a value, it can't change its mind.
+- **Validity** — a decided value was actually proposed by some node (the algorithm can't invent a value out of thin air).
+- **Termination** — every node that doesn't crash eventually decides.
+
+The first three are *safety* properties ("nothing bad happens"). Termination is the *liveness* property ("something good eventually happens") — and it's the one that formalises fault tolerance, because it requires a majority of nodes to be up and able to communicate. An algorithm that simply never decides anything trivially satisfies the first three; termination is what forces it to make progress despite failures. Raft's Leader Completeness Property (§3.3) is *how Raft delivers* agreement and integrity across leadership changes; the randomised timeouts and majority quorums are how it delivers termination.
+
 ### 3.1 The Raft cluster shape
 
 <iframe
@@ -271,11 +282,28 @@ The mechanism that buys this: a candidate's `RequestVote` includes its own log's
 
 The proof is in §5 of the [Raft paper](https://raft.github.io/raft.pdf). The intuition: **committing requires a majority; electing requires a majority; any two majorities overlap.** That overlap is what carries committed state across term boundaries.
 
+### 3.3a The log *is* the consensus
+
+It's tempting to read §3.1 as "Raft does consensus, and a log falls out as a side effect." The deeper truth runs the other way: **building an ordered, replicated, append-only log *is* the consensus problem**, wearing a disguise. That disguise has a name — **total order broadcast** (also called atomic broadcast): deliver every message to every node, in the same order, exactly once, even when nodes fail. Agreeing on each successive log entry is precisely "agree on one value" run in a loop, and a sequence of single-value agreements *is* a totally ordered log. The two are interconvertible.
+
+And it's a wide equivalence class. Single-value agreement, a linearisable compare-and-set, an atomic fetch-and-add (handing out monotonic IDs), atomic commit across participants — all of these reduce to one another and to total order broadcast. Solve any one and you can solve the rest. That is *why* the TL;DR's chain ("once you have a log you have a state machine, a database, a lock service…") is true rather than merely asserted: one Raft cluster can back a config store, a lock service, an ID generator, and a database, because all of them are the same primitive seen from different angles. Raft (like Viewstamped Replication and Zab) gives you the log out of the box; single-decree Paxos hands you one value at a time, which is why Multi-Paxos exists to stack a log on top.
+
+### 3.3b Consensus is what 2PC wishes it were
+
+Atomic commit just appeared in that equivalence class, and it's worth a closer look — because the two-phase commit (2PC) you met in the transactions chapter is *almost* consensus but fails at exactly the point Raft is built to survive. Both run a vote, but the voting rules differ in a decisive way:
+
+- **2PC needs a *yes* from every participant.** A single coordinator solicits votes; one "no" (or one participant that can't be reached) forces an abort. The decision is unanimous-or-abort.
+- **Fault-tolerant consensus needs only a *quorum* of *any* nodes.** Any node can start an election, and only a majority must respond — the minority can be dead or partitioned and the cluster still decides.
+
+That difference is the whole game. 2PC has one coordinator and no backup: if the coordinator crashes *after* participants have voted yes but *before* it broadcasts the outcome, every participant is stuck holding locks in an **in-doubt** state, unable to commit or abort, until the coordinator returns. The system blocks indefinitely. The textbook fix is exactly this chapter's subject — **replace the single blocking coordinator with a fault-tolerant consensus protocol**, so the commit decision itself is replicated across a quorum and survives any minority failure. Consensus is the thing 2PC reaches for and can't be on its own.
+
 ### 3.4 Why not Paxos?
 
 Single-decree Paxos (Lamport's original 1989 paper, formally published 1998) solves the same problem with different mechanics. Multi-Paxos extends it to a sequence of decisions. The algorithms are *equivalent in capability* — every Raft cluster could be replaced by a Multi-Paxos cluster — but Raft splits the problem into three subproblems (election, replication, safety) that you can reason about independently. Paxos packs them together; the resulting algorithm has fewer moving parts but is much harder to teach, test, or implement.
 
-In production, **Raft has effectively won**. The few well-known Paxos systems (Google's Chubby, Spanner's replication layer) predate Raft; new systems pick Raft. Aspects of Paxos — `Fast Paxos`, `Egalitarian Paxos`, `Mencius` — are still active research for specific performance tweaks.
+Raft and Paxos aren't the only two members of this family. The four best-known consensus algorithms are **Viewstamped Replication** (which predates and parallels both), **Paxos**, **Raft**, and **Zab** — and Zab is the one **ZooKeeper** runs underneath. They share a deep structure under different vocabulary: the monotonically-increasing counter Raft calls a **term** is the **ballot number** in Paxos and the **view number** in Viewstamped Replication. Same idea, three names.
+
+In production, **Raft has become the default for new, general-purpose, teachable implementations** — its understandability is the whole point. But "Paxos is legacy" overstates it: **Multi-Paxos remains the workhorse variant inside large-scale infrastructure** (it's what most systems "using Paxos" actually run), with Google's Chubby and Spanner's replication layer as the canonical examples, and leaderless derivatives — `Fast Paxos`, `Egalitarian Paxos`, `Mencius` — are active research for specific performance and robustness tweaks rather than retired ideas.
 
 ## 4. Worked example — what makes a Raft cluster slow
 
@@ -293,7 +321,7 @@ The throughput ceiling on a 3-node Raft cluster on commodity hardware is **rough
 
 | Choice | What you give up | What you get |
 |---|---|---|
-| **Use Raft (via etcd / Consul)** | the ability to take writes during a leader-election window | strong consistency, linearisable reads from the leader, durability across F failures with 2F+1 nodes |
+| **Use Raft (via etcd / Consul)** | the ability to take writes during a leader-election window | strong consistency, linearisable reads (etcd confirms leadership via a quorum round before serving the read — see §6.2), durability across F failures with 2F+1 nodes |
 | **3-node cluster** | tolerates only 1 failure | low quorum cost (2 acks per write) |
 | **5-node cluster** | every write needs 3 acks (higher latency) | tolerates 2 simultaneous failures |
 | **Place all nodes in one AZ** | survives node failures, not AZ failures | low write latency (intra-AZ <1 ms) |
@@ -303,6 +331,8 @@ The throughput ceiling on a 3-node Raft cluster on commodity hardware is **rough
 | **Use a managed datastore (CockroachDB, Spanner)** | the API the datastore offers | someone else operates the Raft cluster |
 | **Single-shard Raft** | horizontal write scaling | trivial reasoning model |
 | **Sharded Raft** (CockroachDB, TiKV) | complexity in routing and rebalancing | linear write scaling |
+
+One rule deserves to be stated outright, because it's the opposite of most people's intuition about distributed systems: **adding voters to a single Raft group does not increase throughput — it *decreases* it.** Every committed write needs a quorum, so a bigger group means more acks per commit and more nodes to wait on, not more parallelism. Five nodes are slower per write than three; seven are slower still. (And during a partition, only the majority side makes progress at all.) That is precisely why horizontal write scale comes from **sharding into many Raft groups**, never from growing one group — the last two table rows are the consequence of this rule.
 
 The default 2026 stack for *operating a Raft cluster yourself*: **etcd, 3 nodes across 3 AZs, 16 GB RAM, NVMe SSD, election timeout 1000 ms, heartbeat 100 ms**. For most teams, *not* operating a Raft cluster — using a managed Postgres or DynamoDB or Spanner that runs its own Raft underneath — is the right answer. Reach for "we'll run our own Raft" only when the system genuinely needs a configuration store (Kubernetes, service discovery) and managed alternatives don't fit.
 
@@ -315,6 +345,8 @@ Two candidates can start an election simultaneously, each votes for itself, and 
 ### 6.2 The leader that doesn't know it's deposed
 
 Network partitions the leader from the majority. Followers elect a new leader. **The old leader keeps trying to replicate to its disconnected followers**, none of whom respond. From its own perspective, it's still leader. *But its writes never get a majority ack*, so they never commit. When the partition heals, the old leader receives a higher-term `AppendEntries` from the new leader, steps down to follower, and discards any uncommitted entries. Raft's term mechanism makes this safe by construction.
+
+This is also why a *read* can't simply trust "I'm the leader." A node that still believes it leads may already have been deposed by a partition it hasn't noticed; answering a read from its local state could hand back stale data. So linearisable reads (etcd v3+ does these by default) don't just read the leader's memory — the leader first confirms it still commands a majority via a lightweight quorum round, *then* serves the read. The same majority-overlap argument that protects writes is what makes a read linearisable.
 
 ### 6.3 Disk full / fsync stalls
 
@@ -331,6 +363,12 @@ Raft logs grow forever unless compacted. The standard pattern: periodically snap
 ### 6.6 Even-numbered cluster sizes are dangerous
 
 A 4-node cluster tolerates only 1 failure (you need 3 to commit; lose 1, you have 3; lose 2, you have 2 = no quorum). So *4 nodes give you the same fault tolerance as 3* but with 33% more network + disk for every write. **Always size your cluster as 2F+1 where F is the failures you want to tolerate.** 3 nodes = tolerate 1; 5 nodes = tolerate 2; 7 nodes = tolerate 3. Even sizes are pure waste.
+
+### 6.7 The one bad link (leadership thrash)
+
+Raft's worst-behaved failure mode isn't a dead node — it's a network that's *healthy except for one consistently unreliable link*. Suppose node B can't reliably hear the current leader A, but can talk to everyone else. B stops getting heartbeats, times out, bumps the term, and starts an election. Because B's term is now higher, the *whole cluster* — including the perfectly-functional leader A — is forced to step down and re-elect. A (or another node) wins, B falls behind that one bad link again, times out again, and the cycle repeats. Leadership bounces back and forth and the cluster makes little or no progress, even though only a single link is degraded.
+
+The standard mitigation is the **pre-vote** extension: before incrementing its term and disrupting the cluster, a would-be candidate first runs a *trial* election that asks "if I called a real election, would I win?" A node that can't actually reach a majority (our flaky B) loses the pre-vote, so it *never* raises its term and never deposes the healthy leader. Pre-vote turns the same overlapping-quorum logic from §6.1's split-vote fix into a guard against thrash. (This sensitivity to a single bad node is also why leaderless variants like Egalitarian Paxos exist — with no fixed leader, one poorly-performing link can't hold the whole cluster hostage.)
 
 ## 7. Practice
 
@@ -414,4 +452,4 @@ Before you move on, check your understanding with the coach — explain the idea
 
 ---
 
-> **Next:** with this, **Part 2 Building Blocks is complete.** Raft is what gives you the [linearisable consistency](/cortex/system-design/building-blocks/consistency-models) the strongest queries need; it is what the [replication](/cortex/system-design/building-blocks/replication) story routes around when it picks async over sync; it is what [sharded](/cortex/system-design/building-blocks/sharding-and-partitioning) systems use to elect a per-shard leader. The next stretch of the curriculum is Part 3 Distributed Patterns — messaging, idempotency, sagas, rate limiting, circuit breakers — and the capstones that compose everything you've learned into full system designs. The first capstone, [37 — URL shortener](/cortex/system-design/capstones/url-shortener), is the dry run of the capstone format: it reuses every widget in this part to walk one end-to-end design.
+> **Next:** with this, **Part 2 Building Blocks is complete.** Raft is what gives you the [linearisable consistency](/cortex/system-design/building-blocks/consistency-models) the strongest queries need; it is what the [replication](/cortex/system-design/building-blocks/replication) story routes around when it picks async over sync; it is what [sharded](/cortex/system-design/building-blocks/sharding-and-partitioning) systems use to elect a per-shard leader. The next stretch of the curriculum is Part 3 Distributed Patterns — messaging, idempotency, sagas, rate limiting, circuit breakers — and the capstones that compose everything you've learned into full system designs. The first capstone, [42 — URL shortener](/cortex/system-design/capstones/url-shortener), is the dry run of the capstone format: it reuses every widget in this part to walk one end-to-end design.

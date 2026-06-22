@@ -16,6 +16,8 @@ What lets one Postgres or one SQL Server go that far is not magic. It's the same
 
 The lesson is two things. First, before reaching for an exotic distributed datastore, **find out where the cliff actually is** on a properly-tuned single relational database — usually further than the team's gut estimate. Second, **read the EXPLAIN plan** for slow queries; the diagnostic is built in, and it tells you everything.
 
+One framing before we start: everything here optimises the **OLTP** pattern — many small transactions, each touching a handful of rows by key, reading and writing the latest state. The opposite workload — **OLAP**, scanning billions of rows to compute one aggregate — wants a different engine entirely (column stores, covered in the analytics material). Don't reach for the techniques here to make a reporting query fast.
+
 ## 2. Intuition (Analogy)
 
 A relational database is a **bookkeeper's office**.
@@ -90,7 +92,7 @@ In practice, "3NF or better" is the right default. **Denormalisation** — delib
 
 An index is a separate data structure that maps **a key (column value) → row location on disk**. The default index in every relational database in 2026 is the **B-tree** — Postgres calls it `btree`, MySQL/InnoDB makes it the *primary* organisation of the table itself.
 
-A B-tree on `N` rows has depth `⌈log_fanout(N)⌉`. For a typical Postgres index fanout of ≈ 100 entries per page, a million-row table has a B-tree of depth 3. **An indexed point lookup is ~3 random page reads.** Drag the slider below from 100 rows to 100 million and the depth barely moves — it grows by just one level per ~100× more rows (≈1 to ≈4 across the whole range). The sequential-scan alternative, by contrast, grows linearly with table size (≈ `N / rowsPerPage` pages) — by 1 M rows the index is ~1000× faster, by 100 M rows ~100 000×.
+A B-tree on `N` rows has depth `⌈log_fanout(N)⌉`. A B-tree's branching factor is typically several hundred (DDIA's worked figure: a 4-level tree at branching factor 500 holds ~250 TB); on Postgres's 8 KiB page with wide keys, plan for ≈ 100–300 entries per page. At ≈ 100, a million-row table has a B-tree of depth 3, and depth stays at 3–4 levels for anything short of petabyte scale. A *cold* point lookup touches one page per level (~3 random reads at a million rows); in practice the top levels live in cache, so a *warm* lookup is often a single read or fewer — which is exactly what the `Buffers: shared hit=4` line in the worked example below shows (all cache hits, zero disk reads). Drag the slider below from 100 rows to 100 million and the depth barely moves — it grows by just one level per ~100× more rows (≈1 to ≈4 across the whole range). The sequential-scan alternative, by contrast, grows linearly with table size (≈ `N / rowsPerPage` pages) — by 1 M rows the index is ~1000× faster, by 100 M rows ~100 000×.
 
 ```d3 widget=btree-walker
 {
@@ -104,12 +106,14 @@ A B-tree on `N` rows has depth `⌈log_fanout(N)⌉`. For a typical Postgres ind
 }
 ```
 
+Two storage shapes are worth knowing. A **clustered index** stores the whole row *inside* the index (InnoDB's primary key is always clustered — that's the "primary organisation of the table" above), whereas Postgres keeps rows in a separate **heap** file and the index merely points at heap locations. A **covering index** (`CREATE INDEX ... INCLUDE (cols)`) is the middle ground: it copies extra columns into the index so a query can be answered from the index alone, never touching the heap. That's what makes an **Index Only Scan** (§4) possible. The cost is the usual one — more disk, slower writes.
+
 Beyond B-trees, Postgres also offers:
 
 | Index type | Best for | Footgun |
 |---|---|---|
 | **B-tree** (default) | equality + range on ordered columns | bloat under heavy updates |
-| **Hash** | equality only, very narrow keys | no range queries; pre-Postgres 10, not crash-safe |
+| **Hash** | equality only, very narrow keys | no range or ordering at all, and little real advantage over B-tree (which already does equality well) — rarely the right choice; also not crash-safe before PG 10 |
 | **GIN** (generalised inverted) | full-text, JSON containment, array membership | large + slow to build; rebuild after bulk loads |
 | **GiST** (generalised search) | geospatial, range types | very flexible, but read-side performance varies by operator class |
 | **BRIN** (block-range) | huge tables ordered on the indexed column (time-series) | useless without natural ordering |
@@ -118,29 +122,38 @@ The choice of index is a *read-pattern* decision. There's no universal best.
 
 ### 3.4 Transactions and isolation levels
 
+The transaction model you're about to use is older than you'd guess: IBM's System R fixed it in 1975, and it has barely changed across MySQL, Postgres, Oracle, and SQL Server in the 50 years since. The ACID acronym came later (Härder & Reuter, 1983). Keep one warning in mind throughout — because every engine implements isolation slightly differently, "ACID compliant" on a marketing page tells you almost nothing; the Jepsen analysis is what tells you what Postgres actually does.
+
 A transaction is a sequence of SQL statements that the database treats as a single atomic unit — **all or nothing**. The four ACID properties:
 
 - **Atomicity** — all the statements commit, or none do.
-- **Consistency** — every commit takes the database from one valid state to another (constraints hold; FKs resolve).
+- **Consistency** — each commit moves the database from one *valid* state to another, where "valid" means *your* invariants hold. The catch worth internalising: the database only enforces the invariants you *declare* (FK, UNIQUE, CHECK constraints); the rest of "consistency" is your application's job. C is the letter that's really about your code, not the engine.
 - **Isolation** — concurrent transactions cannot see each other's half-done work, *to a degree* you choose.
 - **Durability** — once a commit returns, the changes survive a crash (this is what the WAL `fsync` buys).
+
+**MVCC — the mechanism behind all of this.** Postgres never overwrites a row in place. An `UPDATE` writes a *new* version of the row and tags the old one as deleted by your transaction; each version records the transaction IDs that created and removed it. A reader sees only the versions committed as of its snapshot. This one idea explains three things the rest of the chapter leans on: why long-running reads never block writers, why your REPEATABLE READ transaction sees a frozen view, and why "dead" tuples pile up until `autovacuum` reclaims them. Bloat (§6.1), snapshot isolation (below), and the vacuum knobs (§3.1) are the same mechanism seen from three angles.
 
 The interesting axis is *isolation*. The SQL standard names four levels; each disallows more anomalies than the previous:
 
 | Level | Allows dirty reads? | Allows non-repeatable reads? | Allows phantom reads? | Allows write skew? |
 |---|---|---|---|---|
-| READ UNCOMMITTED | yes — (but Postgres treats it as READ COMMITTED anyway) | yes | yes | yes |
+| READ UNCOMMITTED | yes¹ | yes | yes | yes |
 | READ COMMITTED (Postgres default) | no | yes | yes | yes |
-| REPEATABLE READ (snapshot in Postgres) | no | no | no in Postgres | yes |
+| REPEATABLE READ (snapshot in Postgres) | no | no | read-only: no; read-then-write: yes² | yes |
 | SERIALIZABLE | no | no | no | no — full serializability |
+
+¹ Postgres has no true READ UNCOMMITTED — ask for it and you silently get READ COMMITTED. The only thing READ UNCOMMITTED ever relaxes over READ COMMITTED is dirty reads, which Postgres's MVCC (below) makes essentially free to avoid, so there's nothing to gain by allowing them.
+² Snapshot isolation freezes your read view, so a phantom can't *appear* to a read-only query. But in a `SELECT`-check-then-`INSERT` transaction, another session can commit a row matching your `WHERE` *after* your snapshot was taken — the classic phantom that drives write skew (double-booked meeting room, duplicate username). Only SERIALIZABLE closes it.
 
 The footguns:
 
 - **Lost update** under READ COMMITTED — `SELECT ... ; UPDATE ... SET col = col + 1` interleaved with another transaction does the wrong thing. Fix: `SELECT ... FOR UPDATE`, or just `UPDATE ... SET col = col + 1` directly (no read).
 - **Write skew** under REPEATABLE READ — two transactions read overlapping data, decide independently, write disjoint rows. Each *individually* is fine; together they violate an invariant the read encoded. Example: "at least one doctor must be on call". Two doctors each read "we have two doctors on call" and each go off duty. Fix: SERIALIZABLE, or an explicit lock on the shared invariant.
-- **Phantom read** — a query reading "all rows matching X" sees a different set across two statements in the same transaction because another transaction inserted a row matching X. Postgres's REPEATABLE READ (snapshot) prevents this; standard REPEATABLE READ doesn't.
+- **Phantom read** — a query reading "all rows matching X" sees a different set across two statements in the same transaction because another transaction inserted a row matching X. Postgres's REPEATABLE READ (snapshot) prevents this *for a read-only query* — your snapshot freezes the visible set. It does **not** protect a read-then-write: if you `SELECT` to check a condition and then `INSERT`/`UPDATE` based on it, a concurrent insert past your snapshot is exactly the phantom that produces write skew. Only SERIALIZABLE closes that gap.
 
-The senior move: **default to SERIALIZABLE** for workloads where correctness depends on the read-then-write pattern; accept the small handful of `serialization_failure` retries that come with it. Default to READ COMMITTED otherwise. The middle ground (REPEATABLE READ) is the one with the worst footguns.
+Here's the trap that makes REPEATABLE READ the worst middle ground: Postgres *does* auto-abort a **lost update** at this level — two transactions hitting the *same* row, like the counter — so the obvious anomaly is safe under snapshot isolation. But it does *not* detect **write skew** — two transactions hitting *different* rows that together break an invariant. REPEATABLE READ rescues you from the conspicuous footgun and silently leaves the subtle one, which is why, when correctness rides on a read-then-write, you go straight to SERIALIZABLE.
+
+The senior move: **default to SERIALIZABLE** for workloads where correctness depends on the read-then-write pattern; default to READ COMMITTED otherwise. Postgres implements SERIALIZABLE as *serializable snapshot isolation* (SSI) — optimistic: transactions run unblocked on a snapshot, and at commit the database checks whether any read they relied on was invalidated by a concurrent write; if so, it aborts with `serialization_failure` and the client retries. The bill scales with contention: low-contention, short transactions retry rarely; hot rows under heavy write traffic abort often. The win over old-style locking is that readers never block writers, so tail latency stays flat — keep serializable transactions short. The middle ground (REPEATABLE READ) is the one with the worst footguns.
 
 ## 4. Worked example — `EXPLAIN ANALYZE` on the same query, two plans
 
@@ -370,7 +383,7 @@ Before you move on, check your understanding with the coach — explain the idea
 - **[Kyle Kingsbury (Jepsen), *PostgreSQL 12.3*](https://jepsen.io/analyses/postgresql-12.3)** — careful empirical analysis of Postgres's isolation levels, including the surprising ways the documentation, the SQL standard, and the implementation diverge.
 - **[Bruce Momjian, *Inside PostgreSQL Buffers*](https://momjian.us/main/writings/pgsql/inside_shared_memory.pdf)** — the canonical deck on what the postmaster / backend / WAL writer / bgwriter / checkpointer are actually doing. Worth re-reading once a year.
 - **[PostgreSQL `EXPLAIN` documentation](https://www.postgresql.org/docs/current/sql-explain.html)** — the manual page for the canonical diagnostic tool. The `(ANALYZE, BUFFERS, FORMAT TEXT)` options are the ones you'll use daily.
-- **[Martin Kleppmann, *Designing Data-Intensive Applications*, ch. 7](https://dataintensive.net/)** — the standard book reference for transactions, isolation levels, and the precise definitions of every anomaly the previous sections touched on.
+- **[Martin Kleppmann & Chris Riccomini, *Designing Data-Intensive Applications*, 2nd ed., ch. 8 (Transactions)](https://dataintensive.net/)** — the standard book reference for ACID, isolation levels, and the precise definition of every anomaly the previous sections touched on. (Ch. 3 covers normalisation and joins; Ch. 4 covers B-trees and secondary indexes.)
 
 ---
 

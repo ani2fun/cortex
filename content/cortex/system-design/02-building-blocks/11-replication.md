@@ -117,7 +117,7 @@ Because multiple leaders can accept writes concurrently, **conflicts are inevita
 
 ### 3.3 Leaderless
 
-Every node accepts writes. Reads and writes are issued to multiple nodes in parallel; *quorum* decides the outcome. Dynamo and Cassandra are the canonical examples.
+Every node accepts writes. Reads and writes are issued to multiple nodes in parallel; *quorum* decides the outcome. The 2007 Dynamo paper and Cassandra are the canonical examples.
 
 <iframe
   src="/c4/view/buildingblocks_replication_leaderless"
@@ -137,15 +137,15 @@ The math: for **N** replicas, **W** write acknowledgements, and **R** read ackno
 | W = 3, R = 1, N = 3 | fast | slow | reads are fast but every write blocks until all 3 nodes |
 | W = 1, R = 3, N = 3 | slow | fast | symmetric of the above |
 
-The trade-off: **strong consistency is paid for in latency** at every read or every write. Cassandra exposes this as a per-query knob (`CONSISTENCY QUORUM`); DynamoDB has `eventually consistent` vs `strongly consistent` reads (an extra round-trip for the strong mode).
+The trade-off: **strong consistency is paid for in latency** at every read or every write. Cassandra exposes this as a per-query knob (`CONSISTENCY QUORUM`). Mind the naming, though: the leaderless ancestor is the *2007 Dynamo paper*, but Amazon's **DynamoDB** product has a different architecture — single-leader on Multi-Paxos — so its `eventually consistent` vs `strongly consistent` read toggle is a read-routing choice, not a quorum.
 
 | Property | Leaderless |
 |---|---|
 | Where do writes go? | any node; coordinator forwards to quorum |
 | Where do reads go? | any node; coordinator gathers quorum responses |
 | Failover | not really — every node is a peer |
-| Conflict resolution | LWW (Cassandra), vector clocks (Dynamo) |
-| Replication lag | exists between nodes; read-repair smooths it over time |
+| Conflict resolution | LWW (Cassandra/ScyllaDB), version vectors + CRDTs (Riak) |
+| Replication lag | exists between nodes; read-repair (on reads) + anti-entropy (background sweep) smooth it over time |
 | Failure mode | sloppy quorums + hinted handoff can violate the W+R>N math |
 
 ### 3.4 Replication lag — the hazard
@@ -173,6 +173,7 @@ The standard mitigations:
 
 - **Read-your-writes consistency**: after a user writes, route their reads for that key (or session) to the leader for a TTL longer than typical lag.
 - **Monotonic reads**: pin a session to a single replica so reads can't go backwards.
+- **Consistent-prefix reads**: when reads fan out across shards that each lag independently, a reader can see a later write *before* the earlier one it causally depends on — the reply arriving before the question. The guarantee is that causally-ordered writes are observed in that same order; the usual fix is to route causally-related writes through one shard so a single ordered log governs them.
 - **Causal consistency**: tag every read with the LSN (log sequence number) of the most recent write the session knows about; the replica blocks the read until it has replayed up to that LSN.
 - **Accept the staleness**: many UIs tolerate "your post will appear shortly" semantics.
 
@@ -235,7 +236,7 @@ A user writes from their phone; the same user reads from their browser five seco
 
 ### 6.4 Multi-leader conflict resolution silently loses data
 
-LWW is the most common default; the loss is silent and irreversible. Two regions update the same field at the same millisecond, the lower-timestamp value vanishes. The mitigations require *application awareness*: model the data so concurrent updates don't collide (counters as deltas, not absolutes); use CRDTs where appropriate (G-Counters, OR-Sets); surface conflicts explicitly for human resolution (the Git model). The trap is reaching for multi-leader because "we want active-active" without designing the data model for it.
+LWW is the most common default; the loss is silent and irreversible. Two regions update the same field *concurrently* — and concurrent here means causally, not on the clock: two writes collide whenever neither had seen the other, so offline edits made hours apart still conflict (a database detects this with **version vectors**). LWW keeps the higher-timestamp value; the other silently vanishes. The mitigations require *application awareness*: model the data so concurrent updates don't collide (counters as deltas, not absolutes); use CRDTs where appropriate (G-Counters, OR-Sets); surface conflicts explicitly for human resolution (the Git model). The trap is reaching for multi-leader because "we want active-active" without designing the data model for it.
 
 ### 6.5 Cascading replica failure
 

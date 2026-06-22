@@ -6,7 +6,7 @@ summary: CAP is a partition-time choice; PACELC names the trade-off you pay ever
 # 4. The CAP theorem and PACELC, honestly
 
 ## TL;DR
-> CAP says: *during a network partition*, a distributed system can guarantee at most two of {Consistency, Availability, Partition-tolerance}. Since partitions are not optional in the real world, you actually choose between **C and A**. PACELC fixes CAP's biggest blind spot by adding: *Else, when there's no partition, you trade off **L**atency vs **C**onsistency*. We will *feel* the trade-off with a runnable simulator before we touch the math.
+> The honest one-line version of CAP is **not** "pick two of three." It is: *when a network partition cuts your replicas apart, you must choose — be **consistent** (refuse to answer rather than risk a stale or divergent answer) or stay **available** (answer on every side and reconcile later).* That's the whole theorem. It says **nothing** about the 99%+ of the time the network is healthy. PACELC fills that gap: *if a **P**artition, choose **A** or **C**; **E**lse, choose **L**atency or **C**onsistency.* The "Else" is the trade-off you actually pay every day. We will *feel* both halves with a runnable simulator before we touch the math — and we'll be honest about how little CAP, even stated correctly, really buys you.
 
 ## 1. Motivation
 
@@ -17,6 +17,14 @@ For the next ten years, every blog post explaining CAP got it slightly wrong. Th
 Then in **2010**, Daniel Abadi at Yale published a [blog post](https://dbmsmusings.blogspot.com/2010/04/problems-with-cap-and-yahoos-little.html) (later formalised in a 2012 IEEE Computer paper) pointing out that CAP only describes the system's behaviour during the rare event of a partition — but says nothing about its behaviour the rest of the time. The rest of the time, you trade *latency* against *consistency* — every replication mechanism, every quorum-vs-eventually-consistent choice, every async-vs-sync-replication knob. That trade-off is **PACELC**: *if a Partition, choose Availability or Consistency; **Else**, choose Latency or Consistency*.
 
 The PACELC version is the one a senior engineer carries around. CAP is the version you find on whiteboards. We will teach the senior version.
+
+One more piece of honesty up front, because most courses skip it. *Designing Data-Intensive Applications* (2nd ed.) is blunt: the CAP theorem, **even stated correctly**, is "of very narrow scope" and "has little practical value for designing systems." Why so harsh? Three reasons, all worth internalising:
+
+1. **It freezes one consistency model.** CAP's "C" means *linearizability* — the single strongest model (more on this below). It says nothing about the weaker-but-still-useful models (read-your-writes, monotonic reads, causal, bounded staleness) that real "eventually consistent" systems actually offer. The design space is a spectrum; CAP sees two points on it.
+2. **It addresses one fault, and a rare one.** CAP is *only* about network partitions. By Google's own incident data, partitions cause **fewer than 8% of incidents** — dead nodes, slow nodes, GC pauses, bad deploys, and overload dominate. A theorem about the 8% case is not where most of your reliability lives.
+3. **CP/AP is not even exhaustive.** Plenty of well-designed systems are *neither* — because CAP's formal definition of "availability" is idiosyncratic and doesn't match what engineers usually mean by available. We'll return to this trap in §7.
+
+So why teach it at all? Because the *vocabulary* (CP, AP, "what happens during a partition?") is the lingua franca of every design review, and because the **underlying trade-off is real** — it just lives mostly in PACELC's "Else," not in CAP's "P." Learn the words; carry the PACELC framing; don't let anyone win an argument by quoting "pick two of three" at you.
 
 ## 2. Intuition (Analogy)
 
@@ -36,6 +44,8 @@ Now extend the analogy. Even when *both siblings are at the kitchen table* — n
 
 The first option is **slower but always consistent** (you see what they see). The second is **faster but briefly inconsistent** (your screen leads theirs). That is **PACELC's *Else*** — the choice you pay every day, not just during the rare cabin trip.
 
+**Why is the partition choice *forced*?** Put yourself on the kitchen-table side during the road trip. You type a word. You cannot tell, from where you sit, whether the cabin sibling (a) has crashed, (b) is fine but unreachable, or (c) is busily typing a *conflicting* word right now. All three look identical: silence. You have exactly two honest moves. Wait for an acknowledgement that may never come (you stay correct but freeze — **CP**), or proceed without it and merge later (you stay responsive but may diverge — **AP**). There is no third move, because *no message can travel faster than the broken link*. The trade-off isn't a design smell you can engineer away; it's a property of the universe — uncertainty under silence. This is exactly why DDIA reframes "pick two of three" as the sharper **"either consistent or available when partitioned."** A more reliable network forces the choice *less often*; it never abolishes it.
+
 ## 3. Formal Definition
 
 ### CAP, precisely
@@ -44,18 +54,25 @@ For an *asynchronous network model* (Gilbert & Lynch's setting):
 
 | Letter | Property | Plain English |
 |---|---|---|
-| **C — Consistency** | Linearizability — every read sees the most recently committed write. | "If I write `x = 5` and then read `x`, I get `5`. Guaranteed. Across all replicas." |
-| **A — Availability** | Every non-failing node returns a non-error response in finite time. | "Every healthy server answers every request, eventually." |
+| **C — Consistency** | *Linearizability specifically* — the system behaves as if there is a single copy of the data and every read sees the most recently completed write. | "If I write `x = 5` and then read `x`, I get `5`. Guaranteed. Across all replicas." |
+| **A — Availability** | Every request to a non-failing node returns a (non-error) response — *in CAP's formal sense*, which is stricter and stranger than the everyday meaning. | "Every healthy server answers every request, eventually." |
 | **P — Partition tolerance** | The system continues to operate even when arbitrary messages between nodes are lost. | "When the network drops messages, the system does not just give up." |
 
-**The theorem:** in any system that may experience a partition, you cannot guarantee both C and A simultaneously.
+> **The "C" is narrower than it looks.** CAP's consistency is *exactly* linearizability — the strongest model, where the whole cluster pretends to be one copy. It is **not** the database "C" in ACID, and it is **not** the umbrella term "strong consistency." Everything weaker — read-your-writes, monotonic reads, causal, bounded staleness — is invisible to CAP, which lumps it all under "not C." That spectrum is the subject of [Lesson 13 — Consistency models](/cortex/system-design/building-blocks/consistency-models); CAP only sees its two endpoints.
 
-**The misunderstanding:** "Pick two of three." Wrong. *P is not a choice.* Networks partition. Every distributed system *must* be P. So the live choice is between:
+**The theorem:** in any system that may experience a partition, you cannot guarantee both C (linearizability) and A simultaneously.
+
+**The misunderstanding:** "Pick two of three." Wrong. *P is not a choice.* Networks partition. Every distributed system that spans more than one machine *must* tolerate P. So the live choice is between:
 
 - **CP**: refuse to answer (or answer with an error) when consistency cannot be guaranteed during a partition. *Sacrifices availability.*
-- **AP**: keep answering on every partitioned side; accept that different nodes may temporarily disagree. *Sacrifices linearizable consistency.*
+- **AP**: keep answering on every partitioned side; accept that different nodes may temporarily disagree. *Sacrifices linearizability.*
 
-There is no third option. Saying "we are CA" is saying "we do not run on a network", which means you are running on a single machine and CAP does not apply. (Some single-machine systems are sold as "CA" for marketing reasons. Roll your eyes when you read this.)
+Saying "we are CA" is saying "we do not run on a network," which means you are running on a single machine and CAP does not apply. (Some single-machine systems are sold as "CA" for marketing reasons. Roll your eyes when you read this.)
+
+**But "CP or AP" is not even a clean dichotomy** — and this is the part the whiteboard cartoon never admits. DDIA flags two more cracks:
+
+- *CAP's "availability" is idiosyncratic.* The formal definition demands that **every** non-failing node answer **every** request. Most real "highly available" systems don't promise that (a node that has lost quorum may correctly return an error yet still be a fault-tolerant, well-run system). So plenty of perfectly good systems satisfy *neither* CP nor AP under CAP's strict letter.
+- *The labels are coarse.* A real database makes the C-vs-A choice *per operation* and *per consistency level*, not once for the whole system. DynamoDB serves eventually-consistent reads (AP-flavoured) and strongly-consistent reads (CP-flavoured) from the **same** table; MongoDB's behaviour depends on your `writeConcern` and `readConcern`. A single "CP/AP" sticker on a logo is a lossy summary at best.
 
 ### PACELC, precisely
 
@@ -75,12 +92,16 @@ A system gets a two-letter classification — one for each scenario:
 | MySQL with async replication | **PA + EL** | The async replica may fall behind, even with no partition. |
 | MySQL with sync replication | **PC + EC** | Replicas always caught up; writes pay the cross-replica latency. |
 
+Notice the table classifies *configurations*, not just product names. "MySQL with async replication" and "MySQL with sync replication" are the **same binary** in different clothes — the PACELC class is a property of how you *operate* the system, not the logo on the box. The same is true of Postgres (sync vs async streaming), MongoDB (`w:1` vs `w:majority`), and Cassandra (`ONE` vs `QUORUM` vs `ALL`). When someone says "Cassandra is AP," they mean *Cassandra as usually configured*; crank it to `QUORUM`/`QUORUM` and you've moved its "E" toward C and paid the latency for it.
+
 Two stable engineering instincts emerge:
 
-1. **PC + EC** systems are for *truth-of-record* data — money, identity, inventory, anything where the answer "I am not sure" is preferable to a wrong answer.
-2. **PA + EL** systems are for *experience* data — likes, views, presence, search, anything where "stale by 30 seconds" is fine and "unavailable for 30 seconds" is a disaster.
+1. **PC + EC** systems are for *truth-of-record* data — money, identity, inventory, unique usernames, sequence numbers, anything where the answer "I am not sure" is preferable to a wrong answer.
+2. **PA + EL** systems are for *experience* data — likes, views, presence, search, recommendations, anything where "stale by 30 seconds" is fine and "unavailable for 30 seconds" is a disaster.
 
-Most real companies run **both kinds side by side**. We will see this directly in [Capstone 38 (news feed)](/cortex/system-design/capstones/news-feed) and [Capstone 44 (payments)](/cortex/system-design/capstones/payment-system).
+That mapping isn't arbitrary. It tracks DDIA's own list of where linearizability is genuinely *required*: leader election (only one leader, ever), uniqueness constraints (only one person gets the username), and "never go negative / never oversell / never double-book" invariants. Each of those needs a single up-to-date value every node agrees on — which is exactly what a partition can take away. The experience-data cases need none of that, so they keep availability instead.
+
+Most real companies run **both kinds side by side**. We will see this directly in [Capstone 43 (news feed)](/cortex/system-design/capstones/news-feed) and [Capstone 49 (payments)](/cortex/system-design/capstones/payment-system).
 
 ## 4. Worked Example
 
@@ -93,7 +114,7 @@ Let's design two services and pick CAP/PACELC for each.
 
 **Pick AP** during partition. **Pick L** (low latency) normally. → **PA + EL**.
 
-Real-world: Cassandra. Twitter, Instagram, and Reddit all use Cassandra-class stores for this exact workload.
+Real-world: **Cassandra / DynamoDB**, configured for low quorums. *What actually happens under a partition:* each side keeps accepting reads and writes against whatever replicas it can still reach. Two sides may record different values for the same key; on heal, the cluster reconciles — Cassandra and DynamoDB default to **last-writer-wins by timestamp**, which means one of the concurrent writes is silently dropped. For a like counter that's fine (and many teams use a CRDT counter so *both* increments survive). Twitter, Instagram, and Reddit all run Cassandra-class stores for exactly this kind of high-volume, loss-tolerant experience data.
 
 ### Service 2 — Bank account balance
 
@@ -102,7 +123,7 @@ Real-world: Cassandra. Twitter, Instagram, and Reddit all use Cassandra-class st
 
 **Pick CP** during partition. **Pick C** (strong) normally. → **PC + EC**.
 
-Real-world: Spanner. Modern fintech ledgers run on Spanner-class stores (e.g. Spanner or CockroachDB).
+Real-world: **Spanner / CockroachDB / etcd**. *What actually happens under a partition:* writes go through a consensus group (Paxos in Spanner, Raft in CockroachDB and etcd). The side that still holds a **majority** of replicas keeps committing; the **minority** side cannot reach quorum, so it *refuses* writes — and refuses linearizable reads too — rather than risk handing back a value the majority has already moved past. The balance is never wrong; it is, for those cut-off clients, briefly *unavailable*. That is the CP bargain made concrete: "I'm not sure" beats "$100 that isn't there." Modern fintech ledgers run on exactly these Spanner-class stores.
 
 ### Service 3 — Mixed system (the realistic case)
 
@@ -314,10 +335,26 @@ You will discover that **last-writer-wins silently lost one of the writes** — 
 
 **The cost of AP, after a partition:** the application must handle conflicts. "Last-writer-wins" is the simplest strategy and the easiest to lose data with. Vector clocks let the application *detect* a conflict and decide. CRDTs let the application *avoid* the conflict by design (counters, sets, registers with merge functions). All three are real engineering you have to invest in.
 
+### Why the trade-off *cannot* be engineered away
+
+It's tempting to assume that "consistent and fast" is just an optimisation problem waiting for a clever enough algorithm. It isn't, and it's worth understanding *why* at three levels of depth.
+
+**1. The intuition (silence is ambiguous).** A replica that needs to answer a request, but can't reach its peers, faces the ambiguity from the analogy: a peer that is *dead*, a peer that is *slow*, and a peer that is *busy writing a conflicting value* all look identical — silence. To be linearizable, the replica must resolve that ambiguity before answering, which means **waiting to hear from enough peers**. To be available, it must answer **without** waiting. You cannot do both at once. That's the partition case (CAP's "P").
+
+**2. The surprising part — it costs you even with a *perfect* network.** Here is the insight that elevates PACELC from "nice footnote" to "the real story." Attiya and Welch proved a hard lower bound: the response time of a linearizable read or write is **at least proportional to the uncertainty in network delay**. Not the *average* delay — the *uncertainty* (the spread between fastest and slowest plausible message). Real networks have highly variable delay, so linearizable operations are *inherently* high-latency — **all the time, not only during a partition.** A faster algorithm for linearizability provably does not exist; weaker consistency models, by contrast, can be served from a local replica in microseconds. This lower bound *is* PACELC's "Else" expressed as a theorem: choosing C over L isn't a missed optimisation, it's paying for a guarantee that has a non-negotiable price.
+
+**3. The analogy that makes it click — your laptop already chose AP.** You don't need a datacentre to see this trade-off; it's running inside the CPU you're reading this on. **RAM on a modern multi-core machine is not linearizable.** Each core has its own cache and store buffer; when one core writes a memory address, a second core reading that address moments later is *not* guaranteed to see the new value unless you insert an explicit memory barrier. Why would hardware designers give up linearizability on a *single chip with reliable wires*? Not for fault tolerance — for **speed**. Going to the cache is vastly faster than coordinating across cores. The lesson generalises exactly: most distributed databases that drop linearizability do so for the *same reason your CPU does* — performance — and only secondarily for partition survival. "Strong consistency is slow" is not a database quirk; it's a property of any system with more than one copy of the data.
+
+### The footgun even experts hit: "quorum" ≠ "linearizable"
+
+The simulator above ties CP to "got a quorum." That's a useful teaching model, but be careful in real life: **a Dynamo-style quorum (`w + r > n`) does not, by itself, give you linearizability.** DDIA walks through a concrete race (its Figure 10-6): a write to all three replicas is in flight; reader A's quorum catches one updated node and sees the new value; reader B, whose request *starts after A's finishes*, hits a different quorum and still sees the **old** value. The overlap condition `w + r > n` is satisfied — yet a later read returned an *older* result. Not linearizable. Making quorums truly linearizable requires extra machinery (synchronous read-repair, read-before-write), at a latency cost. And LWW-by-wall-clock systems (Cassandra, ScyllaDB) are "almost certainly nonlinearizable" regardless, because clock skew means timestamps don't faithfully order events. Translation: *the consistency level on the tin is a claim to verify, not a fact to assume* — which is precisely why [Jepsen](https://jepsen.io/analyses) exists.
+
 ## 7. Edge Cases & Failure Modes
 
 - **Believing CAP applies to single-datacentre systems.** Inside one datacentre, partitions are extremely rare. CAP *technically* still applies but in practice you tune for latency, not partitions. PACELC's "Else" tells the real story.
 - **Calling a system "CA".** Either it is single-machine (CAP irrelevant), or it is lying about its partition behaviour (most common — the system silently fails closed during a partition and the docs do not say so).
+- **Treating "CP vs AP" as exhaustive.** It isn't. Because CAP's formal "availability" is so strict, many fault-tolerant systems are *neither* CP nor AP, and most real databases pick C-vs-A *per operation* (DynamoDB strong vs eventual reads; MongoDB by `read/writeConcern`). Forcing a single sticker onto a logo loses the information that actually matters. Ask "what does *this operation* at *this consistency level* do during a partition?" — not "is the database CP or AP?"
+- **Over-anchoring on CAP itself.** CAP is a conversation-starter, not a design tool; DDIA calls it "of mostly historical interest." It models *one* fault (partitions, <8% of real incidents) and *one* consistency model (linearizability). If a design review spends more time arguing CP-vs-AP than discussing slow nodes, overload, failover, and the *normal-day* latency/consistency knob (PACELC's "Else"), it's optimising the footnote and ignoring the chapter.
 - **Confusing eventual consistency with "any old answer".** Real eventual-consistency systems guarantee *bounded staleness* and *monotonic reads* if you ask for them. We will get into this in [Lesson 13 — Consistency models](/cortex/system-design/building-blocks/consistency-models). If a vendor says "eventually consistent" and cannot quote a staleness bound, walk away.
 - **Forgetting that "linearizable" reads are an *option* in CP systems.** Many CP systems (etcd, Spanner) offer "stale read" or "follower read" knobs that trade some consistency for lower latency. Knowing they exist is what distinguishes a senior from a junior using the same database.
 - **Designing for the partition that never happens.** If partitions in your network occur once a year for 30 seconds, designing the entire architecture around the rare partition is a bad investment. Design for the *common* case (no partition, low latency), but have a *plan* for partition (drain shedding, fail-closed, alerting).
@@ -372,6 +409,8 @@ Before you move on, check your understanding with the coach — explain the idea
 - **[Eric Brewer — CAP twelve years later](https://www.infoq.com/articles/cap-twelve-years-later-how-the-rules-have-changed/)** (2012) — the author of CAP corrects the most common misunderstanding of his own theorem. Required reading.
 
 - **[Daniel Abadi — Problems with CAP, and Yahoo's little known NoSQL system](https://dbmsmusings.blogspot.com/2010/04/problems-with-cap-and-yahoos-little.html)** (2010) — the post that introduced PACELC and reframed the conversation.
+
+- **[Martin Kleppmann — A Critique of the CAP Theorem](https://arxiv.org/abs/1509.05393)** (2015) — the rigorous academic case (by DDIA's author) for *why* CAP's definitions of consistency and availability are too narrow to be useful as a design tool. The source of the "mostly historical interest" verdict this lesson takes seriously.
 
 - **[Kyle Kingsbury — Jepsen analysis archive](https://jepsen.io/analyses)** — the gold standard for actually measuring how each major distributed database behaves under partition. Pick any analysis (MongoDB, Cassandra, etcd, CockroachDB) and watch how a real expert *probes* the consistency claims.
 

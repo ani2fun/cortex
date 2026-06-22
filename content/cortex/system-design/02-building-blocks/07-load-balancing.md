@@ -136,7 +136,7 @@ Drag the sliders below. With one virtual node per physical, the load distributio
 
 At any setting, the "gap" readout shows how many fewer keys re-map when you add one more node under consistent hashing versus plain modulo hashing. With 4 nodes and 24 keys, modulo will re-map ~18 of 24 keys when you go to 5; consistent hashing re-maps ~5. That's the entire argument for the algorithm.
 
-Consistent hashing is everywhere once you know to look for it. [Memcached client libraries](https://github.com/memcached/memcached/wiki/ConfiguringClient) (libketama since 2007), [Cassandra's partition map](https://cassandra.apache.org/doc/latest/cassandra/architecture/dynamo.html#consistent-hashing), [Amazon Dynamo's partition assignment](https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf), [Akamai's edge cache placement](https://www.akamai.com/blog/web-performance/akamai-and-the-evolution-of-caching). [Lesson 8 (caching)](/cortex/system-design/building-blocks/caching), [Lesson 12 (sharding)](/cortex/system-design/building-blocks/sharding-and-partitioning), and [Capstone 37 (URL shortener)](/cortex/system-design/capstones/url-shortener) all reach for this same ring.
+Consistent hashing is everywhere once you know to look for it. [Memcached client libraries](https://github.com/memcached/memcached/wiki/ConfiguringClient) (libketama since 2007), [Cassandra's partition map](https://cassandra.apache.org/doc/latest/cassandra/architecture/dynamo.html#consistent-hashing), [Amazon Dynamo's partition assignment](https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf), [Akamai's edge cache placement](https://www.akamai.com/blog/web-performance/akamai-and-the-evolution-of-caching). [Lesson 8 (caching)](/cortex/system-design/building-blocks/caching), [Lesson 12 (sharding)](/cortex/system-design/building-blocks/sharding-and-partitioning), and [Capstone 42 (URL shortener)](/cortex/system-design/capstones/url-shortener) all reach for this same ring.
 
 ### 3.4 Health checks
 
@@ -154,7 +154,7 @@ In open-source NGINX you only get passive (`max_fails` + `fail_timeout`); NGINX 
 | What it catches | what real users would see | shallower problems (process up but DB connection broken) — depends on what `/healthz` does |
 | Where it loses | slow detection under low traffic | a deep dependency outage looks like "every backend is dying" to the LB |
 
-The single most common health-check footgun: **`/healthz` returns 200 without checking dependencies**. Process is up; database is unreachable; LB sees the backend as healthy and keeps sending it doomed requests. The fix is a **deep health check** (`/healthz?deep=1`) that returns 503 if the backend cannot serve a real request — but you want a separate, *shallow* `/healthz` for the LB itself so a deep-dependency hiccup doesn't take everyone out at once. (Lesson 33 on deployments revisits this.)
+The single most common health-check footgun: **`/healthz` returns 200 without checking dependencies**. Process is up; database is unreachable; LB sees the backend as healthy and keeps sending it doomed requests. The fix is a **deep health check** (`/healthz?deep=1`) that returns 503 if the backend cannot serve a real request — but you want a separate, *shallow* `/healthz` for the LB itself so a deep-dependency hiccup doesn't take everyone out at once. (Lesson 38 on deployments revisits this.)
 
 ## 4. Worked example — three backends, induce a failure
 
