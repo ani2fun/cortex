@@ -213,6 +213,7 @@
 
 /* ─── BEM blocks ─────────────────────────────────────────────────── */
 @import "./src/styles/sections/cortex-home.css";
+@import "./src/styles/sections/cortex-tour.css";
 @import "./src/styles/sections/hero.css";
 @import "./src/styles/sections/selected-work.css";
 @import "./src/styles/sections/about.css";

@@ -3,8 +3,9 @@ package cortex.client.pages
 import cortex.client.api.ApiClient
 import cortex.client.components.blog.PostGrid
 import cortex.client.components.book.BookGrid
+import cortex.client.components.home.CortexTour
 import cortex.client.components.icons.LucideIcons
-import cortex.client.util.{AsyncFetch, PageTitle}
+import cortex.client.util.{AsyncFetch, HashScroll, PageTitle}
 import cortex.shared.api.Endpoints.{BlogIndex, CortexIndex}
 import japgolly.scalajs.react.*
 import japgolly.scalajs.react.vdom.html_<^.*
@@ -35,25 +36,17 @@ object CortexIndexPage:
       <.div(
         ^.className := "cx-hero__pill",
         <.span(^.className := "cx-hero__dot", ^.aria.hidden := true),
-        "A reading-first knowledge base"
+        "A reading-first knowledge base. A guided tour — everything Cortex can do"
       ),
-      <.h1(
-        ^.className := "cx-hero__title",
-        "Think in systems,",
-        <.br,
-        "not in tabs."
-      ),
-      <.p(
-        ^.className := "cx-hero__lede",
-        <.em(^.className := "cx-hero__lede-em", "Cortex"),
-        " turns reading into a library you can return to — interactive books, linked notes, and runnable",
-        " code, all set like a publication you'd want to read."
-      ),
+      // The slideshow card IS the hero — first block on the page, right under the pill.
+      CortexTour.Component(),
       <.div(
         ^.className := "cx-hero__ctas",
         <.a(
           ^.href      := "#library",
           ^.className := "cx-btn cx-btn--primary cx-btn--lg",
+          // The SPA router swallows plain #anchor clicks — route the scroll through HashScroll.
+          ^.onClick ==> ((e: ReactMouseEvent) => HashScroll.onHashLinkClick(e, "library")),
           LucideIcons.BookOpen(LucideIcons.withClass("cx-btn__icon")),
           "Start reading"
         ),
