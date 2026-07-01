@@ -104,6 +104,8 @@ object LucideIcons:
 
   @js.native @JSImport("lucide-react", "ShieldCheck") private object ShieldCheckRaw extends js.Object
 
+  @js.native @JSImport("lucide-react", "Home") private object HomeRaw extends js.Object
+
   // ---- Components (call as Sun(withClass("h-5 w-5"))) --------------------
 
   val Sun           = JsComponent[IconProps, Children.None, Null](SunRaw)
@@ -169,3 +171,4 @@ object LucideIcons:
   val Code          = JsComponent[IconProps, Children.None, Null](CodeRaw)
   val List          = JsComponent[IconProps, Children.None, Null](ListRaw)
   val ShieldCheck   = JsComponent[IconProps, Children.None, Null](ShieldCheckRaw)
+  val Home          = JsComponent[IconProps, Children.None, Null](HomeRaw)

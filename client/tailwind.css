@@ -18,35 +18,35 @@
    `text-primary` / `border-primary` / `bg-card` callsite picks up the
    new accent automatically — no rename churn. */
 :root {
-    --background: 36 28% 96%;
-    --foreground: 30 14% 14%;
-    /* Warm-tinted card surface (#fbf9f3) — matches the prototype's
-       --card token, gives cards a slightly softer cream cast against the
-       page bg instead of a flat white slab. */
-    --card: 40 50% 97%;
-    --card-foreground: 30 14% 14%;
-    --popover: 40 50% 97%;
-    --popover-foreground: 30 14% 14%;
-    --primary: 234 61% 57%;
-    --primary-foreground: 36 28% 98%;
-    --secondary: 32 22% 90%;
-    --secondary-foreground: 30 14% 14%;
-    --muted: 32 22% 92%;
-    --muted-foreground: 30 8% 38%;
-    --accent: 32 22% 90%;
-    --accent-foreground: 30 14% 14%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 36 28% 98%;
-    --border: 32 18% 84%;
-    --input: 32 18% 84%;
-    --ring: 234 61% 57%;
+    /* HelloInterview palette — warm-paper light neutrals over a teal brand.
+       HI's hex converted to the `H S% L%` triples that the @theme
+       `hsl(var(--x))` wrapping + `bg-primary/<alpha>` modifiers expect. */
+    --background: 45 44% 96%;         /* #FAF8F2 warm paper */
+    --foreground: 224 14% 16%;        /* #23262E warm-charcoal ink */
+    --card: 0 0% 100%;                /* #FFFFFF surface */
+    --card-foreground: 224 14% 16%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 14% 16%;
+    --primary: 169 82% 27%;           /* #0C7C68 HI teal (brand-600) */
+    --primary-foreground: 0 0% 100%;  /* #FFFFFF on-brand */
+    --secondary: 45 35% 93%;          /* #F4F1E8 warm-100 */
+    --secondary-foreground: 224 14% 16%;
+    --muted: 45 35% 93%;              /* #F4F1E8 */
+    --muted-foreground: 221 8% 45%;   /* #6A707D ink-500 */
+    --accent: 45 32% 90%;             /* #EEEADE warm-150 hover surface */
+    --accent-foreground: 224 14% 16%;
+    --destructive: 4 54% 50%;         /* #C5443B HI danger */
+    --destructive-foreground: 0 0% 100%;
+    --border: 43 26% 86%;             /* #E5E0D3 line-200 */
+    --input: 43 26% 86%;
+    --ring: 169 82% 27%;              /* #0C7C68 teal focus ring */
     --radius: 0.875rem;
 
-    /* Editorial extras: cream + dark-roast literals so components that need
-       a precise on-brand colour (logo strip, name superscript) can reach
-       past the shadcn semantic layer. */
-    --cream: 36 28% 92%;
-    --roast: 30 12% 6%;
+    /* Editorial extras: warm surface + ink literals so components that need a
+       precise on-brand colour (logo strip, name superscript) can reach past
+       the shadcn semantic layer. */
+    --cream: 45 35% 93%;              /* #F4F1E8 */
+    --roast: 224 14% 16%;             /* #23262E */
 
     /* Syntax-highlighting roles — consumed by the Shiki css-variables theme
        (aliased onto --shiki-token-* on the code surface). Indigo keyword, teal
@@ -58,25 +58,26 @@
     --syn-com: hsl(var(--muted-foreground));
 }
 .dark {
-    --background: 30 12% 6%;
-    --foreground: 36 32% 92%;
-    --card: 30 10% 9%;
-    --card-foreground: 36 32% 92%;
-    --popover: 30 10% 9%;
-    --popover-foreground: 36 32% 92%;
-    --primary: 234 67% 70%;
-    --primary-foreground: 30 12% 6%;
-    --secondary: 30 8% 14%;
-    --secondary-foreground: 36 32% 92%;
-    --muted: 30 8% 14%;
-    --muted-foreground: 35 12% 62%;
-    --accent: 30 8% 14%;
-    --accent-foreground: 36 32% 92%;
-    --destructive: 0 62.8% 50%;
-    --destructive-foreground: 36 32% 92%;
-    --border: 30 8% 18%;
-    --input: 30 8% 18%;
-    --ring: 234 67% 70%;
+    /* HI cool-charcoal dark neutrals over the brighter teal brand. */
+    --background: 223 15% 9%;         /* #14161B */
+    --foreground: 60 6% 90%;          /* #E7E7E4 */
+    --card: 222 15% 13%;              /* #1C1F26 */
+    --card-foreground: 60 6% 90%;
+    --popover: 222 15% 13%;
+    --popover-foreground: 60 6% 90%;
+    --primary: 166 63% 48%;           /* #2DC8A5 HI teal (dark brand) */
+    --primary-foreground: 168 71% 8%; /* #06231D */
+    --secondary: 220 15% 16%;         /* #22262E */
+    --secondary-foreground: 60 6% 90%;
+    --muted: 220 15% 16%;
+    --muted-foreground: 220 7% 66%;   /* #A2A6AE */
+    --accent: 220 15% 16%;
+    --accent-foreground: 60 6% 90%;
+    --destructive: 5 70% 62%;         /* #E2675C */
+    --destructive-foreground: 60 6% 90%;
+    --border: 220 15% 20%;            /* #2C313B */
+    --input: 220 15% 20%;
+    --ring: 166 63% 48%;
 
     /* Syntax — brighter variants for the dark code surface. Keyword + comment
        inherit :root and resolve against .dark's --primary / --muted-foreground. */
@@ -115,20 +116,18 @@
     --radius-md: calc(var(--radius) - 2px);
     --radius-sm: calc(var(--radius) - 4px);
 
-    /* Editorial type system. Tailwind v4 emits `font-display`, `font-sans`,
-       `font-mono` utilities from these. Instrument Serif is italic-only at
-       400 — used exclusively for display headings (hero name, section
-       headings). Geist Mono carries eyebrows / dates / status pills / tags.
-       Geist sans is the default body font. */
-    --font-display: "Instrument Serif", ui-serif, Georgia, "Times New Roman", serif;
-    --font-sans: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    --font-mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, Monaco, "Cascadia Mono", monospace;
+    /* Type system. Noto Sans is the single UI + display + heading typeface;
+       JetBrains Mono carries all code + eyebrows / status pills / tags.
+       Tailwind v4 emits `font-display`, `font-sans`, `font-mono` from these. */
+    --font-display: "Noto Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --font-sans: "Noto Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Monaco, "Cascadia Mono", monospace;
 
-    /* Cortex reader stack. Literata = reading body, Newsreader = upright chapter
-       headings, JetBrains Mono = code. v4 emits font-read/font-head/font-code
-       utilities from these, and they're usable directly as var(--font-read) etc. */
+    /* Cortex reader stack. Literata = long-form reading body (kept serif for
+       reading comfort); Noto Sans = chapter headings; JetBrains Mono = code.
+       v4 emits font-read/font-head/font-code, usable as var(--font-read) etc. */
     --font-read: "Literata", Georgia, "Times New Roman", serif;
-    --font-head: "Newsreader", ui-serif, Georgia, serif;
+    --font-head: "Noto Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     --font-code: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Monaco, monospace;
 }
 
@@ -147,7 +146,6 @@
         background-color: hsl(var(--background));
         color: hsl(var(--foreground));
         font-family: var(--font-sans);
-        font-feature-settings: "ss01", "cv11";
         position: relative;
     }
 
@@ -213,6 +211,7 @@
 
 /* ─── BEM blocks ─────────────────────────────────────────────────── */
 @import "./src/styles/sections/cortex-home.css";
+@import "./src/styles/sections/cortex-library-nav.css";
 @import "./src/styles/sections/cortex-tour.css";
 @import "./src/styles/sections/hero.css";
 @import "./src/styles/sections/selected-work.css";

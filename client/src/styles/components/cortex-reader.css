@@ -214,21 +214,26 @@
     .cortex-reader-sidebar__inner {
         @apply flex flex-col gap-5 px-6 pt-9 pb-12;
     }
-    /* "Back to Cortex" link — mono uppercase eyebrow, low weight. */
+    /* "Back to Main" toggle — small sans, muted, chevron, hover → teal. It's a
+       <button> (swaps the sidebar to the library view in place), so reset the
+       native button chrome. */
     .cortex-reader-sidebar__back {
-        @apply text-[14px] font-mono font-medium uppercase tracking-widest
-               text-muted-foreground hover:text-primary transition-colors;
+        @apply inline-flex items-center gap-1 text-[13px] font-sans font-medium
+               text-muted-foreground hover:text-primary transition-colors
+               bg-transparent border-0 p-0 cursor-pointer;
     }
-    /* Book title — Instrument Serif italic, sized for sidebar. */
+    .cortex-reader-sidebar__back-icon {
+        @apply w-4 h-4 shrink-0;
+    }
+    /* "LEARN" kicker above the book title (mirrors HelloInterview's heading). */
+    .cortex-reader-sidebar__eyebrow {
+        @apply mt-4 text-[11px] font-mono font-semibold uppercase tracking-[0.16em]
+               text-muted-foreground;
+    }
+    /* Book title — bold Noto Sans, sized for the sidebar. */
     .cortex-reader-sidebar__title {
-        font-family: var(--font-display);
-        font-style: italic;
-        font-weight: 400;
-        font-size: 24px;
-        line-height: 1.1;
-        letter-spacing: -0.015em;
-        color: hsl(var(--foreground));
-        margin-top: 0.5rem;
+        @apply font-sans font-bold text-[20px] leading-tight tracking-tight
+               text-foreground mt-0.5;
     }
     .cortex-reader-sidebar__description {
         @apply mt-1 text-[11px] font-mono uppercase tracking-wider
@@ -771,7 +776,7 @@
 
     /* Expanded inner (search + tree) — fades when collapsed without peek. */
     .cortex-reader-sidebar__expanded {
-        @apply flex flex-col gap-5 px-6 pt-9 pb-12;
+        @apply flex flex-col gap-5 px-6 pt-16 pb-12;
         transition: opacity 180ms ease;
     }
     /* Scoped to `__desktop`: the mobile drawer reuses the same `__expanded`

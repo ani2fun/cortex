@@ -1,0 +1,129 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   Cortex library navigation — the HelloInterview "dashboard" view.
+   Rendered by CortexLibraryNav inside the reader's left sidebar as the
+   alternate view that "Back to Main" toggles to: a "Your Dashboard" home
+   link + an expandable "Learn" group listing every book. It sits inside
+   `.cortex-reader-sidebar__expanded` (which supplies the outer padding), so
+   the rail itself is a plain flex column. Semantic tokens only — tracks the
+   teal palette + light/dark automatically.
+   ───────────────────────────────────────────────────────────────────────── */
+.cx-lnav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-family: var(--font-sans);
+}
+
+/* Top-level item (Your Dashboard). */
+.cx-lnav__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+  transition: background-color 0.15s, color 0.15s;
+}
+.cx-lnav__item:hover {
+  background: hsl(var(--accent));
+  color: hsl(var(--foreground));
+}
+.cx-lnav__item--active {
+  background: color-mix(in oklab, hsl(var(--primary)) 12%, transparent);
+  color: hsl(var(--primary));
+  font-weight: 600;
+}
+
+.cx-lnav__icon {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+}
+.cx-lnav__label {
+  flex: 1 1 auto;
+}
+
+.cx-lnav__divider {
+  height: 1px;
+  background: hsl(var(--border));
+  margin: 10px 12px;
+}
+
+/* "Learn" group — native <details>/<summary> for accessible open/close. */
+.cx-lnav__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+}
+.cx-lnav__head::-webkit-details-marker {
+  display: none;
+}
+.cx-lnav__head:hover {
+  background: hsl(var(--accent));
+}
+.cx-lnav__caret {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  color: hsl(var(--muted-foreground));
+  transition: transform 0.18s ease;
+}
+.cx-lnav__group:not([open]) .cx-lnav__caret {
+  transform: rotate(-90deg);
+}
+
+/* Book rows under "Learn". */
+.cx-lnav__list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin-top: 2px;
+  padding-left: 8px;
+}
+.cx-lnav__book {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px 8px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+  transition: background-color 0.15s, color 0.15s;
+}
+.cx-lnav__book:hover {
+  background: hsl(var(--accent));
+  color: hsl(var(--foreground));
+}
+.cx-lnav__book--active {
+  background: color-mix(in oklab, hsl(var(--primary)) 12%, transparent);
+  color: hsl(var(--primary));
+  font-weight: 600;
+}
+.cx-lnav__book-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cx-lnav__book-caret {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
+  color: hsl(var(--muted-foreground));
+  opacity: 0.55;
+}
+.cx-lnav__book:hover .cx-lnav__book-caret {
+  opacity: 1;
+}

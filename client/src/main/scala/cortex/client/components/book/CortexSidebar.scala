@@ -1,5 +1,7 @@
 package cortex.client.components.book
 
+import cortex.client.api.ApiClient
+import cortex.client.components.home.CortexLibraryNav
 import cortex.client.components.icons.LucideIcons
 import cortex.client.util.ReaderState
 import cortex.shared.api.Endpoints.{Book, ChapterRef}
@@ -9,7 +11,9 @@ import japgolly.scalajs.react.*
 import japgolly.scalajs.react.vdom.html_<^.*
 import org.scalajs.dom
 
+import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 import scala.scalajs.js
+import scala.util.{Failure, Success}
 
 /**
  * Cortex reader's left-panel **Sidebar Forest**. Tree assembly lives in [[SidebarForest]] (shared,
@@ -209,15 +213,23 @@ object CortexSidebar:
       onLinkClick: Callback,
       query: String,
       onQuery: String => Callback,
-      rows: Map[String, RowState]
+      rows: Map[String, RowState],
+      onBackToMain: Callback
   ): VdomNode =
     val filtered = filterChapters(book.chapters, query)
     val forest   = SidebarForest.build(filtered)
     <.div(
       ^.className := "cortex-reader-sidebar__expanded",
       <.div(
-        <.a(^.href       := "/", ^.className := "cortex-reader-sidebar__back", "← Cortex"),
-        <.h2(^.className := "cortex-reader-sidebar__title", book.title),
+        <.button(
+          ^.tpe       := "button",
+          ^.className := "cortex-reader-sidebar__back",
+          ^.onClick --> onBackToMain,
+          LucideIcons.ChevronLeft(LucideIcons.withClass("cortex-reader-sidebar__back-icon")),
+          "Back to Main"
+        ),
+        <.div(^.className := "cortex-reader-sidebar__eyebrow", "Learn"),
+        <.h2(^.className  := "cortex-reader-sidebar__title", book.title),
         if book.description.nonEmpty then
           <.p(^.className := "cortex-reader-sidebar__description", book.description)
         else EmptyVdom,
@@ -305,12 +317,14 @@ object CortexSidebar:
   val Component =
     ScalaFnComponent
       .withHooks[Props]
-      .useState(false)
-      .useState("")
-      .useRef(js.undefined: js.UndefOr[Int])
-      .useRef(js.undefined: js.UndefOr[Int])
+      .useState(false)                       // openS — mobile drawer open
+      .useState("")                          // queryS — chapter search
+      .useRef(js.undefined: js.UndefOr[Int]) // peekInRef
+      .useRef(js.undefined: js.UndefOr[Int]) // peekOutRef
+      .useState(false)                       // showLibraryS — "Back to Main" library-view toggle
+      .useState(Option.empty[List[Book]])    // libBooksS — lazily-fetched full book list
       // Sync-flash listener — fires on cortex:syncFlash custom events from CortexToc.
-      .useEffectOnMountBy { (_, _, _, _, _) =>
+      .useEffectOnMountBy { (_, _, _, _, _, _, _) =>
         Callback {
           val onFlash: js.Function1[dom.Event, Unit] = (_: dom.Event) => flashActiveElements()
           dom.window.addEventListener("cortex:syncFlash", onFlash, useCapture = false)
@@ -319,11 +333,29 @@ object CortexSidebar:
       }
       // Reveal-in-explorer: scroll the active chapter row into view on mount + whenever the URL's
       // chapter slug changes (sidebar click, prev/next, breadcrumb, direct load).
-      .useEffectWithDepsBy((props, _, _, _, _) => props.activeChapterSlug) { (_, _, _, _, _) => _ =>
-        Callback(revealActive())
+      .useEffectWithDepsBy((props, _, _, _, _, _, _) => props.activeChapterSlug) {
+        (_, _, _, _, _, _, _) => _ => Callback(revealActive())
       }
-      .render { (props, openS, queryS, peekInRef, peekOutRef) =>
+      // Reset to the chapter view whenever the book changes — jumping to another book from the library
+      // view should land in that book's chapters, not keep showing the library.
+      .useEffectWithDepsBy((props, _, _, _, _, _, _) => props.book.slug) {
+        (_, _, _, _, _, showLibraryS, _) => _ => showLibraryS.setState(false)
+      }
+      .render { (props, openS, queryS, peekInRef, peekOutRef, showLibraryS, libBooksS) =>
         val close: Callback = openS.setState(false) >> queryS.setState("")
+
+        val onReturnToChapters: Callback = showLibraryS.setState(false)
+
+        // "Back to Main" swaps the sidebar to the library view in place (no navigation) and lazily
+        // fetches the full book list the first time it's opened.
+        val onBackToMain: Callback =
+          showLibraryS.setState(true) >> Callback {
+            if libBooksS.value.isEmpty then
+              ApiClient.getCortexIndex.onComplete {
+                case Success(idx) => libBooksS.setState(Some(idx.books.toList)).runNow()
+                case Failure(_)   => libBooksS.setState(Some(List(props.book))).runNow()
+              }
+          }
 
         val storage = ReaderState.snapshotFor(props.book.chapters.map(_.slug))
         val rows: Map[String, RowState] = props.book.chapters.iterator.zipWithIndex.map {
@@ -332,15 +364,32 @@ object CortexSidebar:
             ch.slug -> RowState(p, m, idx + 1)
         }.toMap
 
-        val expandedInner =
-          renderInner(
-            props.book,
-            props.activeChapterSlug,
-            Callback.empty,
-            queryS.value,
-            q => queryS.setState(q),
-            rows
-          )
+        // The expanded sidebar shows either the chapter tree (default) or the library view that
+        // "Back to Main" toggles to. Both the desktop rail and the mobile drawer render this; the
+        // `onLinkClick` closes the drawer after navigation there and is a no-op on desktop.
+        def expandedContent(onLinkClick: Callback): VdomNode =
+          if showLibraryS.value then
+            <.div(
+              ^.className := "cortex-reader-sidebar__expanded",
+              CortexLibraryNav.Component(
+                CortexLibraryNav.Props(
+                  books = libBooksS.value.getOrElse(List(props.book)),
+                  activeSlug = Some(props.book.slug),
+                  onReturn = onReturnToChapters,
+                  onNavigate = onLinkClick
+                )
+              )
+            )
+          else
+            renderInner(
+              props.book,
+              props.activeChapterSlug,
+              onLinkClick,
+              queryS.value,
+              q => queryS.setState(q),
+              rows,
+              onBackToMain
+            )
 
         // Forest needed twice (expanded inner + rail) but build is cheap; this avoids passing it down.
         val forest = SidebarForest.build(filterChapters(props.book.chapters, ""))
@@ -397,14 +446,7 @@ object CortexSidebar:
                   ^.className  := "cortex-reader-sidebar__close-button",
                   LucideIcons.X(LucideIcons.withClass("cortex-reader-sidebar__close-icon"))
                 ),
-                renderInner(
-                  props.book,
-                  props.activeChapterSlug,
-                  close,
-                  queryS.value,
-                  q => queryS.setState(q),
-                  rows
-                )
+                expandedContent(close)
               )
             )
           else EmptyVdom,
@@ -417,7 +459,7 @@ object CortexSidebar:
             // When collapsed (and not peeking), only the rail is visible; when expanded or peeking,
             // the full inner is shown. We render both so CSS can transition between them; the active
             // one is selected by the layout's `data-side` / `data-peek` attributes.
-            expandedInner,
+            expandedContent(Callback.empty),
             rail
           )
         )
